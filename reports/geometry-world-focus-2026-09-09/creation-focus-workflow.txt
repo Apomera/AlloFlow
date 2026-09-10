@@ -1,0 +1,113 @@
+  function creationFocusRect(engine) {
+    var canvas=engine.renderer && engine.renderer.domElement,area=canvas && canvas.getBoundingClientRect();
+    if(!area || !area.width || !area.height)return {left:-0.72,right:0.72,bottom:-0.65,top:0.65};
+    var margin=14,w=area.width,h=area.height,obstacles=[],xs=[margin,w-margin],ys=[margin,h-margin];
+    var root=canvas.closest && canvas.closest('#geoworld-fs-workspace');
+    if(root)root.querySelectorAll('.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-touch-actions,.gw-touch-joystick,.gw-touch-look-panel,.gwe-builder-dock,.gwe-focus-return').forEach(function(node){
+      var style=window.getComputedStyle(node),r=node.getBoundingClientRect();
+      if(style.display==='none' || style.visibility==='hidden' || !r.width || !r.height)return;
+      var box={left:Math.max(margin,r.left-area.left-10),right:Math.min(w-margin,r.right-area.left+10),top:Math.max(margin,r.top-area.top-10),bottom:Math.min(h-margin,r.bottom-area.top+10)};
+      if(box.left>=box.right || box.top>=box.bottom)return;
+      obstacles.push(box);xs.push(box.left,box.right);ys.push(box.top,box.bottom);
+    });
+    xs=xs.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
+    ys=ys.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
+    var best=null,score=-1;
+    for(var l=0;l<xs.length-1;l++)for(var r=l+1;r<xs.length;r++){
+      if(xs[r]-xs[l]<Math.min(100,w*0.3))continue;
+      for(var t=0;t<ys.length-1;t++)for(var b=t+1;b<ys.length;b++){
+        var rw=xs[r]-xs[l],rh=ys[b]-ys[t];if(rh<Math.min(110,h*0.25))continue;
+        if(obstacles.some(function(o){return xs[l]<o.right && xs[r]>o.left && ys[t]<o.bottom && ys[b]>o.top;}))continue;
+        var offset=Math.abs((xs[l]+xs[r])/2-w/2)/w+Math.abs((ys[t]+ys[b])/2-h/2)/h;
+        var candidate=rw*rh*(1-offset*0.15);
+        if(candidate>score){score=candidate;best={left:xs[l],right:xs[r],top:ys[t],bottom:ys[b]};}
+      }
+    }
+    if(!best)best={left:w*0.25,right:w*0.75,top:h*0.3,bottom:h*0.65};
+    return {left:best.left/w*2-1,right:best.right/w*2-1,bottom:1-best.bottom/h*2,top:1-best.top/h*2};
+  }
+  function creationGeometryBounds(engine, blocks) {
+    var THREE=window.THREE,box=new THREE.Box3();
+    (blocks || []).forEach(function(p){
+      var mesh=engine.blocks[keyFor(p)];if(!mesh || !isStudentBlock(mesh.userData) || !mesh.geometry)return;
+      mesh.updateMatrixWorld(true);if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();
+      if(mesh.geometry.boundingBox)box.union(mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld));
+    });
+    return box;
+  }
+  function focusSelectedBuild(ctx) {
+    var selected=selectionMeasurement(window[ENGINE_KEY]) || aimedStudentMeasurement(ctx,false),THREE=window.THREE;
+    if(!selected || !THREE)return false;
+    var engine=selected.engine,camera=engine.camera;
+    if(!camera || !camera.isPerspectiveCamera || engine._showcase || engine._destroyed)return false;
+    var initialBox=creationGeometryBounds(engine,selected.measurement.blocks);if(initialBox.isEmpty())return false;
+    if(engine._guidedTour && engine.stopGuidedTour)engine.stopGuidedTour(false);
+    try{if(document.pointerLockElement && document.exitPointerLock)document.exitPointerLock();}catch(_){}
+    if(engine.releaseInput)engine.releaseInput();engine.isLocked=false;engine._entryAnim=null;engine._viewPresetAnim=null;
+    var state=engine._creationFocus;
+    if(!state){
+      state={position:camera.position.clone(),quaternion:camera.quaternion.clone(),up:camera.up.clone(),fov:camera.fov,far:camera.far,
+        fog:engine.scene.fog, fogNear:engine.scene.fog && engine.scene.fog.near,fogFar:engine.scene.fog && engine.scene.fog.far,
+        collapsed:!!((ctx.toolData.geometryWorld || {}).sandboxDockCollapsed),frames:[],manual:false,transition:null,lastPosition:camera.position.clone(),lastQuaternion:camera.quaternion.clone()};
+      engine._creationFocus=state;
+    }
+    state.manual=false;state.returning=false;state.lastPosition.copy(camera.position);state.lastQuaternion.copy(camera.quaternion);
+    state.frames.forEach(function(id){window.cancelAnimationFrame(id);});state.frames=[];
+    function syncCamera(){state.lastPosition.copy(camera.position);state.lastQuaternion.copy(camera.quaternion);if(engine.euler)engine.euler.setFromQuaternion(camera.quaternion);camera.updateMatrixWorld(true);}
+    function restoreProjection(){camera.fov=state.fov;camera.far=state.far;camera.up.copy(state.up);camera.updateProjectionMatrix();if(engine.scene.fog===state.fog && state.fog){state.fog.near=state.fogNear;state.fog.far=state.fogFar;}}
+    engine.disposeCreationFocus=function(){
+      if(engine._creationFocus!==state)return;
+      state.frames.forEach(function(id){window.cancelAnimationFrame(id);});state.frames=[];
+      restoreProjection();engine._creationFocus=null;engine.updateCreationFocus=null;engine.fitCreationFocus=null;engine.restoreCreationView=null;engine.disposeCreationFocus=null;
+      patchGeometryState(ctx,{creationFocusAvailable:false});
+    };
+    function transitionTo(position,quaternion,returning,animate){
+      var reduced=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      state.returning=!!returning;state.manual=false;
+      state.transition={from:camera.position.clone(),to:position.clone(),fromQuaternion:camera.quaternion.clone(),toQuaternion:quaternion.clone(),elapsed:0,duration:animate && !reduced?0.5:0};
+      if(!state.transition.duration)engine.updateCreationFocus(0);
+    }
+    engine.updateCreationFocus=function(dt){
+      if(engine._creationFocus!==state)return;
+      if(engine._destroyed || engine._guidedTour || engine._entryAnim || engine._viewPresetAnim){engine.disposeCreationFocus();return;}
+      var held=Object.keys(engine.moveState || {}).some(function(key){return engine.moveState[key];}) || Object.keys(engine.lookState || {}).some(function(key){return engine.lookState[key];});
+      var touch=engine._touchMoveVec || {},poseChanged=state.lastPosition.distanceToSquared(camera.position)>0.00000001 || Math.abs(state.lastQuaternion.dot(camera.quaternion))<0.99999999;
+      if(held || Math.abs(touch.x || 0)+Math.abs(touch.z || 0)>0.001 || poseChanged){
+        state.manual=true;state.transition=null;state.lastPosition.copy(camera.position);state.lastQuaternion.copy(camera.quaternion);
+        if(state.returning)engine.disposeCreationFocus();
+        return;
+      }
+      var animation=state.transition;if(!animation)return;
+      animation.elapsed+=dt;var t=animation.duration?Math.min(1,animation.elapsed/animation.duration):1,ease=1-Math.pow(1-t,3);
+      camera.position.copy(animation.from).lerp(animation.to,ease);camera.quaternion.copy(animation.fromQuaternion).slerp(animation.toQuaternion,ease);syncCamera();
+      if(t===1){state.transition=null;if(state.returning){engine.disposeCreationFocus();patchGeometryState(ctx,{sandboxDockCollapsed:state.collapsed});focusWorldSurface(0);}}
+    };
+    engine.fitCreationFocus=function(animate){
+      if(engine._creationFocus!==state || state.manual || state.returning || engine._showcase)return false;
+      var live=engine._builderSelection,box=creationGeometryBounds(engine,live && live.blocks);if(box.isEmpty())return false;
+      var rect=creationFocusRect(engine),fit=fitCreationCamera(box,camera,rect,2.8);if(!fit)return false;
+      state.rect=rect;state.bounds=box.clone();state.frame=fit;
+      camera.far=Math.max(state.far,fit.far);camera.updateProjectionMatrix();
+      if(engine.scene.fog===state.fog && state.fog){state.fog.near=Math.max(state.fogNear,fit.depthFar+2);state.fog.far=Math.max(state.fogFar,state.fog.near+80);}
+      camera.up.set(0,1,0);var view=camera.clone();view.position.copy(fit.position);view.lookAt(fit.target);
+      transitionTo(fit.position,view.quaternion,false,!!animate);return true;
+    };
+    engine.restoreCreationView=function(){
+      if(engine._creationFocus!==state || state.returning)return false;
+      try{if(document.pointerLockElement && document.exitPointerLock)document.exitPointerLock();}catch(_){}
+      if(engine.releaseInput)engine.releaseInput();engine.isLocked=false;
+      state.frames.forEach(function(id){window.cancelAnimationFrame(id);});state.frames=[];
+      transitionTo(state.position,state.quaternion,true,true);
+      announce(ctx,'Returning to your previous view.','info');return true;
+    };
+    if(engine.clearDimensionAnnotations)engine.clearDimensionAnnotations();
+    if(engine.clearSelectionAnnotations)engine.clearSelectionAnnotations();
+    patchGeometryState(ctx,{creationFocusAvailable:true,sandboxDockCollapsed:true,measureResult:null,builderPanel:'build',hudPanel:'',showGameSettings:false});
+    state.frames.push(window.requestAnimationFrame(function(){state.frames.push(window.requestAnimationFrame(function(){
+      if(engine._creationFocus!==state || engine._destroyed)return;
+      if(!engine.fitCreationFocus(true)){engine.disposeCreationFocus();return;}
+      focusWorldSurface(0);announce(ctx,'Creation framed. Keep building, or choose Previous view to return.','success');
+    }));}));
+    return true;
+  }
+

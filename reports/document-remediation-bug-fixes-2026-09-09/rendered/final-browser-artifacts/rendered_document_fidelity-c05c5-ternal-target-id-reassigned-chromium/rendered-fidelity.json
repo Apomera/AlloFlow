@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "db8e476ca0dff86c63fe39f89e74afcaff29c11d2273bcc09986c953b4402b85",
+    "bytes": 450
+  },
+  "candidate": {
+    "sha256": "7353768746b0e50f97fd36816a3e705b3e993c4b8d6f9544ccfc4df1f74b94fc",
+    "bytes": 450
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 543.8209999999999,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "fee-link-target",
+      "sourceSelector": "#jump",
+      "candidateSelector": "#jump",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "href",
+          "status": "passed",
+          "source": {
+            "relative": "#fees",
+            "resolved": "https://rendered-fidelity.invalid/document#fees"
+          },
+          "candidate": {
+            "relative": "#fees",
+            "resolved": "https://rendered-fidelity.invalid/document#fees"
+          }
+        },
+        {
+          "property": "targetText",
+          "status": "failed",
+          "source": "Fee schedule",
+          "candidate": "Contact information"
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

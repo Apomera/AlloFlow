@@ -73,6 +73,12 @@ window.StemLab = window.StemLab || {
       [data-galaxy-workspace][data-galaxy-focus-idle=true] [data-galaxy-focus-exit] { opacity: 0; }
       [data-galaxy-workspace][data-galaxy-focus=true] [data-galaxy-focus-exit]:focus-visible, [data-galaxy-workspace][data-galaxy-focus=true] [data-galaxy-focus-exit]:hover { opacity: 1; }
       [data-galaxy-workspace][data-galaxy-focus-idle=true] canvas { cursor: none !important; }
+      [data-galaxy-appearance-preview] { display: block; height: 42px; width: 100%; border-radius: 7px; background: #080f24; overflow: hidden; }
+      [data-galaxy-appearance-preset] { display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 6px !important; }
+      [data-galaxy-appearance-preset] svg { width: 100%; height: 42px; }
+      [data-galaxy-preset-label] { display: flex; justify-content: center; align-items: center; gap: 3px; min-height: 18px; }
+      [data-galaxy-preset-hint] { display: block; font-size: 10px; font-weight: 500; line-height: 1.4; }
+      @media (forced-colors: active) { [data-galaxy-appearance-preset][aria-pressed=true] { border: 3px solid Highlight; } }
       [data-galaxy-controls] input[type=range] { accent-color: #466798; }
       [data-galaxy-info] { border-inline-start: 3px solid #6386bd; background: #fff; line-height: 1.75; }
       [data-galaxy-root] button:focus-visible, [data-galaxy-root] summary:focus-visible, [data-galaxy-root] input:focus-visible, [data-galaxy-root] select:focus-visible { outline: 3px solid #3b82f6; outline-offset: 3px; }
@@ -661,7 +667,14 @@ if (!window._galaxyHasLoadedOnce) {
           var galaxyQuality = d.galaxyQuality || 'auto';
           var galaxyBrightness = Number.isFinite(d.galaxyBrightness) ? Math.min(1.2, Math.max(0.7, d.galaxyBrightness)) : 1;
           var galaxyVelocityOverlay = d.galaxyVelocityOverlay !== false;
+          var galaxyMagneticOverlay = d.galaxyMagneticOverlay !== false;
           var galaxyGlow = Number.isFinite(d.galaxyGlow) ? Math.min(1.4, Math.max(0, d.galaxyGlow)) : 1;
+          var galaxyAppearancePresets = [
+            { key: 'soft', label: __alloT('stem.galaxy.appearance_soft', 'Soft'), hint: __alloT('stem.galaxy.appearance_soft_hint', 'Dimmer · crisp stars'), brightness: 0.9, glow: 0.35 },
+            { key: 'balanced', label: __alloT('stem.galaxy.appearance_balanced', 'Balanced'), hint: __alloT('stem.galaxy.appearance_balanced_hint', 'Natural glow'), brightness: 1, glow: 1 },
+            { key: 'vivid', label: __alloT('stem.galaxy.appearance_vivid', 'Vivid'), hint: __alloT('stem.galaxy.appearance_vivid_hint', 'Brighter · soft halos'), brightness: 1.08, glow: 1.3 }
+          ];
+          var activeGalaxyAppearance = galaxyAppearancePresets.find(function (preset) { return Math.abs(galaxyBrightness - preset.brightness) < 0.001 && Math.abs(galaxyGlow - preset.glow) < 0.001; });
           var galaxyScienceOverlay = d.galaxyScienceOverlay !== false;
 
           var simMode = ALLOWED_GALAXY_MODES[d.simMode] ? d.simMode : 'galaxy';
@@ -1159,7 +1172,7 @@ if (!window._galaxyHasLoadedOnce) {
               marks: [
                 { label: __alloT('stem.galaxy.mark_cold_hydrogen', 'Cold hydrogen'), detail: __alloT('stem.galaxy.mark_cold_hydrogen_detail', 'fuel for future stars'), lx: 4, ly: 34, tx: 39, ty: 50, anchor: 'left' },
                 { label: __alloT('stem.galaxy.mark_radio_remnants', 'Remnant shells'), detail: __alloT('stem.galaxy.mark_radio_remnants_detail', 'expanding magnetized debris'), lx: 88, ly: 68, tx: 65, ty: 55, anchor: 'right' },
-                { label: __alloT('stem.galaxy.mark_doppler_field', 'Doppler velocity field'), detail: __alloT('stem.galaxy.mark_doppler_field_detail', 'blue approaches; red recedes'), lx: 88, ly: 28, tx: 70, ty: 41, anchor: 'right' }
+                { overlay: 'velocity', label: __alloT('stem.galaxy.mark_doppler_field', 'Doppler velocity field'), detail: __alloT('stem.galaxy.mark_doppler_field_detail', 'blue approaches; red recedes'), lx: 88, ly: 28, tx: 70, ty: 41, anchor: 'right' }
               ]
             },
             xray: {
@@ -1188,6 +1201,10 @@ if (!window._galaxyHasLoadedOnce) {
             }
           };
           var activeObserveGuide = OBSERVE_GUIDES[observeMode] || OBSERVE_GUIDES.visible;
+
+          var radioLegendDescription = !isSpiralMorphology
+            ? __alloT('stem.galaxy.radio_ordered_unavailable', 'Radio gas view. Ordered velocity and magnetic-field overlays are shown for spiral models only.')
+            : (galaxyVelocityOverlay ? __alloT('stem.galaxy.radio_motion_key_aria', 'Velocity map shown. Blue approaches; red recedes.') : __alloT('stem.galaxy.radio_velocity_hidden', 'Velocity map hidden')) + ' ' + (galaxyMagneticOverlay ? __alloT('stem.galaxy.radio_magnetic_key_aria', 'Magnetic field shown. Line orientation shows field direction; ribbon colors distinguish Faraday depth.') : __alloT('stem.galaxy.radio_magnetic_hidden', 'Magnetic field hidden'));
           if (galaxyType === 'elliptical') {
             var ELLIPTICAL_OBSERVE_GUIDES = {
               visible: {
@@ -1226,6 +1243,7 @@ if (!window._galaxyHasLoadedOnce) {
             };
             activeObserveGuide = ELLIPTICAL_OBSERVE_GUIDES[observeMode] || activeObserveGuide;
           }
+          var visibleObserveMarks = activeObserveGuide.marks.filter(function (mark) { return mark.overlay !== 'velocity' || (isSpiralMorphology && galaxyVelocityOverlay); });
           var previousObserveKey = d.previousObserveMode && d.previousObserveMode !== observeMode ? d.previousObserveMode : null;
           var previousObserve = previousObserveKey ? (OBSERVE_MODES.find(function (m) { return m.key === previousObserveKey; }) || null) : null;
           var observeHistory = (Array.isArray(d.observeHistory) ? d.observeHistory : [observeMode])
@@ -2048,6 +2066,7 @@ if (!window._galaxyHasLoadedOnce) {
             galaxyQuality: galaxyQuality,
             galaxyGlow: galaxyGlow,
             galaxyVelocityOverlay: galaxyVelocityOverlay,
+            galaxyMagneticOverlay: galaxyMagneticOverlay,
             initGalaxy: initGalaxy,
             loadGalaxyPP: loadGalaxyPP,
             starCount: starCount,
@@ -2823,7 +2842,7 @@ if (!window._galaxyHasLoadedOnce) {
             var radioPolarizationGroup = new THREE.Group(); radioPolarizationGroup.name = 'radioMagneticPolarizationField'; radioGroup.add(radioPolarizationGroup);
             var radioPolarizationMaterial = null, faradayRibbonMaterials = [], faradayRibbonObjects = [];
             dopplerVelocityFieldGroup.visible = isSpiralMorphology && galaxyVelocityOverlay;
-            radioPolarizationGroup.visible = isSpiralMorphology;
+            radioPolarizationGroup.visible = isSpiralMorphology && galaxyMagneticOverlay;
             var infraredPointMaterial = null, radioPointMaterial = null, xrayPointMaterial = null, jetMat = null, adaptiveOverlayPointMaterials = [], adaptiveDensePointMaterials = [];
             var extendedInstrumentDetail = 1, resolvedInstrumentDetail = 1, xrayBeaconVisibility = 1;
             var fineStarTex = null;
@@ -6110,7 +6129,7 @@ if (!window._galaxyHasLoadedOnce) {
               if (remainingKeys.length === 1) { var remaining = activeGalaxyPointers[remainingKeys[0]]; prevX = remaining.x; prevY = remaining.y; }
             }
 
-            function onGalWheel(e) { e.preventDefault(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyOverviewRadius / spherical.r)))); }
+            function onGalWheel(e) { e.preventDefault(); cancelGalaxyCameraMotion(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyOverviewRadius / spherical.r)))); }
 
             canvasEl.addEventListener('pointerdown', onGalDown);
 
@@ -6355,8 +6374,25 @@ if (!window._galaxyHasLoadedOnce) {
 
             };
 
+            // Manual camera input always takes over from a tour or a pending transition.
+            function cancelGalaxyCameraMotion() {
+              warpTween = null;
+              if (tourActive) { tourActive = false; if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false); }
+            }
+            canvasEl._galaxyCancelCameraMotion = cancelGalaxyCameraMotion;
+            canvasEl._galaxySetViewAngle = function (angle) {
+              var views = { face: { phi: 0.1, label: __alloT('stem.galaxy.orient_face_on', 'Face-on view') }, angled: { phi: Math.PI * 0.35, label: __alloT('stem.galaxy.orient_angled', 'Angled view') }, edge: { phi: Math.PI * 0.5, label: __alloT('stem.galaxy.orient_edge_on', 'Edge-on view') } };
+              if (!Object.prototype.hasOwnProperty.call(views, angle)) return;
+              cancelGalaxyCameraMotion();
+              var view = views[angle];
+              // Keep distance, azimuth, and selected-object focus when changing inclination.
+              if (prefersReducedMotion) { spherical.phi = view.phi; updateCamera(); }
+              else warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: 0, dp: view.phi - spherical.phi, dr: 0, start: Date.now(), dur: 720, suppressShock: true };
+              setCanvasStatus(view.label);
+            };
             canvasEl._galaxyOverviewRadius = galaxyOverviewRadius;
             canvasEl._galaxyResetView = function () {
+              cancelGalaxyCameraMotion();
               cameraLookGoal.set(0, 0, 0);
               if (prefersReducedMotion) { cameraLookTarget.set(0, 0, 0); spherical.theta = Math.PI * 0.1; spherical.phi = Math.PI * 0.35; spherical.r = galaxyOverviewRadius; updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_overview_restored', 'Overview restored')); return; }
               var dTheta = Math.PI * 0.1 - spherical.theta;
@@ -6366,6 +6402,7 @@ if (!window._galaxyHasLoadedOnce) {
               cinematicMotion.aperture = 0.45; setCanvasStatus(__alloT('stem.galaxy.status_returning_overview', 'Returning to the overview'));
             };
             canvasEl._galaxyZoom = function (direction) {
+              cancelGalaxyCameraMotion();
               spherical.r = Math.max(0.2, Math.min(3, spherical.r * (direction === 'in' ? 0.82 : 1.22)));
               updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyOverviewRadius / spherical.r))));
             };
@@ -7027,7 +7064,7 @@ if (!window._galaxyHasLoadedOnce) {
               resolvedInstrumentDetail = 0.035 + 0.965 * resolvedInstrumentRaw;
               xrayBeaconVisibility = 0.15 + 0.85 * resolvedInstrumentRaw;
               var radioPolarizationDetailLevel = Math.max(0, Math.min(1, (2.05 - spherical.r) / 1.32));
-              radioPolarizationGroup.visible = isSpiralMorphology && radioGroup.visible && radioPolarizationDetailLevel > 0.012;
+              radioPolarizationGroup.visible = isSpiralMorphology && galaxyRuntimeRef.current.galaxyMagneticOverlay && radioGroup.visible && radioPolarizationDetailLevel > 0.012;
               dopplerVelocityFieldGroup.visible = isSpiralMorphology && galaxyRuntimeRef.current.galaxyVelocityOverlay;
               if (radioGroup.visible) {
                 var velocityPulse = prefersReducedMotion ? 1 : 0.9 + 0.1 * Math.sin(elapsed * 0.86);
@@ -9075,6 +9112,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     if (e.key.toLowerCase() === 'h' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); e.stopPropagation(); if (cv._galaxySetFocusView) cv._galaxySetFocusView(!cv._galaxyIsFocusView()); return; }
                     var orb = cv._galaxyOrbit, upCam = cv._galaxyUpdateCam;
+                    if (/^Arrow(Left|Right|Up|Down)$/.test(e.key) && cv._galaxyCancelCameraMotion) cv._galaxyCancelCameraMotion();
 
                     if (e.key === 'ArrowLeft') { e.preventDefault(); orb.theta -= 0.1; upCam(); }
 
@@ -9189,12 +9227,12 @@ if (!window._galaxyHasLoadedOnce) {
                   ),
                   React.createElement("p", { className: "mt-1.5 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.xray_legend_note', 'Color and intensity encode plasma energy, not ordinary visible-light brightness.'))
                 ),
-                !galaxyHudHidden && observeMode === 'radio' && React.createElement("div", { "data-galaxy-radio-velocity-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-cyan-200/20 bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": !galaxyVelocityOverlay ? __alloT('stem.galaxy.radio_velocity_hidden_aria', 'Radio observation key. Velocity map hidden. Line orientation shows magnetic-field direction; ribbon colors distinguish Faraday depth.') : __alloT('stem.galaxy.radio_velocity_aria', 'Radio observation key. The blue-to-red field shows approaching through receding hydrogen. Short line segments trace projected magnetic-field direction. Cyan and magenta ribbons separate Faraday-rotation depth.') },
-                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.12em] text-cyan-100" }, __alloT('stem.galaxy.radio_velocity_title', '21 cm velocity + magnetic field')),
-                  galaxyVelocityOverlay && React.createElement("div", { className: "mt-1.5 h-2 rounded-full bg-gradient-to-r from-blue-600 via-slate-200 to-red-600 shadow-[0_0_10px_rgba(56,189,248,0.28)]", "aria-hidden": true }),
-                  galaxyVelocityOverlay && React.createElement("div", { className: "mt-1 flex justify-between gap-2 text-[11px] font-bold" }, React.createElement("span", { className: "text-blue-200" }, __alloT('stem.galaxy.radio_velocity_toward', '← Approaching')), React.createElement("span", { className: "text-red-200" }, __alloT('stem.galaxy.radio_velocity_away', 'Receding →'))),
-                  !galaxyVelocityOverlay && React.createElement("p", { "data-galaxy-velocity-hidden": "true", className: "mt-1.5 text-[11px] text-slate-300" }, __alloT('stem.galaxy.radio_velocity_hidden', 'Velocity map hidden')),
-                  React.createElement("div", { "data-galaxy-radio-polarization-key": "true", className: "mt-2 space-y-1.5 border-t border-white/10 pt-2 text-[11px] font-bold text-slate-200" },
+                !galaxyHudHidden && observeMode === 'radio' && React.createElement("div", { "data-galaxy-radio-velocity-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-cyan-200/20 bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": radioLegendDescription },
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.12em] text-cyan-100" }, __alloT('stem.galaxy.radio_observation_key', 'Radio observation key')),
+                  isSpiralMorphology && galaxyVelocityOverlay && React.createElement("div", { className: "mt-1.5 h-2 rounded-full bg-gradient-to-r from-blue-600 via-slate-200 to-red-600 shadow-[0_0_10px_rgba(56,189,248,0.28)]", "aria-hidden": true }),
+                  isSpiralMorphology && galaxyVelocityOverlay && React.createElement("div", { className: "mt-1 flex justify-between gap-2 text-[11px] font-bold" }, React.createElement("span", { className: "text-blue-200" }, __alloT('stem.galaxy.radio_velocity_toward', '← Approaching')), React.createElement("span", { className: "text-red-200" }, __alloT('stem.galaxy.radio_velocity_away', 'Receding →'))),
+                  isSpiralMorphology && !galaxyVelocityOverlay && React.createElement("p", { "data-galaxy-velocity-hidden": "true", className: "mt-1.5 text-[11px] text-slate-300" }, __alloT('stem.galaxy.radio_velocity_hidden', 'Velocity map hidden')),
+                  isSpiralMorphology && galaxyMagneticOverlay && React.createElement("div", { "data-galaxy-radio-polarization-key": "true", className: "mt-2 space-y-1.5 border-t border-white/10 pt-2 text-[11px] font-bold text-slate-200" },
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("span", { className: "relative h-3 w-9 shrink-0", "aria-hidden": true }, React.createElement("span", { className: "absolute left-0 top-1/2 h-px w-9 -translate-y-1/2 -rotate-12 bg-cyan-200 shadow-[0_0_6px_rgba(103,232,249,0.9)]" })),
                       React.createElement("span", null, __alloT('stem.galaxy.radio_field_direction', 'Line orientation = magnetic-field direction'))
@@ -9204,7 +9242,8 @@ if (!window._galaxyHasLoadedOnce) {
                       React.createElement("span", null, __alloT('stem.galaxy.radio_faraday_depth', 'Ribbon color = Faraday depth'))
                     )
                   ),
-                  React.createElement("p", { className: "mt-1.5 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.radio_velocity_note', 'Velocity color maps motion; aligned ticks and layered ribbons reveal magnetized gas along the same sightline.'))
+                  isSpiralMorphology && !galaxyMagneticOverlay && React.createElement("p", { "data-galaxy-magnetic-hidden": "true", className: "mt-1.5 text-[11px] text-slate-300" }, __alloT('stem.galaxy.radio_magnetic_hidden', 'Magnetic field hidden')),
+                  React.createElement("p", { "data-galaxy-radio-context": "true", className: "mt-1.5 text-[11px] leading-relaxed text-slate-300" }, isSpiralMorphology ? __alloT('stem.galaxy.radio_overlay_compare_note', 'Toggle the velocity map and magnetic field separately to compare the layers.') : radioLegendDescription)
                 ),
                 !galaxyHudHidden && observeMode === 'gravity' && React.createElement("div", { "data-galaxy-gravity-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-fuchsia-200/20 bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.gravity_legend_aria', 'Gravity inference key. Orbital speed constrains enclosed mass, while aligned weak-lensing arclets trace projected halo mass. This is an evidence map, not a photograph.') },
                   React.createElement("div", { className: "flex items-center gap-2" },
@@ -9255,7 +9294,7 @@ if (!window._galaxyHasLoadedOnce) {
                 ),
                 galaxyScienceOverlay && !selectedStarMeasurement && !galaxyHudHidden && !galaxyTourActive && galaxySceneReady && React.createElement("div", { "data-galaxy-science-overlay": "true", className: "pointer-events-none absolute inset-0 z-[5] hidden md:block", "aria-hidden": true },
                   React.createElement("svg", { viewBox: "0 0 100 100", preserveAspectRatio: "none", className: "absolute inset-0 h-full w-full", "aria-hidden": true, focusable: "false" },
-                    activeObserveGuide.marks.map(function (mark) { return React.createElement("g", { key: mark.label },
+                    visibleObserveMarks.map(function (mark) { return React.createElement("g", { key: mark.label },
                       React.createElement("line", { x1: mark.lx, y1: mark.ly, x2: mark.tx, y2: mark.ty, stroke: activeObserve.accent, strokeWidth: 0.35, strokeDasharray: "1.4 1.1", opacity: 0.72, vectorEffect: "non-scaling-stroke" }),
                       React.createElement("circle", { cx: mark.tx, cy: mark.ty, r: 1.15, fill: "none", stroke: activeObserve.accent, strokeWidth: 0.45, opacity: 0.92, vectorEffect: "non-scaling-stroke" }),
                       React.createElement("circle", { cx: mark.tx, cy: mark.ty, r: 0.32, fill: activeObserve.accent, opacity: 0.95 })
@@ -9274,7 +9313,7 @@ if (!window._galaxyHasLoadedOnce) {
                   // column: they were swallowing clicks on "Hide simulation
                   // labels", "Start cinematic tour" and "Toggle fullscreen" in
                   // every observe mode.
-                  activeObserveGuide.marks.map(function (mark) { return React.createElement("div", { key: "label-" + mark.label, className: "absolute max-w-[10.5rem] rounded-lg border bg-slate-950/80 px-2.5 py-2 text-white shadow-xl backdrop-blur-md pointer-events-none", style: Object.assign({ top: mark.ly + '%', transform: 'translate(0, -50%)', borderColor: activeObserve.accent + '88' }, mark.anchor === 'right' ? { right: (100 - mark.lx) + '%' } : { left: mark.lx + '%' }) },
+                  visibleObserveMarks.map(function (mark) { return React.createElement("div", { key: "label-" + mark.label, "data-galaxy-observe-mark": mark.overlay || "feature", className: "absolute max-w-[10.5rem] rounded-lg border bg-slate-950/80 px-2.5 py-2 text-white shadow-xl backdrop-blur-md pointer-events-none", style: Object.assign({ top: mark.ly + '%', transform: 'translate(0, -50%)', borderColor: activeObserve.accent + '88' }, mark.anchor === 'right' ? { right: (100 - mark.lx) + '%' } : { left: mark.lx + '%' }) },
                     React.createElement("p", { className: "text-[11px] font-black leading-tight" }, activeObserve.icon + " " + mark.label),
                     React.createElement("p", { className: "mt-0.5 text-[11px] leading-tight text-slate-300" }, mark.detail)
                   ); })
@@ -9369,17 +9408,50 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── Layer toggles ──
 
+              !d.webglError && React.createElement("section", { "data-galaxy-view-angles": "true", "aria-labelledby": "galaxy-view-angles-title", className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
+                React.createElement("h4", { id: "galaxy-view-angles-title", className: "text-sm font-black text-slate-900" }, __alloT('stem.galaxy.view_angles_title', 'Viewing angle')),
+                React.createElement("p", { id: "galaxy-view-angles-help", className: "mt-1 text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.view_angles_help', 'Explore the shape from above or across its edge. Your zoom and selected object stay in place.')),
+                React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-1.5" },
+                  [{ key: 'face', ry: 13, label: __alloT('stem.galaxy.orient_face_on', 'Face-on view') }, { key: 'angled', ry: 8, label: __alloT('stem.galaxy.orient_angled', 'Angled view') }, { key: 'edge', ry: 2, label: __alloT('stem.galaxy.orient_edge_on', 'Edge-on view') }].map(function (view) {
+                    return React.createElement("button", { key: view.key, type: "button", "data-galaxy-view-angle": view.key, disabled: !galaxySceneReady, "aria-describedby": "galaxy-view-angles-help", onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetViewAngle) cv._galaxySetViewAngle(view.key); }, className: "flex min-h-[44px] flex-col items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1 py-2 text-[11px] font-bold text-slate-700 transition-colors hover:border-indigo-400 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40" },
+                      React.createElement("svg", { viewBox: "0 0 64 36", width: 64, height: 36, style: { maxWidth: '100%' }, "aria-hidden": true, focusable: "false" },
+                        React.createElement("ellipse", { cx: 32, cy: 18, rx: 24, ry: view.ry, fill: '#e0e7ff', stroke: '#818cf8', strokeWidth: 1.2 }),
+                        React.createElement("ellipse", { cx: 32, cy: 18, rx: 15, ry: Math.max(1, view.ry * 0.6), fill: 'none', stroke: '#6366f1', strokeWidth: 1, strokeDasharray: '3 3' }),
+                        React.createElement("circle", { cx: 32, cy: 18, r: 2.5, fill: '#4338ca' })
+                      ), view.label
+                    );
+                  })
+                )
+              ),
               !d.webglError && React.createElement("section", { "data-galaxy-appearance": "true", "aria-labelledby": "galaxy-appearance-title", className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
                 React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                  React.createElement("h4", { id: "galaxy-appearance-title", className: "text-sm font-black text-slate-900" }, __alloT('stem.galaxy.appearance_title', 'Appearance')),
+                  React.createElement("div", { className: "min-w-0" },
+                    React.createElement("h4", { id: "galaxy-appearance-title", className: "text-sm font-black text-slate-900" }, __alloT('stem.galaxy.appearance_title', 'Appearance')),
+                    React.createElement("p", { "data-galaxy-appearance-current": "true", className: "mt-0.5 text-xs font-semibold text-indigo-700" }, activeGalaxyAppearance ? activeGalaxyAppearance.label : __alloT('stem.galaxy.appearance_custom', 'Custom'))
+                  ),
                   React.createElement("button", { type: "button", "data-galaxy-appearance-reset": "true", disabled: galaxyBrightness === 1 && galaxyGlow === 1, onClick: function () { patchGalaxy({ galaxyBrightness: 1, galaxyGlow: 1 }); }, className: "min-h-[44px] rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:text-slate-400", "aria-label": __alloT('stem.galaxy.appearance_reset_aria', 'Reset brightness and glow') }, __alloT('stem.galaxy.appearance_reset', 'Reset'))
                 ),
                 React.createElement("button", { type: "button", "data-galaxy-focus-launcher": "true", disabled: !galaxySceneReady, onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetFocusView) cv._galaxySetFocusView(true); }, className: "mb-3 flex min-h-[44px] w-full items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-left text-xs font-bold text-white disabled:opacity-40" }, __alloT('stem.galaxy.focus_launcher', 'Focus view · hide interface'), React.createElement("span", { "aria-hidden": true, className: "rounded border border-white/30 px-1.5 py-0.5 text-[11px] text-cyan-100" }, "H")),
                 React.createElement("p", { id: "galaxy-appearance-help", className: "text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.appearance_help', 'Adjust how the scene looks. The galaxy and its measurements stay the same.')),
                 React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-1.5", role: "group", "aria-label": __alloT('stem.galaxy.appearance_presets', 'Appearance presets') },
-                  [{ key: 'soft', label: __alloT('stem.galaxy.appearance_soft', 'Soft'), brightness: 0.9, glow: 0.35 }, { key: 'balanced', label: __alloT('stem.galaxy.appearance_balanced', 'Balanced'), brightness: 1, glow: 1 }, { key: 'vivid', label: __alloT('stem.galaxy.appearance_vivid', 'Vivid'), brightness: 1.08, glow: 1.3 }].map(function (preset) {
-                    var active = Math.abs(galaxyBrightness - preset.brightness) < 0.001 && Math.abs(galaxyGlow - preset.glow) < 0.001;
-                    return React.createElement("button", { key: preset.key, type: "button", "data-galaxy-appearance-preset": preset.key, "aria-pressed": active, onClick: function () { patchGalaxy({ galaxyBrightness: preset.brightness, galaxyGlow: preset.glow }); }, className: "min-h-[44px] rounded-lg border px-1 py-2 text-xs font-bold " + (active ? "border-indigo-600 bg-indigo-50 text-indigo-900" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50") }, active && React.createElement("span", { "aria-hidden": true }, "✓ "), preset.label);
+                  galaxyAppearancePresets.map(function (preset) {
+                    var active = activeGalaxyAppearance === preset;
+                    return React.createElement("button", { type: "button", key: preset.key, "data-galaxy-appearance-preset": preset.key, "aria-pressed": active, "aria-label": preset.label + ': ' + preset.hint, onClick: function () { patchGalaxy({ galaxyBrightness: preset.brightness, galaxyGlow: preset.glow }); }, className: "min-h-[44px] rounded-lg border text-xs font-bold " + (active ? "border-indigo-600 bg-indigo-50 text-indigo-900" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50") },
+                      React.createElement("span", { "data-galaxy-appearance-preview": preset.key, "aria-hidden": true },
+                        React.createElement("svg", { viewBox: "0 0 96 42", focusable: "false", "aria-hidden": true },
+                          [[12,29,0.8],[26,12,1],[44,25,1.8],[65,13,1.3],[82,30,0.9]].map(function (star, i) {
+                            var halo = preset.glow * (i === 2 ? 5.8 : 3.4);
+                            return React.createElement("g", { key: i },
+                              React.createElement("circle", { cx: star[0], cy: star[1], r: halo, fill: i % 2 ? '#fbdba7' : '#8abaff', opacity: 0.07 * preset.glow }),
+                              React.createElement("circle", { cx: star[0], cy: star[1], r: halo * 0.6, fill: '#a8cdff', opacity: 0.15 * preset.glow }),
+                              React.createElement("circle", { cx: star[0], cy: star[1], r: star[2], fill: i % 2 ? '#ffe7c6' : '#edf6ff', opacity: Math.min(1, preset.brightness * 0.85) })
+                            );
+                          })
+                        )
+                      ),
+                      React.createElement("span", { "data-galaxy-preset-label": "true" }, active && React.createElement("span", { "aria-hidden": true }, '✓'), preset.label),
+                      React.createElement("span", { "data-galaxy-preset-hint": "true" }, preset.hint)
+                    );
                   })
                 ),
                 [{ key: 'galaxyBrightness', id: 'brightness', label: __alloT('stem.galaxy.appearance_brightness', 'Brightness'), value: galaxyBrightness, min: 70, max: 120, hint: __alloT('stem.galaxy.appearance_brightness_hint', 'Dimmer scene to brighter scene.') }, { key: 'galaxyGlow', id: 'glow', label: __alloT('stem.galaxy.appearance_glow', 'Star glow'), value: galaxyGlow, min: 0, max: 140, hint: __alloT('stem.galaxy.appearance_glow_hint', 'Sharper points to softer halos.') }].map(function (setting) {
@@ -9411,9 +9483,16 @@ if (!window._galaxyHasLoadedOnce) {
                 )
               ),
 
-              observeMode === 'radio' && isSpiralMorphology && React.createElement("button", { type: "button", "data-galaxy-velocity-toggle": "true", "aria-pressed": galaxyVelocityOverlay, onClick: function () { upd('galaxyVelocityOverlay', !galaxyVelocityOverlay); }, className: "flex min-h-[44px] w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-xs transition-colors " + (galaxyVelocityOverlay ? "border-cyan-300 bg-cyan-50 text-cyan-950" : "border-slate-200 bg-slate-50 text-slate-600") },
+              observeMode === 'radio' && isSpiralMorphology && React.createElement("div", { "data-galaxy-radio-overlays": "true", className: "space-y-2 rounded-xl border border-slate-200 bg-white p-3" },
+                React.createElement("p", { className: "text-xs font-black text-slate-800" }, __alloT('stem.galaxy.radio_overlays_title', 'Radio overlays')),
+              React.createElement("button", { type: "button", "data-galaxy-velocity-toggle": "true", "aria-pressed": galaxyVelocityOverlay, onClick: function () { upd('galaxyVelocityOverlay', !galaxyVelocityOverlay); }, className: "flex min-h-[44px] w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-xs transition-colors " + (galaxyVelocityOverlay ? "border-cyan-300 bg-cyan-50 text-cyan-950" : "border-slate-200 bg-slate-50 text-slate-600") },
                 React.createElement("span", null, React.createElement("span", { className: "block font-black" }, __alloT('stem.galaxy.radio_velocity_toggle', 'Velocity map')), React.createElement("span", { className: "block text-[11px] opacity-75" }, __alloT('stem.galaxy.radio_velocity_toggle_hint', 'Compare the gas with or without its blue-to-red motion overlay.'))),
                 React.createElement("span", { className: "rounded-full px-2 py-1 text-[11px] font-black", style: { background: galaxyVelocityOverlay ? '#334155' : '#e2e8f0', color: galaxyVelocityOverlay ? '#f8fafc' : '#475569' } }, galaxyVelocityOverlay ? __alloT('stem.galaxy.overlay_on', 'On') : __alloT('stem.galaxy.overlay_off', 'Off'))
+              ),
+              React.createElement("button", { type: "button", "data-galaxy-magnetic-toggle": "true", "aria-pressed": galaxyMagneticOverlay, onClick: function () { upd('galaxyMagneticOverlay', !galaxyMagneticOverlay); }, className: "flex min-h-[44px] w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-xs transition-colors " + (galaxyMagneticOverlay ? "border-cyan-300 bg-cyan-50 text-cyan-950" : "border-slate-200 bg-slate-50 text-slate-600") },
+                React.createElement("span", null, React.createElement("span", { className: "block font-black" }, __alloT('stem.galaxy.radio_magnetic_toggle', 'Magnetic field')), React.createElement("span", { className: "block text-[11px] opacity-75" }, __alloT('stem.galaxy.radio_magnetic_toggle_hint', 'Show or hide the field-direction ticks and colored ribbons.'))),
+                React.createElement("span", { className: "rounded-full px-2 py-1 text-[11px] font-black", style: { background: galaxyMagneticOverlay ? '#334155' : '#e2e8f0', color: galaxyMagneticOverlay ? '#f8fafc' : '#475569' } }, galaxyMagneticOverlay ? __alloT('stem.galaxy.overlay_on', 'On') : __alloT('stem.galaxy.overlay_off', 'Off'))
+              )
               ),
               React.createElement("button", { type: "button", "data-galaxy-science-toggle": "true", "aria-pressed": galaxyScienceOverlay, onClick: function () { upd('galaxyScienceOverlay', !galaxyScienceOverlay); }, className: "flex min-h-[44px] w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-xs transition-colors " + (galaxyScienceOverlay ? "border-cyan-300 bg-cyan-50 text-cyan-950" : "border-slate-200 bg-slate-50 text-slate-600") },
                 React.createElement("span", null, React.createElement("span", { className: "block font-black" }, __alloT('stem.galaxy.science_overlay_title', 'Science labels')), React.createElement("span", { className: "block text-[11px] opacity-75" }, __alloT('stem.galaxy.science_overlay_sub', 'Connect visible features to the evidence they provide.'))),

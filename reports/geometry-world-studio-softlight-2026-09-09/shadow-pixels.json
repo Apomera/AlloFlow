@@ -1,0 +1,59 @@
+{
+  "pass": true,
+  "shadowEdge": [
+    {
+      "stage": "before",
+      "region": [
+        818,
+        526,
+        896,
+        546
+      ],
+      "maxAdjacentStep": 32,
+      "stepsOver20": 25
+    },
+    {
+      "stage": "after",
+      "region": [
+        818,
+        526,
+        896,
+        546
+      ],
+      "maxAdjacentStep": 12,
+      "stepsOver20": 0
+    }
+  ],
+  "saver": [
+    {
+      "file": "saver-front-844x390.png",
+      "identical": true
+    },
+    {
+      "file": "saver-perspective-1200x820.png",
+      "identical": true
+    },
+    {
+      "file": "saver-perspective-390x844.png",
+      "identical": true
+    },
+    {
+      "file": "saver-export.png",
+      "identical": true
+    }
+  ],
+  "perspectiveExports": [
+    {
+      "stage": "before",
+      "width": 2048,
+      "height": 1295,
+      "validSize": true
+    },
+    {
+      "stage": "after",
+      "width": 2048,
+      "height": 1295,
+      "validSize": true
+    }
+  ]
+}

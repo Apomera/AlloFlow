@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "846bd16e9970b5cf3490b5a724d4673ae43062517608d7ee2fda8bed793b5632",
+    "bytes": 68
+  },
+  "candidate": {
+    "sha256": "fc301607b3bbbde8ab3754091221feb6444ff5050abd554e032618ac698ae32c",
+    "bytes": 92
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 500.48969999999827,
+  "status": "passed",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "p",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Do not open. Keep this instruction.",
+          "candidate": "Do not open. Keep this instruction."
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": false,
+          "candidate": true
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": false,
+          "candidate": true
+        },
+        {
+          "property": "visibleText",
+          "status": "passed",
+          "source": "",
+          "candidate": "Do not open. Keep this instruction.",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [],
+            "candidate": [
+              [
+                0,
+                2
+              ],
+              [
+                3,
+                6
+              ],
+              [
+                7,
+                12
+              ],
+              [
+                13,
+                17
+              ],
+              [
+                18,
+                22
+              ],
+              [
+                23,
+                35
+              ]
+            ]
+          }
+        },
+        {
+          "property": "exposedText",
+          "status": "passed",
+          "source": "",
+          "candidate": "Do not open.Keep this instruction.",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [],
+            "candidate": [
+              [
+                0,
+                2
+              ],
+              [
+                3,
+                6
+              ],
+              [
+                7,
+                12
+              ],
+              [
+                13,
+                17
+              ],
+              [
+                18,
+                22
+              ],
+              [
+                23,
+                35
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

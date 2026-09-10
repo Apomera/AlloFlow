@@ -7,6 +7,51 @@
 
 (function() {
   'use strict';
+
+  // Numerical candidates, with a substitution residual and the search interval attached.
+  function gcScanRoots(evaluate, min, max) {
+    var count=500,tolerance=1e-8,results=[],invalid=0;
+    if(!Number.isFinite(min)||!Number.isFinite(max)||max<=min||!Number.isFinite(max-min))return {candidates:[],error:'Choose a finite increasing x interval.'};
+    var step=(max-min)/count,xTolerance=Math.max(1e-10,step*1e-6),samples=[];
+    function value(x){try{var y=evaluate(x);if(typeof y==='number'&&Number.isFinite(y))return y;}catch(e){}invalid++;return NaN;}
+    function add(x,y,method,lo,hi){
+      if(!Number.isFinite(y)||Math.abs(y)>tolerance)return;
+      if(results.some(function(r){return Math.abs(r.x-x)<=xTolerance;}))return;
+      results.push({x:x,residual:Math.abs(y),method:method,bracket:[lo,hi]});
+    }
+    for(var i=0;i<=count;i++){var x=min+(max-min)*(i/count),y=value(x);samples.push({x:x,y:y});if(y===0)add(x,y,'sample zero',x,x);}
+    if(samples.every(function(sample){return sample.y===0;}))return {candidates:[],zeroThroughoutSamples:true,interval:[min,max],samples:count+1,step:step,tolerance:tolerance,invalidEvaluations:invalid};
+    for(var j=1;j<samples.length;j++){
+      var a=samples[j-1],b=samples[j];
+      if(!Number.isFinite(a.y)||!Number.isFinite(b.y)||a.y===0||b.y===0||Math.sign(a.y)===Math.sign(b.y))continue;
+      var lo=a.x,hi=b.x,yl=a.y,best=Math.abs(a.y)<Math.abs(b.y)?a:b;
+      for(var k=0;k<64;k++){
+        var mid=lo+(hi-lo)/2;if(mid===lo||mid===hi)break;
+        var ym=value(mid);if(!Number.isFinite(ym)){best=null;break;}
+        if(!best||Math.abs(ym)<Math.abs(best.y))best={x:mid,y:ym};
+        if(ym===0){lo=hi=mid;break;}
+        if(Math.sign(yl)!==Math.sign(ym))hi=mid;else{lo=mid;yl=ym;}
+      }
+      // A jump can change sign without approaching zero. Require substantial residual reduction.
+      if(best&&Math.abs(best.y)<=Math.max(Math.abs(a.y),Math.abs(b.y))*1e-4)add(best.x,best.y,'sign change',lo,hi);
+    }
+    // A local minimum of |f| can reveal a touching root that a sign-change scan misses.
+    for(var m=1;m<samples.length-1;m++){
+      var left=samples[m-1],center=samples[m],right=samples[m+1];
+      if(!Number.isFinite(left.y)||!Number.isFinite(center.y)||!Number.isFinite(right.y)||center.y===0||!(Math.abs(center.y)<Math.abs(left.y)&&Math.abs(center.y)<Math.abs(right.y)))continue;
+      var l=left.x,r=right.x,ratio=(Math.sqrt(5)-1)/2,c=r-ratio*(r-l),e=l+ratio*(r-l),fc=value(c),fe=value(e);
+      for(var n=0;n<48&&Number.isFinite(fc)&&Number.isFinite(fe);n++){
+        if(Math.abs(fc)<Math.abs(fe)){r=e;e=c;fe=fc;c=r-ratio*(r-l);fc=value(c);}
+        else{l=c;c=e;fc=fe;e=l+ratio*(r-l);fe=value(e);}
+      }
+      var cx=Math.abs(fc)<Math.abs(fe)?c:e,cy=Math.abs(fc)<Math.abs(fe)?fc:fe;
+      if(Math.abs(cy)<=Math.max(Math.abs(left.y),Math.abs(right.y))*1e-4)add(cx,cy,'touching-root candidate',l,r);
+    }
+    results.sort(function(a,b){return a.x-b.x;});
+    return {candidates:results,interval:[min,max],samples:count+1,step:step,tolerance:tolerance,invalidEvaluations:invalid};
+  }
+  window.__alloGraphAnalysis = { scan: gcScanRoots };
+
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -510,64 +555,32 @@
         checkBadges();
 
         /* ── Analyze ── */
+
+        var analysisKey=JSON.stringify([funcs.map(function(f){return f.expr||'';}),win.xmin,win.xmax,d.sliderA,d.sliderB,d.sliderC]);
+        var analysisCurrent=d._analysisKey===analysisKey;
         function runAnalysis() {
-          if (!window.math) return;
+          if (!window.math) { updMulti({showAnalysis:true,_analysisKey:analysisKey,_analysis:{error:'The math engine is still loading. Try Analyze again.'},_zeros:[],_intersections:[]}); return; }
           SOUNDS.analyzeComplete();
-          var zeros = []; var inters = [];
+          var zeros=[],inters=[],report={error:'Enter a function in the first row.'};
+          var scope={};if(d.sliderA!=null)scope.a=d.sliderA;if(d.sliderB!=null)scope.b=d.sliderB;if(d.sliderC!=null)scope.c=d.sliderC;
           try {
-            var f1 = funcs[0];
-            if (f1 && f1.expr && f1.expr.trim()) {
-              var c1 = math.compile(gcCleanExpr(f1.expr));
-              var sA = {};
-              if (d.sliderA != null) sA.a = d.sliderA; if (d.sliderB != null) sA.b = d.sliderB; if (d.sliderC != null) sA.c = d.sliderC;
-              var step = (win.xmax - win.xmin) / 500;
-              var prevY = null; var prevX = null;
-              for (var sx = win.xmin; sx <= win.xmax; sx += step) {
-                try {
-                  var sy = c1.evaluate(Object.assign({ x: sx }, sA));
-                  if (prevY != null && typeof sy === 'number' && isFinite(sy) && typeof prevY === 'number' && prevY * sy < 0) {
-                    var lo = prevX, hi = sx;
-                    for (var bi = 0; bi < 30; bi++) { var mid = (lo + hi) / 2; var mval = c1.evaluate(Object.assign({ x: mid }, sA)); if (c1.evaluate(Object.assign({ x: lo }, sA)) * mval < 0) hi = mid; else lo = mid; }
-                    var root = (lo + hi) / 2;
-                    // A sign flip across a vertical asymptote (tan x at pi/2, 1/x at 0)
-                    // bisects to a point where f is huge, not zero — confirm before reporting.
-                    var rootVal = c1.evaluate(Object.assign({ x: root }, sA));
-                    if (typeof rootVal === 'number' && isFinite(rootVal) && Math.abs(rootVal) < 0.5 && (zeros.length === 0 || Math.abs(zeros[zeros.length - 1].x - root) > step * 2)) zeros.push({ x: root });
-                  }
-                  prevY = sy; prevX = sx;
-                } catch (e) { prevY = null; }
-              }
-              for (var fi2 = 1; fi2 < funcs.length; fi2++) {
-                var f2 = funcs[fi2]; if (!f2 || !f2.expr || !f2.expr.trim()) continue;
-                try {
-                  var c2 = math.compile(gcCleanExpr(f2.expr));
-                  var pDiff = null; var pXd = null;
-                  for (var ix = win.xmin; ix <= win.xmax; ix += step) {
-                    try {
-                      var iy1 = c1.evaluate(Object.assign({ x: ix }, sA));
-                      var iy2 = c2.evaluate(Object.assign({ x: ix }, sA));
-                      var diff2 = iy1 - iy2;
-                      if (pDiff != null && typeof diff2 === 'number' && isFinite(diff2) && pDiff * diff2 < 0) {
-                        var ilo = pXd, ihi = ix;
-                        for (var ibi = 0; ibi < 30; ibi++) { var imid = (ilo + ihi) / 2; var dd = c1.evaluate(Object.assign({ x: imid }, sA)) - c2.evaluate(Object.assign({ x: imid }, sA)); if ((c1.evaluate(Object.assign({ x: ilo }, sA)) - c2.evaluate(Object.assign({ x: ilo }, sA))) * dd < 0) ihi = imid; else ilo = imid; }
-                        var iroot = (ilo + ihi) / 2;
-                        // Same asymptote guard: the curves must actually MEET here, not
-                        // have their difference blow up across a discontinuity.
-                        var iv1 = c1.evaluate(Object.assign({ x: iroot }, sA));
-                        var iv2 = c2.evaluate(Object.assign({ x: iroot }, sA));
-                        if (typeof iv1 === 'number' && typeof iv2 === 'number' && isFinite(iv1) && isFinite(iv2) && Math.abs(iv1 - iv2) < 0.5) inters.push({ x: iroot, y: iv1, f2: fi2 });
-                      }
-                      pDiff = diff2; pXd = ix;
-                    } catch (e) { pDiff = null; }
-                  }
-                } catch (e) { /* skip */ }
+            if(funcs[0]&&funcs[0].expr.trim()){
+              var c1=math.compile(gcCleanExpr(funcs[0].expr));
+              var f=function(x){return c1.evaluate(Object.assign({},scope,{x:x}));};
+              report=gcScanRoots(f,win.xmin,win.xmax);zeros=report.candidates;
+              for(var i=1;i<funcs.length;i++){
+                if(!funcs[i]||!funcs[i].expr.trim())continue;
+                try{
+                  var c2=math.compile(gcCleanExpr(funcs[i].expr));
+                  var crossing=gcScanRoots(function(x){return f(x)-c2.evaluate(Object.assign({},scope,{x:x}));},win.xmin,win.xmax);
+                  if(crossing.zeroThroughoutSamples){report.overlapComparisons=(report.overlapComparisons||[]).concat([i+1]);}
+                  crossing.candidates.forEach(function(pt){inters.push(Object.assign({},pt,{y:f(pt.x),f2:i}));});
+                }catch(e){report.intersectionWarning='At least one comparison function could not be parsed.';}
               }
             }
-          } catch (e) { /* skip */ }
-          var updates = { showAnalysis: true, _zeros: zeros, _intersections: inters, _analyzed: true };
-          if (zeros.length > 0) updates._foundZero = true;
-          if (inters.length > 0) updates._foundIntersection = true;
-          updMulti(updates);
+          }catch(e){report={error:'The first function could not be parsed. Check its expression.'};}
+          updMulti({showAnalysis:true,_zeros:zeros,_intersections:inters,_analysis:report,_analysisKey:analysisKey,_analyzed:true,_foundZero:!!d._foundZero||zeros.length>0,_foundIntersection:!!d._foundIntersection||inters.length>0});
+          if(announceToSR)announceToSR('Numerical analysis complete. '+zeros.length+' zero candidates and '+inters.length+' intersection candidates.');
         }
 
         /* ── AI Tutor ── */
@@ -671,12 +684,12 @@
           });
 
           // Zeros & intersections markers
-          if (d._zeros) d._zeros.forEach(function(z) {
+          if (analysisCurrent && d._zeros) d._zeros.forEach(function(z) {
             var zx = toPixelX(z.x); var zy = toPixelY(0);
             c.save(); c.shadowColor = '#34d399'; c.shadowBlur = 8; c.beginPath(); c.arc(zx, zy, 5, 0, Math.PI * 2); c.fillStyle = '#34d399'; c.fill(); c.restore(); c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke();
             c.fillStyle = '#34d399'; c.font = 'bold 9px system-ui'; c.textAlign = 'center'; c.fillText('x=' + Number(z.x.toPrecision(4)), zx, zy - 10);
           });
-          if (d._intersections) d._intersections.forEach(function(pt) {
+          if (analysisCurrent && d._intersections) d._intersections.forEach(function(pt) {
             var ipx = toPixelX(pt.x); var ipy = toPixelY(pt.y);
             c.beginPath(); c.arc(ipx, ipy, 5, 0, Math.PI * 2); c.fillStyle = '#f472b6'; c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke();
             c.fillStyle = '#f472b6'; c.font = 'bold 9px system-ui'; c.textAlign = 'center'; c.fillText('(' + Number(pt.x.toPrecision(3)) + ',' + Number(pt.y.toPrecision(3)) + ')', ipx, ipy - 10);
@@ -883,16 +896,24 @@
                 h('p',{'data-graphcalc-tangent':true,role:'status',style:{fontSize:12,color:gcText,margin:'6px 0 0',lineHeight:1.5}},Number.isFinite(tangentEstimate.slope)?__alloT('stem.graphcalc.tangent_slope_estimate','Estimated slope ≈ ')+Number(tangentEstimate.slope.toPrecision(5))+'. '+__alloT('stem.graphcalc.tangent_estimate_reason','This numerical estimate compares nearby slopes; use it as evidence alongside the graph.'):__alloT('stem.graphcalc.tangent_unavailable','No reliable finite tangent estimate here. Check the function and its domain; a corner or vertical tangent can make this estimate unavailable.'))
               ) : null,
               // Analysis results
-              d.showAnalysis ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid ' + gcBorder, background: gcCard } },
+              d.showAnalysis && !analysisCurrent ? h('p', { role:'status', style:{color:gcText,padding:12} }, 'Functions or search bounds changed. Run Analyze again to refresh the evidence.') : null,
+              d.showAnalysis && analysisCurrent ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid ' + gcBorder, background: gcCard } },
                 h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold', marginBottom: '4px' } }, __alloT('stem.graphcalc.analysis', '\u26A1 ANALYSIS')),
+                h('p', { 'data-analysis-provenance':true, style:{fontSize:12,color:gcText,lineHeight:1.6} },
+                  d._analysis && d._analysis.error ? d._analysis.error :
+                  'Search interval ['+win.xmin+', '+win.xmax+']; 501 grid samples, sign-change refinement, and local minima of |f|. Absolute residual threshold: 1e-8. A candidate is numerical evidence, not proof of a root or a complete solution set.'),
+                h('p', { style:{fontSize:12,color:gcMuted} }, 'Narrow or shift the window to check missed roots. Discontinuities and near-zero minima require further investigation. Zeros use the first function; intersections compare it with each other row.'),
+                d._analysis && d._analysis.zeroThroughoutSamples ? h('p',{role:'status'},'The first function equals zero at every sampled point. A finite list of isolated roots would be misleading; inspect the expression and interval.') : null,
+                d._analysis && d._analysis.overlapComparisons ? h('p',{role:'status'},'The first function matches f'+d._analysis.overlapComparisons.join(', f')+' at every sampled point. This may be an overlap, not isolated intersections.') : null,
+                d._analysis && d._analysis.intersectionWarning ? h('p',{role:'status'},d._analysis.intersectionWarning) : null,
                 h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold' } }, __alloT('stem.graphcalc.zeros', 'Zeros')),
-                    (d._zeros && d._zeros.length > 0) ? d._zeros.map(function(z, zi) { return h('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: gcText } }, 'x=' + Number(z.x.toPrecision(5))); }) : h('div', { style: { fontSize: '10px', color: gcMuted } }, __alloT('stem.graphcalc.none', 'None'))
+                    (d._zeros && d._zeros.length > 0) ? d._zeros.map(function(z, zi) { return h('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: gcText } }, 'x≈' + Number(z.x.toPrecision(8)) + '; |f(x)|=' + Number(z.residual).toExponential(2) + '; ' + z.method); }) : h('div', { style: { fontSize: '10px', color: gcMuted } }, 'No zero candidates found in this interval')
                   ),
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold' } }, __alloT('stem.graphcalc.intersections', 'Intersections')),
-                    (d._intersections && d._intersections.length > 0) ? d._intersections.map(function(pt, pi) { return h('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: gcText } }, '(' + Number(pt.x.toPrecision(4)) + ',' + Number(pt.y.toPrecision(4)) + ')'); }) : h('div', { style: { fontSize: '10px', color: gcMuted } }, __alloT('stem.graphcalc.need_2_funcs', 'Need 2+ funcs'))
+                    (d._intersections && d._intersections.length > 0) ? d._intersections.map(function(pt, pi) { return h('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: gcText } }, 'f1 & f' + (pt.f2 + 1) + ': (' + Number(pt.x.toPrecision(8)) + ', ' + Number(pt.y.toPrecision(8)) + '); |f1−f' + (pt.f2 + 1) + '|=' + Number(pt.residual).toExponential(2)); }) : h('div', { style: { fontSize: '10px', color: gcMuted } }, funcs.filter(function(f){return f.expr && f.expr.trim();}).length < 2 ? 'Add a second function to compare' : 'No intersection candidates found in this interval')
                   )
                 )
               ) : null

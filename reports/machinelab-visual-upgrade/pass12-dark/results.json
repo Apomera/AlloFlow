@@ -1,0 +1,25 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [
+    "Keyboard slider did not update both comparison views"
+  ],
+  "overflow": false,
+  "shots": [
+    "workshop12-lever",
+    "workshop12-pulley",
+    "workshop12-windlass",
+    "workshop12-ramp",
+    "workshop12-wedge",
+    "workshop12-screw",
+    "workshop12-lift-lever",
+    "workshop12-lever-reverse",
+    "workshop12-lever-equal",
+    "workshop12-screw-fine"
+  ]
+}

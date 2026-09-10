@@ -51,13 +51,15 @@ describe('algebraCAS — verifySolution substitutes the root back in', () => {
 });
 
 describe('algebraCAS — solve-answer verify badge', () => {
-  it('renders "Verified by the math engine" when the solved answer checks out', () => {
+  it('qualifies a numerical root check without claiming the AI steps are verified', () => {
     const chk = cas().verifySolution('2x + 5 = 13', 'x = 4');
     expect(chk.verified).toBe(true);
     const html = renderTool('algebraCAS', {
       algebraCAS: { mode: 'solve', expression: '2x + 5 = 13', result: 'STEP 1: subtract 5\nANSWER: x = 4', verify: chk }
     });
-    expect(html).toContain('Verified by the math engine');
+    expect(html).toContain('Listed roots pass a numerical substitution check');
+    expect(html).toContain('steps are not independently checked');
+    expect(html).toContain('does not prove all roots were found');
   });
 });
 

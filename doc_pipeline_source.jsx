@@ -10021,6 +10021,8 @@ var createDocPipeline = function(deps) {
   const acceptFixedHtmlDetailed = (fixed, original, opts) => {
     if (!fixed) return { accepted: false, reason: 'empty-output' };
     if (!original) return { accepted: false, reason: 'no-original' };
+    const strictContent = !!(opts && opts.strictContent);
+    let readingInput = original, readingOutput = fixed;
     const sizeFloor = (opts && opts.sizeFloor) || 0.95;
     const textFloor = (opts && opts.textFloor) || 0.97;
     // Upper-bound ceilings — symmetric to the floors above. Catches the
@@ -10034,7 +10036,16 @@ var createDocPipeline = function(deps) {
     if (sizeRatio < sizeFloor) {
       return { accepted: false, reason: 'size-shrink', sizeRatio: sizeRatio, sizeLost: original.length - fixed.length };
     }
-    if (sizeRatio > sizeCeiling) {
+    // Accessibility metadata has its own bounded budget: useful alt text can
+    // double a tiny document without adding source prose. Only quoted attributes
+    // on actual tags qualify; oversized metadata still meets the normal ceiling.
+    const withoutMetadata = markup => String(markup).replace(/<[a-z][\w:-]*\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi, tag =>
+      tag.replace(/\s(?:alt|aria-label|aria-labelledby|aria-describedby|scope|lang)\s*=\s*(?:"[^"]{0,2048}"|'[^']{0,2048}')/gi, ''));
+    const baseSize = withoutMetadata(original).length, newSize = withoutMetadata(fixed).length;
+    const metadataGrowth = (fixed.length - newSize) - (original.length - baseSize);
+    const metadataGrowthAllowed = metadataGrowth > 0 && metadataGrowth <= 65536
+      && newSize <= Math.max(1, baseSize) * sizeCeiling;
+    if (sizeRatio > sizeCeiling && !metadataGrowthAllowed) {
       return { accepted: false, reason: 'size-growth-unexpected', sizeRatio: sizeRatio, sizeGained: fixed.length - original.length };
     }
     const origText = textCharCount(original);
@@ -10092,6 +10103,406 @@ var createDocPipeline = function(deps) {
         }
       } catch (_) {}
     }
+    if (strictContent && fixed !== original) {
+      // Source-preserving fixes have a stronger contract than intentional source
+      // recovery/rewriting. Retargeting supplied missing passages stays opt-out.
+      if (typeof DOMParser === 'undefined') return { accepted: false, reason: 'source-contract-uncheckable' };
+      try {
+        const parse = markup => {
+          const fragment = /<(?:tr|td|th)\b/i.test(markup) && !/<table\b/i.test(markup);
+          return new DOMParser().parseFromString(fragment ? '<table><tbody>' + markup + '</tbody></table>' : markup, 'text/html');
+        };
+        const before = parse(original), after = parse(fixed);
+        const norm = s => String(s || '').normalize('NFKC').replace(/\s+/g, ' ').trim();
+        // Locations describe this comparison's source, never an unchecked current-DOM target.
+        const rejectAt = (reason, sourceLocation) => ({ accepted: false, reason, sourceLocation });
+        const nodes = (doc, selector) => Array.from(doc.querySelectorAll(selector));
+        const hiddenContent = doc => {
+          const hidden = new Set(nodes(doc, '[hidden],[inert],[aria-hidden]').filter(el => el.hasAttribute('hidden') || el.hasAttribute('inert') || String(el.getAttribute('aria-hidden')).toLowerCase() === 'true'));
+          // Resolve ordinary static CSS declarations without running document scripts.
+          // Unsupported selectors/conditional rules remain conservative; rendered
+          // export checks still own external styles and dynamic visibility.
+          const properties = ['display', 'visibility', 'content-visibility', 'opacity'];
+          const styles = new Map();
+          const applyStyle = (el, declarations, specificity) => {
+            const parser = doc.createElement('span'); parser.setAttribute('style', declarations);
+            let state = styles.get(el); if (!state) { state = {}; styles.set(el, state); }
+            for (const property of properties) {
+              const value = parser.style.getPropertyValue(property).trim().toLowerCase();
+              if (!value) continue;
+              const rank = (parser.style.getPropertyPriority(property) === 'important' ? 1e9 : 0) + specificity;
+              if (!state[property] || rank >= state[property].rank) state[property] = { value, rank };
+            }
+          };
+          for (const sheet of nodes(doc, 'style')) {
+            for (const rule of (sheet.textContent || '').replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+              if (!/(?:display|visibility|content-visibility|opacity)\s*:/i.test(rule[2])) continue;
+              for (const selector of rule[1].trim().split(',')) {
+                // Simple compound/descendant selectors have predictable specificity.
+                // Do not approximate functional pseudo-class specificity as lower.
+                if (/[:|\\]/.test(selector)) throw Error('Uncheckable visibility selector');
+                const ids = (selector.match(/#[\w-]+/g) || []).length;
+                const classes = (selector.match(/\.[\w-]+|\[[^\]]+\]/g) || []).length;
+                const types = (selector.replace(/#[\w-]+|\.[\w-]+|\[[^\]]+\]/g, '').match(/[a-zA-Z][\w-]*/g) || []).length;
+                const specificity = ids * 10000 + classes * 100 + types;
+                for (const el of nodes(doc, selector.trim())) applyStyle(el, rule[2], specificity);
+              }
+            }
+          }
+          for (const el of nodes(doc, '[style]')) applyStyle(el, el.getAttribute('style') || '', 1e6);
+          for (const [el, state] of styles) {
+            const value = key => state[key] && state[key].value;
+            if (value('display') === 'none' || /^(hidden|collapse)$/.test(value('visibility') || '')
+              || value('content-visibility') === 'hidden' || (value('opacity') && Number(value('opacity')) === 0)) hidden.add(el);
+          }
+          if (!hidden.size) return new Set();
+          // Track each word occurrence in document order, including visible copies.
+          // A hidden duplicate in another section cannot authorize hiding this one.
+          let text = ''; const masks = [];
+          const append = (value, masked) => { text += value; for (let i = 0; i < value.length; i++) masks.push(masked); };
+          const walk = (node, masked) => {
+            const isHidden = masked || hidden.has(node);
+            if (node.nodeType === 1 && /^(SCRIPT|STYLE|TEMPLATE|NOSCRIPT)$/.test(node.tagName)) return;
+            if (node.nodeType === 3) append(String(node.nodeValue || '').normalize('NFKC'), isHidden);
+            if (node.nodeType === 1 && /^(IMG|INPUT|SELECT|TEXTAREA|MATH)$/.test(node.tagName)) append(' asset:' + node.tagName + ':' + (node.getAttribute('src') || node.getAttribute('name') || '') + ' ', isHidden);
+            const block = node.nodeType === 1 && /^(P|DIV|SECTION|ARTICLE|MAIN|H[1-6]|LI|TD|TH|TR|BR|LABEL)$/.test(node.tagName);
+            if (block) append(' ', isHidden);
+            for (const child of Array.from(node.childNodes || [])) walk(child, isHidden);
+            if (block) append(' ', isHidden);
+          };
+          walk(doc.body, false);
+          const occurrences = new Map(), result = new Set();
+          for (const match of text.matchAll(/\S+/g)) {
+            const word = match[0], count = (occurrences.get(word) || 0) + 1;
+            occurrences.set(word, count);
+            if (masks.slice(match.index, match.index + word.length).some(Boolean)) result.add(JSON.stringify([word, count]));
+          }
+          return result;
+        };
+        const sourceHidden = hiddenContent(before);
+        for (const key of hiddenContent(after)) {
+          if (!sourceHidden.has(key)) return rejectAt('source-visibility-changed', 'document');
+        }
+        const sourceTableNodes = nodes(before, 'table'), outputTableNodes = nodes(after, 'table');
+        for (let ti = 0; ti < sourceTableNodes.length; ti++) {
+          const a = sourceTableNodes[ti], b = outputTableNodes[ti];
+          if (!b) continue; // The grid check below reports removed tables.
+          const role = el => (el.getAttribute('role') || '').trim().toLowerCase();
+          // ARIA role tokens use the first recognized concrete role. Invalid
+          // fallback tokens do not override a native table header.
+          const concreteRoles = new Set(('alert alertdialog application article banner blockquote button caption cell checkbox code columnheader combobox complementary contentinfo definition deletion dialog directory document emphasis feed figure form generic grid gridcell group heading img insertion link list listbox listitem log main marquee math menu menubar menuitem menuitemcheckbox menuitemradio meter navigation none note option paragraph presentation progressbar radio radiogroup region row rowgroup rowheader scrollbar search searchbox separator slider spinbutton status strong subscript superscript switch tab table tablist tabpanel term textbox time timer toolbar tooltip tree treegrid treeitem').split(' '));
+          const explicitRole = el => role(el).split(/\s+/).find(value => concreteRoles.has(value));
+          const sourceTableRole = explicitRole(a) || 'table', outputTableRole = explicitRole(b) || 'table';
+          // Preserve an existing table/grid role, including ARIA fallback tokens.
+          // A table that already lacks these semantics may still be repaired.
+          if (/^(table|grid|treegrid)$/.test(sourceTableRole) && sourceTableRole !== outputTableRole)
+            return rejectAt('table-semantics-changed', 'table:' + (ti + 1));
+          const headerRole = el => explicitRole(el)
+            || (/^(row|rowgroup)$/i.test(el.getAttribute('scope') || '') ? 'rowheader' : 'columnheader');
+          const cells = table => nodes(table, 'td,th').filter(el => el.closest('table') === table);
+          const ac = cells(a), bc = cells(b);
+          for (let ci = 0; ci < ac.length; ci++) {
+            if (!bc[ci]) continue;
+            const loc = 'table:' + (ti + 1) + '/cell:' + (ci + 1);
+            const sourceHeaderRole = headerRole(ac[ci]), outputHeaderRole = headerRole(bc[ci]);
+            if (ac[ci].tagName === 'TH' && (bc[ci].tagName !== 'TH'
+              || (/^(rowheader|columnheader)$/.test(sourceHeaderRole) && !/^(rowheader|columnheader)$/.test(outputHeaderRole)))) return rejectAt('table-semantics-changed', loc);
+            const scope = ac[ci].getAttribute('scope');
+            let allowedScopeRepair = ac.length === 1 && scope === 'row' && bc[ci].getAttribute('scope') === 'col';
+            if (scope && ac.length > 1 && scope !== bc[ci].getAttribute('scope')) {
+              // A simple first row consisting entirely of unspanned headers can
+              // correct row scope to column scope; complex grids stay conservative.
+              const rows = nodes(a, 'tr').filter(row => row.closest('table') === a);
+              const first = rows[0], rowCells = first ? Array.from(first.children).filter(el => /^(TD|TH)$/.test(el.tagName)) : [];
+              const simpleColumnRepair = scope === 'row' && bc[ci].getAttribute('scope') === 'col'
+                && ac[ci].parentElement === first && rows.length > 1 && rowCells.length > 1
+                && rowCells.every(el => el.tagName === 'TH' && el.rowSpan === 1 && el.colSpan === 1)
+                && rows.slice(1).every(row => Array.from(row.children).filter(el => /^(TD|TH)$/.test(el.tagName)).length === rowCells.length)
+                && ac.every(el => el.rowSpan === 1 && el.colSpan === 1 && !el.hasAttribute('headers'));
+              if (!simpleColumnRepair) return rejectAt('table-semantics-changed', loc);
+              allowedScopeRepair = simpleColumnRepair;
+            }
+            if (ac[ci].tagName === 'TH' && /^(rowheader|columnheader)$/.test(sourceHeaderRole)
+              && sourceHeaderRole !== outputHeaderRole && !(allowedScopeRepair && outputHeaderRole === 'columnheader')) return rejectAt('table-semantics-changed', loc);
+            const headers = (cell, all) => (cell.getAttribute('headers') || '').trim().split(/\s+/).filter(Boolean).map(id => all.findIndex(el => el.id === id));
+            const ah = headers(ac[ci], ac), bh = headers(bc[ci], bc);
+            if (ah.length && ah.every(i => i >= 0) && JSON.stringify(ah) !== JSON.stringify(bh)) return rejectAt('table-semantics-changed', loc);
+          }
+        }
+        const formState = doc => {
+          // Resolve labels once per document. Accessing every control's live
+          // labels collection repeatedly walks the whole tree in some DOMs.
+          // Native label.control preserves for/implicit-label and duplicate-ID rules.
+          // Resolve descendant text alternatives before flattening native labels
+          // or references. Image alt, SVG titles and descendant ARIA labels can
+          // supply all of a control's name while textContent remains empty.
+          const hiddenForName = node => node.hidden || node.getAttribute('aria-hidden') === 'true'
+            || node.style.display === 'none' || /^(hidden|collapse)$/.test(node.style.visibility);
+          const textAlternative = (node, excluded, referenced = false, seen = new Set(), includeHidden = referenced) => {
+            if (!node || node === excluded || seen.has(node)) return '';
+            if (node.nodeType === 3) return node.nodeValue || '';
+            if (node.nodeType !== 1 || /^(SCRIPT|STYLE|TEMPLATE|NOSCRIPT)$/.test(node.tagName)) return '';
+            if (!includeHidden && hiddenForName(node)) return '';
+            const nextSeen = new Set(seen); nextSeen.add(node);
+            const refs = (node.getAttribute('aria-labelledby') || '').trim().split(/\s+/).map(id => doc.getElementById(id)).filter(Boolean);
+            // Do not recursively follow aria-labelledby from a referenced node.
+            if (!referenced && refs.length) return ' ' + refs.map(ref => textAlternative(ref, excluded, true, nextSeen)).join(' ') + ' ';
+            const ariaLabel = norm(node.getAttribute('aria-label'));
+            if (ariaLabel) return ' ' + ariaLabel + ' ';
+            if (node.tagName === 'IMG' || (node.tagName === 'INPUT' && node.type === 'image'))
+              return ' ' + (node.getAttribute('alt') || node.getAttribute('title') || '') + ' ';
+            if (node.localName === 'svg') {
+              const title = Array.from(node.children).find(child => child.localName === 'title');
+              if (title) return ' ' + title.textContent + ' ';
+            }
+            if (node.tagName === 'BR') return ' ';
+            const text = Array.from(node.childNodes).map(child => textAlternative(child, excluded, referenced, nextSeen, includeHidden)).join('');
+            return /^(P|DIV|SECTION|ARTICLE|LI|H[1-6])$/.test(node.tagName) ? ' ' + text + ' ' : text;
+          };
+          const labelsByControl = new Map(), namesByControl = new Map();
+          for (const label of nodes(doc, 'label')) {
+            const control = label.control;
+            if (!control) continue;
+            if (!labelsByControl.has(control)) labelsByControl.set(control, []);
+            labelsByControl.get(control).push(norm(label.textContent));
+            if (!namesByControl.has(control)) namesByControl.set(control, []);
+            // A directly hidden native label still supplies its name. Hidden
+            // descendants of an otherwise visible label do not supply words.
+            let labelHidden = false;
+            for (let ancestor = label; ancestor; ancestor = ancestor.parentElement) {
+              if (hiddenForName(ancestor)) { labelHidden = true; break; }
+            }
+            namesByControl.get(control).push(norm(textAlternative(label, control, false, new Set(), labelHidden)));
+          }
+          const formIndexes = new Map(nodes(doc, 'form').map((form, index) => [form, index]));
+          return nodes(doc, 'form,input,select,textarea,button').map(el => {
+          const attrs = ['name','type','value','checked','selected','multiple','disabled','readonly','required','min','max','step','pattern','action','method','enctype','formaction','formmethod','formenctype','placeholder','aria-checked','aria-valuenow'];
+          const labels = labelsByControl.get(el) || [];
+          const form = el.form;
+          const owner = form ? (formIndexes.get(form) ?? -1) : -1;
+          const groups = el.tagName === 'SELECT' ? nodes(el, 'optgroup') : [];
+          const groupIndexes = new Map(groups.map((group, index) => [group, index]));
+          const options = el.tagName === 'SELECT' ? nodes(el, 'option').map(o => {
+            const group = o.closest('optgroup');
+            // option.disabled reflects only the option's own attribute. A disabled
+            // optgroup also makes every option unavailable, even when unselected.
+            return [o.value, o.selected, o.disabled || !!(group && group.disabled), norm(o.textContent),
+              group ? groupIndexes.get(group) : -1];
+          }) : [];
+          const references = attr => (el.getAttribute(attr) || '').trim().split(/\s+/).map(id => doc.getElementById(id)).filter(Boolean);
+          const referenceText = ref => norm(textAlternative(ref, null, true));
+          const namedRefs = references('aria-labelledby');
+          const nativeName = (namesByControl.get(el) || []).filter(Boolean).join(' ') || (el.tagName === 'BUTTON' ? norm(textAlternative(el, null))
+            : el.tagName === 'INPUT' && /^(button|submit|reset)$/.test(el.type) ? norm(el.value || (el.type === 'submit' ? 'Submit' : el.type === 'reset' ? 'Reset' : ''))
+            : el.tagName === 'INPUT' && el.type === 'image' ? norm(el.getAttribute('alt')) : '');
+          const primaryName = namedRefs.length ? namedRefs.map(referenceText).join(' ') : norm(el.getAttribute('aria-label')) || nativeName;
+          const accessibleName = namedRefs.length ? primaryName : primaryName || norm(el.getAttribute('title'))
+            || (/^(INPUT|TEXTAREA)$/.test(el.tagName) ? norm(el.getAttribute('placeholder')) : '');
+          const describedRefs = references('aria-describedby');
+          const accessibleDescription = describedRefs.length ? describedRefs.map(referenceText).join(' ')
+            : norm(el.getAttribute('aria-description')) || (primaryName ? norm(el.getAttribute('title')) : '');
+          // Resolved text keeps ID renaming valid while retaining the source's
+          // ordered description/details/error associations. Empty source targets
+          // may acquire wording during a legitimate accessibility repair.
+          const relationships = ['aria-describedby', 'aria-details', 'aria-errormessage'].map(attr => references(attr).map(referenceText));
+          const attributeState = attrs.map(name => name === 'type' && el.tagName === 'INPUT' ? el.type : el.getAttribute(name));
+          return { accessibleName, accessibleDescription, relationships, state: [el.tagName, attributeState, owner, el.tagName === 'TEXTAREA' ? el.value : '', options, el.matches(':disabled')], labels, groupLabels: groups.map(group => norm(group.label)) };
+          });
+        };
+        const af = formState(before), bf = formState(after);
+        for (let i = 0; i < Math.max(af.length, bf.length); i++) {
+          if (!af[i] || !bf[i] || JSON.stringify(af[i].state) !== JSON.stringify(bf[i].state)
+            || (af[i].accessibleName && af[i].accessibleName !== bf[i].accessibleName)
+            || (af[i].accessibleDescription && af[i].accessibleDescription !== bf[i].accessibleDescription)
+            || af[i].relationships.some((refs, ri) => refs.some((value, vi) => value && value !== bf[i].relationships[ri][vi]))
+            || af[i].labels.some(label => !bf[i].labels.includes(label))
+            || af[i].groupLabels.length !== bf[i].groupLabels.length || af[i].groupLabels.some((label, gi) => label && label !== bf[i].groupLabels[gi])) return rejectAt('form-state-changed', 'control:' + (i + 1));
+        }
+        const mathTree = el => {
+          if (el.nodeType === 3) return norm(el.nodeValue);
+          if (el.nodeType !== 1 || /^(annotation|annotation-xml)$/.test(el.localName)) return null;
+          const children = Array.from(el.childNodes).map(mathTree).filter(v => v !== null && v !== '');
+          return [el.localName, ['mathvariant','notation','linethickness','open','close','separators'].map(a => el.getAttribute(a)), children];
+        };
+        const am = nodes(before, 'math'), bm = nodes(after, 'math');
+        for (let i = 0; i < Math.max(am.length, bm.length); i++) {
+          const mathName = el => {
+            const refs = el ? (el.getAttribute('aria-labelledby') || '').trim().split(/\s+/).map(id => el.ownerDocument.getElementById(id)).filter(Boolean) : [];
+            return refs.length ? refs.map(ref => norm(ref.textContent)).join(' ') : el && el.getAttribute('aria-label') || '';
+          };
+          if (!am[i] || !bm[i] || (mathName(am[i]) && mathName(am[i]) !== mathName(bm[i])) || JSON.stringify(mathTree(am[i])) !== JSON.stringify(mathTree(bm[i]))) return rejectAt('math-content-changed', 'math:' + (i + 1));
+        }
+        const numericPattern = /[+\-−]?\s*\d+(?:[.,]\d+)*(?:\s*(?:%|°\s*[CF]))?/g;
+        const canonicalNumber = value => {
+          const compact = value.replace(/\s+/g, '').replace(/−/g, '-');
+          return compact.replace(/^[+\-]?\d+(?:[.,]\d+)*/, token => {
+            const clean = /^[-+]?\d{1,3}(?:,\d{3})+(?:\.\d+)?$/.test(token) ? token.replace(/,/g, '') : token;
+            // String normalization avoids rounding large identifiers through IEEE doubles.
+            return /^[-+]?\d+(?:\.\d+)?$/.test(clean) ? clean.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '') : clean;
+          });
+        };
+        const cellText = value => norm(norm(value).replace(numericPattern, value => " " + canonicalNumber(value) + " "));
+        const tableGrid = doc => Array.from(doc.querySelectorAll('table')).map(table =>
+          Array.from(table.querySelectorAll('tr')).filter(row => row.closest('table') === table).map(row =>
+            Array.from(row.children).filter(cell => /^(TD|TH)$/.test(cell.tagName)).map(cell =>
+              [cellText(cell.textContent), cell.rowSpan, cell.colSpan])));
+        const sourceTables = tableGrid(before);
+        const outputTables = tableGrid(after);
+        if (sourceTables.length && JSON.stringify(sourceTables) !== JSON.stringify(outputTables)) {
+          for (let ti = 0; ti < sourceTables.length; ti++) {
+            const rows = sourceTables[ti], otherRows = outputTables[ti];
+            if (!otherRows) return rejectAt('table-content-changed', 'table:' + (ti + 1));
+            for (let ri = 0; ri < rows.length; ri++) {
+              for (let ci = 0; ci < rows[ri].length; ci++) {
+                if (JSON.stringify(rows[ri][ci]) !== JSON.stringify(otherRows[ri] && otherRows[ri][ci]))
+                  return rejectAt('table-content-changed', 'table:' + (ti + 1) + '/row:' + (ri + 1) + '/cell:' + (ci + 1));
+              }
+            }
+          }
+          return rejectAt('table-content-changed', 'document');
+        }
+        const destination = anchor => {
+          const href = String(anchor.getAttribute('href') || '').trim();
+          try { return /^https?:/i.test(href) ? new URL(href).href : href; } catch (_) { return href; }
+        };
+        // Base changes affect every relative destination, including forms and assets.
+        if ((before.querySelector('base[href]')?.getAttribute('href') || '') !== (after.querySelector('base[href]')?.getAttribute('href') || '')) return rejectAt('link-destination-changed', 'document');
+        const sourceLinks = Array.from(before.querySelectorAll('a[href]'));
+        const skipLink = anchor => /^#[^#]+$/.test(destination(anchor))
+          && /(?:^|\s)(?:skip-link|sr-only)(?:\s|$)/.test(anchor.className || '');
+        const sourceSkipCounts = new Map();
+        sourceLinks.filter(skipLink).forEach(anchor => sourceSkipCounts.set(destination(anchor), (sourceSkipCounts.get(destination(anchor)) || 0) + 1));
+        // New local skip controls may be added, but every original anchor must
+        // still have its destination. Changing an external link cannot erase it.
+        for (const anchor of Array.from(after.querySelectorAll('a[href]'))) {
+          const href = destination(anchor);
+          if (skipLink(anchor) && after.getElementById(href.slice(1))) {
+            const remaining = sourceSkipCounts.get(href) || 0;
+            if (remaining > 0) sourceSkipCounts.set(href, remaining - 1); else anchor.remove();
+          }
+        }
+        const outputLinks = Array.from(after.querySelectorAll('a[href]'));
+        const targetIndexes = new Map();
+        const boundDestination = anchor => {
+          const href = destination(anchor);
+          if (!href.startsWith('#')) return href;
+          let id; try { id = decodeURIComponent(href.slice(1)); } catch (_) { return href; }
+          const target = anchor.ownerDocument.getElementById(id);
+          if (!target) return href;
+          const signature = el => JSON.stringify([norm(el.textContent), nodes(el, 'img,image').map(img => img.getAttribute('src') || img.getAttribute('href') || '')]);
+          const value = signature(target);
+          let index = targetIndexes.get(anchor.ownerDocument);
+          if (!index) {
+            index = new Map();
+            for (const el of nodes(anchor.ownerDocument, '[id]')) { const key = signature(el); index.set(key, (index.get(key) || 0) + 1); }
+            targetIndexes.set(anchor.ownerDocument, index);
+          }
+          // Ambiguous or duplicate targets must retain their identifiers as well.
+          return 'internal:' + value + ((index.get(value) || 0) > 1 ? ':' + href : '');
+        };
+        if (JSON.stringify(sourceLinks.map(boundDestination)) !== JSON.stringify(outputLinks.map(boundDestination))) {
+          const at = sourceLinks.findIndex((link, i) => !outputLinks[i] || boundDestination(link) !== boundDestination(outputLinks[i]));
+          return rejectAt('link-destination-changed', 'link:' + (at < 0 ? sourceLinks.length + 1 : at + 1));
+        }
+        let markerPrefix = 'alloflowpreservation';
+        while (String(original).includes(markerPrefix) || String(fixed).includes(markerPrefix)) markerPrefix += 'x';
+        const inlineScriptState = (list, links, captionRoot) => list.map(el => {
+          const clone = el.cloneNode(true), nestedLinks = nodes(el, 'a[href]');
+          // Descriptive wording may change for a link inside a footnote. The
+          // script around a linked expression must still retain its own meaning.
+          nodes(clone, 'a[href]').forEach((anchor, index) => { anchor.textContent = markerPrefix + 'link' + links.indexOf(nestedLinks[index]); });
+          const containingLink = el.closest('a[href]');
+          let attachment = null;
+          if (containingLink) {
+            // Link wording normalization later detaches these nodes. Capture the
+            // link and text preceding each script first, including the base to
+            // which it is attached; inline wrappers do not change this evidence.
+            const range = el.ownerDocument.createRange();
+            range.setStart(containingLink, 0); range.setEndBefore(el);
+            attachment = [links.indexOf(containingLink), cellText(range.cloneContents().textContent)];
+          }
+          let captionAttachment = null;
+          if (captionRoot) {
+            // Captions are removed before the general reading-order check. Keep
+            // each script's preceding caption content and script ancestry now;
+            // neutral inline wrapping does not alter either piece of evidence.
+            const range = el.ownerDocument.createRange();
+            range.setStart(captionRoot, 0); range.setEndBefore(el);
+            const parents = []; let parent = el.parentElement;
+            while (parent && parent !== captionRoot) {
+              if (/^(SUP|SUB)$/.test(parent.tagName)) parents.push(list.indexOf(parent));
+              parent = parent.parentElement;
+            }
+            captionAttachment = [cellText(range.cloneContents().textContent), parents];
+          }
+          return [el.tagName, cellText(clone.textContent), attachment, captionAttachment];
+        });
+        // Existing captions are source content. New captions can describe the
+        // asset without their numbers being mistaken for invented source prose.
+        for (const selector of ['figure', 'table']) {
+          const a = Array.from(before.querySelectorAll(selector)), b = Array.from(after.querySelectorAll(selector));
+          const caption = el => el && Array.from(el.children).find(n => /^(FIGCAPTION|CAPTION)$/.test(n.tagName));
+          const captionText = el => String(el.textContent || '').normalize('NFC').replace(/\s+/g, ' ').trim();
+          for (let i = 0; i < a.length; i++) {
+            const ac = caption(a[i]), bc = caption(b[i]);
+            if (ac && (!bc || captionText(ac) !== captionText(bc))) {
+              return rejectAt(selector === 'figure' ? 'image-association-changed' : 'table-content-changed', (selector === 'figure' ? 'figure:' : 'table:') + (i + 1));
+            }
+            if (ac && bc && JSON.stringify(inlineScriptState(nodes(ac, 'sup,sub'), sourceLinks, ac)) !== JSON.stringify(inlineScriptState(nodes(bc, 'sup,sub'), outputLinks, bc)))
+              return rejectAt('math-content-changed', (selector === 'figure' ? 'figure:' : 'table:') + (i + 1));
+          }
+        }
+        for (const doc of [before, after]) {
+          doc.querySelectorAll('script,style,noscript,template,figcaption,caption').forEach(el => el.remove());
+          // Textual list markers are structural; single digits in prose are not.
+          doc.querySelectorAll('li').forEach(li => {
+            if (li.firstChild && li.firstChild.nodeType === 3) li.firstChild.nodeValue = li.firstChild.nodeValue.replace(/^\s*\d+[.)]\s+/, '');
+          });
+        }
+        const numbers = doc => (String(doc.body.textContent || '').match(numericPattern) || []).map(canonicalNumber);
+        if (JSON.stringify(numbers(before)) !== JSON.stringify(numbers(after))) {
+          return { accepted: false, reason: 'source-value-changed' };
+        }
+        // Preserve symbolic operators in prose too. Numeric signs retain their
+        // existing canonical-number policy; descriptive new captions are excluded.
+        const symbols = doc => (String(doc.body.textContent || '').replace(numericPattern, '').match(/[+−=×÷<>≤≥≠±∞∑∏√∫]/g) || []).join('');
+        if (symbols(before) !== symbols(after)) return rejectAt('math-content-changed', 'document');
+        // Preserve HTML exponent/subscript kind and content before link labels
+        // are replaced: a superscript inside a link is still source mathematics.
+        const sourceScripts = nodes(before, 'sup,sub'), outputScripts = nodes(after, 'sup,sub');
+        if (JSON.stringify(inlineScriptState(sourceScripts, sourceLinks)) !== JSON.stringify(inlineScriptState(outputScripts, outputLinks))) return rejectAt('math-content-changed', 'document');
+        // Anchor labels can become descriptive without authorizing href changes.
+        sourceLinks.forEach((anchor, index) => { anchor.textContent = ' ' + markerPrefix + 'link' + index + ' '; });
+        outputLinks.forEach((anchor, index) => { anchor.textContent = ' ' + markerPrefix + 'link' + index + ' '; });
+        const imageContext = doc => {
+          const media = Array.from(doc.querySelectorAll('img,image,source'));
+          media.forEach((el, index) => el.replaceWith(doc.createTextNode(' ' + markerPrefix + 'figure' + index + ' ')));
+          const text = norm(doc.body.textContent);
+          return media.map((_, index) => {
+            const marker = markerPrefix + 'figure' + index, at = text.indexOf(marker);
+            return [text.slice(0, at).split(/\s+/).filter(Boolean).slice(-12).join(' '),
+              text.slice(at + marker.length).split(/\s+/).filter(Boolean).slice(0, 12).join(' ')];
+          });
+        };
+        if (JSON.stringify(imageContext(before)) !== JSON.stringify(imageContext(after))) {
+          return { accepted: false, reason: 'image-association-changed' };
+        }
+        const normalizeTextNodes = node => {
+          if (node.nodeType === 3) node.nodeValue = node.nodeValue.replace(numericPattern, value => ' ' + canonicalNumber(value) + ' ');
+          else Array.from(node.childNodes || []).forEach(normalizeTextNodes);
+        };
+        normalizeTextNodes(before.body); normalizeTextNodes(after.body);
+        // Retain the attachment/order of scripts still present after allowed link
+        // wording normalization. These markers exist only in comparison clones.
+        for (const list of [sourceScripts, outputScripts]) list.forEach((el, index) => {
+          if (!el.ownerDocument.documentElement.contains(el)) return;
+          el.before(el.ownerDocument.createTextNode(' ' + markerPrefix + 'inline' + index + 'start '));
+          el.after(el.ownerDocument.createTextNode(' ' + markerPrefix + 'inline' + index + 'end '));
+        });
+        readingInput = before.body.innerHTML;
+        readingOutput = after.body.innerHTML;
+      } catch (_) { return { accepted: false, reason: 'source-contract-uncheckable' }; }
+    }
     // Reading-order WARN (H-4, audit 2026-06-23): the size/text magnitude checks above CANNOT see a block
     // REORDER — they pass as long as char/word totals hold. Attach a non-blocking `readingOrderWarn` (mirrors
     // the fabrication WARN pattern below) so a reorder is SURFACED, not silently shipped with a high score.
@@ -10099,14 +10510,16 @@ var createDocPipeline = function(deps) {
     // legitimate remediation pass can lightly reflow; making it BLOCKING is a follow-up after Canvas
     // calibration on real multi-section docs. (checkReadingOrderPreserved is top-level in this module.)
     let _roWarn = null;
-    try { var _ro = checkReadingOrderPreserved(original, fixed); if (_ro && _ro.ok === false) _roWarn = { droppedToken: _ro.droppedToken, beforeCount: _ro.beforeCount, afterCount: _ro.afterCount }; } catch (_) {}
+    try { var _ro = checkReadingOrderPreserved(readingInput, readingOutput); if (_ro && _ro.ok === false) _roWarn = { droppedToken: _ro.droppedToken, beforeCount: _ro.beforeCount, afterCount: _ro.afterCount }; } catch (_) {}
+    if (strictContent && _roWarn) return { accepted: false, reason: 'source-reading-order-changed' };
     // Content-fabrication (hallucination) signal — WARN-ONLY, faithful path only. Attaches
     // a `fabrication` report to the accepted decision; never flips `accepted` (see
     // detectFabrication). The caller surfaces it so the teacher can verify before
     // distributing — the shrink guards above only catch lost content, not invented content.
     if (opts && opts.mode === 'faithful') {
       try {
-        const _fab = detectFabrication(fixed, original, opts);
+        const _fab = detectFabrication(readingOutput, readingInput, opts);
+        if (strictContent && _fab && _fab.suspected) return { accepted: false, reason: 'source-content-added' };
         if (_fab && _fab.suspected) return { accepted: true, fabrication: _fab, readingOrderWarn: _roWarn, sizeRatio, textRatio: (origText > 0 ? fixedText / origText : 1), textLost: Math.max(0, origText - fixedText) };
       } catch (_) {}
     }
@@ -10764,7 +11177,7 @@ var createDocPipeline = function(deps) {
     const _candidateRejections = [];
     let _candidateRejectionCount = 0;
     const _recordCandidateRejection = (decision, chunkId, phase) => {
-      const record = { chunkId: String(chunkId), phase, reason: decision.reason || 'content-not-preserved' };
+      const record = { chunkId: String(chunkId), phase, reason: decision.reason || 'content-not-preserved', ...(decision.sourceLocation ? { sourceLocation: decision.sourceLocation } : {}) };
       _candidateRejectionCount++;
       if (_candidateRejections.length < 100) _candidateRejections.push(record);
       warnLog('[aiFixChunked:' + label + '] rejected ' + phase + ' candidate for chunk ' + chunkId + ': ' + record.reason + '; preserving the input');
@@ -10773,7 +11186,7 @@ var createDocPipeline = function(deps) {
       }
     };
     const _checkCandidate = (candidate, input, chunkId, phase, fragment = true) => {
-      const decision = acceptFixedHtmlDetailed(candidate, input, { fragment, mode: 'faithful' });
+      const decision = acceptFixedHtmlDetailed(candidate, input, { fragment, mode: 'faithful', strictContent: true });
       if (!decision.accepted) _recordCandidateRejection(decision, chunkId, phase);
       return decision;
     };
@@ -16467,8 +16880,8 @@ var createDocPipeline = function(deps) {
   // results must not mix with fresh ones). Previous: -1 (audit-cache finalization fix + key
   // identity extension — the version had sat at 20260524-1 through six weeks of scoring/honesty
   // changes, so cache hits could replay results produced by superseded logic).
-  // 2026-09-07: strict fragment/asset preservation and physical-page OCR evidence.
-  const _PIPELINE_PROMPT_VERSION = '20260907-1';
+  // 2026-09-09: strict source values, link/figure associations, and bounded metadata additions.
+  const _PIPELINE_PROMPT_VERSION = '20260909-6';
   // Cache identity must include the AI backend/model — a result produced by a local Ollama model is
   // not interchangeable with a Gemini one for the SAME bytes and settings. Best-effort, stable id.
   const _cacheBackendId = () => {
@@ -23035,6 +23448,25 @@ HTML section ${chunkNum}/${chunks.length}:
       fileSize: _sessionDefaults.file ? _sessionDefaults.file.size : null,
     }, sessionMeta || {});
     let _throttlePaused = false;
+    let _sourceRejectionCount = 0;
+    const _sourceRejections = [];
+    const _sourceEvidenceCallback = _sessMeta.onPassEvidence;
+    _sessMeta.onPassEvidence = meta => {
+      if (!_chunkInvocationIsCurrent()) return;
+      _sourceRejectionCount = Math.min(1000000, _sourceRejectionCount + Math.max(0, Number(meta && meta.candidateRejectionCount) || 0));
+      const records = meta && Array.isArray(meta.candidateRejections) ? meta.candidateRejections : [];
+      _sourceRejections.push(...records.slice(0, Math.max(0, 100 - _sourceRejections.length)).map(record => ({ chunkId: record.chunkId, phase: record.phase, reason: record.reason, ...(record.sourceLocation ? { sourceLocation: record.sourceLocation } : {}) })));
+      if (typeof _sourceEvidenceCallback === 'function') _sourceEvidenceCallback(meta);
+    };
+    // Each rejected candidate is a delta, just like aiFixChunked pass evidence.
+    // Callers retain it on unchanged/reverted output, through their revision guard.
+    const _publishSourceRejection = (decision, chunkId, phase) => {
+      if (!decision || decision.accepted || !_chunkInvocationIsCurrent()) return;
+      if (typeof _sessMeta.onPassEvidence === 'function') {
+        try { _sessMeta.onPassEvidence({ candidateRejectionCount: 1,
+          candidateRejections: [{ chunkId: String(chunkId), phase, reason: decision.reason || 'content-not-preserved', ...(decision.sourceLocation ? { sourceLocation: decision.sourceLocation } : {}) }] }); } catch (_) {}
+      }
+    };
     const _markSessionThrottlePaused = () => {
       _throttlePaused = true;
       if (typeof _sessMeta.onThrottleDeferred === 'function') {
@@ -23414,7 +23846,8 @@ ${_smallHtmlData}
 
 Return ONLY the complete fixed HTML.`, true));
 
-          const _singlePassDecision = acceptFixedHtmlDetailed(fixedHtml, currentHtml, { mode: 'faithful' });
+          const _singlePassDecision = acceptFixedHtmlDetailed(fixedHtml, currentHtml, { mode: 'faithful', strictContent: true });
+          if (!_singlePassDecision.accepted) _publishSourceRejection(_singlePassDecision, 1, 'single');
           if (_singlePassDecision.accepted) {
             currentHtml = fixedHtml;
             // Hallucination guard (WARN-only): the AI was told to preserve content
@@ -23877,6 +24310,13 @@ Return the fixed section content only — raw HTML, no JSON wrapping.`;
 
                 // ── Step A: Local integrity check (fast, no API) ──
                 emitChunkProgress(chi, 'integrity', 'Checking structure and content overlap', { attempt: attempt + 1 });
+                // The same source contract runs before the semantic verifier. A
+                // model verdict cannot waive source-value or association changes.
+                const sourceDecision = acceptFixedHtmlDetailed(cleaned, chunk, { fragment: true, mode: 'faithful', strictContent: true });
+                if (!sourceDecision.accepted) {
+                  _publishSourceRejection(sourceDecision, chi + 1, 'chunk');
+                  continue;
+                }
                 const integrity = verifyChunkIntegrity(originalChunk, cleaned);
 
                 if (!integrity.passed) {
@@ -24104,8 +24544,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
           // Adopt only a complete reassembly. Its chunk state remains pending
           // until the final document-level cleanup below succeeds, so UI/session state
-          // can never describe a proposal that the 70% preservation gate rejected.
-          const _reassemblyAccepted = reassembled.length > _origInputHtml.length * 0.7;
+          // can never describe a proposal that the shared source contract rejected.
+          const _reassemblyDecision = acceptFixedHtmlDetailed(reassembled, currentHtml, { mode: 'faithful', strictContent: true });
+          const _reassemblyAccepted = _reassemblyDecision.accepted;
+          if (!_reassemblyAccepted) _publishSourceRejection(_reassemblyDecision, 'all', 'assembly');
           if (_reassemblyAccepted) {
             currentHtml = reassembled;
             _pendingChunkState = {
@@ -24138,7 +24580,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           } else {
             _chunkSessionCompletion.reassemblyAccepted = false;
             _chunkSessionCompletion.failedCount = Math.max(1, _chunkSessionCompletion.failedCount || 0);
-            try { warnLog(`[AutoFix] reassembled doc ${reassembled.length}b < 70% of original input ${_origInputHtml.length}b — keeping prior currentHtml unchanged`); } catch (_) {}
+            try { warnLog(`[AutoFix] reassembled doc rejected (${_reassemblyDecision.reason}) — keeping prior currentHtml unchanged`); } catch (_) {}
           }
         }
         } // end else (full chunk/single-pass path)
@@ -24309,6 +24751,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         chunkWeightedScore: _chunkResultIsCurrent && typeof chunkWeightedScore !== 'undefined' ? chunkWeightedScore : null,
         chunkState: _chunkResultIsCurrent ? _invocationChunkState : null,
         throttlePaused: _throttlePaused,
+        candidateRejectionCount: _chunkResultIsCurrent ? _sourceRejectionCount : 0,
+        candidateRejections: _chunkResultIsCurrent ? _sourceRejections : [],
         stale: !_chunkResultIsCurrent,
       };
     } catch (error) {
@@ -24538,6 +24982,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
     // ── AI fix with retry ──
     let accepted = null;
+    const _refixSourceRejections = [];
     const _refixViolationData = _neutralizePromptFence(String(violationInstructions || ''));
     const _refixChunkData = _neutralizePromptFence(String(chunk || ''));
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -24577,6 +25022,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           if (pcf.fixCount > 0) cleaned = pcf.html;
         } catch(e) { /* non-blocking */ }
 
+        // A section re-fix cannot weaken the full-document source contract.
+        const sourceDecision = acceptFixedHtmlDetailed(cleaned, chunk, { fragment: true, mode: 'faithful', strictContent: true });
+        if (!sourceDecision.accepted) {
+          const record = { chunkId: String(chunkIndex + 1), phase: 'chunk', reason: sourceDecision.reason, ...(sourceDecision.sourceLocation ? { sourceLocation: sourceDecision.sourceLocation } : {}) };
+          _refixSourceRejections.push(record);
+          try { if (typeof options.onPassEvidence === 'function') options.onPassEvidence({ candidateRejectionCount: 1, candidateRejections: [record] }); } catch (_) {}
+          continue;
+        }
         // Integrity check against original
         const integrity = verifyChunkIntegrity(originalChunk, cleaned);
         if (!integrity.passed) {
@@ -24728,6 +25181,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     return {
       html: fullHtml,
       chunkIndex,
+      candidateRejectionCount: _refixSourceRejections.length,
+      candidateRejections: _refixSourceRejections,
       chunkResult: accepted,
       chunkState: _refixChunkState,
       chunkWeightedScore: newWeightedScore,
@@ -25121,7 +25576,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 _candidateRejectionCount += Math.max(0, Number(meta && meta.candidateRejectionCount) || 0);
                 const entries = meta && Array.isArray(meta.candidateRejections) ? meta.candidateRejections : [];
                 for (const entry of entries.slice(0, Math.max(0, 100 - _candidateRejections.length))) {
-                  _candidateRejections.push({ pass: fixPass + 1, chunkId: entry.chunkId, phase: entry.phase, reason: entry.reason });
+                  _candidateRejections.push({ pass: fixPass + 1, chunkId: entry.chunkId, phase: entry.phase, reason: entry.reason, ...(entry.sourceLocation ? { sourceLocation: entry.sourceLocation } : {}) });
                 }
               },
             });
@@ -36634,7 +37089,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       const entries = meta && Array.isArray(meta.candidateRejections) ? meta.candidateRejections : [];
       const total = meta && Number.isSafeInteger(meta.candidateRejectionCount) ? meta.candidateRejectionCount : entries.length;
       candidateRejectionCount = Math.min(1000000, candidateRejectionCount + Math.max(0, total, entries.length));
-      const delta = { candidateRejectionCount: Math.min(1000000, Math.max(0, total, entries.length)), candidateRejections: entries.slice(0, 100).map(entry => ({ pass: passCount, chunkId: entry.chunkId, phase: entry.phase, reason: entry.reason })) };
+      const delta = { candidateRejectionCount: Math.min(1000000, Math.max(0, total, entries.length)), candidateRejections: entries.slice(0, 100).map(entry => ({ pass: passCount, chunkId: entry.chunkId, phase: entry.phase, reason: entry.reason, ...(entry.sourceLocation ? { sourceLocation: entry.sourceLocation } : {}) })) };
       candidateRejections.push(...delta.candidateRejections.slice(0, Math.max(0, 100 - candidateRejections.length)));
       try { if (typeof options.onPassEvidence === 'function') options.onPassEvidence(delta); } catch (_) {}
     };

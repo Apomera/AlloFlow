@@ -36,6 +36,9 @@ function discoverPairs() {
   const pairs = [];
   for (const f of fs.readdirSync(ROOT)) {
     if (!/^_build_.*\.js$/.test(f)) continue;
+    // This migration edits host wiring; it does not build the teacher module.
+    // The actual teacher source/module pair is discovered from its own builder.
+    if (f === '_build_concept_quest_integrations.js') continue;
     let body = '';
     try { body = fs.readFileSync(path.join(ROOT, f), 'utf8'); } catch (_) { continue; }
     const src = (body.match(/[a-z0-9_]+_source\.jsx/i) || [])[0];

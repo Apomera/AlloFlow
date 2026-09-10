@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "stage": "complete",
+  "durationMs": 39924,
+  "modelCalls": 11,
+  "checks": {
+    "browserLaunched": true,
+    "modulesBooted": true,
+    "auditAccepted": true,
+    "remediationStarted": true,
+    "contentPreserved": true,
+    "auditorCoverage": true,
+    "taggedArtifact": true,
+    "taggedDelivery": true,
+    "originalLayout": true,
+    "verificationBinding": true,
+    "activeContentScan": true
+  },
+  "beforeScore": 85,
+  "afterScore": 96,
+  "note": "This install can remediate: real pipeline, real browser, real fixAndVerifyPdf. Only the model was scripted, so a live run additionally needs a valid GEMINI_API_KEY."
+}

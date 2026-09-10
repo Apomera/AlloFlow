@@ -1,0 +1,81 @@
+{
+  "verifiedAt": "2026-09-09T03:13:27.037Z",
+  "passedTests": 199,
+  "testsByFile": {
+    "geometry_world_block_fidelity.test.js": {
+      "count": 31,
+      "evidence": "integration-regression-tests.json"
+    },
+    "geometry_world_engine_lifecycle.test.js": {
+      "count": 9,
+      "evidence": "integration-regression-tests.json"
+    },
+    "geometry_world_measurement_annotations.test.js": {
+      "count": 9,
+      "evidence": "integration-regression-tests.json"
+    },
+    "geometry_world_printlab_bridge.test.js": {
+      "count": 28,
+      "evidence": "integration-regression-tests.json"
+    },
+    "geometry_world_print_workflow.test.js": {
+      "count": 12,
+      "evidence": "integration-regression-tests.json"
+    },
+    "geometry_world_showcase_export.test.js": {
+      "count": 11,
+      "evidence": "integration-regression-tests.json"
+    },
+    "geometry_world_studio_presentation.test.js": {
+      "count": 3,
+      "evidence": "integration-regression-tests.json"
+    },
+    "geometry_world_visual_pipeline.test.js": {
+      "count": 55,
+      "evidence": "integration-regression-tests.json"
+    },
+    "geometry_world_visual_state_lifecycle.test.js": {
+      "count": 15,
+      "evidence": "visual-state-lifecycle-tests.json"
+    },
+    "geometry_world_dock_selection.test.js": {
+      "count": 2,
+      "evidence": "builder-flow-fix-tests.json"
+    },
+    "geometry_world_retained_selection.test.js": {
+      "count": 10,
+      "evidence": "builder-flow-fix-tests.json"
+    },
+    "geometry_world_standalone_export.test.js": {
+      "count": 2,
+      "evidence": "builder-flow-fix-tests.json"
+    },
+    "geometry_world_ground_edges.test.js": {
+      "count": 5,
+      "evidence": "ground-edge-tests-final.json"
+    },
+    "geometry_world_surface_rendering.test.js": {
+      "count": 7,
+      "evidence": "ground-edge-tests-final.json"
+    }
+  },
+  "syntax": "passed",
+  "desktopMirrors": "byte-identical",
+  "sourceSHA256": {
+    "stem_tool_geometryworld.js": "29110b8c2df28d3078f8caae85447e70e86471e6715168984b8168359ca3fb13",
+    "stem_tool_geometryworld_builder.js": "e29fe2cd80899a24aa939ae58d1d3d24c8d12266bc93919da32e5746d4137926",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "browser": {
+    "passed": true,
+    "evidence": "saver-ground-edge-results.json",
+    "drawsBefore": 1514,
+    "drawsAfter": 912,
+    "savedDraws": 602,
+    "savedPercent": 39.8,
+    "trianglesUnchanged": 12626,
+    "unchangedSTL": "fcec4a5158452565fde809e983647bb251a48c40dcb2ef5365f7594dfdab7398",
+    "preview": "saver-floor-edges-off.png",
+    "limitation": "Controlled draw-call comparison in one view; not an FPS benchmark."
+  }
+}

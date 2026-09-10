@@ -32,12 +32,13 @@ const fixture = () => ({
 
 describe('Aquarium simulation to visual-state bridge', () => {
   it('sanitizes saved appearance without accepting chemistry overrides or mutating input', () => {
-    const input = { substrate: 'invalid', backdrop: 'black', quality: 'high', lightIntensity: 9, animalScale: 0, showEquipment: false, clarity: 0, dissolvedO2: 0 };
+    const input = { substrate: 'invalid', backdrop: 'black', quality: 'high', lightIntensity: 9, animalScale: 0, waterShimmer: 0, showEquipment: false, clarity: 0, dissolvedO2: 0 };
     const before = copy(input);
-    expect(copy(helpers.sanitizeAquariumAppearance(input))).toEqual({ substrate: 'sand', backdrop: 'black', quality: 'high', lightIntensity: 1.4, animalScale: .8, showEquipment: false });
+    expect(copy(helpers.sanitizeAquariumAppearance(input))).toEqual({ substrate: 'sand', backdrop: 'black', quality: 'high', lightIntensity: 1.4, animalScale: .8, waterShimmer: 0, showEquipment: false });
     expect(input).toEqual(before);
     expect(helpers.sanitizeAquariumAppearance({ lightIntensity: NaN, animalScale: Infinity }).lightIntensity).toBe(1);
-    expect(copy(helpers.sanitizeAquariumAppearance(null))).toEqual({ substrate: 'sand', backdrop: 'depth', quality: 'balanced', lightIntensity: 1, animalScale: 1, showEquipment: true });
+    expect(copy(helpers.sanitizeAquariumAppearance(null))).toEqual({ substrate: 'sand', backdrop: 'depth', quality: 'balanced', lightIntensity: 1, animalScale: 1, waterShimmer: .4, showEquipment: true });
+    for (const [waterShimmer, expected] of [[0, 0], [8, 1], [-2, 0], [null, .4], [NaN, .4], ['0', .4]]) expect(helpers.sanitizeAquariumAppearance({ waterShimmer }).waterShimmer).toBe(expected);
   });
   it('distinguishes the real level-zero sponge filter and ambient light from absent equipment', () => {
     const scene = helpers.buildAquariumSceneDynamics(fixture());
@@ -122,7 +123,7 @@ describe('Aquarium simulation to visual-state bridge', () => {
   });
   it('keeps every model value unchanged when appearance alone changes', () => {
     const input = fixture(), before = copy(input), normal = helpers.buildAquariumSceneDynamics(input);
-    const styled = helpers.buildAquariumSceneDynamics({ ...input, appearance: { substrate: 'dark', backdrop: 'planted', quality: 'low', lightIntensity: .6, animalScale: 1.3, showEquipment: false } });
+    const styled = helpers.buildAquariumSceneDynamics({ ...input, appearance: { substrate: 'dark', backdrop: 'planted', quality: 'low', lightIntensity: .6, animalScale: 1.3, waterShimmer: 0, showEquipment: false } });
     for (const key of ['equipment', 'aeration', 'algaeLevel', 'fish', 'plants', 'feeding', 'model', 'lighting']) expect(copy(styled[key])).toEqual(copy(normal[key]));
     expect(input).toEqual(before);
   });

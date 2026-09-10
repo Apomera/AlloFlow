@@ -26,3 +26,11 @@ The teacher desktop image was visually inspected. Browser regressions cover part
 - Host JSX parsed successfully; targeted diff whitespace checks passed; root/public view bundles matched in the parity test.
 
 Application changes remain local; no deployment was performed.
+
+## Open-ended and language follow-up
+
+- Both setup surfaces now show Set-length episode and Open-ended as native radio options in Essential setup. Episode length appears only for set-length episodes; switching back restores the prior count during the current setup session.
+- Open-ended copy explains the lack of a decision cap and the existing energy/finale ending conditions. Finale preferences and preset choice counts remain intact.
+- English-only setup keeps English in the summary and omits the single-option dropdown. Additional languages and saved non-English selections retain the language control. Teachers get an Add languages in Universal Settings shortcut that focuses the shared language input.
+- Validation: 10 focused unit checks and 18 browser checks passed. Browser fixture document isolation was corrected after three initial remount failures. Mobile controls were visually inspected; light, dark and high-contrast layouts passed scoped axe and overflow checks at 375px and 1200px. All three host sources parsed successfully and targeted whitespace checks passed.
+- Latest screenshots are in open-ended-tests; the earlier implementation captures and height measurements above describe the preceding revision. No live AI session or deployment was performed.

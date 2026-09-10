@@ -1,0 +1,13 @@
+import {describe,it,expect} from 'vitest';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),context={};require('node:vm').runInNewContext(require('node:fs').readFileSync('apps_script/session_mailbox/Code.gs','utf8'),context);
+const state=()=>({roster:{u:{},v:{}},escapeRoomState:{mode:'lesson-board',isActive:true,isPaused:false,attemptId:'attempt',teams:{u:'All',v:'All'},teamProgress:{All:{boardActions:{},boardRuns:{attempt:{turn:0,steps:{t0:{phase:'choose',targetId:''}}}}}}}});
+const key='escapeRoomState.teamProgress.All.boardActions.u',action={attemptId:'attempt',turn:0,requestId:'req1',kind:'vote',targetId:'heater',value:''},allowed=(updates,data=state())=>context.participantCanPatchSession(updates,'u',data);
+describe('Lesson board Mailbox permissions',()=>{
+ it('permits a self join and bounded current proposal',()=>{expect(allowed({'escapeRoomState.teams.u':'All'})).toBe(true);expect(allowed({[key]:action})).toBe(true);});
+ it('permits only the active activity response during the answer phase',()=>{const d=state();d.escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0={phase:'answer',targetId:'heater'};expect(allowed({[key]:{...action,kind:'answer',value:'1'}},d)).toBe(true);expect(allowed({[key]:action},d)).toBe(false);expect(allowed({[key]:{...action,kind:'answer',targetId:'cloud',value:'1'}},d)).toBe(false);});
+ it.each([{attemptId:'old'},{turn:1},{turn:0.5},{requestId:'__proto__'},{targetId:'constructor'},{value:1},{kind:'build'},{extra:true},{requestId:'x'.repeat(129)},{targetId:'a.b'}])('rejects malformed/stale request %#',extra=>expect(allowed({[key]:{...action,...extra}})).toBe(false));
+ it.each(['escapeRoomState','escapeRoomState.teamProgress','escapeRoomState.teamProgress.All','escapeRoomState.teamProgress.All.boardRuns','escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.result','escapeRoomState.teamProgress.All.boardActions.v','escapeRoomState.isPaused','escapeRoomState.board','escapeRoomState.teams.v'])('rejects student changes to %s',path=>expect(allowed({[path]:action})).toBe(false));
+ it.each(['paused','ended','outsider','unjoined','review'])('rejects %s actions',test=>{const d=state();if(test==='paused')d.escapeRoomState.isPaused=true;if(test==='ended')d.escapeRoomState.isActive=false;if(test==='outsider')d.roster={};if(test==='unjoined')d.escapeRoomState.teams={};if(test==='review')d.escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.phase='review';expect(allowed({[key]:action},d)).toBe(false);});
+ it('does not accept a valid self action mixed with a forged result',()=>expect(allowed({[key]:action,'escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.result':{success:true}})).toBe(false));
+});

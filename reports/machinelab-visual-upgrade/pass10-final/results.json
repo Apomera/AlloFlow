@@ -1,0 +1,19 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "workshop10-wedge-ready",
+    "workshop10-wedge-split",
+    "workshop10-wedge-thin",
+    "workshop10-wedge-thick",
+    "workshop10-wedge-square",
+    "workshop10-wedge-rear"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "before": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+  "after": "c58a4eb29a6fdd6bcdd94ed29d20c69919d7215a85ee5ffb525e666ffcc91676",
+  "syntax": true,
+  "parity": true,
+  "lineEnding": "LF",
+  "rejectsStaleBreakHit": true
+}

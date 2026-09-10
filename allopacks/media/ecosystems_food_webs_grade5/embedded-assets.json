@@ -1,0 +1,317 @@
+[
+  {
+    "id": "ec-term-1",
+    "kind": "term",
+    "file": "ec-term-1.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A spreading paper oak has lobed green leaves, a brown trunk and acorns resting near its roots.",
+    "altHash": "img-jwb-dd274272"
+  },
+  {
+    "id": "ec-term-2",
+    "kind": "term",
+    "file": "ec-term-2.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A brown deer with a white tail underside reaches toward green shrub leaves at the edge of a meadow.",
+    "altHash": "img-tir-0dc5b25a"
+  },
+  {
+    "id": "ec-term-3",
+    "kind": "term",
+    "file": "ec-term-3.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Layered bracket fungi and small brown mushrooms grow from a crumbling fallen log among leaf litter.",
+    "altHash": "img-178b-9248f9de"
+  },
+  {
+    "id": "ec-term-4",
+    "kind": "term",
+    "file": "ec-term-4.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A brown deer with a white tail underside reaches toward green shrub leaves at the edge of a meadow.",
+    "altHash": "img-tir-0dc5b25a"
+  },
+  {
+    "id": "ec-term-5",
+    "kind": "term",
+    "file": "ec-term-5.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A brown hawk with a rust-red tail perches on a branch, holding a small gray mouse beneath its talons.",
+    "altHash": "img-qjn-d919d9dc"
+  },
+  {
+    "id": "ec-term-6",
+    "kind": "term",
+    "file": "ec-term-6.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A black paper bear touches red berries with its snout; a fish lies beside its front paws on a rocky stream bank.",
+    "altHash": "img-vcf-46f8a672"
+  },
+  {
+    "id": "ec-term-7",
+    "kind": "term",
+    "file": "ec-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Arrows lead from a green plant to a rabbit and then to a brown bird of prey.",
+    "altHash": "img-8kf-cd3293d9"
+  },
+  {
+    "id": "ec-term-8",
+    "kind": "term",
+    "file": "ec-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A green plant connects by arrows to a rabbit and a mouse; both animals connect to a bird of prey.",
+    "altHash": "img-gcb-e7710f9f"
+  },
+  {
+    "id": "ec-term-9",
+    "kind": "term",
+    "file": "ec-term-9.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A paper meadow includes an oak, grass, rabbit, insects, pond, frog and fallen log with fungi; roots and a worm appear in the soil below.",
+    "altHash": "img-136n-531b3a3a"
+  },
+  {
+    "id": "ec-term-10",
+    "kind": "term",
+    "file": "ec-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An arrow leads from a golden Sun disk toward a green plant rooted in a soil patch.",
+    "altHash": "img-8b7-bcb3d4db"
+  },
+  {
+    "id": "ec-term-11",
+    "kind": "term",
+    "file": "ec-term-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Golden dots in brown soil have arrows pointing toward the branching roots of a green plant.",
+    "altHash": "img-7n3-402a9502"
+  },
+  {
+    "id": "ec-term-12",
+    "kind": "term",
+    "file": "ec-term-12.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Four brown deer share a meadow: two graze, one smaller deer watches, and an antlered deer stands upright.",
+    "altHash": "img-vbr-a918a947"
+  },
+  {
+    "id": "ec-anchor-1",
+    "kind": "anchor",
+    "file": "ec-anchor-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A spreading paper oak has lobed green leaves, a brown trunk and acorns resting near its roots.",
+    "altHash": "img-ffz-73a5f19d"
+  },
+  {
+    "id": "ec-anchor-2",
+    "kind": "anchor",
+    "file": "ec-anchor-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A black paper bear touches red berries with its snout; a fish lies beside its front paws on a rocky stream bank.",
+    "altHash": "img-n3b-49dfa49f"
+  },
+  {
+    "id": "ec-anchor-3",
+    "kind": "anchor",
+    "file": "ec-anchor-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Layered bracket fungi and small brown mushrooms grow from a crumbling fallen log among leaf litter.",
+    "altHash": "img-uyv-6e9b3a6c"
+  },
+  {
+    "id": "ec-anchor-4",
+    "kind": "anchor",
+    "file": "ec-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A ten-by-ten array of green dots points toward a smaller array with two columns and five rows.",
+    "altHash": "img-n3z-f0d05b8d"
+  },
+  {
+    "id": "ec-anchor-5",
+    "kind": "anchor",
+    "file": "ec-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A green plant connects by arrows to a rabbit and a mouse; both animals connect to a bird of prey.",
+    "altHash": "img-gcb-e7710f9f"
+  },
+  {
+    "id": "ec-sort-1",
+    "kind": "sort",
+    "file": "ec-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A spreading paper oak has lobed green leaves, a brown trunk and acorns resting near its roots.",
+    "altHash": "img-ffz-73a5f19d"
+  },
+  {
+    "id": "ec-sort-2",
+    "kind": "sort",
+    "file": "ec-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A green paper grasshopper rests on a blade with its mouth beside a notched edge; long antennae and folded jumping legs are visible.",
+    "altHash": "img-crb-ed4c71f9"
+  },
+  {
+    "id": "ec-sort-3",
+    "kind": "sort",
+    "file": "ec-sort-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Layered bracket fungi and small brown mushrooms grow from a crumbling fallen log among leaf litter.",
+    "altHash": "img-uyv-6e9b3a6c"
+  },
+  {
+    "id": "ec-sort-4",
+    "kind": "sort",
+    "file": "ec-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Wispy green strands form mats just below a pond surface, with rounded stones visible underneath.",
+    "altHash": "img-ntn-358fffbc"
+  },
+  {
+    "id": "ec-sort-5",
+    "kind": "sort",
+    "file": "ec-sort-5.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A brown hawk with a rust-red tail perches on a branch, holding a small gray mouse beneath its talons.",
+    "altHash": "img-jhr-3695cf68"
+  },
+  {
+    "id": "ec-sort-6",
+    "kind": "sort",
+    "file": "ec-sort-6.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A segmented pink paper earthworm curves across dark soil with one end touching a decaying brown leaf.",
+    "altHash": "img-r0v-8fe9e341"
+  },
+  {
+    "id": "ec-sort-7",
+    "kind": "sort",
+    "file": "ec-sort-7.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Clumps of green grass and seed heads rise above a soil cutaway with branching pale roots.",
+    "altHash": "img-o4r-44496291"
+  },
+  {
+    "id": "ec-sort-8",
+    "kind": "sort",
+    "file": "ec-sort-8.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A black paper bear touches red berries with its snout; a fish lies beside its front paws on a rocky stream bank.",
+    "altHash": "img-n3b-49dfa49f"
+  },
+  {
+    "id": "ec-sort-9",
+    "kind": "sort",
+    "file": "ec-sort-9.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Green rounded rod shapes surround torn brown material and smaller fragments in a symbolic magnified view.",
+    "altHash": "img-gfn-81a5a2ac"
+  },
+  {
+    "id": "ec-sort-10",
+    "kind": "sort",
+    "file": "ec-sort-10.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Green paper leaves end in reddish hinged traps with fine edge teeth; one holds a fly, while a golden Sun appears above.",
+    "altHash": "img-rjb-0a5b87e7"
+  },
+  {
+    "id": "ec-lesson-1",
+    "kind": "lesson",
+    "file": "ec-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Arrows lead from a green plant to a rabbit and then to a brown bird of prey.",
+    "altHash": "img-8kf-cd3293d9"
+  },
+  {
+    "id": "ec-lesson-2",
+    "kind": "lesson",
+    "file": "ec-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A green plant connects by arrows to a rabbit and a mouse; both animals connect to a bird of prey.",
+    "altHash": "img-gcb-e7710f9f"
+  },
+  {
+    "id": "ec-lesson-3",
+    "kind": "lesson",
+    "file": "ec-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An arrow leads from a golden Sun disk toward a green plant rooted in a soil patch.",
+    "altHash": "img-8b7-bcb3d4db"
+  },
+  {
+    "id": "ec-lesson-4",
+    "kind": "lesson",
+    "file": "ec-lesson-4.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A black paper bear touches red berries with its snout; a fish lies beside its front paws on a rocky stream bank.",
+    "altHash": "img-2n3n-29b800d5"
+  },
+  {
+    "id": "ec-lesson-5",
+    "kind": "lesson",
+    "file": "ec-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A ten-by-ten array of green dots points toward a smaller array with two columns and five rows.",
+    "altHash": "img-n3z-f0d05b8d"
+  },
+  {
+    "id": "ec-lesson-6",
+    "kind": "lesson",
+    "file": "ec-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Golden dots in brown soil have arrows pointing toward the branching roots of a green plant.",
+    "altHash": "img-7n3-402a9502"
+  },
+  {
+    "id": "ec-lesson-7",
+    "kind": "lesson",
+    "file": "ec-lesson-7.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Green paper leaves end in reddish hinged traps with fine edge teeth; one holds a fly, while a golden Sun appears above.",
+    "altHash": "img-2trv-a119df4f"
+  },
+  {
+    "id": "ec-lesson-8",
+    "kind": "lesson",
+    "file": "ec-lesson-8.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Green rounded rod shapes surround torn brown material and smaller fragments in a symbolic magnified view.",
+    "altHash": "img-243b-3121b3c9"
+  }
+]

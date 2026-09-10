@@ -1,0 +1,42 @@
+import {test,expect} from '@playwright/test';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {GlHarness} from './helpers/stem_gl_harness';
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_anatomy.js',toolId:'anatomy',width:1120,height:1600,appStyles:true});
+test.beforeAll(async()=>harness.start());test.afterAll(async()=>harness.stop());
+test('Anatomy study record filters, exports, previews, merges and opens review on desktop and phone',async({page})=>{
+ test.setTimeout(180000);await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1280,height:1000});
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await harness.mount(page,{anatomy:{_showStudySheet:true,_bodyView3d:false,_activeTab:'explore',system:'skeletal',view:'anterior',complexity:3,_structuresViewed:{skull:true,ribs:true,femur:true},_structureConfidence:{skull:'mastered',ribs:'practice'},_confidenceAt:{skull:Date.now()-9*86400000,ribs:Date.now()},_structureNotes:{femur:'The femur supports the thigh.',ribs:'My current note.'}}},undefined,{expectCanvas:false});
+ await page.addStyleTag({content:'#wrap{height:auto;min-height:100%;}'});
+ const sheet=page.locator('[data-anatomy-study-sheet]');await expect(sheet).toBeVisible();
+ await sheet.getByLabel('Show',{exact:true}).selectOption('review');await expect(sheet.locator('[data-anatomy-study-open]')).toHaveCount(2);
+ const downloadEvent=page.waitForEvent('download');await sheet.getByRole('button',{name:'Download study record',exact:true}).click();const download=await downloadEvent;
+ const packet=JSON.parse(await readFile((await download.path())!,'utf8'));expect(packet.records.map((r:any)=>r.id).sort()).toEqual(['femur','ribs','skull']);
+ const textEvent=page.waitForEvent('download');await sheet.getByRole('button',{name:'Download text',exact:true}).click();const textFile=await textEvent;expect(await readFile((await textFile.path())!,'utf8')).toContain('The femur supports the thigh.');
+ await sheet.getByText('Resume from a study record',{exact:true}).click();
+ const file=sheet.locator('#anatomy-study-import-file');await file.setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{bad')});await expect(sheet.locator('[data-anatomy-study-record-notice]')).toContainText('not valid JSON');
+ const incoming={schema:'alloflow-anatomy-study',version:1,records:[{id:'ribs',viewed:true,confidence:'learning',ratedAt:Date.now(),note:'Incoming conflicting note.'},{id:'mandible',viewed:true,confidence:'practice',ratedAt:Date.now(),note:'New jaw note.'}]};
+ await file.setInputFiles({name:'study.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});
+ await expect(sheet.locator('[data-anatomy-study-import-preview]')).toContainText('2 recognized structures');
+ expect(await page.evaluate(()=>(window as any).__toolData.anatomy._structureNotes.mandible)).toBeUndefined();
+ await sheet.getByRole('button',{name:'Merge study record',exact:true}).click();await expect(sheet.locator('[data-anatomy-study-record-notice]')).toContainText('Structures imported: 2');
+ expect(await page.evaluate(()=>(window as any).__toolData.anatomy._structureNotes.ribs)).toBe('My current note.');
+ expect(await page.evaluate(()=>(window as any).__toolData.anatomy._structureNotes.mandible)).toBe('New jaw note.');
+ await sheet.getByLabel('Show',{exact:true}).selectOption('all');await expect(sheet.locator('[data-anatomy-study-open]')).toHaveCount(4);
+ await page.addScriptTag({path:'axe-core/4.12.1/axe.min.js'});
+ const scans:any[]=[];await mkdir('reports/anatomy-study-enhancement',{recursive:true});
+ for(const theme of ['light','dark','contrast']){
+  await page.evaluate(theme=>{document.body.className=theme==='light'?'':'theme-'+theme;},theme);
+  const violations=await page.evaluate(async()=>{const result=await (window as any).axe.run(document.querySelector('[data-anatomy-study-sheet]'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return result.violations.map((v:any)=>({id:v.id,nodes:v.nodes.map((n:any)=>({target:n.target,summary:n.failureSummary}))}));});scans.push({theme,violations});
+ }
+ await writeFile('reports/anatomy-study-enhancement/accessibility.json',JSON.stringify(scans,null,2));expect(scans.flatMap(s=>s.violations)).toEqual([]);
+ await page.evaluate(()=>document.body.className='');await sheet.screenshot({path:'reports/anatomy-study-enhancement/study-desktop.png'});
+ await page.setViewportSize({width:390,height:844});await page.addStyleTag({content:'#wrap{width:100%;}'});
+ expect(await sheet.evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);await sheet.screenshot({path:'reports/anatomy-study-enhancement/study-phone.png'});
+ await sheet.locator('[data-anatomy-study-open="mandible"]').focus();await page.keyboard.press('Enter');await expect(sheet).toHaveCount(0);
+ await expect(page.locator('[data-anatomy-structure-detail-heading]')).toContainText('Mandible');
+ await page.getByRole('button',{name:'📄 Study sheet',exact:true}).click();
+ await page.locator('[data-anatomy-study-review-system="skeletal"]').click();await expect(page.locator('[data-anatomy-recall-card]')).toBeVisible();
+ expect(await page.evaluate(()=>(window as any).__toolData.anatomy._flashcardScope)).toBe('review');expect(errors).toEqual([]);
+ await harness.destroy(page);
+});

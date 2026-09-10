@@ -1,0 +1,80 @@
+{
+  "requestedFiles": 10,
+  "reportedFiles": 10,
+  "missing": [],
+  "tests": 177,
+  "passed": 177,
+  "results": [
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aifix_chunk_gates.test.js",
+      "evidence": "final-tests.json",
+      "status": "passed",
+      "tests": 20,
+      "passed": 20
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aifix_source_associations.test.js",
+      "evidence": "final-tests.json",
+      "status": "passed",
+      "tests": 39,
+      "passed": 39
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_build_parity.test.js",
+      "evidence": "isolated-tests.json",
+      "status": "passed",
+      "tests": 1,
+      "passed": 1
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_followup_fidelity.test.js",
+      "evidence": "final-tests.json",
+      "status": "passed",
+      "tests": 26,
+      "passed": 26
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_form_association_index.test.js",
+      "evidence": "final-tests.json",
+      "status": "passed",
+      "tests": 17,
+      "passed": 17
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_review_evidence.test.js",
+      "evidence": "final-tests.json",
+      "status": "passed",
+      "tests": 3,
+      "passed": 3
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_review_helpers.test.js",
+      "evidence": "final-tests.json",
+      "status": "passed",
+      "tests": 28,
+      "passed": 28
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_semantic_fidelity.test.js",
+      "evidence": "final-tests.json",
+      "status": "passed",
+      "tests": 29,
+      "passed": 29
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_source_contract_integration.test.js",
+      "evidence": "final-tests.json",
+      "status": "passed",
+      "tests": 10,
+      "passed": 10
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/source_remediation_contract.test.js",
+      "evidence": "isolated-tests.json",
+      "status": "passed",
+      "tests": 4,
+      "passed": 4
+    }
+  ],
+  "note": "The complete combined run reported 175 passes and two timeouts. Both affected files passed in isolation with exit 0 (5 tests). No source changes occurred between runs. This is consolidated per-file evidence, not one clean combined invocation."
+}

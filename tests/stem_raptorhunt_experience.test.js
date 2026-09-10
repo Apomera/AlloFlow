@@ -3979,16 +3979,18 @@ describe('Raptor Hunt ground shadow and background-aware readability', () => {
     expect(init).toContain('updateRaptorShadow();');
     // It sits on the sampled terrain, not on a flat plane at y = 0.
     expect(init).toContain('var shadowY = terrainHeightAt(shadowX, shadowZ);');
-    expect(init).toContain('raptorShadow.position.set(shadowX, shadowY + 0.22, shadowZ);');
+    expect(init).toContain('raptorShadow.position.set(shadowX, shadowY, shadowZ);');
+    expect(init).toContain('conformRaptorShadow(raptorShadow.geometry');
   });
 
   it('throws the shadow away from the sun and clamps the low-sun runaway', () => {
     // offset = altitude * sunDir.xz / sunDir.y diverges as the sun nears the horizon,
     // which would fling the shadow to the far side of the world at dawn and dusk.
-    expect(init).toContain('var sunLift = Math.max(0.25, sunDir.y);');
+    expect(init).toContain('var lightDirection=sunDir.y>=0?sunDir:moonDir;');
+    expect(init).toContain('var sunLift = Math.max(0.25, lightDirection.y);');
     expect(init).toContain('var offsetLimit = raptorVisualRadius * 6;');
-    expect(init).toContain('-sunDir.x / sunLift * altitude');
-    expect(init).toContain('-sunDir.z / sunLift * altitude');
+    expect(init).toContain('-lightDirection.x / sunLift * altitude');
+    expect(init).toContain('-lightDirection.z / sunLift * altitude');
 
     const limit = 6 * 2.3;   // raptorVisualRadius is about 2.3 m for a mid-sized bird
     const offset = (altitude, sunY) => Math.min(limit, (altitude * 0.7) / Math.max(0.25, sunY));
@@ -3998,12 +4000,12 @@ describe('Raptor Hunt ground shadow and background-aware readability', () => {
   });
 
   it('spreads and fades the shadow with height, the way a penumbra does', () => {
-    expect(init).toContain('var fade = Math.max(0, 1 - altitude / shadowFadeHeight);');
-    expect(init).toContain('raptorShadowOpacity = fade * fade * 0.62 * shadowLightTerm;');
-    expect(init).toContain('raptorShadowScale = raptorVisualRadius * (1.05 + (altitude / shadowFadeHeight) * 1.9);');
+    const profile=Function(functionBody(text,'raptorShadowProfile')+';return raptorShadowProfile;')();
+    expect(init).toContain('raptorShadowOpacity = profile.fade * 0.62 * shadowLightTerm * (1-mappedShadowBlend);');
+    expect(init).toContain('raptorShadowScale = raptorVisualRadius * (2.1 + (altitude / shadowFadeHeight) * 1.9);');
     const fadeHeight = Number(init.match(/var shadowFadeHeight = (\d+);/)[1]);
-    const opacity = (alt) => Math.pow(Math.max(0, 1 - alt / fadeHeight), 2) * 0.62;
-    const scale = (alt) => 1.05 + (alt / fadeHeight) * 1.9;
+    const opacity = (alt) => profile(alt,0,0,0).fade * 0.62;
+    const scale = (alt) => 2.1 + (alt / fadeHeight) * 1.9;
     expect(opacity(0)).toBeGreaterThan(opacity(60));
     expect(opacity(60)).toBeGreaterThan(opacity(160));
     expect(opacity(fadeHeight + 10)).toBe(0);
@@ -4017,6 +4019,7 @@ describe('Raptor Hunt ground shadow and background-aware readability', () => {
     expect(text).toContain("shadowGradient.addColorStop(0, 'rgba(255,255,255,0.9)');");
     expect(text).toContain("shadowGradient.addColorStop(1, 'rgba(255,255,255,0)');");
     expect(text).not.toContain("shadowGradient.addColorStop(0, 'rgba(0,0,0,0.85)');");
+    expect(init).toContain('raptorShadow.material.color.convertSRGBToLinear();');
     // Sky-lit blue-grey, not black, or the shadow reads as a hole in the terrain.
     const shade = text.match(/depthWrite: false, fog: true, color: (0x[0-9a-f]{6})/)[1];
     expect(luminance(fromHex(Number(shade)))).toBeGreaterThan(0.005);

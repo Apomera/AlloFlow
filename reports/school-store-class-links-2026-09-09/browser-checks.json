@@ -1,0 +1,25 @@
+{
+  "surfaces": [
+    {
+      "surface": "actual-admin-link-review",
+      "width": 1280,
+      "result": "passed"
+    },
+    {
+      "surface": "actual-staff-linked-award",
+      "width": 1280,
+      "result": "passed"
+    },
+    {
+      "surface": "actual-admin-link-review",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "surface": "actual-staff-linked-award",
+      "width": 390,
+      "result": "passed"
+    }
+  ],
+  "errors": []
+}

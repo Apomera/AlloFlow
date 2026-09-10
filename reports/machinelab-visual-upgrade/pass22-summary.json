@@ -1,0 +1,56 @@
+{
+  "enhancement": "Visible wheel-and-drum rotation marks",
+  "tests": {
+    "focusedPassed": 397,
+    "files": 5,
+    "added": 14,
+    "finalGeometryRerun": 248
+  },
+  "browser": {
+    "light": {
+      "directory": "pass22-light-final",
+      "desktopScenarios": 18,
+      "mobileScenarios": 2,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: windlass 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "dark": {
+      "directory": "pass22-dark",
+      "desktopScenarios": 18,
+      "mobileScenarios": 2,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: windlass 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "contrast": {
+      "directory": "pass22-contrast",
+      "desktopScenarios": 18,
+      "mobileScenarios": 2,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: windlass 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "sourceSha256": "a144bb84e32f3274f24cd7cb5b330b34a34971b5b32d6b5e45ff9ed337e36644",
+  "published": false
+}

@@ -1,0 +1,25 @@
+{
+  "cliExitCode": 1,
+  "status": "review-required",
+  "checks": [
+    {
+      "id": "desktop",
+      "main": 1,
+      "heading": "Rendered fidelity review",
+      "viewportWidth": 1100,
+      "documentWidth": 1100,
+      "scripts": 0,
+      "profiles": 3
+    },
+    {
+      "id": "mobile",
+      "main": 1,
+      "heading": "Rendered fidelity review",
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "scripts": 0,
+      "profiles": 3
+    }
+  ],
+  "humanValidation": "not-run"
+}

@@ -2162,6 +2162,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
     // Batch callers pass a run-local history snapshot so later resources see
     // earlier resources even though React state updates are asynchronous.
+    let planningGenerationInputs = null;
     const generationHistory = Array.isArray(configOverride && configOverride.historyOverride)
         ? configOverride.historyOverride
         : (Array.isArray(history) ? history : []);
@@ -6905,8 +6906,19 @@ Return ONLY JSON:
       } else if (type === 'lesson-plan') {
          setGenerationStep(isIndependentMode ? t('lesson_plan.status_creating_study') : (isParentMode ? t('lesson_plan.status_creating_family') : t('lesson_plan.status_synthesizing')));
          const historySource = configOverride.historyOverride || history;
-         const context = getLessonContext(historySource);
-         const assetManifest = configOverride.assetManifest || getAssetManifest(historySource);
+         const contextTrace = [], inventoryTrace = [];
+         const context = getLessonContext(historySource, { trace: segment => contextTrace.push(segment) });
+         const assetManifest = configOverride.assetManifest || getAssetManifest(historySource, { trace: item => inventoryTrace.push(item) });
+         let inventoryTraced = !configOverride.assetManifest;
+         if (configOverride.assetManifest) {
+             // A precomputed Full Pack inventory is traceable only when it still
+             // exactly matches this resource scope. Never infer IDs from custom prose.
+             try {
+                 const comparisonTrace = [];
+                 const comparisonManifest = getAssetManifest(historySource, { trace: item => comparisonTrace.push(item) });
+                 if (comparisonManifest === assetManifest) { inventoryTrace.push(...comparisonTrace); inventoryTraced = true; }
+             } catch (_) { /* Keep custom inventory usable with unavailable attribution. */ }
+         }
          let prompt;
          if (isIndependentMode) {
              prompt = buildStudyGuidePrompt(context, effectiveLanguage, effCustomInstructions);
@@ -6941,6 +6953,13 @@ Return ONLY JSON:
              `;
              setGenerationTaskProgress(0, 1, isIndependentMode ? t('lesson_plan.status_creating_study') : (isParentMode ? t('lesson_plan.status_creating_family') : t('lesson_plan.status_synthesizing')));
          }
+         const captureInputs = window.AlloModules?.UtilsPure?.capturePlanningInputs;
+         planningGenerationInputs = typeof captureInputs === "function" ? captureInputs({
+           context, segments:contextTrace, mode:isIndependentMode ? 'study' : isParentMode ? 'family' : 'teacher', route:'dispatcher',
+           local:usesLocalTextBackend, suppliedContext:usesLocalTextBackend ? localExcerpt(context, 6500) : context,
+           inventoryText:assetManifest, inventory:inventoryTrace, inventorySupplied:!usesLocalTextBackend && !isIndependentMode && !isParentMode,
+           inventoryTraced
+         }) : { version:0 };
          assertLocalTaskSupported('strict-json', 'The lesson plan');
          const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('lesson-plan'));
          if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, isIndependentMode ? t('lesson_plan.status_creating_study') : (isParentMode ? t('lesson_plan.status_creating_family') : t('lesson_plan.status_synthesizing')));
@@ -7930,6 +7949,7 @@ Return ONLY JSON:
           timestamp: new Date(),
           config: _buildItemConfig()
       };
+      if (type === 'lesson-plan' && planningGenerationInputs) newItem.config = { ...newItem.config, generationInputs: planningGenerationInputs };
       setHistory(prev => [...prev, newItem]);
       if (switchView || !generatedContent) {
           setGeneratedContent({ type, data: storedContent, id: newItem.id, config: newItem.config });

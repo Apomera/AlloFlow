@@ -1,0 +1,363 @@
+{
+  "date": "2026-09-10",
+  "scope": "Offline production JSON bridge, MiscHandlers and history hydration; original resource fields preserved. Not a signed-in community-library or full-view rendering test.",
+  "files": 71,
+  "resources": 807,
+  "results": [
+    {
+      "file": "allopacks/american_revolution_causes_grade5.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/ancient_egypt_grade6.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/area_perimeter_grade4.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/argument_evidence_grade6.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/body_systems_grade6.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/cell_structure_grade7.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/central_idea_grade7.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/chemical_reactions_grade8.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/constitution_grade8.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/context_clues_grade3.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/data_and_typical_grade6.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/day_night_sky_grade1.allopack.json",
+      "resources": 9,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/decimal_place_value_grade5.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/ecosystems_food_webs_grade5.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/energy_transfer_grade4.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/equal_groups_grade3.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/figurative_language_grade5.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/forces_motion_grade3.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/fractions_number_line_grade4.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/habitats_diversity_grade2.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/linear_equations_grade8.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/local_government_grade4.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/magnetism_grade6.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/main_idea_grade4.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/making_ten_grade1.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/map_skills_grade3.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/materials_grade2.allopack.json",
+      "resources": 9,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/moon_phases_grade6.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/natural_selection_grade8.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/photosynthesis_grade7.allopack.json",
+      "resources": 12,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/place_value_grade2.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/plant_needs_grade3.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/plate_tectonics_grade6.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/point_of_view_grade4.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/probability_models_grade7.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/proportional_relationships_grade7.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/ratios_real_life_grade6.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/rules_and_fairness_grade1.allopack.json",
+      "resources": 9,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/scarcity_choice_grade7.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/simple_machines_grade5.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/sound_vibration_grade1.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/states_of_matter_grade4.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/story_retell_grade2.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/theme_development_grade8.allopack.json",
+      "resources": 12,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/then_and_now_grade2.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/volume_grade5.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/water_cycle_grade6.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/weather_vs_climate_grade5.allopack.json",
+      "resources": 11,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/weathering_erosion_grade4.allopack.json",
+      "resources": 10,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/word_families_grade1.allopack.json",
+      "resources": 9,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/area_perimeter_grade4.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/day_night_sky_grade1.allopack.json",
+      "resources": 13,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/decimal_place_value_grade5.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/ecosystems_food_webs_grade5.allopack.json",
+      "resources": 15,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/energy_transfer_grade4.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/equal_groups_grade3.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/forces_motion_grade3.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/fractions_number_line_grade4.allopack.json",
+      "resources": 15,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/habitats_diversity_grade2.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/magnetism_grade6.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/materials_grade2.allopack.json",
+      "resources": 13,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/moon_phases_grade6.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/plant_needs_grade3.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/probability_models_grade7.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/simple_machines_grade5.allopack.json",
+      "resources": 15,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/sound_vibration_grade1.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/states_of_matter_grade4.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/volume_grade5.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/water_cycle_grade6.allopack.json",
+      "resources": 12,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/weather_vs_climate_grade5.allopack.json",
+      "resources": 15,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/weathering_erosion_grade4.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    }
+  ]
+}

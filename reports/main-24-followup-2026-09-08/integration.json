@@ -1,0 +1,26 @@
+{
+  "module": "concept_map_handlers_module.js",
+  "sha256": "6d689cd7880e80e2a78fff1eecb6282a0333c73b0efffba9385d4a08fa5a13d5",
+  "mirrorsMatch": true,
+  "generatedSourceCurrent": true,
+  "syntaxPassed": true,
+  "pins": [
+    {
+      "host": "AlloFlowANTI.txt",
+      "count": 1,
+      "version": "6d689cd7"
+    },
+    {
+      "host": "desktop/web-app/src/AlloFlowANTI.txt",
+      "count": 1,
+      "version": "6d689cd7"
+    },
+    {
+      "host": "desktop/web-app/src/App.jsx",
+      "count": 1,
+      "version": "6d689cd7"
+    }
+  ],
+  "whitespaceExitCode": 0,
+  "whitespaceOutput": "warning: in the working copy of 'concept_map_handlers_module.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'concept_map_handlers_source.jsx', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'desktop/web-app/public/concept_map_handlers_module.js', CRLF will be replaced by LF the next time Git touches it\n"
+}

@@ -1,0 +1,51 @@
+{
+  "seedsSolved": 200,
+  "uniqueRooms": 145,
+  "invalidGraphCasesRejected": 6,
+  "prerequisiteBypassBlocked": true,
+  "duplicateCollectionBlocked": true,
+  "replayVerified": true,
+  "browserSolve": true,
+  "keyboardCollection": true,
+  "graduatedHints": true,
+  "newVariation": true,
+  "layouts": [
+    {
+      "colorScheme": "light",
+      "width": 736,
+      "overflow": false,
+      "axeViolations": 0
+    },
+    {
+      "colorScheme": "light",
+      "width": 360,
+      "overflow": false,
+      "axeViolations": 0
+    },
+    {
+      "colorScheme": "light",
+      "width": 320,
+      "overflow": false,
+      "axeViolations": 0
+    },
+    {
+      "colorScheme": "dark",
+      "width": 736,
+      "overflow": false,
+      "axeViolations": 0
+    },
+    {
+      "colorScheme": "dark",
+      "width": 360,
+      "overflow": false,
+      "axeViolations": 0
+    },
+    {
+      "colorScheme": "dark",
+      "width": 320,
+      "overflow": false,
+      "axeViolations": 0
+    }
+  ],
+  "errors": []
+}

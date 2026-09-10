@@ -207,13 +207,13 @@ describe('Aquarium visual scene lifecycle', () => {
     const old=h.root('residents').children[0],beforeSize=new realThree.Box3().setFromObject(old).getSize(new realThree.Vector3());
     const sand=h.root('vessel').children.find(node=>node.geometry?.parameters?.width===11.9&&node.geometry?.parameters?.height===.3);
     h.update({appearance:{substrate:'dark',backdrop:'black',quality:'low',animalScale:1.3,lightIntensity:.7}});h.flush();
-    expect(h.renderer.pixelRatio).toBe(1);expect(sand.material.color.getHex()).toBe(0x464e4a);
+    expect(h.renderer.pixelRatio).toBe(1);expect(sand.material.color.equals(new realThree.Color(0x464e4a).convertSRGBToLinear())).toBe(true);
     const after=h.root('residents').children[0],afterSize=new realThree.Box3().setFromObject(after).getSize(new realThree.Vector3());
     expect(afterSize.x).toBeGreaterThan(beforeSize.x*1.2);expect(after.userData.fishInstanceId).toBe(old.userData.fishInstanceId);
     expect(h.root('residents').children).toHaveLength(1);
     expect(h.root('environment').userData.lightActive).toBe(true);
     h.update({model:{daylight:false}});h.flush();
-    expect(h.root('environment').userData.lightActive).toBe(false);expect(sand.material.color.getHex()).toBe(0x464e4a);
+    expect(h.root('environment').userData.lightActive).toBe(false);expect(sand.material.color.equals(new realThree.Color(0x464e4a).convertSRGBToLinear())).toBe(true);
     expect(h.root('residents').children[0]).toBe(after);
   });
 
@@ -317,4 +317,30 @@ describe('Aquarium visual scene lifecycle', () => {
     expect(keyLight.intensity).toBeCloseTo(full);
   });
 
+});
+
+
+describe('Aquarium grounded substrate surfaces', () => {
+  it('keeps the rippled surface above its base and isolates their color attributes', () => {
+    const h = harness({ paused: true });
+    const bed = h.root('substrate-bed');
+    const base = h.root('vessel').children.find(n => n.geometry?.type === 'BoxGeometry' && n.geometry.parameters.height === .3);
+    expect(bed).toBeTruthy(); expect(base).toBeTruthy();
+    expect(base.material).not.toBe(bed.material); expect(base.material.vertexColors).toBe(false); expect(bed.material.vertexColors).toBe(true);
+    const vertices = bed.geometry.attributes.position;
+    const top = base.position.y + base.geometry.parameters.height / 2;
+    for (let i=0;i<vertices.count;i++) expect(vertices.getY(i)).toBeGreaterThan(top);
+    h.update({ appearance: { substrate: 'dark' } });h.flush();
+    expect(base.material.color.getHex()).toBe(bed.material.color.getHex());
+  });
+  it('updates contact shading after moving or removing a real habitat object', () => {
+    const item={id:'rock-1',type:'river_stone',x:0,y:0,z:0,rotation:0,scale:1};
+    const h=harness({paused:true,layout:[item],catalog:[{id:'river_stone',label:'Stone'}]});
+    const bed=h.root('substrate-bed'),first=Array.from(bed.geometry.attributes.color.array);
+    expect(bed.userData.contactFootprints).toBe(1);
+    h.update({layout:[{...item,x:3}]});h.flush();expect(Array.from(bed.geometry.attributes.color.array)).not.toEqual(first);
+    h.update({layout:[]});h.flush();expect(bed.userData.contactFootprints).toBe(0);
+    expect(Math.min(...bed.geometry.attributes.color.array)).toBeGreaterThan(.6);
+    expect(h.root('substrate-bed')).toBe(bed);
+  });
 });

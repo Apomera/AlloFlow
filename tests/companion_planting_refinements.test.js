@@ -29,7 +29,7 @@ describe('Companion Planting refinements', () => {
     expect(source).toContain('data-companion-workspaces');
     expect(source).toContain('data-companion-workspace-stage');
     expect(source).toContain('prefers-reduced-motion: reduce');
-    expect(source).toContain('Ambient ecosystem visitors respond');
+    expect(source).toContain('data-garden-scene');
     expect(source).toContain('grid min-w-[700px] grid-cols-4 gap-2 sm:min-w-0');
     expect(source).toContain('sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5');
     expect(source).toContain('sm:grid-cols-2 xl:grid-cols-4');

@@ -1,0 +1,12 @@
+{
+  "sourcePublicSha256": "0F98406FEC4CBC3A7548D09B16A23099C0D5763E3353A2BD23F462F1DCDD5A6B",
+  "bundledExamplesChecked": 22,
+  "newControlledSourceTests": 27,
+  "validationHost": "isolated local React host",
+  "newCameraTests": 6,
+  "testsPassed": 272,
+  "browserPageErrors": 0,
+  "testFiles": 15,
+  "scopedAxeViolations": 0,
+  "densePreview": "Scroll viewport expanded only for the complete-board screenshot"
+}

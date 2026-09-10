@@ -1,0 +1,317 @@
+[
+  {
+    "id": "en-term-1",
+    "kind": "term",
+    "file": "en-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three panels show a teal marble approaching a gold marble, touching it, then a rightward arrow and the gold marble farther right.",
+    "altHash": "img-9y7-acc7c260"
+  },
+  {
+    "id": "en-term-2",
+    "kind": "term",
+    "file": "en-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three stacked panels show a teal ball progressively farther right above the same horizontal surface.",
+    "altHash": "img-6yv-32e8457d"
+  },
+  {
+    "id": "en-term-3",
+    "kind": "term",
+    "file": "en-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two rows each show four teal ball positions; positions in the lower row are spaced farther apart.",
+    "altHash": "img-84v-72242214"
+  },
+  {
+    "id": "en-term-4",
+    "kind": "term",
+    "file": "en-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An arrow points from a terracotta-colored square on the left toward a blue square on the right.",
+    "altHash": "img-3db-d89fb876"
+  },
+  {
+    "id": "en-term-5",
+    "kind": "term",
+    "file": "en-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three panels show a teal marble approaching a gold marble, touching it, then a rightward arrow and the gold marble farther right.",
+    "altHash": "img-9y7-acc7c260"
+  },
+  {
+    "id": "en-term-6",
+    "kind": "term",
+    "file": "en-term-6.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A mallet touches a pale drumhead; three curved golden paper strips spread outward above the wooden drum.",
+    "altHash": "img-8af-34406d93"
+  },
+  {
+    "id": "en-term-7",
+    "kind": "term",
+    "file": "en-term-7.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A teal flashlight points toward a bright wall patch, joined by a pale paper cone in a dark room.",
+    "altHash": "img-5qr-8e94d297"
+  },
+  {
+    "id": "en-term-8",
+    "kind": "term",
+    "file": "en-term-8.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A gray spoon rests in orange soup with its handle extending over the rim; two pale wisps rise above the bowl.",
+    "altHash": "img-9uf-80fc1764"
+  },
+  {
+    "id": "en-term-9",
+    "kind": "term",
+    "file": "en-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two separate wires join opposite battery ends through a filament inside a pale round bulb, forming a continuous loop.",
+    "altHash": "img-6on-fe1c931a"
+  },
+  {
+    "id": "en-term-10",
+    "kind": "term",
+    "file": "en-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two arrows branch from a battery toward a golden light disk above and three brown wavy strokes below.",
+    "altHash": "img-dwf-98fa08bb"
+  },
+  {
+    "id": "en-anchor-1",
+    "kind": "anchor",
+    "file": "en-anchor-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A mallet touches a pale drumhead; three curved golden paper strips spread outward above the wooden drum.",
+    "altHash": "img-6ff-4f771215"
+  },
+  {
+    "id": "en-anchor-2",
+    "kind": "anchor",
+    "file": "en-anchor-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A teal flashlight points toward a bright wall patch, joined by a pale paper cone in a dark room.",
+    "altHash": "img-4dj-134bc401"
+  },
+  {
+    "id": "en-anchor-3",
+    "kind": "anchor",
+    "file": "en-anchor-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A gray spoon rests in orange soup with its handle extending over the rim; two pale wisps rise above the bowl.",
+    "altHash": "img-7o3-28675fa3"
+  },
+  {
+    "id": "en-anchor-4",
+    "kind": "anchor",
+    "file": "en-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two separate wires join opposite battery ends through a filament inside a pale round bulb, forming a continuous loop.",
+    "altHash": "img-6on-fe1c931a"
+  },
+  {
+    "id": "en-anchor-5",
+    "kind": "anchor",
+    "file": "en-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three panels show a teal marble approaching a gold marble, touching it, then a rightward arrow and the gold marble farther right.",
+    "altHash": "img-9y7-acc7c260"
+  },
+  {
+    "id": "en-sort-1",
+    "kind": "sort",
+    "file": "en-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A mallet touches a pale drumhead; three curved golden paper strips spread outward above the wooden drum.",
+    "altHash": "img-6ff-4f771215"
+  },
+  {
+    "id": "en-sort-2",
+    "kind": "sort",
+    "file": "en-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Two children stand far apart across a field; one cups hands at their mouth, while the other holds a hand beside an ear.",
+    "altHash": "img-51r-698dca10"
+  },
+  {
+    "id": "en-sort-3",
+    "kind": "sort",
+    "file": "en-sort-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A brown paper hand touches a string above an acoustic guitar sound hole; six strings cross the body toward the neck.",
+    "altHash": "img-agn-d2aa55d8"
+  },
+  {
+    "id": "en-sort-4",
+    "kind": "sort",
+    "file": "en-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A teal flashlight points toward a bright wall patch, joined by a pale paper cone in a dark room.",
+    "altHash": "img-4dj-134bc401"
+  },
+  {
+    "id": "en-sort-5",
+    "kind": "sort",
+    "file": "en-sort-5.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Golden light falls through a window onto a potted plant, its green leaves and the sill.",
+    "altHash": "img-9g3-9fa359e2"
+  },
+  {
+    "id": "en-sort-6",
+    "kind": "sort",
+    "file": "en-sort-6.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A lit floor lamp casts golden patches onto the wall and floor beside an armchair and small table.",
+    "altHash": "img-9n3-3dcd3f74"
+  },
+  {
+    "id": "en-sort-7",
+    "kind": "sort",
+    "file": "en-sort-7.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A gray spoon rests in orange soup with its handle extending over the rim; two pale wisps rise above the bowl.",
+    "altHash": "img-7o3-28675fa3"
+  },
+  {
+    "id": "en-sort-8",
+    "kind": "sort",
+    "file": "en-sort-8.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Four warm-colored wavy paper strips rise above a cream radiator mounted beneath a closed window.",
+    "altHash": "img-7ir-d0af923a"
+  },
+  {
+    "id": "en-sort-9",
+    "kind": "sort",
+    "file": "en-sort-9.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Two brown paper hands wrap around a terracotta mug; pale wisps rise above the liquid.",
+    "altHash": "img-con-8810972d"
+  },
+  {
+    "id": "en-sort-10",
+    "kind": "sort",
+    "file": "en-sort-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two separate wires join opposite battery ends through a filament inside a pale round bulb, forming a continuous loop.",
+    "altHash": "img-6on-fe1c931a"
+  },
+  {
+    "id": "en-sort-11",
+    "kind": "sort",
+    "file": "en-sort-11.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A teal kettle sits on its base on a dry counter; a black cord connects the base to a plugged-in wall outlet.",
+    "altHash": "img-7jb-54e7eba1"
+  },
+  {
+    "id": "en-sort-12",
+    "kind": "sort",
+    "file": "en-sort-12.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A white cable connects a dark-screen tablet on a table to an adapter in a wall outlet.",
+    "altHash": "img-59j-dc4a97cb"
+  },
+  {
+    "id": "en-lesson-1",
+    "kind": "lesson",
+    "file": "en-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three stacked panels show a teal ball progressively farther right above the same horizontal surface.",
+    "altHash": "img-6yv-32e8457d"
+  },
+  {
+    "id": "en-lesson-2",
+    "kind": "lesson",
+    "file": "en-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two rows each show four teal ball positions; positions in the lower row are spaced farther apart.",
+    "altHash": "img-84v-72242214"
+  },
+  {
+    "id": "en-lesson-3",
+    "kind": "lesson",
+    "file": "en-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three panels show a teal marble approaching a gold marble, touching it, then a rightward arrow and the gold marble farther right.",
+    "altHash": "img-9y7-acc7c260"
+  },
+  {
+    "id": "en-lesson-4",
+    "kind": "lesson",
+    "file": "en-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two separate wires join opposite battery ends through a filament inside a pale round bulb, forming a continuous loop.",
+    "altHash": "img-6on-fe1c931a"
+  },
+  {
+    "id": "en-lesson-5",
+    "kind": "lesson",
+    "file": "en-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An arrow points from a terracotta-colored square on the left toward a blue square on the right.",
+    "altHash": "img-3db-d89fb876"
+  },
+  {
+    "id": "en-lesson-6",
+    "kind": "lesson",
+    "file": "en-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two arrows branch from a battery toward a golden light disk above and three brown wavy strokes below.",
+    "altHash": "img-dwf-98fa08bb"
+  },
+  {
+    "id": "en-lesson-7",
+    "kind": "lesson",
+    "file": "en-lesson-7.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Golden light falls through a window onto a potted plant, its green leaves and the sill.",
+    "altHash": "img-vbr-ef37ee14"
+  },
+  {
+    "id": "en-lesson-8",
+    "kind": "lesson",
+    "file": "en-lesson-8.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A brown paper hand touches a string above an acoustic guitar sound hole; six strings cross the body toward the neck.",
+    "altHash": "img-181z-2dc84ed8"
+  }
+]

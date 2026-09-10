@@ -1,0 +1,584 @@
+{
+  "slug": "moon_phases_grade6",
+  "prefix": "mn",
+  "status": "complete",
+  "style": "Matte astronomy paintings and exact phase/geometry diagrams",
+  "provider": "Built-in image generation and deterministic SVG diagrams",
+  "groups": [
+    "Illumination and phase sequence",
+    "Growing and shrinking visible light",
+    "Two different eclipse alignments",
+    "Rotation and a classroom model"
+  ],
+  "lessonTitles": [
+    "The illuminated hemisphere",
+    "The phase sequence",
+    "Waxing",
+    "Waning",
+    "A lunar eclipse",
+    "A solar eclipse",
+    "One rotation per orbit",
+    "Keep the observer’s shadow out"
+  ],
+  "note": "Images are text-free with editable captions. Distinguish Earth-view phase disks from space-view position diagrams: orbit pictures show the Sun-facing hemisphere, not the phase seen from Earth. Right-lit waxing examples use a northern-up textbook convention; viewing orientation varies with location and time. Dark outlines make the new Moon’s position visible in diagrams, not in the real night sky. All sizes, distances, shadow cones and orbital planes are simplified and not to scale. Lunar surface textures are artistic. Ordinary phases are not caused by Earth’s shadow. Keep the model ball out of the observer’s head shadow for a full phase; deliberately align it only when demonstrating an eclipse. Use a cool lamp and blunt handle with teacher supervision, never direct solar viewing or a laser. Educator review remains pending.",
+  "sources": [
+    {
+      "key": "crescent",
+      "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show a waxing crescent in a northern-up textbook orientation: a very thin cream crescent follows the RIGHT circular rim, tapering to tips at top and bottom. Only about fifteen percent of the disk is bright; the rest is very dark navy. The outer limb stays a circle; the inner boundary curves to the right too.",
+      "alt": "A thin pale crescent follows the right rim of a dark circular Moon against navy.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-e588658f-dec2-4204-a76c-02aed7862dfd.png",
+      "file": "source-crescent-gouache.png",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "key": "quarter",
+      "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show first quarter in a northern-up textbook orientation: exactly the RIGHT semicircle is pale cream and the LEFT semicircle dark navy. The terminator is a straight VERTICAL diameter from the exact top of the circle to its exact bottom. Do not show a crescent or gibbous.",
+      "alt": "The right semicircle of the Moon is pale, and the left semicircle is dark, separated by a vertical boundary.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-78760eee-1021-4311-a253-7d6af42e3bc0.png",
+      "file": "source-quarter-gouache.png",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "key": "gibbous",
+      "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show a waxing gibbous in a northern-up textbook orientation: roughly eighty-five percent of the circle is bright cream, with only a narrow dark crescent along the LEFT rim. The bright region includes the entire right rim and the center. Keep the circular outer limb.",
+      "alt": "A mostly pale circular Moon has a narrow dark region along its left rim.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-7f39b334-c19d-477b-bce6-dbecfea7c6d0.png",
+      "file": "source-gibbous-gouache.png",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "key": "red",
+      "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show the full circular Moon during total lunar eclipse as a dim copper-red disk, subtle reddish mottling, NO bright white portion and NO crescent. Moon remains a complete visible circle. Use muted copper and burnt orange against navy. No foreground clouds or horizon.",
+      "alt": "A complete copper-red Moon with subtle dark mottling sits against a navy background.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-7c0fbb04-03ea-4e47-be10-27c01feb3ac6.png",
+      "file": "source-red-gouache.png",
+      "reviewedAt": "2026-09-10"
+    }
+  ],
+  "assets": [
+    {
+      "id": "mn-term-1",
+      "kind": "term",
+      "index": 0,
+      "sourceKey": "orbit",
+      "caption": "Space view: sunlight comes from the left. Earth is central. The Moon at left is at new moon, below is first quarter, right is full, and above is third quarter in this north-of-orbit view. Every drawn Moon is half illuminated toward the Sun. These are positions, not the phase shapes seen from Earth. Sizes, distances and tilt are simplified.",
+      "prompt": "Exact text-free diagram: A Sun at left sends arrows rightward toward Earth and four Moon positions; every small Moon has its left half illuminated.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-term-1-diagram.png",
+      "vectorFile": "mn-term-1.svg",
+      "alt": "A Sun at left sends arrows rightward toward Earth and four Moon positions; every small Moon has its left half illuminated.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-term-2",
+      "kind": "term",
+      "index": 1,
+      "sourceKey": "cycle",
+      "caption": "Read the top row left to right, then the bottom row left to right: new, waxing crescent, first quarter, waxing gibbous, full, waning gibbous, third quarter, waning crescent. The cycle averages 29.5 days. Orientation is a northern-up textbook convention; sky orientation varies.",
+      "prompt": "Exact text-free diagram: Eight disks form two rows: dark, right crescent, right half, right gibbous; full, left gibbous, left half, left crescent.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-term-2-diagram.png",
+      "vectorFile": "mn-term-2.svg",
+      "alt": "Eight disks form two rows: dark, right crescent, right half, right gibbous; full, left gibbous, left half, left crescent.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-term-3",
+      "kind": "term",
+      "index": 2,
+      "sourceKey": "crescent",
+      "caption": "This is an artistic Earth-view Moon disk. Use the card statement to identify the phase or eclipse context; orientation and brightness can vary.",
+      "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show a waxing crescent in a northern-up textbook orientation: a very thin cream crescent follows the RIGHT circular rim, tapering to tips at top and bottom. Only about fifteen percent of the disk is bright; the rest is very dark navy. The outer limb stays a circle; the inner boundary curves to the right too.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-crescent-gouache.png",
+      "alt": "A thin pale crescent follows the right rim of a dark circular Moon against navy.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-e588658f-dec2-4204-a76c-02aed7862dfd.png",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-term-4",
+      "kind": "term",
+      "index": 3,
+      "sourceKey": "gibbous",
+      "caption": "This is an artistic Earth-view Moon disk. Use the card statement to identify the phase or eclipse context; orientation and brightness can vary.",
+      "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show a waxing gibbous in a northern-up textbook orientation: roughly eighty-five percent of the circle is bright cream, with only a narrow dark crescent along the LEFT rim. The bright region includes the entire right rim and the center. Keep the circular outer limb.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-gibbous-gouache.png",
+      "alt": "A mostly pale circular Moon has a narrow dark region along its left rim.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-7f39b334-c19d-477b-bce6-dbecfea7c6d0.png",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-term-5",
+      "kind": "term",
+      "index": 4,
+      "sourceKey": "waxing",
+      "caption": "Waxing means the sunlit portion of the visible disk is increasing. Read left to right. The Moon itself does not gain surface area or create more light.",
+      "prompt": "Exact text-free diagram: Three Moon disks progress from a right-lit crescent to a right-lit half and a right-lit gibbous.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-term-5-diagram.png",
+      "vectorFile": "mn-term-5.svg",
+      "alt": "Three Moon disks progress from a right-lit crescent to a right-lit half and a right-lit gibbous.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-term-6",
+      "kind": "term",
+      "index": 5,
+      "sourceKey": "waning",
+      "caption": "Waning means the sunlit portion of the visible disk is decreasing. Read left to right. The left-lit orientation is a textbook convention, not a universal sky-direction rule.",
+      "prompt": "Exact text-free diagram: Three Moon disks progress from a left-lit gibbous to a left-lit half and a left-lit crescent.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-term-6-diagram.png",
+      "vectorFile": "mn-term-6.svg",
+      "alt": "Three Moon disks progress from a left-lit gibbous to a left-lit half and a left-lit crescent.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-term-7",
+      "kind": "term",
+      "index": 6,
+      "sourceKey": "lunar",
+      "caption": "Lunar eclipse geometry: Sun–Earth–Moon. The Moon is near full and enters Earth’s shadow. Total lunar eclipses can look copper red; partial and penumbral eclipses look different. Only the central shadow is shown. Sizes and distances are not to scale.",
+      "prompt": "Exact text-free diagram: The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-term-7-diagram.png",
+      "vectorFile": "mn-term-7.svg",
+      "alt": "The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-term-8",
+      "kind": "term",
+      "index": 7,
+      "sourceKey": "shadow",
+      "caption": "This is Earth’s central shadow in a lunar-eclipse alignment. Ordinary Moon phases are not caused by this shadow. The outer partial-shadow region is omitted; the picture is not to scale.",
+      "prompt": "Exact text-free diagram: Earth blocks light from a Sun at left, leaving a dark narrowing region containing a small Moon to its right.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-term-8-diagram.png",
+      "vectorFile": "mn-term-8.svg",
+      "alt": "Earth blocks light from a Sun at left, leaving a dark narrowing region containing a small Moon to its right.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-term-9",
+      "kind": "term",
+      "index": 8,
+      "sourceKey": "locked",
+      "caption": "Each disk is the Moon at a different time. The golden marker identifies the same surface region, not the lit side. Keeping it toward Earth requires one rotation per orbit, about 27.3 days relative to the stars. Libration lets us see a little around the edges over time.",
+      "prompt": "Exact text-free diagram: Four Moon positions circle Earth; a golden surface marker on each Moon is turned inward toward Earth.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-term-9-diagram.png",
+      "vectorFile": "mn-term-9.svg",
+      "alt": "Four Moon positions circle Earth; a golden surface marker on each Moon is turned inward toward Earth.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-term-10",
+      "kind": "term",
+      "index": 9,
+      "sourceKey": "model",
+      "caption": "Use a cool teacher-approved lamp and a matte ball on a blunt handle. Put the learner at Earth’s viewpoint. At the full-phase position, hold the ball slightly above the observer’s head shadow. This side view shows the materials, not the observer’s phase view. Never substitute the real Sun or a laser.",
+      "prompt": "Exact text-free diagram: A lamp on a stand shines toward a pale-and-dark ball on a blunt handle.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-term-10-diagram.png",
+      "vectorFile": "mn-term-10.svg",
+      "alt": "A lamp on a stand shines toward a pale-and-dark ball on a blunt handle.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-anchor-1",
+      "kind": "anchor",
+      "index": 0,
+      "sourceKey": "half",
+      "caption": "A side view of illumination: approximately one hemisphere faces the Sun outside a lunar eclipse. The phase seen from Earth depends on our viewing direction. The dark side of this sphere is its own night side, not Earth’s shadow.",
+      "prompt": "Exact text-free diagram: Light arrows from a golden source at left point toward a sphere whose left half is pale and right half dark.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-anchor-1-diagram.png",
+      "vectorFile": "mn-anchor-1.svg",
+      "alt": "Light arrows from a golden source at left point toward a sphere whose left half is pale and right half dark.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-anchor-2",
+      "kind": "anchor",
+      "index": 1,
+      "sourceKey": "cycle",
+      "caption": "Read the top row left to right, then the bottom row left to right: new, waxing crescent, first quarter, waxing gibbous, full, waning gibbous, third quarter, waning crescent. The cycle averages 29.5 days. Orientation is a northern-up textbook convention; sky orientation varies.",
+      "prompt": "Exact text-free diagram: Eight disks form two rows: dark, right crescent, right half, right gibbous; full, left gibbous, left half, left crescent.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-anchor-2-diagram.png",
+      "vectorFile": "mn-anchor-2.svg",
+      "alt": "Eight disks form two rows: dark, right crescent, right half, right gibbous; full, left gibbous, left half, left crescent.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-anchor-3",
+      "kind": "anchor",
+      "index": 2,
+      "sourceKey": "waxing",
+      "caption": "Waxing means the sunlit portion of the visible disk is increasing. Read left to right. The Moon itself does not gain surface area or create more light.",
+      "prompt": "Exact text-free diagram: Three Moon disks progress from a right-lit crescent to a right-lit half and a right-lit gibbous.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-anchor-3-diagram.png",
+      "vectorFile": "mn-anchor-3.svg",
+      "alt": "Three Moon disks progress from a right-lit crescent to a right-lit half and a right-lit gibbous.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-anchor-4",
+      "kind": "anchor",
+      "index": 3,
+      "sourceKey": "lunar",
+      "caption": "Lunar eclipse geometry: Sun–Earth–Moon. The Moon is near full and enters Earth’s shadow. Total lunar eclipses can look copper red; partial and penumbral eclipses look different. Only the central shadow is shown. Sizes and distances are not to scale.",
+      "prompt": "Exact text-free diagram: The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-anchor-4-diagram.png",
+      "vectorFile": "mn-anchor-4.svg",
+      "alt": "The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-anchor-5",
+      "kind": "anchor",
+      "index": 4,
+      "sourceKey": "locked",
+      "caption": "Each disk is the Moon at a different time. The golden marker identifies the same surface region, not the lit side. Keeping it toward Earth requires one rotation per orbit, about 27.3 days relative to the stars. Libration lets us see a little around the edges over time.",
+      "prompt": "Exact text-free diagram: Four Moon positions circle Earth; a golden surface marker on each Moon is turned inward toward Earth.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-anchor-5-diagram.png",
+      "vectorFile": "mn-anchor-5.svg",
+      "alt": "Four Moon positions circle Earth; a golden surface marker on each Moon is turned inward toward Earth.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-sort-1",
+      "kind": "sort",
+      "index": 0,
+      "sourceKey": "crescent",
+      "caption": "This is an artistic Earth-view Moon disk. Use the card statement to identify the phase or eclipse context; orientation and brightness can vary.",
+      "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show a waxing crescent in a northern-up textbook orientation: a very thin cream crescent follows the RIGHT circular rim, tapering to tips at top and bottom. Only about fifteen percent of the disk is bright; the rest is very dark navy. The outer limb stays a circle; the inner boundary curves to the right too.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-crescent-gouache.png",
+      "alt": "A thin pale crescent follows the right rim of a dark circular Moon against navy.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-e588658f-dec2-4204-a76c-02aed7862dfd.png",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-sort-2",
+      "kind": "sort",
+      "index": 1,
+      "sourceKey": "red",
+      "caption": "This is an artistic Earth-view Moon disk. Use the card statement to identify the phase or eclipse context; orientation and brightness can vary.",
+      "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show the full circular Moon during total lunar eclipse as a dim copper-red disk, subtle reddish mottling, NO bright white portion and NO crescent. Moon remains a complete visible circle. Use muted copper and burnt orange against navy. No foreground clouds or horizon.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-red-gouache.png",
+      "alt": "A complete copper-red Moon with subtle dark mottling sits against a navy background.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-7c0fbb04-03ea-4e47-be10-27c01feb3ac6.png",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-sort-3",
+      "kind": "sort",
+      "index": 2,
+      "sourceKey": "solar",
+      "caption": "Solar eclipse geometry: Sun–Moon–Earth, near new moon. A narrow central shadow can produce totality; a broader surrounding region sees a partial eclipse. This schematic shows neither actual scale nor an annular eclipse. It is not a solar-observation guide.",
+      "prompt": "Exact text-free diagram: The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-sort-3-diagram.png",
+      "vectorFile": "mn-sort-3.svg",
+      "alt": "The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-sort-4",
+      "kind": "sort",
+      "index": 3,
+      "sourceKey": "quarter",
+      "caption": "This is an artistic Earth-view Moon disk. Use the card statement to identify the phase or eclipse context; orientation and brightness can vary.",
+      "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show first quarter in a northern-up textbook orientation: exactly the RIGHT semicircle is pale cream and the LEFT semicircle dark navy. The terminator is a straight VERTICAL diameter from the exact top of the circle to its exact bottom. Do not show a crescent or gibbous.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-quarter-gouache.png",
+      "alt": "The right semicircle of the Moon is pale, and the left semicircle is dark, separated by a vertical boundary.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-78760eee-1021-4311-a253-7d6af42e3bc0.png",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-sort-5",
+      "kind": "sort",
+      "index": 4,
+      "sourceKey": "solar",
+      "caption": "Solar eclipse geometry: Sun–Moon–Earth, near new moon. A narrow central shadow can produce totality; a broader surrounding region sees a partial eclipse. This schematic shows neither actual scale nor an annular eclipse. It is not a solar-observation guide.",
+      "prompt": "Exact text-free diagram: The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-sort-5-diagram.png",
+      "vectorFile": "mn-sort-5.svg",
+      "alt": "The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-sort-6",
+      "kind": "sort",
+      "index": 5,
+      "sourceKey": "lunar",
+      "caption": "Lunar eclipse geometry: Sun–Earth–Moon. The Moon is near full and enters Earth’s shadow. Total lunar eclipses can look copper red; partial and penumbral eclipses look different. Only the central shadow is shown. Sizes and distances are not to scale.",
+      "prompt": "Exact text-free diagram: The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-sort-6-diagram.png",
+      "vectorFile": "mn-sort-6.svg",
+      "alt": "The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-sort-7",
+      "kind": "sort",
+      "index": 6,
+      "sourceKey": "gibbous",
+      "caption": "This is an artistic Earth-view Moon disk. Use the card statement to identify the phase or eclipse context; orientation and brightness can vary.",
+      "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show a waxing gibbous in a northern-up textbook orientation: roughly eighty-five percent of the circle is bright cream, with only a narrow dark crescent along the LEFT rim. The bright region includes the entire right rim and the center. Keep the circular outer limb.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-gibbous-gouache.png",
+      "alt": "A mostly pale circular Moon has a narrow dark region along its left rim.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-7f39b334-c19d-477b-bce6-dbecfea7c6d0.png",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-sort-8",
+      "kind": "sort",
+      "index": 7,
+      "sourceKey": "new",
+      "caption": "At new moon, the sunlit hemisphere mostly faces away from Earth. The Moon is near the Sun in our sky and normally not visible. This flattened position diagram does not imply a solar eclipse every month; alignment in three dimensions matters.",
+      "prompt": "Exact text-free diagram: The Moon lies between a Sun at left and Earth at right; its pale half faces the Sun and its dark half faces Earth.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-sort-8-diagram.png",
+      "vectorFile": "mn-sort-8.svg",
+      "alt": "The Moon lies between a Sun at left and Earth at right; its pale half faces the Sun and its dark half faces Earth.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-sort-9",
+      "kind": "sort",
+      "index": 8,
+      "sourceKey": "solar",
+      "caption": "Solar eclipse geometry: Sun–Moon–Earth, near new moon. A narrow central shadow can produce totality; a broader surrounding region sees a partial eclipse. This schematic shows neither actual scale nor an annular eclipse. It is not a solar-observation guide.",
+      "prompt": "Exact text-free diagram: The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-sort-9-diagram.png",
+      "vectorFile": "mn-sort-9.svg",
+      "alt": "The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-sort-10",
+      "kind": "sort",
+      "index": 9,
+      "sourceKey": "shadow",
+      "caption": "This is Earth’s central shadow in a lunar-eclipse alignment. Ordinary Moon phases are not caused by this shadow. The outer partial-shadow region is omitted; the picture is not to scale.",
+      "prompt": "Exact text-free diagram: Earth blocks light from a Sun at left, leaving a dark narrowing region containing a small Moon to its right.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-sort-10-diagram.png",
+      "vectorFile": "mn-sort-10.svg",
+      "alt": "Earth blocks light from a Sun at left, leaving a dark narrowing region containing a small Moon to its right.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-lesson-1",
+      "kind": "lesson",
+      "index": 0,
+      "sourceKey": "half",
+      "caption": "A side view of illumination: approximately one hemisphere faces the Sun outside a lunar eclipse. The phase seen from Earth depends on our viewing direction. The dark side of this sphere is its own night side, not Earth’s shadow.",
+      "prompt": "Exact text-free diagram: Light arrows from a golden source at left point toward a sphere whose left half is pale and right half dark.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-lesson-1-diagram.png",
+      "vectorFile": "mn-lesson-1.svg",
+      "alt": "Light arrows from a golden source at left point toward a sphere whose left half is pale and right half dark.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-lesson-2",
+      "kind": "lesson",
+      "index": 1,
+      "sourceKey": "cycle",
+      "caption": "Read the top row left to right, then the bottom row left to right: new, waxing crescent, first quarter, waxing gibbous, full, waning gibbous, third quarter, waning crescent. The cycle averages 29.5 days. Orientation is a northern-up textbook convention; sky orientation varies.",
+      "prompt": "Exact text-free diagram: Eight disks form two rows: dark, right crescent, right half, right gibbous; full, left gibbous, left half, left crescent.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-lesson-2-diagram.png",
+      "vectorFile": "mn-lesson-2.svg",
+      "alt": "Eight disks form two rows: dark, right crescent, right half, right gibbous; full, left gibbous, left half, left crescent.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-lesson-3",
+      "kind": "lesson",
+      "index": 2,
+      "sourceKey": "waxing",
+      "caption": "Waxing means the sunlit portion of the visible disk is increasing. Read left to right. The Moon itself does not gain surface area or create more light.",
+      "prompt": "Exact text-free diagram: Three Moon disks progress from a right-lit crescent to a right-lit half and a right-lit gibbous.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-lesson-3-diagram.png",
+      "vectorFile": "mn-lesson-3.svg",
+      "alt": "Three Moon disks progress from a right-lit crescent to a right-lit half and a right-lit gibbous.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-lesson-4",
+      "kind": "lesson",
+      "index": 3,
+      "sourceKey": "waning",
+      "caption": "Waning means the sunlit portion of the visible disk is decreasing. Read left to right. The left-lit orientation is a textbook convention, not a universal sky-direction rule.",
+      "prompt": "Exact text-free diagram: Three Moon disks progress from a left-lit gibbous to a left-lit half and a left-lit crescent.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-lesson-4-diagram.png",
+      "vectorFile": "mn-lesson-4.svg",
+      "alt": "Three Moon disks progress from a left-lit gibbous to a left-lit half and a left-lit crescent.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-lesson-5",
+      "kind": "lesson",
+      "index": 4,
+      "sourceKey": "lunar",
+      "caption": "Lunar eclipse geometry: Sun–Earth–Moon. The Moon is near full and enters Earth’s shadow. Total lunar eclipses can look copper red; partial and penumbral eclipses look different. Only the central shadow is shown. Sizes and distances are not to scale.",
+      "prompt": "Exact text-free diagram: The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-lesson-5-diagram.png",
+      "vectorFile": "mn-lesson-5.svg",
+      "alt": "The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-lesson-6",
+      "kind": "lesson",
+      "index": 5,
+      "sourceKey": "solar",
+      "caption": "Solar eclipse geometry: Sun–Moon–Earth, near new moon. A narrow central shadow can produce totality; a broader surrounding region sees a partial eclipse. This schematic shows neither actual scale nor an annular eclipse. It is not a solar-observation guide.",
+      "prompt": "Exact text-free diagram: The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-lesson-6-diagram.png",
+      "vectorFile": "mn-lesson-6.svg",
+      "alt": "The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-lesson-7",
+      "kind": "lesson",
+      "index": 6,
+      "sourceKey": "locked",
+      "caption": "Each disk is the Moon at a different time. The golden marker identifies the same surface region, not the lit side. Keeping it toward Earth requires one rotation per orbit, about 27.3 days relative to the stars. Libration lets us see a little around the edges over time.",
+      "prompt": "Exact text-free diagram: Four Moon positions circle Earth; a golden surface marker on each Moon is turned inward toward Earth.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-lesson-7-diagram.png",
+      "vectorFile": "mn-lesson-7.svg",
+      "alt": "Four Moon positions circle Earth; a golden surface marker on each Moon is turned inward toward Earth.",
+      "reviewedAt": "2026-09-10"
+    },
+    {
+      "id": "mn-lesson-8",
+      "kind": "lesson",
+      "index": 7,
+      "sourceKey": "model",
+      "caption": "Use a cool teacher-approved lamp and a matte ball on a blunt handle. Put the learner at Earth’s viewpoint. At the full-phase position, hold the ball slightly above the observer’s head shadow. This side view shows the materials, not the observer’s phase view. Never substitute the real Sun or a laser.",
+      "prompt": "Exact text-free diagram: A lamp on a stand shines toward a pale-and-dark ball on a blunt handle.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "mn-lesson-8-diagram.png",
+      "vectorFile": "mn-lesson-8.svg",
+      "alt": "A lamp on a stand shines toward a pale-and-dark ball on a blunt handle.",
+      "reviewedAt": "2026-09-10"
+    }
+  ],
+  "models": {
+    "cycle": {
+      "sequence": [
+        [
+          0,
+          true
+        ],
+        [
+          0.15,
+          true
+        ],
+        [
+          0.5,
+          true
+        ],
+        [
+          0.85,
+          true
+        ],
+        [
+          1,
+          true
+        ],
+        [
+          0.85,
+          false
+        ],
+        [
+          0.5,
+          false
+        ],
+        [
+          0.15,
+          false
+        ]
+      ]
+    },
+    "locked": {
+      "positions": [
+        [
+          210,
+          500
+        ],
+        [
+          500,
+          790
+        ],
+        [
+          790,
+          500
+        ],
+        [
+          500,
+          210
+        ]
+      ]
+    }
+  }
+}

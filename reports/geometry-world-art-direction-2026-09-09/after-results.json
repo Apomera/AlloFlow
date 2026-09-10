@@ -1,0 +1,353 @@
+{
+  "scope": "Matched current-source WebGL pavilion and material gallery, balanced and saver, with exact STL and mesh invariants",
+  "errors": [],
+  "consoleErrors": [],
+  "captures": [
+    {
+      "file": "after-pavilion-meadow-balanced.png",
+      "profile": {
+        "preference": "balanced",
+        "tier": "balanced",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Balanced",
+        "maxPixelRatio": 1.5,
+        "shadows": true,
+        "postFx": false,
+        "ambientMotion": true
+      },
+      "position": [
+        18.407252478568612,
+        15.60257742765552,
+        23.32499307342508
+      ],
+      "quaternion": [
+        -0.16276767998822747,
+        0.32786043083366007,
+        0.05745448769158173,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "draws": 1516,
+      "triangles": 14850,
+      "programs": 13,
+      "shaderErrors": [],
+      "stlHash": "fcec4a5158452565fde809e983647bb251a48c40dcb2ef5365f7594dfdab7398",
+      "stlBytes": 31784,
+      "stlTriangles": 634,
+      "meshHash": "ff1c0df057e5641f5d92baae8d8baa8da09ed8fa0fb53a0ea76cc3a26bfd03d5",
+      "selected": 150,
+      "maps": {
+        "normal": 146,
+        "roughness": 146
+      },
+      "cameraMatchesBaseline": true
+    },
+    {
+      "file": "after-pavilion-studio-balanced.png",
+      "profile": {
+        "preference": "balanced",
+        "tier": "balanced",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Balanced",
+        "maxPixelRatio": 1.5,
+        "shadows": true,
+        "postFx": false,
+        "ambientMotion": true
+      },
+      "position": [
+        18.407252478568612,
+        15.60257742765552,
+        23.32499307342508
+      ],
+      "quaternion": [
+        -0.16276767998822747,
+        0.32786043083366007,
+        0.05745448769158173,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "studio",
+      "draws": 303,
+      "triangles": 1582,
+      "programs": 19,
+      "shaderErrors": [],
+      "stlHash": "fcec4a5158452565fde809e983647bb251a48c40dcb2ef5365f7594dfdab7398",
+      "stlBytes": 31784,
+      "stlTriangles": 634,
+      "meshHash": "ff1c0df057e5641f5d92baae8d8baa8da09ed8fa0fb53a0ea76cc3a26bfd03d5",
+      "selected": 150,
+      "maps": {
+        "normal": 146,
+        "roughness": 146
+      },
+      "cameraMatchesBaseline": true
+    },
+    {
+      "file": "after-pavilion-meadow-saver.png",
+      "profile": {
+        "preference": "saver",
+        "tier": "saver",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Battery saver",
+        "maxPixelRatio": 1,
+        "shadows": false,
+        "postFx": false,
+        "ambientMotion": false
+      },
+      "position": [
+        18.407252478568612,
+        15.60257742765552,
+        23.32499307342508
+      ],
+      "quaternion": [
+        -0.16276767998822747,
+        0.32786043083366007,
+        0.05745448769158173,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "meadow",
+      "draws": 1515,
+      "triangles": 12650,
+      "programs": 27,
+      "shaderErrors": [],
+      "stlHash": "fcec4a5158452565fde809e983647bb251a48c40dcb2ef5365f7594dfdab7398",
+      "stlBytes": 31784,
+      "stlTriangles": 634,
+      "meshHash": "ff1c0df057e5641f5d92baae8d8baa8da09ed8fa0fb53a0ea76cc3a26bfd03d5",
+      "selected": 150,
+      "maps": {
+        "normal": 0,
+        "roughness": 0
+      },
+      "cameraMatchesBaseline": true
+    },
+    {
+      "file": "after-pavilion-studio-saver.png",
+      "profile": {
+        "preference": "saver",
+        "tier": "saver",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Battery saver",
+        "maxPixelRatio": 1,
+        "shadows": false,
+        "postFx": false,
+        "ambientMotion": false
+      },
+      "position": [
+        18.407252478568612,
+        15.60257742765552,
+        23.32499307342508
+      ],
+      "quaternion": [
+        -0.16276767998822747,
+        0.32786043083366007,
+        0.05745448769158173,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "studio",
+      "draws": 303,
+      "triangles": 1582,
+      "programs": 30,
+      "shaderErrors": [],
+      "stlHash": "fcec4a5158452565fde809e983647bb251a48c40dcb2ef5365f7594dfdab7398",
+      "stlBytes": 31784,
+      "stlTriangles": 634,
+      "meshHash": "ff1c0df057e5641f5d92baae8d8baa8da09ed8fa0fb53a0ea76cc3a26bfd03d5",
+      "selected": 150,
+      "maps": {
+        "normal": 0,
+        "roughness": 0
+      },
+      "cameraMatchesBaseline": true
+    },
+    {
+      "file": "after-materials-meadow-balanced.png",
+      "profile": {
+        "preference": "balanced",
+        "tier": "balanced",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Balanced",
+        "maxPixelRatio": 1.5,
+        "shadows": true,
+        "postFx": false,
+        "ambientMotion": true
+      },
+      "position": [
+        13.710192248672435,
+        9.85907073523532,
+        16.88063838835382
+      ],
+      "quaternion": [
+        -0.16276767998822744,
+        0.32786043083366007,
+        0.05745448769158172,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "draws": 1344,
+      "triangles": 14006,
+      "programs": 19,
+      "shaderErrors": [],
+      "stlHash": "16094d34395d7fd6573072f71643b5075ff51b2e2a6f972ecc482883b683efe9",
+      "stlBytes": 28884,
+      "stlTriangles": 576,
+      "meshHash": "46a201ec5cd26ebc7eb773cc3bc43e0d8df44a2b6ae3c722d935be30627c383f",
+      "selected": 99,
+      "maps": {
+        "normal": 93,
+        "roughness": 89
+      },
+      "cameraMatchesBaseline": true
+    },
+    {
+      "file": "after-materials-studio-balanced.png",
+      "profile": {
+        "preference": "balanced",
+        "tier": "balanced",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Balanced",
+        "maxPixelRatio": 1.5,
+        "shadows": true,
+        "postFx": false,
+        "ambientMotion": true
+      },
+      "position": [
+        13.710192248672435,
+        9.85907073523532,
+        16.88063838835382
+      ],
+      "quaternion": [
+        -0.16276767998822744,
+        0.32786043083366007,
+        0.05745448769158172,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "studio",
+      "draws": 201,
+      "triangles": 1194,
+      "programs": 26,
+      "shaderErrors": [],
+      "stlHash": "16094d34395d7fd6573072f71643b5075ff51b2e2a6f972ecc482883b683efe9",
+      "stlBytes": 28884,
+      "stlTriangles": 576,
+      "meshHash": "46a201ec5cd26ebc7eb773cc3bc43e0d8df44a2b6ae3c722d935be30627c383f",
+      "selected": 99,
+      "maps": {
+        "normal": 93,
+        "roughness": 89
+      },
+      "cameraMatchesBaseline": true
+    },
+    {
+      "file": "after-materials-meadow-saver.png",
+      "profile": {
+        "preference": "saver",
+        "tier": "saver",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Battery saver",
+        "maxPixelRatio": 1,
+        "shadows": false,
+        "postFx": false,
+        "ambientMotion": false
+      },
+      "position": [
+        13.710192248672435,
+        9.85907073523532,
+        16.88063838835382
+      ],
+      "quaternion": [
+        -0.16276767998822744,
+        0.32786043083366007,
+        0.05745448769158172,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "meadow",
+      "draws": 1344,
+      "triangles": 11830,
+      "programs": 28,
+      "shaderErrors": [],
+      "stlHash": "16094d34395d7fd6573072f71643b5075ff51b2e2a6f972ecc482883b683efe9",
+      "stlBytes": 28884,
+      "stlTriangles": 576,
+      "meshHash": "46a201ec5cd26ebc7eb773cc3bc43e0d8df44a2b6ae3c722d935be30627c383f",
+      "selected": 99,
+      "maps": {
+        "normal": 4,
+        "roughness": 0
+      },
+      "cameraMatchesBaseline": true
+    },
+    {
+      "file": "after-materials-studio-saver.png",
+      "profile": {
+        "preference": "saver",
+        "tier": "saver",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Battery saver",
+        "maxPixelRatio": 1,
+        "shadows": false,
+        "postFx": false,
+        "ambientMotion": false
+      },
+      "position": [
+        13.710192248672435,
+        9.85907073523532,
+        16.88063838835382
+      ],
+      "quaternion": [
+        -0.16276767998822744,
+        0.32786043083366007,
+        0.05745448769158172,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "studio",
+      "draws": 201,
+      "triangles": 1194,
+      "programs": 34,
+      "shaderErrors": [],
+      "stlHash": "16094d34395d7fd6573072f71643b5075ff51b2e2a6f972ecc482883b683efe9",
+      "stlBytes": 28884,
+      "stlTriangles": 576,
+      "meshHash": "46a201ec5cd26ebc7eb773cc3bc43e0d8df44a2b6ae3c722d935be30627c383f",
+      "selected": 99,
+      "maps": {
+        "normal": 4,
+        "roughness": 0
+      },
+      "cameraMatchesBaseline": true
+    }
+  ],
+  "sources": [
+    {
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_geometryworld.js",
+      "sha256": "15587a7a55cf5c0cd140ab7c9ce450ccf6133ba32f9de14024c251d22f5d062a"
+    },
+    {
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_geometryworld_builder.js",
+      "sha256": "82a268a00954799d497fe59453f1e53370ea1dfe233baffcdf620d891dff0a7c"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "pavilion",
+      "profiles": 4,
+      "stlIdentical": true,
+      "meshIdentical": true,
+      "historyIdentical": true
+    },
+    {
+      "kind": "materials",
+      "profiles": 4,
+      "stlIdentical": true,
+      "meshIdentical": true,
+      "historyIdentical": true
+    }
+  ],
+  "passed": true,
+  "probeNote": "The initial optional bevel material-count probe used an incorrect property path. Its invalid zero counts were removed; the harness is corrected for future runs. Shader compilation, normal/roughness maps, exact cameras, mesh transforms/buffers, history, and actual STL invariants were measured successfully."
+}

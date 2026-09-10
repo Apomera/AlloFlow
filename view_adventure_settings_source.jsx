@@ -46,6 +46,11 @@ function AdventureSettingsSurface({ theme, children, compact = false }) {
       [data-adventure-settings] textarea.as-control{resize:vertical;min-height:100px}
       [data-adventure-settings] .as-help{display:block;font-size:12px;font-weight:400;color:var(--as-muted);margin:6px 0 0;line-height:1.6}
       [data-adventure-settings] .as-check{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:10px 0;cursor:pointer;font-size:13px;font-weight:600}
+      [data-adventure-settings] .as-episode-mode{border:0;padding:0;margin:0 0 16px;min-width:0}
+      [data-adventure-settings] .as-episode-mode legend{font-size:13px;font-weight:600;margin-bottom:6px}
+      [data-adventure-settings] .as-option{display:flex;align-items:center;gap:10px;min-height:44px;padding:10px;border:1px solid var(--as-line);border-radius:8px;background:var(--as-bg);font-size:13px;font-weight:600;cursor:pointer}
+      [data-adventure-settings] .as-option:has(input:checked){border:2px solid var(--as-accent);padding:9px}
+      [data-adventure-settings] .as-option input{width:20px;height:20px;margin:0;accent-color:var(--as-accent);flex-shrink:0}
       [data-adventure-settings] .as-check input{width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:var(--as-accent)}
       [data-adventure-settings] input:disabled,[data-adventure-settings] select:disabled,[data-adventure-settings] textarea:disabled{cursor:not-allowed;color:var(--as-muted);opacity:1;background:var(--as-wash)}
       [data-adventure-settings] .as-button{min-height:44px;padding:8px 12px;border:1px solid var(--as-line);border-radius:8px;background:var(--as-bg);color:var(--as-accent);font-size:13px;font-weight:600;cursor:pointer}
@@ -73,24 +78,35 @@ function AdventureSettingSection({ title, summary, children }) {
 function AdventureEpisodeSettings({ state, onChange, t, locked = false, id = 'adventure-episode-length', theme = 'light', freeResponse = false, includeFinale = false }) {
   const label = (key, fallback) => adventureSetupText(t, key, fallback);
   const limit = adventureSetupLimit(state);
+  const previousLength = React.useRef(limit ?? 12);
   const disabled = locked || typeof onChange !== 'function';
   const update = (key, value) => { if (!disabled) onChange(previous => ({ ...previous, [key]: value })); };
   return <AdventureSettingsSurface theme={theme}>
+    <fieldset className="as-episode-mode" disabled={disabled} aria-describedby={id + '-hint'}>
+      <legend>{label('episode_format', 'Episode format')}</legend>
+      <div className="as-grid">
+        <label className="as-option"><input type="radio" name={id + '-format'} checked={limit !== null} disabled={disabled} onChange={() => update('episodeTurnLimit', previousLength.current)} />{label('set_length', 'Set-length episode')}</label>
+        <label className="as-option"><input type="radio" name={id + '-format'} checked={limit === null} disabled={disabled} onChange={() => { if (!disabled) { previousLength.current = limit ?? previousLength.current; update('episodeTurnLimit', null); } }} />{label('open', 'Open-ended')}</label>
+      </div>
+    </fieldset>
     <div className="as-grid">
-      <label className="as-field" htmlFor={id}>{label('length', 'Episode length')}
-        <select className="as-control" aria-label={label('length', 'Episode length')} id={id} value={limit == null ? 'open' : String(limit)} disabled={disabled} onChange={e => update('episodeTurnLimit', e.target.value === 'open' ? null : Number(e.target.value))}>
+      {limit !== null && <label className="as-field" htmlFor={id}>{label('length', 'Episode length')}
+        <select className="as-control" aria-label={label('length', 'Episode length')} id={id} value={String(limit)} disabled={disabled} onChange={e => { previousLength.current = Number(e.target.value); update('episodeTurnLimit', previousLength.current); }}>
           <option value="6">{label('short', 'Short · 6 decisions')}</option><option value="12">{label('standard', 'Standard · 12 decisions')}</option><option value="20">{label('long', 'Long · 20 decisions')}</option>
           {limit != null && ![6, 12, 20].includes(limit) && <option value={String(limit)}>{limit} {label('decisions', 'decisions')}</option>}
-          <option value="open">{label('open', 'Open-ended')}</option>
         </select>
-      </label>
+      </label>}
       {!freeResponse && <label className="as-field" htmlFor={id + '-choices'}>{label('choices', 'Choices per decision')}
         <select className="as-control" aria-label={label('choices', 'Choices per decision')} id={id + '-choices'} value={state.choiceCount || 6} disabled={disabled} onChange={e => update('choiceCount', Number(e.target.value))}>
           {[2, 3, 4, 5, 6].map(count => <option key={count} value={count}>{count}</option>)}
         </select>
       </label>}
     </div>
-    <p className="as-help">{label('length_hint', 'Length counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.')}</p>
+    <p className="as-help" id={id + '-hint'}>{limit === null
+      ? state.enableAutoClimax
+        ? label('open_with_finale_hint', 'No fixed decision limit. A final challenge can still end the story; turn it off below to keep exploring. Energy depletion can end a run earlier.')
+        : label('open_without_finale_hint', 'No fixed decision limit and no automatic final challenge. Energy depletion can still end a run.')
+      : label('length_hint', 'Length counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.')}</p>
     {includeFinale && <>
       <label className="as-check"><input type="checkbox" checked={!!state.enableAutoClimax} disabled={disabled} onChange={e => update('enableAutoClimax', e.target.checked)} />{label('finale', 'Include a final challenge')}</label>
       {limit === null && state.enableAutoClimax && <label className="as-field" htmlFor={id + '-earliest'}>{label('earliest_finale', 'Earliest finale round (open-ended)')}
@@ -147,13 +163,14 @@ function AdventureSetupFields(props) {
       <h3 id={id + '-essential-heading'} className="as-title">{label('essential_setup', 'Essential setup')}</h3>
       <div className="as-grid">
         {field('input-mode', label('adventure.interaction_mode', 'Interaction mode'), props.adventureInputMode || 'choice', 'setAdventureInputMode', modes, 'allowModeSwitch')}
-        {field('language', label('adventure.language_label', 'Adventure language'), props.adventureLanguageMode || 'English', 'setAdventureLanguageMode', languageOptions, 'allowLanguageSwitch', label('translation_hint', 'Story language follows this control; the translation language follows Universal Settings.'))}
+        {languageOptions.length > 1 && field('language', label('adventure.language_label', 'Adventure language'), props.adventureLanguageMode || 'English', 'setAdventureLanguageMode', languageOptions, 'allowLanguageSwitch', label('translation_hint', 'Story language follows this control; the translation language follows Universal Settings.'))}
         <label className="as-field" htmlFor={id + '-response'}>{label('response_format', 'Student responses')}
           <select aria-label={label('response_format', 'Student responses')} id={id + '-response'} className="as-control" value={props.adventureFreeResponseEnabled ? 'written' : 'choice'} disabled={locked('freeResponse') || typeof props.setAdventureFreeResponseEnabled !== 'function'} onChange={e => change('setAdventureFreeResponseEnabled', e.target.value === 'written', 'freeResponse')}>
             <option value="choice">{label('response_choices', 'Choose from suggestions')}</option><option value="written">{label('response_written', 'Write or dictate')}</option>
           </select>
         </label>
       </div>
+      {props.isTeacherMode && languageOptions.length === 1 && typeof props.openUniversalSettings === 'function' && <button type="button" className="as-button" style={{ marginTop: 12 }} disabled={locked()} onClick={() => { if (!locked()) props.openUniversalSettings('languages'); }}>{label('add_languages', 'Add languages in Universal Settings')}</button>}
       <div style={{ marginTop: 16 }}><AdventureEpisodeSettings state={state} onChange={props.setAdventureState} t={props.t} theme={props.theme} locked={locked()} id={id + '-episode-length'} freeResponse={props.adventureFreeResponseEnabled} includeFinale /></div>
       {props.isSocialStoryMode && <label className="as-field" htmlFor={id + '-social-focus'}>{label('social_focus', 'Social skill to practise')}
         <input id={id + '-social-focus'} className="as-control" type="text" value={props.socialStoryFocus || ''} disabled={locked() || typeof props.setSocialStoryFocus !== 'function'} onChange={e => change('setSocialStoryFocus', e.target.value)} placeholder={label('adventure.social_story_focus_placeholder', 'e.g., Sharing toys, Dealing with frustration')} />
@@ -214,7 +231,7 @@ function AdventureSetupFields(props) {
       <strong>{label('setup_summary', 'Setup summary')}: </strong>{modes.find(option => option[0] === props.adventureInputMode)?.[1] || modes[0][1]}{' · '}
       {limit == null ? label('open', 'Open-ended') : limit + ' ' + label('decisions', 'decisions')}{' · '}
       {props.adventureFreeResponseEnabled ? label('response_written', 'Write or dictate') : (state.choiceCount || 6) + ' ' + label('suggested_choices', 'suggested choices')}{' · '}
-      {languageOptions.find(option => option[0] === props.adventureLanguageMode)?.[1] || props.adventureLanguageMode}
+      {languageOptions.find(option => option[0] === props.adventureLanguageMode)?.[1] || props.adventureLanguageMode || languageOptions[0][1]}
     </div>
   </AdventureSettingsSurface>;
 }

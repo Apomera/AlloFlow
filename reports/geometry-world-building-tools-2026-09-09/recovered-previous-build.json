@@ -1,0 +1,1 @@
+{"schema":"alloflow-geometry-world/2","title":"Geometry World editable build","coordinateSystem":"x-right,y-up,z-depth","blocks":[{"x":0,"y":1,"z":0,"type":"stone","shape":"halfA","rotation":1},{"x":2,"y":1,"z":0,"type":"wood","shape":"quarter","rotation":3},{"x":4,"y":1,"z":0,"type":"stone","shape":"halfB","rotation":2}]}

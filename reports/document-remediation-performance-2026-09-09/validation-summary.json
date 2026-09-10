@@ -1,0 +1,62 @@
+{
+  "files": 9,
+  "passed": 147,
+  "failed": 0,
+  "results": [
+    {
+      "file": "aifix_chunk_gates.test.js",
+      "evidence": "final-tests.json",
+      "passed": 20,
+      "failed": 0
+    },
+    {
+      "file": "aifix_source_associations.test.js",
+      "evidence": "final-tests.json",
+      "passed": 39,
+      "failed": 0
+    },
+    {
+      "file": "doc_pipeline_build_parity.test.js",
+      "evidence": "final-tests.json",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "file": "remediation_review_evidence.test.js",
+      "evidence": "final-tests.json",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "file": "remediation_review_helpers.test.js",
+      "evidence": "final-tests.json",
+      "passed": 28,
+      "failed": 0
+    },
+    {
+      "file": "remediation_semantic_fidelity.test.js",
+      "evidence": "final-tests.json",
+      "passed": 29,
+      "failed": 0
+    },
+    {
+      "file": "remediation_source_contract_integration.test.js",
+      "evidence": "final-tests.json",
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "file": "source_remediation_contract.test.js",
+      "evidence": "final-tests.json",
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "file": "remediation_form_association_index.test.js",
+      "evidence": "association-retest.json",
+      "passed": 17,
+      "failed": 0
+    }
+  ],
+  "runnerNote": "The combined CLI exited 1 despite its JSON reporting 130 passes and success:true; its report omitted the new association file. The cause was not established. That entire 17-test file passed separately with exit 0 and full diagnostics. No application changes were made between these runs."
+}

@@ -164,10 +164,11 @@ describe('Printing Press confirmation-dialog accessibility', () => {
     expect(document.activeElement).toBe(host.firstElementChild);
   });
 
-  it('keeps both destructive triggers and the shared dialog contract explicit', () => {
+  it('keeps destructive triggers and the shared dialog contract explicit', () => {
     const source = readFileSync(SOURCE, 'utf8');
     expect(source).not.toContain('window.confirm');
-    expect(source.match(/'aria-haspopup': 'dialog'/g)).toHaveLength(2);
+    // The two existing destructive controls and saved print-run reset each announce a dialog.
+    expect(source.match(/'aria-haspopup': 'dialog'/g)).toHaveLength(3);
     expect(source).toContain("role: 'alertdialog'");
     expect(source).toContain("'aria-modal': 'true'");
     expect(source).toContain("event.key === 'Escape'");

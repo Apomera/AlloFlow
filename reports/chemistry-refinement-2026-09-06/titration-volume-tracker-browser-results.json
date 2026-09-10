@@ -1,0 +1,130 @@
+{
+  "checks": [
+    "Start/clear marks preserve experiment data and notebook readings. Real additions update the measured difference. Marks survive close-up navigation, closing/reopening, and 2D/3D switches. Keyboard focus and Escape work without recreating the viewer.",
+    "50 mL refill crossings, empty-burette starts, backward volume changes, setup resets, dark titrant, indicator changes, and WebGL fallback retain correct measurement behavior.",
+    "All 20 accessibility scans passed with no overflow. Touch additions, forced-colors keyboard marking, refill diagrams, max-volume disabled controls, and close focus were checked."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "name": "unmarked",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "unmarked",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "unmarked",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "unmarked",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "clear",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "clear",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "clear",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "clear",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "empty",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "empty",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "empty",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "empty",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "refill",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "refill",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "refill",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "refill",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

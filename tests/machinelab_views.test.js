@@ -299,3 +299,147 @@ describe('Machine Lab: the range view', () => {
     expect(g912).toContain('a fact about drag, not about levers');
   });
 });
+
+describe('Machine Lab: lever observation follows the selected arm ratio',()=>{
+  it('explains the force cost of a shorter effort arm with consistent ratio precision',()=>{
+    const html=renderTool('machineLab',state({bench:'lever',leverEffortArm:0.2,leverLoadArm:4}));
+    expect(html).toContain('The shorter effort arm moves less and needs more force');
+    expect(html).not.toContain('The long effort arm travels farther');
+    expect(html).toContain('Distance ×0.05');expect(html).toContain('Force ÷0.05');
+  });
+  it('explains equal-distance motion when the arms are equal',()=>{
+    const html=renderTool('machineLab',state({bench:'lever',leverEffortArm:2,leverLoadArm:2}));
+    expect(html).toContain('Equal arms move equal distances');
+    expect(html).not.toContain('The long effort arm travels farther');
+  });
+});
+
+it('explains why a single fixed pulley redirects effort without multiplying force',()=>{
+  const single=renderTool('machineLab',state({bench:'pulley',pulleySegments:1}));
+  expect(single).toContain('A fixed pulley changes the pull direction; ideal effort equals the load.');
+  expect(single).toContain('Distance ×1');expect(single).toContain('Force ÷1');
+  const multiple=renderTool('machineLab',state({bench:'pulley',pulleySegments:6}));
+  expect(multiple).toContain('More supporting rope segments share the load.');
+  expect(multiple).not.toContain('ideal effort equals the load');
+});
+
+describe('Machine Lab: force and distance comparison cards',()=>{
+  function barPair(html,kind){
+    const section=html.slice(html.indexOf('data-ml-comparison="'+kind+'"'));
+    return ['effort','load'].map(side=>Number(section.match(new RegExp('data-ml-bar="'+side+'" style="width:([0-9.e+-]+)%'))[1]));
+  }
+  for(const [settings,ratio] of [[{bench:'lever',leverEffortArm:0.2,leverLoadArm:4},0.05],[{bench:'lever',leverEffortArm:2,leverLoadArm:2},1],[{bench:'lever',leverEffortArm:2,leverLoadArm:1},2],[{bench:'pulley',pulleySegments:6},6],[{bench:'screw',screwHandleR:0.5,screwPitch:0.001},Math.PI*1000]])it(`shows reciprocal distance and force ratios at ${ratio}`,()=>{
+    const html=renderTool('machineLab',state(settings)),distance=barPair(html,'distance'),force=barPair(html,'force');
+    expect(distance[0]/distance[1]).toBeCloseTo(ratio,8);expect(force[0]/force[1]).toBeCloseTo(1/ratio,8);
+    expect(Math.max(...distance)).toBe(100);expect(Math.max(...force)).toBe(100);
+    expect(html).toContain('role="group" aria-label="Distance comparison"');expect(html).toContain('role="group" aria-label="Force comparison"');
+    expect(html).toContain(ratio>1?'Less force · more distance':ratio<1?'More force · less distance':'Same force · same distance');
+  });
+  it('withholds comparison bars for an invalid machine',()=>{
+    const html=renderTool('machineLab',state({bench:'lever',leverEffortArm:0}));expect(html).not.toContain('data-ml-comparison');
+  });
+  it('explains reversed and equal tradeoffs without adding a numerical ledger for young learners',()=>{
+    const short=renderTool('machineLab',state({bandOverride:'k2',bench:'lever',leverEffortArm:0.2,leverLoadArm:4}));
+    const equal=renderTool('machineLab',state({bandOverride:'k2',bench:'pulley',pulleySegments:1}));
+    expect(short).toContain('Here you push harder');expect(equal).toContain('the same distance, with the same force');
+    expect(short).not.toContain('data-ml-comparison');expect(equal).not.toContain('Work in:');
+  });
+});
+
+
+describe('Machine Lab: motion inspection controls',()=>{
+  beforeEach(()=>{
+    const host=resetStemLab();
+    host.makeOrbitViewer=()=>({attach(){},push(){},status(){return 'ready';},onStatusChange(){}});
+    loadTool(FILE,'machineLab');
+  });
+  for(const band of BANDS)it('offers labelled keyboard inspection at '+band,()=>{
+    const html=renderTool('machineLab',state({bandOverride:band,shopMotionProgress:0.37}));
+    const doc=new DOMParser().parseFromString(html,'text/html'),slider=doc.querySelector('#ml-shop-stroke');
+    expect(slider.type).toBe('range');expect(slider.value).toBe('37');
+    expect(slider.getAttribute('aria-valuetext')).toBe('37% of the working stroke');
+    expect(doc.querySelector('label[for="ml-shop-stroke"]').textContent).toBe('Inspect the motion');
+    expect(doc.getElementById(slider.getAttribute('aria-describedby')).textContent).toContain('model stays still');
+    expect(doc.querySelectorAll('.ml-shop-inspector button')).toHaveLength(3);
+  });
+  for(const [progress,label] of [[0,'Start'],[0.5,'Halfway'],[1,'Full stroke']])it('marks the held '+label+' pose',()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({shopMotionProgress:progress})),'text/html');
+    expect(doc.querySelector('.ml-shop-inspector [aria-pressed="true"]').textContent).toBe(label);
+    expect(doc.querySelectorAll('.ml-shop-inspector [aria-pressed="true"]')).toHaveLength(1);
+  });
+  it('does not claim a held pose during playback, while leaving stop-at-position buttons available',()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({shopAnimating:true,shopDemoId:1,shopMotionProgress:0.5})),'text/html');
+    expect(doc.querySelector('#ml-shop-stroke').disabled).toBe(true);
+    expect(doc.querySelector('.ml-shop-inspector [aria-pressed="true"]')).toBeNull();
+    expect([...doc.querySelectorAll('.ml-shop-inspector button')].every(b=>!b.disabled)).toBe(true);
+  });
+});
+
+
+describe('Machine Lab: focus mechanism control',()=>{
+  for(const band of BANDS)for(const focused of [false,true])it('exposes focus state '+focused+' at '+band,()=>{
+    const html=renderTool('machineLab',state({bandOverride:band,shopFocusMechanism:focused}));
+    const doc=new DOMParser().parseFromString(html,'text/html'),button=doc.querySelector('button[aria-label="Focus mechanism"]');
+    expect(button).not.toBeNull();expect(button.type).toBe('button');expect(button.textContent).toBe('Focus mechanism');
+    expect(button.getAttribute('aria-pressed')).toBe(String(focused));expect(button.title).toContain('restore the workshop');
+  });
+  it('keeps focus control scoped to the workshop',()=>{
+    const html=renderTool('machineLab',state({view:'build'}));expect(html).not.toContain('aria-label="Focus mechanism"');
+  });
+});
+
+
+describe('Machine Lab: shape-based distance legend',()=>{
+  for(const band of BANDS)it('explains both shapes at '+band,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bandOverride:band})),'text/html');
+    expect(doc.querySelector('[data-ml-distance-symbol="effort"]').textContent).toBe('◆ Effort path');
+    expect(doc.querySelector('[data-ml-distance-symbol="load"]').textContent).toBe('○ Load path');
+    expect(doc.querySelector('.ml-shop-bay').getAttribute('aria-label')).toContain('A solid diamond marks the effort distance and an open ring marks the load distance');
+    expect(doc.querySelector('.ml-shop-bay').getAttribute('aria-label')).toContain('Both distances share one scale');
+  });
+});
+
+
+it('explains the lever arm guides without showing them as a feature of other stations',()=>{
+  const html=renderTool('machineLab',state({bench:'lever'}));
+  expect(html).toContain('The colored guides beneath the beam measure each arm from the pivot to its contact point.');
+  expect(renderTool('machineLab',state({bench:'pulley'}))).not.toContain('The colored guides beneath the beam');
+});
+
+
+it('explains equal-tension arrows only at the pulley station',()=>{
+  for(const bench of ['lever','pulley','windlass','ramp','wedge','screw']){
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bench})),'text/html');
+    const guide=doc.querySelector('[data-ml-pulley-support-guide]');
+    if(bench==='pulley'){
+      expect(guide.textContent).toContain('Equal arrows show equal tension in this ideal rope');
+      expect(guide.textContent).toContain('the free end is pulled down');
+    }else expect(guide).toBeNull();
+  }
+});
+
+
+describe('Machine Lab: traveled-distance legend',()=>{
+  for(const band of BANDS)it('explains full rails and traveled bars visually and accessibly at '+band,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bandOverride:band})),'text/html');
+    const text='Thin rails show the full stroke; wide bars show distance traveled.';
+    expect(doc.querySelector('[data-ml-distance-fill-guide]').textContent).toBe(text);
+    expect(doc.querySelector('.ml-shop-bay').getAttribute('aria-label')).toContain(text);
+  });
+});
+
+
+it('explains the screw thread and compression bands at the press station',()=>{
+  const html=renderTool('machineLab',state({bench:'screw'}));
+  expect(html).toContain('one visible thread spacing per revolution');
+  expect(html).toContain('The bands show the block compressing without turning.');
+  expect(renderTool('machineLab',state({bench:'pulley'}))).not.toContain('The bands show the block compressing');
+});
+
+
+it('explains the marked wheel and striped drum at the wheel-and-axle station',()=>{
+  const html=renderTool('machineLab',state({bench:'windlass'}));
+  expect(html).toContain('The marked grip and striped drum turn together');
+  expect(html).toContain('Rotate to a side view to follow the drum');
+  expect(renderTool('machineLab',state({bench:'screw'}))).not.toContain('The marked grip and striped drum');
+});

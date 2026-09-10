@@ -295,7 +295,7 @@ describe('Money Math regression refinements', () => {
     check = document.querySelector('button[aria-label="Check"]');
     await React.act(async () => { check.click(); check.click(); });
     expect(latest._moneyMath.tipFeedback.ok).toBe(true);
-    expect(document.body.textContent).toContain('= \u00A5383/person');
+    expect(document.body.textContent).toContain('\u2248 \u00A5383/person');
     expect(awardXP).toHaveBeenCalledWith('moneyMath', 15, 'tip calculation');
     expect(awardXP).toHaveBeenCalledTimes(1);
     await React.act(async () => { root.unmount(); });
@@ -361,7 +361,7 @@ describe('Money Math regression refinements', () => {
     document.body.innerHTML = '<div id="money-root"></div>';
     const root = ReactDOMClient.createRoot(document.getElementById('money-root'));
     await React.act(async () => { root.render(React.createElement(App)); });
-    const start = document.querySelector('button[aria-label="Item costs:"]');
+    const start = document.querySelector('button[aria-label="Generate a change-check problem"]');
     await React.act(async () => { start.click(); });
     expect(latest._moneyMath.ccPrice).toBeGreaterThan(100);
     expect(latest._moneyMath.ccPaid).toBeGreaterThanOrEqual(latest._moneyMath.ccPrice);

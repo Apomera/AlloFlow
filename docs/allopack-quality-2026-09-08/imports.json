@@ -1,8 +1,8 @@
 {
   "date": "2026-09-08",
   "scope": "Offline production JSON bridge, MiscHandlers and history hydration; original resource fields preserved. Not a signed-in community-library or full-view rendering test.",
-  "files": 57,
-  "resources": 609,
+  "files": 59,
+  "resources": 637,
   "results": [
     {
       "file": "allopacks/american_revolution_causes_grade5.allopack.json",
@@ -260,6 +260,11 @@
       "status": "passed"
     },
     {
+      "file": "allopacks/illustrated/habitats_diversity_grade2.allopack.json",
+      "resources": 14,
+      "status": "passed"
+    },
+    {
       "file": "allopacks/illustrated/materials_grade2.allopack.json",
       "resources": 13,
       "status": "passed"
@@ -287,6 +292,11 @@
     {
       "file": "allopacks/illustrated/weather_vs_climate_grade5.allopack.json",
       "resources": 15,
+      "status": "passed"
+    },
+    {
+      "file": "allopacks/illustrated/weathering_erosion_grade4.allopack.json",
+      "resources": 14,
       "status": "passed"
     }
   ]

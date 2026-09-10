@@ -1,0 +1,598 @@
+{
+  "success": true,
+  "method": "Production core placement and updateGhostPreview with local THREE r128 and existing transaction fixture. Sixteen shapes/rotations; each repeats 60 unchanged preview calls. No browser or FPS measurement.",
+  "results": [
+    {
+      "shape": "cube",
+      "rotation": 0,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "cube",
+      "rotation": 1,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "cube",
+      "rotation": 2,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "cube",
+      "rotation": 3,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "halfB",
+      "rotation": 0,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "halfB",
+      "rotation": 1,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "halfB",
+      "rotation": 2,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "halfB",
+      "rotation": 3,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "halfA",
+      "rotation": 0,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "halfA",
+      "rotation": 1,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "halfA",
+      "rotation": 2,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "halfA",
+      "rotation": 3,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "quarter",
+      "rotation": 0,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "quarter",
+      "rotation": 1,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "quarter",
+      "rotation": 2,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    },
+    {
+      "shape": "quarter",
+      "rotation": 3,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "maxWorldVertexError": 0,
+      "ghostScale": [
+        1,
+        1,
+        1
+      ],
+      "ownedGeometry": true,
+      "fillGeometryReused": true,
+      "edgeGeometryReused": true
+    }
+  ]
+}

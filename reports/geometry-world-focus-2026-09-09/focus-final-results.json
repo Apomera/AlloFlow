@@ -1,0 +1,841 @@
+{
+  "scope": "One actual local React/Three WebGL browser; Focus creation, exact editor/print invariants; no app source edits",
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [],
+  "cases": [
+    {
+      "label": "offcenter-1440x900",
+      "fixture": {
+        "kind": "offcenter",
+        "expected": 44,
+        "world": 45,
+        "origin": {
+          "x": 31,
+          "z": -27
+        }
+      },
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "before": {
+        "position": [
+          32.5,
+          4.2,
+          -23.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 44,
+        "vertices": 1056,
+        "obstacleOverlaps": [],
+        "returnRect": {
+          "x": 12,
+          "y": 118,
+          "width": 225.125,
+          "height": 58,
+          "visible": true
+        },
+        "lookRect": null,
+        "returnLookOverlap": false,
+        "minX": -0.2272911279484212,
+        "maxX": 0.23632449820346463,
+        "minY": -0.3776464189250419,
+        "maxY": 0.43819044753756903,
+        "minZ": 0.9721366780914518,
+        "maxZ": 0.9864800454328053,
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "width": 1418,
+          "height": 825
+        },
+        "camera": {
+          "position": [
+            39.83911372276514,
+            6.2879896954291254,
+            -17.759498983771223
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.3278604308336601,
+            0.057454487691581756,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.9410437235543019,
+          "right": 0.9410437235543019,
+          "bottom": -0.5312,
+          "top": 0.6766545454545455
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          39.83911372276514,
+          6.2879896954291254,
+          -17.759498983771223
+        ],
+        "quaternion": [
+          -0.1627676799882275,
+          0.3278604308336601,
+          0.057454487691581756,
+          0.9288235581039676
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "keyboardMovement": {
+        "forward": true,
+        "manual": true,
+        "pose": {
+          "position": [
+            38.61167608129708,
+            6.2879896954291254,
+            -19.281521659191622
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.3278604308336601,
+            0.057454487691581756,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        }
+      },
+      "restored": {
+        "position": [
+          32.5,
+          4.2,
+          -23.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    },
+    {
+      "label": "offcenter-390x844",
+      "fixture": {
+        "kind": "offcenter",
+        "expected": 44,
+        "world": 45,
+        "origin": {
+          "x": 31,
+          "z": -27
+        }
+      },
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "before": {
+        "position": [
+          32.5,
+          4.2,
+          -23.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 44,
+        "vertices": 1056,
+        "obstacleOverlaps": [],
+        "returnRect": {
+          "x": 12,
+          "y": 106,
+          "width": 109.203125,
+          "height": 80.5,
+          "visible": true
+        },
+        "lookRect": {
+          "x": 244,
+          "y": 128,
+          "width": 134,
+          "height": 54.5,
+          "visible": true
+        },
+        "returnLookOverlap": false,
+        "minX": -0.4036052159589721,
+        "maxX": 0.3974286275103089,
+        "minY": 0.2079731806606488,
+        "maxY": 0.5985600754890189,
+        "minZ": 0.9892182479626953,
+        "maxZ": 0.9927122574046475,
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 376,
+          "height": 777
+        },
+        "camera": {
+          "position": [
+            46.914333587837696,
+            7.127457678722648,
+            -8.98622635108126
+          ],
+          "quaternion": [
+            -0.22299042263093882,
+            0.3234159418866813,
+            0.07871218962705945,
+            0.9162323892727979
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.8885106382978722,
+          "right": 0.8885106382978722,
+          "bottom": 0.17567567567567569,
+          "top": 0.638996138996139
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          46.914333587837696,
+          7.127457678722648,
+          -8.98622635108126
+        ],
+        "quaternion": [
+          -0.22299042263093882,
+          0.3234159418866813,
+          0.07871218962705945,
+          0.9162323892727979
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "restored": {
+        "position": [
+          32.5,
+          4.2,
+          -23.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    },
+    {
+      "label": "offcenter-320x700",
+      "fixture": {
+        "kind": "offcenter",
+        "expected": 44,
+        "world": 45,
+        "origin": {
+          "x": 31,
+          "z": -27
+        }
+      },
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "before": {
+        "position": [
+          32.5,
+          4.2,
+          -23.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 44,
+        "vertices": 1056,
+        "obstacleOverlaps": [],
+        "returnRect": {
+          "x": 12,
+          "y": 106,
+          "width": 109.203125,
+          "height": 80.5,
+          "visible": true
+        },
+        "lookRect": {
+          "x": 174,
+          "y": 128,
+          "width": 134,
+          "height": 54.5,
+          "visible": true
+        },
+        "returnLookOverlap": false,
+        "minX": 0.04701967863326238,
+        "maxX": 0.4233623140841958,
+        "minY": 0.1101372947672159,
+        "maxY": 0.2906421823159651,
+        "minZ": 0.9960149282307212,
+        "maxZ": 0.9967415874725353,
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 306,
+          "height": 633
+        },
+        "camera": {
+          "position": [
+            57.81472603398844,
+            11.900944881554809,
+            10.49462778104278
+          ],
+          "quaternion": [
+            -0.16276767998822747,
+            0.32786043083366007,
+            0.05745448769158172,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.0031372549019607343,
+          "right": 0.47372549019607846,
+          "bottom": -0.16641390205371237,
+          "top": 0.5660979462875197
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          57.81472603398844,
+          11.900944881554809,
+          10.49462778104278
+        ],
+        "quaternion": [
+          -0.16276767998822747,
+          0.32786043083366007,
+          0.05745448769158172,
+          0.9288235581039676
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "restored": {
+        "position": [
+          32.5,
+          4.2,
+          -23.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    }
+  ],
+  "walking": {
+    "fitted": {
+      "count": 44,
+      "vertices": 1056,
+      "obstacleOverlaps": [],
+      "returnRect": {
+        "x": 12,
+        "y": 106,
+        "width": 109.203125,
+        "height": 80.5,
+        "visible": true
+      },
+      "lookRect": {
+        "x": 174,
+        "y": 128,
+        "width": 134,
+        "height": 54.5,
+        "visible": true
+      },
+      "returnLookOverlap": false,
+      "minX": -0.2294638340368469,
+      "maxX": 0.22655649047634963,
+      "minY": 0.32446074639832295,
+      "maxY": 0.5508822931864731,
+      "minZ": 0.994757811079728,
+      "maxZ": 0.995902522825919,
+      "canvas": {
+        "x": 7,
+        "y": 60,
+        "width": 306,
+        "height": 633
+      },
+      "camera": {
+        "position": [
+          56.84308746138925,
+          9.916307311093973,
+          3.3254284521226793
+        ],
+        "quaternion": [
+          -0.23235528265937544,
+          0.3225934810088129,
+          0.0820178411868538,
+          0.913902370255131
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": false
+      },
+      "safeRect": {
+        "left": -0.872156862745098,
+        "right": 0.8721568627450982,
+        "bottom": 0.31017377567140597,
+        "top": 0.5634439178515007
+      },
+      "manual": false,
+      "transitioning": false,
+      "dockCollapsed": true,
+      "overflow": false,
+      "engineValid": true,
+      "activeElement": "geoworld-fs-wrap"
+    },
+    "stable": {
+      "position": [
+        56.84308746138925,
+        9.916307311093973,
+        3.3254284521226793
+      ],
+      "quaternion": [
+        -0.23235528265937544,
+        0.3225934810088129,
+        0.0820178411868538,
+        0.913902370255131
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fov": 75,
+      "near": 0.1,
+      "far": 200,
+      "flyMode": false
+    }
+  },
+  "races": {
+    "baseline": {
+      "world": "[{\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":33,\"y\":6,\"z\":-26,\"type\":\"gold\",\"shape\":\"quarter\",\"rotation\":3}]",
+      "selected": "[{\"x\":32,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-26},{\"x\":31,\"y\":1,\"z\":-26},{\"x\":32,\"y\":1,\"z\":-25},{\"x\":32,\"y\":1,\"z\":-27},{\"x\":34,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-25},{\"x\":33,\"y\":1,\"z\":-27},{\"x\":31,\"y\":1,\"z\":-25},{\"x\":31,\"y\":1,\"z\":-27},{\"x\":35,\"y\":1,\"z\":-26},{\"x\":34,\"y\":1,\"z\":-25},{\"x\":34,\"y\":1,\"z\":-27},{\"x\":33,\"y\":1,\"z\":-24},{\"x\":31,\"y\":2,\"z\":-25},{\"x\":31,\"y\":2,\"z\":-27},{\"x\":36,\"y\":1,\"z\":-26},{\"x\":35,\"y\":1,\"z\":-25},{\"x\":35,\"y\":1,\"z\":-27},{\"x\":31,\"y\":3,\"z\":-25},{\"x\":31,\"y\":3,\"z\":-27},{\"x\":35,\"y\":2,\"z\":-25},{\"x\":35,\"y\":2,\"z\":-27},{\"x\":31,\"y\":4,\"z\":-25},{\"x\":31,\"y\":4,\"z\":-27},{\"x\":35,\"y\":3,\"z\":-25},{\"x\":35,\"y\":3,\"z\":-27},{\"x\":31,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-27},{\"x\":35,\"y\":4,\"z\":-25},{\"x\":35,\"y\":4,\"z\":-27},{\"x\":32,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-26},{\"x\":32,\"y\":5,\"z\":-27},{\"x\":35,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-25},{\"x\":32,\"y\":5,\"z\":-26},{\"x\":33,\"y\":5,\"z\":-27},{\"x\":34,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-26},{\"x\":33,\"y\":6,\"z\":-26}]",
+      "count": 45,
+      "hash": "b0c16e9b6c147b331797edb49eba017ca1e64634d487568ff2bb0ab35f42ab97",
+      "bytes": 15684,
+      "undo": "[{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"action\":\"place\",\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1},{\"action\":\"place\",\"x\":33,\"y\":6,\"z\":-26,\"type\":\"gold\",\"shape\":\"quarter\",\"rotation\":3}]",
+      "redo": "[]",
+      "placed": 46,
+      "xp": 25,
+      "milestones": "{}"
+    },
+    "frame": {
+      "count": 45,
+      "vertices": 1080,
+      "obstacleOverlaps": [],
+      "returnRect": {
+        "x": 12,
+        "y": 118,
+        "width": 225.125,
+        "height": 58,
+        "visible": true
+      },
+      "lookRect": null,
+      "returnLookOverlap": false,
+      "minX": -0.21598169879949372,
+      "maxX": 0.22412238026981615,
+      "minY": -0.38633187355327575,
+      "maxY": 0.44905590408415674,
+      "minZ": 0.9741418848985458,
+      "maxZ": 0.9870056628960658,
+      "canvas": {
+        "x": 11,
+        "y": 64,
+        "width": 1418,
+        "height": 825
+      },
+      "camera": {
+        "position": [
+          40.099626369207556,
+          6.662376136299208,
+          -17.436463302182627
+        ],
+        "quaternion": [
+          -0.16276767998822744,
+          0.3278604308336601,
+          0.05745448769158173,
+          0.9288235581039676
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "safeRect": {
+        "left": -0.9410437235543019,
+        "right": 0.9410437235543019,
+        "bottom": -0.5312,
+        "top": 0.6766545454545455
+      },
+      "manual": false,
+      "transitioning": false,
+      "dockCollapsed": true,
+      "overflow": false,
+      "engineValid": true,
+      "activeElement": "geoworld-fs-wrap"
+    },
+    "animation": {
+      "seed": {
+        "progress": 0.25,
+        "timer": 60.01,
+        "environment": "day",
+        "scale": [
+          0.7,
+          0.7,
+          0.7
+        ],
+        "fogNear": 55,
+        "fogFar": 145
+      },
+      "progress": 0.25,
+      "timer": 60.01,
+      "environment": "day",
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "pendingPop": false,
+      "fogNear": 55,
+      "depthFar": 14.298133301776172
+    },
+    "resized": {
+      "count": 45,
+      "vertices": 1080,
+      "obstacleOverlaps": [],
+      "returnRect": {
+        "x": 12,
+        "y": 106,
+        "width": 109.203125,
+        "height": 80.5,
+        "visible": true
+      },
+      "lookRect": null,
+      "returnLookOverlap": false,
+      "minX": -0.5542972940318297,
+      "maxX": 0.5692210354884568,
+      "minY": -0.13877245883607942,
+      "maxY": 0.44260368196688454,
+      "minZ": 0.9835384191164971,
+      "maxZ": 0.9900703275405444,
+      "canvas": {
+        "x": 7,
+        "y": 60,
+        "width": 306,
+        "height": 633
+      },
+      "camera": {
+        "position": [
+          42.74622630025559,
+          6.792435411272984,
+          -14.154679387683059
+        ],
+        "quaternion": [
+          -0.16276767998822747,
+          0.32786043083366007,
+          0.05745448769158173,
+          0.9288235581039676
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "safeRect": {
+        "left": -0.872156862745098,
+        "right": 0.8721568627450982,
+        "bottom": -0.2069194312796208,
+        "top": 0.5528909952606635
+      },
+      "manual": false,
+      "transitioning": false,
+      "dockCollapsed": true,
+      "overflow": false,
+      "engineValid": true,
+      "activeElement": "geoworld-fs-wrap"
+    }
+  },
+  "showcase": {
+    "count": 45,
+    "vertices": 1080,
+    "obstacleOverlaps": [],
+    "returnRect": null,
+    "lookRect": {
+      "x": 174,
+      "y": 128,
+      "width": 134,
+      "height": 54.5,
+      "visible": false
+    },
+    "returnLookOverlap": false,
+    "minX": -0.5259933504032988,
+    "maxX": 0.4523988099334707,
+    "minY": -0.14786564005635133,
+    "maxY": 0.16951444467973548,
+    "minZ": 0.9943825366768826,
+    "maxZ": 0.9954010867905101,
+    "canvas": {
+      "x": 7,
+      "y": 60,
+      "width": 306,
+      "height": 633
+    },
+    "camera": {
+      "position": [
+        34,
+        36.73589474472928,
+        -25
+      ],
+      "quaternion": [
+        -0.7071067811865475,
+        0,
+        0,
+        0.7071067811865476
+      ],
+      "up": [
+        0,
+        0,
+        -1
+      ],
+      "fov": 42,
+      "near": 0.1,
+      "far": 200,
+      "flyMode": true
+    },
+    "safeRect": null,
+    "manual": false,
+    "transitioning": false,
+    "dockCollapsed": true,
+    "overflow": false,
+    "engineValid": true,
+    "activeElement": null
+  },
+  "printHandoff": {
+    "exact": true,
+    "count": 45,
+    "bytes": 15684
+  },
+  "printReturn": {
+    "world": true,
+    "selection": true,
+    "undo": true,
+    "redo": true,
+    "camera": true,
+    "quaternion": true,
+    "flyMode": true,
+    "blocks": 46
+  },
+  "shaderErrors": [],
+  "pass": true
+}

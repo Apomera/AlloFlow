@@ -1,0 +1,4187 @@
+{
+  "phase": "after",
+  "sourceHashes": {
+    "stem_tool_geometryworld.js": "d636a8a3d6e0a2c522bfe3cc91f198a9aa5572bd88521b9b15108ee0c4a37cf4",
+    "stem_tool_geometryworld_builder.js": "cf3edde2514d93fb3d9455badf67b25e183e7e6ae93877fe2c570a83d3480edc"
+  },
+  "scope": "Matched actual local React/Three WebGL; DPR1; 44-block off-center fractional pavilion plus one unrelated authored block",
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [
+    "Unchanged selected build triggers zero structure traversals across five idle polls"
+  ],
+  "viewports": [
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "label": "320x700",
+      "inspector": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 306,
+          "height": 633,
+          "visible": true
+        },
+        "creation": {
+          "x": -16025.246828299663,
+          "y": -1521.8032540251986,
+          "width": 23121.781183285235,
+          "height": 12725.66255476178,
+          "minX": -105.78592698235074,
+          "maxX": 45.33682584957889,
+          "minY": -34.20966603708241,
+          "maxY": 5.997798590916899,
+          "minZ": 0.6051077289505455,
+          "maxZ": 3.24439287094781
+        },
+        "clearRect": null,
+        "controls": [
+          {
+            "kind": "inspector",
+            "name": "Close measurement inspector",
+            "x": 261,
+            "y": 15,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "Explore measurement details",
+            "x": 19,
+            "y": 149.984375,
+            "width": 282,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "🧱 Build This!",
+            "x": 19,
+            "y": 538.5,
+            "width": 282,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 12,
+            "y": 294,
+            "width": 53.265625,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 69.265625,
+            "y": 294,
+            "width": 57.109375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 12,
+            "y": 342,
+            "width": 71,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 12,
+            "y": 390,
+            "width": 65.671875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Jump or fly up",
+            "x": 244,
+            "y": 250,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Fly down",
+            "x": 244,
+            "y": 304,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Place block",
+            "x": 244,
+            "y": 358,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Break block",
+            "x": 244,
+            "y": 412,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Measure structure",
+            "x": 244,
+            "y": 466,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Undo last block action",
+            "x": 244,
+            "y": 520,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 10,
+            "y": 634,
+            "width": 300,
+            "height": 58,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 45.6875,
+            "y": 576,
+            "width": 228.625,
+            "height": 50,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 8,
+            "y": 290,
+            "width": 140,
+            "height": 148,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-actions",
+            "x": 244,
+            "y": 250,
+            "width": 64,
+            "height": 318,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-joystick",
+            "x": 20,
+            "y": 468,
+            "width": 100,
+            "height": 100,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-look-panel",
+            "x": 174,
+            "y": 128,
+            "width": 134,
+            "height": 54.5,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 126,
+            "y": 444,
+            "width": 68,
+            "height": 59,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-measure-card",
+            "x": 6,
+            "y": 8,
+            "width": 308,
+            "height": 198.984375,
+            "visible": true,
+            "overlap": true
+          }
+        ],
+        "inspector": {
+          "x": 6,
+          "y": 8,
+          "width": 308,
+          "height": 198.984375,
+          "visible": true,
+          "scrollHeight": 197,
+          "clientHeight": 197,
+          "text": "📏 Composite structure\n×\nLength\n6\nWidth\n4\nHeight\n5\nOccupied volume\n37 3/4 cubic units\nExplore measurement details",
+          "disclosures": [
+            {
+              "open": false,
+              "summary": "Explore measurement details"
+            }
+          ]
+        },
+        "focus": null,
+        "overflow": false,
+        "activeElement": "#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-",
+        "camera": {
+          "position": [
+            32.5,
+            4.2,
+            -23.5
+          ],
+          "quaternion": [
+            -0.3582637671833657,
+            0,
+            0,
+            0.9336204116896669
+          ],
+          "fov": 75
+        }
+      },
+      "inspectorState": {
+        "compact": "true",
+        "open": "false",
+        "volume": true,
+        "dimensions": true
+      },
+      "inspectorSlider": {
+        "before": "0",
+        "after": "1",
+        "min": 0,
+        "max": 5
+      },
+      "expanded": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 306,
+          "height": 633,
+          "visible": true
+        },
+        "creation": {
+          "x": -16025.246828299663,
+          "y": -1521.8032540251986,
+          "width": 23121.781183285235,
+          "height": 12725.66255476178,
+          "minX": -105.78592698235074,
+          "maxX": 45.33682584957889,
+          "minY": -34.20966603708241,
+          "maxY": 5.997798590916899,
+          "minZ": 0.6051077289505455,
+          "maxZ": 3.24439287094781
+        },
+        "clearRect": null,
+        "controls": [
+          {
+            "kind": "inspector",
+            "name": "Close measurement inspector",
+            "x": 261,
+            "y": 8.5,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "Explore measurement details",
+            "x": 19,
+            "y": 136.984375,
+            "width": 282,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "Show all layers",
+            "x": 28,
+            "y": 333.046875,
+            "width": 83.921875,
+            "height": 28,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "🧱 Build This!",
+            "x": 19,
+            "y": 525.5,
+            "width": 282,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 12,
+            "y": 294,
+            "width": 53.265625,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 69.265625,
+            "y": 294,
+            "width": 57.109375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 12,
+            "y": 342,
+            "width": 71,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 12,
+            "y": 390,
+            "width": 65.671875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Jump or fly up",
+            "x": 244,
+            "y": 250,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Fly down",
+            "x": 244,
+            "y": 304,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Place block",
+            "x": 244,
+            "y": 358,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Break block",
+            "x": 244,
+            "y": 412,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Measure structure",
+            "x": 244,
+            "y": 466,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Undo last block action",
+            "x": 244,
+            "y": 520,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 10,
+            "y": 634,
+            "width": 300,
+            "height": 58,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 45.6875,
+            "y": 576,
+            "width": 228.625,
+            "height": 50,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 8,
+            "y": 290,
+            "width": 140,
+            "height": 148,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-actions",
+            "x": 244,
+            "y": 250,
+            "width": 64,
+            "height": 318,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-joystick",
+            "x": 20,
+            "y": 468,
+            "width": 100,
+            "height": 100,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-look-panel",
+            "x": 174,
+            "y": 128,
+            "width": 134,
+            "height": 54.5,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 126,
+            "y": 444,
+            "width": 68,
+            "height": 59,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-measure-card",
+            "x": 6,
+            "y": 8,
+            "width": 308,
+            "height": 564,
+            "visible": true,
+            "overlap": true
+          }
+        ],
+        "inspector": {
+          "x": 6,
+          "y": 8,
+          "width": 308,
+          "height": 564,
+          "visible": true,
+          "scrollHeight": 577,
+          "clientHeight": 562,
+          "text": "📏 Composite structure\n×\nLength\n6\nWidth\n4\nHeight\n5\nOccupied volume\n37 3/4 cubic units\nExplore measurement details\nOccupied volume = 37 3/4 cubic units\nBounding box 120 − empty 82 1/4 = 37 3/4 (31% filled)\nSurface area needs partial-face analysis (press N)\nLAYER EXPLORER\nLayers 1-1 of 5\nReveal through layer\nAll\nTop layer 5\nShow all layers\nEquivalent view\nCompose fractional pieces\nWhole-cube equivalent\nOccupied unit cubes\n32×1 + 10×1/2 + 1×1/2 + 1×1/4 = 37 3/4\nViews compared: 1/2\nCompare 2 views\nExplore one more view, then explain how the representations match.\nConnect: Which fractional pieces could combine to make another whole cubic unit?\n44 blocks (32×1 + 1×½ + 1×¼ + 10×½)\nMaterials: 15 stone, 9 wood, 19 brick, 1 sand\n🧱 Build This!",
+          "disclosures": [
+            {
+              "open": true,
+              "summary": "Explore measurement details"
+            }
+          ]
+        },
+        "focus": null,
+        "overflow": false,
+        "activeElement": "Layer explorer depth",
+        "camera": {
+          "position": [
+            32.5,
+            4.2,
+            -23.5
+          ],
+          "quaternion": [
+            -0.3582637671833657,
+            0,
+            0,
+            0.9336204116896669
+          ],
+          "fov": 75
+        }
+      },
+      "liveEditExpanded": "true",
+      "inspectorCloseFocus": {
+        "focused": true,
+        "outline": "3px"
+      },
+      "focused": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 306,
+          "height": 633,
+          "visible": true
+        },
+        "creation": {
+          "x": 51.99144396340484,
+          "y": 223.97014443729756,
+          "width": 152.17982225335882,
+          "height": 149.0983873278408,
+          "minX": -0.705938274748988,
+          "maxX": 0.28870108638407616,
+          "minY": 0.010841921753117264,
+          "maxY": 0.48192687381580546,
+          "minZ": 0.9858506922346592,
+          "maxZ": 0.9910568347890308
+        },
+        "clearRect": {
+          "left": -0.8806535947712417,
+          "right": 0.4558169934640523,
+          "bottom": -0.036619273301737865,
+          "top": 0.5563665086887836,
+          "width": 204.48,
+          "height": 187.68000000000004
+        },
+        "controls": [
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 12,
+            "y": 520,
+            "width": 51.265625,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 66.265625,
+            "y": 520,
+            "width": 55.109375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 124.375,
+            "y": 520,
+            "width": 52,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 179.375,
+            "y": 520,
+            "width": 69,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 251.375,
+            "y": 520,
+            "width": 63.671875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Jump or fly up",
+            "x": 244,
+            "y": 192,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Fly down",
+            "x": 244,
+            "y": 246,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Place block",
+            "x": 244,
+            "y": 300,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Break block",
+            "x": 244,
+            "y": 354,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Measure structure",
+            "x": 244,
+            "y": 408,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Undo last block action",
+            "x": 244,
+            "y": 462,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "return",
+            "name": "Previous view",
+            "x": 21,
+            "y": 134.5,
+            "width": 91.203125,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 10,
+            "y": 634,
+            "width": 300,
+            "height": 58,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 45.6875,
+            "y": 576,
+            "width": 228.625,
+            "height": 50,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 8,
+            "y": 516,
+            "width": 304,
+            "height": 52,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-touch-actions",
+            "x": 244,
+            "y": 192,
+            "width": 64,
+            "height": 318,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-touch-joystick",
+            "x": 20,
+            "y": 402,
+            "width": 100,
+            "height": 100,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-touch-look-panel",
+            "x": 174,
+            "y": 128,
+            "width": 134,
+            "height": 54.5,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 126,
+            "y": 437,
+            "width": 68,
+            "height": 59,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gwe-focus-return",
+            "x": 12,
+            "y": 106,
+            "width": 109.203125,
+            "height": 80.5,
+            "visible": true,
+            "overlap": false
+          }
+        ],
+        "inspector": null,
+        "focus": {
+          "manual": false,
+          "transition": false
+        },
+        "overflow": false,
+        "activeElement": "Free Build Sandbox — interactive 3D world. 0 of 0 questions answered.",
+        "camera": {
+          "position": [
+            45.074845551920646,
+            6.334943500461753,
+            -13.276786706712262
+          ],
+          "quaternion": [
+            -0.17408732309997907,
+            0.3271350785537517,
+            0.061450147615494576,
+            0.926768646250804
+          ],
+          "fov": 75
+        }
+      },
+      "primary": [
+        {
+          "kind": "utility",
+          "name": "Toggle fly mode",
+          "x": 12,
+          "y": 520,
+          "width": 51.265625,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Undo last action",
+          "x": 66.265625,
+          "y": 520,
+          "width": 55.109375,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Redo last action",
+          "x": 124.375,
+          "y": 520,
+          "width": 52,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Return to spawn point",
+          "x": 179.375,
+          "y": 520,
+          "width": 69,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Clear my placed blocks",
+          "x": 251.375,
+          "y": 520,
+          "width": 63.671875,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Jump or fly up",
+          "x": 244,
+          "y": 192,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Fly down",
+          "x": 244,
+          "y": 246,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Place block",
+          "x": 244,
+          "y": 300,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Break block",
+          "x": 244,
+          "y": 354,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Measure structure",
+          "x": 244,
+          "y": 408,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Undo last block action",
+          "x": 244,
+          "y": 462,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "return",
+          "name": "Previous view",
+          "x": 21,
+          "y": 134.5,
+          "width": 91.203125,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        }
+      ],
+      "withRedo": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 306,
+          "height": 633,
+          "visible": true
+        },
+        "creation": {
+          "x": 51.99144396340484,
+          "y": 223.97014443729756,
+          "width": 152.17982225335882,
+          "height": 149.0983873278408,
+          "minX": -0.705938274748988,
+          "maxX": 0.28870108638407616,
+          "minY": 0.010841921753117264,
+          "maxY": 0.48192687381580546,
+          "minZ": 0.9858506922346592,
+          "maxZ": 0.9910568347890308
+        },
+        "clearRect": {
+          "left": -0.8806535947712417,
+          "right": 0.4558169934640523,
+          "bottom": -0.036619273301737865,
+          "top": 0.5563665086887836,
+          "width": 204.48,
+          "height": 187.68000000000004
+        },
+        "controls": [
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 12,
+            "y": 520,
+            "width": 51.265625,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 66.265625,
+            "y": 520,
+            "width": 55.109375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": true
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 124.375,
+            "y": 520,
+            "width": 52,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 179.375,
+            "y": 520,
+            "width": 69,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 251.375,
+            "y": 520,
+            "width": 63.671875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Jump or fly up",
+            "x": 244,
+            "y": 192,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Fly down",
+            "x": 244,
+            "y": 246,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Place block",
+            "x": 244,
+            "y": 300,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Break block",
+            "x": 244,
+            "y": 354,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Measure structure",
+            "x": 244,
+            "y": 408,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Undo last block action",
+            "x": 244,
+            "y": 462,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "return",
+            "name": "Previous view",
+            "x": 21,
+            "y": 134.5,
+            "width": 91.203125,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 10,
+            "y": 634,
+            "width": 300,
+            "height": 58,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 45.6875,
+            "y": 576,
+            "width": 228.625,
+            "height": 50,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 8,
+            "y": 516,
+            "width": 304,
+            "height": 52,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-touch-actions",
+            "x": 244,
+            "y": 192,
+            "width": 64,
+            "height": 318,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-touch-joystick",
+            "x": 20,
+            "y": 402,
+            "width": 100,
+            "height": 100,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-touch-look-panel",
+            "x": 174,
+            "y": 128,
+            "width": 134,
+            "height": 54.5,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 126,
+            "y": 437,
+            "width": 68,
+            "height": 59,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gwe-focus-return",
+            "x": 12,
+            "y": 106,
+            "width": 109.203125,
+            "height": 80.5,
+            "visible": true,
+            "overlap": false
+          }
+        ],
+        "inspector": null,
+        "focus": {
+          "manual": false,
+          "transition": false
+        },
+        "overflow": false,
+        "activeElement": "Undo last action",
+        "camera": {
+          "position": [
+            45.074845551920646,
+            6.334943500461753,
+            -13.276786706712262
+          ],
+          "quaternion": [
+            -0.17408732309997907,
+            0.3271350785537517,
+            0.061450147615494576,
+            0.926768646250804
+          ],
+          "fov": 75
+        }
+      },
+      "utilitiesWithRedo": [
+        {
+          "kind": "utility",
+          "name": "Toggle fly mode",
+          "x": 12,
+          "y": 520,
+          "width": 51.265625,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Undo last action",
+          "x": 66.265625,
+          "y": 520,
+          "width": 55.109375,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": true
+        },
+        {
+          "kind": "utility",
+          "name": "Redo last action",
+          "x": 124.375,
+          "y": 520,
+          "width": 52,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Return to spawn point",
+          "x": 179.375,
+          "y": 520,
+          "width": 69,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Clear my placed blocks",
+          "x": 251.375,
+          "y": 520,
+          "width": 63.671875,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        }
+      ],
+      "previousFocus": {
+        "focused": true,
+        "outline": "3px"
+      },
+      "returned": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 306,
+          "height": 633,
+          "visible": true
+        },
+        "creation": {
+          "x": -16025.246828299663,
+          "y": -1521.8032540251986,
+          "width": 23121.781183285235,
+          "height": 12725.66255476178,
+          "minX": -105.78592698235074,
+          "maxX": 45.33682584957889,
+          "minY": -34.20966603708241,
+          "maxY": 5.997798590916899,
+          "minZ": 0.6051077289505455,
+          "maxZ": 3.24439287094781
+        },
+        "clearRect": null,
+        "controls": [],
+        "obstacles": [
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 7,
+            "y": 390,
+            "width": 306,
+            "height": 294,
+            "visible": true,
+            "overlap": true
+          }
+        ],
+        "inspector": null,
+        "focus": null,
+        "overflow": false,
+        "activeElement": "Focus creation",
+        "camera": {
+          "position": [
+            32.5,
+            4.2,
+            -23.5
+          ],
+          "quaternion": [
+            -0.3582637671833657,
+            0,
+            0,
+            0.9336204116896669
+          ],
+          "fov": 75
+        }
+      }
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "label": "390x844",
+      "inspector": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 376,
+          "height": 777,
+          "visible": true
+        },
+        "creation": {
+          "x": -19672.198713410486,
+          "y": -1881.6447525712151,
+          "width": 28381.712447729267,
+          "height": 15620.600007977731,
+          "minX": -105.6765889011196,
+          "maxX": 45.2899666719084,
+          "minY": -34.20966603708241,
+          "maxY": 5.997798590916899,
+          "minZ": 0.6051077289505455,
+          "maxZ": 3.24439287094781
+        },
+        "clearRect": null,
+        "controls": [
+          {
+            "kind": "inspector",
+            "name": "Close measurement inspector",
+            "x": 331,
+            "y": 15,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "Explore measurement details",
+            "x": 19,
+            "y": 149.984375,
+            "width": 352,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "🧱 Build This!",
+            "x": 19,
+            "y": 538.5,
+            "width": 352,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 12,
+            "y": 438,
+            "width": 53.265625,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 69.265625,
+            "y": 438,
+            "width": 57.109375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 12,
+            "y": 486,
+            "width": 54,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 70,
+            "y": 486,
+            "width": 71,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 12,
+            "y": 534,
+            "width": 65.671875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Jump or fly up",
+            "x": 314,
+            "y": 394,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Fly down",
+            "x": 314,
+            "y": 448,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Place block",
+            "x": 314,
+            "y": 502,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Break block",
+            "x": 314,
+            "y": 556,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Measure structure",
+            "x": 314,
+            "y": 610,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Undo last block action",
+            "x": 314,
+            "y": 664,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 10,
+            "y": 778,
+            "width": 370,
+            "height": 58,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 73.2578125,
+            "y": 720,
+            "width": 243.484375,
+            "height": 50,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 8,
+            "y": 434,
+            "width": 140,
+            "height": 148,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-actions",
+            "x": 314,
+            "y": 394,
+            "width": 64,
+            "height": 318,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-joystick",
+            "x": 20,
+            "y": 612,
+            "width": 100,
+            "height": 100,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-look-panel",
+            "x": 244,
+            "y": 128,
+            "width": 134,
+            "height": 54.5,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 161,
+            "y": 588,
+            "width": 68,
+            "height": 59,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-measure-card",
+            "x": 6,
+            "y": 8,
+            "width": 378,
+            "height": 198.984375,
+            "visible": true,
+            "overlap": true
+          }
+        ],
+        "inspector": {
+          "x": 6,
+          "y": 8,
+          "width": 378,
+          "height": 198.984375,
+          "visible": true,
+          "scrollHeight": 197,
+          "clientHeight": 197,
+          "text": "📏 Composite structure\n×\nLength\n6\nWidth\n4\nHeight\n5\nOccupied volume\n37 3/4 cubic units\nExplore measurement details",
+          "disclosures": [
+            {
+              "open": false,
+              "summary": "Explore measurement details"
+            }
+          ]
+        },
+        "focus": null,
+        "overflow": false,
+        "activeElement": "#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-",
+        "camera": {
+          "position": [
+            32.5,
+            4.2,
+            -23.5
+          ],
+          "quaternion": [
+            -0.3582637671833657,
+            0,
+            0,
+            0.9336204116896669
+          ],
+          "fov": 75
+        }
+      },
+      "inspectorState": {
+        "compact": "true",
+        "open": "false",
+        "volume": true,
+        "dimensions": true
+      },
+      "inspectorSlider": {
+        "before": "0",
+        "after": "1",
+        "min": 0,
+        "max": 5
+      },
+      "expanded": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 376,
+          "height": 777,
+          "visible": true
+        },
+        "creation": {
+          "x": -19672.198713410486,
+          "y": -1881.6447525712151,
+          "width": 28381.712447729267,
+          "height": 15620.600007977731,
+          "minX": -105.6765889011196,
+          "maxX": 45.2899666719084,
+          "minY": -34.20966603708241,
+          "maxY": 5.997798590916899,
+          "minZ": 0.6051077289505455,
+          "maxZ": 3.24439287094781
+        },
+        "clearRect": null,
+        "controls": [
+          {
+            "kind": "inspector",
+            "name": "Close measurement inspector",
+            "x": 331,
+            "y": 15,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "Explore measurement details",
+            "x": 19,
+            "y": 149.984375,
+            "width": 352,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "Show all layers",
+            "x": 28,
+            "y": 346.046875,
+            "width": 83.921875,
+            "height": 28,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "🧱 Build This!",
+            "x": 19,
+            "y": 538.5,
+            "width": 352,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 12,
+            "y": 438,
+            "width": 53.265625,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 69.265625,
+            "y": 438,
+            "width": 57.109375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 12,
+            "y": 486,
+            "width": 54,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 70,
+            "y": 486,
+            "width": 71,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 12,
+            "y": 534,
+            "width": 65.671875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Jump or fly up",
+            "x": 314,
+            "y": 394,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Fly down",
+            "x": 314,
+            "y": 448,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Place block",
+            "x": 314,
+            "y": 502,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Break block",
+            "x": 314,
+            "y": 556,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Measure structure",
+            "x": 314,
+            "y": 610,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Undo last block action",
+            "x": 314,
+            "y": 664,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 10,
+            "y": 778,
+            "width": 370,
+            "height": 58,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 73.2578125,
+            "y": 720,
+            "width": 243.484375,
+            "height": 50,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 8,
+            "y": 434,
+            "width": 140,
+            "height": 148,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-actions",
+            "x": 314,
+            "y": 394,
+            "width": 64,
+            "height": 318,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-joystick",
+            "x": 20,
+            "y": 612,
+            "width": 100,
+            "height": 100,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-touch-look-panel",
+            "x": 244,
+            "y": 128,
+            "width": 134,
+            "height": 54.5,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 161,
+            "y": 588,
+            "width": 68,
+            "height": 59,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-measure-card",
+            "x": 6,
+            "y": 8,
+            "width": 378,
+            "height": 591.5,
+            "visible": true,
+            "overlap": true
+          }
+        ],
+        "inspector": {
+          "x": 6,
+          "y": 8,
+          "width": 378,
+          "height": 591.5,
+          "visible": true,
+          "scrollHeight": 590,
+          "clientHeight": 590,
+          "text": "📏 Composite structure\n×\nLength\n6\nWidth\n4\nHeight\n5\nOccupied volume\n37 3/4 cubic units\nExplore measurement details\nOccupied volume = 37 3/4 cubic units\nBounding box 120 − empty 82 1/4 = 37 3/4 (31% filled)\nSurface area needs partial-face analysis (press N)\nLAYER EXPLORER\nLayers 1-1 of 5\nReveal through layer\nAll\nTop layer 5\nShow all layers\nEquivalent view\nCompose fractional pieces\nWhole-cube equivalent\nOccupied unit cubes\n32×1 + 10×1/2 + 1×1/2 + 1×1/4 = 37 3/4\nViews compared: 1/2\nCompare 2 views\nExplore one more view, then explain how the representations match.\nConnect: Which fractional pieces could combine to make another whole cubic unit?\n44 blocks (32×1 + 1×½ + 1×¼ + 10×½)\nMaterials: 15 stone, 9 wood, 19 brick, 1 sand\n🧱 Build This!",
+          "disclosures": [
+            {
+              "open": true,
+              "summary": "Explore measurement details"
+            }
+          ]
+        },
+        "focus": null,
+        "overflow": false,
+        "activeElement": "Layer explorer depth",
+        "camera": {
+          "position": [
+            32.5,
+            4.2,
+            -23.5
+          ],
+          "quaternion": [
+            -0.3582637671833657,
+            0,
+            0,
+            0.9336204116896669
+          ],
+          "fov": 75
+        }
+      },
+      "inspectorCloseFocus": {
+        "focused": true,
+        "outline": "3px"
+      },
+      "focused": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 376,
+          "height": 777,
+          "visible": true
+        },
+        "creation": {
+          "x": 59.12531345606299,
+          "y": 270.96186836689685,
+          "width": 209.52434848167485,
+          "height": 205.3624210238534,
+          "minX": -0.7227376943826437,
+          "maxX": 0.39175352094541416,
+          "minY": -0.0716197925115836,
+          "maxY": 0.45698360780721536,
+          "minZ": 0.9836018026711574,
+          "maxZ": 0.9900951948447625
+        },
+        "clearRect": {
+          "left": -0.8954255319148935,
+          "right": 0.5496808510638297,
+          "bottom": -0.20774774774774768,
+          "top": 0.6311711711711712,
+          "width": 271.67999999999995,
+          "height": 325.91999999999996
+        },
+        "controls": [
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 12,
+            "y": 664,
+            "width": 63.84375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 78.84375,
+            "y": 664,
+            "width": 67.703125,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 149.546875,
+            "y": 664,
+            "width": 64.59375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 217.140625,
+            "y": 664,
+            "width": 81.59375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 301.734375,
+            "y": 664,
+            "width": 76.265625,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Jump or fly up",
+            "x": 314,
+            "y": 336,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Fly down",
+            "x": 314,
+            "y": 390,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Place block",
+            "x": 314,
+            "y": 444,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Break block",
+            "x": 314,
+            "y": 498,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Measure structure",
+            "x": 314,
+            "y": 552,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "touch",
+            "name": "Undo last block action",
+            "x": 314,
+            "y": 606,
+            "width": 64,
+            "height": 48,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "return",
+            "name": "Previous view",
+            "x": 21,
+            "y": 134.5,
+            "width": 91.203125,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 10,
+            "y": 778,
+            "width": 370,
+            "height": 58,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 73.2578125,
+            "y": 720,
+            "width": 243.484375,
+            "height": 50,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 8,
+            "y": 660,
+            "width": 374,
+            "height": 52,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-touch-actions",
+            "x": 314,
+            "y": 336,
+            "width": 64,
+            "height": 318,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-touch-joystick",
+            "x": 20,
+            "y": 546,
+            "width": 100,
+            "height": 100,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-touch-look-panel",
+            "x": 244,
+            "y": 128,
+            "width": 134,
+            "height": 54.5,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 161,
+            "y": 581,
+            "width": 68,
+            "height": 59,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gwe-focus-return",
+            "x": 12,
+            "y": 106,
+            "width": 109.203125,
+            "height": 80.5,
+            "visible": true,
+            "overlap": false
+          }
+        ],
+        "inspector": null,
+        "focus": {
+          "manual": false,
+          "transition": false
+        },
+        "overflow": false,
+        "activeElement": "Free Build Sandbox — interactive 3D world. 0 of 0 questions answered.",
+        "camera": {
+          "position": [
+            43.62783552917161,
+            6.171119740061057,
+            -14.520016084614719
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.32786043083366,
+            0.05745448769158173,
+            0.9288235581039676
+          ],
+          "fov": 75
+        }
+      },
+      "primary": [
+        {
+          "kind": "utility",
+          "name": "Toggle fly mode",
+          "x": 12,
+          "y": 664,
+          "width": 63.84375,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Undo last action",
+          "x": 78.84375,
+          "y": 664,
+          "width": 67.703125,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Redo last action",
+          "x": 149.546875,
+          "y": 664,
+          "width": 64.59375,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Return to spawn point",
+          "x": 217.140625,
+          "y": 664,
+          "width": 81.59375,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Clear my placed blocks",
+          "x": 301.734375,
+          "y": 664,
+          "width": 76.265625,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Jump or fly up",
+          "x": 314,
+          "y": 336,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Fly down",
+          "x": 314,
+          "y": 390,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Place block",
+          "x": 314,
+          "y": 444,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Break block",
+          "x": 314,
+          "y": 498,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Measure structure",
+          "x": 314,
+          "y": 552,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "touch",
+          "name": "Undo last block action",
+          "x": 314,
+          "y": 606,
+          "width": 64,
+          "height": 48,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "return",
+          "name": "Previous view",
+          "x": 21,
+          "y": 134.5,
+          "width": 91.203125,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        }
+      ],
+      "previousFocus": {
+        "focused": true,
+        "outline": "3px"
+      },
+      "returned": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 376,
+          "height": 777,
+          "visible": true
+        },
+        "creation": {
+          "x": -19672.198713410486,
+          "y": -1881.6447525712151,
+          "width": 28381.712447729267,
+          "height": 15620.600007977731,
+          "minX": -105.6765889011196,
+          "maxX": 45.2899666719084,
+          "minY": -34.20966603708241,
+          "maxY": 5.997798590916899,
+          "minZ": 0.6051077289505455,
+          "maxZ": 3.24439287094781
+        },
+        "clearRect": null,
+        "controls": [],
+        "obstacles": [
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 7,
+            "y": 473.53125,
+            "width": 376,
+            "height": 354.46875,
+            "visible": true,
+            "overlap": true
+          }
+        ],
+        "inspector": null,
+        "focus": null,
+        "overflow": false,
+        "activeElement": "Focus creation",
+        "camera": {
+          "position": [
+            32.5,
+            4.2,
+            -23.5
+          ],
+          "quaternion": [
+            -0.3582637671833657,
+            0,
+            0,
+            0.9336204116896669
+          ],
+          "fov": 75
+        }
+      }
+    },
+    {
+      "size": {
+        "width": 844,
+        "height": 390
+      },
+      "label": "844x390",
+      "inspector": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "width": 822,
+          "height": 315,
+          "visible": true
+        },
+        "creation": {
+          "x": -7632.269748679926,
+          "y": -723.1532780694116,
+          "width": 11506.099640971323,
+          "height": 6332.675678909891,
+          "minX": -19.596763378783276,
+          "maxX": 8.398612876621405,
+          "minY": -34.20966603708241,
+          "maxY": 5.997798590916899,
+          "minZ": 0.6051077289505455,
+          "maxZ": 3.24439287094781
+        },
+        "clearRect": null,
+        "controls": [
+          {
+            "kind": "inspector",
+            "name": "Close measurement inspector",
+            "x": 423,
+            "y": 64.5,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "Show all layers",
+            "x": 68,
+            "y": 335.046875,
+            "width": 83.921875,
+            "height": 28,
+            "visible": true,
+            "disabled": true,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "🧱 Build This!",
+            "x": 59,
+            "y": 527.5,
+            "width": 404,
+            "height": 17,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": false,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 221.1484375,
+            "y": 210,
+            "width": 58,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 282.1484375,
+            "y": 210,
+            "width": 96.46875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 381.6171875,
+            "y": 210,
+            "width": 91.609375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 476.2265625,
+            "y": 210,
+            "width": 74.25,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 553.4765625,
+            "y": 210,
+            "width": 69.375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 129,
+            "y": 324,
+            "width": 586,
+            "height": 58,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 300.2578125,
+            "y": 266,
+            "width": 243.484375,
+            "height": 50,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 217.1484375,
+            "y": 206,
+            "width": 409.703125,
+            "height": 52,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 764,
+            "y": 147,
+            "width": 68,
+            "height": 59,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-measure-card",
+            "x": 46,
+            "y": 64,
+            "width": 430,
+            "height": 240,
+            "visible": true,
+            "overlap": true
+          }
+        ],
+        "inspector": {
+          "x": 46,
+          "y": 64,
+          "width": 430,
+          "height": 240,
+          "visible": true,
+          "scrollHeight": 496,
+          "clientHeight": 238,
+          "text": "📏 Composite structure\n×\nLength\n6\nWidth\n4\nHeight\n5\nOccupied volume\n37 3/4 cubic units\nOccupied volume = 37 3/4 cubic units\nBounding box 120 − empty 82 1/4 = 37 3/4 (31% filled)\nSurface area needs partial-face analysis (press N)\nLAYER EXPLORER\nAll layers\nReveal through layer\nAll\nTop layer 5\nShow all layers\nEquivalent view\nCompose fractional pieces\nWhole-cube equivalent\nOccupied unit cubes\n32×1 + 10×1/2 + 1×1/2 + 1×1/4 = 37 3/4\nViews compared: 1/2\nCompare 2 views\nExplore one more view, then explain how the representations match.\nConnect: Which fractional pieces could combine to make another whole cubic unit?\n44 blocks (32×1 + 1×½ + 1×¼ + 10×½)\nMaterials: 15 stone, 9 wood, 19 brick, 1 sand\n🧱 Build This!",
+          "disclosures": [
+            {
+              "open": true,
+              "summary": "Explore measurement details"
+            }
+          ]
+        },
+        "focus": null,
+        "overflow": false,
+        "activeElement": "#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-",
+        "camera": {
+          "position": [
+            32.5,
+            4.2,
+            -23.5
+          ],
+          "quaternion": [
+            -0.3582637671833657,
+            0,
+            0,
+            0.9336204116896669
+          ],
+          "fov": 75
+        }
+      },
+      "inspectorState": {
+        "compact": "false",
+        "open": "true",
+        "volume": true,
+        "dimensions": true
+      },
+      "inspectorCloseFocus": {
+        "focused": true,
+        "outline": "3px"
+      },
+      "focused": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "width": 822,
+          "height": 315,
+          "visible": true
+        },
+        "creation": {
+          "x": 376.3734987950415,
+          "y": 92.0952272247465,
+          "width": 92.56381710999055,
+          "height": 92.32694166879631,
+          "minX": -0.11101338492690643,
+          "maxX": 0.11420271509740147,
+          "minY": 0.23541480067591866,
+          "maxY": 0.8216176049222444,
+          "minZ": 0.981943165555192,
+          "maxZ": 0.989759138577084
+        },
+        "clearRect": {
+          "left": -0.6791750304136253,
+          "right": 0.6821023418491483,
+          "bottom": 0.17688888888888887,
+          "top": 0.8961269841269841,
+          "width": 559.4849999999999,
+          "height": 113.28
+        },
+        "controls": [
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 221.1484375,
+            "y": 210,
+            "width": 58,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 282.1484375,
+            "y": 210,
+            "width": 96.46875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 381.6171875,
+            "y": 210,
+            "width": 91.609375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 476.2265625,
+            "y": 210,
+            "width": 74.25,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 553.4765625,
+            "y": 210,
+            "width": 69.375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "return",
+            "name": "Previous view",
+            "x": 21,
+            "y": 134.5,
+            "width": 91.203125,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 129,
+            "y": 324,
+            "width": 586,
+            "height": 58,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 300.2578125,
+            "y": 266,
+            "width": 243.484375,
+            "height": 50,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 217.1484375,
+            "y": 206,
+            "width": 409.703125,
+            "height": 52,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 724,
+            "y": 118,
+            "width": 108,
+            "height": 59,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gwe-focus-return",
+            "x": 12,
+            "y": 106,
+            "width": 109.203125,
+            "height": 80.5,
+            "visible": true,
+            "overlap": false
+          }
+        ],
+        "inspector": null,
+        "focus": {
+          "manual": false,
+          "transition": false
+        },
+        "overflow": false,
+        "activeElement": "Free Build Sandbox — interactive 3D world. 0 of 0 questions answered.",
+        "camera": {
+          "position": [
+            43.03219749886377,
+            6.045706214244528,
+            -13.736785219707595
+          ],
+          "quaternion": [
+            -0.2628913973015137,
+            0.3196596120504595,
+            0.0927966200143357,
+            0.9055907646186121
+          ],
+          "fov": 75
+        }
+      },
+      "primary": [
+        {
+          "kind": "utility",
+          "name": "Toggle fly mode",
+          "x": 221.1484375,
+          "y": 210,
+          "width": 58,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Undo last action",
+          "x": 282.1484375,
+          "y": 210,
+          "width": 96.46875,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Redo last action",
+          "x": 381.6171875,
+          "y": 210,
+          "width": 91.609375,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Return to spawn point",
+          "x": 476.2265625,
+          "y": 210,
+          "width": 74.25,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Clear my placed blocks",
+          "x": 553.4765625,
+          "y": 210,
+          "width": 69.375,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "return",
+          "name": "Previous view",
+          "x": 21,
+          "y": 134.5,
+          "width": 91.203125,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        }
+      ],
+      "previousFocus": {
+        "focused": true,
+        "outline": "3px"
+      },
+      "returned": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "width": 822,
+          "height": 315,
+          "visible": true
+        },
+        "creation": {
+          "x": -7632.269748679926,
+          "y": -723.1532780694116,
+          "width": 11506.099640971323,
+          "height": 6332.675678909891,
+          "minX": -19.596763378783276,
+          "maxX": 8.398612876621405,
+          "minY": -34.20966603708241,
+          "maxY": 5.997798590916899,
+          "minZ": 0.6051077289505455,
+          "maxZ": 3.24439287094781
+        },
+        "clearRect": null,
+        "controls": [
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 221.1484375,
+            "y": 210,
+            "width": 58,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 282.1484375,
+            "y": 210,
+            "width": 96.46875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 381.6171875,
+            "y": 210,
+            "width": 91.609375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 476.2265625,
+            "y": 210,
+            "width": 74.25,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 553.4765625,
+            "y": 210,
+            "width": 69.375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": false,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 129,
+            "y": 324,
+            "width": 586,
+            "height": 58,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 300.2578125,
+            "y": 266,
+            "width": 243.484375,
+            "height": 50,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 217.1484375,
+            "y": 206,
+            "width": 409.703125,
+            "height": 52,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 486,
+            "y": 118,
+            "width": 346,
+            "height": 260,
+            "visible": true,
+            "overlap": true
+          }
+        ],
+        "inspector": null,
+        "focus": null,
+        "overflow": false,
+        "activeElement": "Focus creation",
+        "camera": {
+          "position": [
+            32.5,
+            4.2,
+            -23.5
+          ],
+          "quaternion": [
+            -0.3582637671833657,
+            0,
+            0,
+            0.9336204116896669
+          ],
+          "fov": 75
+        }
+      }
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "1440x900",
+      "inspector": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "width": 1418,
+          "height": 825,
+          "visible": true
+        },
+        "creation": {
+          "x": -20374.516008447426,
+          "y": -1997.5919187532209,
+          "width": 30135.02286921061,
+          "height": 16585.579159049714,
+          "minX": -29.752490844072533,
+          "maxX": 12.751067504602515,
+          "minY": -34.20966603708241,
+          "maxY": 5.997798590916899,
+          "minZ": 0.6051077289505455,
+          "maxZ": 3.24439287094781
+        },
+        "clearRect": null,
+        "controls": [
+          {
+            "kind": "inspector",
+            "name": "Close measurement inspector",
+            "x": 1019,
+            "y": 71,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "Show all layers",
+            "x": 664,
+            "y": 348.046875,
+            "width": 83.921875,
+            "height": 28,
+            "visible": true,
+            "disabled": true,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "inspector",
+            "name": "🧱 Build This!",
+            "x": 655,
+            "y": 540.5,
+            "width": 404,
+            "height": 17,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 519.1484375,
+            "y": 720,
+            "width": 58,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 580.1484375,
+            "y": 720,
+            "width": 96.46875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 679.6171875,
+            "y": 720,
+            "width": 91.609375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 774.2265625,
+            "y": 720,
+            "width": 74.25,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 851.4765625,
+            "y": 720,
+            "width": 69.375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 427,
+            "y": 834,
+            "width": 586,
+            "height": 58,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 598.2578125,
+            "y": 776,
+            "width": 243.484375,
+            "height": 50,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 515.1484375,
+            "y": 716,
+            "width": 409.703125,
+            "height": 52,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 1360,
+            "y": 657,
+            "width": 68,
+            "height": 59,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-measure-card",
+            "x": 642,
+            "y": 64,
+            "width": 430,
+            "height": 510.5,
+            "visible": true,
+            "overlap": true
+          }
+        ],
+        "inspector": {
+          "x": 642,
+          "y": 64,
+          "width": 430,
+          "height": 510.5,
+          "visible": true,
+          "scrollHeight": 509,
+          "clientHeight": 509,
+          "text": "📏 Composite structure\n×\nLength\n6\nWidth\n4\nHeight\n5\nOccupied volume\n37 3/4 cubic units\nOccupied volume = 37 3/4 cubic units\nBounding box 120 − empty 82 1/4 = 37 3/4 (31% filled)\nSurface area needs partial-face analysis (press N)\nLAYER EXPLORER\nAll layers\nReveal through layer\nAll\nTop layer 5\nShow all layers\nEquivalent view\nCompose fractional pieces\nWhole-cube equivalent\nOccupied unit cubes\n32×1 + 10×1/2 + 1×1/2 + 1×1/4 = 37 3/4\nViews compared: 1/2\nCompare 2 views\nExplore one more view, then explain how the representations match.\nConnect: Which fractional pieces could combine to make another whole cubic unit?\n44 blocks (32×1 + 1×½ + 1×¼ + 10×½)\nMaterials: 15 stone, 9 wood, 19 brick, 1 sand\n🧱 Build This!",
+          "disclosures": [
+            {
+              "open": true,
+              "summary": "Explore measurement details"
+            }
+          ]
+        },
+        "focus": null,
+        "overflow": false,
+        "activeElement": "#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-",
+        "camera": {
+          "position": [
+            32.5,
+            4.2,
+            -23.5
+          ],
+          "quaternion": [
+            -0.3582637671833657,
+            0,
+            0,
+            0.9336204116896669
+          ],
+          "fov": 75
+        }
+      },
+      "inspectorState": {
+        "compact": "false",
+        "open": "true",
+        "volume": true,
+        "dimensions": true
+      },
+      "inspectorCloseFocus": {
+        "focused": true,
+        "outline": "3px"
+      },
+      "focused": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "width": 1418,
+          "height": 825,
+          "visible": true
+        },
+        "creation": {
+          "x": 558.8505902845693,
+          "y": 295.74644039075275,
+          "width": 328.7034789416871,
+          "height": 336.532707415827,
+          "minX": -0.2272911279484212,
+          "maxX": 0.23632449820346463,
+          "minY": -0.3776464189250419,
+          "maxY": 0.43819044753756903,
+          "minZ": 0.9721366780914518,
+          "maxZ": 0.9864800454328053
+        },
+        "clearRect": {
+          "left": -0.9410437235543019,
+          "right": 0.9410437235543019,
+          "bottom": -0.5312,
+          "top": 0.6766545454545455,
+          "width": 1334.4,
+          "height": 498.24
+        },
+        "controls": [
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 519.1484375,
+            "y": 720,
+            "width": 58,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 580.1484375,
+            "y": 720,
+            "width": 96.46875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 679.6171875,
+            "y": 720,
+            "width": 91.609375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 774.2265625,
+            "y": 720,
+            "width": 74.25,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 851.4765625,
+            "y": 720,
+            "width": 69.375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "return",
+            "name": "Previous view",
+            "x": 126.453125,
+            "y": 125,
+            "width": 103.671875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 427,
+            "y": 834,
+            "width": 586,
+            "height": 58,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 598.2578125,
+            "y": 776,
+            "width": 243.484375,
+            "height": 50,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 515.1484375,
+            "y": 716,
+            "width": 409.703125,
+            "height": 52,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 1320,
+            "y": 118,
+            "width": 108,
+            "height": 59,
+            "visible": true,
+            "overlap": false
+          },
+          {
+            "selector": ".gwe-focus-return",
+            "x": 12,
+            "y": 118,
+            "width": 225.125,
+            "height": 58,
+            "visible": true,
+            "overlap": false
+          }
+        ],
+        "inspector": null,
+        "focus": {
+          "manual": false,
+          "transition": false
+        },
+        "overflow": false,
+        "activeElement": "Free Build Sandbox — interactive 3D world. 0 of 0 questions answered.",
+        "camera": {
+          "position": [
+            39.83911372276514,
+            6.2879896954291254,
+            -17.759498983771223
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.3278604308336601,
+            0.057454487691581756,
+            0.9288235581039676
+          ],
+          "fov": 75
+        }
+      },
+      "primary": [
+        {
+          "kind": "utility",
+          "name": "Toggle fly mode",
+          "x": 519.1484375,
+          "y": 720,
+          "width": 58,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Undo last action",
+          "x": 580.1484375,
+          "y": 720,
+          "width": 96.46875,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Redo last action",
+          "x": 679.6171875,
+          "y": 720,
+          "width": 91.609375,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Return to spawn point",
+          "x": 774.2265625,
+          "y": 720,
+          "width": 74.25,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "utility",
+          "name": "Clear my placed blocks",
+          "x": 851.4765625,
+          "y": 720,
+          "width": 69.375,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        },
+        {
+          "kind": "return",
+          "name": "Previous view",
+          "x": 126.453125,
+          "y": 125,
+          "width": 103.671875,
+          "height": 44,
+          "visible": true,
+          "disabled": false,
+          "hit": true,
+          "inViewport": true,
+          "outline": "3px",
+          "focused": false
+        }
+      ],
+      "previousFocus": {
+        "focused": true,
+        "outline": "3px"
+      },
+      "returned": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "width": 1418,
+          "height": 825,
+          "visible": true
+        },
+        "creation": {
+          "x": -20374.516008447426,
+          "y": -1997.5919187532209,
+          "width": 30135.02286921061,
+          "height": 16585.579159049714,
+          "minX": -29.752490844072533,
+          "maxX": 12.751067504602515,
+          "minY": -34.20966603708241,
+          "maxY": 5.997798590916899,
+          "minZ": 0.6051077289505455,
+          "maxZ": 3.24439287094781
+        },
+        "clearRect": null,
+        "controls": [
+          {
+            "kind": "utility",
+            "name": "Toggle fly mode",
+            "x": 519.1484375,
+            "y": 720,
+            "width": 58,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Undo last action",
+            "x": 580.1484375,
+            "y": 720,
+            "width": 96.46875,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Redo last action",
+            "x": 679.6171875,
+            "y": 720,
+            "width": 91.609375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Return to spawn point",
+            "x": 774.2265625,
+            "y": 720,
+            "width": 74.25,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          },
+          {
+            "kind": "utility",
+            "name": "Clear my placed blocks",
+            "x": 851.4765625,
+            "y": 720,
+            "width": 69.375,
+            "height": 44,
+            "visible": true,
+            "disabled": false,
+            "hit": true,
+            "inViewport": true,
+            "outline": "3px",
+            "focused": false
+          }
+        ],
+        "obstacles": [
+          {
+            "selector": ".gw-hotbar",
+            "x": 427,
+            "y": 834,
+            "width": 586,
+            "height": 58,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-shape-tray",
+            "x": 598.2578125,
+            "y": 776,
+            "width": 243.484375,
+            "height": 50,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gw-action-bar",
+            "x": 515.1484375,
+            "y": 716,
+            "width": 409.703125,
+            "height": 52,
+            "visible": true,
+            "overlap": true
+          },
+          {
+            "selector": ".gwe-builder-dock",
+            "x": 1082,
+            "y": 118,
+            "width": 346,
+            "height": 770,
+            "visible": true,
+            "overlap": true
+          }
+        ],
+        "inspector": null,
+        "focus": null,
+        "overflow": false,
+        "activeElement": "Focus creation",
+        "camera": {
+          "position": [
+            32.5,
+            4.2,
+            -23.5
+          ],
+          "quaternion": [
+            -0.3582637671833657,
+            0,
+            0,
+            0.9336204116896669
+          ],
+          "fov": 75
+        }
+      }
+    }
+  ],
+  "fixture": {
+    "kind": "offcenter",
+    "expected": 44,
+    "world": 45,
+    "origin": {
+      "x": 31,
+      "z": -27
+    }
+  },
+  "initial": {
+    "world": "[{\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3}]",
+    "selection": "[{\"x\":32,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-26},{\"x\":31,\"y\":1,\"z\":-26},{\"x\":32,\"y\":1,\"z\":-25},{\"x\":32,\"y\":1,\"z\":-27},{\"x\":34,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-25},{\"x\":33,\"y\":1,\"z\":-27},{\"x\":31,\"y\":1,\"z\":-25},{\"x\":31,\"y\":1,\"z\":-27},{\"x\":35,\"y\":1,\"z\":-26},{\"x\":34,\"y\":1,\"z\":-25},{\"x\":34,\"y\":1,\"z\":-27},{\"x\":33,\"y\":1,\"z\":-24},{\"x\":31,\"y\":2,\"z\":-25},{\"x\":31,\"y\":2,\"z\":-27},{\"x\":36,\"y\":1,\"z\":-26},{\"x\":35,\"y\":1,\"z\":-25},{\"x\":35,\"y\":1,\"z\":-27},{\"x\":31,\"y\":3,\"z\":-25},{\"x\":31,\"y\":3,\"z\":-27},{\"x\":35,\"y\":2,\"z\":-25},{\"x\":35,\"y\":2,\"z\":-27},{\"x\":31,\"y\":4,\"z\":-25},{\"x\":31,\"y\":4,\"z\":-27},{\"x\":35,\"y\":3,\"z\":-25},{\"x\":35,\"y\":3,\"z\":-27},{\"x\":31,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-27},{\"x\":35,\"y\":4,\"z\":-25},{\"x\":35,\"y\":4,\"z\":-27},{\"x\":32,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-26},{\"x\":32,\"y\":5,\"z\":-27},{\"x\":35,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-25},{\"x\":32,\"y\":5,\"z\":-26},{\"x\":33,\"y\":5,\"z\":-27},{\"x\":34,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-26}]",
+    "count": 44,
+    "hash": "cde7f332aec709c0ff1d071171fbaf918899cf406200670cf4f2a2979a21c3be",
+    "undo": "[{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"action\":\"place\",\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1}]",
+    "redo": "[]",
+    "placed": 45
+  },
+  "intentionalEditCheckpoint": {
+    "world": "[{\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3}]",
+    "selection": "[{\"x\":32,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-26},{\"x\":31,\"y\":1,\"z\":-26},{\"x\":32,\"y\":1,\"z\":-25},{\"x\":32,\"y\":1,\"z\":-27},{\"x\":34,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-25},{\"x\":33,\"y\":1,\"z\":-27},{\"x\":31,\"y\":1,\"z\":-25},{\"x\":31,\"y\":1,\"z\":-27},{\"x\":35,\"y\":1,\"z\":-26},{\"x\":34,\"y\":1,\"z\":-25},{\"x\":34,\"y\":1,\"z\":-27},{\"x\":33,\"y\":1,\"z\":-24},{\"x\":31,\"y\":2,\"z\":-25},{\"x\":31,\"y\":2,\"z\":-27},{\"x\":36,\"y\":1,\"z\":-26},{\"x\":35,\"y\":1,\"z\":-25},{\"x\":35,\"y\":1,\"z\":-27},{\"x\":31,\"y\":3,\"z\":-25},{\"x\":31,\"y\":3,\"z\":-27},{\"x\":35,\"y\":2,\"z\":-25},{\"x\":35,\"y\":2,\"z\":-27},{\"x\":31,\"y\":4,\"z\":-25},{\"x\":31,\"y\":4,\"z\":-27},{\"x\":35,\"y\":3,\"z\":-25},{\"x\":35,\"y\":3,\"z\":-27},{\"x\":31,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-27},{\"x\":35,\"y\":4,\"z\":-25},{\"x\":35,\"y\":4,\"z\":-27},{\"x\":32,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-26},{\"x\":32,\"y\":5,\"z\":-27},{\"x\":35,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-25},{\"x\":32,\"y\":5,\"z\":-26},{\"x\":33,\"y\":5,\"z\":-27},{\"x\":34,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-26}]",
+    "count": 44,
+    "hash": "cde7f332aec709c0ff1d071171fbaf918899cf406200670cf4f2a2979a21c3be",
+    "undo": "[{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"action\":\"place\",\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1}]",
+    "redo": "[{\"action\":\"place\",\"x\":33,\"y\":6,\"z\":-26,\"type\":\"gold\",\"shape\":\"quarter\",\"rotation\":3}]",
+    "placed": 46
+  },
+  "idleTraversalCalls": 1,
+  "final": {
+    "world": "[{\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3}]",
+    "selection": "[{\"x\":32,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-26},{\"x\":31,\"y\":1,\"z\":-26},{\"x\":32,\"y\":1,\"z\":-25},{\"x\":32,\"y\":1,\"z\":-27},{\"x\":34,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-25},{\"x\":33,\"y\":1,\"z\":-27},{\"x\":31,\"y\":1,\"z\":-25},{\"x\":31,\"y\":1,\"z\":-27},{\"x\":35,\"y\":1,\"z\":-26},{\"x\":34,\"y\":1,\"z\":-25},{\"x\":34,\"y\":1,\"z\":-27},{\"x\":33,\"y\":1,\"z\":-24},{\"x\":31,\"y\":2,\"z\":-25},{\"x\":31,\"y\":2,\"z\":-27},{\"x\":36,\"y\":1,\"z\":-26},{\"x\":35,\"y\":1,\"z\":-25},{\"x\":35,\"y\":1,\"z\":-27},{\"x\":31,\"y\":3,\"z\":-25},{\"x\":31,\"y\":3,\"z\":-27},{\"x\":35,\"y\":2,\"z\":-25},{\"x\":35,\"y\":2,\"z\":-27},{\"x\":31,\"y\":4,\"z\":-25},{\"x\":31,\"y\":4,\"z\":-27},{\"x\":35,\"y\":3,\"z\":-25},{\"x\":35,\"y\":3,\"z\":-27},{\"x\":31,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-27},{\"x\":35,\"y\":4,\"z\":-25},{\"x\":35,\"y\":4,\"z\":-27},{\"x\":32,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-26},{\"x\":32,\"y\":5,\"z\":-27},{\"x\":35,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-25},{\"x\":32,\"y\":5,\"z\":-26},{\"x\":33,\"y\":5,\"z\":-27},{\"x\":34,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-26}]",
+    "count": 44,
+    "hash": "cde7f332aec709c0ff1d071171fbaf918899cf406200670cf4f2a2979a21c3be",
+    "undo": "[{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"action\":\"place\",\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1}]",
+    "redo": "[{\"action\":\"place\",\"x\":33,\"y\":6,\"z\":-26,\"type\":\"gold\",\"shape\":\"quarter\",\"rotation\":3}]",
+    "placed": 46
+  },
+  "shaderErrors": [],
+  "pass": false
+}

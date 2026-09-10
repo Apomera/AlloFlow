@@ -1,0 +1,4 @@
+const fs=require('node:fs'),file='reports/geometry-world-graphics-2026-09-08/verify-workspace-feedback.cjs';
+let s=fs.readFileSync(file,'utf8');
+s=s.replace("   await shot(label+'-achievement-dimensions');", "   row.achievementOverlaps=await page.locator('.gw-achievement-toast').evaluate(node=>{const r=node.getBoundingClientRect();return Array.from(document.querySelectorAll('.gw-touch-actions button,.gw-touch-look-panel')).filter(b=>{const x=b.getBoundingClientRect();return Math.min(x.right,r.right)-Math.max(x.left,r.left)>1&&Math.min(x.bottom,r.bottom)-Math.max(x.top,r.top)>1;}).map(b=>b.getAttribute('aria-label')||b.className);});check(row.achievementOverlaps.length===0,label+': achievement has clear space beside touch controls');await shot(label+'-achievement-dimensions');");
+const fd=fs.openSync(file,'r+');try{fs.writeFileSync(fd,s,'utf8');fs.ftruncateSync(fd,Buffer.byteLength(s));}finally{fs.closeSync(fd);}

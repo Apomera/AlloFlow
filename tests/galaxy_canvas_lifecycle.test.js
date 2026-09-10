@@ -278,6 +278,54 @@ describe('galaxy canvas lifecycle', () => {
     });
   }
 
+  it('keeps the magnetic overlay preference independent of velocity without rebuilding', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    await mountGalaxy(ensureThree, { observeMode: 'radio', galaxyType: 'barredSpiral' });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    const toggle = () => host.querySelector('[data-galaxy-magnetic-toggle]');
+    await click(toggle());
+    expect(latestToolData.galaxy.galaxyMagneticOverlay).toBe(false);
+    expect(host.querySelector('[data-galaxy-velocity-toggle]').getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('[data-galaxy-radio-polarization-key]')).toBeNull();
+    expect(host.querySelector('[data-galaxy-magnetic-hidden]')).not.toBeNull();
+    await click(host.querySelectorAll('[data-galaxy-observatory] button')[0]);
+    await click(host.querySelectorAll('[data-galaxy-observatory] button')[2]);
+    expect(toggle().getAttribute('aria-pressed')).toBe('false');
+    await click(toggle());
+    expect(host.querySelector('[data-galaxy-radio-polarization-key]')).not.toBeNull();
+    expect(host.querySelector('[data-galaxy-canvas]')).toBe(canvas);
+    expect(ensureThree).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['elliptical', 'irregular'])('keeps the radio legend accurate for the %s model', async (galaxyType) => {
+    await mountGalaxy(vi.fn(() => new Promise(() => {})), { observeMode: 'radio', galaxyType });
+    expect(host.querySelector('[data-galaxy-radio-overlays]')).toBeNull();
+    expect(host.querySelector('[data-galaxy-radio-polarization-key]')).toBeNull();
+    expect(host.querySelector('[data-galaxy-radio-context]').textContent).toContain('spiral models only');
+    expect(host.querySelector('[data-galaxy-radio-velocity-legend]').getAttribute('aria-label')).toContain('spiral models only');
+  });
+
+  it('keeps the velocity overlay preference across radio mode changes without restarting Three.js', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    await mountGalaxy(ensureThree, { observeMode: 'radio', galaxyType: 'barredSpiral' });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    const toggle = () => host.querySelector('[data-galaxy-velocity-toggle]');
+    expect(toggle().getAttribute('aria-pressed')).toBe('true');
+    await click(toggle());
+    expect(latestToolData.galaxy.galaxyVelocityOverlay).toBe(false);
+    expect(host.querySelector('[data-galaxy-velocity-hidden]')).not.toBeNull();
+    await click(host.querySelectorAll('[data-galaxy-observatory] button')[0]);
+    expect(toggle()).toBeNull();
+    await click(host.querySelectorAll('[data-galaxy-observatory] button')[2]);
+    expect(toggle().getAttribute('aria-pressed')).toBe('false');
+    expect(host.querySelector('[data-galaxy-velocity-hidden]')).not.toBeNull();
+    await click(toggle());
+    expect(latestToolData.galaxy.galaxyVelocityOverlay).toBe(true);
+    expect(host.querySelector('[data-galaxy-velocity-hidden]')).toBeNull();
+    expect(host.querySelector('[data-galaxy-canvas]')).toBe(canvas);
+    expect(ensureThree).toHaveBeenCalledTimes(1);
+  });
+
   it('does not restart Three.js when ordinary galaxy state changes rerender the tool', async () => {
     const ensureThree = vi.fn(() => new Promise(() => {}));
     await mountGalaxy(ensureThree);

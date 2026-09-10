@@ -677,7 +677,7 @@ describe('solar system main 3D canvas loop', () => {
 
       // The captured thumbnail reaches the journal entry (session-local copy only,
       // so persisted state stays text-sized).
-      expect(source).toContain('function recordDroneJournal(kind, title, observation, cer, silent, photoThumb, photoContext)');
+      expect(source).toContain('function recordDroneJournal(kind, title, observation, cer, silent, photoThumb, photoContext, specimen)');
       expect(source).toContain('droneJournalEntries.unshift(photoThumb ? Object.assign({ photoThumb: photoThumb }, entry) : entry);');
       expect(source).toContain('true, photo.image, photo.context);');
       expect(source).toContain("entry.photoThumb ? '<img src=");

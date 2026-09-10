@@ -1,0 +1,68 @@
+{
+  "passed": true,
+  "ai": "Deterministic provider fixtures through production generation and repair",
+  "providerRequests": 6,
+  "liveWrites": 0,
+  "scenarios": [
+    "sequential generation repaired once",
+    "native keyboard flow expansion",
+    "exact editor focus and return",
+    "discovery structure repaired to shared tool gate",
+    "solo view excludes teacher flow",
+    "failed repair preserves previous room",
+    "legacy sequential import remains playable"
+  ],
+  "audits": [
+    {
+      "name": "desktop",
+      "width": 1280,
+      "dark": false,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "smallestTarget": 87.953125,
+      "violations": []
+    },
+    {
+      "name": "mobile",
+      "width": 320,
+      "dark": false,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "smallestTarget": 87.953125,
+      "violations": []
+    },
+    {
+      "name": "dark",
+      "width": 390,
+      "dark": true,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "smallestTarget": 87.953125,
+      "violations": []
+    },
+    {
+      "name": "large-text",
+      "width": 320,
+      "dark": false,
+      "large": true,
+      "forced": false,
+      "overflow": false,
+      "smallestTarget": 193.296875,
+      "violations": []
+    },
+    {
+      "name": "forced-colors",
+      "width": 390,
+      "dark": false,
+      "large": false,
+      "forced": true,
+      "overflow": false,
+      "smallestTarget": 87.953125,
+      "violations": []
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\checkbox-selected-choice-changed\\source.html",
+    "sha256": "ffe1f6adfababd06836d83c8dd8ae039fcfe22449c4542e982e0aa1cf09f636f",
+    "bytes": 367
+  },
+  "candidate": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\checkbox-selected-choice-changed\\candidate.html",
+    "sha256": "17036ec31b9054dbfe90429641716e94279e18993a3490cd4608b6cf9c06c944",
+    "bytes": 359
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 1294.995299999995,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0
+    }
+  },
+  "checks": [
+    {
+      "id": "receipt-choice",
+      "sourceSelector": "#receipt",
+      "candidateSelector": "#receipt",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "name",
+          "status": "passed",
+          "source": "Email a receipt",
+          "candidate": "Email a receipt"
+        },
+        {
+          "property": "role",
+          "status": "passed",
+          "source": "checkbox",
+          "candidate": "checkbox"
+        },
+        {
+          "property": "checked",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

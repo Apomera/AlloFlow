@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "testFiles": 22,
+  "tests": 642,
+  "command": "npx vitest run tests/allopack_ tests/catalog_index.test.js --maxWorkers=1",
+  "targetedNewTests": 13,
+  "scope": "AlloPack and catalog suites; exact counts, unit geometry, source-content preservation and image descriptions"
+}

@@ -540,6 +540,7 @@ Prim3D exists, so pass `--pre=@prim3d_module.js` to see its toolbar.
 
 ```bash
 node dev-tools/school_rewards_manual_capture.cjs   # regenerate the manual figures
+node dev-tools/school_store_setup_ui_check.cjs     # actual launcher: three paths, guide, phone/desktop; blocks remote requests
 node dev-tools/school_rewards_demo_walkthrough.cjs # the 4-role demo route + 390px mobile pass
 node dev-tools/rebuild_school_rewards_practice.cjs # rebuild both practice pages (OneDrive-safe)
 ```

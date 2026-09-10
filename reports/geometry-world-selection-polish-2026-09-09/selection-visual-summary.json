@@ -1,0 +1,40 @@
+{
+  "pass": true,
+  "scope": "Actual browser selection/dock/Showcase/PNG/Print Lab checks, followed by a narrow phone disclosure-overlap check. Parent owns separate source regression aggregation.",
+  "baseline": "before-results.json",
+  "finalWorkflow": "after-results.json",
+  "retainedHarnessAttempt": "after-first-attempt-results.json",
+  "phoneOverlapFollowup": "supplemental-results.json",
+  "exactFixturePreserved": true,
+  "print": {
+    "exact": true,
+    "count": 44,
+    "bytes": 15484,
+    "unitMm": 20,
+    "storedUnit": 20
+  },
+  "return": {
+    "world": true,
+    "selection": true,
+    "undo": true,
+    "redo": true,
+    "blocks": 45,
+    "unitMm": 20
+  },
+  "export": {
+    "filename": "after-studio-export-phone.png",
+    "bytes": 393474,
+    "width": 991,
+    "height": 2048,
+    "png": true
+  },
+  "sources": {
+    "stem_tool_geometryworld.js": "bfce4860fc3f6efd19a85ee8c2d4b0fb9c49c4f8103330e01e5b15e02b8013ed",
+    "stem_tool_geometryworld_builder.js": "95fd225c30e43435ecb525d7e45af1c58bc44cb77340fb370482d69533453a56",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "visualFinding": {
+    "issue": "Collapsed Build launcher intersected expanded phone measurement text.",
+    "fixed": true
+  }
+}

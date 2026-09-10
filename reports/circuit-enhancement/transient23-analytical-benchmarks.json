@@ -1,0 +1,32 @@
+[
+  {
+    "name": "RC",
+    "ok": true,
+    "message": "Time response calculated from the configured starting energy. Board, probes, and readings follow the scope cursor.",
+    "samples": 783,
+    "steps": 391,
+    "rejected": 4,
+    "elapsedMs": 122.53889999999998,
+    "maxAbsoluteError": 0.0034401455444106332
+  },
+  {
+    "name": "RL",
+    "ok": true,
+    "message": "Time response calculated from the configured starting energy. Board, probes, and readings follow the scope cursor.",
+    "samples": 795,
+    "steps": 397,
+    "rejected": 5,
+    "elapsedMs": 95.5942,
+    "maxAbsoluteError": 0.000034370842744727015
+  },
+  {
+    "name": "RLC",
+    "ok": true,
+    "message": "Time response calculated from the configured starting energy. Board, probes, and readings follow the scope cursor.",
+    "samples": 3927,
+    "steps": 1963,
+    "rejected": 4,
+    "elapsedMs": 1281.5167999999999,
+    "maxAbsoluteError": 0.031348603341747605
+  }
+]

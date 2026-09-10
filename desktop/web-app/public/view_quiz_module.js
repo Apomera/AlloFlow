@@ -7107,6 +7107,26 @@ function QuizView(props) {
   var resetEscapeRoom = props.resetEscapeRoom;
   var launchCollaborativeEscapeRoom = props.launchCollaborativeEscapeRoom;
   var launchConceptQuest = props.launchConceptQuest;
+  var [boardSetupOpen, setBoardSetupOpen] = React.useState(false);
+  var [boardSetupReady, setBoardSetupReady] = React.useState(() => !!window.AlloModules?.LessonBoardModule);
+  React.useEffect(() => {
+    if (!boardSetupOpen || boardSetupReady) return;
+    window.__alloLazyLessonBoard?.();
+    const timer = setInterval(() => {
+      if (window.AlloModules?.LessonBoardModule) setBoardSetupReady(true);
+    }, 250);
+    return () => clearInterval(timer);
+  }, [boardSetupOpen, boardSetupReady]);
+  var [connectedSetupOpen, setConnectedSetupOpen] = React.useState(false);
+  var [connectedSetupReady, setConnectedSetupReady] = React.useState(() => !!window.AlloModules?.ConnectedEscapeRoomModule);
+  React.useEffect(() => {
+    if (!connectedSetupOpen || connectedSetupReady) return;
+    window.__alloLazyConnectedEscape?.();
+    const timer = setInterval(() => {
+      if (window.AlloModules?.ConnectedEscapeRoomModule) setConnectedSetupReady(true);
+    }, 250);
+    return () => clearInterval(timer);
+  }, [connectedSetupOpen, connectedSetupReady]);
   var openEscapeRoomSettings = props.openEscapeRoomSettings;
   var generateEscapeRoom = props.generateEscapeRoom;
   var handlePuzzleSolved = props.handlePuzzleSolved;
@@ -8487,7 +8507,58 @@ function QuizView(props) {
   }
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, classExplainerBanner, modeBanner, explainerPanel, qualityReviewPanel, deliverySettingsPanel, draftStatusPanel, learnerAttemptPanel, reviewDialog, /*#__PURE__*/React.createElement("div", {
+  }, boardSetupOpen && (isTeacherMode || !activeSessionCode) && (boardSetupReady && window.AlloModules?.LessonBoardSetup ? /*#__PURE__*/React.createElement(window.AlloModules.LessonBoardSetup, {
+    callGemini: props.callGemini,
+    inputText: props.inputText,
+    generatedContent: generatedContent,
+    language: leveledTextLanguage === 'All selected languages' ? props.selectedLanguages?.[0] || 'English' : leveledTextLanguage || 'English',
+    activeSessionCode: activeSessionCode,
+    appId: appId,
+    sessionData: sessionData,
+    user: props.user,
+    allowLive: !!(isTeacherMode && activeSessionCode),
+    t: t,
+    onClose: () => setBoardSetupOpen(false),
+    onLaunched: () => setEscapeRoomState(previous => ({
+      ...previous,
+      isActive: false,
+      isGenerating: false,
+      isPreview: false
+    }))
+  }) : /*#__PURE__*/React.createElement("div", {
+    role: "status"
+  }, t('lesson_board.loading', {
+    defaultValue: 'Loading the lesson board…'
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setBoardSetupOpen(false)
+  }, t('common.close')))), connectedSetupOpen && (isTeacherMode || !activeSessionCode) && (connectedSetupReady && window.AlloModules?.ConnectedEscapeRoomSetup ? /*#__PURE__*/React.createElement(window.AlloModules.ConnectedEscapeRoomSetup, {
+    callGemini: props.callGemini,
+    inputText: props.inputText,
+    generatedContent: generatedContent,
+    language: leveledTextLanguage === 'All selected languages' ? props.selectedLanguages?.[0] || 'English' : leveledTextLanguage || 'English',
+    activeSessionCode: activeSessionCode,
+    appId: appId,
+    sessionData: sessionData,
+    user: props.user,
+    allowLive: !!(isTeacherMode && activeSessionCode),
+    t: t,
+    onClose: () => setConnectedSetupOpen(false),
+    onLaunched: () => setEscapeRoomState(previous => ({
+      ...previous,
+      isActive: false,
+      isGenerating: false,
+      isPreview: false
+    }))
+  }) : /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "rounded-xl bg-indigo-50 p-4"
+  }, t('connected_escape.loading', {
+    defaultValue: 'Loading the connected room…'
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setConnectedSetupOpen(false)
+  }, t('common.close')))), classExplainerBanner, modeBanner, explainerPanel, qualityReviewPanel, deliverySettingsPanel, draftStatusPanel, learnerAttemptPanel, reviewDialog, /*#__PURE__*/React.createElement("div", {
     className: "bg-teal-50 p-4 rounded-lg border border-teal-100 mb-6 flex justify-between items-center flex-wrap gap-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-teal-800 flex-grow"
@@ -8497,6 +8568,7 @@ function QuizView(props) {
     type: "button",
     "aria-label": t('common.connect'),
     onClick: handleStartLiveSession,
+    disabled: !!sessionData?.escapeRoomState?.isActive,
     className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200 ' + quizreducedMotionClass,
     title: t('quiz.launch_live_tooltip')
   }, /*#__PURE__*/React.createElement(Wifi, {
@@ -8522,7 +8594,7 @@ function QuizView(props) {
     type: "button",
     "aria-label": t('common.confirm'),
     onClick: handleToggleIsPresentationMode,
-    disabled: isReviewGame || isTeacherMode && sessionData?.quizState?.isActive,
+    disabled: isReviewGame || isTeacherMode && (sessionData?.quizState?.isActive || sessionData?.escapeRoomState?.isActive),
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isPresentationMode ? 'bg-indigo-600 text-white hover:bg-indigo-700 ring-2 ring-indigo-200' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`,
     title: t('quiz.presentation')
   }, isPresentationMode ? /*#__PURE__*/React.createElement(CheckCircle, {
@@ -8532,7 +8604,7 @@ function QuizView(props) {
   }), isPresentationMode ? t('common.close') : t('quiz.presentation')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleToggleIsReviewGame,
-    disabled: isPresentationMode,
+    disabled: isPresentationMode || !!sessionData?.escapeRoomState?.isActive,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isReviewGame ? 'bg-yellow-500 text-indigo-900 hover:bg-yellow-600 ring-2 ring-yellow-200' : 'bg-white text-yellow-600 border border-yellow-200 hover:bg-yellow-50'}`,
     title: t('quiz.review_game'),
     "aria-label": t('quiz.review_game')
@@ -8557,7 +8629,7 @@ function QuizView(props) {
         }
       }
     },
-    disabled: isPresentationMode || isReviewGame,
+    disabled: isPresentationMode || isReviewGame || ['connected-room', 'lesson-board'].includes(sessionData?.escapeRoomState?.mode) && sessionData.escapeRoomState.isActive,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${escapeRoomState.isActive ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-200' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50'}`,
     title: isTeacherMode && activeSessionCode ? t('escape_room.launch_live_tooltip') : t('escape_room.title'),
     "aria-label": t('escape_room.title')
@@ -8565,10 +8637,30 @@ function QuizView(props) {
     size: 14
   }) : /*#__PURE__*/React.createElement(DoorOpen, {
     size: 14
-  }), escapeRoomState.isActive ? t('common.close') : isTeacherMode && activeSessionCode ? t('escape_room.launch_live_btn') : t('escape_room.title')), isTeacherMode && activeSessionCode && !escapeRoomState.isActive && /*#__PURE__*/React.createElement("button", {
+  }), escapeRoomState.isActive ? t('common.close') : isTeacherMode && activeSessionCode ? t('escape_room.launch_live_btn') : t('escape_room.title')), (isTeacherMode || !activeSessionCode) && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-open-lesson-board": true,
+    onClick: () => setBoardSetupOpen(true),
+    disabled: isPresentationMode || isReviewGame || !!sessionData?.escapeRoomState?.isActive,
+    className: "flex items-center gap-2 rounded-full border border-teal-300 bg-teal-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-teal-600 disabled:opacity-50"
+  }, /*#__PURE__*/React.createElement(Gamepad2, {
+    size: 14
+  }), t('lesson_board.title', {
+    defaultValue: 'Lesson board game'
+  })), (isTeacherMode || !activeSessionCode) && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-open-connected-room": true,
+    onClick: () => setConnectedSetupOpen(true),
+    disabled: isPresentationMode || isReviewGame || !!sessionData?.escapeRoomState?.isActive,
+    className: "flex items-center gap-2 rounded-full border border-indigo-300 bg-indigo-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-600 disabled:opacity-50"
+  }, /*#__PURE__*/React.createElement(DoorOpen, {
+    size: 14
+  }), t('connected_escape.title', {
+    defaultValue: 'Connected escape room'
+  })), isTeacherMode && activeSessionCode && !escapeRoomState.isActive && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: launchConceptQuest,
-    disabled: isPresentationMode || isReviewGame,
+    disabled: isPresentationMode || isReviewGame || ['connected-room', 'lesson-board'].includes(sessionData?.escapeRoomState?.mode) && sessionData.escapeRoomState.isActive,
     className: "flex items-center gap-2 rounded-full border border-indigo-300 bg-gradient-to-r from-indigo-700 to-purple-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50",
     title: t('concept_quest.launch_tooltip'),
     "aria-label": t('concept_quest.launch_aria')

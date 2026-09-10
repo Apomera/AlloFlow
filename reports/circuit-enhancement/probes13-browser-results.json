@@ -1,0 +1,20 @@
+{
+  "errors": [],
+  "axeViolations": [],
+  "checks": [
+    "keyboard open",
+    "source reading",
+    "selected-part measurement",
+    "swap gives negative reading",
+    "same-node zero",
+    "probes preserve circuit history/current",
+    "live edit and undo",
+    "PNG export",
+    "390px layout",
+    "unknown node",
+    "same unknown node zero",
+    "known source across unknown region",
+    "parallel shared rails",
+    "hide probes"
+  ]
+}

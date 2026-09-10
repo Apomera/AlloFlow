@@ -8,6 +8,16 @@ test('parking coach updates real clearances and readiness on desktop and phone',
   const metrics=page.getByRole('region',{name:'Live parking measurements'});
   await expect(metrics).toContainText('Align first');
   await expect(page.getByRole('heading',{name:'Parallel parking',exact:true})).toBeVisible();
+  await expect(metrics).toContainText('Front wheels · Straight');
+  await page.keyboard.down('s'); await page.keyboard.down('d');
+  await expect(metrics).toContainText('Reversing');
+  await expect(metrics).toContainText('Front wheels · Right');
+  await page.keyboard.up('s'); await page.keyboard.up('d');
+  await page.keyboard.down(' ');
+  await expect(metrics.getByLabel('Car response')).toContainText('Braking');
+  await page.keyboard.up(' ');
+  await page.getByRole('button',{name:'Reset practice',exact:true}).click();
+  await expect(metrics).toContainText('Front wheels · Straight');
   await page.screenshot({path:'reports/roadready-review/parking-coach-desktop.png',scale:'css',fullPage:true});
   // The shorter practice view follows a car that backs beyond its initial frame.
   await page.evaluate(()=>Object.assign((window as any).__testHooks.parking.carRef.current,{x:254.3,y:420,heading:-Math.PI/2,speed:0,steering:0}));

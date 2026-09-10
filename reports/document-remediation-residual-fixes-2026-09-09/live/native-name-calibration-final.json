@@ -1,0 +1,156 @@
+{
+  "measuredAt": "2026-09-10T03:33:36.797Z",
+  "scope": "Static local Chromium ARIA snapshots; naming behavior only, not human screen-reader calibration.",
+  "results": [
+    {
+      "label": "hidden native label overridden",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Teacher name\"",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "hidden image native label overridden",
+      "source": "- textbox \"Student name\": Ada",
+      "candidate": "- textbox \"Teacher name\": Ada",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "native label hidden by ancestor overridden",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Teacher name\"",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "image native label overridden",
+      "source": "- textbox \"Student name\": Ada",
+      "candidate": "- textbox \"Teacher name\": Ada",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "implicit image label overridden",
+      "source": "- textbox \"Student name\": Ada",
+      "candidate": "- textbox \"Teacher name\": Ada",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "image alternative in native label changed",
+      "source": "- textbox \"Student name\": Ada",
+      "candidate": "- textbox \"Teacher name\": Ada",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "image label reference overridden",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Teacher name\"",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "descendant ARIA native label overridden",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Teacher name\"",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "mixed text and alternative overridden",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Teacher name\"",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "SVG title native label overridden",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Teacher name\"",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "button descendant alternative overridden",
+      "source": "- button \"Student name\":\n  - img \"Student name\"",
+      "candidate": "- button \"Teacher name\":\n  - img \"Student name\"",
+      "nativeNameChanged": true
+    },
+    {
+      "label": "image description units retargeted",
+      "source": "- textbox \"Weight\"",
+      "candidate": "- textbox \"Weight\"",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "equivalent hidden native name",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Student name\"",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "equivalent hidden image native name",
+      "source": "- textbox \"Student name\": Ada",
+      "candidate": "- textbox \"Student name\": Ada",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "equivalent native name hidden by ancestor",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Student name\"",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "equivalent image native name",
+      "source": "- textbox \"Student name\": Ada",
+      "candidate": "- textbox \"Student name\": Ada",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "equivalent image reference name",
+      "source": "- textbox \"Student name\": Ada",
+      "candidate": "- textbox \"Student name\": Ada",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "native image label ID rename",
+      "source": "- textbox \"Student name\": Ada",
+      "candidate": "- textbox \"Student name\": Ada",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "image reference ID rename",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Student name\"",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "image label inline wrapper",
+      "source": "- textbox \"Student name\": Ada",
+      "candidate": "- textbox \"Student name\": Ada",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "mixed equivalent name",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Student name\"",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "descendant ARIA equivalent name",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Student name\"",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "hidden decorative label content excluded",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Student name\"",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "hidden directly referenced image name",
+      "source": "- textbox \"Student name\"",
+      "candidate": "- textbox \"Student name\"",
+      "nativeNameChanged": false
+    },
+    {
+      "label": "empty source image name repaired",
+      "source": "- textbox: Ada",
+      "candidate": "- textbox \"Student name\": Ada",
+      "nativeNameChanged": true
+    }
+  ]
+}

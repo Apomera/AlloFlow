@@ -1,0 +1,227 @@
+[
+  {
+    "id": "we-term-1",
+    "kind": "term",
+    "file": "we-term-1.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "An illustrated soil cutaway shows a tree root extending into a crack in a gray boulder.",
+    "altHash": "img-lq7-09d16822"
+  },
+  {
+    "id": "we-term-2",
+    "kind": "term",
+    "file": "we-term-2.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "An illustrated stream cutaway shows enlarged brown grains suspended in blue water above a sandy bed, with streaks suggesting flow.",
+    "altHash": "img-ijz-375f3156"
+  },
+  {
+    "id": "we-term-3",
+    "kind": "term",
+    "file": "we-term-3.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Illustrated sediment examples include a pile of sand grains, angular gravel pieces and larger rounded pebbles.",
+    "altHash": "img-r8n-117fe8d8"
+  },
+  {
+    "id": "we-term-4",
+    "kind": "term",
+    "file": "we-term-4.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A stream widens into a pool; an illustrated cutaway shows sediment piled on the bottom with a few grains above it.",
+    "altHash": "img-fav-0daca3e4"
+  },
+  {
+    "id": "we-term-5",
+    "kind": "term",
+    "file": "we-term-5.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "An illustrated land profile shows a gently sloping grassy hill beside a much steeper hill.",
+    "altHash": "img-7df-efc119f0"
+  },
+  {
+    "id": "we-term-6",
+    "kind": "term",
+    "file": "we-term-6.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Rain falls on a bare slope where small surface streams join a channel at the bottom.",
+    "altHash": "img-qpn-d2394811"
+  },
+  {
+    "id": "we-term-7",
+    "kind": "term",
+    "file": "we-term-7.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A brown-skinned cartoon child with curls and glasses studies two cups of muddy water beside a blank notebook and pencil.",
+    "altHash": "img-i0r-9c1b8a41"
+  },
+  {
+    "id": "we-term-8",
+    "kind": "term",
+    "file": "we-term-8.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "An inclined miniature hillside tray with soil, plants and rocks drains muddy water through an outlet into a clear cup.",
+    "altHash": "img-gjr-e5163c72"
+  },
+  {
+    "id": "we-anchor-1",
+    "kind": "anchor",
+    "file": "we-anchor-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "An illustrated cutaway shows a root connected to a tree entering a crack in a large gray rock.",
+    "altHash": "img-h07-211ae082"
+  },
+  {
+    "id": "we-anchor-2",
+    "kind": "anchor",
+    "file": "we-anchor-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "An illustrated stream descends rocky ground and branches across a broad fan-shaped deposit of sand and gravel.",
+    "altHash": "img-r7z-3739d772"
+  },
+  {
+    "id": "we-anchor-3",
+    "kind": "anchor",
+    "file": "we-anchor-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Two illustrated soil trays rest on solid wedges at different slopes, with each outlet positioned above an empty collection cup.",
+    "altHash": "img-9gb-31f26b6c"
+  },
+  {
+    "id": "we-sort-1",
+    "kind": "sort",
+    "file": "we-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A thick root connected to a tree runs into a narrow crack in a gray rock at ground level.",
+    "altHash": "img-f3j-104154a7"
+  },
+  {
+    "id": "we-sort-2",
+    "kind": "sort",
+    "file": "we-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Two illustrated views show the same rock on snowy ground with ice inside a narrow crack, then a wider crack.",
+    "altHash": "img-c7z-ce845291"
+  },
+  {
+    "id": "we-sort-3",
+    "kind": "sort",
+    "file": "we-sort-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "An illustrated stream cutaway shows sand grains underwater, with pale arrows pointing downstream above a sandy bed.",
+    "altHash": "img-i1b-55eb64a7"
+  },
+  {
+    "id": "we-sort-4",
+    "kind": "sort",
+    "file": "we-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Illustrated sand grains and pale motion streaks cross a dry path beside grass bending in the same direction.",
+    "altHash": "img-fmf-e42e097a"
+  },
+  {
+    "id": "we-sort-5",
+    "kind": "sort",
+    "file": "we-sort-5.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A stream enters a wider pool; an illustrated underwater cutaway shows sand piled on the bottom with grains above it.",
+    "altHash": "img-ffr-e1989da0"
+  },
+  {
+    "id": "we-sort-6",
+    "kind": "sort",
+    "file": "we-sort-6.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "An illustrated river winds through flat land with fresh-looking mud, shallow puddles and grass tufts beside its channel.",
+    "altHash": "img-hlv-73d5b44b"
+  },
+  {
+    "id": "we-lesson-1",
+    "kind": "lesson",
+    "file": "we-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Three illustrated panels show roots in cracked rock, grains carried through water, and a sand deposit resting on a pool bottom.",
+    "altHash": "img-1f4b-d8552b9d"
+  },
+  {
+    "id": "we-lesson-2",
+    "kind": "lesson",
+    "file": "we-lesson-2.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Two illustrated rock views show water in a narrow crack on mild ground, then ice in a wider crack amid snow.",
+    "altHash": "img-13pz-9f44bbab"
+  },
+  {
+    "id": "we-lesson-3",
+    "kind": "lesson",
+    "file": "we-lesson-3.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Four illustrated scenes show a shallow stream, windblown sand, rocks in and along a glacier, and loose stones below a steep rock face.",
+    "altHash": "img-2myv-1e0dc024"
+  },
+  {
+    "id": "we-lesson-4",
+    "kind": "lesson",
+    "file": "we-lesson-4.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "An illustrated pool cutaway shows coarse material near the inlet, finer sand farther away, and small grains still suspended in the water.",
+    "altHash": "img-12tf-bc83ea4b"
+  },
+  {
+    "id": "we-lesson-5",
+    "kind": "lesson",
+    "file": "we-lesson-5.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Two cartoon students with different skin tones inspect soil trays on different slopes, with empty collection cups, water pitchers and blank notebooks.",
+    "altHash": "img-18mz-26cf90d1"
+  },
+  {
+    "id": "we-lesson-6",
+    "kind": "lesson",
+    "file": "we-lesson-6.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A cartoon child using a wheelchair holds two muddy-water cups while a brown-skinned classmate draws a cup outline on paper.",
+    "altHash": "img-12tz-6874d8a2"
+  },
+  {
+    "id": "we-lesson-7",
+    "kind": "lesson",
+    "file": "we-lesson-7.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Two clear cups hold lighter and darker muddy water at similar levels, with sediment at their bottoms and a blank notebook nearby.",
+    "altHash": "img-q3j-4f985b72"
+  },
+  {
+    "id": "we-lesson-8",
+    "kind": "lesson",
+    "file": "we-lesson-8.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Side-by-side illustrations compare a small planted soil tray draining into a cup with a mountain landscape containing trees and a winding stream.",
+    "altHash": "img-2993-fce2ae79"
+  }
+]

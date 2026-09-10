@@ -7036,6 +7036,11 @@ function PdfAuditView(props) {
     try {
       const result = await refixChunk(chunkIndex, {
         onProgress: (message) => _setRemediationOperationStep(operationTicket, message),
+        onPassEvidence: delta => {
+          if (!_remediationOperationIsCurrent(operationTicket)) return;
+          const review = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.RemediationReview;
+          if (review) _commitAsyncHtmlIfCurrent(operationTicket.htmlToken, prev => ({ ...prev, ...review.mergeEvidence(prev, delta) }));
+        },
         currentHtml: source.accessibleHtml,
         persistedState: source.chunkState,
         documentEpoch: operationTicket.documentEpoch,
@@ -9754,7 +9759,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
                             preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
                             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
-                            candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120) })) : [],
+                            candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120), ...(typeof entry.sourceLocation === 'string' ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {}) })) : [],
                             reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,
@@ -16026,7 +16031,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
                             preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
                             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
-                                  candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120) })) : [],
+                                  candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120), ...(typeof entry.sourceLocation === 'string' ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {}) })) : [],
                                   reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,

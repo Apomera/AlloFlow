@@ -57,3 +57,7 @@ Social Practice exposes the target social skill here. Systems mode exposes resou
 Expand **Learning supports**, **Story & game rules**, **Visuals**, **Story guidance**, or **Saving & permissions** for the remaining options. The old Difficulty control is labeled **Energy & rewards** to reflect what it changes; the underlying multipliers and lesson expectations are unchanged. Automatic reading is available under Learning supports before starting.
 
 During a story, teacher finale controls remain available in the sidebar under **Teacher story controls**. Gameplay status and the gameplay toolbar appear after the first scene starts.
+
+Choose **Set-length episode** or **Open-ended** directly in Essential setup. Open-ended has no fixed decision cap; an enabled final challenge or energy depletion can still finish the story. Switching back restores the previous decision count while the setup is open.
+
+Adventure language appears when additional languages are available or a saved adventure uses another language. For English-only lessons, English stays in the setup summary. Teachers can use **Add languages in Universal Settings** to open and focus the shared language input.

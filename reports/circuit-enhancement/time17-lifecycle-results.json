@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "checks": [
+    "editing during playback cancels clock and resets time",
+    "leaving mixed workspace cleans up timer",
+    "return resumes previously running sweep",
+    "hidden page pauses playback",
+    "live meter announcements off during playback and restored when paused"
+  ]
+}

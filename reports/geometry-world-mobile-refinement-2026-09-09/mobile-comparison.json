@@ -1,0 +1,125 @@
+{
+  "pass": true,
+  "sameFixture": true,
+  "sourceHashes": {
+    "stem_tool_geometryworld.js": "d636a8a3d6e0a2c522bfe3cc91f198a9aa5572bd88521b9b15108ee0c4a37cf4",
+    "stem_tool_geometryworld_builder.js": "cf3edde2514d93fb3d9455badf67b25e183e7e6ae93877fe2c570a83d3480edc"
+  },
+  "idleTraversalCalls": 0,
+  "idleWarmupCalls": 1,
+  "supplementalPhoneLandscapePassed": true,
+  "viewports": [
+    {
+      "viewport": "320x700",
+      "before": {
+        "width": 57.58042322399281,
+        "height": 57.12979690917913,
+        "area": 3289.5578847312904,
+        "inspectorHeight": 158
+      },
+      "after": {
+        "width": 152.17982225335882,
+        "height": 149.0983873278408,
+        "area": 22689.76608181326,
+        "inspectorHeight": 198.984375
+      },
+      "heightRatio": 2.609818262873694,
+      "areaRatio": 6.8975123335355715,
+      "clearRect": {
+        "left": -0.8806535947712417,
+        "right": 0.4558169934640523,
+        "bottom": -0.036619273301737865,
+        "top": 0.5563665086887836,
+        "width": 204.48,
+        "height": 187.68000000000004
+      },
+      "primaryCount": 12,
+      "primaryTargetsPass": true,
+      "obstacleOverlap": []
+    },
+    {
+      "viewport": "390x844",
+      "before": {
+        "width": 150.5943625722248,
+        "height": 151.74300864082178,
+        "area": 22851.641661056157,
+        "inspectorHeight": 302
+      },
+      "after": {
+        "width": 209.52434848167485,
+        "height": 205.3624210238534,
+        "area": 43028.42746764229,
+        "inspectorHeight": 198.984375
+      },
+      "heightRatio": 1.3533567237351254,
+      "areaRatio": 1.8829468843357313,
+      "clearRect": {
+        "left": -0.8954255319148935,
+        "right": 0.5496808510638297,
+        "bottom": -0.20774774774774768,
+        "top": 0.6311711711711712,
+        "width": 271.67999999999995,
+        "height": 325.91999999999996
+      },
+      "primaryCount": 12,
+      "primaryTargetsPass": true,
+      "obstacleOverlap": []
+    },
+    {
+      "viewport": "844x390",
+      "before": {
+        "width": 92.56381710999055,
+        "height": 92.32694166879631,
+        "area": 8546.134142955227,
+        "inspectorHeight": 240
+      },
+      "after": {
+        "width": 92.56381710999055,
+        "height": 92.32694166879631,
+        "area": 8546.134142955227,
+        "inspectorHeight": 240
+      },
+      "heightRatio": 1,
+      "areaRatio": 1,
+      "clearRect": {
+        "left": -0.6791750304136253,
+        "right": 0.6821023418491483,
+        "bottom": 0.17688888888888887,
+        "top": 0.8961269841269841,
+        "width": 559.4849999999999,
+        "height": 113.28
+      },
+      "primaryCount": 6,
+      "primaryTargetsPass": true,
+      "obstacleOverlap": []
+    },
+    {
+      "viewport": "1440x900",
+      "before": {
+        "width": 328.7034789416871,
+        "height": 336.532707415827,
+        "area": 110619.47170524724,
+        "inspectorHeight": 401.8125
+      },
+      "after": {
+        "width": 328.7034789416871,
+        "height": 336.532707415827,
+        "area": 110619.47170524724,
+        "inspectorHeight": 510.5
+      },
+      "heightRatio": 1,
+      "areaRatio": 1,
+      "clearRect": {
+        "left": -0.9410437235543019,
+        "right": 0.9410437235543019,
+        "bottom": -0.5312,
+        "top": 0.6766545454545455,
+        "width": 1334.4,
+        "height": 498.24
+      },
+      "primaryCount": 6,
+      "primaryTargetsPass": true,
+      "obstacleOverlap": []
+    }
+  ]
+}

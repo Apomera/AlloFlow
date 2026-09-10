@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "e7b9b16be4416a51b1a4eb81e97bd6a186773b05e612682ceeb32878edf873ca",
+    "bytes": 395
+  },
+  "candidate": {
+    "sha256": "d1a55716b04a0e51c7e8a01282d7cdbea95bb4f5aa9d8d4e1544ce5dd36fcb14",
+    "bytes": 427
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 1117.7241000000004,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "submission-instruction",
+      "sourceSelector": "#instruction",
+      "candidateSelector": "#instruction",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Submit the form before Friday.",
+          "candidate": "Submit the form before Friday."
+        },
+        {
+          "property": "visible",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        },
+        {
+          "property": "exposed",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        },
+        {
+          "property": "visibleText",
+          "status": "failed",
+          "source": "Submit the form before Friday.",
+          "candidate": "",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                6
+              ],
+              [
+                7,
+                10
+              ],
+              [
+                11,
+                15
+              ],
+              [
+                16,
+                22
+              ],
+              [
+                23,
+                30
+              ]
+            ],
+            "candidate": []
+          }
+        },
+        {
+          "property": "exposedText",
+          "status": "failed",
+          "source": "Submit the form before Friday.",
+          "candidate": "",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                6
+              ],
+              [
+                7,
+                10
+              ],
+              [
+                11,
+                15
+              ],
+              [
+                16,
+                22
+              ],
+              [
+                23,
+                30
+              ]
+            ],
+            "candidate": []
+          }
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

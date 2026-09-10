@@ -495,6 +495,1242 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     document.head.appendChild(ecoStyle);
   }
 
+  // ── Multi-species food-web laboratory ──
+  // Illustrative biomass-index model. Diet links are grounded in natural history;
+  // rates are teaching assumptions, not fitted wildlife population parameters.
+  var ECO_WEB_SPECIES = [
+    { id: 'plants', name: 'Meadow plants', icon: '\uD83C\uDF3F', role: 'Producer', initial: 110, x: 50, y: 84, color: '#86efac' },
+    { id: 'rabbits', name: 'Rabbits', icon: '\uD83D\uDC07', role: 'Herbivore', initial: 35, intake: 0.55, half: 40, efficiency: 0.28, mortality: 0.07, crowding: 0.0005, x: 25, y: 48, color: '#7dd3fc' },
+    { id: 'voles', name: 'Meadow voles', icon: '\uD83D\uDC01', role: 'Herbivore', initial: 28, intake: 0.45, half: 40, efficiency: 0.35, mortality: 0.08, crowding: 0.0007, x: 75, y: 48, color: '#fde68a' },
+    { id: 'foxes', name: 'Red foxes', icon: '\uD83E\uDD8A', role: 'Predator', initial: 9, intake: 0.8, half: 18, efficiency: 0.2, mortality: 0.09, crowding: 0.0004, x: 25, y: 14, color: '#fdba74' },
+    { id: 'owls', name: 'Barn owls', icon: '\uD83E\uDD89', role: 'Predator', initial: 6, intake: 0.65, half: 14, efficiency: 0.3, mortality: 0.08, crowding: 0.0004, x: 75, y: 14, color: '#c4b5fd' },
+    { id:'caterpillars',name:'Caterpillars',icon:'🐛',role:'Herbivore',optional:true,initial:20,intake:0.5,half:30,efficiency:0.3,mortality:0.08,crowding:0.0008,x:83,y:48,color:'#bef264' },
+    { id:'bluetits',name:'Blue tits',icon:'🐦',role:'Insectivore',optional:true,initial:5,intake:0.65,half:10,efficiency:0.3,mortality:0.07,crowding:0.0006,x:83,y:14,color:'#67e8f9' }
+  ];
+  var ECO_WEB_LINKS = [
+    { food: 'plants', consumer: 'rabbits', weight: 1 },
+    { food: 'plants', consumer: 'voles', weight: 1 },
+    { food: 'rabbits', consumer: 'foxes', weight: 1 },
+    { food: 'voles', consumer: 'foxes', weight: 1.4 },
+    { food: 'voles', consumer: 'owls', weight: 1 },
+    { food:'plants',consumer:'caterpillars',weight:1 },
+    { food:'caterpillars',consumer:'bluetits',weight:1 }
+  ];
+  function ecoWebNumber(value, fallback, min, max) {
+    var n = Number(value);
+    return value == null || !isFinite(n) ? fallback : Math.max(min, Math.min(max, n));
+  }
+  function ecoWebConfig(raw) {
+    raw = raw || {};
+    var initial = {}, enabled = {};
+    var soil={enabled:!!(raw.soil&&raw.soil.enabled===true),detritus:ecoWebNumber(raw.soil&&raw.soil.detritus,30,0,160),nutrients:ecoWebNumber(raw.soil&&raw.soil.nutrients,4,0,160),decomposers:ecoWebNumber(raw.soil&&raw.soil.decomposers,8,0,80)};
+    ECO_WEB_SPECIES.forEach(function(sp) {
+      enabled[sp.id] = sp.id === 'plants' || (sp.optional ? !!(raw.enabled && raw.enabled[sp.id] === true) : !(raw.enabled && raw.enabled[sp.id] === false));
+      initial[sp.id] = enabled[sp.id] ? ecoWebNumber(raw.initial && raw.initial[sp.id], sp.initial, 0, 160) : 0;
+    });
+    return { initial: initial, enabled: enabled, soil:soil, capacity: ecoWebNumber(raw.capacity, 160, 40, 240), cover: ecoWebNumber(raw.cover, 0, 0, 80),
+      event: !soil.enabled && ['clearLitter','decomposerDecline'].indexOf(raw.event)>=0 ? 'none' : ['none', 'remove', 'reduce', 'drought', 'restoreCover', 'clearCover','clearLitter','decomposerDecline'].indexOf(raw.event) >= 0 ? raw.event : 'remove',
+      target: ECO_WEB_SPECIES.some(function(sp) { return sp.id === raw.target; }) ? raw.target : 'foxes',
+      eventStep: Math.round(ecoWebNumber(raw.eventStep, 80, 10, 200)) };
+  }
+  function ecoWebRun(raw, disturbed, subdivisions) {
+    var config = ecoWebConfig(raw), values = Object.assign({}, config.initial), capacity = config.capacity, cover = config.cover;
+    var soil=config.soil.enabled?{detritus:config.soil.detritus,nutrients:config.soil.nutrients,decomposers:config.soil.decomposers,exported:0}:null;
+    var nutrientPerBiomass=0.1;
+    var samples = [], substeps = Math.round(ecoWebNumber(subdivisions, soil ? 8 : 4, 1, 16)), dt = 0.1 / substeps;
+    function sample(step) { var row={step:step,time:step/10,values:Object.assign({},values),capacity:capacity,cover:cover};if(soil)row.soil=Object.assign({},soil);samples.push(row); }
+    sample(0);
+    for (var step = 1; step <= 240; step++) {
+      for (var sub = 0; sub < substeps; sub++) {
+        var available = {}, losses = {}, gains = {}, demand = {}, fluxes = [];
+        ECO_WEB_SPECIES.forEach(function(sp) {
+          var value = values[sp.id];
+          var change = sp.id === 'plants' ? 0.7 * value * (1 - value / capacity) : -sp.mortality * value - sp.crowding * value * value;
+          available[sp.id] = Math.max(0, value + dt * change);
+          if(soil){
+            // Fixed nutrient quota across all living biomass. Growth transfers
+            // mineral stock into plants; actual mortality returns it to litter.
+            var growth=sp.id==='plants'?Math.min(Math.max(0,dt*change),soil.nutrients/nutrientPerBiomass):0;
+            var mortality=Math.min(value,Math.max(0,-dt*change)+(sp.id==='plants'?dt*0.018*value:0));
+            soil.nutrients=Math.max(0,soil.nutrients-growth*nutrientPerBiomass);
+            soil.detritus+=mortality*nutrientPerBiomass;
+            available[sp.id]=value+growth-mortality;
+          }
+          losses[sp.id] = 0; gains[sp.id] = 0; demand[sp.id] = 0;
+        });
+        ECO_WEB_SPECIES.slice(1).forEach(function(sp) {
+          var foods = ECO_WEB_LINKS.filter(function(link) { return link.consumer === sp.id; });
+          // Cover reduces accessible herbivore biomass for both predators. Plant
+          // grazing is unchanged; the cover index is independent of food biomass.
+          var access = sp.id === 'foxes' || sp.id === 'owls' ? 1 - cover / 100 : 1;
+          var foodTotal = foods.reduce(function(sum, link) { return sum + values[link.food] * link.weight * access; }, 0);
+          // Shared saturation caps a predator's total feeding, rather than giving
+          // it a separate full meal for every additional prey species.
+          foods.forEach(function(link) {
+            var amount = dt * sp.intake * values[sp.id] * values[link.food] * link.weight * access / (sp.half + foodTotal);
+            fluxes.push({ food: link.food, consumer: sp.id, amount: amount, efficiency: sp.efficiency });
+            demand[link.food] += amount;
+          });
+        });
+        fluxes.forEach(function(flux) {
+          // Competing consumers share the same donor budget, so no two predators
+          // can consume the same biomass and removal cannot make it negative.
+          var factor = demand[flux.food] > 0 ? Math.min(1, available[flux.food] / demand[flux.food]) : 0;
+          var amount = flux.amount * factor;
+          losses[flux.food] += amount;
+          gains[flux.consumer] += amount * flux.efficiency;
+          if(soil)soil.detritus+=amount*(1-flux.efficiency)*nutrientPerBiomass;
+        });
+        ECO_WEB_SPECIES.forEach(function(sp) { values[sp.id] = Math.max(0, available[sp.id] - losses[sp.id] + gains[sp.id]); });
+        if(soil){
+          var microbialDeath=Math.min(soil.decomposers,dt*(0.035*soil.decomposers+0.0006*soil.decomposers*soil.decomposers));
+          soil.decomposers-=microbialDeath;soil.detritus+=microbialDeath*nutrientPerBiomass;
+          var processed=Math.min(soil.detritus,dt*0.12*soil.decomposers*soil.detritus/(12+soil.detritus));
+          soil.detritus-=processed;
+          soil.decomposers+=processed*0.18/nutrientPerBiomass;
+          soil.nutrients+=processed*0.82;
+        }
+      }
+      // Event time is sampled immediately after the disturbance. Both runs are
+      // bit-for-bit identical before this point. Zero has no spontaneous recovery.
+      if (disturbed && step === config.eventStep) {
+        if(soil && (config.event==='remove'||config.event==='reduce'))soil.exported+=values[config.target]*(config.event==='remove'?1:0.8)*nutrientPerBiomass;
+        if(soil && config.event==='clearLitter'){soil.exported+=soil.detritus;soil.detritus=0;}
+        if(soil && config.event==='decomposerDecline'){var dead=soil.decomposers*0.8;soil.decomposers-=dead;soil.detritus+=dead*nutrientPerBiomass;}
+        if (config.event === 'remove') values[config.target] = 0;
+        if (config.event === 'reduce') values[config.target] *= 0.2;
+        if (config.event === 'drought') capacity *= 0.5;
+        if (config.event === 'restoreCover') cover = Math.min(80, cover + 40);
+        if (config.event === 'clearCover') cover = 0;
+      }
+      sample(step);
+    }
+    return samples;
+  }
+  function ecoWebCompare(config) {
+    var normalized=ecoWebConfig(config);
+    return { baseline: ecoWebRun(config, false), experiment: ecoWebRun(config, true), soilEnabled:normalized.soil.enabled, species:ECO_WEB_SPECIES.filter(function(sp){return !sp.optional||normalized.enabled[sp.id];}).map(function(sp){return sp.id;}) };
+  }
+  function ecoWebFormat(value) {
+    return value > 0 && value < 0.1 ? '<0.1' : value.toFixed(1);
+  }
+  function ecoWebDelta(value) {
+    return value === 0 ? '0.0' : (value > 0 ? '+' : '−') + ecoWebFormat(Math.abs(value));
+  }
+  function ecoWebCSV(result) {
+    var exported=ECO_WEB_SPECIES.filter(function(sp){return !sp.optional||(result.species||[]).indexOf(sp.id)>=0;});
+    var header = ['modeled_time'];
+    exported.forEach(function(sp) { header.push(sp.id + '_baseline', sp.id + '_experiment'); });
+    header.push('capacity_baseline', 'capacity_experiment', 'refuge_cover_percent_baseline', 'refuge_cover_percent_experiment');
+    if(result.soilEnabled)['detritus','decomposers','nutrients','exported'].forEach(function(key){header.push('soil_'+key+'_baseline','soil_'+key+'_experiment');});
+    var rows = result.baseline.map(function(row, i) {
+      var cells = [row.time.toFixed(1)];
+      exported.forEach(function(sp) { cells.push(row.values[sp.id].toFixed(5), result.experiment[i].values[sp.id].toFixed(5)); });
+      cells.push(row.capacity.toFixed(2), result.experiment[i].capacity.toFixed(2), row.cover.toFixed(2), result.experiment[i].cover.toFixed(2));
+      if(result.soilEnabled)['detritus','decomposers','nutrients','exported'].forEach(function(key){cells.push(row.soil[key].toFixed(8),result.experiment[i].soil[key].toFixed(8));});
+      return cells.join(',');
+    });
+    return [header.join(',')].concat(rows).join('\r\n');
+  }
+  window.StemLab.ecosystemFoodWeb = { species: ECO_WEB_SPECIES, links: ECO_WEB_LINKS, normalize: ecoWebConfig, run: ecoWebRun, compare: ecoWebCompare, csv: ecoWebCSV, format: ecoWebFormat, insights: ecoWebInsights, capture: ecoWebCapture, notebook: ecoWebNotebook, notebookText: ecoWebNotebookText, meadowPose: ecoMeadowPose };
+
+  // Optional presentation of the food-web samples; this renderer never evolves biomass.
+  // Presentation-only poses. They never modify biomass, feeding, or habitat cover.
+  function ecoMeadowPose(id, index, time, reduced) {
+    time = reduced ? 0 : ecoWebNumber(time, 0, 0, 24);
+    var order = ['rabbits','voles','foxes','owls','caterpillars','bluetits'].indexOf(id);
+    var n = index * 4 + Math.max(0, order), a = index * 2.399963 + Math.max(0, order) * 1.53 + 0.35;
+    var radius = 2.0 + (((n + 1) * 0.61803398875) % 1) * 6.2;
+    var x = Math.cos(a) * radius, z = Math.sin(a) * radius * 0.76;
+    var phase = n * 1.37;
+    // Smooth three-second walking bouts alternate with five-second pauses.
+    // Integrating a fixed clock makes rewind reproduce the same path exactly.
+    function walkClock(t) { var cycle=Math.floor(t/8),u=Math.min(1,(t-cycle*8)/3);return cycle*3+3*u*u*(3-2*u); }
+    var walkingPhase=(time+phase)%8;
+    var moving=reduced?0:walkingPhase<3?Math.sin(Math.PI*walkingPhase/3):0;
+    var travel=walkClock(time+phase)-walkClock(phase);
+    var theta = (id === 'owls' ? time*0.32 : travel*(id==='caterpillars'?0.05:0.24)) + phase;
+    var dx = Math.sin(theta) - Math.sin(phase), dz = Math.cos(theta) - Math.cos(phase);
+    x += dx * (id === 'owls' ? 0.85 : 0.55); z += dz * (id === 'owls' ? 0.65 : 0.4);
+    // Keep the inspection bird's path clear of the decorative foreground log.
+    if(id==='bluetits' && index===0){x=2+dx*0.55;z=-0.8+dz*0.4;}
+    return { x: x, z: z, yaw: Math.atan2(Math.sin(theta) * 0.4, Math.cos(theta) * 0.55),
+      altitude: id === 'owls' ? 2.1 + Math.sin(theta) * 0.22 : 0.025,
+      gait: reduced ? 0 : Math.sin((travel+walkClock(phase))*7+phase)*moving, moving: moving,
+      forage: (1-moving)*(0.65+0.35*Math.sin(time*0.65+phase)), phase: phase };
+  }
+
+  function EcoMeadow3D(props) {
+    var React = props.React, h = React.createElement;
+    var host = React.useRef(null), engine = React.useRef(null), latest = React.useRef(props);
+    latest.current = props;
+    var statusState = React.useState('loading'), status = statusState[0], setStatus = statusState[1];
+    var orbitState = React.useState(0.65), orbit = orbitState[0], setOrbit = orbitState[1];
+    var zoomState = React.useState(19), zoom = zoomState[0], setZoom = zoomState[1];
+    var lightingState = React.useState('daylight'), lighting = lightingState[0], setLighting = lightingState[1];
+    var markersState = React.useState(false), markers = markersState[0], setMarkers = markersState[1];
+    var cameraModeState = React.useState('habitat'), cameraMode = cameraModeState[0], setCameraMode = cameraModeState[1];
+    var branchState = React.useState('experiment'), branch = branchState[0], setBranch = branchState[1];
+    var playingState = React.useState(false), playing = playingState[0], setPlayingState = playingState[1];
+    var playingNow = React.useRef(false);
+    function setPlaying(value) { playingNow.current=value; setPlayingState(value); }
+    var reducedState = React.useState(function() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); });
+    var reduced = reducedState[0], setReduced = reducedState[1];
+    var view = React.useRef({});
+    view.current = { orbit: orbit, zoom: zoom, branch: branch, reduced: reduced, cameraMode: cameraMode, markers: markers, lighting: lighting };
+    var sample = props.result ? props.result[branch][props.cursor].values : props.config.initial;
+    var soilSample=props.config.soil.enabled?(props.result?props.result[branch][props.cursor].soil:props.config.soil):null;
+    React.useEffect(function(){if(!props.config.soil.enabled&&cameraMode==='soil')setCameraMode('habitat');},[props.config.soil.enabled,cameraMode]);
+    React.useEffect(function() {
+      if (!window.matchMedia) return;
+      var query = window.matchMedia('(prefers-reduced-motion: reduce)');
+      function change() { setReduced(query.matches); if (query.matches) setPlaying(false); }
+      if (query.addEventListener) query.addEventListener('change', change);
+      return function() { if (query.removeEventListener) query.removeEventListener('change', change); };
+    }, []);
+    React.useEffect(function() {
+      if (!playing || !props.result || reduced || status !== 'ready') return;
+      var timer = setInterval(function() {
+        // Pause takes effect in the event handler, before effect cleanup runs.
+        if (!playingNow.current) return;
+        var p = latest.current;
+        if (document.hidden) { setPlaying(false); return; }
+        var next = Math.min(240, p.cursor + 1);
+        p.onCursor(next);
+        if (next === 240) setPlaying(false);
+      }, 100);
+      return function() { clearInterval(timer); };
+    }, [playing, !!props.result, reduced, status]);
+    React.useEffect(function() { setPlaying(false); }, [props.result, props.inspectionVersion]);
+    React.useEffect(function() {
+      var cancelled = false, renderer, scene, camera, observer, shadowLight, meshes = [], groups = {};
+      var geometries = [], materials = [], textures = [], materialMap = {}, timeout;
+      var container = host.current, disposeListeners = function() {};
+      function fail() { if (!cancelled) { setStatus('unavailable'); setPlaying(false); } }
+      function start() {
+        if (cancelled) return;
+        clearTimeout(timeout);
+        var T = window.THREE;
+        if (!T) { fail(); return; }
+        try {
+          renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+          renderer.outputEncoding = T.sRGBEncoding;
+          renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+          renderer.setClearColor(0x122538, 0);
+          renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.95;
+          renderer.domElement.setAttribute('aria-hidden', 'true');
+          container.appendChild(renderer.domElement);
+          scene = new T.Scene();
+          scene.background = new T.Color(0x91a6a0); scene.fog = new T.FogExp2(0x91a6a0,0.032);
+          camera = new T.PerspectiveCamera(42, 1, 0.1, 180);
+          var skyLight = new T.HemisphereLight(0xe5f5ff, 0x57472e, 0.65); scene.add(skyLight);
+          var sun = new T.DirectionalLight(0xffe3ac, 1.15); sun.position.set(-8, 16, 10); scene.add(sun); shadowLight = sun;
+          // Only nearby solid objects cast real shadows; the surrounding canopy
+          // keeps its inexpensive baked shade. This bounds the shadow pass.
+          sun.castShadow = true; sun.shadow.mapSize.set(1024,1024);
+          sun.shadow.camera.left = sun.shadow.camera.bottom = -15;
+          sun.shadow.camera.right = sun.shadow.camera.top = 15;
+          sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 65;
+          sun.shadow.bias = -0.0003; sun.shadow.normalBias = 0.035;
+          var rim = new T.DirectionalLight(0xc1dfed, 0.45); rim.position.set(6, 8, -12); scene.add(rim);
+          function geometry(g) { geometries.push(g); return g; }
+          var sphere = geometry(new T.IcosahedronGeometry(1, 2));
+          var bladeGeometry=geometry(new T.BufferGeometry());
+          bladeGeometry.setAttribute('position',new T.Float32BufferAttribute([0,-1,0,-0.7,-0.05,0,0.7,-0.05,0,-0.4,0.6,0.05,0.4,0.6,0.05,0,1,0.12,0,0,0.24,0,0.65,0.22],3));
+          bladeGeometry.setIndex([0,1,6,0,6,2,1,3,7,1,7,6,6,7,4,6,4,2,3,5,7,7,5,4]);bladeGeometry.computeVertexNormals();
+          var cone = geometry(new T.ConeGeometry(1, 1, 5));
+          var cylinder = geometry(new T.CylinderGeometry(1, 1, 1, 48));
+          var box = geometry(new T.BoxGeometry(1, 1, 1));
+          // Small procedural surface maps are shared across all representatives.
+          // They add coat/feather detail without external assets or extra meshes.
+          function coatTexture(feathers) {
+            var canvas=document.createElement('canvas');canvas.width=256;canvas.height=128;
+            var ctx=canvas.getContext('2d'),seed=feathers?817:401;
+            function noise(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
+            ctx.fillStyle='#ecebe7';ctx.fillRect(0,0,256,128);
+            for(var mark=0;mark<(feathers?950:3400);mark++){
+              var x=noise()*256,y=noise()*128,v=Math.floor(155+noise()*90);
+              ctx.strokeStyle='rgba('+v+','+v+','+v+','+(feathers?0.65:0.5)+')';ctx.lineWidth=feathers?0.7:0.45;
+              ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(feathers?3:1.5),y+2+noise()*(feathers?2:7));ctx.stroke();
+            }
+            if(feathers){for(var band=0;band<7;band++){ctx.fillStyle='rgba(70,61,49,0.3)';ctx.fillRect(0,band*20+4,256,2);}}
+            var texture=new T.CanvasTexture(canvas);texture.encoding=T.sRGBEncoding;
+            texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());textures.push(texture);return texture;
+          }
+          var furTexture=coatTexture(false),featherTexture=coatTexture(true);
+          var featherPositions=[],featherUV=[],featherIndices=[];
+          for(var section=0;section<=8;section++){
+            var t=section/8,halfWidth=0.12*Math.pow(Math.sin(Math.PI*t),0.6)+0.004;
+            featherPositions.push(-halfWidth,0.035*Math.sin(Math.PI*t),t,halfWidth,0.035*Math.sin(Math.PI*t),t);
+            featherUV.push(0,t,1,t);
+            if(section<8){var b=section*2;featherIndices.push(b,b+2,b+1,b+1,b+2,b+3);}
+          }
+          var featherGeometry=geometry(new T.BufferGeometry());featherGeometry.setAttribute('position',new T.Float32BufferAttribute(featherPositions,3));featherGeometry.setAttribute('uv',new T.Float32BufferAttribute(featherUV,2));featherGeometry.setIndex(featherIndices);featherGeometry.computeVertexNormals();
+          function mesh(parent, geo, color, x, y, z, sx, sy, sz, id) {
+            var key = color + ':' + (id || 'habitat');
+            if (!materialMap[key]) {
+              var coat=id && id!=='plants' && ['#25272d','#faf9ed','#292b27','#242d29','#252b2b','#735447','#c89389','#b7954f','#fff3d9'].indexOf(color)<0;
+              var map=coat?(geo===featherGeometry?featherTexture:furTexture):null;
+              materialMap[key] = new T.MeshStandardMaterial({color:new T.Color(color).convertSRGBToLinear(),map:map,roughness:coat?1:0.8,flatShading:false,side:geo===featherGeometry?T.DoubleSide:T.FrontSide});
+              materials.push(materialMap[key]);
+            }
+            var m = new T.Mesh(geo, materialMap[key]); m.position.set(x, y, z); m.scale.set(sx, sy, sz); parent.add(m);
+            m.castShadow = !!id && id !== 'plants'; m.receiveShadow = !!id;
+            if (id) { m.userData.species = id; meshes.push(m); }
+            return m;
+          }
+          // The landscape is a visual setting; only the configured cover index
+          // changes the model. Terrain, flowers, logs and lighting add no biomass.
+          function groundHeight(x, z) {
+            var clearing = Math.exp(-(x*x+z*z)/140);
+            return 0.12 + clearing * (0.16 + 0.10*Math.sin(x*0.48)*Math.cos(z*0.58)) + (1-clearing)*(0.7*Math.sin(x*0.12)*Math.cos(z*0.16)+0.3*Math.sin(z*0.3));
+          }
+          var terrainPositions = [0, groundHeight(0, 0), 0], terrainColors = [], terrainIndices = [];
+          var terrainRings = 46, terrainSegments = 112;
+          function terrainColor(x, z) {
+            var shade = 0.5 + 0.5 * Math.sin(x * 0.64 + z * 0.8) * Math.cos(z * 0.65);
+            var clearing = Math.exp(-(x*x/130+z*z/95));
+            var c = new T.Color('#514d37').lerp(new T.Color('#69734c'),shade).lerp(new T.Color('#91a967'),clearing*0.85).convertSRGBToLinear();
+            terrainColors.push(c.r, c.g, c.b);
+          }
+          terrainColor(0, 0);
+          for (var ring = 1; ring <= terrainRings; ring++) {
+            for (var segment = 0; segment < terrainSegments; segment++) {
+              var angle = segment / terrainSegments * Math.PI * 2, r = ring / terrainRings;
+              var tx = Math.cos(angle) * 50 * r, tz = Math.sin(angle) * 43 * r;
+              terrainPositions.push(tx, groundHeight(tx, tz), tz); terrainColor(tx, tz);
+              var index = 1 + (ring - 1) * terrainSegments + segment, next = 1 + (ring - 1) * terrainSegments + (segment + 1) % terrainSegments;
+              if (ring === 1) terrainIndices.push(0, next, index);
+              else {
+                var inner = index - terrainSegments, innerNext = next - terrainSegments;
+                terrainIndices.push(inner, innerNext, index, innerNext, next, index);
+              }
+            }
+          }
+          var terrainGeometry = geometry(new T.BufferGeometry());
+          terrainGeometry.setAttribute('position', new T.Float32BufferAttribute(terrainPositions, 3));
+          terrainGeometry.setAttribute('color', new T.Float32BufferAttribute(terrainColors, 3));
+          terrainGeometry.setIndex(terrainIndices); terrainGeometry.computeVertexNormals();
+          var groundPixels=new Uint8Array(128*128*4), groundSeed=813;
+          for(var gp=0;gp<128*128;gp++){groundSeed=(groundSeed*1664525+1013904223)>>>0;var grain=190+(groundSeed%66);groundPixels[gp*4]=grain;groundPixels[gp*4+1]=grain;groundPixels[gp*4+2]=grain;groundPixels[gp*4+3]=255;}
+          var groundTexture=new T.DataTexture(groundPixels,128,128,T.RGBAFormat);groundTexture.wrapS=groundTexture.wrapT=T.RepeatWrapping;groundTexture.magFilter=T.LinearFilter;groundTexture.needsUpdate=true;textures.push(groundTexture);
+          var terrainUV=[];for(var uvIndex=0;uvIndex<terrainPositions.length;uvIndex+=3)terrainUV.push(terrainPositions[uvIndex]/4,terrainPositions[uvIndex+2]/4);
+          terrainGeometry.setAttribute('uv',new T.Float32BufferAttribute(terrainUV,2));
+          var terrainMaterial = new T.MeshStandardMaterial({ vertexColors: true, map:groundTexture, roughness: 1 }); materials.push(terrainMaterial);
+          var terrain = new T.Mesh(terrainGeometry, terrainMaterial); terrain.receiveShadow = true; scene.add(terrain);
+
+          var disc = geometry(new T.CircleGeometry(1, 32));
+          var shadowPixels = new Uint8Array(64 * 64 * 4);
+          for (var py=0;py<64;py++) for(var px=0;px<64;px++) {
+            var radial=Math.sqrt(Math.pow((px-31.5)/31.5,2)+Math.pow((py-31.5)/31.5,2)), offset=(py*64+px)*4;
+            shadowPixels[offset]=255;shadowPixels[offset+1]=255;shadowPixels[offset+2]=255;shadowPixels[offset+3]=Math.round(Math.pow(Math.max(0,1-radial),0.7)*255);
+          }
+          var shadowTexture=new T.DataTexture(shadowPixels,64,64,T.RGBAFormat);shadowTexture.needsUpdate=true;shadowTexture.magFilter=T.LinearFilter;textures.push(shadowTexture);
+          var shadowMaterial = new T.MeshBasicMaterial({ color: '#15291d', map:shadowTexture, transparent: true, opacity: 0.36, depthWrite: false, toneMapped:false }); materials.push(shadowMaterial);
+          function shadow(parent, x, y, z, sx, sz) {
+            var m = new T.Mesh(disc, shadowMaterial); m.rotation.x = -Math.PI / 2;
+            m.position.set(x, y, z); m.scale.set(sx, sz, 1); parent.add(m); return m;
+          }
+          // The clearing sits inside a continuous woodland landscape. Instancing
+          // keeps the surrounding forest to a few draw calls; it is scenery only.
+          var forestRandomState = 7319;
+          function forestRandom() { forestRandomState = (forestRandomState * 1664525 + 1013904223) >>> 0; return forestRandomState / 4294967296; }
+          var treeSites = [];
+          for (var attempt = 0; attempt < 2200 && treeSites.length < 175; attempt++) {
+            var fx = (forestRandom() - 0.5) * 74, fz = (forestRandom() - 0.5) * 64;
+            var radial = fx * fx / (38 * 38) + fz * fz / (33 * 33);
+            // A broad opening on the near side keeps the model visible from the
+            // default camera while forest continues well beyond it on all sides.
+            if (radial > 1 || fx * fx / 121 + fz * fz / 90 < 1 || (fz > 0 && fz < 25 && Math.abs(fx) < 13)) continue;
+            if (treeSites.some(function(p) { return Math.pow(p.x-fx,2)+Math.pow(p.z-fz,2)<8; })) continue;
+            treeSites.push({x:fx,z:fz,height:5.2+forestRandom()*4.6,width:1.65+forestRandom()*1.4});
+          }
+          var trunkGeometry=geometry(new T.CylinderGeometry(0.57,1,1,9));
+          // Cutout foliage gives the canopy a leafy silhouette instead of solid balls.
+          var leafCanvas=document.createElement('canvas');leafCanvas.width=leafCanvas.height=256;var leafCtx=leafCanvas.getContext('2d');
+          for(var sprig=0;sprig<32;sprig++){
+            var sa=forestRandom()*Math.PI*2,sr=Math.sqrt(forestRandom())*83,sx=128+Math.cos(sa)*sr,sy=128+Math.sin(sa)*sr;
+            leafCtx.strokeStyle='rgba(180,180,170,0.85)';leafCtx.lineWidth=1.4;leafCtx.beginPath();leafCtx.moveTo(128,140);leafCtx.quadraticCurveTo(sx,140,sx,sy);leafCtx.stroke();
+            for(var leafPart=0;leafPart<7;leafPart++){
+              var lx=sx+(forestRandom()-0.5)*44,ly=sy+(forestRandom()-0.5)*42;
+              var lum=Math.floor(160+forestRandom()*95);leafCtx.fillStyle='rgb('+lum+','+lum+','+Math.floor(lum*0.92)+')';
+              leafCtx.save();leafCtx.translate(lx,ly);leafCtx.rotate(forestRandom()*Math.PI);leafCtx.beginPath();leafCtx.moveTo(0,-10);leafCtx.bezierCurveTo(8,-5,8,4,0,11);leafCtx.bezierCurveTo(-8,4,-8,-5,0,-10);leafCtx.fill();leafCtx.restore();
+            }
+          }
+          var leafTexture=new T.CanvasTexture(leafCanvas);leafTexture.encoding=T.sRGBEncoding;leafTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());textures.push(leafTexture);
+          var leafVertices=[],leafUV=[],leafIndices=[];
+          for(var plane=0;plane<4;plane++){
+            var qa=plane*Math.PI/3,base=leafVertices.length/3;
+            [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(function(q){if(plane===3)leafVertices.push(q[0],0,q[1]);else leafVertices.push(q[0]*Math.cos(qa),q[1],q[0]*Math.sin(qa));});
+            leafUV.push(0,0,1,0,1,1,0,1);leafIndices.push(base,base+1,base+2,base,base+2,base+3);
+          }
+          var foliageGeometry=geometry(new T.BufferGeometry());foliageGeometry.setAttribute('position',new T.Float32BufferAttribute(leafVertices,3));foliageGeometry.setAttribute('uv',new T.Float32BufferAttribute(leafUV,2));foliageGeometry.setIndex(leafIndices);foliageGeometry.computeVertexNormals();
+          var barkCanvas=document.createElement('canvas');barkCanvas.width=64;barkCanvas.height=256;var barkCtx=barkCanvas.getContext('2d');barkCtx.fillStyle='#6b5a48';barkCtx.fillRect(0,0,64,256);
+          for(var stripe=0;stripe<170;stripe++){var bx=forestRandom()*64,by=forestRandom()*256;barkCtx.strokeStyle= stripe%3===0?'#8c7960':'#483f35';barkCtx.lineWidth=0.4+forestRandom()*1.4;barkCtx.beginPath();barkCtx.moveTo(bx,by);barkCtx.lineTo(bx+(forestRandom()-0.5)*3,by+8+forestRandom()*36);barkCtx.stroke();}
+          var barkTexture=new T.CanvasTexture(barkCanvas);barkTexture.encoding=T.sRGBEncoding;barkTexture.wrapT=T.RepeatWrapping;barkTexture.repeat.y=3;textures.push(barkTexture);
+          var barkMaterial=new T.MeshStandardMaterial({color:0xffffff,map:barkTexture,bumpMap:barkTexture,bumpScale:0.025,roughness:1});materials.push(barkMaterial);
+          var leafMaterial=new T.MeshStandardMaterial({color:0xffffff,map:leafTexture,alphaTest:0.42,side:T.DoubleSide,roughness:1});materials.push(leafMaterial);
+          var trunks=new T.InstancedMesh(trunkGeometry,barkMaterial,treeSites.length);
+          var branches=new T.InstancedMesh(trunkGeometry,barkMaterial,treeSites.length*3);
+          var foliage=new T.InstancedMesh(foliageGeometry,leafMaterial,treeSites.length*30);
+          scene.add(trunks,branches,foliage);
+          var transform=new T.Object3D(), leafIndex=0;
+          treeSites.forEach(function(p,i) {
+            var gy=groundHeight(p.x,p.z), trunkWidth=0.17+p.height*0.019;
+            transform.position.set(p.x,gy+p.height*0.4,p.z);transform.rotation.set(0,0,0);transform.scale.set(trunkWidth,p.height*0.8,trunkWidth);transform.updateMatrix();trunks.setMatrixAt(i,transform.matrix);
+            for(var b=0;b<3;b++) {
+              var ba=b*Math.PI*2/3+i;
+              transform.position.set(p.x+Math.cos(ba)*0.55,gy+p.height*0.61,p.z+Math.sin(ba)*0.55);
+              transform.rotation.set(Math.cos(ba)*0.5,0,Math.sin(ba)*0.5);transform.scale.set(trunkWidth*0.45,p.height*0.38,trunkWidth*0.45);transform.updateMatrix();branches.setMatrixAt(i*3+b,transform.matrix);
+            }
+            for(var leaf=0;leaf<30;leaf++) {
+              var la=leaf*2.39996+i, lr=Math.sqrt(forestRandom())*p.width;
+              var ly=(forestRandom()-0.5)*p.width*1.15;
+              transform.position.set(p.x+Math.cos(la)*lr,gy+p.height*0.84+ly,p.z+Math.sin(la)*lr);
+              transform.rotation.set(forestRandom()*0.8,la,forestRandom()*0.5);
+              var clump=0.48+forestRandom()*0.55;
+              transform.scale.set(clump*1.2,clump*0.72,clump);transform.updateMatrix();foliage.setMatrixAt(leafIndex,transform.matrix);
+              var leafColor=new T.Color('#294737').lerp(new T.Color('#78905a'),forestRandom()*0.85).convertSRGBToLinear();foliage.setColorAt(leafIndex,leafColor);leafIndex++;
+            }
+            if (Math.abs(p.x)<20 && Math.abs(p.z)<20) shadow(scene,p.x+0.3,gy+0.03,p.z+0.3,p.width*1.3,p.width);
+          });
+          trunks.instanceMatrix.needsUpdate=true;branches.instanceMatrix.needsUpdate=true;foliage.instanceMatrix.needsUpdate=true;foliage.instanceColor.needsUpdate=true;
+          // Exposed roots taper into the soil, breaking the straight pole silhouette.
+          var roots = new T.InstancedMesh(trunkGeometry,barkMaterial,treeSites.length*4); scene.add(roots);
+          var rootAxis = new T.Vector3(0,1,0), rootStart = new T.Vector3(), rootEnd = new T.Vector3(), rootDirection = new T.Vector3();
+          treeSites.forEach(function(p,i){
+            for(var r=0;r<4;r++){
+              var a=i*0.71+r*Math.PI/2, length=0.75+forestRandom()*0.9;
+              rootStart.set(p.x,groundHeight(p.x,p.z)+0.19,p.z);
+              rootEnd.set(p.x+Math.cos(a)*length,groundHeight(p.x+Math.cos(a)*length,p.z+Math.sin(a)*length)+0.015,p.z+Math.sin(a)*length);
+              rootDirection.subVectors(rootEnd,rootStart);
+              transform.position.copy(rootStart).add(rootEnd).multiplyScalar(0.5);
+              transform.quaternion.setFromUnitVectors(rootAxis,rootDirection.clone().normalize());
+              transform.scale.set(0.12,rootDirection.length(),0.16);transform.updateMatrix();roots.setMatrixAt(i*4+r,transform.matrix);
+            }
+          });roots.instanceMatrix.needsUpdate=true;
+          renderer.domElement.setAttribute('data-root-count',String(treeSites.length*4));
+          // Forest-floor litter adds scale and texture beyond the study clearing.
+          var litterGeometry=geometry(new T.IcosahedronGeometry(1,0));
+          var litterMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:1});materials.push(litterMaterial);
+          var litter=new T.InstancedMesh(litterGeometry,litterMaterial,700);scene.add(litter);
+          for(var li=0;li<700;li++) {
+            var lx=(forestRandom()-0.5)*64,lz=(forestRandom()-0.5)*55;
+            var inClearing=lx*lx/100+lz*lz/80<1;
+            transform.position.set(lx,groundHeight(lx,lz)+0.035,lz);transform.rotation.set(0,forestRandom()*Math.PI,0);
+            var leafSize=inClearing?0.035:0.10+forestRandom()*0.18;
+            transform.scale.set(leafSize,0.012,leafSize*0.55);transform.updateMatrix();litter.setMatrixAt(li,transform.matrix);
+            litter.setColorAt(li,new T.Color('#695539').lerp(new T.Color('#a28a50'),forestRandom()).convertSRGBToLinear());
+          }
+          litter.instanceMatrix.needsUpdate=true;litter.instanceColor.needsUpdate=true;
+          // Decorative understory is kept outside the modeled food-plant groups.
+          // Its distribution and shadows are stable across timeline scrubbing.
+          var fernVertices=[],fernIndices=[],fernColors=[];
+          function fernQuad(points,shade){var base=fernVertices.length/3;points.forEach(function(p){fernVertices.push(p[0],p[1],p[2]);var color=new T.Color(shade*0.6,shade,shade*0.5).convertSRGBToLinear();fernColors.push(color.r,color.g,color.b);});fernIndices.push(base,base+1,base+2,base,base+2,base+3);}
+          for(var frond=0;frond<7;frond++){
+            var angle=frond*Math.PI*2/7,ux=Math.cos(angle),uz=Math.sin(angle),vx=-uz,vz=ux;
+            for(var segment=1;segment<=10;segment++){
+              var t=segment/11,prior=(segment-1)/11,r=t*0.68,pr=prior*0.68;
+              var cy=Math.sin(t*Math.PI*0.78)*0.66,py=Math.sin(prior*Math.PI*0.78)*0.66;
+              fernQuad([[ux*pr+vx*0.009,py,uz*pr+vz*0.009],[ux*r+vx*0.009,cy,uz*r+vz*0.009],[ux*r-vx*0.009,cy,uz*r-vz*0.009],[ux*pr-vx*0.009,py,uz*pr-vz*0.009]],0.5);
+              var span=Math.sin(t*Math.PI)*0.20;
+              [-1,1].forEach(function(side){var cx=ux*r,cz=uz*r;
+                fernQuad([[cx,cy,cz],[cx+vx*side*span*0.6-ux*0.025,cy+0.025,cz+vz*side*span*0.6-uz*0.025],[cx+vx*side*span-ux*0.07,cy-0.025,cz+vz*side*span-uz*0.07],[cx+vx*side*span*0.45-ux*0.075,cy-0.02,cz+vz*side*span*0.45-uz*0.075]],0.34+0.15*t+(side===1?0.08:0));
+              });
+            }
+          }
+          var fernGeometry=geometry(new T.BufferGeometry());fernGeometry.setAttribute('position',new T.Float32BufferAttribute(fernVertices,3));fernGeometry.setAttribute('color',new T.Float32BufferAttribute(fernColors,3));fernGeometry.setIndex(fernIndices);fernGeometry.computeVertexNormals();
+          var fernMaterial=new T.MeshStandardMaterial({vertexColors:true,side:T.DoubleSide,roughness:1});materials.push(fernMaterial);
+          var ferns=new T.InstancedMesh(fernGeometry,fernMaterial,180);scene.add(ferns);
+          for(var fi=0;fi<180;fi++){
+            var fa=forestRandom()*Math.PI*2,fr=9.5+forestRandom()*16,fernX=Math.cos(fa)*fr,fernZ=Math.sin(fa)*fr*0.8,fernScale=0.65+forestRandom()*0.8;
+            transform.position.set(fernX,groundHeight(fernX,fernZ)+0.025,fernZ);transform.rotation.set(0,fa,0);transform.scale.setScalar(fernScale);transform.updateMatrix();ferns.setMatrixAt(fi,transform.matrix);
+          }ferns.instanceMatrix.needsUpdate=true;
+          // Canopy shade is baked into terrain colors rather than recalculated
+          // with a costly shadow pass for every model sample.
+          var terrainShade=terrainGeometry.getAttribute('color');
+          for(var shadeVertex=0;shadeVertex<terrainPositions.length/3;shadeVertex++){
+            var shadeX=terrainPositions[shadeVertex*3],shadeZ=terrainPositions[shadeVertex*3+2],canopyShade=0;
+            treeSites.forEach(function(tree){var dd=Math.pow(shadeX-tree.x-1.1,2)+Math.pow(shadeZ-tree.z+0.8,2);canopyShade=Math.max(canopyShade,Math.max(0,1-dd/(tree.width*tree.width*2.1)));});
+            var shadeFactor=1-canopyShade*(0.23+0.1*Math.sin(shadeX*3.2)*Math.sin(shadeZ*2.5));
+            terrainShade.setXYZ(shadeVertex,terrainShade.getX(shadeVertex)*shadeFactor,terrainShade.getY(shadeVertex)*shadeFactor,terrainShade.getZ(shadeVertex)*shadeFactor);
+          }terrainShade.needsUpdate=true;
+          // Five curved leaves per tuft, grouped in irregular patches. A low
+          // central layer preserves visibility of small animals and food plants.
+          var grassPositions=[],grassIndices=[];
+          for(var blade=0;blade<5;blade++){
+            var ba=blade*2.39996, ux=Math.cos(ba),uz=Math.sin(ba),vx=-uz,vz=ux, base=grassPositions.length/3;
+            var bladeHeight=0.22+(blade%3)*0.065;
+            [[-0.018,0,0],[0.018,0,0],[-0.014,bladeHeight*0.55,0.07],[0.014,bladeHeight*0.55,0.07],[0,bladeHeight,0.16]].forEach(function(q){grassPositions.push(vx*q[0]+ux*q[2],q[1],vz*q[0]+uz*q[2]);});
+            grassIndices.push(base,base+1,base+2,base+1,base+3,base+2,base+2,base+3,base+4);
+          }
+          var groundBladeGeometry=geometry(new T.BufferGeometry());groundBladeGeometry.setAttribute('position',new T.Float32BufferAttribute(grassPositions,3));groundBladeGeometry.setIndex(grassIndices);groundBladeGeometry.computeVertexNormals();
+          var groundBladeMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide});materials.push(groundBladeMaterial);
+          var groundBlades=new T.InstancedMesh(groundBladeGeometry,groundBladeMaterial,2400);groundBlades.receiveShadow=true;scene.add(groundBlades);
+          for(var grass=0;grass<2400;grass++){
+            var patch=grass%64,pa=patch*2.39996,pr=2+Math.sqrt((patch+0.5)/64)*15;
+            var gx=Math.cos(pa)*pr+(forestRandom()-0.5)*4,gz=Math.sin(pa)*pr*0.8+(forestRandom()-0.5)*3;
+            var gh=(0.45+forestRandom()*0.8)*(gx*gx+gz*gz<45?0.65:1);
+            transform.position.set(gx,groundHeight(gx,gz)+0.012,gz);transform.rotation.set(0,forestRandom()*Math.PI*2,0);transform.scale.set(gh,gh,gh);transform.updateMatrix();groundBlades.setMatrixAt(grass,transform.matrix);
+            groundBlades.setColorAt(grass,new T.Color('#3f5830').lerp(new T.Color('#909155'),forestRandom()).convertSRGBToLinear());
+          }groundBlades.instanceMatrix.needsUpdate=true;groundBlades.instanceColor.needsUpdate=true;
+          renderer.domElement.setAttribute('data-grass-tufts','2400');
+          // A few fallen branches and fungi add recognizable forest-floor scale.
+          [[-7.5,5.8],[7,4.6],[-8,-2]].forEach(function(p,j){
+            var deadwood=new T.Group();deadwood.position.set(p[0],groundHeight(p[0],p[1])+0.15,p[1]);deadwood.rotation.z=Math.PI/2;deadwood.rotation.y=j*0.9;scene.add(deadwood);
+            var fallenBranch=mesh(deadwood,cylinder,'#5a4937',0,0,0,0.12,2.1,0.12);fallenBranch.material=barkMaterial;
+            for(var fungus=0;fungus<3;fungus++){
+              var mx=p[0]+0.35+fungus*0.2,mz=p[1]+0.3;
+              var my=groundHeight(mx,mz);mesh(scene,cylinder,'#c8b796',mx,my+0.12,mz,0.025,0.24,0.025);
+              mesh(scene,sphere,'#9c704b',mx,my+0.24,mz,0.11,0.065,0.11);
+            }
+          });
+          renderer.domElement.setAttribute('data-understory','ferns,grass,fallen-wood,fungi');
+
+          renderer.domElement.setAttribute('data-forest-trees',String(treeSites.length));
+          renderer.domElement.setAttribute('data-landscape-span','100 x 86 scene units');
+
+          [[-7,1],[5,4],[-4,4.8]].forEach(function(p, i) {
+            var y = groundHeight(p[0],p[1]); shadow(scene,p[0]+0.1,y+0.02,p[1]+0.1,0.8,0.55);
+            mesh(scene, sphere, ['#959b87','#a5aa97','#818d7b'][i],p[0],y+0.23,p[1],0.64,0.4,0.46);
+            mesh(scene, sphere, '#788371',p[0]+0.55,y+0.1,p[1]+0.18,0.26,0.18,0.22);
+          });
+          // Fallen wood provides a readable foreground scale cue.
+          var log = new T.Group(); log.position.set(-0.8,groundHeight(-0.8,4.9)+0.22,4.9); log.rotation.z=Math.PI/2; log.rotation.y=0.2; scene.add(log);
+          var mainLog=mesh(log,cylinder,'#694a32',0,0,0,0.24,1.65,0.24);mainLog.material=barkMaterial;
+          var endCanvas=document.createElement('canvas');endCanvas.width=endCanvas.height=128;
+          var endContext=endCanvas.getContext('2d');endContext.fillStyle='#bda077';endContext.fillRect(0,0,128,128);
+          for(var growthRing=1;growthRing<16;growthRing++){
+            endContext.beginPath();
+            for(var ringPoint=0;ringPoint<=96;ringPoint++){
+              var ringAngle=ringPoint*Math.PI/48,ringRadius=growthRing*3.8+0.8*Math.sin(ringAngle*5+growthRing*0.8)+0.5*Math.sin(ringAngle*9);
+              var ringX=61+Math.cos(ringAngle)*ringRadius,ringY=66+Math.sin(ringAngle)*ringRadius*0.94;
+              if(ringPoint)endContext.lineTo(ringX,ringY);else endContext.moveTo(ringX,ringY);
+            }endContext.strokeStyle=growthRing%3?'#93774f':'#80633e';endContext.lineWidth=growthRing%3?0.7:1.2;endContext.stroke();
+          }
+          [0.4,2.2,4.7].forEach(function(a){endContext.beginPath();endContext.moveTo(61+Math.cos(a)*62,66+Math.sin(a)*62);endContext.lineTo(61+Math.cos(a+0.02)*33,66+Math.sin(a+0.02)*33);endContext.strokeStyle='#675339';endContext.lineWidth=1.2;endContext.stroke();});
+          var endTexture=new T.CanvasTexture(endCanvas);endTexture.encoding=T.sRGBEncoding;textures.push(endTexture);
+          var endMaterial=new T.MeshStandardMaterial({map:endTexture,roughness:1});materials.push(endMaterial);
+          [-1,1].forEach(function(side){var end=new T.Mesh(disc,endMaterial);end.position.y=side*0.833;end.rotation.x=-side*Math.PI/2;end.scale.setScalar(0.205);end.receiveShadow=true;log.add(end);});
+          var refugePatches = [];
+          [[-6,2.5],[-4,4],[0,4.6],[4,3.8],[6,1.5],[4,-3.8],[0,-4.5],[-4,-3.6]].forEach(function(p) {
+            var patch = new T.Group(); patch.position.set(p[0], groundHeight(p[0],p[1]), p[1]); scene.add(patch);
+            shadow(patch,0,0.03,0,1.05,0.8);
+            var shrubLeaves=new T.InstancedMesh(foliageGeometry,leafMaterial,28);patch.add(shrubLeaves);
+            for(var sprig=0;sprig<28;sprig++){
+              var sa=sprig*2.39996,sr=Math.sqrt((sprig+0.5)/28)*0.83;
+              transform.position.set(Math.cos(sa)*sr,0.3+forestRandom()*0.65,Math.sin(sa)*sr*0.8);
+              transform.rotation.set(forestRandom()*0.6,sa,forestRandom()*0.4);transform.scale.set(0.35,0.3,0.35);transform.updateMatrix();shrubLeaves.setMatrixAt(sprig,transform.matrix);
+              shrubLeaves.setColorAt(sprig,new T.Color('#355635').lerp(new T.Color('#71904e'),forestRandom()).convertSRGBToLinear());
+            }shrubLeaves.instanceMatrix.needsUpdate=true;shrubLeaves.instanceColor.needsUpdate=true;
+            for(var stem=0;stem<5;stem++){
+              var branch=mesh(patch,trunkGeometry,'#655642',(stem-2)*0.16,0.35,Math.sin(stem)*0.2,0.035,0.7,0.035);branch.rotation.z=(stem-2)*0.14;
+            }
+            refugePatches.push(patch);
+          });
+          var selectionGeometry = geometry(new T.RingGeometry(0.83,1,40));
+          var selectionMaterial = new T.MeshBasicMaterial({ color: new T.Color('#ffe790').convertSRGBToLinear(), side: T.DoubleSide, transparent: true, depthWrite: false, toneMapped: false }); materials.push(selectionMaterial);
+          var selectionEdgeGeometry = geometry(new T.RingGeometry(0.76,1.07,40));
+          var selectionEdgeMaterial = new T.MeshBasicMaterial({ color: new T.Color('#233b3d').convertSRGBToLinear(), side:T.DoubleSide, transparent:true, depthWrite:false, toneMapped:false });materials.push(selectionEdgeMaterial);
+          var centers = { plants: [0, 0], rabbits: [-3.2, 1.7], voles: [3.1, 2.2], foxes: [-3, -1.6], owls: [2.7, -1.9] };
+          ECO_WEB_SPECIES.forEach(function(sp) {
+            var list = [], max = sp.id === 'plants' ? 56 : 16;
+            for (var i = 0; i < max; i++) {
+              var animal = new T.Group(); scene.add(animal);
+              var a = i * 2.39996, radius = sp.id === 'plants' ? Math.sqrt((i + 0.5) / max) * 6.6 : 0.7 + (i % 4) * 0.5;
+              var initialPose = ecoMeadowPose(sp.id,i,0,true);
+              var x = sp.id === 'plants' ? Math.cos(a)*radius : initialPose.x, z = sp.id === 'plants' ? Math.sin(a)*radius*0.75 : initialPose.z;
+              animal.userData.home = [x, z]; animal.userData.phase = i * 1.7;
+              var ringMarker = new T.Mesh(selectionGeometry,selectionMaterial); ringMarker.rotation.x=-Math.PI/2;
+              ringMarker.position.y=0.02; ringMarker.scale.setScalar(sp.id === 'plants' ? 0.36 : sp.id === 'foxes' ? 0.76 : 0.55); animal.add(ringMarker); animal.userData.marker=ringMarker;
+              var markerEdge=new T.Mesh(selectionEdgeGeometry,selectionEdgeMaterial);markerEdge.position.z=-0.002;markerEdge.renderOrder=1;ringMarker.renderOrder=2;ringMarker.add(markerEdge);
+              animal.userData.shadow=shadow(animal,0,0.015,0,sp.id === 'foxes' ? 0.65 : 0.38,sp.id === 'plants' ? 0.18 : 0.3);
+              if (sp.id === 'plants') {
+                [-1,0,1].forEach(function(side) {
+                  var blade=mesh(animal,bladeGeometry,['#5f8c3e','#99b963','#426a36'][(i+side+3)%3],side*0.11,0.25+0.06*(i%3),0,0.065,0.34,0.12,sp.id);blade.material.side=T.DoubleSide;blade.rotation.z=-side*0.38;
+                });
+                if(i%4===0){
+                  mesh(animal,cylinder,'#577443',0.07,0.42,0,0.025,0.75,0.025,sp.id);
+                  for(var petal=0;petal<5;petal++){var pa=petal*Math.PI*2/5;mesh(animal,sphere,i%8===0?'#f2d779':'#c0b1d8',0.07+Math.cos(pa)*0.09,0.8,Math.sin(pa)*0.09,0.09,0.035,0.06,sp.id);}
+                  mesh(animal,sphere,'#d79d38',0.07,0.82,0,0.045,0.04,0.045,sp.id);
+                }
+              } else if(sp.id==='caterpillars') {
+                for(var segment=0;segment<8;segment++){
+                  var sx=(segment-3.5)*0.095;
+                  mesh(animal,sphere,segment===7?'#6d853c':segment%2?'#819d47':'#96ae58',sx,0.105,0,0.075,0.078,0.075,sp.id);
+                  [-1,1].forEach(function(side){mesh(animal,sphere,'#c3bd75',sx,0.036,side*0.055,0.02,0.028,0.025,sp.id);});
+                }
+                [-1,1].forEach(function(side){mesh(animal,sphere,'#252b2b',0.37,0.126,side*0.043,0.012,0.012,0.01,sp.id);});
+              } else if(sp.id==='bluetits') {
+                mesh(animal,sphere,'#81925a',-0.03,0.25,0,0.24,0.17,0.145,sp.id);
+                mesh(animal,sphere,'#dac96c',0.085,0.215,0,0.16,0.145,0.13,sp.id);
+                mesh(animal,sphere,'#3c728f',0.17,0.395,0,0.145,0.13,0.125,sp.id);
+                [-1,1].forEach(function(side){
+                  mesh(animal,sphere,'#e5e3cd',0.205,0.365,side*0.078,0.11,0.077,0.06,sp.id);
+                  mesh(animal,sphere,'#252b2b',0.267,0.4,side*0.104,0.018,0.019,0.013,sp.id);
+                  var wing=mesh(animal,sphere,'#507e96',-0.075,0.265,side*0.127,0.21,0.092,0.038,sp.id);wing.rotation.z=0.18;
+                  mesh(animal,cylinder,'#6b6050',0.035,0.072,side*0.066,0.012,0.115,0.012,sp.id);
+                  mesh(animal,sphere,'#6b6050',0.07,0.022,side*0.066,0.067,0.016,0.018,sp.id);
+                });
+                mesh(animal,sphere,'#414f51',0.32,0.361,0,0.067,0.025,0.026,sp.id);
+                var tail=mesh(animal,sphere,'#46768b',-0.31,0.21,0,0.19,0.027,0.073,sp.id);tail.rotation.z=0.16;
+              } else if (sp.id === 'owls') {
+                // A horizontal flight silhouette with broad, swept wings.
+                mesh(animal,sphere,'#b39365',-0.07,0.4,0,0.36,0.2,0.2,sp.id);
+                mesh(animal,sphere,'#eee3c6',0.08,0.34,0,0.25,0.14,0.185,sp.id);
+                mesh(animal,sphere,'#a17e53',0.26,0.5,0,0.21,0.205,0.2,sp.id);
+                animal.userData.wings=[];
+                [-1,1].forEach(function(side){
+                  mesh(animal,sphere,'#fff3d9',0.408,0.52,side*0.075,0.065,0.145,0.114,sp.id);
+                  mesh(animal,sphere,'#25272d',0.459,0.55,side*0.087,0.021,0.031,0.024,sp.id);
+                  mesh(animal,sphere,'#faf9ed',0.477,0.562,side*0.09,0.006,0.007,0.008,sp.id);
+                  var joint=new T.Group();joint.position.set(-0.02,0.42,side*0.14);joint.userData.side=side;animal.add(joint);animal.userData.wings.push(joint);
+                  mesh(joint,sphere,'#a38b69',-0.08,0,side*0.27,0.31,0.045,0.43,sp.id);
+                  for(var feather=0;feather<8;feather++){
+                    var plume=mesh(joint,featherGeometry,feather%2?'#baa280':'#d3bd96',-0.23+feather*0.052,0.012,side*(0.2+feather*0.04),0.95,1,side*(0.66-feather*0.025),sp.id);
+                    plume.rotation.y=-side*(0.48+feather*0.045);
+                  }
+                  mesh(animal,sphere,'#b7954f',-0.31,0.245,side*0.07,0.095,0.025,0.025,sp.id);
+                });
+                mesh(animal,sphere,'#b7954f',0.471,0.43,0,0.035,0.06,0.03,sp.id);
+                for(var tail=0;tail<5;tail++){
+                  var plume=mesh(animal,featherGeometry,'#c8b187',-0.27,0.34,(tail-2)*0.044,0.55,1,0.33,sp.id);plume.rotation.y=-Math.PI/2+(tail-2)*0.09;
+                }
+              } else if(sp.id === 'foxes') {
+                mesh(animal,sphere,'#c66d35',-0.03,0.49,0,0.5,0.27,0.23,sp.id);
+                mesh(animal,sphere,'#efe0bd',0.29,0.45,0,0.17,0.25,0.2,sp.id);
+                mesh(animal,sphere,'#c47d45',0.38,0.70,0,0.235,0.185,0.175,sp.id);
+                mesh(animal,sphere,'#d5ba91',0.59,0.63,0,0.235,0.085,0.10,sp.id);
+                mesh(animal,sphere,'#efe0bd',0.59,0.594,0,0.19,0.044,0.085,sp.id);
+                mesh(animal,sphere,'#252b2b',0.805,0.65,0,0.055,0.045,0.06,sp.id);
+                [-1,1].forEach(function(side){
+                  mesh(animal,cone,'#78422b',0.31,0.905,side*0.13,0.10,0.235,0.085,sp.id);
+                  mesh(animal,cone,'#d89a70',0.347,0.91,side*0.13,0.058,0.145,0.05,sp.id);
+                  mesh(animal,sphere,'#292b27',0.49,0.741,side*0.145,0.028,0.027,0.019,sp.id);
+                  [-0.33,0.29].forEach(function(lx){var leg=new T.Group();leg.position.set(lx,0.4,side*0.16);leg.userData.phase=(lx<0?1:-1)*side;animal.add(leg);mesh(leg,cylinder,'#493c30',0,-0.18,0,0.065,0.42,0.065,sp.id);mesh(leg,sphere,'#3e382d',0.04,-0.345,0,0.12,0.06,0.08,sp.id);animal.userData.legs=animal.userData.legs||[];animal.userData.legs.push(leg);});
+                });
+                var foxTail=mesh(animal,sphere,'#bd622f',-0.67,0.36,0.02,0.52,0.17,0.19,sp.id);foxTail.rotation.z=0.32;
+                var foxTip=mesh(animal,sphere,'#f4e6c9',-1.02,0.25,0.02,0.21,0.13,0.14,sp.id);foxTip.rotation.z=0.32;
+              } else {
+                var rabbit=sp.id==='rabbits', fur=rabbit?'#9d8c70':'#796751';
+                mesh(animal,sphere,fur,-0.03,0.28,0,rabbit?0.34:0.29,0.26,0.23,sp.id);
+                mesh(animal,sphere,rabbit?'#e6ddc9':'#ac9680',0.16,0.24,0,0.19,0.18,0.2,sp.id);
+                mesh(animal,sphere,fur,0.27,0.43,0,0.215,0.17,0.17,sp.id);
+                [-1,1].forEach(function(side){
+                  var ear=mesh(animal,sphere,fur,0.23,rabbit?0.81:0.62,side*0.13,rabbit?0.075:0.09,rabbit?0.29:0.09,0.065,sp.id);ear.rotation.z=rabbit?-0.15:0;
+                  var inner=mesh(animal,sphere,'#c89389',0.267,rabbit?0.83:0.62,side*0.13,0.045,rabbit?0.2:0.045,0.045,sp.id);inner.rotation.z=rabbit?-0.15:0;
+                  mesh(animal,sphere,'#242d29',0.377,0.47,side*0.139,0.026,0.029,0.022,sp.id);
+                  var hind=mesh(animal,sphere,fur,-0.17,0.11,side*0.18,rabbit?0.2:0.12,0.12,0.1,sp.id);
+                  var fore=mesh(animal,sphere,fur,0.22,0.065,side*0.12,0.14,0.055,0.07,sp.id);
+                  [hind,fore].forEach(function(paw,index){
+                    var joint=new T.Group();joint.position.copy(paw.position);joint.position.y+=0.10;
+                    joint.userData.phase=(index===0?1:-1)*(rabbit?1:side);paw.position.sub(joint.position);joint.add(paw);animal.add(joint);
+                    animal.userData.paws=animal.userData.paws||[];animal.userData.paws.push(joint);
+                  });
+                });
+                mesh(animal,sphere,'#735447',0.46,0.39,0,0.029,0.025,0.033,sp.id);
+                mesh(animal,sphere,rabbit?'#eee8d5':fur,-0.39,0.24,0,rabbit?0.11:0.19,rabbit?0.11:0.045,0.07,sp.id);
+              }
+              if(sp.id==='foxes') {
+                var tailJoint=new T.Group();tailJoint.position.set(-0.38,0.4,0);animal.add(tailJoint);
+                [foxTail,foxTip].forEach(function(part){part.position.sub(tailJoint.position);tailJoint.add(part);});animal.userData.tail=tailJoint;
+              }
+              if(sp.id !== 'plants' && sp.id !== 'owls' && sp.id !== 'bluetits' && sp.id !== 'caterpillars') {
+                var head=new T.Group();head.position.set(0.24,sp.id==='foxes'?0.58:0.4,0);
+                animal.children.slice().forEach(function(part){if(part.isMesh && part.userData.species===sp.id && part.position.x>0.18 && part.position.y>0.34){part.position.sub(head.position);head.add(part);}});animal.add(head);animal.userData.head=head;
+              }
+              if(sp.id!=='plants') {
+                var body=new T.Group(),size=(sp.id==='caterpillars'?0.65:sp.id==='bluetits'?0.8:sp.id==='voles'?0.57:sp.id==='rabbits'?0.86:1)*(0.94+(i%5)*0.028);
+                animal.children.slice().forEach(function(part){if(part!==ringMarker && part!==animal.userData.shadow)body.add(part);});
+                animal.add(body);body.scale.setScalar(size);animal.userData.body=body;
+                animal.userData.shadow.scale.multiplyScalar(size);
+              }
+              list.push(animal);
+            }
+            groups[sp.id] = list;
+          });
+
+          // A small study patch represents the optional soil pools. Its fungi are
+          // symbols for combined microbial biomass, not simulated fruiting bodies.
+          var soilPatch=new T.Group(),soilX=0,soilZ=9.2;scene.add(soilPatch);
+          soilPatch.position.set(soilX,groundHeight(soilX,soilZ)+0.025,soilZ);
+          // Reserve a small viewing opening in decorative undergrowth so ferns
+          // do not obscure the soil study. Model populations are unaffected.
+          [ferns,groundBlades].forEach(function(instances){
+            var studyMatrix=new T.Matrix4(),studyPosition=new T.Vector3();
+            for(var si=0;si<instances.count;si++){
+              instances.getMatrixAt(si,studyMatrix);studyPosition.setFromMatrixPosition(studyMatrix);
+              var limit=instances===ferns?3.4:2.0;
+              if(Math.hypot(studyPosition.x-soilX,(studyPosition.z-soilZ)*1.25)<limit){studyMatrix.scale(new T.Vector3(0,0,0));instances.setMatrixAt(si,studyMatrix);}
+            }instances.instanceMatrix.needsUpdate=true;
+          });
+          // Feather humus into the terrain instead of drawing a hard-edged disc.
+          var humusCanvas=document.createElement('canvas');humusCanvas.width=humusCanvas.height=128;
+          var humusContext=humusCanvas.getContext('2d'),humusImage=humusContext.createImageData(128,128);
+          for(var hp=0;hp<128*128;hp++){
+            var hx=(hp%128-64)/64,hz=(Math.floor(hp/128)-64)/64,noise=(Math.sin(hp*127.1)*43758.5453)%1,grain=Math.abs(noise);
+            var edge=Math.max(0,Math.min(1,(1-Math.sqrt(hx*hx+hz*hz)+0.05*Math.sin(hx*19)*Math.sin(hz*17))*5));
+            humusImage.data[hp*4]=57+grain*30;humusImage.data[hp*4+1]=44+grain*23;humusImage.data[hp*4+2]=29+grain*14;humusImage.data[hp*4+3]=edge*220;
+          }humusContext.putImageData(humusImage,0,0);
+          var humusTexture=new T.CanvasTexture(humusCanvas);humusTexture.encoding=T.sRGBEncoding;textures.push(humusTexture);
+          var humusMaterial=new T.MeshStandardMaterial({map:humusTexture,transparent:true,depthWrite:false,roughness:1});materials.push(humusMaterial);
+          var humusGeometry=geometry(new T.PlaneGeometry(4.4,3.8,24,20));humusGeometry.rotateX(-Math.PI/2);
+          var humusPositions=humusGeometry.getAttribute('position');
+          for(var hv=0;hv<humusPositions.count;hv++)humusPositions.setY(hv,groundHeight(soilX+humusPositions.getX(hv),soilZ+humusPositions.getZ(hv))-groundHeight(soilX,soilZ)+0.012);
+          humusGeometry.computeVertexNormals();var humus=new T.Mesh(humusGeometry,humusMaterial);humus.receiveShadow=true;soilPatch.add(humus);
+          var dryLeafGeometry=geometry(new T.BufferGeometry());
+          dryLeafGeometry.setAttribute('position',new T.Float32BufferAttribute([-1,0,0,-0.58,0.3,-0.8,0.12,0,-1,0.7,0.2,-0.5,1,0,0,0.52,0.1,0.8,-0.22,0,0.9,-0.7,0.3,0.6,0,1,0],3));
+          dryLeafGeometry.setIndex([8,1,0,8,2,1,8,3,2,8,4,3,8,5,4,8,6,5,8,7,6,8,0,7]);dryLeafGeometry.computeVertexNormals();
+          var dryLeafUV=[],dryLeafVertices=dryLeafGeometry.getAttribute('position');
+          for(var lv=0;lv<dryLeafVertices.count;lv++)dryLeafUV.push((dryLeafVertices.getX(lv)+1)/2,(dryLeafVertices.getZ(lv)+1)/2);
+          dryLeafGeometry.setAttribute('uv',new T.Float32BufferAttribute(dryLeafUV,2));
+          var dryLeafCanvas=document.createElement('canvas');dryLeafCanvas.width=128;dryLeafCanvas.height=64;
+          var dryLeafContext=dryLeafCanvas.getContext('2d');dryLeafContext.fillStyle='#e3d6b9';dryLeafContext.fillRect(0,0,128,64);
+          for(var blemish=0;blemish<180;blemish++){var lx=(blemish*47.31)%128,ly=(blemish*19.77)%64;dryLeafContext.fillStyle=blemish%3?'rgba(111,81,42,0.09)':'rgba(244,228,192,0.25)';dryLeafContext.beginPath();dryLeafContext.ellipse(lx,ly,1+blemish%4,0.6+blemish%3,blemish,0,Math.PI*2);dryLeafContext.fill();}
+          dryLeafContext.strokeStyle='#9b835e';dryLeafContext.lineWidth=1.1;dryLeafContext.beginPath();dryLeafContext.moveTo(0,32);dryLeafContext.bezierCurveTo(40,29,85,35,128,32);dryLeafContext.stroke();
+          for(var vein=1;vein<8;vein++)[-1,1].forEach(function(side){var vx=vein*14;dryLeafContext.beginPath();dryLeafContext.moveTo(vx,32);dryLeafContext.quadraticCurveTo(vx+8,32+side*12,vx+17,32+side*26);dryLeafContext.lineWidth=0.6;dryLeafContext.stroke();});
+          var dryLeafTexture=new T.CanvasTexture(dryLeafCanvas);dryLeafTexture.encoding=T.sRGBEncoding;textures.push(dryLeafTexture);
+          var dryLeafMaterial=new T.MeshStandardMaterial({color:0xffffff,map:dryLeafTexture,roughness:1,side:T.DoubleSide});materials.push(dryLeafMaterial);
+          var soilLeaves=new T.InstancedMesh(dryLeafGeometry,dryLeafMaterial,180);soilPatch.add(soilLeaves);soilLeaves.receiveShadow=true;
+          for(var sl=0;sl<180;sl++){
+            var angle=sl*2.399963,radius=Math.sqrt((sl*37%181)/181)*1.85;
+            var leafX=Math.cos(angle)*radius,leafZ=Math.sin(angle)*radius*0.85;
+            transform.position.set(leafX,groundHeight(soilX+leafX,soilZ+leafZ)-groundHeight(soilX,soilZ)+0.025+(sl%4)*0.013,leafZ);
+            transform.rotation.set((sl%5)*0.07,angle,(sl%7)*0.03);transform.scale.set(0.065+(sl%3)*0.017,0.007,0.032);transform.updateMatrix();soilLeaves.setMatrixAt(sl,transform.matrix);
+            soilLeaves.setColorAt(sl,new T.Color(['#79613e','#51432e','#99804d','#68502e'][sl%4]).convertSRGBToLinear());
+          }soilLeaves.instanceMatrix.needsUpdate=true;soilLeaves.instanceColor.needsUpdate=true;
+          var capGeometry=geometry(new T.LatheGeometry([[0,0.105],[0.04,0.102],[0.085,0.088],[0.13,0.048],[0.16,0.007],[0.156,-0.006],[0.105,0.003],[0.03,0.015],[0,0.016]].map(function(p){return new T.Vector2(p[0],p[1]);}),28));
+          // Shared, deterministic surface maps keep the added detail inexpensive.
+          var capCanvas=document.createElement('canvas');capCanvas.width=256;capCanvas.height=128;
+          var capContext=capCanvas.getContext('2d'),capImage=capContext.createImageData(256,128);
+          for(var cp=0;cp<256*128;cp++){
+            var cu=cp%256,cv=Math.floor(cp/256),grain=Math.abs(Math.sin(cp*93.71)*43758.5453)%1;
+            var mottling=8*Math.sin(cu*0.15+Math.sin(cv*0.12))*Math.sin(cv*0.18)+4*Math.sin(cu*0.7+cv*0.06);
+            var tone=225+mottling+grain*13;
+            capImage.data[cp*4]=tone;capImage.data[cp*4+1]=tone-3;capImage.data[cp*4+2]=tone-9;capImage.data[cp*4+3]=255;
+          }capContext.putImageData(capImage,0,0);
+          var capTexture=new T.CanvasTexture(capCanvas);capTexture.encoding=T.sRGBEncoding;capTexture.wrapS=T.RepeatWrapping;textures.push(capTexture);
+          var capMaterials=['#9b6a36','#b38950','#c4a46c'].map(function(color){var material=new T.MeshStandardMaterial({color:new T.Color(color).convertSRGBToLinear(),map:capTexture,bumpMap:capTexture,bumpScale:0.004,roughness:0.78});materials.push(material);return material;});
+          var soilFungi=[];
+          for(var sf=0;sf<18;sf++){
+            // Fixed sunflower spacing keeps every cap separated, including the
+            // largest tilted mushrooms at the full 18-symbol display. Sites do
+            // not move when abundance changes or the timeline is scrubbed.
+            var fungus=new T.Group(),fa=sf*2.399963,fr=Math.sqrt((sf+0.5)/18)*1.85;
+            var fungusX=Math.cos(fa)*fr,fungusZ=Math.sin(fa)*fr*0.85;
+            fungus.position.set(fungusX,groundHeight(soilX+fungusX,soilZ+fungusZ)-groundHeight(soilX,soilZ)+0.025,fungusZ);fungus.rotation.y=fa;fungus.rotation.z=Math.sin(sf*3)*0.13;fungus.scale.setScalar(0.55+(sf%4)*0.17);soilPatch.add(fungus);
+            var stalk=mesh(fungus,cylinder,'#d6c5a0',0,0.13,0,0.025,0.26,0.021);stalk.castShadow=true;stalk.receiveShadow=true;
+            var cap=mesh(fungus,capGeometry,['#9b6a36','#b38950','#c4a46c'][sf%3],0,0.265,0,1,1,1);cap.material=capMaterials[sf%3];cap.castShadow=true;cap.receiveShadow=true;
+            mesh(fungus,sphere,'#dfcfad',0,0.256,0,0.148,0.012,0.148);
+            for(var gill=0;gill<14;gill++){
+              var ga=gill*Math.PI/7,groove=mesh(fungus,sphere,'#a18a62',Math.cos(ga)*0.082,0.249,Math.sin(ga)*0.082,0.06,0.0025,0.0025);groove.rotation.y=-ga;
+            }
+            for(var fleck=0;fleck<5;fleck++){var a=fleck*2.4,rr=0.04+fleck*0.013;mesh(fungus,sphere,'#d5b982',Math.cos(a)*rr,0.365-rr*0.34,Math.sin(a)*rr,0.007,0.002,0.005);}
+            soilFungi.push(fungus);
+          }
+          // Connected branching threads grow outward from distributed sites;
+          // each site has twelve line segments, with no radial dash pattern.
+          var threadPositions=[];
+          function threadSegment(ax,az,bx,bz){[ [ax,az],[bx,bz] ].forEach(function(p){threadPositions.push(p[0],groundHeight(soilX+p[0],soilZ+p[1])-groundHeight(soilX,soilZ)+0.04,p[1]);});}
+          for(var strand=0;strand<46;strand++){
+            var site=strand%18,siteAngle=site*2.399963,siteRadius=Math.sqrt((site+0.5)/18)*1.85;
+            var tx=Math.cos(siteAngle)*siteRadius,tz=Math.sin(siteAngle)*siteRadius*0.85,heading=strand*1.73;
+            for(var seg=0;seg<6;seg++){
+              var direction=heading+Math.sin(seg*0.9+strand)*0.3,nx=tx+Math.cos(direction)*0.057,nz=tz+Math.sin(direction)*0.057;
+              threadSegment(tx,tz,nx,nz);
+              if(seg===1||seg===3||seg===5){var ba=direction+(strand%2?1:-1)*0.72,bx=nx+Math.cos(ba)*0.045,bz=nz+Math.sin(ba)*0.045;threadSegment(nx,nz,bx,bz);threadSegment(bx,bz,bx+Math.cos(ba+0.2)*0.032,bz+Math.sin(ba+0.2)*0.032);}
+              tx=nx;tz=nz;
+            }
+          }
+          var threadGeometry=geometry(new T.BufferGeometry());threadGeometry.setAttribute('position',new T.Float32BufferAttribute(threadPositions,3));
+          var threadMaterial=new T.LineBasicMaterial({color:0xc8b48f,transparent:true,opacity:0.42});materials.push(threadMaterial);
+          var soilThreads=new T.LineSegments(threadGeometry,threadMaterial);soilPatch.add(soilThreads);
+
+          function draw() {
+            if (cancelled || !renderer) return;
+            var p = latest.current, v = view.current;
+            var values = p.result ? p.result[v.branch][p.cursor].values : p.config.initial;
+            // Lighting is a viewing preference, not model time or weather.
+            var light = {
+              daylight:{sky:0x91a6a0,sun:0xffe3ac,power:1.25,ambient:0.62,rim:0.35,x:-8,y:16,z:10,exposure:0.92,fog:1},
+              golden:{sky:0xb3a08a,sun:0xffbf76,power:1.65,ambient:0.45,rim:0.26,x:-16,y:7,z:12,exposure:0.93,fog:1.15},
+              overcast:{sky:0x9eafb4,sun:0xe5eef4,power:0.38,ambient:0.95,rim:0.18,x:-8,y:16,z:10,exposure:0.91,fog:1.25}
+            }[v.lighting];
+            scene.background.setHex(light.sky);scene.fog.color.setHex(light.sky);
+            sun.color.setHex(light.sun);sun.intensity=light.power;sun.position.set(light.x,light.y,light.z);sun.castShadow=v.lighting!=='overcast';
+            skyLight.intensity=light.ambient;rim.intensity=light.rim;renderer.toneMappingExposure=light.exposure;
+            renderer.domElement.setAttribute('data-lighting',v.lighting);
+            var time = v.reduced || !p.result ? 0 : p.cursor / 10;
+            var currentSoil=p.config.soil.enabled?(p.result?p.result[v.branch][p.cursor].soil:p.config.soil):null;
+            soilPatch.visible=!!currentSoil;
+            var fungiCount=currentSoil&&currentSoil.decomposers>0?Math.min(18,Math.max(1,Math.ceil(currentSoil.decomposers*1.5))):0;
+            soilFungi.forEach(function(fungus,i){fungus.visible=i<fungiCount;});
+            soilLeaves.count=currentSoil&&currentSoil.detritus>0?Math.min(180,Math.max(1,Math.ceil(currentSoil.detritus*4))):0;
+            soilThreads.visible=fungiCount>0;threadGeometry.setDrawRange(0,Math.ceil(fungiCount/18*46)*24);
+            ['detritus','decomposers','nutrients'].forEach(function(key){renderer.domElement.setAttribute('data-soil-'+key,String(currentSoil?currentSoil[key]:0));});
+            renderer.domElement.setAttribute('data-soil-enabled',String(!!currentSoil));
+            renderer.domElement.setAttribute('data-soil-fungi',String(fungiCount));
+            renderer.domElement.setAttribute('data-soil-litter',String(soilLeaves.count));
+            var currentCover = p.result ? p.result[v.branch][p.cursor].cover : p.config.cover;
+            refugePatches.forEach(function(patch, i) { patch.visible = currentCover > i * 10; patch.scale.setScalar(Math.min(1, Math.max(0.3, (currentCover - i * 10) / 10))); });
+            renderer.domElement.setAttribute('data-refuge-cover', String(currentCover));
+            var width = Math.max(1, container.clientWidth), height = Math.max(1, container.clientHeight);
+            if (renderer.domElement.width !== Math.floor(width * renderer.getPixelRatio()) || renderer.domElement.height !== Math.floor(height * renderer.getPixelRatio())) renderer.setSize(width, height, false);
+            camera.aspect = width / height;
+            // Increase distance on narrow screens so the clearing remains visible.
+            var soilView=v.cameraMode==='soil'&&!!currentSoil;
+            var detail = v.cameraMode === 'detail' && p.focus !== 'plants';
+            var focusPose=ecoMeadowPose(p.focus,0,time,v.reduced);
+            var target = soilView?[soilX,soilZ]:detail ? [focusPose.x,focusPose.z] : [0,0];
+            var wide = v.cameraMode === 'forest';
+            var targetY = soilView?groundHeight(soilX,soilZ)+0.15:detail ? groundHeight(focusPose.x,focusPose.z)+focusPose.altitude+(p.focus==='caterpillars'?0.08:p.focus==='bluetits'?0.22:p.focus==='voles'?0.2:0.42) : 0.8;
+            var distance = v.zoom * (soilView?0.20:detail ? (p.focus==='caterpillars'?0.09:p.focus==='bluetits'?0.13:p.focus==='voles'?0.13:0.20) : wide ? 1.6 : 1) * Math.max(1, (detail ? 0.9 : 1.2) / camera.aspect);
+            var cameraAngle=detail?v.orbit+Math.PI/2+focusPose.yaw:v.orbit;
+            camera.position.set(target[0] + Math.sin(cameraAngle) * distance, targetY + distance * (soilView?0.75:detail ? 0.42 : wide ? 0.78 : 0.40), target[1] + Math.cos(cameraAngle) * distance);
+            camera.lookAt(target[0], targetY, target[1]); camera.updateProjectionMatrix();
+            scene.fog.density=light.fog*(wide?0.014:0.019)/Math.max(1,1/camera.aspect);
+            renderer.domElement.setAttribute('data-camera-mode', v.cameraMode);
+            renderer.domElement.setAttribute('data-selected-species', p.focus);
+            renderer.domElement.setAttribute('data-selection-markers',String(v.markers));
+            renderer.domElement.setAttribute('data-representative-position',focusPose.x.toFixed(4)+','+focusPose.z.toFixed(4));
+            ECO_WEB_SPECIES.forEach(function(sp) {
+              var value = values[sp.id], max = groups[sp.id].length;
+              var count = p.config.enabled[sp.id] && value > 0 ? Math.min(max, Math.max(1, Math.ceil(value / sp.initial * (sp.id === 'plants' ? 40 : 7)))) : 0;
+              groups[sp.id].forEach(function(g, i) {
+                g.visible = i < count;
+                var home=g.userData.home, pose=ecoMeadowPose(sp.id,i,time,v.reduced);
+                var px=sp.id==='plants'?home[0]:pose.x,pz=sp.id==='plants'?home[1]:pose.z,altitude=sp.id==='plants'?0.025:pose.altitude;
+                g.position.set(px,groundHeight(px,pz)+altitude,pz);
+                g.userData.marker.visible=v.markers && sp.id===p.focus;
+                g.userData.marker.position.y=-altitude+0.035;g.userData.shadow.position.y=-altitude+0.02;
+                if(g.userData.head) g.userData.head.rotation.z=-(sp.id==='foxes'?0.15:0.3)*pose.forage;
+                if(g.userData.legs)g.userData.legs.forEach(function(leg){leg.rotation.z=pose.gait*leg.userData.phase*0.18;});
+                if(g.userData.paws)g.userData.paws.forEach(function(paw){paw.rotation.z=pose.gait*paw.userData.phase*0.18;});
+                if(g.userData.body && sp.id==='bluetits')g.userData.body.position.y=Math.abs(pose.gait)*0.06;
+                if(g.userData.body && sp.id==='rabbits')g.userData.body.position.y=Math.abs(pose.gait)*0.045;
+                if(g.userData.tail)g.userData.tail.rotation.y=v.reduced?0:Math.sin(time*1.1+pose.phase)*0.12;
+                if(g.userData.body && sp.id==='owls')g.userData.body.rotation.x=v.reduced?0:Math.sin(time*0.32+pose.phase)*0.10;
+                if(g.userData.wings)g.userData.wings.forEach(function(wing){wing.rotation.x=wing.userData.side*(v.reduced?0.08:Math.sin(time*3.8+pose.phase)*0.3);});
+                g.rotation.y=sp.id==='plants'?g.userData.phase:pose.yaw;
+              });
+              Object.keys(materialMap).forEach(function(key) { if (key.split(':')[1] === sp.id) materialMap[key].emissive.set(sp.id === p.focus ? '#101b16' : '#000000'); });
+              renderer.domElement.setAttribute('data-biomass-' + sp.id, String(value));
+              renderer.domElement.setAttribute('data-glyphs-' + sp.id, String(count));
+            });
+            renderer.domElement.setAttribute('data-wildlife-detail','textured-coats,layered-feathers,relative-sizes');
+            renderer.domElement.setAttribute('data-step', String(p.result ? p.cursor : 0));
+            renderer.domElement.setAttribute('data-branch', v.branch);
+            scene.updateMatrixWorld(true);
+            renderer.render(scene, camera);
+          }
+          var ray = new T.Raycaster(), pointer = new T.Vector2();
+          function pick(e) {
+            var rect = renderer.domElement.getBoundingClientRect();
+            pointer.set((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1);
+            ray.setFromCamera(pointer, camera);
+            var hit = ray.intersectObjects(meshes).find(function(hit) { var node=hit.object;while(node){if(!node.visible)return false;node=node.parent;}return true; });
+            if (hit) latest.current.onFocus(hit.object.userData.species);
+          }
+          function lost(e) { e.preventDefault(); fail(); }
+          renderer.domElement.addEventListener('click', pick);
+          renderer.domElement.addEventListener('webglcontextlost', lost);
+          disposeListeners = function() { renderer.domElement.removeEventListener('click', pick); renderer.domElement.removeEventListener('webglcontextlost', lost); };
+          engine.current = { draw: draw };
+          if (window.ResizeObserver) { observer = new ResizeObserver(draw); observer.observe(container); }
+          window.addEventListener('resize', draw);
+          var priorDispose = disposeListeners;
+          disposeListeners = function() { priorDispose(); window.removeEventListener('resize', draw); };
+          draw(); setStatus('ready');
+        } catch (e) { fail(); }
+      }
+      timeout = setTimeout(fail, 12000);
+      if (window.THREE) start();
+      else if (window.StemLab && window.StemLab.ensureThree) { try { Promise.resolve(window.StemLab.ensureThree()).then(start).catch(fail); } catch (e) { fail(); } }
+      else fail();
+      return function() {
+        cancelled = true; clearTimeout(timeout); engine.current = null;
+        if (observer) observer.disconnect(); disposeListeners();
+        geometries.forEach(function(g) { g.dispose(); }); materials.forEach(function(m) { m.dispose(); }); textures.forEach(function(texture) { texture.dispose(); });
+        if (shadowLight) shadowLight.shadow.dispose();
+        if (renderer) { renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); }
+      };
+    }, []);
+    React.useEffect(function() { if (engine.current && status === 'ready') engine.current.draw(); }, [props.result, props.cursor, props.focus, JSON.stringify(props.config), orbit, zoom, branch, reduced, status, cameraMode, markers, lighting]);
+    return h('section', { className: 'efw-card efw-stack', 'data-efw-meadow': 'true', 'aria-label': '3D meadow habitat' },
+      h('div', { className: 'efw-row', style: { justifyContent: 'space-between' } }, h('h4', null, '3D woodland clearing'), h('strong', { 'data-efw-scene-time': 'true' }, props.result ? (branch === 'baseline' ? 'Baseline' : 'Experiment') + ' · time ' + (props.cursor / 10).toFixed(1) : 'Starting community')),
+      h('p', null, 'Explore a meadow clearing within a larger woodland. Select an organism for a close-up, or use Forest overview to see the surrounding landscape.'),
+      h('p', { 'data-efw-scene-cover': 'true' }, h('strong', null, 'Refuge cover: ' + (props.result ? props.result[branch][props.cursor].cover : props.config.cover) + '%'), ' · Leafy thickets represent shelter; upright flowering tufts represent food plants.'),
+      h('div', { ref: host, className: 'efw-meadow-stage', style: { display: status === 'unavailable' ? 'none' : 'block' } },
+        h('div', { className: 'efw-meadow-overlay', 'data-efw-selection-label': 'true' }, h('span', null, cameraMode==='soil'&&soilSample?'FOREST-FLOOR STUDY':cameraMode === 'detail' ? 'GROUP INSPECTION' : cameraMode === 'forest' ? 'WOODLAND LANDSCAPE' : 'WOODLAND CLEARING'), h('strong', null, cameraMode==='soil'&&soilSample?'Fungi, bacteria & fallen material':(ECO_WEB_SPECIES.find(function(sp) { return sp.id === props.focus; }) || ECO_WEB_SPECIES[0]).name), h('span', null, cameraMode==='soil'&&soilSample?'Decomposers '+ecoWebFormat(soilSample.decomposers)+' · organic matter '+ecoWebFormat(soilSample.detritus)+' · nutrients '+ecoWebFormat(soilSample.nutrients):props.config.enabled[props.focus] ? ecoWebFormat(sample[props.focus]) + ' biomass index' + (sample[props.focus] === 0 ? ' · none present at this time' : markers ? ' · yellow rings mark selection' : ' · representative animals shown') : 'Not included in this community'))),
+      status === 'loading' && h('p', { role: 'status' }, 'Loading the 3D meadow…'),
+      status === 'unavailable' && h('div', { role: 'status', className: 'efw-result' }, '3D is unavailable on this device. The food-web diagram, species values, and comparison remain available below.'),
+      status === 'ready' && h('div', { className: 'efw-row' },
+        h('label', null, 'Lighting', h('select', { 'aria-label':'Woodland lighting', value:lighting, onChange:function(e){setLighting(e.target.value);} }, h('option',{value:'daylight'},'Daylight'),h('option',{value:'golden'},'Golden hour'),h('option',{value:'overcast'},'Overcast'))),
+        h('button', { type: 'button', 'aria-pressed': cameraMode === 'habitat', onClick: function() { setCameraMode('habitat'); } }, 'Habitat view'),
+        soilSample&&h('button',{type:'button','aria-pressed':cameraMode==='soil',onClick:function(){setCameraMode('soil');}},'Inspect forest floor'),
+        h('button', { type: 'button', 'aria-pressed': cameraMode === 'forest', onClick: function() { setCameraMode('forest'); } }, 'Forest overview'),
+        h('button', { type:'button', 'aria-pressed':markers, onClick:function(){setMarkers(!markers);} }, 'Selection markers'),
+        h('button', { type: 'button', 'aria-pressed': cameraMode === 'detail', onClick: function() { setCameraMode('detail'); } }, 'Inspect selected group'),
+        h('button', { type: 'button', onClick: function() { setOrbit(orbit - Math.PI / 6); } }, 'Rotate left'),
+        h('button', { type: 'button', onClick: function() { setOrbit(orbit + Math.PI / 6); } }, 'Rotate right'),
+        h('button', { type: 'button', onClick: function() { setOrbit(0.65); setZoom(19); setCameraMode('habitat'); } }, 'Reset camera'),
+        h('label', { style: { flex: '1 1 180px' } }, 'Camera distance', h('input', { type: 'range', min: 15, max: 30, value: zoom, 'aria-label': 'Meadow camera distance', onChange: function(e) { setZoom(Number(e.target.value)); } }))),
+      h('div', { className: 'efw-meadow-species', role: 'group', 'aria-label': 'Meadow species selection' }, ECO_WEB_SPECIES.filter(function(sp){return !sp.optional||props.config.enabled[sp.id];}).map(function(sp) { return h('button', { type: 'button', key: sp.id, 'aria-pressed': props.focus === sp.id, onClick: function() { props.onFocus(sp.id); } }, sp.icon + ' ' + sp.name, h('strong', { style: { display: 'block' } }, props.config.enabled[sp.id] ? ecoWebFormat(sample[sp.id]) + ' biomass' : 'Not included')); })),
+      props.result && h('div', { className: 'efw-row' },
+        h('label', null, 'Scene data', h('select', { 'aria-label': 'Meadow scene data', value: branch, onChange: function(e) { setBranch(e.target.value); } }, h('option', { value: 'experiment' }, 'Experiment'), h('option', { value: 'baseline' }, 'Baseline'))),
+        !reduced && status === 'ready' && h('button', { type: 'button', onClick: function() { if (!playing && props.cursor === 240) props.onCursor(0); setPlaying(!playing); } }, playing ? 'Pause meadow timeline' : 'Play meadow timeline'),
+        h('label', { style: { flex: '1 1 240px' } }, 'Inspect time: ' + (props.cursor / 10).toFixed(1), h('input', { type: 'range', min: 0, max: 240, value: props.cursor, 'aria-label': 'Meadow timeline', onChange: function(e) { setPlaying(false); props.onCursor(Number(e.target.value)); } }))),
+      soilSample&&h('p',{'data-efw-soil-scene-caption':'true'},'Forest-floor study: leaf litter represents organic matter; mushrooms and pale fungal threads symbolize the combined fungi-and-bacteria biomass. These are capped visual indicators, not mushroom counts or a map of real soil microbes. Use Inspect forest floor to find the patch.'),
+      reduced && h('small', null, 'Reduced motion is on. Use the timeline to inspect still scenes.'),
+      h('small', null, 'Organism symbols show approximate, capped abundance—not individual animal counts. A tiny positive biomass keeps one symbol; zero has none. Read the values for exact comparisons. Lighting changes appearance only; it does not set model time or weather. The cover percentage reduces predator access to herbivores in the model. Ground cover, ferns, surrounding trees and fungi outside the soil study patch are scenery for this meadow food-web model. Close-up mode follows one representative animal; its walking pauses, flight, and feeding poses are illustrative. Animal sizes are adjusted for visibility and are not a measurement scale. Thicket positions, animal movement, trees, and rocks are illustrative; individual animals do not navigate or hide in specific patches.'));
+  }
+
+
+  // Analyze the paired samples only; thresholds describe display visibility,
+  // not ecological significance, and ties resolve to the earliest sample.
+  function ecoWebInsights(pair) {
+    return ECO_WEB_SPECIES.map(function(sp) {
+      var peak = null, firstVisible = null;
+      pair.experiment.forEach(function(row, i) {
+        var delta = row.values[sp.id] - pair.baseline[i].values[sp.id];
+        if (delta !== 0 && (!peak || Math.abs(delta) > Math.abs(peak.delta))) peak = { step: row.step, delta: delta };
+        if (!firstVisible && Math.abs(delta) >= 0.1) firstVisible = { step: row.step, delta: delta };
+      });
+      return { id: sp.id, peak: peak, firstVisible: firstVisible };
+    });
+  }
+
+  function EcoCommunityOverview(props) {
+    var React = props.React, h = React.createElement, pair = props.result, cursor = props.cursor;
+    var insights = React.useMemo(function() { return ecoWebInsights(pair); }, [pair]);
+    var selected = ECO_WEB_SPECIES.find(function(sp) { return sp.id === props.focus; }) || ECO_WEB_SPECIES[0];
+    var selectedInsight = insights.find(function(item) { return item.id === selected.id; });
+    var eventStep = props.config.eventStep, hasEvent = props.config.event !== 'none';
+    function inspect(step) { props.onInspect(step, selected.id); }
+    function miniChart(sp) {
+      var max = 1;
+      [pair.baseline, pair.experiment].forEach(function(rows) { rows.forEach(function(row) { max = Math.max(max, row.values[sp.id]); }); });
+      max *= 1.1;
+      function x(step) { return 10 + step / 240 * 210; }
+      function y(value) { return 89 - value / max * 66; }
+      function points(rows) { return rows.map(function(row) { return x(row.step).toFixed(2) + ',' + y(row.values[sp.id]).toFixed(2); }).join(' '); }
+      return h('svg', { viewBox: '0 0 230 112', 'aria-hidden': 'true', focusable: 'false', className: 'efw-overview-plot' },
+        h('text', { x: 10, y: 14, fill: '#cbd5e1', fontSize: 16 }, 'Scale 0–' + max.toFixed(1)),
+        h('line', { x1: 10, x2: 220, y1: 89, y2: 89, stroke: '#64748b' }),
+        hasEvent && h('line', { x1: x(eventStep), x2: x(eventStep), y1: 22, y2: 89, stroke: '#fde68a', strokeDasharray: '2 4' }),
+        h('polyline', { points: points(pair.baseline), fill: 'none', stroke: '#e2e8f0', strokeWidth: 2, strokeDasharray: '6 4' }),
+        h('polyline', { points: points(pair.experiment), fill: 'none', stroke: '#67e8f9', strokeWidth: 2.5 }),
+        h('line', { x1: x(cursor), x2: x(cursor), y1: 22, y2: 89, stroke: '#c4b5fd', strokeWidth: 1.5 }),
+        h('circle', { cx: x(cursor), cy: y(pair.experiment[cursor].values[sp.id]), r: 3.5, fill: '#67e8f9' }),
+        h('text', { x: 10, y: 105, fill: '#cbd5e1', fontSize: 16 }, '0'),
+        h('text', { x: 220, y: 105, textAnchor: 'end', fill: '#cbd5e1', fontSize: 16 }, '24 time units'));
+    }
+    return h('section', { className: 'efw-card efw-stack', 'data-efw-overview': 'true', 'aria-label': 'Community comparison overview' },
+      h('div', { className: 'efw-row', style: { justifyContent: 'space-between' } }, h('h4', null, 'The whole community'), h('strong', null, 'Time ' + (cursor / 10).toFixed(1))),
+      h('p', null, 'Compare all groups, then select one to inspect its detailed chart. Each group uses its own vertical scale; both runs share that scale.'),
+      h('div', { className: 'efw-overview-legend' }, h('span', null, 'Baseline · dashed'), h('span', null, 'Experiment · solid'), hasEvent && h('span', null, 'Yellow line · disturbance'), h('span', null, 'Purple line · inspected time')),
+      h('div', { className: 'efw-overview-grid' }, ECO_WEB_SPECIES.filter(function(sp){return !sp.optional||props.config.enabled[sp.id];}).map(function(sp) {
+        var baseline = pair.baseline[cursor].values[sp.id], experiment = pair.experiment[cursor].values[sp.id], enabled = props.config.enabled[sp.id];
+        var delta = experiment - baseline;
+        return h('button', { key: sp.id, type: 'button', className: 'efw-overview-group', 'data-efw-overview-species': sp.id, 'aria-pressed': selected.id === sp.id, 'aria-label': 'Compare ' + sp.name + (enabled ? ': baseline ' + ecoWebFormat(baseline) + ', experiment ' + ecoWebFormat(experiment) + ', difference ' + ecoWebDelta(delta) + ' biomass index' : ': not included'), onClick: function() { props.onInspect(cursor, sp.id); } },
+          h('span', { className: 'efw-overview-name' }, sp.icon + ' ' + sp.name), miniChart(sp),
+          h('span', { className: 'efw-overview-values' }, h('span', null, 'Baseline ', h('strong', null, ecoWebFormat(baseline))), h('span', null, 'Experiment ', h('strong', null, ecoWebFormat(experiment)))),
+          h('span', { className: 'efw-overview-delta' }, enabled ? 'Difference ' + ecoWebDelta(delta) : 'Not included'));
+      })),
+      h('div', { className: 'efw-result efw-stack', 'data-efw-moments': 'true' },
+        h('h4', null, 'Inspect key moments · ' + selected.name),
+        h('div', { className: 'efw-row' },
+          h('button', { type: 'button', onClick: function() { inspect(0); } }, 'Start'),
+          hasEvent && h('button', { type: 'button', onClick: function() { inspect(Math.max(0, eventStep - 1)); } }, 'Before disturbance'),
+          hasEvent && h('button', { type: 'button', onClick: function() { inspect(eventStep); } }, 'At disturbance'),
+          h('button', { type: 'button', onClick: function() { inspect(240); } }, 'End')),
+        !props.config.enabled[selected.id] ? h('p', null, 'This group is excluded and remains at zero in both runs.') : selectedInsight.peak ? h('div', { className: 'efw-stack' },
+          h('p', { 'data-efw-peak-summary': 'true' }, 'Largest absolute difference: ' + ecoWebDelta(selectedInsight.peak.delta) + ' biomass index at time ' + (selectedInsight.peak.step / 10).toFixed(1) + '.'),
+          h('div', { className: 'efw-row' }, h('button', { type: 'button', onClick: function() { inspect(selectedInsight.peak.step); } }, 'Inspect largest difference'),
+            selectedInsight.firstVisible && h('button', { type: 'button', onClick: function() { inspect(selectedInsight.firstVisible.step); } }, 'Inspect first 0.1 difference')),
+          h('small', null, selectedInsight.firstVisible ? 'The absolute difference first reaches 0.1 biomass index at time ' + (selectedInsight.firstVisible.step / 10).toFixed(1) + '.' : 'The absolute difference stays below 0.1 biomass index throughout this run.')) : h('p', { 'data-efw-peak-summary': 'true' }, 'The two runs match for this group at every sampled time.'),
+        h('small', null, 'Differences mean experiment minus baseline. Larger or smaller is not automatically better. The 0.1 threshold helps locate visible changes; it is not a test of ecological significance. Moments are calculated from samples every 0.1 modeled time unit.')));
+  }
+
+
+  function ecoWebEventLabel(config) {
+    var target = ECO_WEB_SPECIES.find(function(sp) { return sp.id === config.target; }) || ECO_WEB_SPECIES[3];
+    if (config.event === 'restoreCover') return 'Restore refuge cover by 40 percentage points (maximum 80%)';
+    if (config.event === 'clearCover') return 'Clear all refuge cover';
+    if (config.event === 'clearLitter') return 'Remove organic matter from the ecosystem';
+    if (config.event === 'decomposerDecline') return 'Decomposer mortality: 80% loss';
+    if (config.event === 'drought') return 'Drought: halve plant capacity';
+    if (config.event === 'none') return 'No disturbance (control)';
+    return (config.event === 'reduce' ? 'Reduce by 80%: ' : 'Remove ') + target.name;
+  }
+  function ecoWebCapture(config, pair, step, focus, prediction, explanation, id) {
+    step = Math.round(ecoWebNumber(step, 0, 0, 240));
+    return {
+      version: 1, id: id, config: ecoWebConfig(config), step: step,
+      focus: ECO_WEB_SPECIES.some(function(sp) { return sp.id === focus; }) ? focus : 'plants',
+      prediction: String(prediction || '').slice(0, 1200), explanation: String(explanation || '').slice(0, 2000),
+      baseline: JSON.parse(JSON.stringify(pair.baseline[step])),
+      experiment: JSON.parse(JSON.stringify(pair.experiment[step]))
+    };
+  }
+  function ecoWebNotebook(raw) {
+    if (!Array.isArray(raw)) return [];
+    var ids = {};
+    return raw.filter(function(note) {
+      if (!note || note.version !== 1 || !Number.isSafeInteger(note.id) || note.id < 1 || ids[note.id] || !Number.isInteger(note.step) || note.step < 0 || note.step > 240 || !note.config) return false;
+      var valid = ['baseline', 'experiment'].every(function(branch) {
+        var row = note[branch];
+        return row && (!ecoWebConfig(note.config).soil.enabled || (row.soil && ['detritus','nutrients','decomposers','exported'].every(function(key){return Number.isFinite(row.soil[key])&&row.soil[key]>=0;}))) && row.step === note.step && row.time === note.step / 10 && Number.isFinite(row.capacity) && row.capacity > 0 && Number.isFinite(row.cover) && row.cover >= 0 && row.cover <= 80 && row.values && ECO_WEB_SPECIES.every(function(sp) { return (sp.optional && row.values[sp.id] === undefined && !ecoWebConfig(note.config).enabled[sp.id]) || (Number.isFinite(row.values[sp.id]) && row.values[sp.id] >= 0); });
+      });
+      if (valid) ids[note.id] = true;
+      return valid;
+    }).slice(0, 12).map(function(note) {
+      var pair = { baseline: [], experiment: [] };
+      ['baseline','experiment'].forEach(function(branch){
+        var row=JSON.parse(JSON.stringify(note[branch]));ECO_WEB_SPECIES.forEach(function(sp){if(sp.optional && row.values[sp.id]===undefined)row.values[sp.id]=0;});pair[branch][note.step]=row;
+      });
+      return ecoWebCapture(note.config, pair, note.step, note.focus, note.prediction, note.explanation, note.id);
+    });
+  }
+  function ecoWebNotebookText(raw) {
+    var notes = ecoWebNotebook(raw);
+    var lines = ['ECOSYSTEM FIELD NOTEBOOK', 'Illustrative food-web model. Biomass indices are not animal counts; time units are modeled.', 'Each observation stores its original paired sample and setup. Notes are separate observations, not statistical replicates.', ''];
+    notes.forEach(function(note) {
+      var c = note.config, selected = ECO_WEB_SPECIES.find(function(sp) { return sp.id === note.focus; });
+      lines.push('OBSERVATION ' + note.id + ' — ' + selected.name + ' — time ' + (note.step / 10).toFixed(1));
+      lines.push('Disturbance: ' + ecoWebEventLabel(c) + (c.event === 'none' ? '' : '; event time: ' + (c.eventStep / 10).toFixed(1)));
+      lines.push('Starting capacity: ' + c.capacity + '; starting cover: ' + c.cover + '%');
+      if(c.soil.enabled){lines.push('Soil starts: organic matter '+c.soil.detritus+'; nutrients '+c.soil.nutrients+'; decomposers '+c.soil.decomposers);['detritus','decomposers','nutrients','exported'].forEach(function(key){lines.push('Soil '+key+' | '+note.baseline.soil[key].toPrecision(8)+' | '+note.experiment.soil[key].toPrecision(8));});}
+      lines.push('Starting community: ' + ECO_WEB_SPECIES.map(function(sp) { return sp.name + '=' + c.initial[sp.id] + (c.enabled[sp.id] ? '' : ' (excluded)'); }).join('; '));
+      lines.push('Prediction before run: ' + (note.prediction || '(not recorded)'));
+      lines.push('Group | Baseline | Experiment | Difference (experiment minus baseline)');
+      ECO_WEB_SPECIES.forEach(function(sp) {
+        var b = note.baseline.values[sp.id], e = note.experiment.values[sp.id];
+        lines.push(sp.name + ' | ' + b.toPrecision(8) + ' | ' + e.toPrecision(8) + ' | ' + (e - b).toPrecision(8));
+      });
+      lines.push('Sample capacity: baseline ' + note.baseline.capacity + '; experiment ' + note.experiment.capacity);
+      lines.push('Sample refuge cover: baseline ' + note.baseline.cover + '%; experiment ' + note.experiment.cover + '%');
+      lines.push('Explanation: ' + (note.explanation || '(not recorded)'), '');
+    });
+    return lines.join('\r\n');
+  }
+  function EcoFieldNotebook(props) {
+    var h = props.React.createElement, notes = props.notes;
+    function download() {
+      var url = URL.createObjectURL(new Blob([ecoWebNotebookText(notes)], { type: 'text/plain;charset=utf-8' }));
+      var a = document.createElement('a'); a.href = url; a.download = 'ecosystem-field-notebook.txt';
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    }
+    return h('section', { className: 'efw-card efw-stack', 'data-efw-notebook': 'true', 'aria-label': 'Food-web field notebook' },
+      h('div', { className: 'efw-row', style: { justifyContent: 'space-between' } }, h('h4', null, 'Field notebook'), h('span', { role: 'status' }, notes.length + ' of 12 observations saved')),
+      h('p', null, 'Save a comparison sample with its prediction, explanation, and setup. Saved observations stay here when you change the experiment. Export a copy to keep outside this tool.'),
+      !notes.length && h('p', { className: 'efw-result' }, 'Run a comparison, inspect a time, write an explanation, then choose “Save observation” in the results.'),
+      notes.length > 0 && h('button', { type: 'button', onClick: download }, 'Export field notebook'),
+      h('div', { className: 'efw-notebook-grid' }, notes.map(function(note) {
+        var sp = ECO_WEB_SPECIES.find(function(sp) { return sp.id === note.focus; });
+        var b = note.baseline.values[sp.id], e = note.experiment.values[sp.id];
+        return h('article', { key: note.id, className: 'efw-note efw-stack', 'data-efw-note': note.id },
+          h('h4', null, 'Observation ' + note.id + ' · ' + sp.name),
+          h('strong', null, 'Time ' + (note.step / 10).toFixed(1) + ' · difference ' + ecoWebDelta(e - b)),
+          h('p', null, 'Baseline ' + ecoWebFormat(b) + ' · experiment ' + ecoWebFormat(e) + ' biomass index'),
+          h('p', null, 'Refuge cover: ' + note.baseline.cover + '% baseline · ' + note.experiment.cover + '% experiment'),
+          note.config.soil.enabled && h('p',{'data-efw-note-soil':'true'},'Soil sample · organic matter '+ecoWebFormat(note.experiment.soil.detritus)+' · decomposers '+ecoWebFormat(note.experiment.soil.decomposers)+' · available nutrients '+ecoWebFormat(note.experiment.soil.nutrients)),
+          h('p', { className: 'efw-note-prose' }, h('strong', null, 'Explanation: '), note.explanation || 'Not recorded'),
+          h('details', null, h('summary', null, 'Saved setup and all species'),
+            h('p', null, 'Disturbance: ' + ecoWebEventLabel(note.config) + (note.config.event === 'none' ? '' : ' at time ' + (note.config.eventStep / 10).toFixed(1))),
+            h('p', null, 'Starting capacity ' + note.config.capacity + ' · starting cover ' + note.config.cover + '%'),
+            h('p', { className: 'efw-note-prose' }, 'Prediction: ' + (note.prediction || 'Not recorded')),
+            h('p', null, 'Starting community: ' + ECO_WEB_SPECIES.map(function(group) { return group.name + ' ' + note.config.initial[group.id] + (note.config.enabled[group.id] ? '' : ' (excluded)'); }).join('; ')),
+            h('div', { className: 'efw-scroll' }, h('table', null,
+              h('caption', null, 'Saved biomass indices · observation ' + note.id),
+              h('thead', null, h('tr', null, ['Group', 'Baseline', 'Experiment'].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))),
+              h('tbody', null, ECO_WEB_SPECIES.map(function(group) { return h('tr', { key: group.id }, h('th', { scope: 'row' }, group.name), h('td', null, ecoWebFormat(note.baseline.values[group.id])), h('td', null, ecoWebFormat(note.experiment.values[group.id]))); }))))),
+          h('div', { className: 'efw-row' }, h('button', { type: 'button', onClick: function() { props.onReopen(note); }, 'aria-label': 'Reopen observation ' + note.id }, 'Reopen setup and time'), h('button', { type: 'button', onClick: function() { props.onRemove(note.id); }, 'aria-label': 'Remove observation ' + note.id }, 'Remove')));
+      })),
+      notes.length > 0 && h('small', null, 'Reopening replaces the current working setup and explanation with this observation. Saved evidence stays unchanged; the working charts are recalculated using the current model. Each observation includes all groups.'));
+  }
+
+
+  // Soil samples share the food-web cursor; charts compare paired runs on one scale.
+  function EcoSoilCyclePanel(props) {
+    var h=props.React.createElement,result=props.result,cursor=props.cursor;
+    var start=Object.assign({exported:0},props.config.soil);
+    var baseline=result?result.baseline[cursor].soil:start,experiment=result?result.experiment[cursor].soil:start;
+    var pools=[['detritus','Organic matter','Nutrient content of litter, waste and dead organisms.','#fbbf24'],['decomposers','Fungi + bacteria','A combined decomposer biomass index.','#c4b5fd'],['nutrients','Available nutrients','Recycled nutrients that plants can take up.','#6ee7b7']];
+    return h('section',{className:'efw-card efw-stack','data-efw-soil-cycle':'true','aria-label':'Forest-floor nutrient cycle'},
+      h('div',{className:'efw-row',style:{justifyContent:'space-between'}},h('h4',null,'Forest-floor cycle'),h('strong',null,result?'Paired samples · time '+(cursor/10).toFixed(1):'Starting soil community')),
+      h('p',null,'Fallen material feeds decomposers. They release nutrients that support new plant growth; plant and animal losses return material to the forest floor.'),
+      h('ol',{className:'efw-soil-loop','aria-label':'Nutrient recycling pathway'},['Plants & animals','Litter & waste','Fungi & bacteria','Nutrients → plants'].map(function(label,i){return h('li',{key:label},h('span',null,String(i+1).padStart(2,'0')),label);})),
+      h('div',{className:'efw-soil-grid'},pools.map(function(pool){
+        var key=pool[0],max=result?Math.max(1,...result.baseline.map(function(r){return r.soil[key];}),...result.experiment.map(function(r){return r.soil[key];})):Math.max(1,start[key]);
+        function path(rows){return rows.map(function(row,i){return (i?'L':'M')+(12+i*236/240).toFixed(2)+' '+(89-row.soil[key]/max*64).toFixed(2);}).join(' ');}
+        return h('article',{key:key,className:'efw-soil-pool','data-efw-soil-pool':key,'data-baseline':baseline[key],'data-experiment':experiment[key]},
+          h('h5',null,pool[1]),h('p',null,pool[2]),
+          result&&h('svg',{viewBox:'0 0 260 108',role:'img','aria-label':pool[1]+' history from time 0 to 24; baseline dashed, experiment solid',className:'efw-overview-plot'},
+            h('text',{x:12,y:15,fill:'#e2e8f0',fontSize:10},'0–'+max.toFixed(1)+' index'),
+            h('path',{d:path(result.baseline),fill:'none',stroke:'#e2e8f0',strokeWidth:2,strokeDasharray:'5 4'}),
+            h('path',{d:path(result.experiment),fill:'none',stroke:pool[3],strokeWidth:2.5}),
+            props.config.event!=='none'&&h('line',{x1:12+props.config.eventStep*236/240,x2:12+props.config.eventStep*236/240,y1:22,y2:89,stroke:'#fde68a',strokeDasharray:'2 4'}),
+            h('line',{x1:12+cursor*236/240,x2:12+cursor*236/240,y1:22,y2:89,stroke:'#e9d5ff'}),
+            h('text',{x:12,y:102,fill:'#e2e8f0',fontSize:10},'0'),h('text',{x:248,y:102,textAnchor:'end',fill:'#e2e8f0',fontSize:10},'24 modeled time')),
+          h('div',{className:'efw-soil-values'},h('span',null,result?'Baseline':'Starting index',h('strong',null,ecoWebFormat(baseline[key]))),result&&h('span',null,'Experiment',h('strong',null,ecoWebFormat(experiment[key])))),
+          result&&h('p',{className:'efw-overview-delta'},'Difference: '+ecoWebDelta(experiment[key]-baseline[key])));
+      })),
+      result&&h('div',{className:'efw-overview-legend'},h('span',null,'Baseline · dashed'),h('span',null,'Experiment · solid'),h('span',null,'Yellow · disturbance'),h('span',null,'Purple · inspected time')),
+      result&&h('label',null,'Inspect soil time: '+(cursor/10).toFixed(1),h('input',{type:'range',min:0,max:240,value:cursor,'aria-label':'Soil cycle timeline',onChange:function(e){props.onCursor(Number(e.target.value));}})),
+      h('small',{'data-efw-soil-exported':'true'},'Nutrients removed from the ecosystem: baseline '+ecoWebFormat(baseline.exported)+' · experiment '+ecoWebFormat(experiment.exported)+'. Organic matter and nutrients use a nutrient-content index; decomposers use a biomass index. Charts have separate vertical scales.'),
+      h('details',null,h('summary',null,'How the soil cycle is modeled'),h('p',null,'One biomass unit contains 0.1 nutrient units. Plant growth draws from available nutrients; mortality and unassimilated food return nutrients to organic matter. Decomposers process that matter, retaining 18% of its nutrients and releasing 82%. The tracked nutrient total is conserved, including any material removed from the ecosystem.'),h('p',null,'These are illustrative rates and a fixed nutrient quota, not measurements of a particular forest. The combined fungi-and-bacteria pool has no species diversity, carbon budget, weather, nutrient leaching or fungal fruiting season. Plant capacity still limits growth.')));
+  }
+
+  function EcoFoodWebPanel(props) {
+    var React = props.React, h = React.createElement, state = props.state || {}, config = ecoWebConfig(state);
+    var t = props.t, resultConfig = state.run ? ecoWebConfig(state.run.config) : null;
+    var result = React.useMemo(function() { return resultConfig ? ecoWebCompare(resultConfig) : null; }, [JSON.stringify(resultConfig)]);
+    var cursor = Math.round(ecoWebNumber(state.cursor, 240, 0, 240));
+    var focus = ECO_WEB_SPECIES.find(function(sp) { return sp.id === state.focus; }) || ECO_WEB_SPECIES[0];
+    var shownConfig = resultConfig || config;
+    var shown = result ? result.experiment[cursor].values : config.initial;
+    var notes = React.useMemo(function() { return ecoWebNotebook(state.notebook); }, [state.notebook]);
+    function update(patch) { props.onChange(Object.assign({}, state, patch)); }
+    function saveObservation() {
+      if (!result || notes.length >= 12) return;
+      var id = Math.max(0, Math.floor(ecoWebNumber(state.notebookSequence, 0, 0, 1000000)), ...notes.map(function(note) { return note.id; })) + 1;
+      var note = ecoWebCapture(resultConfig, result, cursor, focus.id, state.run.prediction, state.reflection, id);
+      update({ notebook: notes.concat([note]), notebookSequence: id });
+      if (props.announce) props.announce('Observation ' + id + ' saved to the field notebook.');
+    }
+    function draft(patch) { update(Object.assign({ run: null, cursor: 0, reflection: '' }, patch)); }
+    function preset(full) { draft({ soil:{enabled:false}, focus:'plants', enabled: { rabbits: true, voles: full, foxes: true, owls: full }, initial: {}, event: 'remove', target: 'foxes', capacity: 160, cover: 0, eventStep: 80 }); }
+    function linkLabel(link) {
+      function name(id) { return ECO_WEB_SPECIES.find(function(sp) { return sp.id === id; }).name; }
+      return name(link.food) + ' → ' + name(link.consumer);
+    }
+    var expanded=shownConfig.enabled.caterpillars||shownConfig.enabled.bluetits;
+    var diagramSpecies=ECO_WEB_SPECIES.filter(function(sp){return !sp.optional||shownConfig.enabled[sp.id];}).map(function(sp){
+      if(!expanded||sp.id==='plants'||sp.optional)return sp;
+      return Object.assign({},sp,{x:sp.id==='rabbits'||sp.id==='foxes'?17:50});
+    });
+    var activeLinks = ECO_WEB_LINKS.filter(function(link) { return shownConfig.enabled[link.food] && shownConfig.enabled[link.consumer]; });
+    var incoming = activeLinks.filter(function(link) { return link.consumer === focus.id; }).map(linkLabel);
+    var outgoing = activeLinks.filter(function(link) { return link.food === focus.id; }).map(linkLabel);
+    var eventName = config.event === 'clearLitter' ? 'Remove organic matter' : config.event === 'decomposerDecline' ? 'Decomposer mortality: 80% loss' : config.event === 'restoreCover' ? 'Add 40 percentage points of refuge cover (maximum 80%)' : config.event === 'clearCover' ? 'Clear all refuge cover' : config.event === 'drought' ? 'Plant capacity halves' : config.event === 'none' ? 'No disturbance' : (config.event === 'remove' ? 'Remove ' : 'Reduce 80%: ') + ECO_WEB_SPECIES.find(function(sp) { return sp.id === config.target; }).name;
+    var exportCsv = function() {
+      if (!result) return;
+      var url = URL.createObjectURL(new Blob([ecoWebCSV(result)], { type: 'text/csv;charset=utf-8' }));
+      var a = document.createElement('a'); a.href = url; a.download = 'meadow-food-web-comparison.csv';
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    };
+    function chart() {
+      var max = 1;
+      [result.baseline, result.experiment].forEach(function(rows) { rows.forEach(function(row) { max = Math.max(max, row.values[focus.id]); }); });
+      max *= 1.12;
+      var sx = function(step) { return 42 + step / 240 * 350; };
+      var sy = function(value) { return 204 - value / max * 174; };
+      function points(rows) { return rows.map(function(row) { return sx(row.step).toFixed(2) + ',' + sy(row.values[focus.id]).toFixed(2); }).join(' '); }
+      return h('svg', { viewBox: '0 0 430 250', className: 'efw-chart', role: 'img', 'aria-label': focus.name + ': baseline and experiment biomass indices across 24 modeled time units. Exact values are in the comparison table.', 'data-efw-chart': 'true' },
+        [0, 0.5, 1].map(function(f) { return h('g', { key: f }, h('line', { x1: 42, x2: 392, y1: sy(max * f), y2: sy(max * f), stroke: '#475569' }), h('text', { x: 35, y: sy(max * f) + 5, textAnchor: 'end', fill: '#e2e8f0', fontSize: 16 }, Math.round(max * f))); }),
+        h('line', { x1: sx(resultConfig.eventStep), x2: sx(resultConfig.eventStep), y1: 22, y2: 204, stroke: '#fde68a', strokeDasharray: '3 5' }),
+        h('text', { x: sx(resultConfig.eventStep) + (resultConfig.eventStep > 150 ? -5 : 5), textAnchor: resultConfig.eventStep > 150 ? 'end' : 'start', y: 18, fill: '#fde68a', fontSize: 15 }, resultConfig.event === 'none' ? 'Reference time' : 'Event'),
+        h('polyline', { points: points(result.baseline), fill: 'none', stroke: '#e2e8f0', strokeWidth: 3, strokeDasharray: '8 5' }),
+        h('polyline', { points: points(result.experiment), fill: 'none', stroke: '#67e8f9', strokeWidth: 3 }),
+        h('line', { x1: sx(cursor), x2: sx(cursor), y1: 24, y2: 204, stroke: '#c4b5fd', strokeWidth: 2 }),
+        h('circle', { cx: sx(cursor), cy: sy(result.experiment[cursor].values[focus.id]), r: 5, fill: '#67e8f9', stroke: '#0f172a' }),
+        [0, 8, 16, 24].map(function(time) { return h('text', { key: time, x: sx(time * 10), y: 232, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 16 }, time); }));
+    }
+    return h('section', { className: 'efw', 'data-eco-foodweb': 'true', 'aria-label': t('stem.ecosystem.foodweb_lab', 'Multi-species food-web lab') },
+      h('style', null, `
+        .efw{--fw-bg:#f8fafc;--fw-panel:#fff;--fw-ink:#172b3a;--fw-muted:#475569;--fw-line:#64748b;--fw-tint:#e2e8f0;--fw-accent:#155e75;background:var(--fw-bg);color:var(--fw-ink);border:1px solid var(--fw-line);border-radius:16px;padding:20px;display:grid;gap:20px;font-size:14px;line-height:1.5}
+        .theme-dark .efw,.dark .efw{--fw-bg:#0f172a;--fw-panel:#1e293b;--fw-ink:#f8fafc;--fw-muted:#cbd5e1;--fw-line:#94a3b8;--fw-tint:#334155;--fw-accent:#a5f3fc}
+        .theme-contrast .efw{--fw-bg:#000;--fw-panel:#000;--fw-ink:#fff;--fw-muted:#fff;--fw-line:#fff;--fw-tint:#172b3a;--fw-accent:#ffff00}
+        .efw h3{font-size:19px;font-weight:800;margin:0}.efw h4{font-size:16px;font-weight:750;margin:0}.efw p{margin:5px 0}.efw small{font-size:12px;color:var(--fw-muted)}
+        .efw button,.efw select,.efw input[type=number],.efw textarea{border:1px solid var(--fw-line);border-radius:8px;color:var(--fw-ink);background:var(--fw-panel);padding:8px 10px;font:inherit;min-height:42px;max-width:100%}
+        .efw button{cursor:pointer;font-weight:650}.efw button:disabled{cursor:default}.efw .efw-primary{background:#155e75;color:#fff;border-color:#155e75}.efw :is(button,input,select,textarea):focus-visible{outline:3px solid var(--fw-accent);outline-offset:3px}
+        .efw-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}.efw-card{background:var(--fw-panel);border:1px solid var(--fw-line);border-radius:12px;padding:16px;min-width:0}.efw-stack{display:grid;gap:12px}.efw-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.efw-row>*{min-width:0}.efw-species{display:grid;grid-template-columns:minmax(0,1fr) 86px;gap:8px;align-items:center}.efw label{display:block;font-weight:600}.efw input[type=checkbox]{width:18px;height:18px;vertical-align:middle;margin-right:8px;accent-color:#155e75}.efw input[type=range]{width:100%;accent-color:#155e75;min-height:28px}.efw textarea{width:100%;min-height:80px}.efw textarea::placeholder{color:var(--fw-muted);opacity:1}.efw .efw-node:focus-visible{outline:3px solid #fde68a;outline-offset:3px}.efw select{width:100%}
+        .efw-soil-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px}.efw-soil-pool{border:1px solid var(--fw-line);border-radius:10px;padding:14px;min-width:0;display:grid;gap:10px}.efw-soil-pool h5{font-size:17px;margin:0}.efw-soil-pool p{font-size:13px;margin:0}.efw-soil-values{display:grid;gap:7px;font-variant-numeric:tabular-nums}.efw-soil-values>span{display:flex;justify-content:space-between;gap:12px}.efw-soil-values strong{font-size:20px}.efw-soil-loop{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}.efw-soil-loop li{background:#142f2b;color:#ecfdf5;border:1px solid #5c9284;border-radius:8px;padding:12px;display:flex;align-items:center;gap:12px;font-size:14px}.efw-soil-loop span{color:#a7f3d0;font-size:11px;font-weight:700}.efw-soil-setup{display:grid;gap:12px;min-width:0;padding:12px;border:1px solid var(--fw-line);border-radius:8px}.efw-soil-setup legend{font-weight:700;padding:0 5px}
+        .efw-notebook-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}.efw-note{border:1px solid var(--fw-line);border-radius:10px;padding:14px;min-width:0}.efw-note-prose{white-space:pre-wrap;overflow-wrap:anywhere}.efw-overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}.efw .efw-overview-group{display:grid;gap:8px;min-width:0;text-align:left;font-weight:400;padding:10px}.efw .efw-overview-group[aria-pressed=true]{border:2px solid var(--fw-accent);box-shadow:0 0 0 1px var(--fw-accent)}.efw-overview-name{font-weight:750}.efw-overview-plot{width:100%;display:block;background:#0f172a;border-radius:8px}.efw-overview-values{display:grid;gap:3px;font-size:12px;font-variant-numeric:tabular-nums}.efw-overview-values>span{display:flex;justify-content:space-between;gap:8px}.efw-overview-delta{border-top:1px solid var(--fw-line);padding-top:6px;font-size:13px;font-weight:700}.efw-overview-legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--fw-muted)}.efw-meadow-stage{position:relative;height:510px;min-width:0;background:radial-gradient(ellipse at 45% 25%,#426575 0%,#203b4a 48%,#122538 100%);border:1px solid #64748b;border-radius:12px;overflow:hidden}.efw-meadow-overlay{position:absolute;z-index:1;top:14px;left:14px;max-width:calc(100% - 28px);display:grid;gap:3px;padding:10px 14px;background:#102331;color:#f8fafc;border:1px solid #7895a1;border-radius:9px;pointer-events:none;font-size:12px;line-height:1.4}.efw-meadow-overlay strong{font-size:17px}.efw-meadow-overlay>span:first-child{font-size:10px;letter-spacing:1.5px;color:#c3d9e1}.efw-meadow-stage canvas{width:100%;height:100%;display:block;cursor:pointer}.efw-meadow-species{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.efw-meadow-species button[aria-pressed=true]{outline:3px solid var(--fw-accent);outline-offset:1px}.efw-network{position:relative;height:382px;background:radial-gradient(ellipse at 50% 100%,#164e3c,#0f172a 75%);border:1px solid #64748b;border-radius:12px;overflow:hidden}.efw-network>svg{position:absolute;inset:0;width:100%;height:100%}.efw button.efw-node{position:absolute;transform:translate(-50%,-50%);width:142px;min-height:86px;background:#172b3a;color:#f8fafc;border:2px solid #94a3b8;display:grid;gap:0;padding:5px;font-size:13px;line-height:1.3;text-align:center}.efw button.efw-node[aria-pressed=true]{border-color:#fff;box-shadow:0 0 0 3px #67e8f9}.efw-node strong{font-size:18px;font-variant-numeric:tabular-nums}.efw-node small{color:#cbd5e1;font-size:11px}.efw-network-caption{color:var(--fw-muted);font-size:12px}.efw-chart{width:100%;display:block;background:#0f172a;border-radius:10px}.efw-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px}.efw-legend span:before{content:'';display:inline-block;width:24px;border-top:3px solid var(--fw-accent);vertical-align:middle;margin-right:6px}.efw-legend span:first-child:before{border-top-style:dashed;border-color:var(--fw-muted)}
+        .efw table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}.efw th,.efw td{padding:9px 7px;border-bottom:1px solid var(--fw-line);text-align:right}.efw th:first-child{ text-align:left}.efw a{color:var(--fw-accent);text-decoration:underline}.efw-scroll{overflow-x:auto}.efw .efw-result{border-left:4px solid var(--fw-accent);padding-left:12px}.efw details>summary{cursor:pointer;font-weight:700}
+        @media(max-width:800px){.efw-meadow-stage{height:420px}.efw-meadow-overlay{top:10px;left:10px;padding:8px 10px;max-width:calc(100% - 20px);font-size:11px}.efw-meadow-overlay strong{font-size:15px}.efw-chart text{font-size:20px}.efw-grid{grid-template-columns:1fr}.efw{padding:12px;gap:14px}.efw button.efw-node{width:min(128px,44%)}.efw-card{padding:12px}}
+      `),
+      h('div', null, h('h3', null, t('stem.ecosystem.foodweb_title', 'One meadow. More connections.')),
+        h('p', null, 'Add another herbivore and predator, then investigate how a change travels through the food web. Plants now respond to grazing too.'),
+        h('small', null, 'All values are illustrative biomass indices, not animal counts. This lab uses its own configurable food-web model.')),
+      h('div', { className: 'efw-row' }, h('button', { type: 'button', 'aria-pressed': !!state.showMeadow, onClick: function() { update({ showMeadow: !state.showMeadow }); } }, state.showMeadow ? 'Hide 3D meadow' : 'Show 3D meadow'), h('small', null, 'Optional habitat view · linked to the same comparison')),
+      state.showMeadow && h(EcoMeadow3D, { React: React, config: shownConfig, result: result, cursor: cursor, focus: focus.id, inspectionVersion: state.inspectionVersion, onCursor: function(value) { update({ cursor: value }); }, onFocus: function(id) { update({ focus: id }); } }),
+      shownConfig.soil.enabled && h(EcoSoilCyclePanel,{React:React,config:shownConfig,result:result,cursor:cursor,onCursor:function(step){update({cursor:step,inspectionVersion:(state.inspectionVersion||0)+1});}}),
+      result && h(EcoCommunityOverview, { React: React, result: result, config: shownConfig, cursor: cursor, focus: focus.id, onInspect: function(step, id) { update({ cursor: step, focus: id, inspectionVersion: (state.inspectionVersion || 0) + 1 }); } }),
+      h('div', { className: 'efw-grid' },
+        h('div', { className: 'efw-stack' },
+          h('div', { className: 'efw-card efw-stack' },
+            h('h4', null, '1. Build your community'),
+            h('div', { className: 'efw-row' }, h('button', { type: 'button', onClick: function() { preset(false); } }, 'Simple chain'), h('button', { type: 'button', onClick: function() { preset(true); } }, 'Shared-prey web'), h('button', { type: 'button', onClick: function() { draft({ soil:{enabled:false}, enabled: {}, initial: {}, capacity: 160, cover: 10, event: 'restoreCover', eventStep: 80, showMeadow: true, focus: 'rabbits' }); } }, 'Habitat restoration'), h('button',{type:'button',onClick:function(){draft({soil:{enabled:false},enabled:{caterpillars:true,bluetits:true},initial:{},capacity:180,cover:10,event:'reduce',target:'caterpillars',eventStep:80,showMeadow:true,focus:'bluetits'});}},'Insect food shortage'),h('button',{type:'button',onClick:function(){draft({soil:{enabled:true,detritus:30,nutrients:4,decomposers:8},enabled:{caterpillars:true,bluetits:true},initial:{},capacity:180,cover:10,event:'decomposerDecline',eventStep:80,showMeadow:true,focus:'plants'});}},'Decomposer decline')),
+            h('p',{className:'efw-network-caption'},'Add Caterpillars and Blue tits for a plant–insect–bird pathway. These optional groups start off in the original presets.'),
+            ECO_WEB_SPECIES.map(function(sp) { return h('div', { key: sp.id, className: 'efw-species' },
+              h('label', null, h('input', { type: 'checkbox', checked: config.enabled[sp.id], disabled: sp.id === 'plants', 'aria-label': 'Include ' + sp.name, onChange: function(e) { var enabled = Object.assign({}, config.enabled); enabled[sp.id] = e.target.checked; var initial=Object.assign({},state.initial||{});if(e.target.checked && !config.enabled[sp.id] && initial[sp.id]==null)initial[sp.id]=sp.initial;draft({ enabled: enabled,initial:initial }); } }), sp.icon + ' ' + sp.name, h('small', { style: { display: 'block', marginLeft: 26 } }, sp.role)),
+              h('input', { type: 'number', min: 0, max: 160, step: 1, value: config.initial[sp.id], disabled: !config.enabled[sp.id], 'aria-label': sp.name + ' starting biomass index', onChange: function(e) { var initial = Object.assign({}, state.initial || {}); initial[sp.id] = ecoWebNumber(e.target.value, 0, 0, 160); draft({ initial: initial }); } })); }),
+            h('fieldset',{className:'efw-soil-setup'},h('legend',null,'Life in the soil'),
+              h('label',null,h('input',{type:'checkbox',checked:config.soil.enabled,'aria-label':'Enable soil nutrient cycle',onChange:function(e){draft({soil:Object.assign({},config.soil,{enabled:e.target.checked}),event:!e.target.checked&&['decomposerDecline','clearLitter'].indexOf(config.event)>=0?'none':config.event});}}),' Enable soil nutrient cycle'),
+              h('small',null,'Add fungi and bacteria as a combined decomposer group. Nutrient availability then limits plant growth.'),
+              config.soil.enabled&&[['detritus','Starting organic matter',160],['decomposers','Starting decomposer biomass',80],['nutrients','Starting available nutrients',160]].map(function(pool){return h('label',{key:pool[0],className:'efw-species'},pool[1],h('input',{type:'number',min:0,max:pool[2],step:1,value:config.soil[pool[0]],'aria-label':pool[1],onChange:function(e){var soil=Object.assign({},config.soil);soil[pool[0]]=ecoWebNumber(e.target.value,0,0,pool[2]);draft({soil:soil});}}));})),
+            h('label', null, 'Plant capacity: ' + config.capacity, h('input', { type: 'range', min: 40, max: 240, step: 10, value: config.capacity, 'aria-label': 'Food-web plant capacity', onChange: function(e) { draft({ capacity: Number(e.target.value) }); } })),
+            h('label', null, 'Starting refuge cover: ' + config.cover + '%', h('input', { type: 'range', min: 0, max: 80, step: 10, value: config.cover, 'aria-label': 'Starting refuge cover', onChange: function(e) { draft({ cover: Number(e.target.value) }); } })),
+            h('small', null, 'Cover limits how much herbivore biomass predators can access. It is separate from food plants and their capacity; more cover does not guarantee that every group benefits.')),
+          h('div', { className: 'efw-card efw-stack' },
+            h('h4', null, '2. Change one thing'),
+            h('label', null, 'Disturbance', h('select', { 'aria-label': 'Disturbance', value: config.event, onChange: function(e) { draft({ event: e.target.value }); } },
+              [['remove', 'Remove one group'], ['reduce', 'Reduce one group by 80%'], ['drought', 'Drought: halve plant capacity'], ['restoreCover', 'Restore cover: add 40 percentage points'], ['clearCover', 'Clear all refuge cover'], ['none', 'No disturbance (control)']].concat(config.soil.enabled?[['decomposerDecline','Decomposer mortality: lose 80%'],['clearLitter','Remove organic matter']]:[]).map(function(o) { return h('option', { key: o[0], value: o[0] }, o[1]); }))),
+            (config.event === 'remove' || config.event === 'reduce') && h('label', null, 'Affected group', h('select', { 'aria-label': 'Affected group', value: config.target, onChange: function(e) { draft({ target: e.target.value }); } }, ECO_WEB_SPECIES.map(function(sp) { return h('option', { key: sp.id, value: sp.id }, sp.name); }))),
+            config.event !== 'none' && h('label', null, 'Event at modeled time ' + (config.eventStep / 10).toFixed(1), h('input', { type: 'range', min: 10, max: 200, step: 10, value: config.eventStep, 'aria-label': 'Food-web event time', onChange: function(e) { draft({ eventStep: Number(e.target.value) }); } })),
+            ((config.event === 'clearCover' && config.cover === 0) || (config.event === 'restoreCover' && config.cover === 80)) && h('p', { role: 'status' }, 'This setup leaves cover unchanged. Adjust starting cover to test a habitat change.'),
+            h('label', null, 'Your prediction (optional)', h('textarea', { 'aria-label': 'Your prediction (optional)', value: state.prediction || '', maxLength: 1200, placeholder: 'Which group will change indirectly, and why?', onChange: function(e) { update({ prediction: e.target.value }); } })),
+            h('button', { type: 'button', className: 'efw-primary', onClick: function() { update({ run: { config: config, prediction: state.prediction || '' }, cursor: 240, reflection: '' }); if (props.announce) props.announce('Food-web comparison complete. Inspect the diagram, chart, and table.'); } }, t('stem.ecosystem.foodweb_run', 'Run food-web comparison')),
+            h('small', null, 'Both runs start with the same community. Only the experiment receives the disturbance. Editing the setup clears the previous comparison.'))),
+        h('div', { className: 'efw-stack' },
+          h('div', { className: 'efw-card' }, h('h4', null, result ? 'Experiment at time ' + (cursor / 10).toFixed(1) : 'Your food web'),
+            h('p', { className: 'efw-network-caption' }, 'Select a group to inspect it. Arrows show possible food-to-consumer links, not current feeding rates.'),
+            h('div', { className: 'efw-network', role: 'group', 'aria-label': 'Interactive meadow food web' },
+              h('svg', { viewBox: '0 0 600 382', preserveAspectRatio: 'none', 'aria-hidden': 'true' },
+                h('defs', null, h('marker', { id: 'efw-arrow', markerWidth: 8, markerHeight: 8, refX: 7, refY: 4, orient: 'auto' }, h('path', { d: 'M0 0L8 4L0 8Z', fill: '#cbd5e1' }))),
+                activeLinks.map(function(link) { var food = diagramSpecies.find(function(sp) { return sp.id === link.food; }), consumer = diagramSpecies.find(function(sp) { return sp.id === link.consumer; }); return h('path', { key: link.food + link.consumer, d: 'M' + food.x * 6 + ' ' + (food.y * 3.82 - 44) + ' L' + consumer.x * 6 + ' ' + (consumer.y * 3.82 + 46), stroke: '#cbd5e1', strokeWidth: 2, fill: 'none', markerEnd: 'url(#efw-arrow)' }); })),
+              diagramSpecies.map(function(sp) { return h('button', { type: 'button', key: sp.id, className: 'efw-node', 'aria-pressed': focus.id === sp.id, 'aria-label': 'Inspect ' + sp.name + ': ' + (shownConfig.enabled[sp.id] ? ecoWebFormat(shown[sp.id]) + ' biomass index' : 'not included'), style: { width:expanded?'28%':undefined,left: sp.x + '%', top: sp.y + '%', borderStyle: shownConfig.enabled[sp.id] ? 'solid' : 'dashed' }, onClick: function() { update({ focus: sp.id }); } }, h('span', { style: { color: sp.color } }, sp.icon + ' ' + sp.name), h('strong', null, shownConfig.enabled[sp.id] ? ecoWebFormat(shown[sp.id]) : '—'), h('small', null, shownConfig.enabled[sp.id] ? sp.role : 'Not included')); })),
+            h('div', { className: 'efw-result', 'data-efw-relationships': 'true' }, h('h4', null, focus.name),
+              h('p', null, incoming.length ? 'Food links: ' + incoming.join('; ') + '.' : focus.id === 'plants' ? 'Plants grow using the model’s resource capacity.' : 'No food link is included for this group.'),
+              outgoing.length > 0 && h('p', null, 'Supports: ' + outgoing.join('; ') + '.'),
+              h('small', null, 'These are selected teaching links, not complete diets. Caterpillars add another plant consumer; blue tits depend only on caterpillars here. Real blue tits eat other foods too. Larval metamorphosis and bird breeding stages are not modeled. Trees in the 3D background remain scenery, not additional food biomass.'))),
+          result ? h('div', { className: 'efw-card efw-stack', 'data-efw-results': 'true' },
+            h('h4', null, '3. Follow the consequences'),
+            h('p', { role: 'status' }, eventName + (resultConfig.event !== 'none' ? ' at time ' + (resultConfig.eventStep / 10).toFixed(1) + '.' : '. The two runs should match.')),
+            h('p', { 'data-efw-cover-comparison': 'true' }, 'Refuge cover at this time: baseline ' + result.baseline[cursor].cover + '% · experiment ' + result.experiment[cursor].cover + '%.'),
+            state.run.prediction && h('p', null, h('strong', null, 'Prediction before this run: '), state.run.prediction),
+            h('label', null, 'Chart group', h('select', { 'aria-label': 'Chart group', value: focus.id, onChange: function(e) { update({ focus: e.target.value }); } }, ECO_WEB_SPECIES.map(function(sp) { return h('option', { key: sp.id, value: sp.id }, sp.name); }))),
+            chart(), h('div', { className: 'efw-legend' }, h('span', null, 'Baseline · dashed'), h('span', null, 'Experiment · solid')),
+            h('small', null, 'Values below 0.1 are shown as <0.1, not zero. Horizontal axis: modeled time. Vertical axis: ' + focus.name + ' biomass index. Both runs share the same scale.'),
+            h('label', null, 'Inspect time: ' + (cursor / 10).toFixed(1), h('input', { type: 'range', min: 0, max: 240, value: cursor, 'aria-label': 'Food-web comparison time', 'aria-valuetext': (cursor / 10).toFixed(1) + ' modeled time units', onChange: function(e) { update({ cursor: Number(e.target.value) }); } })),
+            h('div', { className: 'efw-scroll' }, h('table', null,
+              h('caption', { style: { textAlign: 'left', fontWeight: 700 } }, 'Biomass indices at time ' + (cursor / 10).toFixed(1)),
+              h('thead', null, h('tr', null, ['Group', 'Baseline', 'Experiment', 'Change'].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))),
+              h('tbody', null, diagramSpecies.map(function(sp) { var before = result.baseline[cursor].values[sp.id], after = shown[sp.id], delta = after - before; return h('tr', { key: sp.id }, h('th', { scope: 'row' }, sp.name), h('td', null, ecoWebFormat(before)), h('td', null, ecoWebFormat(after)), h('td', null, ecoWebDelta(delta))); })))),
+            h('label', null, 'Explain an indirect change', h('textarea', { 'aria-label': 'Explain an indirect change', value: state.reflection || '', maxLength: 2000, placeholder: 'Trace two arrows. Use values from the table to support your explanation.', onChange: function(e) { update({ reflection: e.target.value }); } })),
+            h('div', { className: 'efw-row' }, h('button', { type: 'button', className: 'efw-primary', disabled: notes.length >= 12, onClick: saveObservation }, 'Save observation'), h('small', { role: 'status' }, notes.length >= 12 ? 'Notebook full. Export your notes, then remove an observation to make room.' : 'Save time ' + (cursor / 10).toFixed(1) + ', all groups, and the explanation above.')),
+            h('button', { type: 'button', onClick: exportCsv }, 'Export comparison CSV')) : h('div', { className: 'efw-card' }, h('h4', null, 'Try a question'), h('p', null, 'If foxes disappear, do owls benefit from more voles, or do the remaining consumers put more pressure on plants?'), h('small', null, 'Run the comparison, inspect different groups, and check whether the direction changes over time.')))),
+      h(EcoFieldNotebook, { React: React, notes: notes, onRemove: function(id) { update({ notebook: notes.filter(function(note) { return note.id !== id; }) }); if (props.announce) props.announce('Observation ' + id + ' removed.'); }, onReopen: function(note) { update(Object.assign({}, note.config, { run: { config: note.config, prediction: note.prediction }, prediction: note.prediction, reflection: note.explanation, cursor: note.step, focus: note.focus, inspectionVersion: (state.inspectionVersion || 0) + 1 })); if (props.announce) props.announce('Observation ' + note.id + ' reopened at time ' + (note.step / 10).toFixed(1) + '.'); } }),
+      h('details', { className: 'efw-card' }, h('summary', null, 'Model assumptions and ecology sources'),
+        h('p', null, 'Plant biomass grows logistically. Consumers lose biomass through mortality and crowding, and gain a fraction of what they eat. Feeding saturates across available foods; consumers sharing a food source compete for the same biomass. All groups have separate state variables.'),
+        h('p', null, 'The rates, feeding weights, conversion fractions, and time units are illustrative. Results depend on the selected links and starting values. Refuge cover is a single habitat-wide accessibility factor, not an individual movement or patch-occupancy simulation. No immigration, seasons, or age structure are included. Nutrient recycling is available only when the soil cycle is enabled. Removing a group sets it to zero without spontaneous recolonization. This is not a population forecast.'),
+        h('p', null, 'Cover ranges from 0% to 80%. Foxes and owls use herbivore biomass multiplied by (1 − cover / 100) in both the feeding numerator and saturation denominator; grazing is unchanged. Blue-tit access to caterpillars is unchanged by this mammal-refuge index. These teaching assumptions are not fitted to field data. Restoration adds 40 percentage points, capped at 80%; clearing sets cover to zero. Neither event instantly creates or removes organisms. The baseline retains its starting cover. Thicket placement in 3D does not affect the calculations.'),
+        h('p', null, 'Drought changes resource capacity persistently; it does not instantly halve existing plant biomass. A group excluded from the community remains at zero in both runs.'),
+        h('ul', null,
+          h('li', null, h('a', { href: 'https://parkplanning.nps.gov/showFile.cfm?projectID=14330&sfid=122740', target: '_blank', rel: 'noopener noreferrer' }, 'National Park Service: vegetation cover and vulnerability to predators')),
+          h('li',null,h('a',{href:'https://www.nrcs.usda.gov/resources/education-and-teaching-materials/soil-biology-primer',target:'_blank',rel:'noopener noreferrer'},'USDA NRCS: decomposition and nutrient cycling')),
+          h('li',null,h('a',{href:'https://www.rspb.org.uk/birds-and-wildlife/blue-tit',target:'_blank',rel:'noopener noreferrer'},'RSPB: blue tits and caterpillars')),
+          h('li',null,h('a',{href:'https://www.rspb.org.uk/birds-and-wildlife/feeding-birds-near-you/natural-food-for-birds',target:'_blank',rel:'noopener noreferrer'},'RSPB: plants supporting caterpillars and birds')),
+          h('li', null, h('a', { href: 'https://www.nps.gov/yell/learn/nature/red-fox.htm', target: '_blank', rel: 'noopener noreferrer' }, 'National Park Service: red fox diets')),
+          h('li', null, h('a', { href: 'https://www.nps.gov/pipe/learn/nature/mammals.htm', target: '_blank', rel: 'noopener noreferrer' }, 'National Park Service: meadow vole diets')),
+          h('li', null, h('a', { href: 'https://www.allaboutbirds.org/guide/barn_owl/lifehistory', target: '_blank', rel: 'noopener noreferrer' }, 'Cornell Lab: barn owl diets')),
+          h('li', null, h('a', { href: 'https://www.nps.gov/articles/the-big-scientific-debate-trophic-cascades.htm', target: '_blank', rel: 'noopener noreferrer' }, 'National Park Service: interpreting trophic cascades')))));
+  }
+
+
   // ── Badge definitions (20 total) ──
   var BADGES = [
     { id: 'firstSim',          icon: '\u2B50',       label: 'First Simulation',    desc: 'Run your first graph simulation' },
@@ -600,7 +1836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
   // ── Biome color palettes ──
   var BIOME_COLORS = {
-    grassland: { name: 'Grassland', emoji: '\uD83C\uDF3E', skyDay: [130, 180, 235], skyNight: '#0f172a', skyNightEnd: '#1e293b', groundDay: ['#4ade80','#22c55e','#166534'], groundNight: ['#1a3a2a','#14532d','#0a2e1a'] },
+    grassland: { name: 'Grassland', emoji: '\uD83C\uDF3E', skyDay: [130, 180, 235], skyNight: '#0f172a', skyNightEnd: '#1e293b', groundDay: ['#91bd73','#4d9159','#24553b'], groundNight: ['#1a3a2a','#14532d','#0a2e1a'] },
     forest:    { name: 'Forest',    emoji: '\uD83C\uDF32', skyDay: [90, 130, 170],  skyNight: '#0a1420', skyNightEnd: '#141e30', groundDay: ['#2d7a3e','#1a5c2e','#0d3b1a'], groundNight: ['#0d2618','#081c10','#051008'] },
     savanna:   { name: 'Savanna',   emoji: '\uD83E\uDD81', skyDay: [210, 180, 130], skyNight: '#1a1208', skyNightEnd: '#2a1e10', groundDay: ['#c4a265','#a8862b','#8b7040'], groundNight: ['#4a3520','#3d2b18','#2d2010'] },
     tundra:    { name: 'Tundra',    emoji: '\u2744\uFE0F', skyDay: [170, 195, 220], skyNight: '#0a0f1a', skyNightEnd: '#151c28', groundDay: ['#c8d0c8','#a8b0a8','#8a928a'], groundNight: ['#3a3e3a','#2d312d','#202420'] },
@@ -1441,13 +2677,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var liveTelemetry = liveTelemetryFor(livePopHistory);
       var phaseVisualFor = function(label) {
         var text = String(label || '').toLowerCase();
-        if (text.indexOf('extinct') >= 0 || text.indexOf('crash') >= 0) {
+        if (text.indexOf('extinct') >= 0 || text.indexOf('crash') >= 0 || text.indexOf('collapse') >= 0) {
           return { accent: '#b91c1c', border: '#fca5a5', soft: 'rgba(254,226,226,0.86)', icon: '\u26A0\uFE0F', tag: 'High risk' };
         }
-        if (text.indexOf('starvation') >= 0 || text.indexOf('dangerously') >= 0) {
+        if (text.indexOf('starvation') >= 0 || text.indexOf('dangerously') >= 0 || text.indexOf('decline') >= 0 || text.indexOf('pressure') >= 0) {
           return { accent: '#b45309', border: '#fcd34d', soft: 'rgba(254,243,199,0.9)', icon: '\u26A0\uFE0F', tag: 'Food pressure' };
         }
-        if (text.indexOf('recovery') >= 0 || text.indexOf('recover') >= 0) {
+        if (text.indexOf('recovery') >= 0 || text.indexOf('recover') >= 0 || text.indexOf('rebound') >= 0 || text.indexOf('released') >= 0) {
           return { accent: '#047857', border: '#6ee7b7', soft: 'rgba(209,250,229,0.88)', icon: '\u2191', tag: 'Recovery' };
         }
         if (text.indexOf('waiting') >= 0 || !text) {
@@ -2167,7 +3403,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         }
         var titleId = 'eco-system-comparison-title-' + record.id;
         var descId = 'eco-system-comparison-desc-' + record.id;
-        return h('figure', { className: 'min-w-0 space-y-1', 'data-eco-system-comparison': record.id },
+        return h('figure', { key: record.id, className: 'min-w-0 space-y-1', 'data-eco-system-comparison': record.id },
           h('figcaption', { className: 'space-y-0.5' },
             h('div', { className: 'text-sm font-bold text-slate-900 dark:text-slate-100' }, record.scenario.emoji + ' ' + record.scenario.name),
             h('div', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, record.scenario.producer.label + ' \u2192 ' + record.scenario.prey.label + ' \u2192 ' + record.scenario.predator.label)
@@ -2639,9 +3875,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         var ctxC = canvas.getContext('2d');
         if (!ctxC) { canvas._ecoInit = false; return; }
-        var dpr = window.devicePixelRatio || 2;
-        var cw = canvas.clientWidth;
-        var ch = canvas.clientHeight;
+        var dpr = Math.min(2, window.devicePixelRatio || 1);
+        var cw = Math.max(1, canvas.clientWidth);
+        var ch = Math.max(1, canvas.clientHeight);
         canvas.width = cw * dpr;
         canvas.height = ch * dpr;
         ctxC.scale(dpr, dpr);
@@ -2699,13 +3935,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           if (isEcoHidden()) cancelEcoFrame();
           else { cancelEcoFrame(); draw(); }
         }
-        // Rolling population history for the phase explainer + live mini-chart.
-        // Sampled every ~10 frames (6 samples/sec), capped at last 60 samples
-        // = 10 seconds of history. Closed over the animation loop so it
-        // persists across frames without state.dataset thrash.
-        var popHistory = [];
-        var POP_HISTORY_MAX = 60;
-        var POP_SAMPLE_EVERY = 10;
+        // Charts and phase detection share simulation-tick samples.
+        // Repainting a paused scene must not append observations.
 
         // Mouse tracking for sandbox
         canvas._mouseX = -1;
@@ -3034,6 +4265,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           animId = null;
           if (!canvas.isConnected) { cleanupEcoCanvas(); return; }
           if (isEcoHidden()) { cancelEcoFrame(); return; }
+          // Preserve scene positions and sharpness when the host resizes, even paused.
+          var nextW = Math.max(1, canvas.clientWidth), nextH = Math.max(1, canvas.clientHeight);
+          var nextDpr = Math.min(2, window.devicePixelRatio || 1);
+          if (nextW !== cw || nextH !== ch || nextDpr !== dpr) {
+            var scaleX = nextW / cw, scaleY = nextH / ch;
+            [preyEntities, predEntities, vegetation, clouds, stars, bugs, catchParticles].forEach(function(group) {
+              group.forEach(function(entity) { entity.x *= scaleX; entity.y *= scaleY; });
+            });
+            if (canvas._mouseX >= 0) canvas._mouseX *= scaleX;
+            if (canvas._mouseY >= 0) canvas._mouseY *= scaleY;
+            cw = nextW; ch = nextH; dpr = nextDpr;
+            groundY = Math.round(ch * (isAquaticScene ? 0.22 : 0.46));
+            groundBottom = ch - 20;
+            preyTopY = Math.round(ch * (isAquaticScene ? 0.62 : 0.46));
+            predatorTopY = groundY;
+            canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr);
+            ctxC.setTransform(dpr, 0, 0, dpr, 0, 0);
+          }
           // ── Read speed & pause from dataset ──
           var speed = parseInt(canvas.dataset.speed || '2', 10);
           var paused = canvas.dataset.paused === '1';
@@ -3720,7 +4969,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             skyGrad.addColorStop(1, bC.skyNightEnd);
           }
           ctxC.fillStyle = skyGrad;
-          ctxC.fillRect(0, 0, cw, aquaticRender ? ch : ch * 0.5);
+          // Paint behind the entire rolling ground contour so valleys never expose transparency.
+          ctxC.fillRect(0, 0, cw, ch);
 
           if (aquaticRender) {
             var depthGrad = ctxC.createLinearGradient(0, 0, 0, ch);
@@ -4343,11 +5593,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           for (var hb = 0; hb < predEntities.length; hb++) { if (predEntities[hb].alive) hudPredAlive++; }
 
           // ── Sample population history (every 10th frame) ──
-          // Feeds the phase explainer + the live mini-chart below.
-          if (tick % POP_SAMPLE_EVERY === 0) {
-            popHistory.push({ p: hudPreyAlive, f: hudPredAlive });
-            if (popHistory.length > POP_HISTORY_MAX) popHistory.shift();
-          }
+          // Use a bounded view of the same valid samples sent to telemetry.
+          var phaseHistory = popHistory.slice(-60);
 
           // ── Phase detection ──
           // Read the rolling history to classify what part of the cycle the
@@ -4360,13 +5607,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var phaseLabel = '';
           var phaseColor = 'rgba(100,116,139,0.85)';
           var phaseExplain = '';
-          if (popHistory.length >= 12) {
-            var splitIdx = Math.floor(popHistory.length * 0.66);
+          if (phaseHistory.length >= 12) {
+            var splitIdx = Math.floor(phaseHistory.length * 0.66);
             var oldP = 0, oldF = 0, newP = 0, newF = 0;
             var oldN = 0, newN = 0;
-            for (var phi = 0; phi < popHistory.length; phi++) {
-              if (phi < splitIdx) { oldP += popHistory[phi].p; oldF += popHistory[phi].f; oldN++; }
-              else { newP += popHistory[phi].p; newF += popHistory[phi].f; newN++; }
+            for (var phi = 0; phi < phaseHistory.length; phi++) {
+              if (phi < splitIdx) { oldP += phaseHistory[phi].prey; oldF += phaseHistory[phi].pred; oldN++; }
+              else { newP += phaseHistory[phi].prey; newF += phaseHistory[phi].pred; newN++; }
             }
             var pMean = oldN > 0 ? oldP / oldN : 0;
             var fMean = oldN > 0 ? oldF / oldN : 0;
@@ -4419,16 +5666,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           }
 
           // ── Live mini-chart (top-right) ──
-          // Shows the last ~10 seconds of prey + predator counts as
-          // overlaid sparklines. Same data as the analytical chart\'s
-          // model, but THIS is what the canvas actually did. Students
-          // can compare model-vs-reality at a glance without leaving
-          // the sim view.
-          if (popHistory.length >= 2) {
-            var miniW = 110, miniH = 44;
+          // Show the last 60 simulation samples. Speed changes their elapsed
+          // wall time; these are animated-agent counts, not analytical-model output.
+          if (phaseHistory.length >= 2 && cw >= 480) {
+            var miniW = 150, miniH = 64;
             var miniX = cw - miniW - 10, miniY = 10;
             // Backing pill
-            ctxC.fillStyle = 'rgba(15,23,42,0.75)';
+            ctxC.fillStyle = '#0f172a';
             ctxC.beginPath();
             ctxC.moveTo(miniX + 6, miniY);
             ctxC.arcTo(miniX + miniW, miniY, miniX + miniW, miniY + miniH, 6);
@@ -4437,15 +5681,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ctxC.arcTo(miniX, miniY, miniX + miniW, miniY, 6);
             ctxC.fill();
             // Title
-            ctxC.font = '8px sans-serif';
-            ctxC.fillStyle = '#94a3b8';
-            ctxC.fillText(__alloT('stem.ecosystem.last_10s', 'Last ~10s'), miniX + 6, miniY + 9);
+            ctxC.font = '11px sans-serif';
+            ctxC.fillStyle = '#e2e8f0';
+            ctxC.fillText(__alloT('stem.ecosystem.recent_population_samples', 'Recent samples'), miniX + 6, miniY + 14);
             // Max-of-pools as the y-axis ceiling (so both lines fit)
             var miniMax = Math.max(preyEntities.length, predEntities.length, 1);
             var plotX = miniX + 4;
-            var plotY = miniY + 13;
+            var plotY = miniY + 22;
             var plotW = miniW - 8;
-            var plotH = miniH - 16;
+            var plotH = miniH - 28;
             // Faint baseline
             ctxC.strokeStyle = 'rgba(148,163,184,0.20)';
             ctxC.lineWidth = 1;
@@ -4457,26 +5701,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ctxC.strokeStyle = '#22c55e';
             ctxC.lineWidth = 1.5;
             ctxC.beginPath();
-            for (var mli = 0; mli < popHistory.length; mli++) {
-              var mx = plotX + (mli / (POP_HISTORY_MAX - 1)) * plotW;
-              var my = plotY + plotH - (popHistory[mli].p / miniMax) * plotH;
+            for (var mli = 0; mli < phaseHistory.length; mli++) {
+              var mx = plotX + (mli / (phaseHistory.length - 1)) * plotW;
+              var my = plotY + plotH - (phaseHistory[mli].prey / miniMax) * plotH;
               if (mli === 0) ctxC.moveTo(mx, my); else ctxC.lineTo(mx, my);
             }
             ctxC.stroke();
-            // Predator line (red)
-            ctxC.strokeStyle = '#ef4444';
+            // Predator line: dashed, also distinguishable without color
+            ctxC.strokeStyle = '#fda4af';
+            ctxC.setLineDash([5, 3]);
             ctxC.lineWidth = 1.5;
             ctxC.beginPath();
-            for (var mli2 = 0; mli2 < popHistory.length; mli2++) {
-              var mx2 = plotX + (mli2 / (POP_HISTORY_MAX - 1)) * plotW;
-              var my2 = plotY + plotH - (popHistory[mli2].f / miniMax) * plotH;
+            for (var mli2 = 0; mli2 < phaseHistory.length; mli2++) {
+              var mx2 = plotX + (mli2 / (phaseHistory.length - 1)) * plotW;
+              var my2 = plotY + plotH - (phaseHistory[mli2].pred / miniMax) * plotH;
               if (mli2 === 0) ctxC.moveTo(mx2, my2); else ctxC.lineTo(mx2, my2);
             }
             ctxC.stroke();
+            ctxC.setLineDash([]);
           }
 
-          ctxC.fillStyle = 'rgba(15,23,42,0.75)';
-          var hudW = 182, hudH = 56;
+          ctxC.fillStyle = '#0f172a';
+          var hudW = 232, hudH = 78;
           ctxC.beginPath();
           ctxC.moveTo(8 + 6, 8);
           ctxC.arcTo(8 + hudW, 8, 8 + hudW, 8 + hudH, 6);
@@ -4490,30 +5736,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // slate-400 (#94a3b8) gave only ~3:1 over a daytime sky; slate-200
           // (#e2e8f0) gives ~12:1 over the dark HUD bg and stays legible
           // even when the gradient over a lit sky thins it out.
-          ctxC.font = '10px sans-serif';
+          ctxC.font = '12px sans-serif';
           ctxC.fillStyle = '#e2e8f0';
-          ctxC.fillText(activeScenario.prey.emoji + ' ' + activeScenario.prey.label + ' (prey): ' + hudPreyAlive, 14, 24);
-          ctxC.fillText(activeScenario.predator.emoji + ' ' + activeScenario.predator.label + ': ' + hudPredAlive, 14, 38);
+          ctxC.fillText(activeScenario.prey.emoji + ' ' + activeScenario.prey.label + ' (prey): ' + hudPreyAlive, 14, 26, 188);
+          ctxC.fillText(activeScenario.predator.emoji + ' ' + activeScenario.predator.label + ': ' + hudPredAlive, 14, 44, 188);
 
           // Population bars — normalized to actual pool sizes so the bars
           // stay informative even when populations boom past the old
           // hardcoded 60/25 caps. Without this fix, a healthy prey
           // population of 75 vs 80 looks identical (both 100%) on the bar.
-          var barX = 153, barW = 28;
+          var barX = 208, barW = 22;
           var preyCap = preyEntities.length || 1;
           var predCap = predEntities.length || 1;
           ctxC.fillStyle = '#334155';
-          ctxC.fillRect(barX, 16, barW, 6);
+          ctxC.fillRect(barX, 19, barW, 6);
           ctxC.fillStyle = '#22c55e';
-          ctxC.fillRect(barX, 16, barW * Math.min(1, hudPreyAlive / preyCap), 6);
+          ctxC.fillRect(barX, 19, barW * Math.min(1, hudPreyAlive / preyCap), 6);
           ctxC.fillStyle = '#334155';
-          ctxC.fillRect(barX, 30, barW, 6);
+          ctxC.fillRect(barX, 37, barW, 6);
           ctxC.fillStyle = '#ef4444';
-          ctxC.fillRect(barX, 30, barW * Math.min(1, hudPredAlive / predCap), 6);
+          ctxC.fillRect(barX, 37, barW * Math.min(1, hudPredAlive / predCap), 6);
 
           // Day/night indicator
           ctxC.fillStyle = '#e2e8f0';
-          ctxC.fillText(aquaticRender ? (isDayR ? '\u2600 High surface light' : '\uD83C\uDF0A Low surface light') : (isDayR ? '\u2600 Day' : '\uD83C\uDF19 Night'), 14, 52);
+          ctxC.fillText(aquaticRender ? (isDayR ? '\u2600 High surface light' : '\uD83C\uDF0A Low surface light') : (isDayR ? '\u2600 Day' : '\uD83C\uDF19 Night'), 14, 62);
 
           // ── Sandbox tool indicator in HUD ──
           if (sandboxToolVal) {
@@ -4522,15 +5768,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // the 4.5 this bold 9px label needs. emerald-400 at full opacity gives 5.02:1
             // and keeps the same green identity as the sandbox tool chips.
             ctxC.fillStyle = '#34d399';
-            ctxC.font = 'bold 9px sans-serif';
-            ctxC.fillText('Tool: ' + sandboxToolVal.toUpperCase(), 14, 62);
+            ctxC.font = 'bold 11px sans-serif';
+            ctxC.fillText('Tool: ' + sandboxToolVal.toUpperCase(), 14, 78);
           }
 
           // ── Phase explainer pill (right under the main HUD) ──
           if (phaseLabel) {
-            ctxC.font = 'bold 10px sans-serif';
+            ctxC.font = 'bold 12px sans-serif';
             var phaseTextW = ctxC.measureText(phaseLabel).width;
-            var pillX = 8, pillY = 70, pillH = 18;
+            var pillX = 8, pillY = 92, pillH = 22;
             var pillW = phaseTextW + 16;
             ctxC.fillStyle = phaseColor;
             ctxC.beginPath();
@@ -4550,7 +5796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // underlying mechanism. Word-wraps across up to 2 lines so the
           // sentence fits at common canvas widths. Renders behind the
           // existing bottom info bar so it doesn't fight HUD elements.
-          if (phaseExplain) {
+          if (phaseExplain && cw >= 600) {
             var stripH = 36;
             var stripY = ch - stripH - 24;  // 24px above the React info bar
             var stripPad = 12;
@@ -4599,79 +5845,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ctxC.fillText('\u23F8 ' + __alloT('stem.ecosystem.paused_caps', 'PAUSED'), cw / 2, ch / 2);
             ctxC.textAlign = 'start';
             ctxC.restore();
-          }
-
-          // ── Live mini-graph (top-right) ──
-          if (popHistory.length > 5) {
-            var mgX = cw - 128, mgY = 8, mgW = 120, mgH = 50;
-            ctxC.fillStyle = 'rgba(15,23,42,0.75)';
-            ctxC.beginPath();
-            ctxC.moveTo(mgX + 6, mgY);
-            ctxC.arcTo(mgX + mgW, mgY, mgX + mgW, mgY + mgH, 6);
-            ctxC.arcTo(mgX + mgW, mgY + mgH, mgX, mgY + mgH, 6);
-            ctxC.arcTo(mgX, mgY + mgH, mgX, mgY, 6);
-            ctxC.arcTo(mgX, mgY, mgX + mgW, mgY, 6);
-            ctxC.fill();
-
-            ctxC.strokeStyle = 'rgba(71,85,105,0.3)';
-            ctxC.lineWidth = 0.5;
-            for (var mgi3 = 1; mgi3 < 3; mgi3++) {
-              ctxC.beginPath();
-              ctxC.moveTo(mgX + 4, mgY + mgi3 * (mgH / 3));
-              ctxC.lineTo(mgX + mgW - 4, mgY + mgi3 * (mgH / 3));
-              ctxC.stroke();
-            }
-
-            var maxPop = 1;
-            for (var mpi = 0; mpi < popHistory.length; mpi++) {
-              if (popHistory[mpi].prey > maxPop) maxPop = popHistory[mpi].prey;
-              if (popHistory[mpi].pred > maxPop) maxPop = popHistory[mpi].pred;
-            }
-            // Ensure carrying capacity visible on mini-graph
-            if (carryK > maxPop) maxPop = carryK;
-
-            // Prey line
-            ctxC.strokeStyle = '#22c55e';
-            ctxC.lineWidth = 1.5;
-            ctxC.beginPath();
-            for (var mli = 0; mli < popHistory.length; mli++) {
-              var mx = mgX + 4 + (mli / (popHistory.length - 1)) * (mgW - 8);
-              var my = mgY + mgH - 4 - (popHistory[mli].prey / maxPop) * (mgH - 8);
-              if (mli === 0) ctxC.moveTo(mx, my); else ctxC.lineTo(mx, my);
-            }
-            ctxC.stroke();
-
-            // Pred line
-            ctxC.strokeStyle = '#ef4444';
-            ctxC.lineWidth = 1.5;
-            ctxC.beginPath();
-            for (var mli2 = 0; mli2 < popHistory.length; mli2++) {
-              var mx2 = mgX + 4 + (mli2 / (popHistory.length - 1)) * (mgW - 8);
-              var my2 = mgY + mgH - 4 - (popHistory[mli2].pred / maxPop) * (mgH - 8);
-              if (mli2 === 0) ctxC.moveTo(mx2, my2); else ctxC.lineTo(mx2, my2);
-            }
-            ctxC.stroke();
-
-            // Carrying capacity dashed line on mini-graph
-            var kcY = mgY + mgH - 4 - (carryK / maxPop) * (mgH - 8);
-            ctxC.strokeStyle = '#f59e0b';
-            ctxC.lineWidth = 1;
-            ctxC.setLineDash([3, 3]);
-            ctxC.beginPath();
-            ctxC.moveTo(mgX + 4, kcY);
-            ctxC.lineTo(mgX + mgW - 4, kcY);
-            ctxC.stroke();
-            ctxC.setLineDash([]);
-
-            // Legend dots
-            ctxC.fillStyle = '#22c55e';
-            ctxC.beginPath();
-            ctxC.arc(mgX + 8, mgY + mgH - 2, 2, 0, Math.PI * 2);
-            ctxC.fill();
-            ctxC.fillStyle = '#ef4444';
-            ctxC.beginPath();
-            ctxC.arc(mgX + 20, mgY + mgH - 2, 2, 0, Math.PI * 2);
-            ctxC.fill();
           }
 
           // ── Sandbox: cursor preview ──
@@ -4983,11 +6156,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var ecoRouteCards = [
         { id: 'explore', label: __alloT('stem.ecosystem.explore', 'Explore'), hint: __alloT('stem.ecosystem.route_explore_hint', 'Tune predator-prey dynamics.') },
         { id: 'sandbox', label: __alloT('stem.ecosystem.sandbox', 'Sandbox'), hint: __alloT('stem.ecosystem.route_sandbox_hint', 'Build a food web by hand.') },
+        { id: 'foodweb', label: __alloT('stem.ecosystem.foodweb', 'Food web'), hint: 'Build a community and test indirect effects.' },
         { id: 'conserve', label: __alloT('stem.ecosystem.conserve', 'Conserve'), hint: __alloT('stem.ecosystem.route_conserve_hint', 'Run the Maine campaign.') },
         { id: 'inquiry', label: __alloT('stem.ecosystem.inquiry', 'Inquiry'), hint: __alloT('stem.ecosystem.route_inquiry_hint', 'Sweep variables and observe.') }
       ];
-      var ecoTabNames = { explore: __alloT('stem.ecosystem.explore', 'Explore'), sandbox: __alloT('stem.ecosystem.sandbox', 'Sandbox'), conserve: __alloT('stem.ecosystem.conservation', 'Conservation'), inquiry: __alloT('stem.ecosystem.inquiry', 'Inquiry'), quiz: __alloT('stem.ecosystem.quiz', 'Quiz'), badges: __alloT('stem.ecosystem.badges', 'Badges') };
-      var ECO_TAB_ORDER = ['explore', 'sandbox', 'conserve', 'inquiry', 'quiz', 'badges'];
+      var ecoTabNames = { foodweb: __alloT('stem.ecosystem.foodweb', 'Food web'), explore: __alloT('stem.ecosystem.explore', 'Explore'), sandbox: __alloT('stem.ecosystem.sandbox', 'Sandbox'), conserve: __alloT('stem.ecosystem.conservation', 'Conservation'), inquiry: __alloT('stem.ecosystem.inquiry', 'Inquiry'), quiz: __alloT('stem.ecosystem.quiz', 'Quiz'), badges: __alloT('stem.ecosystem.badges', 'Badges') };
+      var ECO_TAB_ORDER = ['explore', 'sandbox', 'foodweb', 'conserve', 'inquiry', 'quiz', 'badges'];
       var ecoTabKeyDown = function(e, index) {
         var nextIndex = -1;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ECO_TAB_ORDER.length;
@@ -5008,6 +6182,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
       return h('div', { className: 'space-y-3 pb-4', 'data-ecosystem-tool': 'true', 'data-ecosystem-profile': displayProfile },
         h('style', null,
+          '.eco-header{flex-wrap:wrap}.theme-default [data-ecosystem-tool]{--eco-choice-ink:#14532d;--eco-choice-soft:#166534}[data-ecosystem-tool] #eco-live-telemetry .grid{gap:8px}[data-ecosystem-tool] #eco-live-telemetry .grid>div{padding:10px 4px;border-radius:8px}' +
+          "\n[data-ecosystem-tool]{--eco-copy:#e2e8f0;--eco-prey:#86efac;--eco-pred:#fda4af;--eco-capacity:#fcd34d;--eco-axis:#94a3b8;min-width:0;width:100%;font-family:system-ui,sans-serif;line-height:1.5}\n.theme-default [data-ecosystem-tool]{--eco-copy:#1e293b;--eco-prey:#166534;--eco-pred:#9f1239;--eco-capacity:#854d0e;--eco-axis:#64748b}\n.theme-contrast [data-ecosystem-tool]{--eco-copy:#ffff00;--eco-prey:#ffff00;--eco-pred:#fff;--eco-capacity:#67e8f9;--eco-axis:#fff}\n[data-ecosystem-tool] [class*=\"text-[0.625rem]\"],[data-ecosystem-tool] [class*=\"text-[0.6875rem]\"]{font-size:12px;line-height:1.5}\n[data-ecosystem-tool] button{min-height:36px}\n[data-ecosystem-tool] :is(button,input,select,textarea,canvas):focus-visible{outline:3px solid var(--eco-prey);outline-offset:3px}\n.eco-scene{height:420px;background:#0f172a;box-shadow:0 8px 24px #0f172a18}\n.eco-scene-caption{position:absolute;bottom:0;left:0;right:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:8px 12px;background:#0f172a;color:#f8fafc;font-size:12px}\n.eco-scene-caption span{color:#f8fafc!important}\n.eco-scene-controls{flex-wrap:wrap}\n.eco-scene-controls input{min-width:60px}\n#eco-live-telemetry{padding:16px}\n#eco-live-telemetry .font-bold{font-variant-numeric:tabular-nums}\n#eco-live-graph-panel>div{flex-wrap:wrap}\n@media(max-width:600px){.eco-scene{height:360px}.eco-scene-caption span:last-child{display:none}[data-ecosystem-tool] [role=\"tablist\"] button{min-height:44px}.eco-scene-controls>div{min-width:160px}}\n" +
           '[data-ecosystem-profile="beginner"] [data-eco-advanced="true"]{display:none!important;}' +
           '[data-ecosystem-profile="projection"] [data-eco-projection-panel="true"]{padding:16px!important;}' +
           '[data-ecosystem-profile="projection"] [data-eco-projection-text="true"]{font-size:14px!important;line-height:1.55!important;}' +
@@ -5015,7 +6191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         ),
 
         // ── Header ──
-        h('div', { className: 'flex items-center gap-2 mb-2' },
+        h('div', { className: 'eco-header flex items-center gap-2 mb-2' },
           h('button', {
             className: 'transition-colors p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]',
             onClick: function() {
@@ -5026,12 +6202,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             'aria-label': __alloT('stem.ecosystem.back', 'Back')
           }, h(ArrowLeft, { size: 18 })),
           h('span', { className: 'text-lg font-bold tracking-tight' }, activeScenario.emoji + ' ' + __alloT('stem.ecosystem.title', 'Ecosystem Simulator')),
-          h('span', { className: 'ml-auto px-2 py-0.5 text-[0.6875rem] font-bold bg-emerald-700 text-white rounded-full animate-pulse motion-reduce:animate-none' }, __alloT('stem.ecosystem.live', 'LIVE')),
+          h('span', { className: 'ml-auto px-2 py-0.5 text-[0.6875rem] font-bold bg-emerald-700 text-white rounded-full animate-pulse motion-reduce:animate-none' }, tab === 'foodweb' ? 'MODEL' : simPaused ? __alloT('stem.ecosystem.paused_caps', 'PAUSED') : __alloT('stem.ecosystem.live', 'LIVE')),
           h('span', { className: 'text-xs font-bold text-amber-800 dark:text-amber-300 ml-1', style: onHostStyle }, '\u2B50 ' + researchPoints + ' RP'),
         ),
 
         // ── Grade intro ──
-        h('p', { className: 'text-xs text-slate-600 dark:text-slate-200 italic' + onHostInk }, getGradeIntro(gradeBand, activeScenario)),
+        h('p', { className: 'text-xs text-slate-600 dark:text-slate-200 italic' + onHostInk }, tab === 'foodweb' ? 'Follow feeding relationships through a whole community, then test a change against an undisturbed baseline.' : getGradeIntro(gradeBand, activeScenario)),
 
 
         // ── Display profile and study scenario ──
@@ -5080,8 +6256,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
               [
-                { label: 'Scenario', value: activeScenario.name },
-                { label: __alloT('stem.ecosystem.mode', 'Mode'), value: simPaused ? __alloT('stem.ecosystem.paused', 'Paused') : __alloT('stem.ecosystem.live_status', 'Live') },
+                { label: 'Scenario', value: tab === 'foodweb' ? 'Meadow food web' : activeScenario.name },
+                { label: __alloT('stem.ecosystem.mode', 'Mode'), value: tab === 'foodweb' ? 'Comparison lab' : simPaused ? __alloT('stem.ecosystem.paused', 'Paused') : __alloT('stem.ecosystem.live_status', 'Live') },
                 { label: __alloT('stem.ecosystem.research', 'Research'), value: researchPoints + ' RP' },
                 { label: __alloT('stem.ecosystem.badges', 'Badges'), value: badgeCount + '/' + BADGES.length }
               ].map(function(card) {
@@ -5094,7 +6270,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           )
         ),
 
-        h('section', { className: 'rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/20 p-3 space-y-2', 'aria-labelledby': 'eco-scenario-picker-title', 'data-eco-scenario-picker': 'true' },
+        tab !== 'foodweb' && h('section', { className: 'rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/20 p-3 space-y-2', 'aria-labelledby': 'eco-scenario-picker-title', 'data-eco-scenario-picker': 'true' },
           h('div', { className: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1' },
             h('strong', { id: 'eco-scenario-picker-title', className: 'text-xs text-emerald-900 dark:text-emerald-100' }, 'Study scenario'),
             h('span', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'Switching loads that scenario\'s calibrated baseline.')
@@ -5116,11 +6292,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
         // ── Mode tabs (4 tabs now) ──
-        h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': __alloT('stem.ecosystem.aria_explorer_sections', 'Ecosystem Explorer sections') },
+        h('div', { style: { gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }, className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': __alloT('stem.ecosystem.aria_explorer_sections', 'Ecosystem Explorer sections') },
           ECO_TAB_ORDER.map(function(t2, tabIndex) {
             var tabLabel = '';
             if (t2 === 'explore') tabLabel = '\uD83C\uDF3F ' + __alloT('stem.ecosystem.explore', 'Explore');
             else if (t2 === 'sandbox') tabLabel = '\uD83E\uDDEA ' + __alloT('stem.ecosystem.sandbox', 'Sandbox');
+            else if (t2 === 'foodweb') tabLabel = '\uD83D\uDD78 ' + __alloT('stem.ecosystem.foodweb', 'Food web');
             else if (t2 === 'conserve') tabLabel = '\uD83C\uDF32 ' + __alloT('stem.ecosystem.conservation', 'Conservation');
             else if (t2 === 'inquiry') tabLabel = '\u2754 ' + __alloT('stem.ecosystem.inquiry', 'Inquiry');
             else if (t2 === 'quiz') tabLabel = '\u2753 ' + __alloT('stem.ecosystem.quiz', 'Quiz');
@@ -5152,6 +6329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         // ── Topic-accent hero band (per tab) ──
         (function() {
           var TAB_META = {
+            foodweb: { accent: '#155e75', soft: 'rgba(8,145,178,0.10)', icon: '\uD83D\uDD78', title: 'Food-web laboratory', hint: 'Build a meadow and woodland-edge community. Compare species competition, shared prey, and resource changes.' },
             explore: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: activeScenario.emoji, title: 'Explore the ' + activeScenario.name + ' system', hint: activeScenario.question },
             sandbox: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83E\uDDEA', title: 'Sandbox \u2014 ' + activeScenario.name, hint: 'Place ' + activeScenario.producer.plural + ', ' + activeScenario.prey.plural + ', and ' + activeScenario.predator.plural + '; then observe the simplified interaction rules.' },
             conserve: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83C\uDF32', title: __alloT('stem.ecosystem.hero_conserve_title', 'Conservation Manager \u2014 Maine scenario'), hint: __alloT('stem.ecosystem.hero_conserve_hint', 'Explore a Maine-inspired 10-year teaching scenario. Population, habitat, and public-support values are 0-100 indices, and hand-authored cascade rules are not forecasts.') },
@@ -5175,11 +6353,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('h3', { style: { color: 'var(--eco-copy)', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
               h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
+
+        tab === 'foodweb' && h(EcoFoodWebPanel, { React: React, state: d.foodWeb, t: __alloT, announce: announceToSR, onChange: function(value) { upd('foodWeb', value); } }),
 
         // ═══ EXPLORE TAB ═══
         tab === 'explore' && h('div', { className: 'space-y-3' },
@@ -5190,10 +6370,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               padding: '10px 14px', borderRadius: 12, marginBottom: 4,
               background: 'linear-gradient(135deg, rgba(22,163,74,0.14) 0%, rgba(22,163,74,0.04) 100%)',
               borderTop: '1px solid rgba(22,163,74,0.5)', borderRight: '1px solid rgba(22,163,74,0.5)', borderBottom: '1px solid rgba(22,163,74,0.5)', borderLeft: '3px solid #16a34a',
-              color: '#bbf7d0', fontSize: 13, lineHeight: 1.55
+              color: 'var(--eco-copy)', fontSize: 13, lineHeight: 1.55
             }
           },
-            h('strong', { style: { color: '#16a34a' } }, __alloT('stem.ecosystem.goal_label', 'Goal: ')),
+            h('strong', { style: { color: 'var(--eco-prey)' } }, __alloT('stem.ecosystem.goal_label', 'Goal: ')),
             __alloT('stem.ecosystem.explore_goal_body', 'compare settings that produce cycles, damping, or collapse in these teaching models. Predator peaks often lag prey peaks, but the amount of lag depends on the parameters. The animated canvas uses separate stochastic rules; the graph below uses a deterministic logistic predator-prey equation.')
           ),
 
@@ -5276,10 +6456,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   ? 'The trajectories are identical at every step because the same equations with the same numeric inputs produce the same output. Species names and scene artwork shape interpretation, not calculation; this does not mean the real ecosystems are identical.'
                   : 'The trajectories differ because the illustrative baseline parameters and starting indices differ. The pictures and labels do not cause the difference; r, a, b, d, K, and the starting values do.'
               ),
+              h('button', { type: 'button', onClick: function() { addCEREvidence('systems'); }, className: 'rounded-lg border border-cyan-600 dark:border-cyan-500 bg-white/80 dark:bg-slate-900/70 px-3 py-2 text-[0.6875rem] font-bold text-cyan-900 dark:text-cyan-100 hover:border-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500', 'data-eco-add-system-evidence': 'true' }, 'Add this comparison to CER evidence'),
               h('div', { className: 'overflow-x-auto' },
                 h('table', { className: 'w-full min-w-[620px] text-[0.625rem] border-collapse', 'data-eco-scenario-parameter-table': 'true' },
                   h('caption', { className: 'text-left text-[0.6875rem] font-bold text-slate-800 dark:text-slate-100 mb-1' }, 'Numeric inputs used in this comparison'),
-              h('button', { type: 'button', onClick: function() { addCEREvidence('systems'); }, className: 'rounded-lg border border-cyan-600 dark:border-cyan-500 bg-white/80 dark:bg-slate-900/70 px-3 py-2 text-[0.6875rem] font-bold text-cyan-900 dark:text-cyan-100 hover:border-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500', 'data-eco-add-system-evidence': 'true' }, 'Add this comparison to CER evidence'),
                   h('thead', null, h('tr', { className: 'text-left text-slate-700 dark:text-slate-200' }, ['Scenario', 'Prey start', 'Predator start', 'r', 'a', 'b', 'd', 'K', 'Outcome'].map(function(label) { return h('th', { key: label, scope: 'col', className: 'p-1.5 border-b border-cyan-300 dark:border-cyan-700' }, label); }))),
                   h('tbody', null, scenarioComparisonRecords.map(function(record) {
                     return h('tr', { key: 'scenario-parameters-' + record.id },
@@ -5302,7 +6482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // Canvas container
-          h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-emerald-400', style: { height: 320 } },
+          h('div', { className: 'eco-scene relative rounded-xl overflow-hidden border-2 border-emerald-400' },
             h('canvas', { 
               ref: canvasRef,
               role: 'img',
@@ -5329,7 +6509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 + 'hold Shift for larger steps, press Enter or Space to apply the tool, and press '
                 + 'Escape to hide the cursor.')),
             // Bottom info bar
-            h('div', { className: 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-1.5 flex items-center gap-2' },
+            h('div', { className: 'eco-scene-caption' },
               h('span', { className: 'text-[0.6875rem] text-white/90' }, activeScenario.prey.emoji + ' ' + activeScenario.prey.label + ': ' + prey0 + ' start'),
               h('span', { className: 'text-[0.6875rem] text-white/90' }, activeScenario.predator.emoji + ' ' + activeScenario.predator.label + ': ' + pred0 + ' start'),
               h('span', { className: 'text-[0.6875rem] text-white/80 ml-auto' }, __alloT('stem.ecosystem.watch_evolve', 'Watch the ecosystem evolve!'))
@@ -5337,7 +6517,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // ── NEW: Canvas control bar: pause/resume + speed slider ──
-          h('div', { className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
+          h('div', { className: 'eco-scene-controls flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
             h('button', { 'aria-pressed': simPaused, 'aria-label': simPaused ? __alloT('stem.ecosystem.resume_simulation', 'Resume simulation') : __alloT('stem.ecosystem.pause_simulation', 'Pause simulation'), className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
                   ? 'transition-colors bg-emerald-700 text-white hover:bg-emerald-800 active:scale-[0.97]'
@@ -5427,19 +6607,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             className: 'relative rounded-lg px-3 py-2 text-xs font-medium border-2 border-emerald-400/50',
             style: {
               background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.12))',
-              animation: 'pulse 3s ease-in-out infinite'
+              animation: 'none'
             }
           },
             h('div', {
               className: 'absolute inset-0 rounded-lg',
               style: {
                 border: '1px solid rgba(16,185,129,0.3)',
-                animation: 'pulse 2s ease-in-out infinite'
+                animation: 'none'
               }
             }),
             h('span', { className: 'text-emerald-700 dark:text-emerald-300' }, lastObservation)
           ),
-          h('div', { id: 'eco-live-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg border-2 px-3 py-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', style: { background: livePhaseVisual.soft, borderColor: livePhaseVisual.border } },
+          h('div', { id: 'eco-live-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg border-2 px-3 py-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', style: { background: livePhaseVisual.soft, borderColor: livePhaseVisual.border, color: '#1e293b' } },
             h('strong', { style: { color: livePhaseVisual.accent }, className: 'font-bold' }, livePhaseVisual.icon + ' ' + livePhaseLabel + ' '),
             h('span', null, livePhaseExplain)
           ),
@@ -5552,7 +6732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   var predAreaPts2 = pad.toFixed(1) + ',' + (H - pad).toFixed(1) + ' ' + predPts + ' ' + (W - pad).toFixed(1) + ',' + (H - pad).toFixed(1);
                   // Carrying capacity dashed line Y position
                   var kcLineY = lsy(carryingCapacity);
-                  return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 180 }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_live_pop_hist_pre', 'Live predator and prey population history over ') + hist.length + __alloT('stem.ecosystem.aria_samples', ' samples.') },
+                  return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 180 }, 'data-eco-live-chart': 'true', role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_live_pop_hist_pre', 'Live predator and prey population history over ') + hist.length + __alloT('stem.ecosystem.aria_samples', ' samples.') },
                     h('defs', null,
                       h('linearGradient', { id: 'eco-live-prey', x1: '0', y1: '0', x2: '0', y2: '1' },
                         h('stop', { offset: '0%', stopColor: '#22c55e', stopOpacity: 0.35 }),
@@ -5563,25 +6743,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                         h('stop', { offset: '100%', stopColor: '#ef4444', stopOpacity: 0.05 })
                       )
                     ),
+                    [0, 0.5, 1].map(function(fraction) {
+                      var value = maxPop * fraction;
+                      return h('g', { key: 'live-tick-' + fraction },
+                        h('line', { x1: pad, x2: W - pad, y1: lsy(value), y2: lsy(value), stroke: 'var(--eco-axis)', opacity: 0.25 }),
+                        h('text', { x: pad - 5, y: lsy(value) + 3, textAnchor: 'end', fontSize: 10, fill: 'var(--eco-copy)' }, Math.round(value)));
+                    }),
+                    h('text', { x: pad, y: H - 5, fontSize: 10, fill: 'var(--eco-copy)' }, 'Earlier'),
+                    h('text', { x: W - pad, y: H - 5, textAnchor: 'end', fontSize: 10, fill: 'var(--eco-copy)' }, 'Now'),
                     // Axes
-                    h('line', { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
-                    h('line', { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
+                    h('line', { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: 'var(--eco-axis)', strokeWidth: 1 }),
+                    h('line', { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: 'var(--eco-axis)', strokeWidth: 1 }),
                     // Carrying capacity dashed line — drawn only when in range; label right-anchored inside the plot
-                    lKVisible && h('line', { x1: pad, y1: kcLineY, x2: W - pad, y2: kcLineY, stroke: '#f59e0b', strokeWidth: 1.5, strokeDasharray: '6,4', opacity: 0.7 }),
+                    lKVisible && h('line', { x1: pad, y1: kcLineY, x2: W - pad, y2: kcLineY, stroke: 'var(--eco-capacity)', strokeWidth: 1.5, strokeDasharray: '6,4', opacity: 0.7 }),
                     lKVisible
-                      ? h('text', { x: W - pad - 2, y: kcLineY - 3, textAnchor: 'end', fill: '#f59e0b', fontSize: 7 }, 'K=' + carryingCapacity)
-                      : h('text', { x: W - pad - 2, y: pad + 8, textAnchor: 'end', fill: '#f59e0b', fontSize: 7 }, 'K=' + carryingCapacity + ' ↑'),
+                      ? h('text', { x: W - pad - 2, y: kcLineY - 3, textAnchor: 'end', fill: 'var(--eco-capacity)', fontSize: 10 }, 'K=' + carryingCapacity)
+                      : h('text', { x: W - pad - 2, y: pad + 8, textAnchor: 'end', fill: 'var(--eco-capacity)', fontSize: 10 }, 'K=' + carryingCapacity + ' ↑'),
                     // Areas
                     h('polygon', { points: preyAreaPts2, fill: 'url(#eco-live-prey)' }),
                     h('polygon', { points: predAreaPts2, fill: 'url(#eco-live-pred)' }),
                     // Lines
-                    h('polyline', { points: preyPts, fill: 'none', stroke: '#22c55e', strokeWidth: 2 }),
-                    h('polyline', { points: predPts, fill: 'none', stroke: '#ef4444', strokeWidth: 2 }),
+                    h('polyline', { points: preyPts, fill: 'none', stroke: 'var(--eco-prey)', strokeWidth: 2 }),
+                    h('polyline', { points: predPts, fill: 'none', stroke: 'var(--eco-pred)', strokeWidth: 2.5, strokeDasharray: '7 4' }),
                     // End dots + labels
-                    h('circle', { cx: lsx(hist.length - 1), cy: lsy(lLast.prey), r: 3, fill: '#22c55e' }),
-                    h('circle', { cx: lsx(hist.length - 1), cy: lsy(lLast.pred), r: 3, fill: '#ef4444' }),
-                    h('text', { x: lsx(hist.length - 1) + 5, y: lsy(lLast.prey) + 3, fill: '#22c55e', fontSize: 8, fontWeight: 'bold' }, lLast.prey),
-                    h('text', { x: lsx(hist.length - 1) + 5, y: lsy(lLast.pred) + 3, fill: '#ef4444', fontSize: 8, fontWeight: 'bold' }, lLast.pred)
+                    h('circle', { cx: lsx(hist.length - 1), cy: lsy(lLast.prey), r: 3, fill: 'var(--eco-prey)' }),
+                    h('rect', { x: lsx(hist.length - 1) - 3, y: lsy(lLast.pred) - 3, width: 6, height: 6, fill: 'var(--eco-pred)' }),
                   );
                 })() : h('p', { className: 'text-xs text-slate-600 text-center py-4' }, __alloT('stem.ecosystem.canvas_generating_data', 'Canvas simulation is generating live data...'))
               ) : buildEnvSVG(),
@@ -5589,8 +6775,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               // Legend row
               h('div', { className: 'flex gap-3 justify-center text-[0.6875rem]' },
                 ecoGraphView === 'population' ? [
-                  h('span', { key: 'lp', className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-green-500' }), preySeriesLabel),
-                  h('span', { key: 'lpd', className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' }), predatorSeriesLabel),
+                  h('span', { key: 'lp', className: 'flex items-center gap-1' }, h('span', { 'aria-hidden': 'true', style: { width: 22, borderTop: '3px solid var(--eco-prey)' } }), preySeriesLabel + ' (solid)'),
+                  h('span', { key: 'lpd', className: 'flex items-center gap-1' }, h('span', { 'aria-hidden': 'true', style: { width: 22, borderTop: '3px dashed var(--eco-pred)' } }), predatorSeriesLabel + ' (dashed)'),
                   h('span', { key: 'lkc', className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-3 h-0.5 bg-amber-500', style: { borderBottom: '1px dashed #f59e0b' } }), __alloT('stem.ecosystem.carrying_cap', 'Carrying Cap'))
                 ] : [
                   h('span', { key: 'le', className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-green-500' }), activeScenario.producer.label + ' resource / Vegetation index'),
@@ -6540,13 +7726,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             className: 'relative rounded-lg px-3 py-2 text-xs font-medium border-2 border-teal-400/50',
             style: {
               background: 'linear-gradient(135deg, rgba(20,184,166,0.08), rgba(13,148,136,0.12))',
-              animation: 'pulse 3s ease-in-out infinite'
+              animation: 'none'
             }
           },
             h('span', { className: 'text-teal-700 dark:text-teal-300' }, lastObservation)
           ),
 
-          h('div', { id: 'eco-live-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg border-2 px-3 py-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', style: { background: livePhaseVisual.soft, borderColor: livePhaseVisual.border } },
+          h('div', { id: 'eco-live-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg border-2 px-3 py-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', style: { background: livePhaseVisual.soft, borderColor: livePhaseVisual.border, color: '#1e293b' } },
             h('strong', { style: { color: livePhaseVisual.accent }, className: 'font-bold' }, livePhaseVisual.icon + ' ' + livePhaseLabel + ' '),
             h('span', null, livePhaseExplain)
           ),
@@ -7180,10 +8366,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                       'aria-pressed': picked,
                       style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', // The unpicked border was slate-700, 1.72:1 against this panel's hardcoded
                         // #0f172a. slate-500 gives 3.75:1. The picked green already passed at 3.56.
-                        border: '1px solid ' + (picked ? '#15803d' : '#64748b'), color: picked ? ((isContrast || ctx.isDark || ctx.theme === 'dark') ? '#86efac' : '#14532d') : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' }
+                        border: '1px solid ' + (picked ? '#15803d' : '#64748b'), color: picked ? 'var(--eco-choice-ink, #86efac)' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' }
                     },
                       h('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
-                      h('div', { style: { fontSize: 11, color: picked ? ((isContrast || ctx.isDark || ctx.theme === 'dark') ? '#a7f3d0' : '#166534') : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.ecosystem.' + (dkey) + '_desc', df.desc))
+                      h('div', { style: { fontSize: 11, color: picked ? 'var(--eco-choice-soft, #a7f3d0)' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.ecosystem.' + (dkey) + '_desc', df.desc))
                     );
                   })
                 )

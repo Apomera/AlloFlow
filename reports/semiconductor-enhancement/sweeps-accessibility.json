@@ -1,0 +1,22 @@
+[
+  {
+    "variant": "carrier logarithmic sweep",
+    "violations": []
+  },
+  {
+    "variant": "PN limits",
+    "violations": []
+  },
+  {
+    "variant": "P-channel linked 3D",
+    "violations": []
+  },
+  {
+    "variant": "qualitative device with saved run",
+    "violations": []
+  },
+  {
+    "variant": "sweep notebook",
+    "violations": []
+  }
+]

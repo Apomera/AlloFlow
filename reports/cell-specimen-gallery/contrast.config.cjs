@@ -1,0 +1,1 @@
+module.exports={...require('./playwright.config.cjs'),testMatch:['46-cell-contrast.spec.ts'],grep:/observe mode/};

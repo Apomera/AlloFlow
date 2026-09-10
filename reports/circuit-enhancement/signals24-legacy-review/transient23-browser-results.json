@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    "RC cursor, playback, edit restart, undo, starting voltage, and DC/time switching",
+    "RLC response, hidden-page pause, and unmount cleanup",
+    "Capacitive bridge, synchronized readings, selected trace, reversed probes, real waveform and snapshot downloads",
+    "WCAG automated checks and 390/320-pixel scope/inspector layouts",
+    "Incompatible initial constraints hide calculated data and recover after an edit"
+  ],
+  "errors": [],
+  "axe": []
+}

@@ -1,0 +1,24 @@
+{
+  "scenarios": [
+    "Rectifier output, cursor-preserving voltage/flat/3D views, polarity/model editing, actual Schottky drop, and undo",
+    "Bridge rectification, component identities and separation, capacitor smoothing, and reverse-bias readout",
+    "Diode flyback, current continuity, switch lever and bias synchronization, and model-aware waveform export",
+    "Desktop/phone scope and model accessibility, viewport containment, and 16-part label/node containment and collision checks in flat and projected views",
+    "Unsupported ideal drive diagnosis, no stale export, undo recovery, and workspace persistence"
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

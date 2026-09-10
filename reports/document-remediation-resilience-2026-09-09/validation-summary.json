@@ -1,0 +1,66 @@
+{
+  "measuredAt": "2026-09-10T00:31:05.416Z",
+  "policyVersion": "20260909-4",
+  "distinctTestsPassed": 259,
+  "groups": [
+    {
+      "file": "live-focused-tests.json",
+      "passed": 82,
+      "files": [
+        "remediation_inline_math_option_groups.test.js",
+        "remediation_followup_fidelity.test.js",
+        "remediation_semantic_fidelity.test.js"
+      ]
+    },
+    {
+      "file": "live-integration-tests.json",
+      "passed": 87,
+      "files": [
+        "aifix_chunk_gates.test.js",
+        "aifix_source_associations.test.js",
+        "remediation_form_association_index.test.js",
+        "remediation_source_contract_integration.test.js",
+        "doc_pipeline_build_parity.test.js"
+      ]
+    },
+    {
+      "file": "resilience-unit-tests.json",
+      "passed": 19,
+      "files": [
+        "rendered_fidelity_resilience.test.js"
+      ]
+    },
+    {
+      "file": "export-inspection-unit-tests.json",
+      "passed": 2,
+      "files": [
+        "document_export_inspection_failures.test.js"
+      ]
+    },
+    {
+      "file": "rendered-browser-tests.json",
+      "passed": 45
+    },
+    {
+      "file": "export-baseline-tests.json",
+      "passed": 24
+    }
+  ],
+  "shippingModulesMatch": true,
+  "hashes": {
+    "doc_pipeline_source.jsx": "ffd04f44ecaf611379e999396417be56a336d1fa7a05e220f6d17cc33910d343",
+    "doc_pipeline_module.js": "c0baf6cc984631c28ed487a218dca3eb26126eaa30657f22e1634cc399cba7ee",
+    "desktop/web-app/public/doc_pipeline_module.js": "c0baf6cc984631c28ed487a218dca3eb26126eaa30657f22e1634cc399cba7ee",
+    "dev-tools/rendered_document_fidelity.cjs": "8f6933b7fb1a97930a6b77b9cf9917e5519d1b9226e5d60680fe77e8b7c17333",
+    "dev-tools/document_export_at_acceptance.cjs": "d950d70600f7af18432520377b555f602ab91604df0f4f7b3c539b12b544643c"
+  },
+  "mcp": {
+    "passed": true,
+    "durationMs": 53409.839,
+    "scriptedModelCalls": 11,
+    "sourceDrift": false
+  },
+  "humanValidation": "not-run",
+  "liveModelCalls": 0,
+  "deployment": "not-run"
+}

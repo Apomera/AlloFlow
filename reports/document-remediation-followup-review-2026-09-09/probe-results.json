@@ -1,0 +1,515 @@
+{
+  "browser": "148.0.7778.96",
+  "sourceSha256": "d1c3088e7ac9e8a61f1e9992ba615a21d94510dddeccaa99a7f6ebc6c34f67bd",
+  "scope": "Strict candidate gate with actual Chromium rendering/ARIA snapshots; not full pipeline or delivery verdict.",
+  "results": [
+    {
+      "id": "hidden-duplicate-swap",
+      "expected": "reject",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "Complete the exercise.",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - heading \"Required\" [level=2]\n  - paragraph: Complete the exercise.\n  - heading \"Archive\" [level=2]\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "none",
+          "visibility": "visible",
+          "hidden": true,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "Complete the exercise.",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - heading \"Required\" [level=2]\n  - heading \"Archive\" [level=2]\n  - paragraph: Complete the exercise.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "css-cascade-unhide",
+      "expected": "accept",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0010845986984815,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "mismatch": false,
+      "before": {
+        "dom": {
+          "display": "block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "Complete the exercise.",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - paragraph: Complete the exercise.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "Complete the exercise.",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - paragraph: Complete the exercise.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "css-overridden-hide",
+      "expected": "accept",
+      "decision": {
+        "accepted": false,
+        "reason": "source-visibility-changed",
+        "sourceLocation": "document"
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "Complete the exercise.",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - paragraph: Complete the exercise.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "Complete the exercise.",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - paragraph: Complete the exercise.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "aria-name-precedence",
+      "expected": "reject",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "inline-block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "",
+          "ariaLabel": "Name",
+          "labelledby": "student"
+        },
+        "aria": "- main:\n  - text: Student nameTeacher name\n  - textbox \"Student name\": Ada\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "inline-block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "",
+          "ariaLabel": "Name",
+          "labelledby": "teacher"
+        },
+        "aria": "- main:\n  - text: Student nameTeacher name\n  - textbox \"Teacher name\": Ada\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "fieldset-disabled",
+      "expected": "reject",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0098901098901099,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "inline-block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - group \"Student\":\n    - text: Student Name\n    - textbox \"Name\": Ada\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "inline-block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": true,
+          "href": null,
+          "target": null,
+          "text": "",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - group \"Student\":\n    - text: Student Name\n    - textbox \"Name\" [disabled]: Ada\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "optgroup-disabled",
+      "expected": "reject",
+      "decision": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "mismatch": false,
+      "before": {
+        "dom": {
+          "display": "block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "North",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - text: Region\n  - combobox \"Region\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": true,
+          "href": null,
+          "target": null,
+          "text": "North",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - text: Region\n  - combobox \"Region\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "base-retarget",
+      "expected": "reject",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 0.9988505747126437,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "inline",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": "https://school.example/assignment",
+          "target": null,
+          "text": "Read the assignment",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - link \"Read the assignment\":\n    - /url: assignment\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "inline",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": "https://other.example/assignment",
+          "target": null,
+          "text": "Read the assignment",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - link \"Read the assignment\":\n    - /url: assignment\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "internal-target-swap",
+      "expected": "reject",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "inline",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": "https://school.example/#required",
+          "target": "RequiredComplete the exercise.",
+          "text": "Required steps",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - link \"Required steps\":\n    - /url: \"#required\"\n  - heading \"Required\" [level=2]\n  - paragraph: Complete the exercise.\n  - heading \"Archive\" [level=2]\n  - paragraph: Old notes.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "inline",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": "https://school.example/#required",
+          "target": "ArchiveOld notes.",
+          "text": "Required steps",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - link \"Required steps\":\n    - /url: \"#required\"\n  - heading \"Required\" [level=2]\n  - paragraph: Complete the exercise.\n  - heading \"Archive\" [level=2]\n  - paragraph: Old notes.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "benign-default-input-type",
+      "expected": "accept",
+      "decision": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "inline-block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - text: Name\n  - textbox \"Name\": Ada\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "inline-block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - text: Name\n  - textbox \"Name\": Ada\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "benign-header-scope-repair",
+      "expected": "accept",
+      "decision": {
+        "accepted": false,
+        "reason": "table-semantics-changed",
+        "sourceLocation": "table:1/cell:1"
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "table-cell",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "Student",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - table:\n    - rowgroup:\n      - row \"Student Score\":\n        - rowheader \"Student\"\n        - rowheader \"Score\"\n      - row \"Ada 95\":\n        - cell \"Ada\"\n        - cell \"95\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "table-cell",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "Student",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - table:\n    - rowgroup:\n      - row \"Student Score\":\n        - columnheader \"Student\"\n        - columnheader \"Score\"\n      - row \"Ada 95\":\n        - cell \"Ada\"\n        - cell \"95\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "prose-math-operator",
+      "expected": "reject",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "The expression is x + y.",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - paragraph: The expression is x + y.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "block",
+          "visibility": "visible",
+          "hidden": false,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "The expression is x − y.",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - paragraph: The expression is x − y.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "math-spoken-name",
+      "expected": "reject",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.001122334455668,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "math",
+          "visibility": "visible",
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "x+y",
+          "ariaLabel": "x plus y",
+          "labelledby": null
+        },
+        "aria": "- main:\n  - math \"x plus y\": x + y\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "math",
+          "visibility": "visible",
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "x+y",
+          "ariaLabel": "x minus y",
+          "labelledby": null
+        },
+        "aria": "- main:\n  - math \"x minus y\": x + y\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    },
+    {
+      "id": "hidden-inline-split",
+      "expected": "accept",
+      "decision": {
+        "accepted": false,
+        "reason": "source-visibility-changed",
+        "sourceLocation": "document"
+      },
+      "mismatch": true,
+      "before": {
+        "dom": {
+          "display": "none",
+          "visibility": "visible",
+          "hidden": true,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "Complete the exercise.",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      },
+      "after": {
+        "dom": {
+          "display": "none",
+          "visibility": "visible",
+          "hidden": true,
+          "disabled": false,
+          "href": null,
+          "target": null,
+          "text": "Complete the exercise.",
+          "ariaLabel": null,
+          "labelledby": null
+        },
+        "aria": "- main:\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+      }
+    }
+  ]
+}

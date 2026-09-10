@@ -15,6 +15,8 @@ const TMP = path.join(ROOT, '_tmp_allo_commands_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 const source = fs.readFileSync(SOURCE, 'utf-8');
+const recognitionTools = fs.readFileSync(path.join(ROOT, 'school_store_recognition.js'), 'utf8');
+const setupGuide = fs.readFileSync(path.join(ROOT, 'school_store_setup_guide.js'), 'utf8');
 const entry = `/* global React */\n\n${source}\n\nwindow.__alloCommandsExports = { AlloCommandPalette, AlloCommandProgress, buildAlloCommands, getCommandAudience, getCommandAvailability, getLocalCommandInsights, mergeCommandProgressItems, scoreCommand, routeUtterance, executeCommand, cancelCommand, runCommandById, findReadingMatches, normalizeReadingRequest, readingMatchReasons, readingMatchWhyText, createVoiceLoop, looksMultiStep, getCommandContract, sanitizeCommandParams, validateCommandParams, formatCommandResult, validatePlan, planUtterance, runPlan, LEARNER_COMMAND_RISKS, LEARNER_CONFIRMATION_POLICIES, getLearnerCommandPolicy, createLearnerCommandAdapter, registerCommandScope, listMainVoiceEditableFields, normalizeVoiceEditableFields, resolveVoiceEditableField, parseNamedFieldVoiceUtterance, createNamedFieldCommandAdapter, createTutorialCommandAdapter, createGeneratedResourceCommandAdapter, listActiveCommandScopes, getLearnerContextSnapshot, routeScopedUtterance, createCommandKernel };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 console.log('[AlloCommands] Compiling allo_commands_source.jsx...');
@@ -40,6 +42,8 @@ const outputCode = `/**
   var React = window.React;
   if (!React) { console.error('[AlloCommands] React not found on window'); return; }
 
+${recognitionTools}
+${setupGuide}
 ${compiled}
 
   window.AlloModules = window.AlloModules || {};

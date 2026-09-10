@@ -66,6 +66,513 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
   })();
 
 
+  // Shared drawing/hit-test geometry keeps every plot in view on narrow screens.
+  function companionGardenTileSize(canvasWidth, canvasHeight) {
+    var height = canvasHeight || 1080;
+    var ratio = canvasWidth < 1000 ? 0.66 : 0.48; var width = Math.max(24, Math.min((canvasWidth - 64) / 4.35, (height - 340) / (ratio * 4.5)));
+    var tileHeight = width * ratio;
+    return { width: width, height: tileHeight, x: canvasWidth / 2, y: Math.max(190, (height - tileHeight * 4) * 0.48) };
+  }
+  // Shared vector art: no external images, per-instance SVG ids, or random geometry.
+  function companionBotanicalArt(React, cropId, plant, progress, options) {
+    var h = React.createElement;
+    options = options || {};
+    progress = Math.max(0, Math.min(1, Number(progress) || 0));
+    var ground = options.ground !== false;
+    var roots = options.roots !== false;
+    var leafDark = '#245b39', leafMid = '#498147', leafLight = '#81ad56';
+    var fruitOpacity = Math.max(0, Math.min(1, (progress - 0.48) * 3.5));
+    var parts = [];
+    function path(d, fill, stroke, width) { return h('path', { d: d, fill: fill || 'none', stroke: stroke, strokeWidth: width || 2, strokeLinecap: 'round', strokeLinejoin: 'round' }); }
+    function leaf(x, y, angle, scale, light) {
+      return h('g', { transform: 'translate(' + x + ' ' + y + ') rotate(' + angle + ') scale(' + scale + ')' },
+        path('M0 0 C4 -15 23 -17 30 -6 C23 7 8 10 0 0Z', light ? leafLight : leafMid), path('M1 0 Q15 -4 27 -6', null, leafDark, 0.8), path('M12 -3 L12 -9 M19 -4 L23 0', null, leafDark, 0.5));
+    }
+    function flower(x, y, radius, color) {
+      return h('g', { transform: 'translate(' + x + ' ' + y + ')' },
+        Array.from({ length: 8 }, function(_, i) { var a = i * Math.PI / 4; return h('ellipse', { key: i, cx: Math.cos(a) * radius, cy: Math.sin(a) * radius, rx: radius * 0.62, ry: radius * 0.44, transform: 'rotate(' + (i * 45) + ' ' + (Math.cos(a) * radius) + ' ' + (Math.sin(a) * radius) + ')', fill: color }); }),
+        h('circle', { r: radius * 0.59, fill: cropId === 'sunflower' ? '#603f26' : '#ecc05c' }), h('circle', { cx: -radius * 0.17, cy: -radius * 0.18, r: radius * 0.16, fill: '#fae2a0' }));
+    }
+    function fruit(x, y, color, size) {
+      return h('g', { transform: 'translate(' + x + ' ' + y + ')' }, h('circle', { r: size, fill: color }), h('ellipse', { cx: -size * 0.3, cy: -size * 0.3, rx: size * 0.25, ry: size * 0.13, fill: '#fff1ce', opacity: 0.65 }), path('M-4 -6 L0 -4 L4 -7 M0 -4 L0 -9', null, leafDark, 1.5));
+    }
+    if (plant && plant.isStructure) {
+      if (cropId === 'rain_barrel') parts.push(h('g', null, h('rect', { x: 33, y: 43, width: 55, height: 58, rx: 7, fill: '#4c8595' }), h('ellipse', { cx: 60, cy: 43, rx: 28, ry: 8, fill: '#7cafb7', stroke: '#305665', strokeWidth: 2 }), path('M34 61 Q60 71 87 61 M34 87 Q60 97 87 87', null, '#305665', 4), path('M60 84 V91 H73', null, '#dfba69', 4), h('circle', { cx: 60, cy: 83, r: 4, fill: '#d6b362' })));
+      else if (cropId === 'bee_hotel') parts.push(h('g', null, path('M30 49 L60 24 L90 49Z', '#8d4c31'), h('rect', { x: 34, y: 48, width: 52, height: 45, rx: 2, fill: '#c79a60' }), path('M60 93 V108', null, '#795035', 5), [0, 1, 2].map(function(row) { return [0, 1, 2, 3].map(function(col) { return h('circle', { key: row + '-' + col, cx: 43 + col * 11, cy: 58 + row * 12, r: 3.5, fill: '#5c422d', stroke: '#e1c38d', strokeWidth: 2 }); }); })));
+      else parts.push(h('g', null, h('rect', { x: 29, y: 58, width: 64, height: 45, rx: 3, fill: '#7d5336' }), h('ellipse', { cx: 60, cy: 58, rx: 31, ry: 8, fill: '#473923' }), leaf(45, 59, -40, 0.6, true), leaf(70, 59, -130, 0.5), [64, 78, 92].map(function(y) { return path('M30 ' + y + ' H91', null, '#b48d5c', 6); })));
+    } else if (cropId === 'corn' || cropId === 'asparagus' || cropId === 'sunflower') {
+      parts.push(path('M59 104 Q64 69 60 28', null, leafDark, 3.5));
+      if (cropId === 'corn') {
+        parts.push(path('M60 84 Q45 61 19 66 Q40 66 60 88Z', leafMid), path('M61 70 Q78 43 104 49 Q83 50 61 75Z', leafLight), path('M61 55 Q47 34 28 39 Q44 40 61 61Z', leafMid), path('M61 41 Q74 22 91 28 Q75 29 61 47Z', leafLight), path('M59 84 Q40 68 23 66 M63 71 Q84 51 100 49', null, leafDark, 0.7));
+      } else if (cropId === 'asparagus') {
+        parts.push(path('M51 103 L49 44 M70 103 L74 53', null, leafMid, 4), path('M45 47 L49 33 L53 47Z', '#6e9461'), path('M70 56 L74 42 L78 56Z', '#6e9461'), path('M56 31 L60 17 L64 31Z', '#6e9461'));
+      } else parts.push(leaf(60, 81, -145, 1.18), leaf(62, 68, -10, 1.1, true), leaf(60, 51, -155, 0.9), leaf(61, 39, -12, 0.67, true));
+      if (cropId === 'corn') parts.push(h('g', { opacity: fruitOpacity }, path('M60 31 V16 M60 23 L48 15 M60 21 L70 11 M60 27 L74 21', null, '#cba657', 1.7), h('ellipse', { cx: 68, cy: 65, rx: 7, ry: 14, fill: '#eec958', transform: 'rotate(20 68 65)' }), [0, 1, 2, 3].map(function(row) { return h('g', { key: row }, h('circle', { cx: 66, cy: 57 + row * 5, r: 1.25, fill: '#fff0a0' }), h('circle', { cx: 71, cy: 57 + row * 5, r: 1.25, fill: '#d8a333' })); }), path('M61 78 Q79 70 79 54 Q81 80 61 82Z', '#588544')));
+      if (cropId === 'sunflower') parts.push(h('g', { opacity: fruitOpacity }, flower(60, 27, 12, '#edb646')));
+    } else if (['beans', 'peas', 'cucumber'].indexOf(cropId) !== -1) {
+      parts.push(path('M36 105 L43 26 M82 105 L76 26 M41 39 H77 M39 61 H79 M37 83 H81', null, '#b19972', 2));
+      parts.push(path('M58 104 C35 90 87 79 61 65 S36 45 62 28', null, leafDark, 2.6));
+      parts.push(leaf(59, 86, -165, 0.75), leaf(56, 67, -15, 0.78, true), leaf(53, 52, -150, 0.77), leaf(60, 34, -6, 0.6, true));
+      parts.push(h('g', { opacity: fruitOpacity }, flower(49, 44, 3, '#d4add7'), path('M66 66 Q77 80 66 92 Q62 80 66 66Z', '#83a74e', leafDark, 1), path('M47 63 Q37 75 44 87 Q51 77 47 63Z', '#648943', leafDark, 1), h('circle', { cx: 67, cy: 76, r: 1.5, fill: '#b6cc78' }), h('circle', { cx: 67, cy: 83, r: 1.5, fill: '#b6cc78' })));
+    } else if (['carrot', 'radish', 'onion', 'garlic'].indexOf(cropId) !== -1) {
+      [-28, -12, 4, 20, 36].forEach(function(angle, i) { parts.push(h('g', { transform: 'rotate(' + angle + ' 60 102)' }, path('M60 104 Q51 75 60 40 Q68 71 60 104Z', i % 2 ? leafLight : leafMid), path('M60 97 V51', null, leafDark, 0.9))); });
+      if (roots) parts.push(h('g', { opacity: 0.4 + progress * 0.6 }, cropId === 'carrot' ? path('M49 100 Q60 91 71 101 L60 133Z', '#d67c34', '#9f522b', 1) : h('ellipse', { cx: 60, cy: 110, rx: 12, ry: 14, fill: cropId === 'radish' ? '#bc5365' : '#e2cfa9', stroke: '#946948', strokeWidth: 1 }), path('M60 122 L58 135 M52 109 L61 111 M56 117 L63 119', null, '#956f4b', 1)));
+    } else if (['squash', 'strawberry', 'clover', 'nasturtium', 'buckwheat'].indexOf(cropId) !== -1) {
+      parts.push(path('M17 104 C31 78 63 106 101 90', null, leafDark, 3));
+      [22, 46, 72, 88].forEach(function(x, i) { parts.push(h('g', { transform: 'translate(' + x + ' ' + (i % 2 ? 84 : 91) + ') rotate(' + (i % 2 ? 15 : -20) + ')' }, path('M0 8 C-15 3 -20 -9 -9 -13 C-8 -27 7 -25 10 -15 C26 -17 30 0 17 5 Q7 14 0 8Z', i % 2 ? leafLight : leafMid, leafDark, 0.8), path('M3 9 L2 -16 M3 2 L-10 -7 M3 2 L16 -7', null, leafDark, 0.8))); });
+      if (cropId === 'squash' || cropId === 'strawberry') parts.push(h('g', { opacity: fruitOpacity }, flower(84, 67, 5, '#efbd53'), cropId === 'strawberry' ? fruit(48, 99, '#bd4a4c', 7) : h('g', null, h('ellipse', { cx: 61, cy: 101, rx: 17, ry: 12, fill: '#cf8b38' }), h('ellipse', { cx: 61, cy: 101, rx: 9, ry: 12, fill: '#e6a349', stroke: '#b9752b', strokeWidth: 1 }), path('M61 91 L63 85', null, leafDark, 3))));
+      else parts.push(h('g', { opacity: fruitOpacity }, flower(36, 70, 4, cropId === 'nasturtium' ? '#df9556' : '#eddcc9'), flower(83, 67, 5, cropId === 'nasturtium' ? '#e5b25a' : '#e6c3ce')));
+    } else if (['lettuce', 'broccoli'].indexOf(cropId) !== -1) {
+      [-165, -130, -95, -60, -25, 0].forEach(function(angle, i) { parts.push(leaf(59, 101, angle, 1.2 + (i % 2) * 0.3, i % 2)); });
+      if (cropId === 'broccoli') parts.push(h('g', { opacity: fruitOpacity }, [0, 1, 2, 3, 4].map(function(i) { return h('circle', { key: i, cx: 43 + i * 8, cy: 80 - (i % 2) * 6, r: 10, fill: i % 2 ? '#3c7050' : '#295c42' }); })));
+    } else {
+      var isFlower = plant && plant.pollinator && ['basil', 'mint'].indexOf(cropId) === -1;
+      parts.push(path('M60 104 V51 M59 85 Q34 74 33 50 M60 77 Q83 66 84 47', null, leafDark, 2.7));
+      [[60, 87, -145], [59, 66, -8], [42, 73, -155], [79, 65, -15], [59, 49, -155]].forEach(function(p, i) { parts.push(leaf(p[0], p[1], p[2], isFlower ? 0.53 : 0.85, i % 2)); });
+      if (isFlower) {
+        var color = ['borage', 'lavender'].indexOf(cropId) !== -1 ? '#9684bf' : cropId === 'marigold' ? '#e49e3d' : '#d497a5';
+        parts.push(h('g', { opacity: fruitOpacity }, flower(33, 46, 8, color), flower(60, 37, 9, color), flower(85, 44, 7, color)));
+      } else if (['tomato', 'pepper', 'blueberry'].indexOf(cropId) !== -1) {
+        parts.push(h('g', { opacity: fruitOpacity }, fruit(41, 82, cropId === 'blueberry' ? '#526080' : '#c85540', 8), fruit(75, 77, cropId === 'blueberry' ? '#526080' : '#dd7a42', 9), fruit(61, 59, cropId === 'blueberry' ? '#64709a' : '#c54b3c', 7)));
+      }
+    }
+    var growScale = plant && plant.isStructure ? 1 : 0.3 + 0.7 * Math.sqrt(progress);
+    return h('svg', { key: cropId || 'empty', className: 'cp-botanical-art', viewBox: '0 0 120 140', 'aria-hidden': true, focusable: 'false', 'data-botanical-crop': cropId || 'empty', 'data-botanical-stage': progress <= 0.01 ? 'seed' : progress < 0.2 ? 'sprout' : progress < 0.55 ? 'leafing' : progress < 0.88 ? 'flowering' : 'mature' },
+      ground && h('g', null, path('M8 103 Q60 86 112 103 L108 125 Q60 140 12 125Z', '#ad8053'), h('ellipse', { cx: 60, cy: 103, rx: 52, ry: 15, fill: '#73573a' }), path('M22 106 Q56 96 101 107 M26 116 Q64 110 94 116', null, '#967148', 1.5), [25, 43, 78, 98].map(function(x, i) { return h('circle', { key: x, cx: x, cy: 105 + (i % 2) * 8, r: 1.3, fill: '#cfb182' }); })),
+      !plant && h('g', { opacity: 0.8 }, path('M35 103 H84 M45 111 H75', null, '#c3a17a', 1.5)),
+      plant && !plant.isStructure && roots && progress > 0.01 && h('g', { className: 'cp-botanical-roots', style: { opacity: 0.45 + progress * 0.5, transform: 'translate(60px, 103px) scale(' + (0.5 + progress * 0.5) + ') translate(-60px, -103px)' } }, path('M60 103 Q51 117 49 127 M60 103 Q64 119 74 129 M60 109 L61 131 M54 115 L40 121 M65 117 L82 121', null, '#e4d6ad', 1), plant.family === 'legume' && h('g', { fill: '#cc9c94' }, h('circle', { cx: 52, cy: 119, r: 2.5 }), h('circle', { cx: 69, cy: 123, r: 2.2 }))),
+      plant && (progress <= 0.01 && !plant.isStructure ? h('g', { 'data-botanical-seed': true }, h('ellipse', { cx: 60, cy: 104, rx: 6, ry: 3.5, fill: '#d2b379', transform: 'rotate(-18 60 104)' }), path('M57 104 L63 103', null, '#906b40', 1)) : h('g', { className: 'cp-botanical-growth', style: { transform: 'translate(60px, 103px) scale(' + growScale + ') translate(-60px, -103px)', opacity: options.health == null ? 1 : Math.max(0.5, options.health / 100) } }, h('g', { className: 'cp-botanical-canopy' }, parts.map(function(part, index) { return React.cloneElement(part, { key: index }); })))));
+  }
+
+
+  // Paint the same authored SVG nodes used by the field guide directly on canvas.
+  // Only our local geometry is supported; no DOM, image downloads, or raster scaling.
+  function companionPaintBotanical(ctx, node, paths) {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) { node.forEach(function(child) { companionPaintBotanical(ctx, child, paths); }); return; }
+    var p = node.props || {}, style = p.style || {};
+    ctx.save();
+    var transform = p.transform || style.transform || '';
+    transform.replace(/(translate|scale|rotate)\(([^)]+)\)/g, function(_, op, values) {
+      var n = values.match(/-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/gi).map(Number);
+      if (op === 'translate') ctx.translate(n[0], n[1] || 0);
+      if (op === 'scale') ctx.scale(n[0], n.length > 1 ? n[1] : n[0]);
+      if (op === 'rotate') {
+        ctx.translate(n[1] || 0, n[2] || 0); ctx.rotate(n[0] * Math.PI / 180); ctx.translate(-(n[1] || 0), -(n[2] || 0));
+      }
+      return _;
+    });
+    if (p.opacity != null) ctx.globalAlpha *= p.opacity;
+    if (style.opacity != null) ctx.globalAlpha *= style.opacity;
+    if (p.fill && p.fill !== 'none') ctx.fillStyle = p.fill;
+    if (p.stroke && p.stroke !== 'none') ctx.strokeStyle = p.stroke;
+    ctx.lineWidth = p.strokeWidth || 1;
+    ctx.lineCap = p.strokeLinecap || 'round'; ctx.lineJoin = p.strokeLinejoin || 'round';
+    var shape = null;
+    if (node.type === 'path') {
+      if (!paths.has(p.d)) paths.set(p.d, new Path2D(p.d));
+      shape = paths.get(p.d);
+    } else if (node.type === 'ellipse' || node.type === 'circle') {
+      shape = new Path2D(); shape.ellipse(p.cx || 0, p.cy || 0, p.rx || p.r || 0, p.ry || p.r || 0, 0, 0, Math.PI * 2);
+    } else if (node.type === 'rect') {
+      shape = new Path2D(); shape.roundRect(p.x || 0, p.y || 0, p.width, p.height, p.rx || 0);
+    }
+    if (shape) {
+      if (p.fill !== 'none') ctx.fill(shape);
+      if (p.stroke && p.stroke !== 'none') ctx.stroke(shape);
+    }
+    companionPaintBotanical(ctx, p.children, paths);
+    ctx.restore();
+  }
+
+  function companionDrawGardenScene(ctx, canvas, React, frame, plants, relationships, time, reducedMotion) {
+    var W = canvas.width, H = canvas.height, geo = companionGardenTileSize(W, H);
+    var tw = geo.width, th = geo.height, cg = frame.cg, grid = frame.grid, season = frame.season;
+    var small = W < 1000, hover = canvas._hoverCell == null ? -1 : canvas._hoverCell;
+    var preview = frame.placementPreview, previewModel = frame.previewModel;
+    var focus = cg.relationshipLens && typeof cg.relationshipFocus === 'number' ? cg.relationshipFocus : -1;
+    var active = preview ? preview.plot : hover >= 0 ? hover : focus;
+    var elapsed = reducedMotion ? 0 : time, cycle = ((elapsed + 42) % 120) / 120;
+    var night = cycle > 0.79 ? Math.sin((cycle - 0.79) / 0.21 * Math.PI) * 0.64 : 0;
+    var palette = [
+      { sky: '#deeee5', horizon: '#fbf2d5', far: '#b7ccb0', hill: '#91b28c', lawn: '#9eb885', shade: '#799c6d' },
+      { sky: '#dcebe7', horizon: '#fff0c9', far: '#aec6a0', hill: '#87a878', lawn: '#99b275', shade: '#78935b' },
+      { sky: '#ece6d8', horizon: '#f8e3c0', far: '#c6ba90', hill: '#ad9c71', lawn: '#b1a273', shade: '#938761' },
+      { sky: '#d9e4e8', horizon: '#f3f2eb', far: '#c6d2cc', hill: '#a9bdb3', lawn: '#d1dcd3', shade: '#b2c6b7' }
+    ][season] || {};
+    canvas.setAttribute('data-garden-origin-y', String(geo.y)); canvas.setAttribute('data-garden-tile-height', String(th));
+    canvas.setAttribute('data-garden-scene', 'botanical'); canvas.setAttribute('data-garden-render-width', String(W));
+    function point(row, col) { return { x: geo.x + (col - row) * tw / 2, y: geo.y + (col + row) * th / 2 }; }
+    function center(index) { return point(Math.floor(index / 4) + 0.5, index % 4 + 0.5); }
+    function poly(points, fill, stroke, width) {
+      ctx.beginPath(); points.forEach(function(p, i) { if (i) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y); }); ctx.closePath();
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = width || 1; ctx.stroke(); }
+    }
+    function oval(x, y, rx, ry, fill, angle) {
+      ctx.fillStyle = fill; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, angle || 0, 0, Math.PI * 2); ctx.fill();
+    }
+    function line(x, y, xx, yy, color, width) {
+      ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(xx, yy); ctx.stroke();
+    }
+    function diamond(p, w, h, fill, stroke, width) {
+      poly([{ x: p.x, y: p.y - h / 2 }, { x: p.x + w / 2, y: p.y }, { x: p.x, y: p.y + h / 2 }, { x: p.x - w / 2, y: p.y }], fill, stroke, width);
+    }
+    function badge(text, x, y, bg, fg, size) {
+      ctx.font = '600 ' + (size || 22) + 'px system-ui';
+      var bw = ctx.measureText(text).width + 24, bh = (size || 22) + 18;
+      x = Math.max(10, Math.min(W - bw - 10, x - bw / 2));
+      ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(x, y, bw, bh, 10); ctx.fill();
+      ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x + bw / 2, y + bh / 2);
+      ctx.textBaseline = 'alphabetic';
+    }
+    if (!canvas._cgBotanicalNodes) canvas._cgBotanicalNodes = new Map();
+    if (!canvas._cgBotanicalPaths) canvas._cgBotanicalPaths = new Map();
+    if (!canvas._cgGrowthStates) canvas._cgGrowthStates = {};
+    function crop(id, plant, progress, x, y, scale, phase, health, ghost) {
+      var rounded = Math.round(Math.max(0, Math.min(1, progress)) * 100) / 100;
+      var key = id + ':' + rounded;
+      if (!canvas._cgBotanicalNodes.has(key)) {
+        if (canvas._cgBotanicalNodes.size >= 96) canvas._cgBotanicalNodes.delete(canvas._cgBotanicalNodes.keys().next().value);
+        canvas._cgBotanicalNodes.set(key, companionBotanicalArt(React, id, plant, rounded, { ground: false, roots: false }));
+      }
+      ctx.save(); ctx.translate(x, y);
+      var wilt = Math.max(0, (30 - frame.moisture) / 30);
+      ctx.rotate(plant.isStructure ? 0 : Math.sin(elapsed * 1.3 + phase) * 0.018 + wilt * 0.1);
+      ctx.scale(scale, scale * (1 - wilt * 0.12)); ctx.translate(-60, -103);
+      ctx.globalAlpha = ghost ? 0.46 : Math.max(0.52, (health == null ? 100 : health) / 100);
+      companionPaintBotanical(ctx, canvas._cgBotanicalNodes.get(key), canvas._cgBotanicalPaths);
+      ctx.restore();
+    }
+    ctx.clearRect(0, 0, W, H); ctx.lineCap = 'round';
+    var sky = ctx.createLinearGradient(0, 0, 0, H * 0.42);
+    sky.addColorStop(0, palette.sky); sky.addColorStop(1, palette.horizon); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    var sunX = W * 0.76 + Math.sin(elapsed * 0.008) * W * 0.06, sunY = H * 0.13;
+    oval(sunX, sunY, 62, 62, '#f4dd9d26'); oval(sunX, sunY, 43, 43, '#f4dd9d40'); oval(sunX, sunY, 25, 25, '#f8e7ae');
+    for (var cloud = 0; cloud < 4; cloud++) {
+      var cx = ((cloud * W * 0.29 + elapsed * 4) % (W + 280)) - 100, cy = 90 + cloud % 2 * 46;
+      oval(cx, cy, 70, 12, '#ffffff65'); oval(cx - 20, cy - 10, 35, 17, '#ffffff65'); oval(cx + 26, cy - 6, 44, 14, '#ffffff65');
+    }
+    [0, 1, 2].forEach(function(layer) {
+      var horizon = H * (0.26 + layer * 0.055);
+      ctx.fillStyle = [palette.far, palette.hill, palette.lawn][layer]; ctx.beginPath(); ctx.moveTo(0, H);
+      ctx.lineTo(0, horizon);
+      ctx.bezierCurveTo(W * 0.22, horizon - 85, W * 0.36, horizon + 90, W * 0.55, horizon - 15);
+      ctx.bezierCurveTo(W * 0.77, horizon - 115, W * 0.94, horizon + 30, W, horizon - 22); ctx.lineTo(W, H); ctx.fill();
+    });
+    var lawn = ctx.createLinearGradient(0, H * 0.4, 0, H);
+    lawn.addColorStop(0, '#ffffff00'); lawn.addColorStop(1, palette.shade); ctx.fillStyle = lawn; ctx.fillRect(0, H * 0.4, W, H * 0.6);
+
+    // Layered orchard trees and foreground grass frame the beds without covering plots.
+    for (var tree = 0; tree < 7; tree++) {
+      var tx = W * ((tree + 0.3) / 7), ty = H * 0.29 + Math.sin(tree * 2) * 12, ts = 0.65 + tree % 3 * 0.2;
+      ctx.save(); ctx.translate(tx, ty); ctx.scale(ts, ts);
+      line(0, 14, 0, -61, '#727d58', 8); line(0, -25, -23, -58, '#727d58', 4);
+      oval(-22, -63, 35, 43, season === 2 ? '#b8a06d' : season === 3 ? '#a2b7ab' : '#82a382');
+      oval(20, -68, 38, 47, season === 2 ? '#c4ad78' : season === 3 ? '#b9cdc0' : '#9cb795');
+      oval(0, -96, 34, 38, season === 2 ? '#d0b982' : season === 3 ? '#d2ded2' : '#aec5a2'); ctx.restore();
+    }
+    var bedBottom = point(4, 4), bedMid = point(2, 2);
+    ctx.save(); ctx.translate(bedMid.x + 12, bedMid.y + 30); ctx.scale(1, th / tw);
+    var gardenShadow = ctx.createRadialGradient(0, 0, tw * 0.5, 0, 0, tw * 2.3);
+    gardenShadow.addColorStop(0, '#34432c27'); gardenShadow.addColorStop(1, '#34432c00');
+    ctx.fillStyle = gardenShadow; ctx.fillRect(-tw * 2.3, -tw * 2.3, tw * 4.6, tw * 4.6); ctx.restore();
+    // A gravel apron makes the individual raised beds readable.
+    var apron = [point(-0.19, -0.19), point(-0.19, 4.19), point(4.19, 4.19), point(4.19, -0.19)];
+    poly(apron, '#d1c4a3', '#b5aa8a', 3);
+    for (var grain = 0; grain < 180; grain++) {
+      var gr = ((grain * 37) % 101) / 101 * 4.36 - 0.18, gc = ((grain * 59) % 103) / 103 * 4.36 - 0.18, gravel = point(gr, gc);
+      oval(gravel.x, gravel.y, 1.9, 1.1, grain % 2 ? '#efdfbc90' : '#8c88624a');
+    }
+    // Grasses are kept outside the exact isometric footprint.
+    for (var tuft = 0; tuft < 130; tuft++) {
+      var gx = (tuft * 173.3 + 21) % W, gy = H * 0.39 + (tuft * 91.7 % (H * 0.6));
+      if (Math.abs(gx - bedMid.x) / (tw * 2.28) + Math.abs(gy - bedMid.y) / (th * 2.28) < 1) continue;
+      var gh = 5 + tuft % 7, lean = Math.sin(elapsed * 1.1 + tuft) * 2;
+      line(gx, gy, gx - 3 + lean, gy - gh, '#516f474c', 1.6); line(gx + 3, gy, gx + 5 + lean, gy - gh * 0.7, '#e2e4b16a', 1.8);
+      if (tuft % 11 === 0 && season !== 3) { oval(gx - 3 + lean, gy - gh - 1, 3.2, 2.5, tuft % 2 ? '#f3ddac' : '#e4c4b5'); }
+    }
+
+
+    // Small practical details anchor the garden in its surroundings.
+    if (!small) {
+      for (var stone = 0; stone < 5; stone++) {
+        var step = stone / 4, sx = W * 0.18 + step * (bedMid.x - tw * 1.55 - W * 0.18);
+        var sy = H + 20 - step * (H - bedMid.y - th * 0.7);
+        oval(sx + 4, sy + 5, 25 - step * 9, 10 - step * 3, '#536f4530', -0.25);
+        oval(sx, sy, 25 - step * 9, 10 - step * 3, '#d9d3b2', -0.25);
+      }
+      var bench = point(0.9, 4.8);
+      ctx.save(); ctx.translate(bench.x, bench.y); ctx.scale(tw / 260, tw / 260);
+      line(-28, 6, -28, 29, '#735c3f', 5); line(30, 6, 30, 29, '#735c3f', 5);
+      line(-33, 0, -33, -30, '#826a47', 4); line(33, 0, 33, -30, '#826a47', 4);
+      line(-40, -27, 40, -27, '#c9ac73', 10); line(-40, -13, 40, -13, '#bb9a65', 9);
+      poly([{x:-44,y:0},{x:36,y:0},{x:46,y:11},{x:-34,y:11}], '#dbc18c'); ctx.restore();
+      var can = point(4.5, 1.2);
+      ctx.save(); ctx.translate(can.x, can.y); ctx.scale(tw / 260, tw / 260);
+      oval(3, 8, 26, 8, '#36543c25'); ctx.fillStyle = '#618e89'; ctx.beginPath(); ctx.roundRect(-15, -21, 30, 27, 5); ctx.fill();
+      oval(0, -21, 15, 5, '#91b4a5'); line(13, -6, 31, -24, '#618e89', 7); line(28, -25, 35, -21, '#a9c7b4', 7);
+      ctx.strokeStyle = '#618e89'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(-16, -9, 10, Math.PI * 0.4, Math.PI * 1.65); ctx.stroke(); ctx.restore();
+    }
+
+    // Beds first, then crops sorted back to front: foliage never disappears under later soil.
+    var order = Array.from({ length: 16 }, function(_, i) { return i; }).sort(function(a, b) { return center(a).y - center(b).y; });
+    order.forEach(function(index) {
+      var p = center(index), cell = grid[index] || {}, planted = !!plants[cell.plantId], bw = tw * 0.91, bh = th * 0.91, depth = Math.max(12, tw * 0.075);
+      var left = { x: p.x - bw / 2, y: p.y }, bottom = { x: p.x, y: p.y + bh / 2 }, right = { x: p.x + bw / 2, y: p.y };
+      poly([left, bottom, { x: bottom.x, y: bottom.y + depth }, { x: left.x, y: left.y + depth }], '#96724d', '#765737', 1);
+      poly([bottom, right, { x: right.x, y: right.y + depth }, { x: bottom.x, y: bottom.y + depth }], '#725539', '#62482e', 1);
+      [0.33, 0.7].forEach(function(f) {
+        line(left.x + 3, left.y + depth * f, bottom.x, bottom.y + depth * f, '#d5ac7155', 1.5);
+        line(bottom.x, bottom.y + depth * f, right.x - 3, right.y + depth * f, '#caa16b40', 1.5);
+      });
+      diamond(p, bw, bh, '#c5a071', '#e3c392', 2);
+      var moisture = Math.max(0, Math.min(1, frame.moisture / 100));
+      var soil = ctx.createLinearGradient(p.x, p.y - bh / 2, p.x, p.y + bh / 2);
+      soil.addColorStop(0, 'rgb(' + Math.round(122 - moisture * 35) + ',' + Math.round(92 - moisture * 30) + ',57)');
+      soil.addColorStop(1, 'rgb(' + Math.round(152 - moisture * 43) + ',' + Math.round(112 - moisture * 34) + ',68)');
+      diamond(p, bw - tw * 0.075, bh - th * 0.075, soil, '#614b3460', 2);
+      for (var furrow = 1; furrow < 5; furrow++) {
+        var r = Math.floor(index / 4), c = index % 4, a = point(r + 0.16, c + 0.13 + furrow * 0.14), b = point(r + 0.84, c + 0.13 + furrow * 0.14);
+        line(a.x, a.y, b.x, b.y, '#3e30242a', Math.max(2, tw * 0.014));
+        line(a.x, a.y + 2, b.x, b.y + 2, '#d4b78425', 1.5);
+      }
+      for (var speck = 0; speck < 24; speck++) {
+        var sr = ((speck * 29 + index * 7) % 97) / 97 * 0.65 + 0.175, sc = ((speck * 47 + index * 11) % 101) / 101 * 0.65 + 0.175;
+        var sp = point(Math.floor(index / 4) + sr, index % 4 + sc);
+        oval(sp.x, sp.y, 1 + speck % 3 * 0.7, 0.8 + speck % 2 * 0.5, speck % 3 ? '#e0be8140' : '#44352870');
+      }
+      if (season === 3) line(p.x - bw / 2, p.y, p.x, p.y - bh / 2, '#f4f5e6b0', 4);
+      if (cell.watered) diamond(p, bw * 0.75, bh * 0.75, '#5798aa13');
+      if (index === active) diamond(p, bw + 2, bh + 2, '#fff4c715', preview ? '#c6b6ee' : '#fff1b0', 4);
+      // Plot numbers are always visible; names appear on focus/hover.
+      var tagX = p.x, tagY = p.y + bh * 0.34, tagW = Math.max(27, tw * 0.12), tagH = Math.max(22, tw * 0.071);
+      ctx.fillStyle = '#ecdcba'; ctx.beginPath(); ctx.roundRect(tagX - tagW / 2, tagY - tagH / 2, tagW, tagH, 4); ctx.fill();
+      ctx.fillStyle = '#544c34'; ctx.font = '700 ' + Math.max(18, tw * 0.052) + 'px system-ui'; ctx.textAlign = 'center'; ctx.fillText(String(index + 1).padStart(2, '0'), tagX, tagY + tagH * 0.28);
+      if (!planted && frame.phase === 'plan' && index !== active) {
+        line(p.x - 5, p.y - 4, p.x + 5, p.y - 4, '#dfcda270', 2); line(p.x, p.y - 9, p.x, p.y + 1, '#dfcda270', 2);
+      }
+    });
+
+    // Relationship lens and placement evidence retain their real pair data.
+    var linkFocus = preview ? preview.plot : focus;
+    var links = previewModel && preview ? previewModel.evidence.links.map(function(l) { return { index: l.index, bonus: l.relationship.bonus }; }) : [];
+    if (!preview && linkFocus >= 0 && grid[linkFocus] && grid[linkFocus].plantId) {
+      grid.forEach(function(cell, index) {
+        if (index === linkFocus || !cell.plantId || Math.abs(index % 4 - linkFocus % 4) > 1 || Math.abs(Math.floor(index / 4) - Math.floor(linkFocus / 4)) > 1) return;
+        var relation = relationships.find(function(pair) { return pair.a === cell.plantId && pair.b === grid[linkFocus].plantId || pair.b === cell.plantId && pair.a === grid[linkFocus].plantId; });
+        if (relation) links.push({ index: index, bonus: relation.bonus });
+      });
+    }
+    if (linkFocus >= 0) links.forEach(function(link) {
+      var from = center(linkFocus), to = center(link.index), color = link.bonus > 0 ? '#d5edb1' : '#f2a393';
+      ctx.save(); if (link.bonus < 0) ctx.setLineDash([9, 7]);
+      line(from.x, from.y, to.x, to.y, color, 4); ctx.restore();
+      badge(link.bonus > 0 ? '+' : '−', (from.x + to.x) / 2, (from.y + to.y) / 2 - 15, '#374e36', color, 18);
+    });
+    var mature = 0, plantedCount = 0, pollinators = [];
+    order.forEach(function(index) {
+      var cell = grid[index] || {}, plant = plants[cell.plantId]; if (!plant) { delete canvas._cgGrowthStates[index]; return; }
+      plantedCount++;
+      var p = center(index), growth = Math.max(0, Math.min(1, cell.growthDay / plant.days));
+      var growthState = canvas._cgGrowthStates[index], now = performance.now();
+      if (!growthState || growthState.id !== cell.plantId) growthState = canvas._cgGrowthStates[index] = { id: cell.plantId, value: growth, from: growth, to: growth, started: now };
+      if (growthState.to !== growth) { growthState.from = growthState.value; growthState.to = growth; growthState.started = now; }
+      var growthBlend = reducedMotion ? 1 : Math.min(1, (now - growthState.started) / 650);
+      growthBlend = 1 - Math.pow(1 - growthBlend, 3);
+      growthState.value = growthState.from + (growthState.to - growthState.from) * growthBlend;
+      var scale = tw * (['squash', 'rhubarb', 'nasturtium'].indexOf(cell.plantId) >= 0 ? 0.76 : 0.66) / 120;
+      var baseY = p.y + th * 0.05, rise = 1;
+      if (canvas._plantBurst && canvas._plantBurst.idx === index && !reducedMotion) {
+        var age = (performance.now() - canvas._plantBurst.t0) / 650;
+        if (age < 1) rise = 0.7 + 0.3 * Math.min(1, age * 1.4);
+      }
+      oval(p.x + tw * 0.07, baseY + th * 0.025, tw * (0.06 + growth * 0.19), th * (0.05 + growth * 0.1), '#332e2850', 0.2);
+      if (growth >= 0.98 && !plant.isStructure) {
+        mature++; ctx.strokeStyle = '#efcc7880'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(p.x, baseY, tw * 0.23, th * 0.14, 0, 0, Math.PI * 2); ctx.stroke();
+      }
+      crop(cell.plantId, plant, growthState.value, p.x, baseY, scale * rise, index * 0.9, cell.health);
+      if (plant.pollinator) pollinators.push(index);
+      if (cell.watered) {
+        ctx.save(); ctx.translate(p.x + tw * 0.3, p.y + th * 0.06); ctx.scale(0.75, 0.75);
+        poly([{ x: 0, y: -12 }, { x: 7, y: 1 }, { x: 5, y: 8 }, { x: -5, y: 8 }, { x: -7, y: 1 }], '#a2d5d8'); ctx.restore();
+      }
+      if (cell.pests > 30) { badge('!', p.x + tw * 0.3, p.y - th * 0.13, '#e8b79b', '#603f2d', 16); }
+    });
+    canvas.setAttribute('data-garden-planted-count', String(plantedCount));
+    canvas.setAttribute('data-garden-ready-count', String(mature));
+    var target = preview ? preview.plot : hover;
+    if (frame.phase === 'plan' && frame.selectedPlant && target >= 0 && target < 16 && !(grid[target] && grid[target].plantId)) {
+      var ghost = center(target), ghostPlant = plants[frame.selectedPlant];
+      if (ghostPlant) crop(frame.selectedPlant, ghostPlant, 0.6, ghost.x, ghost.y, tw * 0.66 / 120, 0, 100, true);
+    }
+
+    // Pollinators visit actual habitat crops; wing motion is intentionally small.
+    if (season !== 3 && night < 0.2) pollinators.slice(0, 4).forEach(function(index, bee) {
+      var p = center(index), x = p.x + Math.cos(elapsed * 1.1 + bee * 2) * tw * 0.22, y = p.y - tw * 0.4 + Math.sin(elapsed * 1.8 + bee) * 13;
+      var wing = 3 + Math.abs(Math.sin(elapsed * 15)) * 2;
+      oval(x - 4, y - 5, 4, wing, '#ffffffbd', -0.4); oval(x + 4, y - 5, 4, wing, '#ffffffbd', 0.4);
+      oval(x, y, 7, 4, '#eac66b', -0.2); line(x - 2, y - 3, x - 1, y + 3, '#685237', 2); oval(x + 6, y - 1, 2.5, 2.5, '#514b33');
+    });
+    if (frame.beneficialPop > 10 && plantedCount) {
+      var ladyPos = center(order.find(function(i) { return grid[i] && grid[i].plantId; }));
+      var lx = ladyPos.x + tw * 0.24 + Math.sin(elapsed * 0.3) * 9, ly = ladyPos.y + th * 0.1;
+      oval(lx, ly, 5, 6, '#bd6651'); line(lx, ly - 4, lx, ly + 4, '#413b2b', 1); oval(lx, ly - 5, 3, 2, '#413b2b');
+      oval(lx - 2, ly - 1, 1, 1, '#413b2b'); oval(lx + 2, ly + 2, 1, 1, '#413b2b');
+    }
+    // Water and soil care use short particles over the plots, not full-scene flashes.
+    var action = canvas._actionBurst, actionAge = action ? (performance.now() - action.t0) / 1000 : 10;
+    if (action && actionAge > 1.8) canvas._actionBurst = null;
+    if (action && actionAge < 1.8 && !reducedMotion) {
+      ctx.save(); ctx.globalAlpha = Math.max(0, 1 - actionAge / 1.8);
+      order.forEach(function(index) {
+        var p = center(index);
+        for (var drop = 0; drop < 4; drop++) {
+          var dx = p.x + Math.sin(index + drop * 2.3) * tw * 0.26, dy = p.y - 60 + ((actionAge * 80 + drop * 19) % 65);
+          if (action.kind === 'water') line(dx, dy, dx - 3, dy + 12, '#c8f0ee', 3);
+          else oval(dx, dy + 35, 3, 2, action.kind === 'compost' ? '#e4c28b' : '#c8e3a1', drop);
+        }
+      }); ctx.restore();
+    }
+    if (canvas._plantBurst && performance.now() - canvas._plantBurst.t0 > 1200) canvas._plantBurst = null;
+    if (canvas._clickRipple) {
+      var rippleAge = (performance.now() - canvas._clickRipple.t0) / 700;
+      if (rippleAge >= 1) canvas._clickRipple = null;
+      else if (!reducedMotion) { ctx.strokeStyle = 'rgba(250,239,200,' + (1 - rippleAge) + ')'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(canvas._clickRipple.x, canvas._clickRipple.y, 8 + rippleAge * 35, 0, Math.PI * 2); ctx.stroke(); }
+    }
+    if (season === 3) {
+      for (var flake = 0; flake < 30; flake++) oval((flake * 127 + elapsed * 8) % W, (flake * 73 + elapsed * 18) % H, 2.5, 2.5, '#ffffff9a');
+    }
+    if (night > 0) {
+      ctx.fillStyle = 'rgba(28,42,63,' + night + ')'; ctx.fillRect(0, 0, W, H);
+      for (var star = 0; star < 18; star++) oval((star * 139) % W, 45 + star * 47 % Math.max(50, H * 0.2), 1.8, 1.8, '#fff4c89a');
+      if (season !== 3) for (var fire = 0; fire < 9; fire++) {
+        var fx = bedMid.x + Math.sin(fire * 4 + elapsed * 0.1) * tw * 1.8, fy = bedMid.y + Math.cos(fire * 3 + elapsed * 0.3) * th;
+        oval(fx, fy, 5, 5, '#f4e39b16'); oval(fx, fy, 1.8, 1.8, '#f4e39ba8');
+      }
+    }
+    // Scene labels remain crisp and out of the planting area on narrow screens.
+    ctx.textAlign = 'left'; ctx.fillStyle = night > 0.3 ? '#f8edd2' : '#344c39'; ctx.font = '700 ' + (small ? 25 : 32) + 'px system-ui';
+    ctx.fillText('Your living garden', 28, 46);
+    ctx.font = '500 21px system-ui'; ctx.fillStyle = night > 0.3 ? '#e0dfc9' : '#52664a';
+    ctx.fillText(['Spring', 'Summer', 'Autumn', 'Winter'][season] + ' · Day ' + ((frame.day % 30) + 1) + ' · Year ' + frame.year, 28, 80);
+    var footer = Math.min(H - 72, Math.max(bedBottom.y + 52, H - 108));
+    var status = plantedCount + '/16 planted' + (small ? ' · ' : '    ·    ') + Math.round(frame.moisture) + '% moisture' + (mature ? ' · ' + mature + ' ready' : '');
+    badge(status, W / 2, footer, '#f5f0dce8', '#3d543a', small ? 19 : 23);
+    if (!small) {
+      ctx.fillStyle = '#344a37'; ctx.font = '500 20px system-ui'; ctx.textAlign = 'center';
+      ctx.fillText(frame.phase === 'plan' ? 'Choose a bed to plan your next planting' : 'Select a crop to explore what is happening below the leaves', W / 2, H - 22);
+    }
+    if (active >= 0 && active < 16) {
+      var selected = grid[active] || {}, selectedPlant = plants[selected.plantId], location = center(active);
+      var label = selectedPlant ? selectedPlant.label + (selectedPlant.isStructure ? '' : ' · ' + Math.round(Math.min(1, selected.growthDay / selectedPlant.days) * 100) + '% grown') : preview ? 'Review placement' : frame.selectedPlant ? 'Preview here' : 'Plot ' + (active + 1) + ' · Open bed';
+      badge(label, location.x, Math.max(104, location.y - tw * 0.69), '#294735f2', '#fbf4da', small ? 19 : 23);
+    }
+  }
+
+  // Local playback state avoids re-rendering the entire garden on every replay step.
+  function CompanionGrowthReplay(props) {
+    var React = props.React, h = React.createElement;
+    var result = props.result;
+    var samples = result.samples;
+    var state = React.useState(0), index = state[0], setIndex = state[1];
+    var playState = React.useState(false), playing = playState[0], setPlaying = playState[1];
+    var speedState = React.useState(900), speed = speedState[0], setSpeed = speedState[1];
+    var mediaState = React.useState(function() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); });
+    var systemReduced = mediaState[0], setSystemReduced = mediaState[1];
+    var root = React.useRef(null);
+    var reduced = props.reducedMotion || systemReduced;
+    var tr = props.tr;
+    var safeIndex = Math.min(index, samples.length - 1);
+    var sample = samples[safeIndex];
+    React.useEffect(function() {
+      if (!window.matchMedia) return;
+      var media = window.matchMedia('(prefers-reduced-motion: reduce)');
+      var update = function() { setSystemReduced(media.matches); };
+      if (media.addEventListener) media.addEventListener('change', update);
+      return function() { if (media.removeEventListener) media.removeEventListener('change', update); };
+    }, []);
+    React.useEffect(function() { if (reduced) setPlaying(false); }, [reduced]);
+    React.useEffect(function() {
+      if (!playing || reduced || safeIndex >= samples.length - 1) return;
+      var timer = setTimeout(function() { setIndex(function(i) { return Math.min(samples.length - 1, i + 1); }); }, speed);
+      return function() { clearTimeout(timer); };
+    }, [playing, reduced, safeIndex, speed, samples.length]);
+    React.useEffect(function() { if (safeIndex >= samples.length - 1) setPlaying(false); }, [safeIndex, samples.length]);
+    React.useEffect(function() {
+      var pause = function() { if (document.hidden) setPlaying(false); };
+      document.addEventListener('visibilitychange', pause);
+      var observer = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(function(entries) { if (entries[0] && !entries[0].isIntersecting) setPlaying(false); }) : null;
+      if (observer && root.current) observer.observe(root.current);
+      return function() { document.removeEventListener('visibilitychange', pause); if (observer) observer.disconnect(); };
+    }, []);
+    function seek(next) { setPlaying(false); setIndex(Math.max(0, Math.min(samples.length - 1, next))); }
+    function stage(value) { return value <= 1 ? tr('seed', 'Seed') : value < 20 ? tr('sprout', 'Sprout') : value < 55 ? tr('leafing', 'Leafing') : value < 88 ? tr('developing', 'Developing') : tr('mature', 'Mature'); }
+    function button(label, onClick, extra) { return h('button', Object.assign({ type: 'button', className: 'cp-experiment-button', onClick: onClick }, extra || {}), label); }
+    return h('section', { ref: root, className: 'cp-growth-replay', 'data-growth-replay': true, 'data-replay-day': sample.day, 'data-replay-playing': playing, 'data-replay-reduced': reduced, 'aria-label': tr('replay_label', 'Animated crop growth comparison') },
+      h('div', { className: 'cp-growth-replay-heading' }, h('div', null, h('div', { className: 'cp-experiment-kicker' }, tr('replay_kicker', 'Follow the change')), h('h4', null, tr('replay_title', 'Watch your trial grow')), h('p', null, tr('replay_desc', 'Step through measured days and compare the same crop in both layouts.'))), h('span', { className: 'cp-replay-day' }, tr('day', 'Day') + ' ' + sample.day)),
+      h('div', { className: 'cp-replay-scenes' }, ['a', 'b'].map(function(side) {
+        var values = sample[side];
+        return h('div', { key: side, className: 'cp-replay-scene cp-replay-scene-' + side, 'data-replay-scene': side },
+          h('div', { className: 'cp-replay-scene-title' }, h('strong', null, side === 'a' ? tr('replay_a', 'A · Original') : tr('replay_b', 'B · Proposed')), h('span', null, stage(values.maturity))),
+          h('div', { className: 'cp-replay-landscape' }, h('div', { className: 'cp-replay-sun', 'aria-hidden': true }), h('div', { className: 'cp-replay-hill', 'aria-hidden': true }), h('div', { className: 'cp-replay-specimen' }, companionBotanicalArt(React, result.cropId, props.plant, values.maturity / 100, { health: values.health }))),
+          h('div', { className: 'cp-replay-caption' }, h('strong', null, props.plant.label), h('span', null, values.maturity.toFixed(1) + '% ' + tr('maturity_lower', 'maturity'))),
+          h('div', { className: 'cp-replay-meter', 'aria-hidden': true }, h('span', { style: { width: values.maturity + '%' } })),
+          h('div', { className: 'cp-replay-vitals' }, h('span', null, tr('health', 'Health') + ' ' + values.health.toFixed(1)), h('span', null, tr('pests', 'Pests') + ' ' + values.pests.toFixed(1))));
+      })),
+      h('label', { className: 'cp-replay-scrubber' }, tr('scrub', 'Explore a day'), h('input', { type: 'range', min: 0, max: samples.length - 1, step: 1, value: safeIndex, onChange: function(event) { seek(Number(event.target.value)); }, 'aria-valuetext': 'Day ' + sample.day + '. Layout A ' + sample.a.maturity.toFixed(1) + ' percent maturity; layout B ' + sample.b.maturity.toFixed(1) + ' percent.', 'data-replay-scrubber': true })),
+      h('div', { className: 'cp-replay-controls' },
+        button(playing ? tr('pause', 'Pause replay') : safeIndex === samples.length - 1 ? tr('replay_again', 'Replay from start') : tr('play', 'Play growth'), function() { if (playing) setPlaying(false); else { if (safeIndex === samples.length - 1) setIndex(0); setPlaying(true); } }, { className: 'cp-experiment-button cp-experiment-primary', disabled: reduced, 'aria-pressed': playing, 'data-replay-play': true }),
+        button(tr('back_day', 'Previous day'), function() { seek(safeIndex - 1); }, { disabled: safeIndex === 0, 'data-replay-previous': true }),
+        button(tr('next_day', 'Next day'), function() { seek(safeIndex + 1); }, { disabled: safeIndex === samples.length - 1, 'data-replay-next': true }),
+        h('label', null, tr('speed', 'Playback speed'), h('select', { value: speed, onChange: function(event) { setSpeed(Number(event.target.value)); }, 'data-replay-speed': true }, h('option', { value: 900 }, '1×'), h('option', { value: 450 }, '2×')))),
+      h('p', { className: 'cp-replay-note' }, reduced ? tr('reduced_hint', 'Reduced motion is on. Use the slider or day buttons to explore every measurement.') : tr('replay_hint', 'Playback stops at the last recorded day and pauses when this panel leaves view.')),
+      h('p', { className: 'cp-replay-note' }, tr('art_hint', 'Plant size illustrates average maturity, not measured height. The numbers come from your trial.')));
+  }
+
+  var CP_GARDEN_VISUAL_CSS = `
+    .cp-botanical-art{display:block;width:100%;height:100%;overflow:visible;pointer-events:none}
+    .cp-botanical-growth,.cp-botanical-roots{transition:transform .55s ease,opacity .55s ease}
+    .cp-botanical-canopy{transform-origin:60px 103px;animation:cp-garden-breeze 3.8s ease-in-out 1}
+    @keyframes cp-garden-breeze{0%,100%{transform:rotate(0)}25%{transform:rotate(-2deg)}70%{transform:rotate(1.4deg)}}
+    @keyframes cp-garden-place{0%{transform:translateY(-5px);opacity:.5}65%{transform:translateY(1px);opacity:1}100%{transform:translateY(0)}}
+    @keyframes cp-garden-water{0%{transform:translateY(-7px);opacity:0}25%{opacity:.9}100%{transform:translateY(28px);opacity:0}}
+    @keyframes cp-garden-visit{0%,100%{transform:translate(0,0)}40%{transform:translate(-12px,-5px)}70%{transform:translate(-5px,3px)}}
+    .cp-experiment .cp-experiment-head{background:radial-gradient(ellipse at 92% 120%,#4a7454 0%,transparent 48%),linear-gradient(120deg,#143a30,#28593e);position:relative;padding:26px}
+    .cp-experiment .cp-experiment-head:after{content:'';position:absolute;right:18px;bottom:0;width:130px;height:84px;background:repeating-linear-gradient(72deg,transparent 0 24px,#c3d79118 25px 27px,transparent 28px 40px);border-radius:100% 0 0 0;pointer-events:none}
+    .cp-experiment .cp-experiment-head>*{position:relative;z-index:1}
+    .cp-experiment .cp-experiment-layout{padding:8px;gap:7px;border-radius:12px;background:repeating-linear-gradient(0deg,#cabda4 0 2px,#ded3be 2px 8px);box-shadow:inset 0 0 0 1px #b6a58b}
+    .cp-experiment .cp-experiment-plot{background:linear-gradient(160deg,#f8faed,#e6eddd);border-color:#acbba1;min-height:128px;padding:21px 3px 7px;box-shadow:0 3px 0 #b3a38b,0 5px 8px #574f3510;transition:background-color .2s,border-color .2s,box-shadow .2s}
+    .cp-experiment .cp-experiment-plant-icon{width:86px;max-width:100%;height:84px;display:block;font-size:inherit}
+    .cp-experiment .cp-experiment-moved{background:linear-gradient(160deg,#fbf6ff,#ece1f4);border-color:#875bab}
+    .cp-experiment-moved .cp-botanical-art{animation:cp-garden-place .45s ease-out 1}
+    .cp-experiment button.cp-experiment-plot:hover{background:#f6f7df;box-shadow:0 3px 0 #a18b62,0 6px 10px #574f3520}
+    .cp-experiment button.cp-experiment-plot[aria-pressed=true]{background:#eee0fb;box-shadow:0 3px 0 #80579b,0 0 0 4px #d8c1e8}
+    .cp-plot-waterdrop{animation:cp-garden-water .8s ease-in 3}.cp-plot-pollinator{animation:cp-garden-visit 3.6s ease-in-out 1}
+    .cp-growth-replay{border:1px solid #b8cdb9;border-radius:16px;overflow:hidden;background:#fafbf4;padding:20px;display:grid;gap:16px}
+    .cp-growth-replay-heading{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.cp-growth-replay-heading p{color:#50634c;margin-top:5px}
+    .cp-replay-day{white-space:nowrap;background:#e4edda;color:#355333;border:1px solid #bbceaf;border-radius:30px;padding:7px 12px;font-weight:800}
+    .cp-replay-scenes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.cp-replay-scene{border:1px solid #b7c9b4;border-radius:12px;background:white;overflow:hidden;min-width:0}
+    .cp-replay-scene-b{border-color:#b9a3c8}.cp-replay-scene-title{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:#e7eee0;color:#294c35}.cp-replay-scene-title>span{font-size:12px}
+    .cp-replay-scene-b .cp-replay-scene-title{background:#ede5f5;color:#634279}
+    .cp-replay-landscape{height:220px;position:relative;overflow:hidden;background:linear-gradient(#dcefe9,#f9f7dd 68%,#d9e1bb 68%,#c5cda2 100%)}
+    .cp-replay-sun{position:absolute;right:13%;top:22px;width:35px;height:35px;border-radius:50%;background:#f4dea0;box-shadow:0 0 0 9px #f6e3a92b,0 0 0 21px #f6e3a921}
+    .cp-replay-hill{position:absolute;left:-5%;right:-5%;height:70px;bottom:17px;background:#cad6b0;border-radius:50% 80% 0 0;transform:rotate(-3deg)}
+    .cp-replay-specimen{position:absolute;width:180px;height:210px;bottom:1px;left:50%;transform:translateX(-50%)}
+    .cp-replay-caption{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:12px 14px 6px}.cp-replay-caption>span{font-size:13px;color:#496045}
+    .cp-replay-meter{height:5px;margin:0 14px;background:#e4ebdf;border-radius:6px;overflow:hidden}.cp-replay-meter>span{display:block;height:100%;background:#337956;transition:width .55s ease}.cp-replay-scene-b .cp-replay-meter>span{background:#81569f}
+    .cp-replay-vitals{display:flex;justify-content:space-between;gap:8px;padding:9px 14px;color:#52664a;font-size:12px}
+    .cp-experiment .cp-replay-scrubber{font-weight:750}.cp-replay-scrubber input{width:100%;height:36px;accent-color:#2c7351;cursor:pointer}
+    .cp-replay-controls{display:flex;align-items:end;gap:8px;flex-wrap:wrap}.cp-replay-controls>label{font-size:12px}.cp-replay-controls select{min-width:80px}
+    .cp-replay-note{font-size:12px;color:#4e6149}
+    @media(max-width:700px){.cp-experiment .cp-experiment-head{padding:18px}.cp-experiment .cp-experiment-layout{padding:5px;gap:5px}.cp-experiment .cp-experiment-plot{min-height:112px}.cp-experiment .cp-experiment-plant-icon{height:68px;width:70px}.cp-growth-replay{padding:12px}.cp-replay-scenes{grid-template-columns:1fr}.cp-replay-landscape{height:205px}.cp-growth-replay-heading{flex-wrap:wrap}.cp-replay-controls .cp-experiment-button{flex:1 1 42%}.cp-replay-caption{flex-wrap:wrap}}
+    [data-community-reduced-motion=true] .cp-botanical-canopy,[data-community-reduced-motion=true] .cp-experiment-moved .cp-botanical-art,[data-community-reduced-motion=true] .cp-plot-waterdrop,[data-community-reduced-motion=true] .cp-plot-pollinator{animation:none!important}
+    [data-community-reduced-motion=true] .cp-botanical-growth,[data-community-reduced-motion=true] .cp-botanical-roots,[data-community-reduced-motion=true] .cp-replay-meter>span,[data-replay-reduced=true] .cp-botanical-growth,[data-replay-reduced=true] .cp-botanical-roots,[data-replay-reduced=true] .cp-replay-meter>span{transition:none!important}
+    [data-replay-reduced=true] .cp-botanical-canopy{animation:none!important}
+    @media(prefers-reduced-motion:reduce){.cp-botanical-canopy,.cp-experiment-moved .cp-botanical-art,.cp-plot-waterdrop,.cp-plot-pollinator{animation:none!important}.cp-botanical-growth,.cp-botanical-roots,.cp-replay-meter>span{transition:none!important}}
+    @media(forced-colors:active){.cp-replay-scene,.cp-growth-replay{border:1px solid CanvasText}.cp-replay-meter>span{background:Highlight}.cp-experiment .cp-experiment-plot[aria-pressed=true]{outline:3px solid Highlight}}
+  `;
+
+
   window.StemLab.registerTool('companionPlanting', {
     icon: '\uD83C\uDF31',
     label: "Companion Planting Lab",
@@ -2601,7 +3108,7 @@ var d = (labToolData.companionPlanting) || {};
             return h('div', { className: 'relative h-36 overflow-hidden rounded-xl border', style: { background: 'linear-gradient(to bottom, #dbeafe 0%, #ecfeff 56%, #a16207 57%, #713f12 100%)', borderColor: profile.color }, role: 'img', 'aria-label': plant.label + ' plant portrait. ' + profile.form + ' above ground with ' + profile.roots.toLowerCase() + ' below ground.', 'data-plant-portrait': key },
               h('div', { className: 'absolute left-2 top-2 rounded-full bg-white/85 px-2 py-0.5 text-[0.5625rem] font-black text-sky-800' }, 'ABOVE GROUND'),
               h('div', { className: 'absolute right-3 top-3 h-7 w-7 rounded-full bg-amber-300 shadow-[0_0_18px_rgba(251,191,36,0.7)]', 'aria-hidden': true }),
-              h('div', { className: 'absolute inset-x-0 top-[30px] text-center text-5xl drop-shadow-sm', 'aria-hidden': true }, plant.emoji),
+              h('div', { style: { position: 'absolute', left: '50%', top: 0, width: 95, height: 110, transform: 'translateX(-50%)' }, 'aria-hidden': true }, companionBotanicalArt(React, key, plant, 1, { ground: false, roots: false })),
               h('div', { className: 'absolute inset-x-0 top-[72px] h-[2px] bg-amber-900/45', 'aria-hidden': true }),
               roots.map(function(root, index) { return h('span', { key: 'root-' + index, className: 'absolute origin-top rounded-full bg-amber-200/90', style: { left: root.left, top: root.top, height: root.height, width: root.width, transform: 'rotate(' + root.rotate + 'deg)' }, 'aria-hidden': true }); }),
               profile.rootShape === 'nodules' && [0, 1, 2].map(function(index) { return h('span', { key: 'nodule-' + index, className: 'absolute h-2 w-2 rounded-full bg-rose-300 ring-1 ring-rose-100', style: { left: (40 + index * 10) + '%', top: (98 + (index % 2) * 12) + 'px' }, 'aria-hidden': true }); }),
@@ -2622,64 +3129,8 @@ var d = (labToolData.companionPlanting) || {};
           }
 
           function cgPlantGrowthForm(key, plant, profile, stageIndex, plantScale, lean, plantOpacity, ready) {
-            var archetype = cgGrowthArchetype(key, plant);
-            var leafColor = ready ? '#15803d' : stageIndex < 2 ? '#86efac' : '#22c55e';
-            var darkLeaf = ready ? '#166534' : '#15803d';
-            var formStyle = { transform: 'translateX(-50%) scale(' + plantScale + ') rotate(' + lean + 'deg)', opacity: plantOpacity };
-            if (stageIndex === 0 && !plant.isStructure) {
-              return h('div', { className: 'absolute left-1/2 top-[48px] h-2 w-3 origin-bottom -translate-x-1/2 rounded-full bg-amber-200 ring-1 ring-amber-800/40', style: formStyle, 'data-growth-archetype': archetype });
-            }
-            if (archetype === 'structure') {
-              return h('div', { className: 'absolute left-1/2 top-[13px] flex h-12 w-14 origin-bottom -translate-x-1/2 items-center justify-center rounded-lg border-2 border-white/70 bg-white/45 text-3xl shadow-sm', style: formStyle, 'data-growth-archetype': archetype }, plant.emoji);
-            }
-            if (archetype === 'upright') {
-              return h('div', { className: 'absolute left-1/2 top-[9px] h-12 w-12 origin-bottom -translate-x-1/2', style: formStyle, 'data-growth-archetype': archetype },
-                h('span', { className: 'absolute bottom-0 left-1/2 h-11 w-1 -translate-x-1/2 rounded-full', style: { backgroundColor: darkLeaf } }),
-                h('span', { className: 'absolute bottom-4 left-2 h-2 w-6 -rotate-[25deg] rounded-full', style: { backgroundColor: leafColor } }),
-                h('span', { className: 'absolute bottom-7 right-2 h-2 w-6 rotate-[25deg] rounded-full', style: { backgroundColor: leafColor } }),
-                h('span', { className: 'absolute left-1/2 top-0 h-4 w-3 -translate-x-1/2 rounded-t-full rounded-b-sm', style: { backgroundColor: key === 'sunflower' ? '#fbbf24' : '#fde68a', boxShadow: key === 'sunflower' ? '0 0 0 3px #f59e0b' : 'none' } })
-              );
-            }
-            if (archetype === 'climber') {
-              return h('div', { className: 'absolute left-1/2 top-[8px] h-12 w-14 origin-bottom -translate-x-1/2', style: formStyle, 'data-growth-archetype': archetype },
-                h('span', { className: 'absolute bottom-0 left-2 h-12 w-[2px] bg-amber-700/80' }),
-                h('span', { className: 'absolute bottom-0 right-2 h-12 w-[2px] bg-amber-700/80' }),
-                h('span', { className: 'absolute left-2 right-2 top-2 h-[2px] bg-amber-700/70' }),
-                h('span', { className: 'absolute bottom-0 left-1/2 h-11 w-5 -translate-x-1/2 rounded-[50%] border-l-2 border-emerald-600' }),
-                [12, 25, 36].map(function(top, index) { return h('span', { key: 'vine-leaf-' + index, className: 'absolute h-2 w-3 rounded-full', style: { left: index % 2 ? 15 : 29, top: top, backgroundColor: leafColor, transform: 'rotate(' + (index % 2 ? -24 : 24) + 'deg)' } }); })
-              );
-            }
-            if (archetype === 'sprawling') {
-              return h('div', { className: 'absolute left-1/2 top-[23px] h-8 w-16 origin-bottom -translate-x-1/2', style: formStyle, 'data-growth-archetype': archetype },
-                h('span', { className: 'absolute bottom-2 left-1 right-1 h-1 -rotate-6 rounded-full', style: { backgroundColor: darkLeaf } }),
-                [3, 17, 34, 49].map(function(left, index) { return h('span', { key: 'ground-leaf-' + index, className: 'absolute h-4 w-5 rounded-[70%_30%_70%_30%]', style: { left: left, top: index % 2 ? 8 : 0, backgroundColor: index % 2 ? leafColor : darkLeaf, transform: 'rotate(' + (index % 2 ? 18 : -18) + 'deg)' } }); }),
-                stageIndex >= 3 && h('span', { className: 'absolute right-1 top-0 h-3 w-3 rounded-full bg-amber-300 ring-2 ring-orange-400' })
-              );
-            }
-            if (archetype === 'root-crop') {
-              var rootColor = key === 'carrot' ? '#f97316' : key === 'radish' ? '#e11d48' : '#eab308';
-              return h('div', { className: 'absolute left-1/2 top-[15px] h-12 w-12 origin-bottom -translate-x-1/2', style: formStyle, 'data-growth-archetype': archetype },
-                [-18, 0, 18].map(function(rotation, index) { return h('span', { key: 'root-top-' + index, className: 'absolute bottom-4 left-1/2 h-7 w-2 origin-bottom -translate-x-1/2 rounded-full', style: { backgroundColor: index === 1 ? darkLeaf : leafColor, transform: 'translateX(-50%) rotate(' + rotation + 'deg)' } }); }),
-                h('span', { className: 'absolute bottom-[-10px] left-1/2 h-7 w-4 -translate-x-1/2 rounded-[55%_55%_75%_75%]', style: { backgroundColor: rootColor, clipPath: 'polygon(10% 0,90% 0,60% 100%,40% 100%)' } })
-              );
-            }
-            if (archetype === 'flowering') {
-              return h('div', { className: 'absolute left-1/2 top-[10px] h-12 w-12 origin-bottom -translate-x-1/2', style: formStyle, 'data-growth-archetype': archetype },
-                h('span', { className: 'absolute bottom-0 left-1/2 h-9 w-1 -translate-x-1/2 rounded-full', style: { backgroundColor: darkLeaf } }),
-                h('span', { className: 'absolute bottom-3 left-2 h-2 w-5 -rotate-[25deg] rounded-full', style: { backgroundColor: leafColor } }),
-                h('span', { className: 'absolute left-1/2 top-2 h-4 w-4 -translate-x-1/2 rounded-full bg-amber-300 shadow-[0_-7px_0_0_#fb7185,7px_0_0_0_#fb7185,0_7px_0_0_#fb7185,-7px_0_0_0_#fb7185]' })
-              );
-            }
-            if (archetype === 'rosette') {
-              return h('div', { className: 'absolute left-1/2 top-[24px] h-8 w-14 origin-bottom -translate-x-1/2', style: formStyle, 'data-growth-archetype': archetype },
-                [-55, -25, 0, 25, 55].map(function(rotation, index) { return h('span', { key: 'rosette-leaf-' + index, className: 'absolute bottom-0 left-1/2 h-7 w-3 origin-bottom -translate-x-1/2 rounded-[80%_20%_70%_30%]', style: { backgroundColor: index % 2 ? leafColor : darkLeaf, transform: 'translateX(-50%) rotate(' + rotation + 'deg)' } }); })
-              );
-            }
-            return h('div', { className: 'absolute left-1/2 top-[12px] h-12 w-14 origin-bottom -translate-x-1/2', style: formStyle, 'data-growth-archetype': archetype },
-              [-20, 0, 20].map(function(rotation, index) { return h('span', { key: 'branch-' + index, className: 'absolute bottom-0 left-1/2 h-10 w-1 origin-bottom -translate-x-1/2 rounded-full', style: { backgroundColor: darkLeaf, transform: 'translateX(-50%) rotate(' + rotation + 'deg)' } }); }),
-              [8, 20, 34, 45].map(function(left, index) { return h('span', { key: 'bush-leaf-' + index, className: 'absolute h-3 w-5 rounded-full', style: { left: left, top: index % 2 ? 12 : 23, backgroundColor: index % 2 ? leafColor : darkLeaf, transform: 'rotate(' + (index % 2 ? 20 : -20) + 'deg)' } }); }),
-              archetype === 'shrub' && stageIndex >= 3 && [20, 34, 42].map(function(left, index) { return h('span', { key: 'fruit-' + index, className: 'absolute h-2 w-2 rounded-full', style: { left: left, top: 22 + (index % 2) * 8, backgroundColor: key === 'blueberry' ? '#4338ca' : key === 'pepper' ? '#ef4444' : '#f97316' } }); })
-            );
+            return h('div', { style: { position: 'absolute', left: '50%', top: -5, width: 80, height: 80, transform: 'translateX(-50%) rotate(' + lean + 'deg)', opacity: plantOpacity }, 'data-growth-archetype': cgGrowthArchetype(key, plant) },
+              companionBotanicalArt(React, key, plant, plant.isStructure ? 1 : [0, 0.12, 0.4, 0.72, 1][stageIndex], { ground: false, roots: false }));
           }
 
           function cgPlotPlantVisual(key, plant, cell, growth, ready, needsCare, bonus, moisture, season, careAction, beneficialPop) {
@@ -2717,9 +3168,9 @@ var d = (labToolData.companionPlanting) || {};
               stageIndex > 1 && profile.rootShape !== 'none' && h('div', { className: 'absolute left-1/2 top-[55px] h-4 w-[2px] origin-top -translate-x-1/2 bg-amber-100/70', style: { transform: 'translateX(-50%) rotate(' + (rootSpread ? 24 : 38) + 'deg)' }, 'aria-hidden': true }),
               profile.rootShape === 'nodules' && stageIndex > 1 && h('div', { className: 'absolute left-[42%] top-[62px] flex gap-1', 'aria-label': __alloT('stem.companionplanting.a11y_nitrogen_fixing_root_nodules', 'Nitrogen-fixing root nodules') }, h('span', { className: 'h-1.5 w-1.5 rounded-full bg-rose-300' }), h('span', { className: 'mt-1 h-1.5 w-1.5 rounded-full bg-rose-300' })),
               cgPlantGrowthForm(key, plant, profile, stageIndex, plantScale, lean, plantOpacity, ready),
-              showWater && [14, 32, 49].map(function(left, index) { return h('span', { key: 'water-drop-' + index, className: 'absolute top-2 text-xs text-blue-600 drop-shadow-sm motion-safe:animate-bounce', style: { left: left + '%', animationDelay: (index * 120) + 'ms' }, 'aria-hidden': true }, '💧'); }),
+              showWater && [14, 32, 49].map(function(left, index) { return h('span', { key: 'water-drop-' + index, className: 'absolute top-2 text-xs text-blue-600 drop-shadow-sm cp-plot-waterdrop', style: { left: left + '%', animationDelay: (index * 120) + 'ms' }, 'aria-hidden': true }, '💧'); }),
               actionId === 'compost' && [12, 28, 64, 79].map(function(left, index) { return h('span', { key: 'compost-' + index, className: 'absolute top-[58px] h-1.5 w-1.5 rounded-full bg-amber-300 ring-1 ring-amber-950/30', style: { left: left + '%' }, 'aria-hidden': true }); }),
-              showPollinator && h('div', { className: 'absolute right-3 top-5 text-sm drop-shadow-sm motion-safe:animate-pulse', 'aria-label': plant.pollinator ? 'Pollinator visiting this flower' : 'Pollinator supporting this fruiting crop', 'data-pollinator-visit': true }, beneficialPop >= 14 ? '🦋' : '🐝'),
+              showPollinator && h('div', { className: 'absolute right-3 top-5 text-sm drop-shadow-sm cp-plot-pollinator', 'aria-label': plant.pollinator ? 'Pollinator visiting this flower' : 'Pollinator supporting this fruiting crop', 'data-pollinator-visit': true }, beneficialPop >= 14 ? '🦋' : '🐝'),
               actionCue && h('div', { className: 'absolute left-1 top-7 rounded-full px-1.5 py-0.5 text-[0.4375rem] font-black shadow-sm ' + actionCue.color, 'data-care-action-cue': actionId }, actionCue.icon + ' ' + actionCue.label),
               h('div', { className: 'absolute bottom-1 left-1.5 rounded-full bg-black/35 px-1.5 py-0.5 text-[0.5rem] font-black text-white' }, moisture < 30 ? 'DRY SOIL' : moisture > 85 ? 'SATURATED' : showWater ? 'FRESHLY WATERED' : 'MOIST SOIL'),
               h('div', { className: 'absolute bottom-1 right-1.5 rounded-full bg-white/85 px-1.5 py-0.5 text-[0.5rem] font-black', style: { color: profile.color } }, stageLabel)
@@ -3025,7 +3476,7 @@ var d = (labToolData.companionPlanting) || {};
           }
 
           // ── CG helper: update community garden state ──
-          var CG_PROGRESS_KEYS = ['grid', 'day', 'phase', 'soilHistory', 'lastCareAction', 'lastDayReport', 'predictionResult', 'journal', 'inquiryHistory', 'inquiryObservations', 'plantingClaim', 'completedChallenges', 'achievements', 'harvestBatches', 'totalHarvested', 'observedVisitors', 'fieldChecklist', 'eventLog'];
+          var CG_PROGRESS_KEYS = ['experimentHistory', 'grid', 'day', 'phase', 'soilHistory', 'lastCareAction', 'lastDayReport', 'predictionResult', 'journal', 'inquiryHistory', 'inquiryObservations', 'plantingClaim', 'completedChallenges', 'achievements', 'harvestBatches', 'totalHarvested', 'observedVisitors', 'fieldChecklist', 'eventLog'];
           function cgProgressStage(state) {
             var phase = state.phase || 'plan';
             if (phase === 'grow') return 'observe';
@@ -3420,15 +3871,35 @@ var d = (labToolData.companionPlanting) || {};
           // ── Crop rotation history per cell ──
           var cgCellHistory = cg.cellHistory || {}; // { "0": ["tomato", "beans"], "1": ["corn"] ... }
 
-          function cgAdvanceDay() {
-            var reportBeforePlants = cgGrid.filter(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; });
-            var reportBeforeGrowth = reportBeforePlants.length ? reportBeforePlants.reduce(function(sum, cell) { return sum + cell.growthDay; }, 0) / reportBeforePlants.length : 0;
-            var reportBeforeHealth = reportBeforePlants.length ? reportBeforePlants.reduce(function(sum, cell) { return sum + cell.health; }, 0) / reportBeforePlants.length : 100;
-            var reportBeforeReady = reportBeforePlants.filter(function(cell) { var plant = CG_PLANTS[cell.plantId]; return plant && cell.growthDay >= plant.days && cell.health > 20; }).length;
+          // One day engine shared by the live garden and isolated controlled trials.
+          // Controlled trials keep deterministic rules but omit random garden events and disease draws.
+          function cgSimulationState(input) {
+            return Object.assign({ grid: cgGrid, day: 0, year: 1, cellHistory: {}, moisture: 60,
+              nitrogen: 50, phosphorus: 40, potassium: 45, organicMatter: 3, pH: 6.5,
+              pestPop: 0, beneficialPop: 5, activeEvent: null }, input || {});
+          }
+          function cgSimulateDay(input, options) {
+            var state = cgSimulationState(input);
+            options = options || {};
+            var random = options.random || Math.random;
+            var cgGrid = state.grid;
+            var cgDay = state.day;
+            var cgSeason = Math.floor((state.day % 120) / 30);
+            var cgCellHistory = state.cellHistory;
+            var cgMoisture = state.moisture;
+            var cgNitrogen = state.nitrogen;
+            var cgActiveEvent = state.activeEvent;
+            var cgPhosphorus = state.phosphorus;
+            var cgPotassium = state.potassium;
+            var cgOrganicMatter = state.organicMatter;
+            var cgPH = state.pH;
+            var cgPestPop = state.pestPop;
+            var cgBeneficialPop = state.beneficialPop;
+            var cgYear = state.year;
             var newGrid = cgGrid.map(function(cell, idx) {
               if (!cell.plantId) return cell;
               var plant = CG_PLANTS[cell.plantId];
-              if (!plant) return cell;
+              if (!plant || plant.isStructure) return cell;
               var c = Object.assign({}, cell);
               var bonus = getCellBonus(cgGrid, idx);
 
@@ -3439,7 +3910,7 @@ var d = (labToolData.companionPlanting) || {};
                 var lastPlant = CG_PLANTS[history[history.length - 1]];
                 if (lastPlant && lastPlant.family === plant.family) {
                   rotationPenalty = 0.3; // 30% growth penalty + disease risk
-                  if (Math.random() < 0.02) c.pests = Math.min(100, c.pests + 15); // soil-borne disease
+                  if (!options.controlled && random() < 0.02) c.pests = Math.min(100, c.pests + 15); // soil-borne disease
                 }
               }
 
@@ -3493,10 +3964,11 @@ var d = (labToolData.companionPlanting) || {};
             var newNitrogen = Math.max(0, Math.min(100, cgNitrogen + nDelta));
 
             // Random event check — both threats AND benefits
-            var newEvent = cgActiveEvent;
+            var newEvent = options.controlled ? null : cgActiveEvent;
+            var eventOccurred = false;
             var extraMoisture = 0;
             var extraNitrogen = 0;
-            if (!cgActiveEvent && cgDay > 5 && Math.random() < 0.18) {
+            if (!options.controlled && !cgActiveEvent && cgDay > 5 && random() < 0.18) {
               var plantedIds = newGrid.filter(function(c) { return c.plantId; }).map(function(c) { return c.plantId; });
               var pollinatorCount = plantedIds.filter(function(id) { return CG_PLANTS[id] && CG_PLANTS[id].pollinator; }).length;
               var uniqueFams = {};
@@ -3506,9 +3978,10 @@ var d = (labToolData.companionPlanting) || {};
               // Higher biodiversity = more likely to get good events
               var goodChance = Math.min(0.6, 0.2 + diversity * 0.05 + pollinatorCount * 0.05);
 
-              if (Math.random() < goodChance) {
+              if (random() < goodChance) {
                 // Beneficial event
-                var goodEvent = CG_GOOD_EVENTS[Math.floor(Math.random() * CG_GOOD_EVENTS.length)];
+                var goodEvent = CG_GOOD_EVENTS[Math.floor(random() * CG_GOOD_EVENTS.length)];
+                eventOccurred = true;
                 newEvent = { emoji: goodEvent.emoji, label: goodEvent.label, desc: goodEvent.desc, lesson: goodEvent.lesson, isGood: true };
                 if (goodEvent.effect) newGrid = goodEvent.effect(newGrid);
                 if (goodEvent.moistureBoost) extraMoisture = goodEvent.moistureBoost;
@@ -3524,7 +3997,8 @@ var d = (labToolData.companionPlanting) || {};
                   return true;
                 });
                 if (possibleInvasives.length > 0) {
-                  newEvent = possibleInvasives[Math.floor(Math.random() * possibleInvasives.length)];
+                  eventOccurred = true;
+                  newEvent = possibleInvasives[Math.floor(random() * possibleInvasives.length)];
                   if (newEvent.damage) {
                     newGrid = newGrid.map(function(cell) {
                       if (!cell.plantId) return cell;
@@ -3610,6 +4084,7 @@ var d = (labToolData.companionPlanting) || {};
               newGrid = newGrid.map(function(cell) {
                 if (!cell.plantId) return cell;
                 var plant = CG_PLANTS[cell.plantId];
+                if (plant && plant.isStructure) return cell;
                 if (plant && plant.perennial) {
                   // Perennials survive and get stronger
                   return Object.assign({}, cell, { growthDay: Math.max(0, cell.growthDay - 10), health: Math.min(100, cell.health + 5) });
@@ -3618,6 +4093,39 @@ var d = (labToolData.companionPlanting) || {};
                 return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 };
               });
             }
+
+            return {
+              grid: newGrid, day: newDay, year: newYear, nitrogen: Math.min(100, newNitrogen + extraNitrogen),
+              moisture: Math.min(100, Math.max(0, newMoisture + extraMoisture)), phosphorus: newP, potassium: newK,
+              pH: Math.round(newPH * 10) / 10, organicMatter: Math.round(newOM * 100) / 100,
+              pestPop: Math.round(newPestPop * 10) / 10, beneficialPop: Math.round(newBeneficialPop * 10) / 10,
+              activeEvent: newEvent, eventOccurred: eventOccurred,
+              forecastNitrogen: newNitrogen, forecastMoisture: newMoisture,
+              rawPH: newPH, rawOrganic: newOM, rawPests: newPestPop, rawBeneficials: newBeneficialPop,
+              extraNitrogen: extraNitrogen, extraMoisture: extraMoisture
+            };
+          }
+
+          function cgAdvanceDay() {
+            var reportBeforePlants = cgGrid.filter(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; });
+            var reportBeforeGrowth = reportBeforePlants.length ? reportBeforePlants.reduce(function(sum, cell) { return sum + cell.growthDay; }, 0) / reportBeforePlants.length : 0;
+            var reportBeforeHealth = reportBeforePlants.length ? reportBeforePlants.reduce(function(sum, cell) { return sum + cell.health; }, 0) / reportBeforePlants.length : 100;
+            var reportBeforeReady = reportBeforePlants.filter(function(cell) { var plant = CG_PLANTS[cell.plantId]; return plant && cell.growthDay >= plant.days && cell.health > 20; }).length;
+            var simulatedDay = cgSimulateDay(cgSimulationState(Object.assign({}, cg, { grid: cgGrid })));
+            var newGrid = simulatedDay.grid;
+            var newDay = simulatedDay.day;
+            var newYear = simulatedDay.year;
+            var newNitrogen = simulatedDay.forecastNitrogen;
+            var newMoisture = simulatedDay.forecastMoisture;
+            var newP = simulatedDay.phosphorus;
+            var newK = simulatedDay.potassium;
+            var newPH = simulatedDay.rawPH;
+            var newOM = simulatedDay.rawOrganic;
+            var newPestPop = simulatedDay.rawPests;
+            var newBeneficialPop = simulatedDay.rawBeneficials;
+            var newEvent = simulatedDay.activeEvent;
+            var extraNitrogen = simulatedDay.extraNitrogen;
+            var extraMoisture = simulatedDay.extraMoisture;
 
             var readyAfterDay = newGrid.filter(function(cell) { var readyPlant = cell.plantId && CG_PLANTS[cell.plantId]; return readyPlant && !readyPlant.isStructure && cell.growthDay >= readyPlant.days && cell.health > 20; }).length;
             var reportAfterPlants = newGrid.filter(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; });
@@ -3628,7 +4136,7 @@ var d = (labToolData.companionPlanting) || {};
             var reportHelpfulLinks = 0;
             cgGrid.forEach(function(cell, idx) { if (cell.plantId) reportHelpfulLinks += getCellBonus(cgGrid, idx).pairs.filter(function(pair) { return pair.bonus > 0; }).length; });
             reportHelpfulLinks = Math.round(reportHelpfulLinks / 2);
-            var reportInsight = newEvent ? 'A garden event shaped today more than the usual seasonal pattern.' : cgSeason === 3 ? 'Winter dormancy paused crop growth while the soil system kept changing.' : cgMoisture < 20 ? 'Low moisture slowed growth. Watering before the next day will protect momentum.' : cgNitrogen < 15 ? 'Low nitrogen limited heavy feeders. Compost or legumes can restore fertility.' : reportHelpfulLinks > 0 ? reportHelpfulLinks + ' helpful companion link' + (reportHelpfulLinks !== 1 ? 's helped' : ' helped') + ' support growth and resilience.' : 'Seasonal conditions drove steady growth. Add companion neighbors to strengthen resilience.';
+            var reportInsight = simulatedDay.eventOccurred ? 'A garden event shaped today more than the usual seasonal pattern.' : cgSeason === 3 ? 'Winter dormancy paused crop growth while the soil system kept changing.' : cgMoisture < 20 ? 'Low moisture slowed growth. Watering before the next day will protect momentum.' : cgNitrogen < 15 ? 'Low nitrogen limited heavy feeders. Compost or legumes can restore fertility.' : reportHelpfulLinks > 0 ? reportHelpfulLinks + ' helpful companion link' + (reportHelpfulLinks !== 1 ? 's helped' : ' helped') + ' support growth and resilience.' : 'Seasonal conditions drove steady growth. Add companion neighbors to strengthen resilience.';
             var reportPlotChanges = newGrid.map(function(afterCell, index) {
               var beforeCell = cgGrid[index] || { plantId: null, growthDay: 0, health: 100, pests: 0 };
               var replayPlantId = afterCell.plantId || beforeCell.plantId;
@@ -3661,7 +4169,7 @@ var d = (labToolData.companionPlanting) || {};
               decision: cgLastCareAction || { id: 'observe', icon: '\u23ED\uFE0F', label: 'Observed without a care action', effect: 'Season, moisture, soil, neighbors, and pests shaped the result.' },
               plotChanges: reportPlotChanges,
               insight: reportInsight,
-              eventLabel: newEvent ? newEvent.label : null
+              eventLabel: simulatedDay.eventOccurred && newEvent ? newEvent.label : null
             };
             var predictionChecks = { growth: lastDayReport.growthDelta >= 0.8, moisture: lastDayReport.moistureDelta <= -1, pests: lastDayReport.pestDelta > 0, harvest: lastDayReport.readyDelta > 0 };
             var observedOutcome = lastDayReport.readyDelta > 0 ? 'A new crop became ready to harvest.' : lastDayReport.healthDelta < 0 ? 'Average plant health declined.' : lastDayReport.pestDelta > 0 ? 'Pest pressure increased.' : lastDayReport.moistureDelta <= -1 ? 'Soil moisture decreased.' : 'The strongest signal was steady crop growth.';
@@ -3685,14 +4193,14 @@ var d = (labToolData.companionPlanting) || {};
                   comparisonAfter: observationComparison ? observationComparison.metric.after : null,
                   comparisonDelta: observationComparison ? observationComparison.metric.delta : null,
                   careStable: !cgLastCareAction,
-                  eventFree: !newEvent
+                  eventFree: !simulatedDay.eventOccurred
                 };
                 nextInquiryObservations = cgInquiryObservations.filter(function(entry) {
                   return entry.claimPlot === cgPlantingClaim.plot && entry.plantId === cgPlantingClaim.plantId && entry.predictionId === cgPlantingClaim.predictionId;
                 }).concat([observation]).slice(-8);
               }
             }
-            var dayFeedback = newEvent ? { icon: newEvent.emoji, title: newEvent.label, detail: newEvent.desc, tone: newEvent.isGood ? 'success' : 'warning' } : { icon: '\uD83D\uDCC5', title: 'Day ' + (newDay % 30 + 1) + ' complete', detail: 'Moisture is ' + Math.round(Math.min(100, Math.max(0, newMoisture + extraMoisture))) + '%. ' + (readyAfterDay ? readyAfterDay + ' crop' + (readyAfterDay !== 1 ? 's are' : ' is') + ' ready to harvest.' : 'Growth advanced across the garden.'), tone: readyAfterDay ? 'celebrate' : 'info' };
+            var dayFeedback = simulatedDay.eventOccurred && newEvent ? { icon: newEvent.emoji, title: newEvent.label, detail: newEvent.desc, tone: newEvent.isGood ? 'success' : 'warning' } : { icon: '\uD83D\uDCC5', title: 'Day ' + (newDay % 30 + 1) + ' complete', detail: 'Moisture is ' + Math.round(Math.min(100, Math.max(0, newMoisture + extraMoisture))) + '%. ' + (readyAfterDay ? readyAfterDay + ' crop' + (readyAfterDay !== 1 ? 's are' : ' is') + ' ready to harvest.' : 'Growth advanced across the garden.'), tone: readyAfterDay ? 'celebrate' : 'info' };
             var nextSoilHistory = cgSoilHistory.concat([{
               day: newDay,
               season: ['Spring', 'Summer', 'Autumn', 'Winter'][cgSeason],
@@ -3701,7 +4209,7 @@ var d = (labToolData.companionPlanting) || {};
               potassium: Math.round(newK * 100) / 100,
               ph: Math.round(newPH * 10) / 10,
               organic: Math.round(newOM * 100) / 100,
-              event: newEvent ? (newEvent.label || 'Garden event') : null,
+              event: simulatedDay.eventOccurred && newEvent ? (newEvent.label || 'Garden event') : null,
               care: cgLastCareAction ? cgLastCareAction.label : null,
               forecast: {
                 nitrogen: Math.round(Math.min(100, newNitrogen) * 100) / 100,
@@ -3869,7 +4377,7 @@ var d = (labToolData.companionPlanting) || {};
           function cgFireActionBurst(kind) {
             try {
               var el = window.__cgCanvasEl;
-              if (el) { el._actionBurst = { kind: kind, t0: performance.now() }; }
+              if (el) { el._actionBurst = { kind: kind, t0: performance.now() }; if (el._cgRequestDraw) el._cgRequestDraw(); }
             } catch (e) { /* silent */ }
           }
 
@@ -4758,6 +5266,199 @@ var d = (labToolData.companionPlanting) || {};
                 h('div', null, h('div', { className: 'text-lg font-black ' + (bonus.total > 0 ? 'text-emerald-400' : bonus.total < 0 ? 'text-red-400' : 'text-slate-200') }, (bonus.total > 0 ? '+' : '') + bonus.total + '%'), h('div', { className: 'text-slate-200' }, __alloT('stem.companionplanting.companion', 'Companion'))),
                 h('div', null, h('div', { className: 'text-lg font-black text-orange-400' }, Math.round(cell.pests)), h('div', { className: 'text-slate-200' }, __alloT('stem.companionplanting.pests', 'Pests')))));
           }
+
+          // Controlled experiment bench: snapshots are independent of the live garden.
+          function cgBenchCopy(value) { return JSON.parse(JSON.stringify(value)); }
+          function cgBenchCapture(useExample) {
+            var grid = cgGrid;
+            if (useExample) {
+              grid = Array.from({ length: 16 }, function(_, index) {
+                return { plantId: ({ 0: 'corn', 1: 'beans', 4: 'squash', 10: 'marigold', 11: 'tomato', 15: 'basil' })[index] || null, growthDay: 0, health: 100, watered: false, pests: 0 };
+              });
+            }
+            var source = cgSimulationState(useExample ? { grid: grid } : Object.assign({}, cg, { grid: grid }));
+            var baseline = {};
+            ['grid', 'day', 'year', 'cellHistory', 'moisture', 'nitrogen', 'phosphorus', 'potassium', 'organicMatter', 'pH', 'pestPop', 'beneficialPop'].forEach(function(key) { baseline[key] = cgBenchCopy(source[key]); });
+            baseline.activeEvent = null;
+            var crops = grid.filter(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; });
+            if (!crops.length) return;
+            cgUpd({ experimentBench: { version: 1, baseline: baseline, variant: cgBenchCopy(grid), focusCrop: crops[0].plantId, duration: 14, water: 'daily', prediction: '', conclusion: '', selected: null, result: null, source: useExample ? 'Example garden' : 'My garden' }, showExperimentBench: true });
+            if (typeof announceToSR === 'function') announceToSR('Garden copied to the experiment bench. Choose two plots in layout B to swap them.');
+          }
+          function cgBenchEdit(patch, keepResult) {
+            setLabToolData(function(prev) {
+              var parent = prev.companionPlanting || {};
+              var garden = parent.communityGarden || {};
+              var bench = garden.experimentBench;
+              if (!bench) return prev;
+              var next = Object.assign({}, bench, patch);
+              if (!keepResult) { next.result = null; next.conclusion = ''; }
+              return Object.assign({}, prev, { companionPlanting: Object.assign({}, parent, { communityGarden: Object.assign({}, garden, { experimentBench: next, experimentStatus: '' }) }) });
+            });
+          }
+          function cgBenchSwap(index) {
+            var bench = cg.experimentBench;
+            if (!bench || !Array.isArray(bench.variant) || index < 0 || index > 15) return;
+            if (typeof bench.selected !== 'number') {
+              cgBenchEdit({ selected: index }, true);
+              if (typeof announceToSR === 'function') announceToSR('Plot ' + (index + 1) + ' selected. Choose another plot to swap, or select this plot to cancel.');
+              return;
+            }
+            if (bench.selected === index) { cgBenchEdit({ selected: null }, true); return; }
+            var variant = bench.variant.slice();
+            var cell = variant[index]; variant[index] = variant[bench.selected]; variant[bench.selected] = cell;
+            cgBenchEdit({ variant: variant, selected: null });
+            if (typeof announceToSR === 'function') announceToSR('Swapped plots ' + (bench.selected + 1) + ' and ' + (index + 1) + ' in layout B. The live garden is unchanged.');
+          }
+          function cgBenchMeasure(state, cropId) {
+            var cells = state.grid.filter(function(cell) { return cell.plantId === cropId; });
+            var plant = CG_PLANTS[cropId];
+            var average = function(key) { return cells.reduce(function(sum, cell) { return sum + cell[key]; }, 0) / cells.length; };
+            return { maturity: average('growthDay') / plant.days * 100, health: average('health'), pests: average('pests'), count: cells.length };
+          }
+          function cgBenchRun() {
+            var bench = cg.experimentBench;
+            if (!bench || !bench.baseline || !CG_PLANTS[bench.focusCrop]) return;
+            var duration = Math.min([7, 14, 30].indexOf(bench.duration) !== -1 ? bench.duration : 14, 119 - (bench.baseline.day % 120));
+            if (duration < 1) return;
+            var baseline = cgBenchCopy(bench.baseline);
+            var variant = Object.assign({}, cgBenchCopy(bench.baseline), { grid: cgBenchCopy(bench.variant) });
+            var samples = [{ day: baseline.day, a: cgBenchMeasure(baseline, bench.focusCrop), b: cgBenchMeasure(variant, bench.focusCrop) }];
+            for (var elapsed = 0; elapsed < duration; elapsed++) {
+              if (bench.water === 'daily') { baseline.moisture = 60; variant.moisture = 60; }
+              baseline = Object.assign({}, baseline, cgSimulateDay(baseline, { controlled: true }));
+              variant = Object.assign({}, variant, cgSimulateDay(variant, { controlled: true }));
+              samples.push({ day: baseline.day, a: cgBenchMeasure(baseline, bench.focusCrop), b: cgBenchMeasure(variant, bench.focusCrop) });
+            }
+            var result = { id: 'trial-' + Date.now(), version: 1, cropId: bench.focusCrop, duration: duration,
+              prediction: String(bench.prediction || '').slice(0, 600), water: bench.water, source: bench.source, requestedDuration: bench.duration,
+              baseline: cgBenchCopy(bench.baseline), variant: cgBenchCopy(bench.variant), samples: samples };
+            cgBenchEdit({ result: result, selected: null, conclusion: '' }, true);
+            if (typeof announceToSR === 'function') announceToSR(duration + '-day controlled comparison complete. Results are below the run button.');
+          }
+          function cgBenchSave() {
+            var bench = cg.experimentBench;
+            if (!bench || !bench.result) return;
+            var record = Object.assign({}, cgBenchCopy(bench.result), { conclusion: String(bench.conclusion || '').slice(0, 1200), savedAt: Date.now() });
+            var history = Array.isArray(cg.experimentHistory) ? cg.experimentHistory : [];
+            cgUpd({ experimentHistory: history.filter(function(item) { return item.id !== record.id; }).concat([record]).slice(-6), experimentStatus: 'Trial saved. Your six most recent trials are kept with garden progress.' });
+            if (typeof saveSnapshot === 'function') saveSnapshot('companionPlanting', 'Controlled trial · ' + CG_PLANTS[record.cropId].label, { controlledExperiment: record });
+            if (typeof announceToSR === 'function') announceToSR('Controlled trial and conclusion saved to garden progress.');
+          }
+          function cgBenchExport() {
+            var bench = cg.experimentBench;
+            if (!bench || !bench.result) return;
+            var result = bench.result;
+            var rows = [['Companion Planting Lab', 'Controlled simulation; not field evidence'],
+              ['Crop', CG_PLANTS[result.cropId].label], ['Duration (days)', result.duration],
+              ['Water policy', result.water === 'daily' ? 'Both watered to 60 before each day' : 'No added water'],
+              ['Random events and random disease', 'Off for both layouts'],
+              ['Prediction', result.prediction], ['Conclusion', String(bench.conclusion || '').slice(0, 1200)],
+              ['Starting day', result.baseline.day], ['Starting year', result.baseline.year]];
+            ['moisture', 'nitrogen', 'phosphorus', 'potassium', 'pH', 'organicMatter', 'pestPop', 'beneficialPop'].forEach(function(key) { rows.push(['Starting ' + key, result.baseline[key]]); });
+            rows.push(['Plot', 'A crop', 'B crop', 'A starting maturity days', 'B starting maturity days', 'A starting health', 'B starting health', 'A starting pests', 'B starting pests', 'Prior crops at plot']);
+            result.baseline.grid.forEach(function(cell, index) { var b = result.variant[index]; rows.push([index + 1, cell.plantId || 'empty', b.plantId || 'empty', cell.growthDay, b.growthDay, cell.health, b.health, cell.pests, b.pests, (result.baseline.cellHistory[index] || []).join('; ')]); });
+            rows.push(['Day', 'A maturity (%)', 'B maturity (%)', 'B minus A maturity (points)', 'A health', 'B health', 'A pests', 'B pests']);
+            result.samples.forEach(function(sample) { rows.push([sample.day, sample.a.maturity, sample.b.maturity, sample.b.maturity - sample.a.maturity, sample.a.health, sample.b.health, sample.a.pests, sample.b.pests].map(function(value) { return typeof value === 'number' ? Math.round(value * 1000) / 1000 : value; })); });
+            // Quote all fields and neutralize formula prefixes in learner-authored cells.
+            var csv = rows.map(function(row) { return row.map(function(value) { var text = String(value == null ? '' : value); if (typeof value === 'string' && /^[\s]*[=+@-]/.test(text)) text = "'" + text; return '"' + text.replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+            try {
+              var url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
+              var link = document.createElement('a'); link.href = url; link.download = 'companion-controlled-trial-' + result.cropId + '.csv';
+              document.body.appendChild(link); link.click(); link.remove();
+              setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+              cgUpd({ experimentStatus: 'CSV downloaded with layouts, starting conditions, daily measurements, and your conclusion.' });
+            } catch (error) { cgUpd({ experimentStatus: 'Download unavailable. Open the daily data table to copy your measurements.' }); }
+          }
+          function renderExperimentBench() {
+            var tr = function(key, fallback) { return __alloT('stem.companionplanting.experiment_' + key, fallback); };
+            var bench = cg.experimentBench;
+            var valid = bench && bench.version === 1 && bench.baseline && Array.isArray(bench.baseline.grid) && bench.baseline.grid.length === 16 && Array.isArray(bench.variant) && bench.variant.length === 16 && CG_PLANTS[bench.focusCrop];
+            var open = cg.showExperimentBench === true && valid;
+            var hasCrops = cgGrid.some(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; });
+            var button = function(label, onClick, extra) { return h('button', Object.assign({ type: 'button', className: 'cp-experiment-button', onClick: onClick }, extra || {}), label); };
+            var result = open ? bench.result : null;
+            var history = Array.isArray(cg.experimentHistory) ? cg.experimentHistory : [];
+            var metric = ['maturity', 'health', 'pests'].indexOf(cg.experimentMetric) !== -1 ? cg.experimentMetric : 'maturity';
+            var metricNames = { maturity: tr('maturity', 'Maturity'), health: tr('health', 'Health'), pests: tr('pests', 'Pest load') };
+            var signed = function(number) { var rounded = Math.round(number * 10) / 10; return (rounded > 0 ? '+' : '') + rounded.toFixed(1); };
+            var cropIds = valid ? Object.keys(CG_PLANTS).filter(function(id) { return !CG_PLANTS[id].isStructure && bench.baseline.grid.some(function(cell) { return cell.plantId === id; }); }) : [];
+            var changed = valid ? bench.variant.filter(function(cell, index) { return JSON.stringify(cell) !== JSON.stringify(bench.baseline.grid[index]); }).length : 0;
+            var last = result ? result.samples[result.samples.length - 1] : null;
+            var rotation = valid && Object.keys(bench.baseline.cellHistory || {}).some(function(key) { return bench.baseline.cellHistory[key].length; });
+            function renderLayout(grid, editable) {
+              return h('div', { className: 'cp-experiment-layout', 'aria-label': editable ? tr('layout_b', 'Layout B: rearrange a copy') : tr('layout_a', 'Layout A: original snapshot') },
+                grid.map(function(cell, index) {
+                  var plant = CG_PLANTS[cell.plantId];
+                  var moved = editable && JSON.stringify(cell) !== JSON.stringify(bench.baseline.grid[index]);
+                  var props = { key: index, className: 'cp-experiment-plot' + (moved ? ' cp-experiment-moved' : ''), 'data-experiment-plot': (editable ? 'b-' : 'a-') + index };
+                  if (editable) Object.assign(props, { type: 'button', onClick: function() { cgBenchSwap(index); }, 'aria-pressed': bench.selected === index,
+                    'aria-label': 'Layout B, plot ' + (index + 1) + ', ' + (plant ? plant.label : 'empty') + (moved ? ', changed' : '') + (bench.selected === index ? ', selected; select again to cancel' : ''),
+                    onKeyDown: function(event) {
+                      var offset = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -4, ArrowDown: 4 }[event.key];
+                      if (!offset) return;
+                      event.preventDefault();
+                      var next = index + offset;
+                      if (next < 0 || next > 15 || (Math.abs(offset) === 1 && Math.floor(next / 4) !== Math.floor(index / 4))) return;
+                      var target = event.currentTarget.parentElement.querySelector('[data-experiment-plot="b-' + next + '"]'); if (target) target.focus();
+                    } });
+                  return h(editable ? 'button' : 'div', props,
+                    h('span', { className: 'cp-experiment-plot-number', 'aria-hidden': true }, String(index + 1).padStart(2, '0') + (moved ? ' ↔' : '')),
+                    h('span', { className: 'cp-experiment-plant-icon', 'aria-hidden': true }, companionBotanicalArt(React, cell.plantId, plant, 1)),
+                    h('span', null, plant ? plant.label : tr('empty', 'Empty')));
+                }));
+            }
+            function renderTrialChart(chartWidth, chartClass) { return h('svg', { className: 'cp-experiment-chart ' + chartClass, viewBox: '0 0 ' + chartWidth + ' 225', role: 'img', 'aria-labelledby': 'cp-experiment-chart-title-' + chartWidth + ' cp-experiment-chart-desc-' + chartWidth },
+                      h('title', { id: 'cp-experiment-chart-title-' + chartWidth }, metricNames[metric] + ' over ' + result.duration + ' days'), h('desc', { id: 'cp-experiment-chart-desc-' + chartWidth }, 'Solid green: layout A. Dashed purple: layout B. Final A ' + last.a[metric].toFixed(1) + ', B ' + last.b[metric].toFixed(1) + '. Exact values are in the daily data table below.'),
+                      [0, 25, 50, 75, 100].map(function(value) { var y = 180 - value * 1.5; return h('g', { key: value }, h('line', { x1: 48, x2: chartWidth - 20, y1: y, y2: y, stroke: '#dce5dc' }), h('text', { x: 38, y: y + 4, textAnchor: 'end', fontSize: chartWidth < 400 ? 14 : 12, fill: '#3a5142' }, value)); }),
+                      ['a', 'b'].map(function(side) { return h('polyline', { key: side, fill: 'none', stroke: side === 'a' ? '#07664b' : '#7441ac', strokeWidth: 3, strokeDasharray: side === 'b' ? '8 5' : undefined, points: result.samples.map(function(sample, index) { return (48 + index / result.duration * (chartWidth - 68)) + ',' + (180 - sample[side][metric] * 1.5); }).join(' '), 'data-experiment-line': side }); }),
+                      h('text', { x: 48, y: 208, fontSize: chartWidth < 400 ? 14 : 12, fill: '#3a5142' }, 'Day ' + result.samples[0].day), h('text', { x: chartWidth - 20, y: 208, textAnchor: 'end', fontSize: chartWidth < 400 ? 14 : 12, fill: '#3a5142' }, 'Day ' + last.day)); }
+            return h('section', { id: 'community-experiment-bench', className: 'cp-experiment', 'data-community-experiment-bench': true, 'aria-labelledby': 'cp-experiment-title' },
+              h('style', null, '.cp-experiment{--cp-ink:#163b32;--cp-green:#07664b;color:#163b32;background:#f4f8f3;border:1px solid #b7cdbb;border-radius:18px;overflow:hidden;font:14px/1.5 system-ui,sans-serif}.cp-experiment *{box-sizing:border-box}.cp-experiment h3,.cp-experiment h4,.cp-experiment p{margin:0}.cp-experiment h3{font-size:24px;line-height:1.2;font-weight:800}.cp-experiment h4{font-size:16px;font-weight:750}.cp-experiment-head{background:#123d32;color:white;padding:22px;display:flex;gap:18px;justify-content:space-between;align-items:center;flex-wrap:wrap}.cp-experiment-head p{color:#d0e8d6;margin-top:7px;max-width:640px}.cp-experiment-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.15em;font-weight:800;margin-bottom:6px}.cp-experiment-body{padding:20px;display:grid;gap:18px}.cp-experiment-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.cp-experiment-button{min-height:44px;padding:10px 14px;border:1px solid #9eb9ad;border-radius:9px;background:white;color:#163b32;font-weight:750;cursor:pointer}.cp-experiment-button:hover{background:#e2efe4}.cp-experiment-button:disabled{opacity:.55;cursor:not-allowed}.cp-experiment-primary{background:#07664b;color:white;border-color:#07664b}.cp-experiment-primary:hover{background:#054e39}.cp-experiment-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.cp-experiment-card{min-width:0;border:1px solid #c7d6cc;border-radius:12px;background:white;padding:16px}.cp-experiment-card>p{color:#496155;margin:4px 0 12px}.cp-experiment-layout{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.cp-experiment .cp-experiment-plot{position:relative;min-width:0;min-height:100px;border:1px solid #c8d9c4;border-radius:9px;background:#f1f6ed;color:#254b38;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 3px 7px;font-size:12px;font-weight:700;overflow-wrap:anywhere;text-align:center}.cp-experiment-plot-number{position:absolute;top:5px;left:7px;font-size:10px;font-weight:800;color:#536651}.cp-experiment-plant-icon{font-size:26px;line-height:1.2}.cp-experiment-moved{border:2px dashed #7441ac;background:#f7f0fc}.cp-experiment-plot[aria-pressed=true]{outline:3px solid #7441ac;outline-offset:1px;background:#ead9fa}.cp-experiment-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.cp-experiment label{display:grid;gap:5px;font-weight:700}.cp-experiment select,.cp-experiment textarea{width:100%;min-width:0;min-height:44px;border:1px solid #9eb9ad;border-radius:8px;padding:9px;background:white;color:#163b32;font:inherit}.cp-experiment textarea{resize:vertical;font-weight:400}.cp-experiment-note{background:#e6eee3;padding:12px;border-radius:9px;color:#314e3b}.cp-experiment-fair{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.cp-experiment-fair span{border:1px solid #c2d1c2;border-radius:30px;padding:4px 9px;font-size:12px;background:white}.cp-experiment-results{display:grid;gap:14px}.cp-experiment-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.cp-experiment-value{display:block;font-size:24px;font-weight:800;margin-top:5px}.cp-experiment-chart{width:100%;height:auto;display:block;background:white;border-radius:8px}.cp-experiment .cp-experiment-chart-narrow{display:none}.cp-experiment table{width:100%;border-collapse:collapse;text-align:left;font-size:12px}.cp-experiment th,.cp-experiment td{padding:8px;border-bottom:1px solid #cbd6cb;white-space:nowrap}.cp-experiment caption{text-align:left;padding:8px;font-weight:700}.cp-experiment details>summary{min-height:44px;cursor:pointer;padding:10px 0;font-weight:750}.cp-experiment a{color:#075a49;text-decoration:underline}.cp-experiment-history{display:grid;gap:8px}.cp-experiment [aria-pressed=true].cp-experiment-button{background:#eaddf5;color:#512877;border-color:#7441ac}@media(max-width:700px){.cp-experiment .cp-experiment-chart-wide{display:none}.cp-experiment .cp-experiment-chart-narrow{display:block}.cp-experiment .cp-experiment-plot>span:last-child{font-size:11px;letter-spacing:-.02em}.cp-experiment-columns{grid-template-columns:1fr}.cp-experiment-head,.cp-experiment-body{padding:14px}.cp-experiment-controls{grid-template-columns:1fr}.cp-experiment-card{padding:12px}.cp-experiment-metrics{grid-template-columns:1fr}.cp-experiment h3{font-size:21px}.cp-experiment .cp-experiment-plot{min-height:90px}}@media(forced-colors:active){.cp-experiment,.cp-experiment-card,.cp-experiment-plot{border:1px solid CanvasText}.cp-experiment-plot[aria-pressed=true]{outline:3px solid Highlight}.cp-experiment-chart polyline{stroke:CanvasText}}'),
+              h('style', { 'data-garden-botanical-style': true }, CP_GARDEN_VISUAL_CSS),
+              h('div', { className: 'cp-experiment-head' },
+                h('div', null, h('div', { className: 'cp-experiment-kicker' }, tr('kicker', 'Plan · Predict · Compare')), h('h3', { id: 'cp-experiment-title' }, tr('title', 'The experiment bench')), h('p', null, tr('intro', 'Would a different layout help your crops? Test two versions of the same garden and follow the evidence.'))),
+                h('div', { className: 'cp-experiment-actions' }, button(cgReducedMotion ? tr('motion_reduced', 'Motion: Reduced') : tr('motion_on', 'Reduce motion'), function() { cgUpd({ reducedMotion: !cgReducedMotion }); }, { 'aria-pressed': cgReducedMotion, 'aria-label': tr('motion_toggle', 'Reduce visual motion'), 'data-experiment-motion': true }), valid && button(open ? tr('close', 'Close bench') : tr('resume', 'Resume experiment'), function() { cgUpd({ showExperimentBench: !open }); }, { 'aria-expanded': !!open, 'aria-controls': 'cp-experiment-body', 'data-experiment-toggle': true }),
+                  !open && button(hasCrops ? tr('copy', 'Copy my garden') : tr('example', 'Try an example'), function() { cgBenchCapture(!hasCrops); }, { 'data-experiment-capture': true }))),
+              !open && h('div', { className: 'cp-experiment-body' }, h('p', null, tr('intro_detail', 'Rearrange a snapshot, choose a crop to track, and compare 7–30 simulated days. Your planted garden and budget stay intact.'))),
+              open && h('div', { id: 'cp-experiment-body', className: 'cp-experiment-body' },
+                h('div', { className: 'cp-experiment-note' }, h('strong', null, tr('fair_test', 'A fair layout test')), h('p', null, tr('fair_detail', 'Only plant positions change. Each plant keeps its starting age, health, and pests. Both layouts use the same soil, calendar, and watering policy.')),
+                  h('div', { className: 'cp-experiment-fair' }, [tr('same_crops', 'Same crops & counts'), tr('same_soil', 'Same starting soil'), tr('same_care', 'Same care'), tr('events_off', 'Random events off')].map(function(label) { return h('span', { key: label }, label); }))),
+                h('div', { className: 'cp-experiment-actions' }, h('strong', null, bench.source + ' · ' + tr('day', 'Day') + ' ' + bench.baseline.day + ' · ' + changed + ' ' + tr('changed', 'plots changed')),
+                  button(tr('reset_layout', 'Reset layout B'), function() { cgBenchEdit({ variant: cgBenchCopy(bench.baseline.grid), selected: null }); }, { 'data-experiment-reset': true }),
+                  h('details', null, h('summary', null, tr('new_setup', 'Start a new setup')), h('p', null, tr('new_setup_hint', 'Save your current result first to keep it in the trial notebook.')), h('div', { className: 'cp-experiment-actions' }, hasCrops && button(tr('copy_fresh', 'Use current garden'), function() { cgBenchCapture(false); }), button(tr('use_example', 'Use example garden'), function() { cgBenchCapture(true); })))),
+                h('div', { className: 'cp-experiment-columns' },
+                  h('div', { className: 'cp-experiment-card' }, h('h4', null, tr('original', 'A · Original layout')), h('p', null, tr('original_hint', 'Your starting point, held as a snapshot.')), renderLayout(bench.baseline.grid, false)),
+                  h('div', { className: 'cp-experiment-card' }, h('h4', null, tr('proposed', 'B · Your proposed layout')), h('p', { role: 'status', 'aria-live': 'polite' }, typeof bench.selected === 'number' ? 'Plot ' + (bench.selected + 1) + ' selected. Choose its destination.' : tr('swap_hint', 'Select any two plots to swap them. Arrow keys move focus.')), renderLayout(bench.variant, true))),
+                rotation && h('p', { className: 'cp-experiment-note' }, tr('rotation', 'This garden has crop history. History stays with each plot, so moving a plant can change both its neighbors and its rotation penalty. Interpret this as a whole-layout test.')),
+                h('div', { className: 'cp-experiment-controls' },
+                  h('label', null, tr('track', 'Crop to track'), h('select', { value: bench.focusCrop, onChange: function(event) { cgBenchEdit({ focusCrop: event.target.value }); }, 'data-experiment-crop': true }, cropIds.map(function(id) { return h('option', { key: id, value: id }, CG_PLANTS[id].label); }))),
+                  h('label', null, tr('duration', 'Trial length'), h('select', { value: bench.duration, onChange: function(event) { cgBenchEdit({ duration: Number(event.target.value) }); }, 'data-experiment-duration': true }, [7, 14, 30].map(function(days) { return h('option', { key: days, value: days }, days + ' ' + tr('days', 'days')); }))),
+                  h('label', null, tr('water', 'Watering in both layouts'), h('select', { value: bench.water, onChange: function(event) { cgBenchEdit({ water: event.target.value }); }, 'data-experiment-water': true }, h('option', { value: 'daily' }, tr('daily_water', 'Water daily to 60%')), h('option', { value: 'none' }, tr('no_water', 'No added water'))))),
+                h('label', null, tr('predict', 'My prediction'), h('textarea', { rows: 2, maxLength: 600, value: bench.prediction || '', placeholder: tr('prediction_hint', 'I predict layout B will… because…'), onChange: function(event) { cgBenchEdit({ prediction: event.target.value }); }, 'data-experiment-prediction': true })),
+                bench.baseline.day % 120 + bench.duration >= 120 && h('p', { className: 'cp-experiment-note' }, tr('year_end', 'Trials stop before the model clears annual crops at year end. Fewer days may run; if no days remain, capture a new setup after the year changes.')),
+                h('div', { className: 'cp-experiment-actions' }, button(tr('run', 'Run controlled comparison'), cgBenchRun, { className: 'cp-experiment-button cp-experiment-primary', disabled: bench.baseline.day % 120 >= 119, 'data-experiment-run': true }), h('span', null, changed ? tr('run_hint', 'No harvesting or extra care during the trial.') : tr('identical_hint', 'Identical layouts make a useful control: expect matching results.'))),
+                result && h('div', { className: 'cp-experiment-results', 'data-experiment-results': true },
+                  h(CompanionGrowthReplay, { key: result.id, React: React, result: result, plant: CG_PLANTS[result.cropId], reducedMotion: cgReducedMotion, tr: tr }),
+                  h('div', null, h('h4', null, CG_PLANTS[result.cropId].label + ' · ' + result.duration + '-day final comparison'), h('p', null, tr('averages', 'Values are averages across all plots of the selected crop. Differences are B minus A: percentage points for maturity, score points for health and pests.'))),
+                  h('div', { className: 'cp-experiment-metrics' }, ['maturity', 'health', 'pests'].map(function(key) { return h('div', { key: key, className: 'cp-experiment-card', 'data-experiment-metric': key }, h('strong', null, metricNames[key]), h('span', { className: 'cp-experiment-value' }, signed(last.b[key] - last.a[key]) + ' pts'), h('p', null, 'A ' + last.a[key].toFixed(1) + ' → B ' + last.b[key].toFixed(1)), h('small', null, key === 'pests' ? tr('less_better', 'Lower pest load is favorable.') : key === 'health' ? tr('health_meaning', 'Health is a modeled condition score.') : tr('maturity_meaning', 'Maturity is progress toward harvest, not yield.'))); })),
+                  h('div', { className: 'cp-experiment-card' }, h('div', { className: 'cp-experiment-actions', role: 'group', 'aria-label': tr('chart_metric', 'Chart metric') }, ['maturity', 'health', 'pests'].map(function(key) { return button(metricNames[key], function() { cgUpd({ experimentMetric: key }); }, { key: key, 'aria-pressed': metric === key }); })),
+                    renderTrialChart(640, 'cp-experiment-chart-wide'), renderTrialChart(320, 'cp-experiment-chart-narrow'),
+                    h('p', null, tr('legend', 'A: solid green · B: dashed purple · Full 0–100 scale'))),
+                  h('p', { className: 'cp-experiment-note' }, Math.abs(last.b.maturity - last.a.maturity) < 0.05 ? tr('no_difference', 'No maturity difference at the endpoint. Check earlier days, health, and pests before concluding the layouts are equivalent.') : tr('difference', 'A layout difference appeared in this model. Check health and pests too: faster maturity alone does not establish a better garden.')),
+                  (last.a.maturity >= 99.95 || last.b.maturity >= 99.95) && h('p', { className: 'cp-experiment-note' }, tr('ceiling', 'Maturity reached the 100% ceiling. Earlier days may reveal a difference that the final day hides.')),
+                  h('details', { 'data-experiment-table': true }, h('summary', null, tr('daily_data', 'Inspect daily data')), h('div', { style: { overflowX: 'auto' }, tabIndex: 0, role: 'region', 'aria-label': tr('table_scroll', 'Daily trial measurements, scroll horizontally for all columns') },
+                    h('table', null, h('caption', null, tr('data_caption', 'Daily measurements · percentages and modeled scores')), h('thead', null, h('tr', null, ['Day', 'A maturity', 'B maturity', 'A health', 'B health', 'A pests', 'B pests'].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))),
+                      h('tbody', null, result.samples.map(function(sample) { return h('tr', { key: sample.day }, h('th', { scope: 'row' }, sample.day), ['maturity', 'health', 'pests'].map(function(key) { return ['a', 'b'].map(function(side) { return h('td', { key: key + side }, sample[side][key].toFixed(2)); }); })); }))))),
+                  h('label', null, tr('conclusion', 'My evidence-based conclusion'), h('textarea', { rows: 3, maxLength: 1200, value: bench.conclusion || '', placeholder: tr('conclusion_hint', 'In this model, layout… The evidence is… A limitation is… My next test would…'), onChange: function(event) { cgBenchEdit({ conclusion: event.target.value }, true); }, 'data-experiment-conclusion': true })),
+                  h('div', { className: 'cp-experiment-actions' }, button(tr('save', 'Save trial to notebook'), cgBenchSave, { 'data-experiment-save': true }), button(tr('export', 'Download trial CSV'), cgBenchExport, { 'data-experiment-export': true }))),
+                h('p', { role: 'status', 'aria-live': 'polite', 'data-experiment-status': true }, cg.experimentStatus || ''),
+                history.length > 0 && h('details', { className: 'cp-experiment-history', 'data-experiment-history': true }, h('summary', null, tr('saved_trials', 'Saved trials') + ' (' + history.length + '/6)'), history.slice().reverse().map(function(record) { var end = record.samples[record.samples.length - 1]; return h('div', { key: record.id, className: 'cp-experiment-card' }, h('strong', null, (CG_PLANTS[record.cropId] || {}).label + ' · ' + record.duration + ' days · ' + signed(end.b.maturity - end.a.maturity) + ' pts maturity'), h('p', null, record.conclusion || tr('no_conclusion', 'No conclusion recorded.')), button(tr('reopen', 'Reopen saved trial'), function() { cgUpd({ experimentBench: { version: 1, baseline: cgBenchCopy(record.baseline), variant: cgBenchCopy(record.variant), focusCrop: record.cropId, duration: record.requestedDuration || ([7, 14, 30].indexOf(record.duration) !== -1 ? record.duration : 14), water: record.water, prediction: record.prediction, conclusion: record.conclusion, result: cgBenchCopy(record), selected: null, source: record.source }, experimentStatus: '' }); })); })),
+                h('details', null, h('summary', null, tr('limits', 'What this model can and cannot tell us')), h('p', null, tr('limitations', 'The bench uses the garden’s simplified growth, soil, seasonal, and neighbor rules. Events and random disease are disabled, so repeating an unchanged trial gives the same result. Multiple plots are not independent field replicates. Companion bonuses are teaching assumptions; a simulation result does not validate a planting claim.')),
+                  h('p', null, tr('limits_nitrogen', 'Nitrogen cycling is accelerated in this model. Real legume benefits depend on bacteria, decomposition, soil, and management; plants do not deliver a fixed daily fertilizer bonus.')),
+                  h('a', { href: 'https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/companion-planting-in-home-gardens', target: '_blank', rel: 'noopener noreferrer' }, tr('source', 'Read the evidence: University of Minnesota Extension')))));
+          }
+
 
           function renderCommunityGarden() {
             var h = React.createElement;
@@ -6651,6 +7352,7 @@ var d = (labToolData.companionPlanting) || {};
             }
 
             return h('div', { className: 'space-y-3', 'data-community-a11y-scope': true, 'data-community-focus-mode': cgFocusMode, 'data-community-focus-stage': gardenJourneyCurrent.id, 'data-community-readable-mode': cgReadableMode, 'data-community-contrast-mode': cgContrastMode, 'data-community-reduced-motion': cgReducedMotion },
+
               h('style', { 'data-community-wcag-style': true }, '[data-community-a11y-scope] button{min-height:44px}[data-community-a11y-scope] :where(button,a[href],input,textarea,select,[tabindex="0"]):focus-visible{outline:3px solid #fbbf24!important;outline-offset:3px!important;box-shadow:0 0 0 2px #0f172a}[data-community-a11y-scope] :where(button,a[href],input,textarea,select,[tabindex="0"]){scroll-margin-block:1rem}@media (forced-colors:active){[data-community-a11y-scope] :where(button,a[href],input,textarea,select,[tabindex="0"]):focus-visible{outline:3px solid CanvasText!important;box-shadow:none}}@media (prefers-reduced-motion:reduce){[data-community-a11y-scope] *,[data-community-a11y-scope] *::before,[data-community-a11y-scope] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}[data-community-contrast-mode="true"]>:where(section,nav){outline:2px solid #0f172a!important;outline-offset:1px}[data-community-contrast-mode="true"] :where(button,a[href],input,textarea,select){border-width:2px!important}[data-community-contrast-mode="true"] [class~="text-slate-400"]{color:#475569!important}[data-community-contrast-mode="true"] [class~="text-slate-500"]{color:#334155!important}[data-community-contrast-mode="true"] [class*="text-white/"]{color:#fff!important}[data-community-contrast-mode="true"] [class*="border-white/"]{border-color:#fff!important}[data-community-reduced-motion="true"] *,[data-community-reduced-motion="true"] *::before,[data-community-reduced-motion="true"] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}[data-community-reduced-motion="true"] [class*="hover:-translate"],[data-community-reduced-motion="true"] [class*="hover:scale"]{transform:none!important}[data-community-readable-mode="true"] [class~="text-[0.5rem]"],[data-community-readable-mode="true"] [class~="text-[0.5625rem]"]{font-size:.75rem!important;line-height:1rem!important}[data-community-readable-mode="true"] [class~="text-[0.625rem]"]{font-size:.8125rem!important;line-height:1.125rem!important}[data-community-readable-mode="true"] [class~="text-[0.6875rem]"]{font-size:.875rem!important;line-height:1.25rem!important}[data-community-focus-mode="true"][data-community-focus-stage="design"] [data-focus-stages]:not([data-focus-stages~="design"]){display:none!important}[data-community-focus-mode="true"][data-community-focus-stage="observe"] [data-focus-stages]:not([data-focus-stages~="observe"]){display:none!important}[data-community-focus-mode="true"][data-community-focus-stage="explain"] [data-focus-stages]:not([data-focus-stages~="explain"]){display:none!important}[data-community-focus-mode="true"][data-community-focus-stage="transfer"] [data-focus-stages]:not([data-focus-stages~="transfer"]){display:none!important}'),
               h('nav', { className: 'relative z-[10000]', 'data-community-skip-links': true, 'aria-label': __alloT('stem.companionplanting.a11y_community_garden_shortcuts', 'Community Garden shortcuts') },
                 h('a', { href: gardenJourneyCurrent.href, className: 'sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:flex min-h-[44px] items-center rounded-lg bg-slate-950 px-4 py-2 text-sm font-black text-white outline-none focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-amber-300' }, 'Skip to next garden task'),
@@ -6724,6 +7426,8 @@ var d = (labToolData.companionPlanting) || {};
                   h('textarea', { id: 'community-progress-summary', value: cgProgressSummaryText, readOnly: true, rows: 5, onFocus: function(event) { if (event.target && event.target.select) event.target.select(); }, 'aria-label': __alloT('stem.companionplanting.a11y_accessible_companion_planting_progress_summary', 'Accessible Companion Planting progress summary'), className: 'mt-1 w-full rounded-xl border border-slate-500 bg-white p-2.5 font-mono text-[0.625rem] leading-relaxed text-slate-900 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200', 'data-community-progress-summary': true })
                 )
               ),
+              renderExperimentBench(),
+
               h('nav', { id: 'community-journey-nav', tabIndex: -1, className: 'scroll-mt-4 overflow-visible rounded-2xl border border-indigo-200 bg-gradient-to-br from-white via-indigo-50 to-emerald-50 shadow-sm focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-600', 'data-community-journey-nav': true, 'aria-label': __alloT('stem.companionplanting.a11y_garden_learning_journey', 'Garden learning journey') },
                 h('div', { className: 'sticky top-2 z-[90] flex flex-wrap items-center justify-between gap-3 rounded-t-2xl border-b border-indigo-200 bg-white/95 p-3 shadow-md backdrop-blur-sm sm:p-4', 'data-current-task-dock': gardenJourneyCurrent.id, 'data-workspace-view': cgFocusMode ? 'compact' : 'all', role: 'region', 'aria-label': __alloT('stem.companionplanting.a11y_current_garden_task', 'Current garden task') },
                   h('div', { className: 'min-w-[220px] flex-1' },
@@ -8072,30 +8776,30 @@ var d = (labToolData.companionPlanting) || {};
               // a fullscreen overlay (position:fixed) and the canvas grows to
               // fill it. A React key tied to cgMaximized forces a fresh canvas
               // mount on toggle so the ref re-runs and rebinds sizing.
+              renderPlantingDock('simulation'),
               h('div', {
                 style: cgMaximized ? {
                   position: 'fixed', inset: 0, zIndex: 9998, background: '#0a0f15',
                   padding: 16, display: 'flex', flexDirection: 'column'
                 } : { position: 'relative' }
               },
-                renderPlantingDock('simulation'),
                 h('canvas', {
                 key: 'cg-canvas-' + (cgMaximized ? 'max' : 'norm'),
                 role: 'img',
                 'aria-label': __alloT('stem.companionplanting.isometric_community_garden_view_click_', 'Visual isometric overview of the community garden. Use the accessible Garden plot navigator below to plant or inspect with a keyboard.'),
                 'aria-describedby': 'community-plot-help',
-                style: { width: '100%', height: cgMaximized ? '100%' : '540px', borderRadius: cgMaximized ? '8px' : '12px', display: 'block', cursor: cgPhase === 'plan' && cgSelectedPlant ? 'crosshair' : 'pointer', background: '#1a2810', flex: cgMaximized ? '1' : 'unset' },
+                style: { width: '100%', height: cgMaximized ? '100%' : 'clamp(360px, 48vw, 580px)', borderRadius: cgMaximized ? '8px' : '12px', display: 'block', cursor: cgPhase === 'plan' && cgSelectedPlant ? 'crosshair' : 'pointer', background: '#1a2810', flex: cgMaximized ? '1' : 'unset' },
                 onMouseMove: function(e) {
                   var rect = e.currentTarget.getBoundingClientRect();
                   var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
                   var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
-                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 300; var iTW2 = 240; var iTH2 = 130; // must match draw-code constants
+                  var hoverGeometry = companionGardenTileSize(e.currentTarget.width, e.currentTarget.height); var isoOX2 = hoverGeometry.x; var isoOY2 = hoverGeometry.y; var iTW2 = hoverGeometry.width; var iTH2 = hoverGeometry.height; // must match draw-code constants
                   var relX2 = mx - isoOX2; var relY2 = my - isoOY2;
                   var hCol = Math.floor((relX2 / (iTW2 / 2) + relY2 / (iTH2 / 2)) / 2);
                   var hRow = Math.floor((relY2 / (iTH2 / 2) - relX2 / (iTW2 / 2)) / 2);
-                  e.currentTarget._hoverCell = (hRow >= 0 && hRow < 4 && hCol >= 0 && hCol < 4) ? hRow * 4 + hCol : -1;
+                  e.currentTarget._hoverCell = (hRow >= 0 && hRow < 4 && hCol >= 0 && hCol < 4) ? hRow * 4 + hCol : -1; if (e.currentTarget._cgRequestDraw) e.currentTarget._cgRequestDraw();
                 },
-                onMouseLeave: function(e) { e.currentTarget._hoverCell = -1; },
+                onMouseLeave: function(e) { e.currentTarget._hoverCell = -1; if (e.currentTarget._cgRequestDraw) e.currentTarget._cgRequestDraw(); },
                 onClick: function(e) {
                   // Isometric click detection: convert screen coords to grid cell
                   var rect = e.currentTarget.getBoundingClientRect();
@@ -8104,8 +8808,8 @@ var d = (labToolData.companionPlanting) || {};
                   // Record click location for the ripple effect (drawn in drawCG)
                   e.currentTarget._clickRipple = { x: mx, y: my, t0: performance.now() };
                   // Iso grid params (must match draw code)
-                  var isoOX = e.currentTarget.width / 2; var isoOY = 300;
-                  var iTW = 240; var iTH = 130; // must match draw-code constants in canvas ref below
+                  var hitGeometry = companionGardenTileSize(e.currentTarget.width, e.currentTarget.height); var isoOX = hitGeometry.x; var isoOY = hitGeometry.y;
+                  var iTW = hitGeometry.width; var iTH = hitGeometry.height; // shared with drawing
                   // Reverse isometric transform
                   var relX = mx - isoOX; var relY = my - isoOY;
                   var iCol = Math.floor((relX / (iTW / 2) + relY / (iTH / 2)) / 2);
@@ -8131,7 +8835,10 @@ var d = (labToolData.companionPlanting) || {};
                   // Always expose the most recent canvas to action handlers
                   // (cgWater/cgWeed/cgCompost are called from buttons outside the canvas)
                   window.__cgCanvasEl = cvEl;
-                  if (cvEl._cgCanvasInit) return;
+                  cvEl._cgFrameState = { cg: cg, grid: cgGrid, day: cgDay, year: cgYear, season: cgSeason, phase: cgPhase,
+                    moisture: cgMoisture, beneficialPop: cgBeneficialPop, selectedPlant: cgSelectedPlant, reducedMotion: cgReducedMotion,
+                    placementPreview: activePlacementPreview, previewModel: activePreviewModel };
+                  if (cvEl._cgCanvasInit) { if (cvEl._cgRequestDraw) cvEl._cgRequestDraw(); return; }
                   cvEl._cgCanvasInit = true;
                   var gctx = cvEl.getContext('2d');
                   // Adaptive canvas resolution: track CSS size so the maximize
@@ -8142,44 +8849,6 @@ var d = (labToolData.companionPlanting) || {};
                   var W = cvEl.width = cvEl.offsetWidth * 2;
                   var H = cvEl.height = Math.max(760, cvEl.offsetHeight * 2);
                   var startT = performance.now();
-                  // Isometric tile parameters. isoOY bumped 180 → 300 so the
-                  // top of the diamond sits comfortably below the horizon line
-                  // (at ~H*0.22) instead of right on it — keeps the plot
-                  // visually grounded rather than floating in the sky.
-                  var isoOX = W / 2; var isoOY = 300; // origin (center-top of grid)
-                  // Tile width/height in iso space. Bumped from 90/50 → 240/130
-                  // (~2.7×) so the 4×4 garden actually fills a meaningful share
-                  // of the canvas instead of looking like a pinpoint in the
-                  // background. Plant draws use iTW/iTH-relative offsets so they
-                  // scale proportionally; absolute plant heights (35-50 px) read
-                  // fine at this tile scale. If you change these here, also
-                  // update the matching constants in onClick + onMouseMove
-                  // handlers above so click hit-testing stays aligned.
-                  var iTW = 240; var iTH = 130;
-                  // Convert grid (row,col) to screen (x,y) center of diamond
-                  function isoToScreen(row, col) {
-                    return { x: isoOX + (col - row) * iTW / 2, y: isoOY + (col + row) * iTH / 2 };
-                  }
-                  // Pre-cache sky gradient
-                  var skyGrads = [['#87ceeb','#e0f0ff'], ['#4da6ff','#fff8e0'], ['#cc8844','#ffe8cc'], ['#8899aa','#d0dde8']].map(function(c) {
-                    var g = gctx.createLinearGradient(0, 0, 0, H * 0.25); g.addColorStop(0, c[0]); g.addColorStop(1, c[1]); return g;
-                  });
-                  // Plant visual profiles for isometric rendering
-                  var PLANT_VISUALS = {
-                    tomato: { stemColor: '#3a6b20', fruitColor: '#e53e3e', leafColor: '#4a8c30', flowerColor: '#fde047', tall: false },
-                    corn: { stemColor: '#5a8a30', fruitColor: '#f0c040', leafColor: '#6aaa40', tall: true },
-                    beans: { stemColor: '#3a7a25', fruitColor: '#558833', leafColor: '#50a030', flowerColor: '#dda0dd' },
-                    squash: { stemColor: '#4a7a20', fruitColor: '#e08020', leafColor: '#3a8a20', flowerColor: '#fbbf24', wide: true },
-                    lettuce: { stemColor: '#5aaa40', leafColor: '#70cc50', bushy: true },
-                    carrot: { stemColor: '#5a8a30', fruitColor: '#f97316', leafColor: '#60a840' },
-                    pepper: { stemColor: '#3a6b20', fruitColor: '#dc2626', leafColor: '#4a8c30' },
-                    marigold: { stemColor: '#5a8a30', leafColor: '#60a840', flowerColor: '#f59e0b' },
-                    sunflower: { stemColor: '#4a7a20', fruitColor: '#7c3a1a', leafColor: '#4a8a30', flowerColor: '#fbbf24', tall: true },
-                    strawberry: { stemColor: '#3a7020', fruitColor: '#e53e3e', leafColor: '#40a030', flowerColor: '#fff' },
-                    blueberry: { stemColor: '#4a6830', fruitColor: '#3b5998', leafColor: '#4a8040' }
-                  };
-                  var defVis = { stemColor: '#4a7a2e', fruitColor: '#888', leafColor: '#50a030' };
-
                   // ResizeObserver: re-sync internal canvas resolution when the
                   // CSS box changes (maximize toggle, window resize). Reads the
                   // current offsetWidth/Height so the canvas never blurs from
@@ -8189,1785 +8858,57 @@ var d = (labToolData.companionPlanting) || {};
                     var _cgRo = new ResizeObserver(function() {
                       W = cvEl.width = cvEl.offsetWidth * 2;
                       H = cvEl.height = Math.max(760, cvEl.offsetHeight * 2);
-                      isoOX = W / 2;
+                      // Drawing and hit-testing derive their geometry from the resized canvas.
+                      if (cvEl._cgRequestDraw) cvEl._cgRequestDraw();
                     });
                     _cgRo.observe(cvEl);
                     cvEl._cgRo = _cgRo;
                   }
-                  var cgReducedMotion = false;
-                  try { cgReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+                  var cgMotionMedia = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+                  cvEl._cgVisible = true;
                   function drawCG() {
-                    // Stop animating if the canvas was detached (e.g. maximize
-                    // toggle remounted it via React key). Prevents orphan RAF
-                    // loops leaking after unmount.
-                    if (!document.contains(cvEl)) {
-                      if (cvEl._cgRo) { try { cvEl._cgRo.disconnect(); } catch (e) {} }
-                      return;
-                    }
-                    cvEl._cgAnim = requestAnimationFrame(drawCG);
-                    var t = (performance.now() - startT) / 1000;
-                    var sSeason = cgSeason; // read directly (canvas re-mounts on state change)
-                    var grid2 = cgGrid;
-
-                    // ── Time-of-day cycle (~120s per "day") ──
-                    // todPhase 0..1 = continuous loop; map to: dawn (0-0.1), morning (0.1-0.3),
-                    // day (0.3-0.6), afternoon (0.6-0.7), dusk (0.7-0.8), night (0.8-1.0).
-                    var DAY_SECONDS = 120;
-                    var todPhase = ((t / DAY_SECONDS) % 1 + 1) % 1;
-                    var isNight = todPhase >= 0.8 || todPhase < 0.05;
-                    var isDusk = todPhase >= 0.7 && todPhase < 0.8;
-                    var isDawn = todPhase >= 0.05 && todPhase < 0.15;
-                    var nightStrength = isNight ? Math.min(1, Math.abs(todPhase < 0.05 ? (0.05 - todPhase) * 5 : (todPhase - 0.8) * 5)) : 0;
-                    var sunArcT = todPhase < 0.8 ? (todPhase - 0.05) / 0.75 : 0;  // 0..1 across the visible-sun portion (5%-80% of cycle)
-
-                    // Clear
-                    gctx.clearRect(0, 0, W, H);
-
-                    // ── Sky (season gradient + time-of-day overlay) ──
-                    gctx.fillStyle = skyGrads[sSeason] || skyGrads[0]; gctx.fillRect(0, 0, W, H * 0.25);
-                    // Time-of-day tint overlay
-                    if (isDawn) {
-                      gctx.fillStyle = 'rgba(255,180,120,0.35)';
-                      gctx.fillRect(0, 0, W, H * 0.25);
-                    } else if (isDusk) {
-                      gctx.fillStyle = 'rgba(255,120,80,0.45)';
-                      gctx.fillRect(0, 0, W, H * 0.25);
-                    } else if (isNight) {
-                      // Dark blue overlay covers whole canvas, deeper at midnight
-                      gctx.fillStyle = 'rgba(15,20,55,' + (0.55 * nightStrength) + ')';
-                      gctx.fillRect(0, 0, W, H);
-                      // Stars
-                      gctx.fillStyle = 'rgba(255,255,255,' + (0.7 * nightStrength) + ')';
-                      for (var sti = 0; sti < 25; sti++) {
-                        var sStarX = (sti * 73.3) % W;
-                        var sStarY = (sti * 41.7) % (H * 0.22) + 8;
-                        var twink = 0.5 + 0.5 * Math.sin(t * 2 + sti * 1.7);
-                        gctx.globalAlpha = twink * nightStrength;
-                        gctx.beginPath(); gctx.arc(sStarX, sStarY, 0.8, 0, Math.PI * 2); gctx.fill();
-                      }
-                      gctx.globalAlpha = 1;
-                    }
-
-                    // ── Sun OR Moon (depending on time-of-day) ──
-                    if (!isNight) {
-                      // Sun arcs east → west across the sky
-                      var sunX = W * 0.08 + sunArcT * W * 0.84;
-                      var sunY = 60 + Math.sin(sunArcT * Math.PI) * -25;  // peak at noon
-                      // Color shifts warmer at dawn/dusk
-                      var sunColor = isDawn ? '#ff9966' : isDusk ? '#ff6644' : '#ffd700';
-                      var glowColor = isDawn || isDusk ? 'rgba(255,150,100,0.18)' : 'rgba(255,215,0,0.12)';
-                      gctx.fillStyle = glowColor;
-                      gctx.beginPath(); gctx.arc(sunX, sunY, 35, 0, Math.PI * 2); gctx.fill();
-                      gctx.fillStyle = sunColor;
-                      gctx.beginPath(); gctx.arc(sunX, sunY, 20, 0, Math.PI * 2); gctx.fill();
-                    } else {
-                      // Moon arcs east → west during night portion of cycle
-                      var moonArcT = ((todPhase - 0.8) / 0.25 + 0.04) % 1;
-                      if (moonArcT < 0) moonArcT += 1;
-                      var moonX = W * 0.1 + moonArcT * W * 0.8;
-                      var moonY = 50 + Math.sin(moonArcT * Math.PI) * -20;
-                      // Glow
-                      gctx.fillStyle = 'rgba(220,220,240,' + (0.18 * nightStrength) + ')';
-                      gctx.beginPath(); gctx.arc(moonX, moonY, 28, 0, Math.PI * 2); gctx.fill();
-                      // Moon
-                      gctx.fillStyle = '#e8e8f0';
-                      gctx.beginPath(); gctx.arc(moonX, moonY, 14, 0, Math.PI * 2); gctx.fill();
-                      // Crescent shadow (subtle)
-                      gctx.fillStyle = 'rgba(60,70,100,0.35)';
-                      gctx.beginPath(); gctx.arc(moonX + 5, moonY - 1, 12, 0, Math.PI * 2); gctx.fill();
-                    }
-
-                    // ── Clouds ──
-                    if (sSeason !== 3 && !isNight) {
-                      gctx.fillStyle = isDusk ? 'rgba(255,160,120,0.3)' : isDawn ? 'rgba(255,200,180,0.3)' : 'rgba(255,255,255,0.2)';
-                      for (var cl2 = 0; cl2 < 3; cl2++) {
-                        var clx2 = (t * 10 + cl2 * W * 0.35) % (W + 120) - 60;
-                        var cly2 = 25 + cl2 * 18;
-                        gctx.beginPath(); gctx.ellipse(clx2, cly2, 30 + cl2 * 10, 10, 0, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.ellipse(clx2 + 20, cly2 - 4, 20, 8, 0, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-
-                    // ── Ground plane (green grass perspective) ──
-                    var grassG = gctx.createLinearGradient(0, H * 0.22, 0, H);
-                    grassG.addColorStop(0, sSeason === 3 ? '#8899aa' : sSeason === 2 ? '#8a7a40' : '#5a8a3e');
-                    grassG.addColorStop(1, sSeason === 3 ? '#667788' : sSeason === 2 ? '#6a5a30' : '#3a6a28');
-                    gctx.fillStyle = grassG; gctx.fillRect(0, H * 0.22, W, H);
-
-                    // ── Ground texture: grass tufts scattered around the garden ──
-                    // Deterministic positions (seeded by index) so tufts don't jitter each frame.
-                    // Skipped in winter (sSeason === 3).
-                    if (sSeason !== 3) {
-                      var tuftColors = sSeason === 2
-                        ? ['rgba(120,90,30,0.55)', 'rgba(140,110,50,0.5)']  // autumn dry tones
-                        : ['rgba(50,110,40,0.55)', 'rgba(70,140,50,0.5)', 'rgba(40,90,30,0.55)']; // spring/summer
-                      for (var tf = 0; tf < 80; tf++) {
-                        // Pseudo-random scatter via cheap hash
-                        var tfx = (tf * 173 + 47) % W;
-                        var tfy = H * 0.24 + ((tf * 91 + 13) % (H * 0.74));
-                        // Skip the garden footprint (rough diamond bounds)
-                        var dx = tfx - isoOX;
-                        var dy = tfy - isoOY;
-                        if (Math.abs(dx) / (iTW * 2.2) + Math.abs(dy) / (iTH * 2.2) < 1) continue;
-                        var tfCol = tuftColors[tf % tuftColors.length];
-                        gctx.strokeStyle = tfCol;
-                        gctx.lineWidth = 1;
-                        // Tiny tuft: 3 short vertical lines
-                        gctx.beginPath();
-                        gctx.moveTo(tfx, tfy);     gctx.lineTo(tfx - 1, tfy - 3);
-                        gctx.moveTo(tfx + 1, tfy); gctx.lineTo(tfx + 1, tfy - 4);
-                        gctx.moveTo(tfx + 2, tfy); gctx.lineTo(tfx + 3, tfy - 3);
-                        gctx.stroke();
-                      }
-                      // Wildflower dots (spring/summer only)
-                      if (sSeason === 0 || sSeason === 1) {
-                        var flowerPalette = sSeason === 0
-                          ? ['#fbbf24', '#f9a8d4', '#fde047', '#fff', '#fb923c']  // spring pastels
-                          : ['#dc2626', '#f59e0b', '#8b5cf6', '#fff', '#fbbf24']; // summer brights
-                        for (var fl = 0; fl < 28; fl++) {
-                          var flx = (fl * 251 + 23) % W;
-                          var fly = H * 0.26 + ((fl * 137 + 19) % (H * 0.7));
-                          var fdx = flx - isoOX, fdy = fly - isoOY;
-                          if (Math.abs(fdx) / (iTW * 2.4) + Math.abs(fdy) / (iTH * 2.4) < 1) continue;
-                          gctx.fillStyle = flowerPalette[fl % flowerPalette.length];
-                          gctx.beginPath(); gctx.arc(flx, fly, 1.6, 0, Math.PI * 2); gctx.fill();
-                          // Tiny stem
-                          gctx.strokeStyle = 'rgba(40,90,30,0.55)';
-                          gctx.lineWidth = 0.6;
-                          gctx.beginPath(); gctx.moveTo(flx, fly + 1); gctx.lineTo(flx, fly + 4); gctx.stroke();
-                        }
-                      }
-                    }
-
-                    // ── Soft stone border around the garden diamond ──
-                    // Scatter small flat stones along the perimeter to frame the
-                    // garden so it doesn't float on plain green.
-                    (function() {
-                      var topPos = isoToScreen(-0.3, -0.3);
-                      var rightPos = isoToScreen(-0.3, 4.3);
-                      var botPos = isoToScreen(4.3, 4.3);
-                      var leftPos = isoToScreen(4.3, -0.3);
-                      var corners = [topPos, rightPos, botPos, leftPos, topPos];
-                      // Stroke a faint outline (almost invisible — sets the bounds)
-                      gctx.strokeStyle = 'rgba(120,110,90,0.18)';
-                      gctx.lineWidth = 1;
-                      gctx.beginPath();
-                      gctx.moveTo(corners[0].x, corners[0].y);
-                      for (var ci = 1; ci < corners.length; ci++) {
-                        gctx.lineTo(corners[ci].x, corners[ci].y);
-                      }
-                      gctx.stroke();
-                      // Stones at intervals along each edge
-                      var stoneColors = ['#9a9088', '#807870', '#a8a098', '#706860'];
-                      for (var edge = 0; edge < 4; edge++) {
-                        var a = corners[edge], b = corners[edge + 1];
-                        var STONES_PER_EDGE = 9;
-                        for (var st = 1; st <= STONES_PER_EDGE; st++) {
-                          var tFrac = st / (STONES_PER_EDGE + 1);
-                          // Wobble each stone slightly off the line so it looks natural
-                          var wobX = (((edge * 7 + st * 13) % 5) - 2) * 1.5;
-                          var wobY = (((edge * 11 + st * 17) % 5) - 2) * 1.2;
-                          var sx = a.x + (b.x - a.x) * tFrac + wobX;
-                          var sy = a.y + (b.y - a.y) * tFrac + wobY;
-                          gctx.fillStyle = stoneColors[(edge + st) % stoneColors.length];
-                          gctx.beginPath();
-                          gctx.ellipse(sx, sy, 3.5 + ((edge + st) % 3), 2.4, 0, 0, Math.PI * 2);
-                          gctx.fill();
-                          // Tiny highlight
-                          gctx.fillStyle = 'rgba(255,255,255,0.18)';
-                          gctx.beginPath();
-                          gctx.ellipse(sx - 0.8, sy - 0.6, 1.4, 0.8, 0, 0, Math.PI * 2);
-                          gctx.fill();
-                        }
-                      }
-                    })();
-
-                    // ── Background trees (behind garden) ──
-                    // Tree size bumped 18-30 → 32-56 so they read proportionally
-                    // against the 240×130 plot diamond. Trunk also widened from
-                    // 4px → 6px so the trunk is visible at the larger canopy size.
-                    var treeLine = isoOY - 40;
-                    gctx.fillStyle = sSeason === 3 ? 'rgba(80,90,100,0.35)' : sSeason === 2 ? 'rgba(140,100,30,0.3)' : 'rgba(35,90,25,0.35)';
-                    for (var bt = 0; bt < 8; bt++) {
-                      var btx = W * 0.08 + bt * W * 0.12;
-                      var bty = treeLine - 5 + Math.sin(bt * 2.3) * 8;
-                      var btSize = 32 + (bt % 3) * 12;
-                      // Canopy
-                      gctx.beginPath(); gctx.arc(btx, bty - btSize * 0.4, btSize, 0, Math.PI * 2); gctx.fill();
-                      gctx.beginPath(); gctx.arc(btx + btSize * 0.3, bty - btSize * 0.2, btSize * 0.7, 0, Math.PI * 2); gctx.fill();
-                      // Trunk
-                      gctx.fillStyle = 'rgba(80,50,20,0.3)';
-                      gctx.fillRect(btx - 3, bty, 6, 20);
-                      gctx.fillStyle = sSeason === 3 ? 'rgba(80,90,100,0.35)' : sSeason === 2 ? 'rgba(140,100,30,0.3)' : 'rgba(35,90,25,0.35)';
-                    }
-
-                    // ── Garden shed (top-right corner, isometric) ──
-                    var shedPos = isoToScreen(-1, 4);
-                    gctx.fillStyle = '#7a5a3a'; gctx.fillRect(shedPos.x - 18, shedPos.y - 30, 36, 24);
-                    gctx.fillStyle = '#6a4a2a'; // roof
-                    gctx.beginPath(); gctx.moveTo(shedPos.x - 22, shedPos.y - 30); gctx.lineTo(shedPos.x, shedPos.y - 42); gctx.lineTo(shedPos.x + 22, shedPos.y - 30); gctx.fill();
-                    gctx.fillStyle = '#5a3a1a'; gctx.fillRect(shedPos.x - 4, shedPos.y - 18, 8, 12); // door
-                    // Tiny window on shed (lit warm at night, daylight blue otherwise)
-                    var windowLit = isNight || isDusk;
-                    gctx.fillStyle = windowLit ? '#fbbf24' : '#a8d4f0';
-                    gctx.fillRect(shedPos.x - 14, shedPos.y - 26, 6, 6);
-                    if (windowLit) {
-                      // Soft warm glow extending into the night
-                      gctx.fillStyle = 'rgba(251,191,36,' + (0.2 * (nightStrength + (isDusk ? 0.5 : 0))) + ')';
-                      gctx.beginPath(); gctx.arc(shedPos.x - 11, shedPos.y - 23, 14, 0, Math.PI * 2); gctx.fill();
-                    }
-                    gctx.strokeStyle = '#5a3a1a'; gctx.lineWidth = 0.5;
-                    gctx.beginPath(); gctx.moveTo(shedPos.x - 11, shedPos.y - 26); gctx.lineTo(shedPos.x - 11, shedPos.y - 20); gctx.stroke();
-                    gctx.beginPath(); gctx.moveTo(shedPos.x - 14, shedPos.y - 23); gctx.lineTo(shedPos.x - 8, shedPos.y - 23); gctx.stroke();
-                    // Chimney (so smoke wisps from earlier render through a real chimney shape)
-                    gctx.fillStyle = '#5a3a1a'; gctx.fillRect(shedPos.x + 8, shedPos.y - 44, 5, 8);
-
-                    // ── Wind chime hanging from shed eave (sways slightly) ──
-                    var chSway = Math.sin(t * 1.2) * 1.5;
-                    var chBaseX = shedPos.x - 22;
-                    var chBaseY = shedPos.y - 30;
-                    gctx.strokeStyle = 'rgba(120,90,60,0.7)'; gctx.lineWidth = 0.6;
-                    gctx.beginPath(); gctx.moveTo(chBaseX, chBaseY); gctx.lineTo(chBaseX + chSway, chBaseY + 4); gctx.stroke();
-                    // 4 hanging tubes
-                    var chTubeColors = ['#cbd5e1', '#94a3b8', '#cbd5e1', '#94a3b8'];
-                    for (var chi = 0; chi < 4; chi++) {
-                      var chTubeX = chBaseX + chSway * (1 + chi * 0.15) - 3 + chi * 2;
-                      gctx.strokeStyle = chTubeColors[chi]; gctx.lineWidth = 1;
-                      gctx.beginPath();
-                      gctx.moveTo(chTubeX, chBaseY + 4);
-                      gctx.lineTo(chTubeX + chSway * 0.3, chBaseY + 9 + chi);
-                      gctx.stroke();
-                    }
-
-                    // ── Wheelbarrow (parked just left of shed, ground level) ──
-                    var wbX = shedPos.x - 50;
-                    var wbY = shedPos.y - 4;
-                    // Tray (parallelogram in iso)
-                    gctx.fillStyle = '#9a3a2a';
-                    gctx.beginPath();
-                    gctx.moveTo(wbX - 12, wbY - 6);
-                    gctx.lineTo(wbX + 12, wbY - 6);
-                    gctx.lineTo(wbX + 14, wbY);
-                    gctx.lineTo(wbX - 10, wbY);
-                    gctx.closePath();
-                    gctx.fill();
-                    // Wheel
-                    gctx.fillStyle = '#3a2a1a';
-                    gctx.beginPath(); gctx.arc(wbX - 8, wbY + 4, 4, 0, Math.PI * 2); gctx.fill();
-                    gctx.fillStyle = '#5a3a2a';
-                    gctx.beginPath(); gctx.arc(wbX - 8, wbY + 4, 1.5, 0, Math.PI * 2); gctx.fill();
-                    // Handles
-                    gctx.strokeStyle = '#7a5a3a'; gctx.lineWidth = 1.5;
-                    gctx.beginPath(); gctx.moveTo(wbX + 12, wbY - 4); gctx.lineTo(wbX + 22, wbY); gctx.stroke();
-
-                    // ── Watering can leaning at shed door ──
-                    var wcX = shedPos.x + 16;
-                    var wcY = shedPos.y - 8;
-                    gctx.fillStyle = '#16a085';
-                    gctx.fillRect(wcX, wcY - 8, 7, 9);  // body
-                    gctx.beginPath();
-                    gctx.moveTo(wcX + 7, wcY - 6);
-                    gctx.lineTo(wcX + 13, wcY - 8);
-                    gctx.lineTo(wcX + 13, wcY - 5);
-                    gctx.lineTo(wcX + 7, wcY - 3);
-                    gctx.closePath();
-                    gctx.fill();
-                    // Handle
-                    gctx.strokeStyle = '#0e6655'; gctx.lineWidth = 1;
-                    gctx.beginPath(); gctx.arc(wcX + 3, wcY - 9, 3, Math.PI, 0); gctx.stroke();
-
-                    // ── Stack of terracotta pots at shed door ──
-                    var potsX = shedPos.x - 12;
-                    var potsY = shedPos.y - 4;
-                    for (var pti = 0; pti < 3; pti++) {
-                      var ptScale = 1 - pti * 0.18;
-                      var ptW = 8 * ptScale;
-                      var ptH = 6 * ptScale;
-                      var ptY = potsY - pti * 5;
-                      // Pot body (trapezoid)
-                      gctx.fillStyle = pti === 2 ? '#c97557' : '#b85a3c';
-                      gctx.beginPath();
-                      gctx.moveTo(potsX - ptW, ptY);
-                      gctx.lineTo(potsX + ptW, ptY);
-                      gctx.lineTo(potsX + ptW * 0.78, ptY - ptH);
-                      gctx.lineTo(potsX - ptW * 0.78, ptY - ptH);
-                      gctx.closePath();
-                      gctx.fill();
-                      // Rim line
-                      gctx.strokeStyle = '#8a3a20'; gctx.lineWidth = 0.6;
-                      gctx.beginPath(); gctx.moveTo(potsX - ptW, ptY); gctx.lineTo(potsX + ptW, ptY); gctx.stroke();
-                    }
-
-                    // ── Rain barrel at right corner of shed ──
-                    var rbX = shedPos.x + 26;
-                    var rbY = shedPos.y - 4;
-                    // Barrel body (vertical wood-stave look)
-                    gctx.fillStyle = '#3a5a8a';
-                    gctx.fillRect(rbX - 6, rbY - 18, 12, 18);
-                    // Stave lines
-                    gctx.strokeStyle = 'rgba(20,40,70,0.4)'; gctx.lineWidth = 0.5;
-                    for (var stv = 1; stv < 4; stv++) {
-                      gctx.beginPath(); gctx.moveTo(rbX - 6 + stv * 3, rbY - 18); gctx.lineTo(rbX - 6 + stv * 3, rbY); gctx.stroke();
-                    }
-                    // Metal hoops
-                    gctx.strokeStyle = '#5a5a5a'; gctx.lineWidth = 1;
-                    gctx.beginPath(); gctx.moveTo(rbX - 6, rbY - 14); gctx.lineTo(rbX + 6, rbY - 14); gctx.stroke();
-                    gctx.beginPath(); gctx.moveTo(rbX - 6, rbY - 4); gctx.lineTo(rbX + 6, rbY - 4); gctx.stroke();
-                    // Open top with water inside (visible water only when moisture is high — recently rained)
-                    gctx.fillStyle = '#1a3a5a';
-                    gctx.beginPath(); gctx.ellipse(rbX, rbY - 18, 6, 1.5, 0, 0, Math.PI * 2); gctx.fill();
-                    if (cgMoisture > 60) {
-                      gctx.fillStyle = '#4a7aaa';
-                      gctx.beginPath(); gctx.ellipse(rbX, rbY - 17.5, 5, 1.2, 0, 0, Math.PI * 2); gctx.fill();
-                      // Tiny ripple
-                      if (Math.sin(t * 0.8) > 0.3) {
-                        gctx.strokeStyle = 'rgba(255,255,255,0.3)'; gctx.lineWidth = 0.4;
-                        gctx.beginPath(); gctx.ellipse(rbX, rbY - 17.5, 2, 0.5, 0, 0, Math.PI * 2); gctx.stroke();
-                      }
-                    }
-                    // Spigot at bottom (small detail)
-                    gctx.fillStyle = '#5a5a5a';
-                    gctx.fillRect(rbX + 5, rbY - 3, 3, 1.5);
-
-                    // ── Compost bin (front-left of garden, outside fence) ──
-                    var cbPos = isoToScreen(4.6, 0.2);
-                    // 3-sided wood box (front + two sides, no top)
-                    gctx.fillStyle = '#7a5a3a';
-                    // Front board
-                    gctx.fillRect(cbPos.x - 14, cbPos.y - 12, 28, 12);
-                    // Left side (perspective slant)
-                    gctx.beginPath();
-                    gctx.moveTo(cbPos.x - 14, cbPos.y - 12);
-                    gctx.lineTo(cbPos.x - 18, cbPos.y - 14);
-                    gctx.lineTo(cbPos.x - 18, cbPos.y - 2);
-                    gctx.lineTo(cbPos.x - 14, cbPos.y);
-                    gctx.closePath();
-                    gctx.fillStyle = '#6a4a2a';
-                    gctx.fill();
-                    // Right side
-                    gctx.beginPath();
-                    gctx.moveTo(cbPos.x + 14, cbPos.y - 12);
-                    gctx.lineTo(cbPos.x + 18, cbPos.y - 14);
-                    gctx.lineTo(cbPos.x + 18, cbPos.y - 2);
-                    gctx.lineTo(cbPos.x + 14, cbPos.y);
-                    gctx.closePath();
-                    gctx.fillStyle = '#6a4a2a';
-                    gctx.fill();
-                    // Slat lines on front board
-                    gctx.strokeStyle = '#5a3a1a'; gctx.lineWidth = 0.5;
-                    for (var sli = 1; sli < 4; sli++) {
-                      gctx.beginPath(); gctx.moveTo(cbPos.x - 14, cbPos.y - 12 + sli * 3); gctx.lineTo(cbPos.x + 14, cbPos.y - 12 + sli * 3); gctx.stroke();
-                    }
-                    // Compost pile inside (visible above the front board)
-                    gctx.fillStyle = '#3a2a1a';
-                    gctx.beginPath();
-                    gctx.ellipse(cbPos.x, cbPos.y - 13, 14, 4, 0, 0, Math.PI);
-                    gctx.fill();
-                    // Compost flecks (organic matter visible)
-                    var compostColors = ['#5a3a1a', '#7a5a2a', '#4a3a1a', '#8a6a3a', '#5a4a2a'];
-                    for (var cfi = 0; cfi < 8; cfi++) {
-                      var cfx = cbPos.x - 12 + (cfi * 3);
-                      var cfy = cbPos.y - 14 + Math.sin(cfi * 1.3) * 1;
-                      gctx.fillStyle = compostColors[cfi % compostColors.length];
-                      gctx.fillRect(cfx, cfy, 2, 1.2);
-                    }
-                    // Steam wisp (compost is alive — decomposition releases heat)
-                    if (sSeason !== 3) {
-                      var stPhase = (t * 0.4) % 2;
-                      if (stPhase < 1.5) {
-                        var stA = (1 - stPhase / 1.5) * 0.25;
-                        gctx.fillStyle = 'rgba(220,220,200,' + stA + ')';
-                        gctx.beginPath();
-                        gctx.arc(cbPos.x + Math.sin(stPhase * 3) * 2, cbPos.y - 16 - stPhase * 8, 2 + stPhase, 0, Math.PI * 2);
-                        gctx.fill();
-                      }
-                    }
-
-                    // ── Isometric stone paths (between rows) ──
-                    gctx.fillStyle = 'rgba(160,150,130,0.2)';
-                    for (var pr = 0; pr < 3; pr++) {
-                      // Horizontal paths between row pr and pr+1
-                      for (var pc = 0; pc < 4; pc++) {
-                        var p1 = isoToScreen(pr, pc);
-                        var p2 = isoToScreen(pr + 1, pc);
-                        var mpx = (p1.x + p2.x) / 2; var mpy = (p1.y + p2.y) / 2;
-                        gctx.beginPath(); gctx.ellipse(mpx, mpy + iTH / 4, 6, 3, 0.5, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-
-                    // ── Isometric fence perimeter ──
-                    var fenceColor = '#8a6a4a';
-                    var corners = [isoToScreen(-0.6, -0.6), isoToScreen(-0.6, 3.6), isoToScreen(3.6, 3.6), isoToScreen(3.6, -0.6)];
-                    gctx.strokeStyle = fenceColor; gctx.lineWidth = 2;
-                    gctx.beginPath();
-                    gctx.moveTo(corners[0].x, corners[0].y); gctx.lineTo(corners[1].x, corners[1].y);
-                    gctx.lineTo(corners[2].x, corners[2].y); gctx.lineTo(corners[3].x, corners[3].y);
-                    gctx.closePath(); gctx.stroke();
-                    // Fence posts at corners
-                    corners.forEach(function(fc) {
-                      gctx.fillStyle = fenceColor;
-                      gctx.fillRect(fc.x - 2, fc.y - 10, 4, 12);
-                    });
-                    // Fence rail (top wire/rail)
-                    gctx.strokeStyle = 'rgba(138,106,74,0.4)'; gctx.lineWidth = 1;
-                    gctx.beginPath();
-                    gctx.moveTo(corners[0].x, corners[0].y - 6); gctx.lineTo(corners[1].x, corners[1].y - 6);
-                    gctx.lineTo(corners[2].x, corners[2].y - 6); gctx.lineTo(corners[3].x, corners[3].y - 6);
-                    gctx.closePath(); gctx.stroke();
-
-                    // ── Birdbath (front-left of garden, just outside fence) ──
-                    var bbPos = isoToScreen(4.4, -0.8);
-                    // Pedestal (stone)
-                    gctx.fillStyle = '#8a8a90';
-                    gctx.fillRect(bbPos.x - 4, bbPos.y - 14, 8, 14);
-                    gctx.fillStyle = 'rgba(0,0,0,0.18)';  // pedestal shadow
-                    gctx.fillRect(bbPos.x - 4, bbPos.y - 8, 8, 2);
-                    // Bowl
-                    gctx.fillStyle = '#9a9aa0';
-                    gctx.beginPath(); gctx.ellipse(bbPos.x, bbPos.y - 14, 12, 4, 0, 0, Math.PI * 2); gctx.fill();
-                    // Water (lighter, with subtle ripple)
-                    gctx.fillStyle = '#6cb4d8';
-                    gctx.beginPath(); gctx.ellipse(bbPos.x, bbPos.y - 15, 9, 2.5, 0, 0, Math.PI * 2); gctx.fill();
-                    // Tiny ripple every few seconds
-                    var ripPhase = (t * 0.4) % 3;
-                    if (ripPhase < 1) {
-                      gctx.strokeStyle = 'rgba(255,255,255,' + (1 - ripPhase) * 0.4 + ')';
-                      gctx.lineWidth = 0.6;
-                      gctx.beginPath(); gctx.ellipse(bbPos.x + Math.sin(ripPhase * 6) * 2, bbPos.y - 15, 2 + ripPhase * 4, 0.6 + ripPhase * 1.5, 0, 0, Math.PI * 2); gctx.stroke();
-                    }
-
-                    // ── Garden gnome (decorative; near front-right corner) ──
-                    var gnPos = isoToScreen(4.3, 3.6);
-                    // Hat (red cone)
-                    gctx.fillStyle = '#dc2626';
-                    gctx.beginPath();
-                    gctx.moveTo(gnPos.x, gnPos.y - 18);
-                    gctx.lineTo(gnPos.x - 5, gnPos.y - 8);
-                    gctx.lineTo(gnPos.x + 5, gnPos.y - 8);
-                    gctx.closePath();
-                    gctx.fill();
-                    // Hat band
-                    gctx.fillStyle = '#b91c1c';
-                    gctx.fillRect(gnPos.x - 5, gnPos.y - 9, 10, 1.5);
-                    // Face
-                    gctx.fillStyle = '#fde2c8';
-                    gctx.beginPath(); gctx.arc(gnPos.x, gnPos.y - 5, 3.5, 0, Math.PI * 2); gctx.fill();
-                    // Beard
-                    gctx.fillStyle = '#e5e7eb';
-                    gctx.beginPath(); gctx.ellipse(gnPos.x, gnPos.y - 2, 4, 5, 0, 0, Math.PI * 2); gctx.fill();
-                    // Body
-                    gctx.fillStyle = '#1d4ed8';
-                    gctx.beginPath();
-                    gctx.moveTo(gnPos.x - 5, gnPos.y);
-                    gctx.lineTo(gnPos.x + 5, gnPos.y);
-                    gctx.lineTo(gnPos.x + 6, gnPos.y + 6);
-                    gctx.lineTo(gnPos.x - 6, gnPos.y + 6);
-                    gctx.closePath();
-                    gctx.fill();
-                    // Eyes (tiny)
-                    gctx.fillStyle = '#1f2937';
-                    gctx.fillRect(gnPos.x - 1.5, gnPos.y - 5, 0.8, 0.8);
-                    gctx.fillRect(gnPos.x + 0.7, gnPos.y - 5, 0.8, 0.8);
-
-                    // ── Wooden bench (community gathering spot, front-right outside fence) ──
-                    var bnPos = isoToScreen(4.6, 2.6);
-                    // Bench seat (wooden plank)
-                    gctx.fillStyle = '#8a6a3a';
-                    gctx.fillRect(bnPos.x - 18, bnPos.y - 10, 36, 4);
-                    // Backrest
-                    gctx.fillStyle = '#7a5a2a';
-                    gctx.fillRect(bnPos.x - 17, bnPos.y - 22, 34, 2);
-                    // Backrest vertical supports
-                    for (var bvi = 0; bvi < 4; bvi++) {
-                      gctx.fillRect(bnPos.x - 14 + bvi * 9.3, bnPos.y - 20, 1.5, 11);
-                    }
-                    // Legs (4 — front pair visible, back pair offset for iso)
-                    gctx.fillStyle = '#5a3a1a';
-                    gctx.fillRect(bnPos.x - 16, bnPos.y - 6, 2, 8);
-                    gctx.fillRect(bnPos.x + 14, bnPos.y - 6, 2, 8);
-                    // Wood grain lines on seat
-                    gctx.strokeStyle = 'rgba(70,50,20,0.3)';
-                    gctx.lineWidth = 0.4;
-                    gctx.beginPath(); gctx.moveTo(bnPos.x - 18, bnPos.y - 8); gctx.lineTo(bnPos.x + 18, bnPos.y - 8); gctx.stroke();
-
-                    // ── Sign post: "COMMUNITY GARDEN" (front-left of fence) ──
-                    var spPos = isoToScreen(4.5, -0.5);
-                    // Post
-                    gctx.fillStyle = '#7a5a3a';
-                    gctx.fillRect(spPos.x - 1.5, spPos.y - 24, 3, 24);
-                    // Sign board
-                    gctx.fillStyle = '#fbe4a3';
-                    gctx.fillRect(spPos.x - 22, spPos.y - 30, 44, 14);
-                    // Sign border
-                    gctx.strokeStyle = '#7a5a3a'; gctx.lineWidth = 1;
-                    gctx.strokeRect(spPos.x - 22, spPos.y - 30, 44, 14);
-                    // Sign text
-                    gctx.fillStyle = '#5a3a1a';
-                    gctx.font = 'bold 7px system-ui';
-                    gctx.textAlign = 'center';
-                    gctx.fillText('COMMUNITY', spPos.x, spPos.y - 23);
-                    gctx.fillText('GARDEN', spPos.x, spPos.y - 17);
-                    gctx.textAlign = 'left';  // reset
-
-                    // ── Isometric 4×4 Grid (diamond tiles) ──
-                    var hoverCell2 = cvEl._hoverCell;
-                    var polCount2 = 0;
-                    for (var iR = 0; iR < 4; iR++) {
-                      for (var iC = 0; iC < 4; iC++) {
-                        var pos = isoToScreen(iR, iC);
-                        var ci4 = iR * 4 + iC;
-                        var cell4 = grid2[ci4];
-                        var hasPlant = cell4 && cell4.plantId && CG_PLANTS[cell4.plantId];
-                        var pl3 = hasPlant ? CG_PLANTS[cell4.plantId] : null;
-                        if (pl3 && pl3.pollinator) polCount2++;
-                        var isHovered = hoverCell2 === ci4;
-
-                        // ── Soil tile (isometric diamond) ──
-                        // Smooth moisture darkening: dry soil is light brown, saturated is dark + slightly cooler
-                        var moisFactor = Math.min(1, Math.max(0, cgMoisture / 100));
-                        var soilDark2 = Math.round(moisFactor * 25);
-                        var moisBlue = Math.round(moisFactor * 8);  // damp soil reads slightly cooler
-                        gctx.fillStyle = hasPlant
-                          ? 'rgba(' + (100 - soilDark2) + ',' + (65 - soilDark2 * 0.4) + ',' + (30 + moisBlue) + ',0.85)'
-                          : 'rgba(' + (110 - soilDark2) + ',' + (75 - soilDark2 * 0.5) + ',' + (35 + moisBlue) + ',0.6)';
-                        gctx.beginPath();
-                        gctx.moveTo(pos.x, pos.y - iTH / 2); // top
-                        gctx.lineTo(pos.x + iTW / 2, pos.y);   // right
-                        gctx.lineTo(pos.x, pos.y + iTH / 2); // bottom
-                        gctx.lineTo(pos.x - iTW / 2, pos.y);   // left
-                        gctx.closePath(); gctx.fill();
-                        // ── Soil tile texture: deterministic pebbles + speckles ──
-                        // 5 pebbles + 7 grain-speckles per tile, positioned by tile
-                        // index so they stay stable across frames. Skipped on tiles
-                        // that have a plant (plant draws on top).
-                        if (!hasPlant) {
-                          for (var sp = 0; sp < 5; sp++) {
-                            var spAng = (ci4 * 2.1 + sp * 1.7) % (Math.PI * 2);
-                            var spDist = 6 + ((ci4 * 11 + sp * 7) % 22);
-                            var spX = pos.x + Math.cos(spAng) * spDist;
-                            var spY = pos.y + Math.sin(spAng) * spDist * (iTH / iTW);
-                            // Keep pebbles inside the diamond
-                            var spDiam = Math.abs(spX - pos.x) / (iTW / 2) + Math.abs(spY - pos.y) / (iTH / 2);
-                            if (spDiam > 0.78) continue;
-                            var spShade = (ci4 + sp) % 3;
-                            gctx.fillStyle = ['rgba(90,60,30,0.55)', 'rgba(140,110,80,0.5)', 'rgba(70,45,25,0.6)'][spShade];
-                            gctx.beginPath();
-                            gctx.ellipse(spX, spY, 1.4 + (sp % 2) * 0.6, 0.9, 0, 0, Math.PI * 2);
-                            gctx.fill();
-                            gctx.fillStyle = 'rgba(255,240,200,0.18)';
-                            gctx.beginPath();
-                            gctx.ellipse(spX - 0.5, spY - 0.4, 0.7, 0.4, 0, 0, Math.PI * 2);
-                            gctx.fill();
-                          }
-                          for (var sk = 0; sk < 7; sk++) {
-                            var skAng = (ci4 * 3.3 + sk * 2.7 + 1.2) % (Math.PI * 2);
-                            var skDist = 4 + ((ci4 * 13 + sk * 9 + 5) % 28);
-                            var skX = pos.x + Math.cos(skAng) * skDist;
-                            var skY = pos.y + Math.sin(skAng) * skDist * (iTH / iTW);
-                            var skDiam = Math.abs(skX - pos.x) / (iTW / 2) + Math.abs(skY - pos.y) / (iTH / 2);
-                            if (skDiam > 0.82) continue;
-                            gctx.fillStyle = (sk % 2 === 0) ? 'rgba(50,30,15,0.4)' : 'rgba(60,40,20,0.35)';
-                            gctx.beginPath();
-                            gctx.arc(skX, skY, 0.7, 0, Math.PI * 2);
-                            gctx.fill();
-                          }
-                        }
-                        // Tile border + hover highlight
-                        gctx.strokeStyle = isHovered ? 'rgba(251,191,36,0.6)' : hasPlant ? 'rgba(80,50,20,0.4)' : 'rgba(80,50,20,0.2)';
-                        gctx.lineWidth = isHovered ? 2 : 1; gctx.stroke();
-                        // Hover glow fill
-                        if (isHovered) {
-                          gctx.fillStyle = 'rgba(251,191,36,0.08)';
-                          gctx.beginPath();
-                          gctx.moveTo(pos.x, pos.y - iTH / 2); gctx.lineTo(pos.x + iTW / 2, pos.y);
-                          gctx.lineTo(pos.x, pos.y + iTH / 2); gctx.lineTo(pos.x - iTW / 2, pos.y);
-                          gctx.closePath(); gctx.fill();
-                        }
-                        // Soil depth side (3D effect — left and bottom faces)
-                        var depth = 8;
-                        gctx.fillStyle = 'rgba(70,45,20,0.5)';
-                        gctx.beginPath();
-                        gctx.moveTo(pos.x - iTW / 2, pos.y);
-                        gctx.lineTo(pos.x, pos.y + iTH / 2);
-                        gctx.lineTo(pos.x, pos.y + iTH / 2 + depth);
-                        gctx.lineTo(pos.x - iTW / 2, pos.y + depth);
-                        gctx.closePath(); gctx.fill();
-                        gctx.fillStyle = 'rgba(60,35,15,0.4)';
-                        gctx.beginPath();
-                        gctx.moveTo(pos.x, pos.y + iTH / 2);
-                        gctx.lineTo(pos.x + iTW / 2, pos.y);
-                        gctx.lineTo(pos.x + iTW / 2, pos.y + depth);
-                        gctx.lineTo(pos.x, pos.y + iTH / 2 + depth);
-                        gctx.closePath(); gctx.fill();
-
-                        // ── Weeds in empty plots (grow phase only) ──
-                        // 3-4 small weed sprigs per empty cell, positioned deterministically by cell index.
-                        // Subtle wind sway. Tells the player the plot needs attention.
-                        if (!hasPlant && cgPhase === 'grow' && sSeason !== 3) {
-                          var weedColor = sSeason === 2 ? 'rgba(140,120,60,0.55)' : 'rgba(110,150,80,0.55)';
-                          gctx.strokeStyle = weedColor;
-                          gctx.lineWidth = 0.8;
-                          for (var wdi = 0; wdi < 4; wdi++) {
-                            var wdAngle = (ci4 * 1.7 + wdi * 1.9) % (Math.PI * 2);
-                            var wdR = 18 + ((ci4 + wdi) % 5) * 4;
-                            var wdBaseX = pos.x + Math.cos(wdAngle) * wdR * 0.5;
-                            var wdBaseY = pos.y + Math.sin(wdAngle) * wdR * 0.25;
-                            var wdSway = Math.sin(t * 1.5 + ci4 + wdi) * 1.2;
-                            var wdH = 4 + ((ci4 + wdi) % 3) * 2;
-                            gctx.beginPath();
-                            gctx.moveTo(wdBaseX, wdBaseY);
-                            gctx.quadraticCurveTo(wdBaseX + wdSway * 0.5, wdBaseY - wdH * 0.5, wdBaseX + wdSway, wdBaseY - wdH);
-                            gctx.stroke();
-                            // Tiny weed leaf (occasional)
-                            if (wdi % 2 === 0) {
-                              gctx.fillStyle = weedColor;
-                              gctx.beginPath();
-                              gctx.ellipse(wdBaseX + wdSway * 0.7, wdBaseY - wdH * 0.6, 1.2, 0.6, wdAngle, 0, Math.PI * 2);
-                              gctx.fill();
-                            }
-                          }
-                        }
-
-                        // ── Plant rendering (isometric) ──
-                        if (hasPlant) {
-                          var vis2 = PLANT_VISUALS[cell4.plantId] || defVis;
-                          var gp2 = Math.min(1, cell4.growthDay / pl3.days);
-                          // ── Droop factor: thirsty plants visibly wilt ──
-                          // 0 = healthy turgor; 1 = severely wilted (compresses height, exaggerates lean)
-                          var droopFactor = cgMoisture < 30 ? Math.max(0, (30 - cgMoisture) / 30) : 0;
-                          var sw2 = Math.sin(t * 1.2 + ci4 * 0.7) * gp2 * 3 + droopFactor * 4 * gp2;
-                          // Drop shadow (isometric ellipse on soil surface)
-                          var shadowAlpha = 0.1 + gp2 * 0.08;
-                          gctx.fillStyle = 'rgba(0,0,0,' + shadowAlpha + ')';
-                          gctx.beginPath();
-                          gctx.ellipse(pos.x + 3, pos.y + 2, 8 + gp2 * 10, 4 + gp2 * 4, 0.3, 0, Math.PI * 2);
-                          gctx.fill();
-                          // ── Harvest-ready glow (soft pulsing aura on mature plants) ──
-                          // Lets the player spot which crops are ready to pick at a glance.
-                          if (gp2 >= 0.98 && !pl3.isStructure) {
-                            var harvestPulse = 0.5 + 0.5 * Math.sin(t * 2.5 + ci4 * 0.7);
-                            gctx.fillStyle = 'rgba(254,240,138,' + (0.18 + harvestPulse * 0.18) + ')';
-                            gctx.beginPath();
-                            gctx.ellipse(pos.x, pos.y - iTH / 4, 16 + harvestPulse * 4, 9 + harvestPulse * 2.5, 0, 0, Math.PI * 2);
-                            gctx.fill();
-                            // Sparkle dots
-                            for (var hsp = 0; hsp < 3; hsp++) {
-                              var spA = (hsp + ci4 * 0.3 + t * 1.5) % 1;
-                              if (spA < 0.4) {
-                                var spX = pos.x + Math.cos(hsp * 2.1 + ci4) * 14;
-                                var spY = pos.y - iTH / 4 - 8 + Math.sin(hsp * 2.1 + ci4) * 6 - spA * 8;
-                                gctx.fillStyle = 'rgba(254,240,138,' + (1 - spA / 0.4) * 0.85 + ')';
-                                gctx.beginPath(); gctx.arc(spX, spY, 1.2, 0, Math.PI * 2); gctx.fill();
-                              }
-                            }
-                          }
-                          var baseX = pos.x; var baseY = pos.y - iTH / 2 - 2;
-                          // sH2 reduced by droop (wilting plants slump)
-                          var sH2 = gp2 * (vis2.tall ? 50 : vis2.bushy ? 18 : vis2.wide ? 25 : 35);
-                          sH2 *= (1 - droopFactor * 0.28);
-
-                          // ── Support structures (trellis / cage / stake) — drawn BEFORE plant so plant climbs/sits in front ──
-                          if (gp2 > 0.15 && !pl3.isStructure) {
-                            var supportType = null;
-                            if (cell4.plantId === 'beans' || cell4.plantId === 'peas') supportType = 'trellis';
-                            else if (cell4.plantId === 'tomato') supportType = 'cage';
-                            else if (cell4.plantId === 'sunflower' || cell4.plantId === 'corn') supportType = 'stake';
-                            if (supportType === 'trellis') {
-                              // Bamboo A-frame trellis (3 verticals + 2 horizontal crosses)
-                              gctx.strokeStyle = 'rgba(180,140,90,0.65)'; gctx.lineWidth = 1.2;
-                              gctx.beginPath(); gctx.moveTo(baseX - 9, baseY); gctx.lineTo(baseX - 3, baseY - sH2 * 1.15); gctx.stroke();
-                              gctx.beginPath(); gctx.moveTo(baseX + 9, baseY); gctx.lineTo(baseX + 3, baseY - sH2 * 1.15); gctx.stroke();
-                              gctx.beginPath(); gctx.moveTo(baseX, baseY); gctx.lineTo(baseX, baseY - sH2 * 1.2); gctx.stroke();
-                              gctx.beginPath(); gctx.moveTo(baseX - 3, baseY - sH2 * 1.15); gctx.lineTo(baseX + 3, baseY - sH2 * 1.15); gctx.stroke();
-                              gctx.beginPath(); gctx.moveTo(baseX - 6, baseY - sH2 * 0.7); gctx.lineTo(baseX + 6, baseY - sH2 * 0.7); gctx.stroke();
-                              gctx.beginPath(); gctx.moveTo(baseX - 7.5, baseY - sH2 * 0.4); gctx.lineTo(baseX + 7.5, baseY - sH2 * 0.4); gctx.stroke();
-                            } else if (supportType === 'cage') {
-                              // Tomato cage (4 wire verticals + 3 horizontal rings)
-                              gctx.strokeStyle = 'rgba(110,110,130,0.55)'; gctx.lineWidth = 1;
-                              var cageH = sH2 * 1.05;
-                              gctx.beginPath(); gctx.moveTo(baseX - 7, baseY); gctx.lineTo(baseX - 7, baseY - cageH); gctx.stroke();
-                              gctx.beginPath(); gctx.moveTo(baseX + 7, baseY); gctx.lineTo(baseX + 7, baseY - cageH); gctx.stroke();
-                              gctx.beginPath(); gctx.moveTo(baseX - 4, baseY); gctx.lineTo(baseX - 4, baseY - cageH); gctx.stroke();
-                              gctx.beginPath(); gctx.moveTo(baseX + 4, baseY); gctx.lineTo(baseX + 4, baseY - cageH); gctx.stroke();
-                              for (var ringI = 1; ringI <= 3; ringI++) {
-                                gctx.beginPath(); gctx.ellipse(baseX, baseY - cageH * (ringI / 4), 7, 1.5, 0, 0, Math.PI * 2); gctx.stroke();
-                              }
-                            } else if (supportType === 'stake') {
-                              // Single bamboo stake behind plant + tie point at midstem
-                              gctx.strokeStyle = 'rgba(160,120,70,0.75)'; gctx.lineWidth = 1.5;
-                              gctx.beginPath(); gctx.moveTo(baseX + 2.5, baseY); gctx.lineTo(baseX + 2.5, baseY - sH2 * 1.18); gctx.stroke();
-                              if (gp2 > 0.5) {
-                                gctx.strokeStyle = 'rgba(80,60,30,0.7)'; gctx.lineWidth = 0.8;
-                                gctx.beginPath(); gctx.moveTo(baseX, baseY - sH2 * 0.5); gctx.lineTo(baseX + 5, baseY - sH2 * 0.5); gctx.stroke();
-                                gctx.beginPath(); gctx.moveTo(baseX, baseY - sH2 * 0.85); gctx.lineTo(baseX + 5, baseY - sH2 * 0.85); gctx.stroke();
-                              }
-                            }
-                          }
-
-                          if (pl3.isStructure) {
-                            // Structure icons (geometric)
-                            gctx.fillStyle = cell4.plantId === 'bee_hotel' ? '#8B6914' : cell4.plantId === 'compost_bin' ? '#5a4030' : '#4a6a8a';
-                            gctx.fillRect(baseX - 6, baseY - 12, 12, 12);
-                            gctx.fillStyle = cell4.plantId === 'rain_barrel' ? '#6a9abb' : '#7a6040';
-                            gctx.fillRect(baseX - 7, baseY - 14, 14, 3);
-                          } else {
-                            // Stem (curved with sway)
-                            gctx.strokeStyle = vis2.stemColor; gctx.lineWidth = 1.5 + gp2;
-                            gctx.beginPath(); gctx.moveTo(baseX, baseY);
-                            gctx.quadraticCurveTo(baseX + sw2 * 0.5, baseY - sH2 * 0.5, baseX + sw2, baseY - sH2);
-                            gctx.stroke();
-                            // Leaves
-                            if (gp2 > 0.2) {
-                              gctx.fillStyle = vis2.leafColor || '#50a030';
-                              var lc2 = vis2.bushy ? 6 : vis2.wide ? 4 : 3;
-                              for (var lf2 = 0; lf2 < lc2; lf2++) {
-                                var lfY2 = baseY - sH2 * (0.25 + lf2 * 0.15);
-                                var lfS2 = lf2 % 2 === 0 ? -1 : 1;
-                                var lfSz2 = (3 + gp2 * 4) * (vis2.bushy ? 1.4 : vis2.wide ? 1.6 : 1);
-                                gctx.beginPath();
-                                gctx.ellipse(baseX + lfS2 * (5 + lf2) + sw2 * (0.4 + lf2 * 0.08), lfY2,
-                                  lfSz2, lfSz2 * 0.45, lfS2 * -0.4, 0, Math.PI * 2);
-                                gctx.fill();
-                              }
-                            }
-                            // Flower
-                            if (vis2.flowerColor && gp2 > 0.5) {
-                              var ftx = baseX + sw2; var fty = baseY - sH2 - 3;
-                              gctx.fillStyle = vis2.flowerColor;
-                              for (var fp = 0; fp < 5; fp++) {
-                                var fa2 = fp * Math.PI * 2 / 5 + t * 0.3;
-                                gctx.beginPath(); gctx.ellipse(ftx + Math.cos(fa2) * 4, fty + Math.sin(fa2) * 4, 3, 1.8, fa2, 0, Math.PI * 2); gctx.fill();
-                              }
-                              gctx.fillStyle = vis2.fruitColor || '#8B6914';
-                              gctx.beginPath(); gctx.arc(ftx, fty, 2, 0, Math.PI * 2); gctx.fill();
-                            }
-                            // Fruit (at 70%+)
-                            if (vis2.fruitColor && gp2 > 0.7 && !vis2.flowerColor) {
-                              gctx.fillStyle = vis2.fruitColor;
-                              var frx2 = baseX + sw2; var fry2 = baseY - sH2 * 0.65;
-                              gctx.beginPath(); gctx.arc(frx2, fry2, 3 + gp2 * 2, 0, Math.PI * 2); gctx.fill();
-                              gctx.fillStyle = 'rgba(255,255,255,0.3)';
-                              gctx.beginPath(); gctx.arc(frx2 - 1, fry2 - 1, 1.5, 0, Math.PI * 2); gctx.fill();
-                            }
-                          }
-                          // Pest dots
-                          if (cell4.pests > 30) {
-                            gctx.fillStyle = 'rgba(220,50,50,0.6)';
-                            for (var pd3 = 0; pd3 < Math.min(3, Math.floor(cell4.pests / 25)); pd3++) {
-                              gctx.beginPath(); gctx.arc(baseX + (pd3 - 1) * 5, baseY - sH2 * 0.4 + Math.sin(t * 3 + pd3 + ci4) * 2, 2, 0, Math.PI * 2); gctx.fill();
-                            }
-                          }
-                          // Harvest glow (golden ring)
-                          if (gp2 >= 1 && cell4.health > 20) {
-                            gctx.strokeStyle = 'rgba(251,191,36,' + (0.3 + Math.sin(t * 3 + ci4) * 0.15) + ')';
-                            gctx.lineWidth = 2;
-                            gctx.beginPath(); gctx.ellipse(pos.x, pos.y, iTW / 2 - 4, iTH / 2 - 2, 0, 0, Math.PI * 2); gctx.stroke();
-                          }
-                          // Growth sparkle
-                          if (gp2 > 0.1 && gp2 < 0.95 && sSeason < 3) {
-                            gctx.fillStyle = 'rgba(200,255,100,' + (0.3 + Math.sin(t * 5 + ci4) * 0.2) + ')';
-                            gctx.beginPath(); gctx.arc(baseX + Math.sin(t * 3 + ci4) * 8, baseY - sH2 * 0.5 - (t * 8 + ci4 * 5) % 15, 1.2, 0, Math.PI * 2); gctx.fill();
-                          }
-                        } else {
-                          // Empty plot indicator (plan phase)
-                          if (cgPhase === 'plan') {
-                            gctx.fillStyle = 'rgba(255,255,255,0.12)'; gctx.font = '14px system-ui'; gctx.textAlign = 'center';
-                            gctx.fillText('+', pos.x, pos.y + 5);
-                          }
-                        }
-
-                        // Companion glow lines (check right and down neighbors)
-                        if (hasPlant) {
-                          [ci4 + 1, ci4 + 4].forEach(function(ni3) {
-                            if (ni3 >= 16 || !grid2[ni3] || !grid2[ni3].plantId) return;
-                            if (ci4 % 4 === 3 && ni3 === ci4 + 1) return;
-                            var nPos = isoToScreen(Math.floor(ni3 / 4), ni3 % 4);
-                            var cm = CG_COMPANIONS.find(function(cp) {
-                              return (cp.a === cell4.plantId && cp.b === grid2[ni3].plantId) || (cp.b === cell4.plantId && cp.a === grid2[ni3].plantId);
-                            });
-                            if (cm) {
-                              gctx.strokeStyle = cm.bonus > 0 ? 'rgba(34,197,94,' + (0.12 + Math.sin(t * 2 + ci4) * 0.06) + ')' : 'rgba(239,68,68,' + (0.12 + Math.sin(t * 2 + ci4) * 0.06) + ')';
-                              gctx.lineWidth = 2;
-                              gctx.beginPath(); gctx.moveTo(pos.x, pos.y); gctx.lineTo(nPos.x, nPos.y); gctx.stroke();
-                            }
-                          });
-                        }
-                      }
-                    }
-
-                    // ═══════════════════════════════════════════════════════
-                    // AMBIENT WILDLIFE — makes the garden feel alive year-round
-                    // not just when the player has planted pollinator-attracting crops.
-                    // Each species respects season; counts boosted by polCount2.
-                    // ═══════════════════════════════════════════════════════
-
-                    // ── Bees (ambient + boosted by pollinator plants; daytime only) ──
-                    // Bees periodically VISIT flowering plants (pause + emit pollen burst on departure)
-                    // instead of just hovering generically. Builds a deterministic visit cycle per bee.
-                    if (sSeason !== 3 && !isNight) {  // skip in winter and at night
-                      // Find flowering plants (target candidates for landings)
-                      var floweringCells = [];
-                      for (var fci = 0; fci < 16; fci++) {
-                        var fcCell = grid2[fci];
-                        if (!fcCell || !fcCell.plantId) continue;
-                        var fcPlant = CG_PLANTS[fcCell.plantId];
-                        var fcVis = PLANT_VISUALS[fcCell.plantId];
-                        if (fcPlant && fcVis && fcVis.flowerColor && (fcCell.growthDay / fcPlant.days) > 0.5) {
-                          floweringCells.push(fci);
-                        }
-                      }
-                      var beeCount = (sSeason === 2 ? 1 : 2) + Math.min(4, polCount2);
-                      for (var bi3 = 0; bi3 < beeCount; bi3++) {
-                        // Each bee has a 14-second cycle: travel (0-50%) → land (50-75%) → leave w/ pollen burst (75-100%)
-                        var beeCycle = 14;
-                        var beePhase = ((t + bi3 * 3.5) % beeCycle) / beeCycle;
-                        var bx3, by3, isLanded = false, isLeaving = false;
-                        if (floweringCells.length > 0 && beePhase >= 0.5) {
-                          // Pick a target flowering plant deterministically per cycle
-                          var beeStage = Math.floor((t + bi3 * 3.5) / beeCycle);
-                          var tgtCell = floweringCells[(beeStage + bi3) % floweringCells.length];
-                          var tgtPos = isoToScreen(Math.floor(tgtCell / 4), tgtCell % 4);
-                          var tgtVis = PLANT_VISUALS[grid2[tgtCell].plantId];
-                          var tgtGp = Math.min(1, grid2[tgtCell].growthDay / CG_PLANTS[grid2[tgtCell].plantId].days);
-                          var tgtFlowerY = tgtPos.y - iTH / 2 - 2 - (tgtVis.tall ? 50 : 35) * tgtGp - 3;
-                          if (beePhase < 0.75) {
-                            // Landed at the flower (slight bobbing)
-                            isLanded = true;
-                            bx3 = tgtPos.x + Math.sin(t * 4) * 1;
-                            by3 = tgtFlowerY + Math.cos(t * 4) * 0.8;
-                          } else {
-                            // Leaving with a pollen burst — interpolate away from flower
-                            isLeaving = true;
-                            var leaveT = (beePhase - 0.75) / 0.25;
-                            bx3 = tgtPos.x + leaveT * (40 + bi3 * 20);
-                            by3 = tgtFlowerY - leaveT * 25;
-                            // Pollen burst (yellow particles trailing)
-                            for (var pbi = 0; pbi < 5; pbi++) {
-                              var pbT = (leaveT + pbi * 0.15) % 1;
-                              if (pbT < 0.6) {
-                                var pbX = tgtPos.x + Math.cos(pbi * 1.3) * (5 + pbT * 15);
-                                var pbY = tgtFlowerY + Math.sin(pbi * 1.3) * (5 + pbT * 12) - pbT * 8;
-                                gctx.fillStyle = 'rgba(252,211,77,' + (1 - pbT / 0.6) * 0.85 + ')';
-                                gctx.beginPath(); gctx.arc(pbX, pbY, 1 + pbT * 0.8, 0, Math.PI * 2); gctx.fill();
-                              }
-                            }
-                          }
-                        } else {
-                          // Generic ambient travel (drifting across the canvas)
-                          bx3 = (t * 20 + bi3 * 100) % (W + 60) - 30;
-                          by3 = isoOY - 20 + Math.sin(t * 1.5 + bi3 * 2.5) * 25;
-                        }
-                        // Bee body
-                        gctx.fillStyle = bi3 % 2 === 0 ? '#fbbf24' : '#f97316';
-                        gctx.beginPath(); gctx.arc(bx3, by3, 2.5, 0, Math.PI * 2); gctx.fill();
-                        // Wings (faster flap when hovering/landing)
-                        gctx.fillStyle = 'rgba(255,255,255,0.5)';
-                        var wingSpeed = isLanded ? 16 : 8;
-                        var wA2 = Math.sin(t * wingSpeed + bi3) * 0.5;
-                        gctx.beginPath(); gctx.ellipse(bx3 - 2.5, by3 - 1.5, 3, 1.8, wA2, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.ellipse(bx3 + 2.5, by3 - 1.5, 3, 1.8, -wA2, 0, Math.PI * 2); gctx.fill();
-                        // Tiny pollen dot on bee's back when leaving (it picked up pollen!)
-                        if (isLeaving) {
-                          gctx.fillStyle = '#fde047';
-                          gctx.beginPath(); gctx.arc(bx3, by3 - 1, 1, 0, Math.PI * 2); gctx.fill();
-                        }
-                      }
-                    }
-
-                    // ── Butterflies (spring/summer; lazy figure-8 path; daytime only) ──
-                    if ((sSeason === 0 || sSeason === 1) && !isNight) {
-                      var btColors = ['#fda4af', '#a78bfa', '#fbbf24'];
-                      var btCount = 2 + Math.min(2, polCount2);
-                      for (var bti = 0; bti < btCount; bti++) {
-                        var btPhase = t * 0.4 + bti * 2.1;
-                        var btCx = W * (0.2 + (bti / btCount) * 0.7) + Math.sin(btPhase) * 70;
-                        var btCy = H * 0.42 + Math.sin(btPhase * 2) * 28;
-                        // Math.sin * 0.55 + 0.45 ranges [-0.10, 1.00] — Math.abs collapses the
-                        // wing-flap into a 0→1 oscillation (wings opening/closing both look the
-                        // same visually) and guarantees a non-negative ellipse radiusX below.
-                        // Floor at 0.05 so the wing never goes to a zero-width line.
-                        var wingPh = Math.max(0.05, Math.abs(Math.sin(t * 14 + bti)));
-                        var btCol = btColors[bti % btColors.length];
-                        gctx.fillStyle = btCol;
-                        // 4 wings (paired fore + hind)
-                        gctx.beginPath(); gctx.ellipse(btCx - 2.5, btCy - 1.8, 3 * wingPh, 3.5, -0.3, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.ellipse(btCx + 2.5, btCy - 1.8, 3 * wingPh, 3.5, 0.3, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.ellipse(btCx - 2.5, btCy + 1.5, 2.2 * wingPh, 2.6, 0.3, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.ellipse(btCx + 2.5, btCy + 1.5, 2.2 * wingPh, 2.6, -0.3, 0, Math.PI * 2); gctx.fill();
-                        // Body
-                        gctx.fillStyle = '#1f2937';
-                        gctx.fillRect(btCx - 0.5, btCy - 2.5, 1, 5);
-                      }
-                    }
-
-                    // ── Birds (seasonal: V-formation migration in autumn, scattered swoop spring/summer; daytime only) ──
-                    if (sSeason !== 3 && !isNight) {
-                      gctx.strokeStyle = 'rgba(40,40,50,0.6)';
-                      gctx.lineWidth = 1.5;
-                      if (sSeason === 2) {
-                        // Autumn: V-formation migrating south
-                        var leadX = ((t * 25) % (W + 240)) - 120;
-                        var leadY = 35;
-                        var formation = [[0,0], [12,7], [-12,7], [24,14], [-24,14]];
-                        for (var fi = 0; fi < formation.length; fi++) {
-                          var bx = leadX + formation[fi][0];
-                          var by = leadY + formation[fi][1];
-                          var flap = Math.sin(t * 6 + fi * 0.4) * 2;
-                          gctx.beginPath();
-                          gctx.moveTo(bx - 5, by + flap);
-                          gctx.quadraticCurveTo(bx, by - 1.5, bx + 5, by + flap);
-                          gctx.stroke();
-                        }
-                      } else {
-                        // Spring/Summer: 3 birds scattered, swooping individually
-                        for (var bi4 = 0; bi4 < 3; bi4++) {
-                          var bcx = ((t * 18 + bi4 * W * 0.4) % (W + 100)) - 50;
-                          var bcy = 28 + Math.sin(t * 0.7 + bi4 * 1.7) * 20 + bi4 * 8;
-                          var flap2 = Math.sin(t * 7.5 + bi4 * 0.5) * 2.5;
-                          gctx.beginPath();
-                          gctx.moveTo(bcx - 6, bcy + flap2);
-                          gctx.quadraticCurveTo(bcx, bcy - 1.5, bcx + 6, bcy + flap2);
-                          gctx.stroke();
-                        }
-                      }
-                    }
-
-                    // ── Hopping rabbit cameo (every ~22s, spring/summer/autumn only) ──
-                    if (sSeason !== 3) {
-                      var rabCycle = 22;
-                      var rabPhase = (t % rabCycle) / rabCycle;
-                      if (rabPhase < 0.45) {
-                        var rabT = rabPhase / 0.45;
-                        var rx = W * 0.05 + rabT * (W * 0.9);
-                        var hopY = Math.abs(Math.sin(rabT * 16)) * -10;
-                        var ry = H * 0.93 + hopY;
-                        gctx.fillStyle = 'rgba(170,140,110,0.85)';
-                        // body
-                        gctx.beginPath(); gctx.ellipse(rx, ry, 8, 5, 0, 0, Math.PI * 2); gctx.fill();
-                        // head
-                        gctx.beginPath(); gctx.ellipse(rx + 6, ry - 4, 4, 4, 0, 0, Math.PI * 2); gctx.fill();
-                        // ears (two upright)
-                        gctx.fillStyle = 'rgba(170,140,110,0.7)';
-                        gctx.beginPath(); gctx.ellipse(rx + 5, ry - 9, 1.2, 3.5, 0, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.ellipse(rx + 7, ry - 9, 1.2, 3.5, 0, 0, Math.PI * 2); gctx.fill();
-                        // cottontail
-                        gctx.fillStyle = 'rgba(255,255,255,0.8)';
-                        gctx.beginPath(); gctx.arc(rx - 7, ry - 1, 2.2, 0, Math.PI * 2); gctx.fill();
-                        // eye
-                        gctx.fillStyle = '#1f2937';
-                        gctx.beginPath(); gctx.arc(rx + 7, ry - 4.5, 0.6, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-
-                    // ── Falling leaves (autumn only) ──
-                    if (sSeason === 2) {
-                      var leafCols = ['#dc2626', '#ea580c', '#eab308', '#ca8a04', '#b45309'];
-                      for (var li = 0; li < 14; li++) {
-                        var lx = (li * 67 + Math.sin(t * 0.6 + li) * 35) % W;
-                        var ly = ((li * 53 + t * 28) % (H + 30)) - 15;
-                        var lr = Math.sin(t * 0.8 + li) * 0.5 + t * 0.4;
-                        gctx.fillStyle = leafCols[li % leafCols.length];
-                        gctx.save();
-                        gctx.translate(lx, ly);
-                        gctx.rotate(lr);
-                        gctx.beginPath(); gctx.ellipse(0, 0, 3, 1.5, 0, 0, Math.PI * 2); gctx.fill();
-                        gctx.restore();
-                      }
-                    }
-
-                    // ── Wildflower tufts in foreground meadow (wind sway, spring/summer/autumn) ──
-                    if (sSeason !== 3) {
-                      var flowCols = ['#fbbf24', '#fda4af', '#a78bfa', '#ffffff', '#f472b6'];
-                      for (var fwi = 0; fwi < 22; fwi++) {
-                        var sway = Math.sin(t * 0.9 + fwi * 0.4) * 1.8;
-                        var fwx = ((fwi * 79) % W) + sway;
-                        var fwy = H * (0.86 + (fwi % 4) * 0.025);
-                        if (fwy > H * 0.97) continue;
-                        // Stem
-                        gctx.strokeStyle = 'rgba(80,120,60,0.55)';
-                        gctx.lineWidth = 0.8;
-                        gctx.beginPath(); gctx.moveTo(fwx - sway * 0.5, fwy + 5); gctx.lineTo(fwx, fwy); gctx.stroke();
-                        // Bloom
-                        gctx.fillStyle = sSeason === 2 ? 'rgba(202,138,4,0.7)' : flowCols[fwi % flowCols.length];
-                        gctx.beginPath(); gctx.arc(fwx, fwy, 1.7, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-
-                    // ── Shed chimney smoke (cold months — winter + chilly autumn evenings) ──
-                    if (sSeason === 3 || sSeason === 2) {
-                      for (var smi = 0; smi < 4; smi++) {
-                        var smPhase = ((t * 0.35 + smi * 0.6) % 2);
-                        if (smPhase > 1.6) continue;
-                        var smX = shedPos.x + 12 + Math.sin(smPhase * 4 + smi) * 3.5;
-                        var smY = shedPos.y - 42 - smPhase * 28;
-                        var smA = Math.max(0, (1 - smPhase / 1.6)) * 0.45;
-                        gctx.fillStyle = 'rgba(220,220,220,' + smA + ')';
-                        gctx.beginPath(); gctx.arc(smX, smY, 2.5 + smPhase * 2.2, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-
-                    // ── Squirrel cameo (climbs the side of the shed every ~30s, all seasons) ──
-                    var sqCycle = 30;
-                    var sqPhase = (t % sqCycle) / sqCycle;
-                    if (sqPhase > 0.15 && sqPhase < 0.55) {
-                      // Climbs up (15-35%) then back down (35-55%)
-                      var climbT = sqPhase < 0.35 ? (sqPhase - 0.15) / 0.2 : 1 - (sqPhase - 0.35) / 0.2;
-                      var sqX = shedPos.x - 22;  // left side of shed
-                      var sqY = shedPos.y - 6 - climbT * 24;  // up along shed wall
-                      var sqWiggle = Math.sin(t * 12) * 0.6;
-                      // Body (gray ellipse)
-                      gctx.fillStyle = 'rgba(120,110,100,0.95)';
-                      gctx.beginPath(); gctx.ellipse(sqX + sqWiggle, sqY, 4, 5, 0, 0, Math.PI * 2); gctx.fill();
-                      // Head
-                      gctx.beginPath(); gctx.arc(sqX + sqWiggle, sqY - 4, 2.5, 0, Math.PI * 2); gctx.fill();
-                      // Bushy tail (curved up)
-                      gctx.fillStyle = 'rgba(140,130,120,0.95)';
-                      gctx.beginPath();
-                      gctx.ellipse(sqX + sqWiggle - 4, sqY - 2, 3, 5, -0.5, 0, Math.PI * 2);
-                      gctx.fill();
-                      // Eye
-                      gctx.fillStyle = '#1f2937';
-                      gctx.beginPath(); gctx.arc(sqX + sqWiggle + 1.5, sqY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
-                    }
-
-                    // ── Perched birds on fence (always-2 in spring/summer, 1 in autumn; daytime only — they roost at night) ──
-                    if (sSeason !== 3 && !isNight) {
-                      var perchCount = sSeason === 2 ? 1 : 2;
-                      for (var pbi = 0; pbi < perchCount; pbi++) {
-                        // Position along the front fence (corner 2 → corner 3)
-                        var perchT = 0.25 + pbi * 0.35 + Math.sin(t * 0.3 + pbi) * 0.05;
-                        var pbX = corners[2].x + (corners[3].x - corners[2].x) * perchT;
-                        var pbY = corners[2].y + (corners[3].y - corners[2].y) * perchT - 8;
-                        // Occasionally hop in place
-                        var hopBoost = Math.max(0, Math.sin(t * 0.5 + pbi * 2) - 0.92) * 12;
-                        pbY -= hopBoost;
-                        // Body
-                        gctx.fillStyle = pbi === 0 ? 'rgba(190,80,60,0.9)' : 'rgba(80,90,140,0.9)';  // robin red + bluebird
-                        gctx.beginPath(); gctx.ellipse(pbX, pbY, 3.5, 2.5, 0, 0, Math.PI * 2); gctx.fill();
-                        // Head
-                        gctx.beginPath(); gctx.arc(pbX + 2.5, pbY - 1.5, 1.8, 0, Math.PI * 2); gctx.fill();
-                        // Beak
-                        gctx.fillStyle = '#fbbf24';
-                        gctx.beginPath();
-                        gctx.moveTo(pbX + 4.2, pbY - 1.5);
-                        gctx.lineTo(pbX + 5.5, pbY - 1.2);
-                        gctx.lineTo(pbX + 4.2, pbY - 0.8);
-                        gctx.closePath();
-                        gctx.fill();
-                        // Tail (small triangle)
-                        gctx.fillStyle = pbi === 0 ? 'rgba(150,60,40,0.9)' : 'rgba(50,60,110,0.9)';
-                        gctx.beginPath();
-                        gctx.moveTo(pbX - 3.5, pbY);
-                        gctx.lineTo(pbX - 6, pbY - 1.5);
-                        gctx.lineTo(pbX - 6, pbY + 1.5);
-                        gctx.closePath();
-                        gctx.fill();
-                      }
-                    }
-
-                    // ── Bird sitting on the birdbath edge (occasional, spring/summer) ──
-                    if ((sSeason === 0 || sSeason === 1) && (t % 18) < 6) {
-                      var bbBirdX = bbPos.x - 8;
-                      var bbBirdY = bbPos.y - 16;
-                      gctx.fillStyle = 'rgba(80,120,170,0.9)';
-                      gctx.beginPath(); gctx.ellipse(bbBirdX, bbBirdY, 3, 2.2, 0, 0, Math.PI * 2); gctx.fill();
-                      gctx.beginPath(); gctx.arc(bbBirdX + 2.2, bbBirdY - 1.4, 1.6, 0, Math.PI * 2); gctx.fill();
-                      gctx.fillStyle = '#fbbf24';
-                      gctx.beginPath();
-                      gctx.moveTo(bbBirdX + 3.6, bbBirdY - 1.4);
-                      gctx.lineTo(bbBirdX + 4.6, bbBirdY - 1.2);
-                      gctx.lineTo(bbBirdX + 3.6, bbBirdY - 0.8);
-                      gctx.closePath();
-                      gctx.fill();
-                      // Tiny splash if bird is moving
-                      if (Math.sin(t * 5) > 0.7) {
-                        gctx.fillStyle = 'rgba(255,255,255,0.6)';
-                        gctx.beginPath(); gctx.arc(bbPos.x + 3, bbPos.y - 15, 1, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-
-                    // ── Fireflies (dusk + early night, spring/summer only) ──
-                    if ((isDusk || (isNight && nightStrength < 0.7)) && (sSeason === 0 || sSeason === 1)) {
-                      var ffStrength = isDusk ? 0.5 : (1 - nightStrength);
-                      for (var ffi = 0; ffi < 12; ffi++) {
-                        var ffx = (ffi * 87 + Math.sin(t * 0.6 + ffi) * 30) % W;
-                        var ffy = H * (0.55 + (ffi % 5) * 0.06) + Math.cos(t * 0.4 + ffi) * 12;
-                        var ffBlink = Math.max(0, Math.sin(t * 1.5 + ffi * 1.3));
-                        if (ffBlink < 0.4) continue;
-                        gctx.fillStyle = 'rgba(254,240,138,' + (ffBlink * 0.85 * ffStrength) + ')';
-                        gctx.beginPath(); gctx.arc(ffx, ffy, 1.8, 0, Math.PI * 2); gctx.fill();
-                        // Glow
-                        gctx.fillStyle = 'rgba(254,240,138,' + (ffBlink * 0.25 * ffStrength) + ')';
-                        gctx.beginPath(); gctx.arc(ffx, ffy, 4.5, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-
-                    // ── Snail crossing the foreground in early morning (dawn only, slow + leaves a wet trail) ──
-                    if (isDawn && sSeason !== 3) {
-                      // Calculate snail position based on time-of-day (slow march across the foreground)
-                      var snProgress = (todPhase - 0.05) / 0.1;  // 0..1 across dawn
-                      var snX = W * 0.1 + snProgress * W * 0.5;
-                      var snY = H * 0.94;
-                      // Wet trail behind snail
-                      gctx.strokeStyle = 'rgba(180,200,220,0.45)';
-                      gctx.lineWidth = 2;
-                      gctx.beginPath();
-                      var trailLen = 60;
-                      for (var tri = 0; tri < trailLen; tri += 4) {
-                        var trX = snX - tri;
-                        var trY = snY + Math.sin(tri * 0.3) * 0.8;
-                        if (tri === 0) gctx.moveTo(trX, trY);
-                        else gctx.lineTo(trX, trY);
-                      }
-                      gctx.stroke();
-                      // Snail body (foot)
-                      gctx.fillStyle = 'rgba(180,160,140,0.9)';
-                      gctx.beginPath(); gctx.ellipse(snX, snY, 6, 2, 0, 0, Math.PI * 2); gctx.fill();
-                      // Spiral shell on top
-                      gctx.fillStyle = '#a87a4a';
-                      gctx.beginPath(); gctx.arc(snX, snY - 2.5, 4, 0, Math.PI * 2); gctx.fill();
-                      gctx.strokeStyle = '#7a4a20'; gctx.lineWidth = 0.6;
-                      // Spiral lines
-                      for (var spi = 0; spi < 3; spi++) {
-                        gctx.beginPath();
-                        gctx.arc(snX - spi * 0.3, snY - 2.5, 3.5 - spi * 1, -Math.PI * 0.7, Math.PI * 0.3);
-                        gctx.stroke();
-                      }
-                      // Eye stalks (two thin antennae with little eyes on top)
-                      gctx.strokeStyle = 'rgba(120,100,80,0.85)'; gctx.lineWidth = 0.6;
-                      gctx.beginPath(); gctx.moveTo(snX + 4, snY - 1); gctx.lineTo(snX + 6, snY - 4); gctx.stroke();
-                      gctx.beginPath(); gctx.moveTo(snX + 5, snY - 1); gctx.lineTo(snX + 7, snY - 4); gctx.stroke();
-                      gctx.fillStyle = '#1f2937';
-                      gctx.beginPath(); gctx.arc(snX + 6, snY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
-                      gctx.beginPath(); gctx.arc(snX + 7, snY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
-                    }
-
-                    // ── Cricket "song" — musical notes float up at night (synesthetic visual for cricket sound) ──
-                    if (isNight && nightStrength > 0.4 && sSeason !== 3) {
-                      var noteCols = ['rgba(168,85,247,', 'rgba(96,165,250,', 'rgba(244,114,182,'];
-                      for (var nti = 0; nti < 5; nti++) {
-                        var ntCycle = 5;
-                        var ntPhase = ((t + nti * 1) % ntCycle) / ntCycle;  // 0..1 rise
-                        if (ntPhase > 0.85) continue;  // pause between rises
-                        var ntX = W * (0.18 + (nti / 5) * 0.65) + Math.sin(t * 0.5 + nti * 1.7) * 8;
-                        var ntY = H * 0.85 - ntPhase * 50;
-                        var ntA = (1 - ntPhase / 0.85) * 0.65 * nightStrength;
-                        gctx.fillStyle = noteCols[nti % noteCols.length] + ntA + ')';
-                        // Eighth-note glyph: stem + flag + filled head
-                        gctx.fillRect(ntX + 1, ntY - 5, 0.8, 6);  // stem
-                        gctx.beginPath(); gctx.ellipse(ntX, ntY, 1.8, 1.2, -0.3, 0, Math.PI * 2); gctx.fill();  // head
-                        // Flag
-                        gctx.beginPath();
-                        gctx.moveTo(ntX + 1.8, ntY - 5);
-                        gctx.quadraticCurveTo(ntX + 4, ntY - 4, ntX + 3, ntY - 1.5);
-                        gctx.lineTo(ntX + 1.8, ntY - 2);
-                        gctx.closePath();
-                        gctx.fill();
-                      }
-                    }
-
-                    // ── Owl in background tree at night (silhouette + glowing eyes) ──
-                    if (isNight && nightStrength > 0.5 && sSeason !== 3) {
-                      var owlX = W * 0.32;
-                      var owlY = isoOY - 50;
-                      // Body silhouette
-                      gctx.fillStyle = 'rgba(20,15,30,0.85)';
-                      gctx.beginPath(); gctx.ellipse(owlX, owlY, 6, 8, 0, 0, Math.PI * 2); gctx.fill();
-                      // Head
-                      gctx.beginPath(); gctx.arc(owlX, owlY - 6, 4.5, 0, Math.PI * 2); gctx.fill();
-                      // Ear tufts
-                      gctx.beginPath();
-                      gctx.moveTo(owlX - 3, owlY - 9); gctx.lineTo(owlX - 4.5, owlY - 12); gctx.lineTo(owlX - 1.5, owlY - 9);
-                      gctx.closePath(); gctx.fill();
-                      gctx.beginPath();
-                      gctx.moveTo(owlX + 3, owlY - 9); gctx.lineTo(owlX + 4.5, owlY - 12); gctx.lineTo(owlX + 1.5, owlY - 9);
-                      gctx.closePath(); gctx.fill();
-                      // Eyes (glowing yellow, blink occasionally)
-                      var eyeBlink = Math.sin(t * 0.3) > 0.95 ? 0 : 1;
-                      gctx.fillStyle = 'rgba(251,191,36,' + (0.9 * eyeBlink * nightStrength) + ')';
-                      gctx.beginPath(); gctx.arc(owlX - 1.8, owlY - 6, 1, 0, Math.PI * 2); gctx.fill();
-                      gctx.beginPath(); gctx.arc(owlX + 1.8, owlY - 6, 1, 0, Math.PI * 2); gctx.fill();
-                    }
-
-                    // ── Dragonflies (summer, daytime; iridescent wings, fast straight-line zips) ──
-                    if (sSeason === 1 && !isNight) {
-                      var dfCount = 2;
-                      for (var dfi = 0; dfi < dfCount; dfi++) {
-                        // Each dragonfly does a 12s loop: zip across, pause, zip back
-                        var dfLoop = 12;
-                        var dfPhase = ((t + dfi * 6) % dfLoop) / dfLoop;  // 0..1
-                        var direction = Math.floor((t + dfi * 6) / dfLoop) % 2 === 0 ? 1 : -1;
-                        var dfx, dfy;
-                        if (dfPhase < 0.4) {
-                          // Zipping across
-                          var zipT = dfPhase / 0.4;
-                          dfx = direction > 0 ? zipT * W : (1 - zipT) * W;
-                          dfy = H * 0.45 + dfi * 35 + Math.sin(t * 4 + dfi) * 8;
-                        } else if (dfPhase < 0.55) {
-                          // Hovering
-                          dfx = direction > 0 ? W : 0;
-                          dfy = H * 0.45 + dfi * 35 + Math.sin(t * 4 + dfi) * 12;
-                          continue;  // off-screen during hover
-                        } else {
-                          continue;
-                        }
-                        // Long thin body (segments)
-                        var bodyAng = direction > 0 ? 0 : Math.PI;
-                        gctx.save();
-                        gctx.translate(dfx, dfy);
-                        gctx.rotate(bodyAng);
-                        // Iridescent wings (4 wings, fast flap)
-                        var wingFlap = Math.abs(Math.sin(t * 30 + dfi)) * 0.6 + 0.4;
-                        gctx.fillStyle = 'rgba(180,220,255,' + (0.45 * wingFlap) + ')';
-                        gctx.beginPath(); gctx.ellipse(-2, -3, 7 * wingFlap, 2, -0.1, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.ellipse(2, -3, 7 * wingFlap, 2, 0.1, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.ellipse(-2, 3, 6 * wingFlap, 1.7, 0.1, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.ellipse(2, 3, 6 * wingFlap, 1.7, -0.1, 0, Math.PI * 2); gctx.fill();
-                        // Body (3 segments — thorax + abdomen)
-                        gctx.fillStyle = '#0e7490';
-                        gctx.fillRect(-2, -1, 4, 2);
-                        gctx.fillStyle = '#0891b2';
-                        gctx.fillRect(2, -0.6, 8, 1.3);
-                        // Head
-                        gctx.fillStyle = '#155e75';
-                        gctx.beginPath(); gctx.arc(-3, 0, 1.6, 0, Math.PI * 2); gctx.fill();
-                        // Eyes (large, compound)
-                        gctx.fillStyle = '#1f2937';
-                        gctx.beginPath(); gctx.arc(-3.3, -0.8, 0.6, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.arc(-3.3, 0.8, 0.6, 0, Math.PI * 2); gctx.fill();
-                        gctx.restore();
-                      }
-                    }
-
-                    // ── Ladybug on a random leaf (periodic, all non-winter seasons; sits ~6s then moves) ──
-                    if (sSeason !== 3 && !isNight) {
-                      var lbCycle = 14;
-                      var lbStage = Math.floor(t / lbCycle);
-                      var lbPhase = (t % lbCycle) / lbCycle;
-                      // Pick a target tile that has a plant (deterministic by stage)
-                      var plantedCells = [];
-                      for (var pci = 0; pci < 16; pci++) { if (grid2[pci] && grid2[pci].plantId) plantedCells.push(pci); }
-                      if (plantedCells.length > 0 && lbPhase < 0.45) {
-                        var targetCell = plantedCells[lbStage % plantedCells.length];
-                        var lbPos = isoToScreen(Math.floor(targetCell / 4), targetCell % 4);
-                        var lbX = lbPos.x + Math.sin(lbStage * 1.7) * 6;
-                        var lbY = lbPos.y - iTH / 2 - 18 + Math.cos(lbStage * 2.3) * 4;
-                        // Body (red dome)
-                        gctx.fillStyle = '#dc2626';
-                        gctx.beginPath(); gctx.ellipse(lbX, lbY, 2.5, 2, 0, 0, Math.PI * 2); gctx.fill();
-                        // Head (small black)
-                        gctx.fillStyle = '#1f2937';
-                        gctx.beginPath(); gctx.arc(lbX - 2, lbY, 1, 0, Math.PI * 2); gctx.fill();
-                        // Center line down the back
-                        gctx.strokeStyle = '#1f2937'; gctx.lineWidth = 0.6;
-                        gctx.beginPath(); gctx.moveTo(lbX - 1, lbY); gctx.lineTo(lbX + 2.5, lbY); gctx.stroke();
-                        // 6 spots (3 per side)
-                        gctx.fillStyle = '#1f2937';
-                        gctx.beginPath(); gctx.arc(lbX, lbY - 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.arc(lbX + 1.4, lbY - 0.5, 0.4, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.arc(lbX + 0.5, lbY + 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.arc(lbX, lbY + 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.arc(lbX + 1.4, lbY + 0.5, 0.4, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-
-                    // ── Garden cat (orange tabby; sleeps near birdbath most of the time, walks occasionally) ──
-                    if (sSeason !== 3) {  // cat is indoors in winter
-                      var catCycle = 60;  // 60-second loop
-                      var catPhase = (t % catCycle) / catCycle;
-                      var catX, catY, catSleeping;
-                      if (catPhase < 0.7) {
-                        // Sleeping curled up next to birdbath
-                        catX = bbPos.x - 22;
-                        catY = bbPos.y - 4;
-                        catSleeping = true;
-                      } else {
-                        // Walking from birdbath toward fence and back (30% of the time)
-                        var walkT = (catPhase - 0.7) / 0.3;
-                        var walkProgress = walkT < 0.5 ? walkT * 2 : (1 - walkT) * 2;  // out then back
-                        catX = bbPos.x - 22 + walkProgress * 60;
-                        catY = bbPos.y - 4 + Math.abs(Math.sin(walkT * 24)) * -1.5;  // tiny step bounce
-                        catSleeping = false;
-                      }
-                      var catColor = '#d97706';  // orange tabby
-                      var catStripe = '#92400e';
-                      if (catSleeping) {
-                        // Curled body (loaf shape)
-                        gctx.fillStyle = catColor;
-                        gctx.beginPath(); gctx.ellipse(catX, catY, 9, 5, 0, 0, Math.PI * 2); gctx.fill();
-                        // Tail wrapped around (curve)
-                        gctx.beginPath();
-                        gctx.ellipse(catX + 6, catY + 1, 4, 2, 0.3, 0, Math.PI * 2);
-                        gctx.fill();
-                        // Head tucked
-                        gctx.beginPath(); gctx.arc(catX - 6, catY - 1, 3.5, 0, Math.PI * 2); gctx.fill();
-                        // Stripes (3 dark bands)
-                        gctx.fillStyle = catStripe;
-                        gctx.fillRect(catX - 3, catY - 3, 1.2, 4);
-                        gctx.fillRect(catX, catY - 3.5, 1.2, 4.5);
-                        gctx.fillRect(catX + 3, catY - 3, 1.2, 4);
-                        // Closed eye (just a line)
-                        gctx.strokeStyle = catStripe; gctx.lineWidth = 0.8;
-                        gctx.beginPath(); gctx.moveTo(catX - 7, catY - 1.5); gctx.lineTo(catX - 5, catY - 1.5); gctx.stroke();
-                        // Ears (two triangles)
-                        gctx.fillStyle = catColor;
-                        gctx.beginPath();
-                        gctx.moveTo(catX - 8, catY - 4); gctx.lineTo(catX - 6.5, catY - 6); gctx.lineTo(catX - 5.5, catY - 3.5);
-                        gctx.closePath(); gctx.fill();
-                        gctx.beginPath();
-                        gctx.moveTo(catX - 6, catY - 4); gctx.lineTo(catX - 4.5, catY - 6); gctx.lineTo(catX - 3.5, catY - 3.5);
-                        gctx.closePath(); gctx.fill();
-                      } else {
-                        // Walking pose (side view)
-                        gctx.fillStyle = catColor;
-                        // Body
-                        gctx.beginPath(); gctx.ellipse(catX, catY, 8, 4, 0, 0, Math.PI * 2); gctx.fill();
-                        // Head
-                        gctx.beginPath(); gctx.arc(catX + 7, catY - 2, 3.5, 0, Math.PI * 2); gctx.fill();
-                        // Ears
-                        gctx.beginPath();
-                        gctx.moveTo(catX + 5, catY - 5); gctx.lineTo(catX + 6, catY - 7); gctx.lineTo(catX + 7, catY - 4.5);
-                        gctx.closePath(); gctx.fill();
-                        gctx.beginPath();
-                        gctx.moveTo(catX + 7, catY - 5); gctx.lineTo(catX + 8, catY - 7); gctx.lineTo(catX + 9, catY - 4.5);
-                        gctx.closePath(); gctx.fill();
-                        // Tail (raised, slightly curved, swishing)
-                        var tailSwish = Math.sin(t * 4) * 1.5;
-                        gctx.strokeStyle = catColor; gctx.lineWidth = 2.5;
-                        gctx.beginPath();
-                        gctx.moveTo(catX - 7, catY - 1);
-                        gctx.quadraticCurveTo(catX - 11, catY - 5 + tailSwish, catX - 12, catY - 7);
-                        gctx.stroke();
-                        // Legs (4, stepping)
-                        var stepPhase = Math.sin(t * 8);
-                        gctx.lineWidth = 1.8;
-                        gctx.beginPath(); gctx.moveTo(catX + 5, catY + 2); gctx.lineTo(catX + 5, catY + 5 + Math.max(0, stepPhase) * -1); gctx.stroke();
-                        gctx.beginPath(); gctx.moveTo(catX + 2, catY + 2); gctx.lineTo(catX + 2, catY + 5 + Math.max(0, -stepPhase) * -1); gctx.stroke();
-                        gctx.beginPath(); gctx.moveTo(catX - 3, catY + 2); gctx.lineTo(catX - 3, catY + 5 + Math.max(0, stepPhase) * -1); gctx.stroke();
-                        gctx.beginPath(); gctx.moveTo(catX - 6, catY + 2); gctx.lineTo(catX - 6, catY + 5 + Math.max(0, -stepPhase) * -1); gctx.stroke();
-                        // Eyes (two yellow dots)
-                        gctx.fillStyle = '#eab308';
-                        gctx.beginPath(); gctx.arc(catX + 8.5, catY - 2, 0.7, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.arc(catX + 9.5, catY - 2, 0.7, 0, Math.PI * 2); gctx.fill();
-                        // Stripes on body
-                        gctx.fillStyle = catStripe;
-                        gctx.fillRect(catX - 3, catY - 2.5, 1, 3);
-                        gctx.fillRect(catX, catY - 3, 1, 3.5);
-                        gctx.fillRect(catX + 3, catY - 2.5, 1, 3);
-                      }
-                    }
-
-                    // ── Spider web in fence corner (subtle, top-left) — small decorative detail ──
-                    var webX = corners[0].x + 8;
-                    var webY = corners[0].y - 4;
-                    gctx.strokeStyle = 'rgba(220,220,230,0.18)';
-                    gctx.lineWidth = 0.6;
-                    for (var wsi = 0; wsi < 6; wsi++) {
-                      var ang = wsi * Math.PI / 3;
-                      gctx.beginPath();
-                      gctx.moveTo(webX, webY);
-                      gctx.lineTo(webX + Math.cos(ang) * 7, webY + Math.sin(ang) * 7);
-                      gctx.stroke();
-                    }
-                    // Concentric web threads
-                    for (var wsj = 1; wsj <= 3; wsj++) {
-                      gctx.beginPath();
-                      gctx.arc(webX, webY, wsj * 2.3, 0, Math.PI * 2);
-                      gctx.stroke();
-                    }
-
-                    // ── Weather ──
-                    if (sSeason === 0 || sSeason === 2) { // Rain
-                      gctx.strokeStyle = 'rgba(100,150,220,0.12)'; gctx.lineWidth = 0.8;
-                      for (var ri4 = 0; ri4 < 15; ri4++) {
-                        var rx3 = (ri4 * 53 + t * 50) % W; var ry3 = (ri4 * 37 + t * 100) % (H * 0.5);
-                        gctx.beginPath(); gctx.moveTo(rx3, ry3); gctx.lineTo(rx3 - 1.5, ry3 + 8); gctx.stroke();
-                      }
-                    }
-                    if (sSeason === 3) { // Snow
-                      gctx.fillStyle = 'rgba(255,255,255,0.45)';
-                      for (var si4 = 0; si4 < 25; si4++) {
-                        gctx.beginPath(); gctx.arc((si4 * 41 + t * 6) % W, (si4 * 23 + t * 12) % H, 1.2 + Math.sin(si4 + t * 0.4) * 0.5, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-
-                    // ── Click ripple effect (1.2-second expanding circle on player click) ──
-                    if (cvEl._clickRipple) {
-                      var rDur = 1.2;  // seconds
-                      var rElapsed = (performance.now() - cvEl._clickRipple.t0) / 1000;
-                      if (rElapsed < rDur) {
-                        var rT = rElapsed / rDur;
-                        var rR = 5 + rT * 50;
-                        var rA = (1 - rT) * 0.55;
-                        // Outer ring
-                        gctx.strokeStyle = 'rgba(251,191,36,' + rA + ')';
-                        gctx.lineWidth = 2 * (1 - rT) + 0.5;
-                        gctx.beginPath(); gctx.arc(cvEl._clickRipple.x, cvEl._clickRipple.y, rR, 0, Math.PI * 2); gctx.stroke();
-                        // Inner softer ring
-                        gctx.strokeStyle = 'rgba(254,240,138,' + (rA * 0.6) + ')';
-                        gctx.lineWidth = 1;
-                        gctx.beginPath(); gctx.arc(cvEl._clickRipple.x, cvEl._clickRipple.y, rR * 0.6, 0, Math.PI * 2); gctx.stroke();
-                      } else {
-                        cvEl._clickRipple = null;
-                      }
-                    }
-
-                    // ── Plant burst (1.6-second celebration on successful plant) ──
-                    // Expanding green/yellow rings + sparkle particles + emoji + label
-                    // popping up briefly above the cell. UDL: high-visibility
-                    // confirmation that the planting action actually happened.
-                    if (cvEl._plantBurst) {
-                      var pbDur = 1.6;
-                      var pbElapsed = (performance.now() - cvEl._plantBurst.t0) / 1000;
-                      if (pbElapsed < pbDur) {
-                        var pbT = pbElapsed / pbDur;          // 0→1
-                        var pbCell = isoToScreen(Math.floor(cvEl._plantBurst.idx / 4), cvEl._plantBurst.idx % 4);
-                        // Three staggered expanding rings (green → yellow → green)
-                        var ringColors = ['rgba(74,222,128,', 'rgba(253,224,71,', 'rgba(34,197,94,'];
-                        for (var pri = 0; pri < 3; pri++) {
-                          var ringStart = pri * 0.12;
-                          if (pbT < ringStart) continue;
-                          var ringT = (pbT - ringStart) / (1 - ringStart);
-                          if (ringT > 1) continue;
-                          var ringR = 6 + ringT * 65;
-                          var ringA = (1 - ringT) * 0.65;
-                          gctx.strokeStyle = ringColors[pri] + ringA + ')';
-                          gctx.lineWidth = 2.5 * (1 - ringT) + 0.4;
-                          gctx.beginPath();
-                          gctx.ellipse(pbCell.x, pbCell.y, ringR, ringR * 0.55, 0, 0, Math.PI * 2);
-                          gctx.stroke();
-                        }
-                        // Sparkle particles flying outward + up
-                        var pCount = 8;
-                        for (var pp = 0; pp < pCount; pp++) {
-                          var pAng = (pp / pCount) * Math.PI * 2 + pbT * 0.5;
-                          var pDist = pbT * 55;
-                          var pPx = pbCell.x + Math.cos(pAng) * pDist;
-                          var pPy = pbCell.y - 5 + Math.sin(pAng) * pDist * 0.55 - pbT * 18; // arc up
-                          var pAlpha = (1 - pbT) * 0.85;
-                          gctx.fillStyle = (pp % 2 === 0) ? 'rgba(253,224,71,' + pAlpha + ')' : 'rgba(74,222,128,' + pAlpha + ')';
-                          gctx.beginPath(); gctx.arc(pPx, pPy, 2 + (1 - pbT) * 1.5, 0, Math.PI * 2); gctx.fill();
-                        }
-                        // Floating emoji + "Planted!" label rising above the cell (first 0.85s)
-                        if (pbT < 0.85) {
-                          var labelT = pbT / 0.85;
-                          var labelY = pbCell.y - 40 - labelT * 40;
-                          var labelA = labelT < 0.15 ? labelT / 0.15 : (1 - (labelT - 0.15) / 0.85);
-                          gctx.globalAlpha = Math.max(0, labelA);
-                          // Backdrop pill
-                          var labelText = cvEl._plantBurst.emoji + ' Planted!';
-                          gctx.font = 'bold 22px system-ui, sans-serif';
-                          var labelW = gctx.measureText(labelText).width + 22;
-                          gctx.fillStyle = 'rgba(20,40,15,0.78)';
-                          gctx.beginPath();
-                          if (gctx.roundRect) {
-                            gctx.roundRect(pbCell.x - labelW / 2, labelY - 18, labelW, 28, 14);
-                            gctx.fill();
-                          } else {
-                            gctx.fillRect(pbCell.x - labelW / 2, labelY - 18, labelW, 28);
-                          }
-                          // Text
-                          gctx.fillStyle = '#fef9c3';
-                          gctx.textAlign = 'center';
-                          gctx.textBaseline = 'middle';
-                          gctx.fillText(labelText, pbCell.x, labelY - 4);
-                          gctx.globalAlpha = 1;
-                          gctx.textAlign = 'start';
-                          gctx.textBaseline = 'alphabetic';
-                        }
-                      } else {
-                        cvEl._plantBurst = null;
-                      }
-                    }
-
-                    // ── Hover preview while a plant is selected (plan phase) ──
-                    // Empty tile + selected plant → ghost silhouette + green "Plant here" badge.
-                    // Occupied tile + selected plant → red "Already planted" badge.
-                    // UDL: lets the student preview placement before committing the action.
-                    // Ambient ecosystem visitors respond to the learner's planting choices.
-                    var ambientT = cgReducedMotion ? 0 : t;
-                    var pollinatorCells = [];
-                    var guardianCells = [];
-                    var hasSunflowerHabitat = false;
-                    grid2.forEach(function(ambientCell, ambientIdx) {
-                      if (!ambientCell.plantId || !CG_PLANTS[ambientCell.plantId]) return;
-                      var ambientPlant = CG_PLANTS[ambientCell.plantId];
-                      if (ambientPlant.pollinator) pollinatorCells.push(ambientIdx);
-                      if (['dill','yarrow','marigold','nasturtium'].indexOf(ambientCell.plantId) !== -1) guardianCells.push(ambientIdx);
-                      if (ambientCell.plantId === 'sunflower') hasSunflowerHabitat = true;
-                    });
-                    if (!isNight && pollinatorCells.length > 0 && sSeason !== 3) {
-                      var beeCount = Math.min(6, pollinatorCells.length + 1);
-                      for (var beeI = 0; beeI < beeCount; beeI++) {
-                        var beeTargetIdx = pollinatorCells[beeI % pollinatorCells.length];
-                        var beeTarget = isoToScreen(Math.floor(beeTargetIdx / 4), beeTargetIdx % 4);
-                        var beeX = beeTarget.x + Math.cos(ambientT * 1.8 + beeI * 2.2) * (24 + beeI * 4);
-                        var beeY = beeTarget.y - 42 + Math.sin(ambientT * 2.7 + beeI * 1.4) * 14;
-                        gctx.fillStyle = 'rgba(255,255,255,0.75)';
-                        gctx.beginPath(); gctx.ellipse(beeX - 3, beeY - 3, 3, 2, -0.5, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.ellipse(beeX + 3, beeY - 3, 3, 2, 0.5, 0, Math.PI * 2); gctx.fill();
-                        gctx.fillStyle = '#facc15'; gctx.beginPath(); gctx.ellipse(beeX, beeY, 4, 2.5, 0, 0, Math.PI * 2); gctx.fill();
-                        gctx.strokeStyle = '#422006'; gctx.lineWidth = 1; gctx.beginPath(); gctx.moveTo(beeX - 1, beeY - 2); gctx.lineTo(beeX - 1, beeY + 2); gctx.moveTo(beeX + 2, beeY - 2); gctx.lineTo(beeX + 2, beeY + 2); gctx.stroke();
-                      }
-                    }
-                    if (guardianCells.length > 0 || cgBeneficialPop >= 10) {
-                      var ladyCount = Math.min(4, Math.max(1, guardianCells.length));
-                      for (var ladyI = 0; ladyI < ladyCount; ladyI++) {
-                        var ladyIdx = guardianCells.length ? guardianCells[ladyI % guardianCells.length] : ladyI;
-                        var ladyBase = isoToScreen(Math.floor(ladyIdx / 4), ladyIdx % 4);
-                        var ladyX = ladyBase.x - 18 + ((ambientT * 7 + ladyI * 13) % 36);
-                        var ladyY = ladyBase.y - 8 - Math.sin(ambientT + ladyI) * 3;
-                        gctx.fillStyle = '#dc2626'; gctx.beginPath(); gctx.arc(ladyX, ladyY, 3.2, 0, Math.PI * 2); gctx.fill();
-                        gctx.fillStyle = '#111827'; gctx.beginPath(); gctx.arc(ladyX, ladyY - 2.6, 1.5, 0, Math.PI * 2); gctx.fill();
-                        gctx.beginPath(); gctx.arc(ladyX - 1.2, ladyY, 0.7, 0, Math.PI * 2); gctx.arc(ladyX + 1.3, ladyY + 1, 0.7, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-                    if (isNight && plantedCells >= 4 && sSeason !== 3) {
-                      for (var fireI = 0; fireI < 12; fireI++) {
-                        var fireX = isoOX - 260 + ((fireI * 47 + ambientT * (5 + fireI % 3)) % 520);
-                        var fireY = isoOY - 80 + ((fireI * 31) % 260) + Math.sin(ambientT * 1.4 + fireI) * 12;
-                        var fireGlow = 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(ambientT * 3 + fireI * 1.8));
-                        gctx.fillStyle = 'rgba(217,249,157,' + fireGlow + ')'; gctx.beginPath(); gctx.arc(fireX, fireY, 2.2, 0, Math.PI * 2); gctx.fill();
-                      }
-                    }
-                    if (hasSunflowerHabitat && !isNight) {
-                      var birdX = ((ambientT * 22) % (W + 160)) - 80;
-                      var birdY = 105 + Math.sin(ambientT * 0.8) * 18;
-                      gctx.strokeStyle = 'rgba(30,41,59,0.65)'; gctx.lineWidth = 2; gctx.beginPath(); gctx.arc(birdX - 6, birdY, 7, Math.PI * 1.08, Math.PI * 1.85); gctx.arc(birdX + 6, birdY, 7, Math.PI * 1.15, Math.PI * 1.92); gctx.stroke();
-                    }
-
-                    var canvasPreviewCell = activePlacementPreview ? activePlacementPreview.plot : hoverCell2;
-                    if (cgPhase === 'plan' && cgSelectedPlant && canvasPreviewCell >= 0 && canvasPreviewCell < 16) {
-                      var pvCell = grid2[canvasPreviewCell];
-                      var pvPos = isoToScreen(Math.floor(canvasPreviewCell / 4), canvasPreviewCell % 4);
-                      var pvOccupied = !!(pvCell && pvCell.plantId);
-                      var pvVis = PLANT_VISUALS[cgSelectedPlant] || defVis;
-                      var pvSelected = CG_PLANTS[cgSelectedPlant];
-                      var pvStaged = !!(activePlacementPreview && activePlacementPreview.plot === canvasPreviewCell);
-                      // Gentle breathing pulse so the student sees this is a live preview
-                      var pvPulse = cgReducedMotion ? 0.72 : 0.55 + 0.25 * Math.sin(t * 5);
-
-                      if (pvStaged && activePreviewModel) {
-                        activePreviewModel.evidence.links.forEach(function(previewLink) {
-                          var neighborPos = isoToScreen(Math.floor(previewLink.index / 4), previewLink.index % 4);
-                          var helpfulPreviewLink = previewLink.relationship.bonus > 0;
-                          gctx.save();
-                          gctx.strokeStyle = helpfulPreviewLink ? 'rgba(16,185,129,0.92)' : 'rgba(244,63,94,0.92)';
-                          gctx.fillStyle = helpfulPreviewLink ? 'rgba(16,185,129,0.12)' : 'rgba(244,63,94,0.12)';
-                          gctx.lineWidth = 4;
-                          if (!helpfulPreviewLink) gctx.setLineDash([7, 5]);
-                          gctx.beginPath(); gctx.moveTo(pvPos.x, pvPos.y - 8); gctx.lineTo(neighborPos.x, neighborPos.y - 8); gctx.stroke();
-                          gctx.setLineDash([]);
-                          gctx.beginPath(); gctx.ellipse(neighborPos.x, neighborPos.y - 5, 42, 23, 0, 0, Math.PI * 2); gctx.fill(); gctx.stroke();
-                          gctx.restore();
-                        });
-                        gctx.save();
-                        gctx.strokeStyle = 'rgba(129,140,248,0.98)';
-                        gctx.fillStyle = 'rgba(129,140,248,0.16)';
-                        gctx.lineWidth = 5;
-                        gctx.beginPath(); gctx.ellipse(pvPos.x, pvPos.y - 4, 52, 29, 0, 0, Math.PI * 2); gctx.fill(); gctx.stroke();
-                        gctx.restore();
-                      }
-
-                      if (!pvOccupied) {
-                        // Ghost plant silhouette (transparent, no fruit detail — keeps it simple)
-                        gctx.globalAlpha = 0.45 * pvPulse;
-                        // Stem
-                        gctx.strokeStyle = pvVis.stemColor;
-                        gctx.lineWidth = 2;
-                        gctx.beginPath();
-                        gctx.moveTo(pvPos.x, pvPos.y);
-                        gctx.lineTo(pvPos.x, pvPos.y - 22);
-                        gctx.stroke();
-                        // Leaves: 2 small ovals
-                        gctx.fillStyle = pvVis.leafColor;
-                        gctx.beginPath();
-                        gctx.ellipse(pvPos.x - 5, pvPos.y - 14, 6, 3.5, -0.4, 0, Math.PI * 2);
-                        gctx.fill();
-                        gctx.beginPath();
-                        gctx.ellipse(pvPos.x + 5, pvPos.y - 18, 6, 3.5, 0.4, 0, Math.PI * 2);
-                        gctx.fill();
-                        // Tiny crown / fruit hint
-                        gctx.fillStyle = pvVis.fruitColor || pvVis.flowerColor || pvVis.leafColor;
-                        gctx.beginPath();
-                        gctx.arc(pvPos.x, pvPos.y - 24, 4, 0, Math.PI * 2);
-                        gctx.fill();
-                        gctx.globalAlpha = 1;
-
-                        // Green "Plant here" badge above the tile
-                        var pvLabel = (pvSelected && pvSelected.emoji ? pvSelected.emoji + ' ' : '') + (pvStaged ? 'Review placement' : 'Preview here');
-                        gctx.font = 'bold 13px system-ui, sans-serif';
-                        var pvLW = gctx.measureText(pvLabel).width + 16;
-                        var pvBadgeY = pvPos.y - iTH * 0.5 - 14;
-                        gctx.fillStyle = 'rgba(22,101,52,0.92)';
-                        if (gctx.roundRect) {
-                          gctx.beginPath();
-                          gctx.roundRect(pvPos.x - pvLW / 2, pvBadgeY - 10, pvLW, 20, 10);
-                          gctx.fill();
-                        } else {
-                          gctx.fillRect(pvPos.x - pvLW / 2, pvBadgeY - 10, pvLW, 20);
-                        }
-                        gctx.fillStyle = '#dcfce7';
-                        gctx.textAlign = 'center';
-                        gctx.textBaseline = 'middle';
-                        gctx.fillText(pvLabel, pvPos.x, pvBadgeY);
-                        gctx.textAlign = 'start';
-                        gctx.textBaseline = 'alphabetic';
-                      } else {
-                        // Red "Already planted" badge
-                        var pvOccLabel = '⛔ Already planted';
-                        gctx.font = 'bold 12px system-ui, sans-serif';
-                        var pvOccLW = gctx.measureText(pvOccLabel).width + 14;
-                        var pvOccBadgeY = pvPos.y - iTH * 0.5 - 14;
-                        gctx.fillStyle = 'rgba(127,29,29,0.92)';
-                        if (gctx.roundRect) {
-                          gctx.beginPath();
-                          gctx.roundRect(pvPos.x - pvOccLW / 2, pvOccBadgeY - 10, pvOccLW, 20, 10);
-                          gctx.fill();
-                        } else {
-                          gctx.fillRect(pvPos.x - pvOccLW / 2, pvOccBadgeY - 10, pvOccLW, 20);
-                        }
-                        gctx.fillStyle = '#fecaca';
-                        gctx.textAlign = 'center';
-                        gctx.textBaseline = 'middle';
-                        gctx.fillText(pvOccLabel, pvPos.x, pvOccBadgeY);
-                        gctx.textAlign = 'start';
-                        gctx.textBaseline = 'alphabetic';
-                      }
-                    }
-
-                    // ── Action burst (water / weed / compost feedback) ──
-                    // Triggered by cgWater/cgWeed/cgCompost via window.__cgCanvasEl._actionBurst.
-                    // Each action gets its own color palette and particle behavior, but they
-                    // share the same 1.4s expanding-rings-and-particles pattern.
-                    if (cvEl._actionBurst) {
-                      var abDur = 1.4;
-                      var abElapsed = (performance.now() - cvEl._actionBurst.t0) / 1000;
-                      if (abElapsed < abDur) {
-                        var abT = abElapsed / abDur;
-                        var abKind = cvEl._actionBurst.kind || 'water';
-                        // Garden center as the origin
-                        var abCenter = isoToScreen(1.5, 1.5);
-                        // Palette per action
-                        var abPalette = {
-                          water:   { ring1: 'rgba(56,189,248,', ring2: 'rgba(186,230,253,', dot1: 'rgba(14,165,233,', dot2: 'rgba(125,211,252,', labelBg: 'rgba(7,89,133,0.85)', labelFg: '#e0f2fe', text: __alloT('stem.companionplanting.watered', '💧 Watered!') },
-                          weed:    { ring1: 'rgba(74,222,128,', ring2: 'rgba(254,202,202,', dot1: 'rgba(34,197,94,',  dot2: 'rgba(248,113,113,', labelBg: 'rgba(20,83,45,0.85)',  labelFg: '#dcfce7', text: __alloT('stem.companionplanting.weeded', '🌿 Weeded!') },
-                          compost: { ring1: 'rgba(180,140,90,', ring2: 'rgba(202,138,4,',  dot1: 'rgba(120,80,40,',   dot2: 'rgba(252,211,77,',  labelBg: 'rgba(69,26,3,0.85)',  labelFg: '#fef3c7', text: __alloT('stem.companionplanting.composted', '♻️ Composted!') }
-                        }[abKind] || { ring1: 'rgba(255,255,255,', ring2: 'rgba(255,255,255,', dot1: 'rgba(255,255,255,', dot2: 'rgba(255,255,255,', labelBg: 'rgba(0,0,0,0.7)', labelFg: '#fff', text: 'Action!' };
-                        // 2 expanding rings (large, scaled across whole garden footprint)
-                        for (var abr = 0; abr < 2; abr++) {
-                          var abrStart = abr * 0.14;
-                          if (abT < abrStart) continue;
-                          var abrT = (abT - abrStart) / (1 - abrStart);
-                          if (abrT > 1) continue;
-                          var abrR = 30 + abrT * 180;
-                          var abrA = (1 - abrT) * 0.6;
-                          gctx.strokeStyle = (abr === 0 ? abPalette.ring1 : abPalette.ring2) + abrA + ')';
-                          gctx.lineWidth = 3 * (1 - abrT) + 0.6;
-                          gctx.beginPath();
-                          gctx.ellipse(abCenter.x, abCenter.y, abrR, abrR * 0.5, 0, 0, Math.PI * 2);
-                          gctx.stroke();
-                        }
-                        // 16 particles flying outward (or raining down for water)
-                        var abP = 16;
-                        for (var abp = 0; abp < abP; abp++) {
-                          var abpAng = (abp / abP) * Math.PI * 2 + abp * 0.31;
-                          var abpDist = abT * 130;
-                          var abpX = abCenter.x + Math.cos(abpAng) * abpDist;
-                          var abpY;
-                          if (abKind === 'water') {
-                            // Water droplets arc inward + downward (rain pattern)
-                            abpY = abCenter.y - 80 + Math.sin(abpAng) * 40 + abT * 95;
-                          } else if (abKind === 'compost') {
-                            // Compost crumbs fall + spread
-                            abpY = abCenter.y + Math.sin(abpAng) * abpDist * 0.45 + abT * 30;
-                          } else {
-                            // Weed particles fly up + out
-                            abpY = abCenter.y + Math.sin(abpAng) * abpDist * 0.5 - abT * 35;
-                          }
-                          var abpA = (1 - abT) * 0.85;
-                          gctx.fillStyle = (abp % 2 === 0 ? abPalette.dot1 : abPalette.dot2) + abpA + ')';
-                          var abpR = (abKind === 'water' ? 2.5 : 1.8) + (1 - abT) * 1.4;
-                          gctx.beginPath();
-                          gctx.arc(abpX, abpY, abpR, 0, Math.PI * 2);
-                          gctx.fill();
-                        }
-                        // Floating action label
-                        if (abT < 0.78) {
-                          var albT = abT / 0.78;
-                          var albY = abCenter.y - 70 - albT * 36;
-                          var albA = albT < 0.18 ? albT / 0.18 : (1 - (albT - 0.18) / 0.82);
-                          gctx.globalAlpha = Math.max(0, albA);
-                          gctx.font = 'bold 24px system-ui, sans-serif';
-                          var albW = gctx.measureText(abPalette.text).width + 28;
-                          gctx.fillStyle = abPalette.labelBg;
-                          if (gctx.roundRect) {
-                            gctx.beginPath();
-                            gctx.roundRect(abCenter.x - albW / 2, albY - 20, albW, 32, 16);
-                            gctx.fill();
-                          } else {
-                            gctx.fillRect(abCenter.x - albW / 2, albY - 20, albW, 32);
-                          }
-                          gctx.fillStyle = abPalette.labelFg;
-                          gctx.textAlign = 'center';
-                          gctx.textBaseline = 'middle';
-                          gctx.fillText(abPalette.text, abCenter.x, albY - 4);
-                          gctx.globalAlpha = 1;
-                          gctx.textAlign = 'start';
-                          gctx.textBaseline = 'alphabetic';
-                        }
-                      } else {
-                        cvEl._actionBurst = null;
-                      }
-                    }
-
-                    // ── Hover tooltip (plant info card on canvas) ──
-                    if (hoverCell2 >= 0 && hoverCell2 < 16) {
-                      var hc = grid2[hoverCell2];
-                      var hPos = isoToScreen(Math.floor(hoverCell2 / 4), hoverCell2 % 4);
-                      if (hc && hc.plantId && CG_PLANTS[hc.plantId]) {
-                        var hp = CG_PLANTS[hc.plantId];
-                        var hGrow = Math.min(100, Math.round(hc.growthDay / hp.days * 100));
-                        var hBonus = getCellBonus(grid2, hoverCell2);
-                        var ttx = Math.min(W - 140, Math.max(10, hPos.x - 60));
-                        var tty = Math.max(50, hPos.y - iTH - 55);
-                        // Background
-                        gctx.fillStyle = 'rgba(0,0,0,0.8)'; gctx.beginPath();
-                        gctx.roundRect(ttx, tty, 130, 50, 6); gctx.fill();
-                        gctx.strokeStyle = 'rgba(255,255,255,0.15)'; gctx.lineWidth = 1;
-                        gctx.beginPath(); gctx.roundRect(ttx, tty, 130, 50, 6); gctx.stroke();
-                        // Content
-                        gctx.fillStyle = '#fff'; gctx.font = 'bold 11px system-ui'; gctx.textAlign = 'left';
-                        gctx.fillText(hp.label, ttx + 8, tty + 16);
-                        gctx.fillStyle = '#94a3b8'; gctx.font = '9px system-ui';
-                        gctx.fillText('Growth: ' + hGrow + '%  Health: ' + Math.round(hc.health) + '%', ttx + 8, tty + 30);
-                        var bonusCol = hBonus.total > 0 ? '#4ade80' : hBonus.total < 0 ? '#f87171' : '#94a3b8';
-                        gctx.fillStyle = bonusCol;
-                        gctx.fillText('Companion: ' + (hBonus.total > 0 ? '+' : '') + hBonus.total + '%  Pests: ' + Math.round(hc.pests), ttx + 8, tty + 43);
-                      } else if (!hc || !hc.plantId) {
-                        // Empty plot tooltip
-                        gctx.fillStyle = 'rgba(0,0,0,0.6)'; gctx.beginPath();
-                        gctx.roundRect(hPos.x - 40, hPos.y - iTH - 25, 80, 22, 4); gctx.fill();
-                        gctx.fillStyle = 'rgba(255,255,255,0.6)'; gctx.font = '9px system-ui'; gctx.textAlign = 'center';
-                        gctx.fillText(cgPhase === 'plan' ? 'Click to plant' : 'Empty plot', hPos.x, hPos.y - iTH - 10);
-                      }
-                    }
-
-                    // ── HUD overlay ──
-                    gctx.fillStyle = 'rgba(0,0,0,0.5)'; gctx.beginPath();
-                    gctx.roundRect(6, 6, 200, 30, 6); gctx.fill();
-                    gctx.font = 'bold 11px system-ui'; gctx.textAlign = 'left';
-                    gctx.fillStyle = '#fff';
-                    var seasonLabels = ['Spring', 'Summer', 'Autumn', 'Winter'];
-                    gctx.fillText(seasonLabels[sSeason] + ' \u2022 Day ' + ((cgDay % 30) + 1) + ' \u2022 Year ' + cgYear, 14, 24);
-                    gctx.font = '9px system-ui'; gctx.fillStyle = 'rgba(255,255,255,0.5)';
-                    gctx.fillText(cgPhase === 'plan' ? 'Click a plot to plant' : 'Click a plant to inspect', 14, 48);
+                    cvEl._cgAnim = null;
+                    if (!document.contains(cvEl)) { if (cvEl._cgCleanup) cvEl._cgCleanup(); return; }
+                    if (document.hidden || cvEl._cgVisible === false) return;
+                    var frame = cvEl._cgFrameState;
+                    var cgDay = frame.day;
+                    var cgReducedMotion = frame.reducedMotion || !!(cgMotionMedia && cgMotionMedia.matches);
+                    if (!cgReducedMotion) cvEl._cgAnim = requestAnimationFrame(drawCG);
+                    var now = performance.now();
+                    if (!cgReducedMotion && cvEl._cgLastPaint && now - cvEl._cgLastPaint < 32) return;
+                    cvEl._cgLastPaint = now;
+                    cvEl.setAttribute('data-garden-render-day', String(cgDay)); cvEl.setAttribute('data-garden-tile-width', String(companionGardenTileSize(W, H).width));
+                    cvEl.setAttribute('data-garden-motion', cgReducedMotion ? 'still' : 'animated');
+                    var t = cgReducedMotion ? 42 : (now - startT) / 1000;
+                    companionDrawGardenScene(gctx, cvEl, React, frame, CG_PLANTS, CG_COMPANIONS, t, cgReducedMotion);
                   }
-                  drawCG();
-                  var obs3 = new MutationObserver(function() {
-                    if (!document.contains(cvEl)) { cancelAnimationFrame(cvEl._cgAnim); obs3.disconnect(); cvEl._cgCanvasInit = false; }
-                  });
+                  cvEl._cgRequestDraw = function() {
+                    if (cvEl._cgAnim) cancelAnimationFrame(cvEl._cgAnim);
+                    cvEl._cgLastPaint = 0;
+                    cvEl._cgAnim = requestAnimationFrame(drawCG);
+                  };
+                  var visibilityUpdate = function() { cvEl._cgRequestDraw(); };
+                  document.addEventListener('visibilitychange', visibilityUpdate);
+                  if (cgMotionMedia && cgMotionMedia.addEventListener) cgMotionMedia.addEventListener('change', visibilityUpdate);
+                  var visibilityObserver = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(function(entries) {
+                    cvEl._cgVisible = !!(entries[0] && entries[0].isIntersecting);
+                    cvEl._cgRequestDraw();
+                  }, { rootMargin: '80px' }) : null;
+                  if (visibilityObserver) visibilityObserver.observe(cvEl);
+                  var obs3 = new MutationObserver(function() { if (!document.contains(cvEl)) cvEl._cgCleanup(); });
+                  cvEl._cgCleanup = function() {
+                    if (cvEl._cgAnim) cancelAnimationFrame(cvEl._cgAnim);
+                    cvEl._cgAnim = null;
+                    if (cvEl._cgRo) cvEl._cgRo.disconnect();
+                    if (visibilityObserver) visibilityObserver.disconnect();
+                    obs3.disconnect();
+                    document.removeEventListener('visibilitychange', visibilityUpdate);
+                    if (cgMotionMedia && cgMotionMedia.removeEventListener) cgMotionMedia.removeEventListener('change', visibilityUpdate);
+                    cvEl._cgCanvasInit = false;
+                    if (window.__cgCanvasEl === cvEl) window.__cgCanvasEl = null;
+                  };
                   obs3.observe(document.body, { childList: true, subtree: true });
+                  cvEl._cgRequestDraw();
                 }
               }),
                 // Maximize / minimize toggle overlay button
@@ -10430,7 +9371,7 @@ var d = (labToolData.companionPlanting) || {};
                   h('div', { className: 'flex flex-wrap items-center gap-2' },
                     h('button', { onClick: cgStartGrowing, disabled: plantedCells === 0, className: 'min-h-[44px] rounded-xl px-4 py-2 text-sm font-black transition-all ' + (plantedCells ? 'bg-lime-300 text-emerald-950 shadow-sm hover:-translate-y-0.5 hover:bg-lime-200' : 'cursor-not-allowed bg-white/10 text-white/40') }, plantedCells ? 'Start Growing - ' + plantedCells + ' plots' : 'Plant a crop to begin'),
                     !cg.confirmClear && h('button', { onClick: function() { cgUpd({ confirmClear: true }); }, disabled: plantedCells === 0, className: 'min-h-[44px] rounded-xl bg-white/10 px-3 py-2 text-[0.6875rem] font-black text-white ring-1 ring-white/15 hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-40' }, 'Clear garden'),
-                    cg.confirmClear && h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-rose-300/30 bg-rose-400/15 p-2' }, h('span', { className: 'px-1 text-[0.625rem] font-bold text-rose-100' }, 'Remove all plots?'), h('button', { onClick: function() { cgUpd({ progressReset: true, grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, nitrogen: 50, phosphorus: 40, potassium: 45, pH: 6.5, organicMatter: 3.0, moisture: 60, budget: 50.00, revenue: 0, expenses: 0, pestPop: 0, beneficialPop: 5, year: 1, totalHarvested: 0, phase: 'plan', selectedPlant: null, plantingTarget: null, placementPreview: null, plantingPrediction: null, comparisonRequest: null, plantingClaim: null, inquiryReasoning: null, inquiryConfidence: null, inquiryNextStep: null, inquiryObservations: [], inquiryHistory: [], journal: [], seenReflections: {}, observedVisitors: [], achievements: [], seasonHistory: [], harvestBatches: [], lastHarvestBatch: null, fieldChecklist: {}, lastPlacement: null, relationshipFocus: null, activeChallenge: null, confirmClear: false, soilHistory: [], lastDayReport: null, lastCareAction: null, eventLog: [], progressTrail: [], resumeCheckpoint: null, resumeAcknowledged: false, progressExportStatus: '', showProgressSummary: false, lastFeedback: { icon: '\u21BA', title: 'Garden cleared', detail: 'All 16 plots are ready for a new plan.', tone: 'info' } }); }, className: 'rounded-lg bg-rose-600 px-2.5 py-1.5 text-[0.625rem] font-black text-white' }, 'Yes, clear'), h('button', { onClick: function() { cgUpd({ confirmClear: false }); }, className: 'rounded-lg bg-white px-2.5 py-1.5 text-[0.625rem] font-black text-slate-700' }, 'Cancel'))
+                    cg.confirmClear && h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-rose-300/30 bg-rose-400/15 p-2' }, h('span', { className: 'px-1 text-[0.625rem] font-bold text-rose-100' }, 'Remove all plots?'), h('button', { onClick: function() { cgUpd({ progressReset: true, experimentBench: null, experimentHistory: [], experimentStatus: '', showExperimentBench: false, grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, nitrogen: 50, phosphorus: 40, potassium: 45, pH: 6.5, organicMatter: 3.0, moisture: 60, budget: 50.00, revenue: 0, expenses: 0, pestPop: 0, beneficialPop: 5, year: 1, totalHarvested: 0, phase: 'plan', selectedPlant: null, plantingTarget: null, placementPreview: null, plantingPrediction: null, comparisonRequest: null, plantingClaim: null, inquiryReasoning: null, inquiryConfidence: null, inquiryNextStep: null, inquiryObservations: [], inquiryHistory: [], journal: [], seenReflections: {}, observedVisitors: [], achievements: [], seasonHistory: [], harvestBatches: [], lastHarvestBatch: null, fieldChecklist: {}, lastPlacement: null, relationshipFocus: null, activeChallenge: null, confirmClear: false, soilHistory: [], lastDayReport: null, lastCareAction: null, eventLog: [], progressTrail: [], resumeCheckpoint: null, resumeAcknowledged: false, progressExportStatus: '', showProgressSummary: false, lastFeedback: { icon: '\u21BA', title: 'Garden cleared', detail: 'All 16 plots are ready for a new plan.', tone: 'info' } }); }, className: 'rounded-lg bg-rose-600 px-2.5 py-1.5 text-[0.625rem] font-black text-white' }, 'Yes, clear'), h('button', { onClick: function() { cgUpd({ confirmClear: false }); }, className: 'rounded-lg bg-white px-2.5 py-1.5 text-[0.625rem] font-black text-slate-700' }, 'Cancel'))
                   )
                 )
               ),
@@ -10903,6 +9844,16 @@ var d = (labToolData.companionPlanting) || {};
                   onClick: function () { upd('gardenMode', 'community'); },
                   className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-600"
                 }, __alloT('stem.companionplanting.community_garden_2', "🏡 Community Garden")),
+
+                React.createElement("button", {
+                  onClick: function () {
+                    upd('gardenMode', 'community');
+                    if (cg.experimentBench) cgUpd({ showExperimentBench: true });
+                    else cgBenchCapture(!cgGrid.some(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; }));
+                  },
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-emerald-900 border border-emerald-200",
+                  "data-experiment-entry": true
+                }, __alloT('stem.companionplanting.experiment_entry', "Experiment bench")),
 
                 React.createElement("button", {
 

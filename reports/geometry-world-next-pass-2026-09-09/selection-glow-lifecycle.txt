@@ -1,0 +1,59 @@
+        engine._selectionGlows = [];
+        engine._selectionGlowTimers = [];
+        engine._selectionGlowRevision = 0;
+        engine._selectionGlowFadeInterval = null;
+        function clearSelectionGlow() {
+          engine._selectionGlowRevision++;
+          (engine._selectionGlowTimers || []).forEach(clearTimeout);
+          engine._selectionGlowTimers = [];
+          if (engine._selectionGlowFadeInterval) clearInterval(engine._selectionGlowFadeInterval);
+          engine._selectionGlowFadeInterval = null;
+          var owned = {};
+          engine._selectionGlows.forEach(function(g) {
+            owned[g.id] = true;
+            engine.scene.remove(g); g.geometry.dispose(); g.material.dispose();
+          });
+          var showcase = engine._showcase;
+          if (showcase) {
+            showcase.hidden = showcase.hidden.filter(function(entry) { return !owned[entry[0].id]; });
+            if (showcase.studio) showcase.studio.hidden = showcase.studio.hidden.filter(function(entry) { return !owned[entry[0].id]; });
+          }
+          engine._selectionGlows = [];
+        }
+        engine.clearSelectionAnnotations = clearSelectionGlow;
+        function showSelectionGlow(blocks) {
+          clearSelectionGlow();
+          var THREE = window.THREE;
+          if (!THREE || engine._destroyed || !engine.scene) return;
+          var revision = engine._selectionGlowRevision;
+          var layers = {};
+          blocks.forEach(function(b) { if (!layers[b.y]) layers[b.y] = []; layers[b.y].push(b); });
+          var sortedYs = Object.keys(layers).map(Number).sort(function(a, b) { return a - b; });
+          var colors = [0xef4444, 0xf59e0b, 0x22c55e, 0x3b82f6, 0x7c3aed, 0xec4899];
+          sortedYs.forEach(function(ly, layerIdx) {
+            engine._selectionGlowTimers.push(setTimeout(function() {
+              if (engine._destroyed || revision !== engine._selectionGlowRevision || !engine.scene || !window.THREE) return;
+              var glowMat = new THREE.MeshBasicMaterial({ color: colors[layerIdx % colors.length], transparent: true, opacity: 0.06, side: THREE.FrontSide, depthWrite: false });
+              layers[ly].forEach(function(b) {
+                var gMesh = new THREE.Mesh(new THREE.BoxGeometry(1.02, 1.02, 1.02), glowMat.clone());
+                gMesh.position.set(b.x + 0.5, b.y + 0.5, b.z + 0.5); gMesh.renderOrder = 997;
+                engine.scene.add(gMesh); engine._selectionGlows.push(gMesh);
+                hideDimensionDuringShowcase(gMesh);
+              });
+              glowMat.dispose();
+            }, layerIdx * 400));
+          });
+          engine._selectionGlowTimers.push(setTimeout(function() {
+            if (engine._destroyed || revision !== engine._selectionGlowRevision) return;
+            var fadeHandle = setInterval(function() {
+              if (engine._destroyed || revision !== engine._selectionGlowRevision) { clearInterval(fadeHandle); return; }
+              var allGone = true;
+              engine._selectionGlows.forEach(function(g) {
+                if (g.material.opacity > 0.01) { g.material.opacity -= 0.015; allGone = false; }
+              });
+              if (allGone) clearSelectionGlow();
+            }, 50);
+            engine._selectionGlowFadeInterval = fadeHandle;
+          }, 25000));
+        }
+

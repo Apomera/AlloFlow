@@ -1,0 +1,331 @@
+{
+  "kind": "pre-refinement-baseline-probes",
+  "implementationSha256": "e07b9b02f0796f2010bb3d344e1e42a2787c09ff7ea896c6b8a0b3a6d7788aea",
+  "reports": [
+    {
+      "id": "math-normalization",
+      "allPassed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Coverage probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Coverage probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "x² + y²"
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          }
+        ],
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Export scripts are disabled; script-dependent interactions require a separate manual task."
+        ]
+      }
+    },
+    {
+      "id": "invalid-utf8",
+      "allPassed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Coverage probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Coverage probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Read this."
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          }
+        ],
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Export scripts are disabled; script-dependent interactions require a separate manual task."
+        ]
+      }
+    },
+    {
+      "id": "legacy-charset",
+      "allPassed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Coverage probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Coverage probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Read this."
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          }
+        ],
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Export scripts are disabled; script-dependent interactions require a separate manual task."
+        ]
+      }
+    },
+    {
+      "id": "disabled-script",
+      "allPassed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Coverage probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Coverage probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Read this."
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          }
+        ],
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Export scripts are disabled; script-dependent interactions require a separate manual task."
+        ]
+      }
+    },
+    {
+      "id": "unloaded-relative-media",
+      "allPassed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Coverage probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Coverage probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Read this."
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          }
+        ],
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Export scripts are disabled; script-dependent interactions require a separate manual task."
+        ]
+      }
+    }
+  ]
+}

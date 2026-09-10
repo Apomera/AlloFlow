@@ -1,0 +1,529 @@
+{
+  "slug": "area_perimeter_grade4",
+  "prefix": "ap",
+  "groups": [
+    "Around and inside",
+    "Measure the shape",
+    "Same fence, different space",
+    "Choose the right quantity"
+  ],
+  "lessonTitles": [
+    "Around the yard",
+    "Cover the yard",
+    "Length and width",
+    "Square units",
+    "Same perimeter",
+    "Compare the areas",
+    "A square rug",
+    "Plan a garden"
+  ],
+  "note": "Exact tiled diagrams use a consistent square unit within each comparison. Object cartoons illustrate jobs only and are not scale drawings. Colored edges show distance around; filled tiles show covered space. Native captions supply dimensions and units.",
+  "status": "complete",
+  "provider": "Deterministic SVG diagrams and built-in image generation",
+  "style": "Concept-focused text-free diagrams and simple object illustrations",
+  "assets": [
+    {
+      "id": "ap-term-1",
+      "kind": "term",
+      "index": 0,
+      "caption": "Add every outside side to measure the distance around.",
+      "alt": "A gold dashed outline traces all four sides of an otherwise empty rectangle.",
+      "prompt": "Exact diagram specification: A highlighted rectangular boundary",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-term-1-diagram.png",
+      "vectorFile": "ap-term-1.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-term-2",
+      "kind": "term",
+      "index": 1,
+      "caption": "Count the square tiles covering the inside.",
+      "alt": "A rectangular region is completely covered by five rows of eight equal square tiles.",
+      "prompt": "Exact diagram specification: Eight-by-five tiled rectangle",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "cols": 8,
+        "rows": 5
+      },
+      "file": "ap-term-2-diagram.png",
+      "vectorFile": "ap-term-2.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-term-3",
+      "kind": "term",
+      "index": 2,
+      "caption": "The highlighted segment measures one long side.",
+      "alt": "A horizontal gold segment spans the long side beneath a rectangle, with end marks.",
+      "prompt": "Exact diagram specification: Rectangle with horizontal dimension",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-term-3-diagram.png",
+      "vectorFile": "ap-term-3.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-term-4",
+      "kind": "term",
+      "index": 3,
+      "caption": "The highlighted segment measures across the shorter side.",
+      "alt": "A vertical gold segment spans the shorter side beside a rectangle, with end marks.",
+      "prompt": "Exact diagram specification: Rectangle with vertical dimension",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-term-4-diagram.png",
+      "vectorFile": "ap-term-4.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-term-5",
+      "kind": "term",
+      "index": 4,
+      "caption": "Four right angles make this a rectangle.",
+      "alt": "A four-sided shape has a small right-angle marker at each corner.",
+      "prompt": "Exact diagram specification: Rectangle with four right-angle marks",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-term-5-diagram.png",
+      "vectorFile": "ap-term-5.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-term-6",
+      "kind": "term",
+      "index": 5,
+      "caption": "All four sides match, and all four corners are right angles.",
+      "alt": "A square outline has right-angle marks and matching single tick marks on all four sides.",
+      "prompt": "Exact diagram specification: Square with equal-side ticks",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-term-6-diagram.png",
+      "vectorFile": "ap-term-6.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-term-7",
+      "kind": "term",
+      "index": 6,
+      "caption": "One square unit has side lengths of one unit.",
+      "alt": "One filled square with four equal sides represents a single area tile.",
+      "prompt": "Exact diagram specification: Single square unit",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "cols": 1,
+        "rows": 1
+      },
+      "file": "ap-term-7-diagram.png",
+      "vectorFile": "ap-term-7.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-term-8",
+      "kind": "term",
+      "index": 7,
+      "caption": "For a rectangle, multiply the number of columns by the number of rows.",
+      "alt": "A rectangular tiled region contains three rows of four equal squares.",
+      "prompt": "Exact diagram specification: Rectangle area rule represented by a 3-by-4 tile array",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "cols": 4,
+        "rows": 3
+      },
+      "file": "ap-term-8-diagram.png",
+      "vectorFile": "ap-term-8.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-term-9",
+      "kind": "term",
+      "index": 8,
+      "caption": "A rectangle has measurements in two perpendicular directions.",
+      "alt": "A rectangle has one horizontal gold measuring segment and one vertical teal segment.",
+      "prompt": "Exact diagram specification: Two perpendicular dimensions",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-term-9-diagram.png",
+      "vectorFile": "ap-term-9.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-term-10",
+      "kind": "term",
+      "index": 9,
+      "caption": "Estimate using repeated known lengths, then measure to check.",
+      "alt": "A rectangular object sits above a row of seven equal reference blocks.",
+      "prompt": "Exact diagram specification: Object compared with repeated reference lengths",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-term-10-diagram.png",
+      "vectorFile": "ap-term-10.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-anchor-1",
+      "kind": "anchor",
+      "index": 0,
+      "caption": "Trace the outside and add all side lengths.",
+      "alt": "A dashed gold path follows the four edges of a rectangle.",
+      "prompt": "Exact diagram specification: Boundary rather than interior",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-anchor-1-diagram.png",
+      "vectorFile": "ap-anchor-1.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-anchor-2",
+      "kind": "anchor",
+      "index": 1,
+      "caption": "Cover the inside using square units.",
+      "alt": "Four rows of five square tiles fill a rectangular region.",
+      "prompt": "Exact diagram specification: Tiled interior",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "cols": 5,
+        "rows": 4
+      },
+      "file": "ap-anchor-2-diagram.png",
+      "vectorFile": "ap-anchor-2.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-anchor-3",
+      "kind": "anchor",
+      "index": 2,
+      "caption": "Ask whether the job goes around an edge or covers a surface.",
+      "alt": "An empty gold-bordered rectangle appears beside a fully tiled square.",
+      "prompt": "Exact diagram specification: Border job versus covering job",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-anchor-3-diagram.png",
+      "vectorFile": "ap-anchor-3.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-anchor-4",
+      "kind": "anchor",
+      "index": 3,
+      "caption": "Both boundaries measure 24 units; the interiors contain 36 and 20 square units.",
+      "alt": "A six-by-six square and a ten-by-two rectangle use the same-sized tiles and highlighted outside edges.",
+      "prompt": "Exact diagram specification: Same-perimeter rectangles at identical unit scale",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "rectangles": [
+          [
+            6,
+            6
+          ],
+          [
+            10,
+            2
+          ]
+        ],
+        "unit": 50
+      },
+      "file": "ap-anchor-4-diagram.png",
+      "vectorFile": "ap-anchor-4.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-sort-1",
+      "kind": "sort",
+      "index": 0,
+      "caption": "Putting a fence around a garden",
+      "alt": "A green rectangular yard is enclosed by a wooden fence along all four outside edges.",
+      "prompt": "Use case: scientific-educational. Square simple 2D cartoon illustration, bold clean outlines, flat colors, minimal shading, cream background. Focus entirely on the objects and the specified job. No people, faces, text, numerals, letters, labels, logos or watermark. No measurement scales or invented quantities. A rectangular garden seen from above with a fence continuously surrounding all four edges. Simple plain green interior. No gate gaps.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-sort-1-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-ca25b1e5-16f5-4334-8342-6da5c9907a4b.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-sort-2",
+      "kind": "sort",
+      "index": 1,
+      "caption": "Carpeting a bedroom floor",
+      "alt": "A red carpet roll is partly unrolled across the floor of an empty room.",
+      "prompt": "Use case: scientific-educational. Square simple 2D cartoon illustration, bold clean outlines, flat colors, minimal shading, cream background. Focus entirely on the objects and the specified job. No people, faces, text, numerals, letters, labels, logos or watermark. No measurement scales or invented quantities. A mostly empty bedroom in a simple cutaway view. A carpet roll is partly unrolled across the floor showing that carpet covers its surface. No decorative wall text.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-sort-2-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-81dd18f0-ccda-40aa-a5a1-58ba9dcc750e.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-sort-3",
+      "kind": "sort",
+      "index": 2,
+      "caption": "Buying trim to go around a picture frame",
+      "alt": "A blank rectangular wooden picture frame stands on a workbench beside four trim strips.",
+      "prompt": "Use case: scientific-educational. Square simple 2D cartoon illustration, bold clean outlines, flat colors, minimal shading, cream background. Focus entirely on the objects and the specified job. No people, faces, text, numerals, letters, labels, logos or watermark. No measurement scales or invented quantities. A plain blank picture frame on a workbench, with trim strips beside it and a visible border around all four sides.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-sort-3-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-d0b9daae-e437-4479-8bdf-2a4ca052a0f4.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-sort-4",
+      "kind": "sort",
+      "index": 3,
+      "caption": "Painting one wall of a room",
+      "alt": "A paint roller sits beside a rectangular wall with much of its surface painted teal.",
+      "prompt": "Use case: scientific-educational. Square simple 2D cartoon illustration, bold clean outlines, flat colors, minimal shading, cream background. Focus entirely on the objects and the specified job. No people, faces, text, numerals, letters, labels, logos or watermark. No measurement scales or invented quantities. A paint roller beside a single blank rectangular wall that is partly coated teal; emphasize paint covering the wall surface, no people or furniture.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-sort-4-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-0c703ae5-24d6-4360-813e-23dad2f44f80.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-sort-5",
+      "kind": "sort",
+      "index": 4,
+      "caption": "Laying sod on a lawn",
+      "alt": "Three partly unrolled sod rolls extend green grass across a patch of bare soil.",
+      "prompt": "Use case: scientific-educational. Square simple 2D cartoon illustration, bold clean outlines, flat colors, minimal shading, cream background. Focus entirely on the objects and the specified job. No people, faces, text, numerals, letters, labels, logos or watermark. No measurement scales or invented quantities. A rectangular bare lawn with rolls of green sod partly unrolled across the ground. Focus on covering the ground surface.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-sort-5-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-b8aff076-de0d-4b07-b882-9607a6f25d8f.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-sort-6",
+      "kind": "sort",
+      "index": 5,
+      "caption": "Adding a ribbon border around a poster",
+      "alt": "Purple ribbon forms a continuous border around a blank poster, with a matching ribbon spool nearby.",
+      "prompt": "Use case: scientific-educational. Square simple 2D cartoon illustration, bold clean outlines, flat colors, minimal shading, cream background. Focus entirely on the objects and the specified job. No people, faces, text, numerals, letters, labels, logos or watermark. No measurement scales or invented quantities. A blank rectangular poster on a plain table with a continuous purple ribbon around its four edges, a ribbon spool beside it. No text on poster.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-sort-6-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-a812dd10-be19-417a-be07-e24276571a1f.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-sort-7",
+      "kind": "sort",
+      "index": 6,
+      "caption": "Tiling a kitchen floor",
+      "alt": "Square tiles cover part of a kitchen floor, with untiled ground and a stack of tiles beside them.",
+      "prompt": "Use case: scientific-educational. Square simple 2D cartoon illustration, bold clean outlines, flat colors, minimal shading, cream background. Focus entirely on the objects and the specified job. No people, faces, text, numerals, letters, labels, logos or watermark. No measurement scales or invented quantities. Simple empty kitchen cutaway with floor partly covered in square tiles and a neat stack of matching tiles nearby. Focus the floor.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-sort-7-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-dd48e9e8-d74a-4e4c-8e03-3c4231255f59.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-sort-8",
+      "kind": "sort",
+      "index": 7,
+      "caption": "Stringing lights along the edge of a roof",
+      "alt": "A string of round bulbs follows the visible roof edges of a small house.",
+      "prompt": "Use case: scientific-educational. Square simple 2D cartoon illustration, bold clean outlines, flat colors, minimal shading, cream background. Focus entirely on the objects and the specified job. No people, faces, text, numerals, letters, labels, logos or watermark. No measurement scales or invented quantities. Simple small house with a string of unlit round bulbs along the visible roof edges. No holiday motifs, no text, no people.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-sort-8-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-52ff4f0a-2f4c-4311-b920-e8facf6863e6.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-sort-9",
+      "kind": "sort",
+      "index": 8,
+      "caption": "Figuring out how much wrapping paper covers a flat box top",
+      "alt": "A teal sheet partly covers a rectangular box top, with a matching paper roll beside it.",
+      "prompt": "Use case: scientific-educational. Square simple 2D cartoon illustration, bold clean outlines, flat colors, minimal shading, cream background. Focus entirely on the objects and the specified job. No people, faces, text, numerals, letters, labels, logos or watermark. No measurement scales or invented quantities. Overhead view of a flat rectangular box lid with a sheet of teal paper partly covering its top surface and a roll of matching paper beside it. No bow, no ribbon border.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-sort-9-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-080e8cc6-04a3-487e-8815-0f8eb1943fe2.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-lesson-1",
+      "kind": "lesson",
+      "index": 0,
+      "caption": "An 8-by-5 yard needs 26 feet of fence if each tile side represents one foot.",
+      "alt": "Five rows of eight square tiles form a yard with its outer boundary highlighted gold.",
+      "prompt": "Exact diagram specification: Eight-by-five yard boundary",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "cols": 8,
+        "rows": 5
+      },
+      "file": "ap-lesson-1-diagram.png",
+      "vectorFile": "ap-lesson-1.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-lesson-2",
+      "kind": "lesson",
+      "index": 1,
+      "caption": "The same yard covers 40 square feet: five rows of eight square-foot tiles.",
+      "alt": "Forty equal square tiles completely fill an eight-column, five-row rectangle.",
+      "prompt": "Exact diagram specification: Same yard tiled inside",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "cols": 8,
+        "rows": 5
+      },
+      "file": "ap-lesson-2-diagram.png",
+      "vectorFile": "ap-lesson-2.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-lesson-3",
+      "kind": "lesson",
+      "index": 2,
+      "caption": "Measure both dimensions using the same unit.",
+      "alt": "A rectangle has measuring segments along its horizontal and vertical directions.",
+      "prompt": "Exact diagram specification: Two dimensions of one rectangle",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-lesson-3-diagram.png",
+      "vectorFile": "ap-lesson-3.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-lesson-4",
+      "kind": "lesson",
+      "index": 3,
+      "caption": "A length unit measures a side. A square unit covers space.",
+      "alt": "One square tile appears beside a rectangle made from six tiles of exactly the same size.",
+      "prompt": "Exact diagram specification: One square unit beside six identical square units.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {},
+      "file": "ap-lesson-4-diagram.png",
+      "vectorFile": "ap-lesson-4.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-lesson-5",
+      "kind": "lesson",
+      "index": 4,
+      "caption": "A 6-by-6 square and a 10-by-2 rectangle both have perimeter 24 units.",
+      "alt": "Two tiled shapes have highlighted borders: a six-by-six square and a ten-by-two rectangle.",
+      "prompt": "Exact diagram specification: Same perimeter comparison",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "rectangles": [
+          [
+            6,
+            6
+          ],
+          [
+            10,
+            2
+          ]
+        ],
+        "unit": 50
+      },
+      "file": "ap-lesson-5-diagram.png",
+      "vectorFile": "ap-lesson-5.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-lesson-6",
+      "kind": "lesson",
+      "index": 5,
+      "caption": "With the same unit size, the square covers 36 square units and the rectangle covers 20.",
+      "alt": "A six-by-six tiled square covers more space than a ten-by-two tiled rectangle at the same scale.",
+      "prompt": "Exact diagram specification: Different areas at same perimeter",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "rectangles": [
+          [
+            6,
+            6
+          ],
+          [
+            10,
+            2
+          ]
+        ],
+        "unit": 50
+      },
+      "file": "ap-lesson-6-diagram.png",
+      "vectorFile": "ap-lesson-6.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-lesson-7",
+      "kind": "lesson",
+      "index": 6,
+      "caption": "A rug 7 feet on each side has perimeter 28 feet and area 49 square feet.",
+      "alt": "A seven-by-seven tiled square has its outside edges highlighted gold.",
+      "prompt": "Exact diagram specification: Seven-by-seven rug",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "cols": 7,
+        "rows": 7
+      },
+      "file": "ap-lesson-7-diagram.png",
+      "vectorFile": "ap-lesson-7.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "ap-lesson-8",
+      "kind": "lesson",
+      "index": 7,
+      "caption": "Both designs use 24 units of boundary. Compare 11 and 32 square units of covered space.",
+      "alt": "An eleven-by-one strip and an eight-by-four rectangle use matching tile sizes and gold outside borders.",
+      "prompt": "Exact diagram specification: Another pair of equal-perimeter garden plans",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "rectangles": [
+          [
+            11,
+            1
+          ],
+          [
+            8,
+            4
+          ]
+        ],
+        "unit": 70
+      },
+      "file": "ap-lesson-8-diagram.png",
+      "vectorFile": "ap-lesson-8.svg",
+      "reviewedAt": "2026-09-09"
+    }
+  ]
+}

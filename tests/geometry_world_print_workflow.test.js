@@ -88,6 +88,30 @@ describe('Geometry World local project continuity',()=>{
     expect(state.builderPrintContext).toEqual({unitMm:10,aiUse:'ASSISTED',aiDisclosure:'Shape planning'});
     expect(window.__alloGeometryWorldReturnProject).toBeUndefined();
   });
+  it.each([false,true])('never restores a transient shape cue through Print Lab (legacy snapshot=%s)',legacy=>{
+    const blocks=[{x:0,y:1,z:0,shape:'cube',type:'stone',rotation:0},{x:1,y:1,z:0,shape:'quarter',type:'wood',rotation:3},{x:9,y:3,z:-4,shape:'halfB',type:'brick',rotation:2}];
+    const selected=blocks.slice(0,2).map(({x,y,z})=>({x,y,z})),en=engineFor(blocks);
+    en._builderSelection={blocks:selected};en._undoStack=[{action:'place',...blocks[0]},{action:'place',...blocks[1]}];en._redoStack=[{action:'remove',...blocks[2]}];
+    en.blocksPlaced=3;en._sessionXP=17;en._blockMilestones={ten:true};en.camera.position.set(2,5,9);en.camera.quaternion.setFromEuler(new THREE.Euler(-0.2,0.4,0));en.yaw=0.4;en.pitch=-0.2;en.flyMode=true;
+    en.measureStructure=(_x,_y,_z,retained)=>({blocks:retained || selected,count:2,L:2,W:1,H:1,totalVolume:1.25,isComplete:true});window.__geoWorldEngine=en;
+    let state={activeLesson:'builderSandbox',worldActive:true,actionFeedback:'Quarter wedge · 0°',selectedShape:3,blockRotation:0,selectedBlock:6,collabMode:true,teacherNote:'Keep the arch open'};
+    const ctx={toolData:{geometryWorld:state},updateMulti(_,patch){state={...state,...patch};this.toolData.geometryWorld=state;},addToast(){},setStemLabTool(tool){this.destination=tool;}};
+    const history=JSON.stringify([en._undoStack,en._redoStack]),pose={position:en.camera.position.toArray(),quaternion:en.camera.quaternion.toArray()};
+    const wholeStl=new Uint8Array(builder.buildGeometryWorldStl(en,blocks).buffer),selectedStl=new Uint8Array(builder.buildGeometryWorldStl(en,selected).buffer);
+    builder.openSelectedBuildInPrintLab(ctx);
+    expect(ctx.destination).toBe('printLab');expect(state.actionFeedback).toBe('Quarter wedge · 0°');
+    const saved=window.__alloGeometryWorldReturnProject,handoff=window.__alloPrintLabPendingHandoff;
+    expect(saved.state.actionFeedback).toBe('');expect(new Uint8Array(handoff.bytes)).toEqual(selectedStl);
+    if(legacy)saved.state.actionFeedback='Quarter wedge · 0°';
+    en.loadLesson(builder.FREE_BUILD_LESSON);en.camera.position.set(0,0,0);en.camera.quaternion.identity();en.flyMode=false;
+    expect(builder.restoreProject(ctx,en,{projectId:handoff.projectId,printContext:{unitMm:10,aiUse:'ASSISTED',aiDisclosure:'Shape planning'}})).toBe(true);
+    expect(state.actionFeedback).toBe('');expect(state.selectedShape).toBe(3);expect(state.blockRotation).toBe(0);expect(state.selectedBlock).toBe(6);expect(state.collabMode).toBe(true);expect(state.teacherNote).toBe('Keep the arch open');
+    expect(new Uint8Array(builder.buildGeometryWorldStl(en,blocks).buffer)).toEqual(wholeStl);
+    expect(new Uint8Array(builder.buildGeometryWorldStl(en,en._builderSelection.blocks).buffer)).toEqual(selectedStl);
+    expect(JSON.stringify([en._undoStack,en._redoStack])).toBe(history);expect(en.blocksPlaced).toBe(3);expect(en._sessionXP).toBe(17);expect(en._blockMilestones).toEqual({ten:true});
+    expect(en.camera.position.toArray()).toEqual(pose.position);expect(en.camera.quaternion.toArray()).toEqual(pose.quaternion);expect(en.yaw).toBe(0.4);expect(en.pitch).toBe(-0.2);expect(en.flyMode).toBe(true);
+    expect(state.builderPrintContext).toEqual({unitMm:10,aiUse:'ASSISTED',aiDisclosure:'Shape planning'});expect(window.__alloGeometryWorldReturnProject).toBeUndefined();
+  });
   it('does not restore an unrelated project token',()=>{
     const en=engineFor([{x:0,y:1,z:0,shape:'cube'}]);window.__alloGeometryWorldReturnProject=builder.captureProject({toolData:{}},en,'project-a');
     expect(builder.restoreProject({},en,{projectId:'project-b'})).toBe(false);expect(Object.keys(en.blocks)).toEqual(['0,1,0']);

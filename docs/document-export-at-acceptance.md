@@ -21,6 +21,9 @@ The checker produces:
 
 - **automated-results.json**: exact artifact SHA-256/byte length, browser/reader version, individual observations, limitations, and an automated result.
 - **manual-results.template.json**: an independent human record, with every task **not-run**, tester/environment fields empty, and the decision **pending-human-at**.
+- **rendered-fidelity-review.html**: when `sourceFidelity` is enabled for any artifact, an offline review of the recorded source/candidate properties and coverage.
+
+HTML and PDF inspections use the same captured bytes recorded in each artifact hash. After all inspections, every artifact is reread for the `artifact.byte-stability` check, including artifacts without a source-fidelity contract. A changed or unreadable file makes that check unavailable and prevents an automated pass. Any related rendered profiles are also marked unavailable. Rendered source files are rechecked as well; a changed or unreadable source invalidates the comparison even when the candidate remains unchanged. Verify the recorded hash again before later human review.
 
 Keep the original template, fill a copy, and retain failure evidence. The CLI refuses an existing output directory to protect completed human records. A new export or changed hash requires a new acceptance record.
 
@@ -38,10 +41,10 @@ These tests load local files and block network access. They do not contact the d
 
 | Surface | Executable observation | Still requires a person |
 |---|---|---|
-| HTML headings | Expected level, order, and accessible name; main landmark | Actual heading navigation and announcements in the reader |
+| HTML headings | Expected level, order, and native accessible name bound to the actual heading; NFC normalization of text and names; main landmark | Actual heading navigation and announcements in the reader |
 | HTML keyboard | Tab order, link activation, native entry/selection/reset, exposed names/states; focus geometry and computed indicator style | Perceptibility/contrast of the focus indicator, full-page obscuring, reader browse/focus-mode transitions |
 | Reading order | Approved anchors appear in DOM order and PDF tagged-content order | Coherent continuous speech, complete meaning, multi-column transitions, omissions or repetitions outside the anchor sample |
-| Tables | Expected cell values/positions and header roles in HTML/PDF | Spoken row/column context and usability of complex or spanning headers |
+| Tables | Expected cell values/positions and header roles in HTML/PDF; native HTML names and exposed table, row, and cell identities/ownership | Spoken row/column context and usability of complex or spanning headers |
 | PDF links/forms | Tagged structure observations; optional external link name/annotation checks | Native reader keyboard behavior, destination usefulness, form fields and announcements |
 | Figures/OCR | Outside the initial packet's automated acceptance scope | Image-description usefulness, source-to-output OCR accuracy, math and symbol meaning |
 
@@ -81,3 +84,15 @@ For each failure, record artifact ID/hash, environment, task ID, reproduction st
 A reviewer may accept only the named artifacts and tested environments once all applicable tasks have evidence and unresolved barriers have been addressed. Missing/wrong content, unusable table context, inaccessible fields, or a keyboard trap require remediation or an explicit blocked decision. Untested environments, figures, scans, and document classes remain outside that decision.
 
 Automated results and human results are separate evidence. Preserve the default **pending-human-at** decision until a real reviewer completes the human record. Neither an automated pass nor this checklist establishes legal conformance or full WCAG/PDF/UA compliance.
+
+## Rendered source comparisons
+
+HTML acceptance artifacts can now opt into native Chromium source/candidate comparisons using `sourceFidelity`. The report includes exact artifact hashes, selected source checkpoints, accessibility-tree names/roles, computed visibility, and explicit incomplete coverage. See [rendered fidelity usage and calibration](rendered-document-fidelity.md). This post-export check does not change the live remediation gate or substitute for a screen-reader session.
+
+## Baseline encoding and inspection coverage
+
+HTML acceptance requires valid UTF-8 bytes and compatible HTML charset declarations, including when `sourceFidelity` is absent. Invalid bytes and legacy declarations produce an unavailable `html.utf8-encoding` check; they are not silently decoded with replacement characters. UTF-8 BOMs, canonical Unicode equivalents, inert data blocks (including JSON, XML, and plain text), embedded data images, and local SVG references remain supported. Executable JavaScript, modules, import maps, and speculation rules leave static coverage unavailable. Table cell expectations use the same NFC normalization as observed HTML/PDF cells. HTML heading text, expected names, and native accessible names also use NFC, including the uniqueness check for a heading level/name pair; normalization preserves compatibility distinctions such as superscript and subscript characters. Heading exposure and names are bound to the actual heading node, so a separately exposed matching heading cannot substitute for a hidden one.
+
+The `html.inspection-coverage` check records blocked requests, disabled executable content, unresolved resource references, and active animations. Those conditions produce unavailable coverage and prevent an automated pass, even if the observed headings and reading anchors match. HTML bytes are served once at an isolated inspection origin, so relative CSS requests become observable; all dependency requests remain blocked. Parsed inline and stylesheet declarations also retain resources that were never requested, including hidden backgrounds, inactive media rules, unused fonts, and image-set URLs. Preload-none videos and unresolved relative stylesheets remain explicit dependencies. Table checks require the actual selected table, every required row, and every expected header/data cell to have exposed native roles. Each cell must remain owned by its corresponding row and table in the accessibility tree, and its native accessible name must match the expected value. Nonempty DOM cell text must also match; image-only headers may use their native alternative name as header content. Hidden rows/cells, reassigned cells, and incorrect ARIA names cannot pass merely because DOM tags and cell text remain unchanged. These observations cover the simple row/column table contract; complex spanning-header usability still requires separately scoped checks and human review. This is a static inspection of the authored acceptance contract; embedded asset quality, full temporal behavior, and whole-document fidelity are not established. Human acceptance remains separate.
+
+Dependency classification is shared with rendered source comparison through `dev-tools/document_html_dependencies.cjs`. Both entry points use the same executable-script, responsive-image, CSS-resource, and animation checks. Rendered calibration records this helper’s hash and invalidates evidence if it changes during a run.

@@ -86,7 +86,7 @@ function runAnalyze(exprFns, win) {
   const stubMath = { compile: (expr) => ({ evaluate: (scope) => exprFns[expr](scope.x) }) };
   // eslint-disable-next-line no-new-func
   new Function('window', 'math', 'SOUNDS', 'funcs', 'd', 'win', 'gcCleanExpr', 'updMulti',
-    src.slice(start, end) + '\nrunAnalysis();'
+    src.slice(src.indexOf('function gcScanRoots('), src.indexOf('window.__alloGraphAnalysis')) + '\nvar analysisKey="test"; var announceToSR=null;\n' + src.slice(start, end) + '\nrunAnalysis();'
   )({ math: stubMath }, stubMath, { analyzeComplete: () => {} }, funcs, {}, win,
     (e) => e, (u) => Object.assign(captured, u));
   return captured;
@@ -97,7 +97,7 @@ describe('Analyze: zeros', () => {
   it('does not report zeros at vertical asymptotes (regression pin)', () => {
     // tan(x) used to report "zeros" at every asymptote (pi/2, 3pi/2, ...).
     const res = runAnalyze({ 'tan(x)': Math.tan }, { xmin: -6.28, xmax: 6.28, ymin: -2, ymax: 2 });
-    for (const z of res._zeros) expect(Math.abs(Math.tan(z.x)), 'x=' + z.x).toBeLessThan(0.5);
+    for (const z of res._zeros) expect(Math.abs(Math.tan(z.x)), 'x=' + z.x).toBeLessThanOrEqual(1e-8);
     expect(res._zeros.length).toBe(3);
     expect(res._zeros.map((z) => Math.round(z.x * 100) / 100 + 0)).toEqual([-3.14, 0, 3.14]);
 

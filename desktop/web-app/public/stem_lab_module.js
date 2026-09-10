@@ -1,3 +1,331 @@
+// STEM_INPUT_RUNTIME_BEGIN
+(function () {
+  if (window.StemInput) return;
+  var STORAGE = 'alloflow_stem_controls_v1';
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORAGE) || '{}') || {}; } catch (_) {}
+  if (!saved || typeof saved !== 'object' || Array.isArray(saved)) saved = {};
+  var prefs = Object.assign({ mode: 'auto', showTouch: false, large: false, hand: 'right', device: 'auto', deadzone: 0.15, sensitivity: 1, invert: false }, saved.preferences || {});
+  if (['auto','keyboard','controller','touch'].indexOf(prefs.mode) < 0) prefs.mode = 'auto';
+  prefs.deadzone=bound(prefs.deadzone,0.02,0.45,0.15);prefs.sensitivity=bound(prefs.sensitivity,0.4,2,1);prefs.hand=prefs.hand==='left'?'left':'right';prefs.device=typeof prefs.device==='string'?prefs.device:'auto';
+  var profiles = saved.profiles && typeof saved.profiles === 'object' ? saved.profiles : {};
+  var scope = null, claim = null, context = 'driving', suspended = false, blurred = false, needsNeutral = true, lastDevice = '', keysDown = {}, physicalDown = {}, listeners = [], snapshot = {}, currentPad = null, frameId;
+  var message = '', revision = 0, paintedRoot = null, rawPhysical = {}, panelCount = 0, panelClose = null, captureActive = false;
+  var road = [
+    ['steer','Steering','a0',null], ['throttle','Accelerator','b7','KeyW'], ['brake','Brake','b6','KeyS'],
+    ['left','Left signal','b2|b14','KeyE'], ['right','Right signal','b3|b15','KeyV'], ['drive','Drive','b12','KeyF'],
+    ['reverse','Reverse','b13','KeyG'], ['park','Park / secure parking','b8','KeyP'], ['pause','Pause / stop','b9','Space'],
+    ['horn','Horn','b0','KeyQ'], ['camera','Camera','b1','KeyC'], ['low','Low beams','b4',null], ['high','High beams','b5',null]
+  ];
+  var generic = [
+    ['forward','W key','a1-', 'KeyW'], ['backward','S key','a1+', 'KeyS'], ['left','A key','a0-', 'KeyA'], ['right','D key','a0+', 'KeyD'],
+    ['up','Up arrow','a3-', 'ArrowUp'], ['down','Down arrow','a3+', 'ArrowDown'], ['lookLeft','Left arrow','a2-', 'ArrowLeft'], ['lookRight','Right arrow','a2+', 'ArrowRight'],
+    ['primary','Space / focused button','b0','Space'], ['back','Escape / back','b1','Escape'], ['interact','E key','b2','KeyE'], ['measure','M key','b3','KeyM'],
+    ['cycle','Q key','b4','KeyQ'], ['secondary','Right click','b5','MouseRight'], ['sprint','Shift','b6','ShiftLeft'], ['click','Click','b7','MouseLeft'],
+    ['grid','G key','b8','KeyG'], ['fly','F key','b9','KeyF'], ['one','1 key','b12','Digit1'], ['two','2 key','b13','Digit2'], ['three','3 key','b14','Digit3'], ['four','4 key','b15','Digit4']
+  ];
+  function tool() { return scope ? scope.tool : claim; }
+  function root() { return scope && scope.root && scope.root.isConnected ? scope.root : document.body; }
+  function bound(n, min, max, fallback) { n = Number(n); return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback; }
+  function definitions(id) { return id === 'roadReady' ? road : generic; }
+  function profileKey(id) { return id + '|' + (prefs.device === 'auto' ? 'default' : prefs.device); }
+  function profile(id) { var p = profiles[profileKey(id)]; return p && typeof p === 'object' ? p : {}; }
+  function keyboardDefinitions(id) {
+    if (id !== 'roadReady') return generic.filter(function(d) { return !/^Mouse/.test(d[3]); });
+    if (context === 'parking') return [['forward','Forward / W',null,'KeyW'],['backward','Reverse / S',null,'KeyS'],['steerLeft','Steer left',null,'KeyA'],['steerRight','Steer right',null,'KeyD'],['brake','Brake',null,'Space'],['reset','Reset practice',null,'KeyR'],['drive','Select Drive',null,'KeyF'],['reverse','Select Reverse',null,'KeyG'],['park','Secure parking',null,'KeyP']];
+    return road.filter(function(d) { return d[3]; }).concat([['steerLeft','Steer left',null,'KeyA'],['steerRight','Steer right',null,'KeyD']]);
+  }
+  function keyMap(id) { var p=profile(id),raw=p[context==='parking'&&id==='roadReady'?'parkingKeys':'keys'],clean={}; if(raw&&typeof raw==='object')Object.keys(raw).forEach(function(k){if(typeof raw[k]==='string'&&/^(Key[A-Z]|Digit[0-9]|Arrow(Up|Down|Left|Right)|Space|Enter|ShiftLeft|PageUp|PageDown|Home|End)$/.test(raw[k]))clean[k]=raw[k];});return clean; }
+  function persist() {
+    try { localStorage.setItem(STORAGE, JSON.stringify({ preferences: prefs, profiles: profiles })); message = ''; }
+    catch (_) { message = 'Controls work for this session; this browser could not save them.'; }
+    revision++; notify();
+  }
+  function notify() { listeners.slice().forEach(function(fn) { fn(); }); }
+  function editable(el) { return !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName || '') || el.closest && el.closest('[contenteditable="true"]'))); }
+  function blocked() { return !tool() || suspended || navigating || blurred || document.hidden || editable(document.activeElement); }
+  function keyValue(code) {
+    if (/^Key[A-Z]$/.test(code)) return code.slice(3).toLowerCase();
+    if (/^Digit[0-9]$/.test(code)) return code.slice(5);
+    return { Space: ' ', ShiftLeft: 'Shift', ShiftRight: 'Shift', ControlLeft: 'Control', AltLeft: 'Alt' }[code] || code;
+  }
+  function target() { var r = root(), el = document.activeElement; return el && el !== document.body && r.contains(el) ? el : (r.querySelector('canvas') || r); }
+  function dispatch(code, type, el) {
+    if (/^Mouse/.test(code)) {
+      if (type !== 'keydown') return;
+      el = el || target();
+      var rect = el.getBoundingClientRect(), button = code === 'MouseRight' ? 2 : 0;
+      var opts = { button: button, buttons: button === 2 ? 2 : 1, clientX: rect.left + rect.width/2, clientY: rect.top + rect.height/2, bubbles: true, cancelable: true };
+      if (window.PointerEvent) { el.dispatchEvent(new PointerEvent('pointerdown', Object.assign({ pointerId: 1, pointerType: 'mouse' }, opts))); el.dispatchEvent(new PointerEvent('pointerup', Object.assign({ pointerId: 1, pointerType: 'mouse' }, opts, { buttons: 0 }))); }
+      el.dispatchEvent(new MouseEvent('mousedown', opts)); el.dispatchEvent(new MouseEvent('mouseup', Object.assign({}, opts, { buttons: 0 })));
+      el.dispatchEvent(new MouseEvent(button === 2 ? 'contextmenu' : 'click', Object.assign({}, opts, { buttons: 0 })));
+      return;
+    }
+    var ev = new KeyboardEvent(type, { code: code, key: keyValue(code), shiftKey: /^Shift/.test(code), bubbles: true, cancelable: true });
+    Object.defineProperty(ev, '_stemInput', { value: true });
+    (el && el.isConnected ? el : target()).dispatchEvent(ev);
+  }
+  function release(includePhysical) {
+    Object.keys(keysDown).forEach(function(code) { dispatch(code, 'keyup', keysDown[code]); }); keysDown = {};
+    if (includePhysical !== false) Object.keys(physicalDown).forEach(function(code) { var p = physicalDown[code]; dispatch(p.code, 'keyup', p.target); }); if (includePhysical !== false) physicalDown = {};
+    snapshot.actions = {}; currentPad = null;
+  }
+  function rearm(controllerOnly) { release(!controllerOnly); if(!controllerOnly){Object.keys(rawPhysical).forEach(function(code){dispatch(code,'keyup',rawPhysical[code]);});rawPhysical={};} needsNeutral = true; }
+  function sourceValue(pad, source) {
+    if (typeof source !== 'string') return 0;
+    if (source.indexOf('|') !== -1) return Math.max.apply(null, source.split('|').map(function(s) { return sourceValue(pad,s); }));
+    var m = /^([ab])(\d{1,2})([+-]?)$/.exec(source); if (!m) return 0;
+    if (m[1] === 'b') { var b = pad.buttons[Number(m[2])]; return b ? bound(b.value == null ? (b.pressed ? 1 : 0) : b.value,0,1,0) : 0; }
+    var value = bound(pad.axes[Number(m[2])], -1, 1, 0);
+    return m[3] === '-' ? Math.max(0,-value) : m[3] === '+' ? Math.max(0,value) : value;
+  }
+  function readActions(pad, id) {
+    var p = profile(id), mapping = p.buttons || {}, calibration = p.calibration || {}, actions = {};
+    definitions(id).forEach(function(d) {
+      var src = mapping[d[0]] || d[2], value = sourceValue(pad,src), cal = calibration[d[0]];
+      if (cal && Math.abs(Number(cal.full)-Number(cal.rest)) >= 0.1) value = bound((value-cal.rest)/(cal.full-cal.rest),0,1,0);
+      if (d[0] === 'steer' && id === 'roadReady') {
+        var dz = bound(prefs.deadzone,0.02,0.45,0.15), sign = value < 0 ? -1 : 1;
+        value = Math.abs(value) <= dz ? 0 : sign * Math.min(1,(Math.abs(value)-dz)/(1-dz)*bound(prefs.sensitivity,0.4,2,1));
+        if (prefs.invert) value = -value;
+      }
+      actions[d[0]] = value;
+    }); return actions;
+  }
+  function isNeutral(pad, id) {
+    var a = readActions(pad,id); return definitions(id).every(function(d) { var source=(profile(id).buttons||{})[d[0]]||d[2]; var threshold=d[0]==='steer'&&id==='roadReady'?0.01:/^a/.test(source)?bound(prefs.deadzone,0.02,0.45,0.15):0.15; return Math.abs(a[d[0]]) <= threshold; });
+  }
+  function emit(actions) {
+    var next = {}, dz = bound(prefs.deadzone,0.02,0.45,0.15);
+    generic.forEach(function(d) {
+      if (!(actions[d[0]] > (/^a/.test((profile(tool()).buttons || {})[d[0]] || d[2]) ? dz : 0.5))) return;
+      var code = d[3]; next[code] = true;
+      if (!keysDown[code]) {
+        var el = target(); keysDown[code] = el;
+        if (code === 'Space' && /^(BUTTON|A)$/.test(el.tagName)) el.click(); else dispatch(code,'keydown',el);
+      }
+    });
+    Object.keys(keysDown).forEach(function(code) { if (!next[code]) { dispatch(code,'keyup',keysDown[code]); delete keysDown[code]; } });
+  }
+  // Controller menu mode owns focus without forwarding activity shortcuts.
+  var navigating = false, navigationHeld = {}, navigationNeutral = true, toggleHeld = false, focusedControl = null, navigationHint = null;
+  function navigationRoot() {
+    var panels = root().querySelectorAll('[data-stem-controls-panel]');
+    return panels.length ? panels[panels.length - 1] : root();
+  }
+  function visibleControl(el) {
+    if (el.tagName==='CANVAS' || el.matches(':disabled') || el.disabled || el.getAttribute('aria-disabled') === 'true' || (el.tabIndex < 0 && el.getAttribute('role') !== 'tab') || !el.getClientRects().length) return false;
+    for(var parent=el; parent && parent!==root(); parent=parent.parentElement) {
+      if (parent.hidden || parent.hasAttribute('inert') || parent.getAttribute('aria-hidden')==='true') return false;
+      if (parent.tagName==='DETAILS' && !parent.open) {
+        var summary=parent.querySelector('summary');
+        if (!summary || (el!==summary && !summary.contains(el))) return false;
+      }
+    }
+    var style=window.getComputedStyle(el);return style.visibility!=='hidden' && style.display!=='none';
+  }
+  function navigationControls() {
+    return Array.from(navigationRoot().querySelectorAll('button,a[href],input:not([type="hidden"]),select,textarea,summary,[tabindex],[role="button"]')).filter(visibleControl);
+  }
+  function highlightControl(el) {
+    if(focusedControl && focusedControl!==el)focusedControl.removeAttribute('data-stem-controller-focus');
+    focusedControl=el;
+    if(el){el.setAttribute('data-stem-controller-focus','true');el.focus();if(el.scrollIntoView)el.scrollIntoView({block:'nearest',inline:'nearest'});}
+  }
+  function moveFocus(direction) {
+    var controls=navigationControls();if(!controls.length)return;
+    var index=controls.indexOf(document.activeElement);
+    highlightControl(controls[index<0?(direction>0?0:controls.length-1):(index+direction+controls.length)%controls.length]);
+  }
+  function navigationChrome() {
+    if(navigating && !panelCount && tool()) {
+      if(!navigationHint){navigationHint=document.createElement('div');navigationHint.className='stem-controller-navigation-hint';navigationHint.setAttribute('role','status');navigationHint.textContent='Controller navigation · ↑↓ Choose · ←→ Adjust · A Select · B Return';}
+      if(navigationHint.parentNode!==root())root().appendChild(navigationHint);
+    } else if(navigationHint){navigationHint.remove();navigationHint=null;}
+    if(!navigating && !panelCount && focusedControl){focusedControl.removeAttribute('data-stem-controller-focus');focusedControl=null;}
+  }
+  function setNavigation(value) {
+    navigating=!!value;rearm();navigationHeld={};navigationNeutral=true;navigationChrome();notify();
+  }
+  function navigationButton(pad,index){var b=pad.buttons[index];return !!(b && (b.pressed || b.value>0.5));}
+  function adjustControl(el,direction) {
+    if(!el || !navigationRoot().contains(el)){moveFocus(direction);return;}
+    if(el.tagName==='SELECT'){
+      var options=Array.from(el.options),next=el.selectedIndex+direction;
+      while(next>=0 && next<options.length && (options[next].disabled || options[next].parentElement.disabled))next+=direction;
+      if(next>=0 && next<options.length){Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype,'value').set.call(el,options[next].value);el.dispatchEvent(new window.Event('change',{bubbles:true}));}
+    } else if(el.tagName==='INPUT' && /^(range|number)$/.test(el.type)) {
+      var step=Number(el.step)||1,min=el.min===''?-Infinity:Number(el.min),max=el.max===''?Infinity:Number(el.max);
+      var value=Math.max(min,Math.min(max,(Number(el.value)||0)+direction*step));
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set.call(el,String(Number(value.toFixed(8))));
+      el.dispatchEvent(new window.Event('input',{bubbles:true}));el.dispatchEvent(new window.Event('change',{bubbles:true}));
+    } else moveFocus(direction);
+  }
+  function activateControl(el) {
+    if(!el || !navigationRoot().contains(el) || !visibleControl(el)){moveFocus(1);return;}
+    if(el.tagName==='SELECT')return; // Left/right changes its value without a native popup.
+    if(el.tagName==='TEXTAREA' || (el.tagName==='INPUT' && !/^(checkbox|radio|button|submit|reset)$/.test(el.type)))return;
+    if(el.tagName==='SUMMARY'){el.parentElement.open=!el.parentElement.open;return;}
+    el.click();
+  }
+  function pollNavigation(pad) {
+    var canUse=!!(pad && (tool() || panelCount) && !document.hidden && !blurred);
+    if(!canUse){navigationHeld={};navigationNeutral=true;toggleHeld=false;if(!pad&&navigating)setNavigation(false);navigationChrome();return false;}
+    var toggle=navigationButton(pad,11);
+    var customToggle=definitions(tool()).some(function(d){return String((profile(tool()).buttons||{})[d[0]]||d[2]).split('|').indexOf('b11')!==-1;});
+    if(toggle && !toggleHeld && !panelCount && !customToggle && !suspended && !editable(document.activeElement) && prefs.mode!=='keyboard' && prefs.mode!=='touch')setNavigation(!navigating);
+    toggleHeld=toggle;
+    if(!navigating && !panelCount){navigationChrome();return false;}
+    release();needsNeutral=true;navigationChrome();
+    var held={};[0,1,11,12,13,14,15].forEach(function(i){held[i]=navigationButton(pad,i);});
+    if(navigationNeutral){navigationHeld=held;if(!Object.values(held).some(Boolean))navigationNeutral=false;return true;}
+    var previousHeld=navigationHeld;navigationHeld=held;
+    var pressed=function(i){return held[i]&&!previousHeld[i];};
+    if(pressed(1)) {
+      if(captureActive)dispatch('Escape','keydown',document.activeElement);
+      else if(panelCount && panelClose)panelClose();
+      else setNavigation(false);
+    } else if(!captureActive) {
+      if(pressed(12))moveFocus(-1);else if(pressed(13))moveFocus(1);
+      else if(pressed(14))adjustControl(document.activeElement,-1);else if(pressed(15))adjustControl(document.activeElement,1);
+      else if(pressed(0))activateControl(document.activeElement);
+    }
+    navigationHeld=held;return true;
+  }
+
+  function paintAttribute(el,name,value) { if(el.getAttribute(name)!==value)el.setAttribute(name,value); }
+  function poll() {
+    var pads = []; try { pads = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean); } catch (_) {}
+    var pad = prefs.device === 'auto' ? pads[0] : pads.find(function(p) { return p.index + ':' + p.id === prefs.device; });
+    var identity = pad ? pad.index + ':' + pad.id : '';
+    if (identity !== lastDevice) { rearm(true); lastDevice = identity; }
+    snapshot = { devices: pads.map(function(p) { return { key: p.index + ':' + p.id, name: p.id, mapping: p.mapping }; }), connected: !!pad, name: pad && pad.id, axes: pad ? Array.from(pad.axes) : [], buttons: pad ? Array.from(pad.buttons).map(function(b) { return b.value == null ? +b.pressed : b.value; }) : [], actions: {}, revision: revision, message: message };
+    if (pollNavigation(pad)) { currentPad=null; snapshot.actions={}; }
+    else if (!pad || blocked() || prefs.mode === 'keyboard' || prefs.mode === 'touch') { release(blocked()); needsNeutral = true; }
+    else {
+      if (needsNeutral && isNeutral(pad,tool())) needsNeutral = false;
+      if (!needsNeutral) { currentPad = pad; snapshot.actions = readActions(pad,tool()); if (tool() !== 'roadReady') emit(snapshot.actions); }
+    }
+    snapshot.waitingForNeutral = needsNeutral && !!pad;
+    snapshot.navigating = navigating || panelCount>0;
+    var r = root();
+    if (paintedRoot && (paintedRoot !== r || !tool())) ['data-stem-input-mode','data-stem-touch-visible','data-stem-large-controls','data-stem-control-hand'].forEach(function(a){paintedRoot.removeAttribute(a);});
+    paintedRoot = tool() ? r : null;
+    if (r && tool()) {
+      paintAttribute(r,'data-stem-input-mode',prefs.mode);
+      paintAttribute(r,'data-stem-touch-visible', showTouch() ? 'true' : 'false');
+      paintAttribute(r,'data-stem-large-controls', prefs.large ? 'true' : 'false');
+      paintAttribute(r,'data-stem-control-hand', prefs.hand === 'left' ? 'left' : 'right');
+    }
+    return snapshot;
+  }
+  function showTouch() { return !!prefs.showTouch || prefs.mode === 'auto' || prefs.mode === 'touch' || (prefs.mode === 'controller' && !snapshot.connected); }
+  // Device events restart sampling; an idle STEM tool needs no animation loop.
+  function shouldAnimate() { return !!(tool() || panelCount) && snapshot.connected && !document.hidden && !blurred; }
+  function loop() { frameId=null; poll(); if(shouldAnimate())frameId=requestAnimationFrame(loop); }
+  function ensureLoop(){
+    poll();
+    if(shouldAnimate() && frameId==null)frameId=requestAnimationFrame(loop);
+    else if(!shouldAnimate() && frameId!=null){cancelAnimationFrame(frameId);frameId=null;}
+  }
+  function onKeyboard(event) {
+    if (event._stemInput) return;
+    var code = event.code || '', held = physicalDown[code];
+    if (suspended) { event.stopPropagation(); if(code==='Escape'&&!captureActive&&panelClose){event.preventDefault();panelClose();} return; }
+    if(navigating && !panelCount && !editable(event.target) && !/^(Tab|Enter|Space)$/.test(code)){
+      event.stopImmediatePropagation();
+      if(code==='Escape'){event.preventDefault();if(event.type==='keydown')setNavigation(false);}
+      return;
+    }
+    if(tool()&&!editable(event.target)){ if(event.type==='keydown')rawPhysical[code]=event.target;else delete rawPhysical[code]; }
+    if (event.type === 'keyup' && held) { event.preventDefault(); event.stopImmediatePropagation(); dispatch(held.code,'keyup',held.target); delete physicalDown[code]; return; }
+    if (blocked() || editable(event.target)) return;
+    var r=root(); if (event.target !== document.body && event.target !== document && !r.contains(event.target)) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || code === 'Tab' || code === 'Escape') return;
+    var map = keyMap(tool()), defs = keyboardDefinitions(tool());
+    var match = defs.find(function(d) { return map[d[3]] && map[d[3]] === code; });
+    var changed = map[code] && map[code] !== code;
+    if (!match && !changed) return;
+    event.preventDefault(); event.stopImmediatePropagation();
+    if (match && event.type === 'keydown' && !held && !event.repeat) { physicalDown[code] = { code: match[3], target: target() }; dispatch(match[3],'keydown',physicalDown[code].target); }
+  }
+  window.addEventListener('keydown',onKeyboard,true); window.addEventListener('keyup',onKeyboard,true);
+  window.addEventListener('blur',function() { blurred=true; rearm(); ensureLoop(); });
+  window.addEventListener('focus',function() { blurred=false; rearm(); ensureLoop(); });
+  document.addEventListener('visibilitychange',function(){rearm();ensureLoop();});
+  window.addEventListener('gamepaddisconnected',function(){rearm(true);ensureLoop();});
+  window.addEventListener('gamepadconnected',ensureLoop);
+  document.addEventListener('focusin',function(e) { if (editable(e.target)) rearm(); });
+  var style = document.createElement('style'); style.id = 'stem-input-controls-css';
+  style.textContent = '.stem-input-panel{padding:16px;border:1px solid var(--allo-stem-border,#64748b);border-radius:12px;background:var(--allo-stem-panel,#172033);color:var(--allo-stem-text,#e2e8f0);font:14px system-ui;max-width:100%;box-sizing:border-box}.stem-input-panel *{box-sizing:border-box}.stem-input-panel button,.stem-input-panel select{min-height:44px;border:1px solid #64748b;border-radius:7px;padding:8px;background:var(--allo-stem-canvas,#0f172a);color:inherit}.stem-input-panel button:focus-visible,.stem-input-panel input:focus-visible,.stem-input-panel select:focus-visible{outline:3px solid #22d3ee;outline-offset:2px}.stem-input-panel h3{margin:0}.stem-input-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px;margin-top:12px}.stem-input-grid label{display:flex;flex-direction:column;gap:5px;min-width:0}.stem-input-grid select{max-width:100%;width:100%}.stem-input-panel summary{cursor:pointer;padding:12px 0;font-weight:700}.stem-input-panel p{line-height:1.5}.stem-input-panel .stem-input-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}.stem-input-panel .stem-input-row>span:first-child{min-width:140px}.stem-input-panel small{display:block;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}[data-stem-touch-visible="false"] [data-stem-touch-controls]{display:none!important}[data-stem-large-controls="true"] [data-stem-touch-controls] button,[data-stem-large-controls="true"] button[data-stem-touch-controls]{min-width:58px!important;min-height:58px!important}[data-stem-control-hand="left"] .rr-touch-pedals{right:auto!important;left:10px!important}[data-stem-control-hand="left"] .rr-touch-secondary{left:auto!important;right:10px!important}';
+  style.textContent += '[data-stem-controller-focus="true"]{outline:3px solid #22d3ee!important;outline-offset:3px!important}.stem-controller-navigation-hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 24px);padding:10px 14px;border:1px solid #22d3ee;border-radius:10px;background:#0f172a;color:#fff;font:13px/1.5 system-ui;z-index:2147483000;pointer-events:none}';
+  document.head.appendChild(style);
+  function Panel(props) {
+    var React=props.React,h=React.createElement, state=React.useState(0), bump=state[1], armed=React.useState(null), capture=armed[0], setCapture=armed[1], notice=React.useState(''), note=notice[0], setNote=notice[1];
+    var id=props.toolId || tool() || 'general', p=profile(id), defs=definitions(id), kd=keyboardDefinitions(id);
+    React.useEffect(function() { panelCount++; navigationHeld={};navigationNeutral=true; suspended=true; panelClose=props.onClose; rearm(); ensureLoop(); var timer=setInterval(function(){bump(function(v){return v+1;});},150); return function(){clearInterval(timer);panelCount--; navigating=false;navigationNeutral=true; suspended=panelCount>0; panelClose=null; captureActive=false; rearm(); ensureLoop();}; },[]);
+    React.useEffect(function() {
+      captureActive=!!capture; if (!capture) return;
+      function catchKey(e) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (e.code === 'Escape') { setCapture(null); return; }
+        if (!e.code || /^(Tab|Meta|Control|Alt)/.test(e.code) || e.ctrlKey || e.altKey || e.metaKey) { setNote('Choose a key without Ctrl, Alt or Command. Tab stays available for navigation.'); return; }
+        var conflict=kd.find(function(d){return d[3]!==capture && (keyMap(id)[d[3]]||d[3])===e.code;});
+        if(conflict){setNote('That key is already used for '+conflict[1]+'. Choose another key.');return;}
+        var field=id==='roadReady' && context==='parking'?'parkingKeys':'keys'; var next=Object.assign({},p[field]||{}); next[capture]=e.code;
+        updateProfile(id,field,next);setCapture(null);setNote('Key saved.');
+      }
+      window.addEventListener('keydown',catchKey,true);return function(){captureActive=false;window.removeEventListener('keydown',catchKey,true);};
+    },[capture,revision,id]);
+    function setting(key,value){prefs[key]=value;rearm();persist();ensureLoop();bump(function(v){return v+1;});}
+    function updateProfile(id,key,value){var k=profileKey(id);profiles[k]=Object.assign({},profile(id));profiles[k][key]=value;rearm();persist();}
+    function binding(action,value){var conflict=value!=='none'&&defs.find(function(d){return d[0]!==action&&String((p.buttons||{})[d[0]]||d[2]).split('|').indexOf(value)!==-1;});if(conflict){setNote('That input is already assigned to '+conflict[1]+'. Choose another input.');return;}var map=Object.assign({},p.buttons||{});map[action]=value;updateProfile(id,'buttons',map);var cal=Object.assign({},p.calibration||{});delete cal[action];updateProfile(id,'calibration',cal);}
+    function calibration(action,point){var pad=currentRawPad();if(!pad){setNote('Connect the selected controller first.');return;}var source=(p.buttons||{})[action]||defs.find(function(d){return d[0]===action;})[2];var cal=Object.assign({},p.calibration||{});cal[action]=Object.assign({},cal[action]||{});cal[action][point]=sourceValue(pad,source);updateProfile(id,'calibration',cal);setNote(point==='rest'?'Released position saved. Hold the pedal fully down and save its pressed position.':'Pressed position saved. Both endpoints must be different.');}
+    var sources=['none'];for(var b=0;b<Math.max(17,snapshot.buttons?snapshot.buttons.length:0);b++)sources.push('b'+b);for(var a=0;a<Math.max(4,snapshot.axes?snapshot.axes.length:0);a++)sources.push('a'+a,'a'+a+'-','a'+a+'+');
+    var status=!snapshot.connected?'No controller detected. Connect it and press a button.':snapshot.name;
+    return h('section',{className:'stem-input-panel','data-stem-controls-panel':'true','aria-label':'Controls settings'},
+      h('div',{className:'stem-input-row'},h('h3',null,'Controls'),props.onClose&&h('button',{type:'button',onClick:props.onClose,'aria-label':'Close controls settings',style:{marginLeft:'auto'}},'Done')),
+      h('p',null,'Choose how you want to interact. Controls are paused while this panel is open.'),
+      h('small',null,'Controller: D-pad up/down chooses a control; left/right adjusts lists and sliders; A selects; B closes. In an activity, press the right stick (R3) to navigate its controls. R3 keeps any custom activity binding you assign.'),
+      h('div',{className:'stem-input-grid'},
+        h('label',null,'Input method',h('select',{'aria-label':'Input method',value:prefs.mode,onChange:function(e){setting('mode',e.target.value);}},['auto','keyboard','controller','touch'].map(function(v){return h('option',{key:v,value:v},{auto:'Automatic / all inputs',keyboard:'Keyboard and mouse',controller:'Controller',touch:'On-screen controls'}[v]);}))),
+        h('label',null,'Controller',h('select',{'aria-label':'Controller',value:prefs.device,onChange:function(e){setting('device',e.target.value);}},h('option',{value:'auto'},'First connected controller'),(snapshot.devices||[]).map(function(d){return h('option',{key:d.key,value:d.key},d.name);}),prefs.device!=='auto'&&!(snapshot.devices||[]).some(function(d){return d.key===prefs.device;})&&h('option',{value:prefs.device},'Saved controller (disconnected)'))),
+        h('label',null,'Control layout',h('select',{'aria-label':'Control layout',value:prefs.hand,onChange:function(e){setting('hand',e.target.value);}},h('option',{value:'right'},'Driving controls on the right'),h('option',{value:'left'},'Driving controls on the left')))),
+      h('div',{className:'stem-input-row'},h('label',null,h('input',{type:'checkbox',checked:!!prefs.showTouch,onChange:function(e){setting('showTouch',e.target.checked);}}),' Show on-screen controls even with keyboard/controller'),h('label',null,h('input',{type:'checkbox',checked:!!prefs.large,onChange:function(e){setting('large',e.target.checked);}}),' Larger on-screen controls')),
+      h('small',null,'Pause, settings and lesson actions stay available. On-screen controls return when a selected controller disconnects.'),
+      h('p',{role:'status'},status),
+      h('div',{'aria-label':'Live controller input'},h('small',null,'Axes: '+(snapshot.axes||[]).map(function(n,i){return i+': '+Number(n).toFixed(2);}).join(' · ')),h('small',null,'Pressed buttons: '+((snapshot.buttons||[]).map(function(n,i){return n>0.15?i+' ('+n.toFixed(2)+')':null;}).filter(Boolean).join(', ')||'none'))),
+      h('details',null,h('summary',null,'Keyboard bindings'),id!=='roadReady'&&h('p',null,'These map the keys used by this tool. Check its keyboard guide for each action. Raptor Hunt also has its own flight presets.'),
+        h('button',{type:'button',onClick:function(){var map={};var replacements={KeyW:'KeyI',KeyS:'KeyK',KeyA:'KeyJ',KeyD:'KeyL',Space:'Enter'};kd.forEach(function(d){map[d[3]]=replacements[d[3]]||d[3];});var vals=Object.values(map);if(new Set(vals).size!==vals.length){setNote('This preset conflicts with an existing tool shortcut. Use individual key bindings.');return;}updateProfile(id,id==='roadReady'&&context==='parking'?'parkingKeys':'keys',map);}},'IJKL one-hand movement preset'),
+        kd.map(function(d){return h('div',{className:'stem-input-row',key:d[3]},h('span',null,d[1]),h('button',{type:'button',onClick:function(){setCapture(d[3]);setNote('Press a key. Esc cancels.');},'aria-label':'Change key for '+d[1]},capture===d[3]?'Press a key…':keyValue(keyMap(id)[d[3]]||d[3])===' '?'Space':keyMap(id)[d[3]]||d[3]));})),
+      h('details',null,h('summary',null,'Controller mapping and sensitivity'),id!=='roadReady'&&h('p',null,'Choose keys matching this tool’s keyboard guide. Button numbers appear in the live input display above.'),
+        h('div',{className:'stem-input-grid'},h('label',null,'Stick deadzone '+Math.round(bound(prefs.deadzone,0.02,0.45,0.15)*100)+'%',h('input',{type:'range',min:0.02,max:0.45,step:0.01,value:prefs.deadzone,onChange:function(e){setting('deadzone',Number(e.target.value));}})),id==='roadReady'&&h('label',null,'Steering sensitivity '+Number(prefs.sensitivity).toFixed(1)+'×',h('input',{type:'range',min:0.4,max:2,step:0.1,value:prefs.sensitivity,onChange:function(e){setting('sensitivity',Number(e.target.value));}}))),
+        id==='roadReady'&&h('label',null,h('input',{type:'checkbox',checked:!!prefs.invert,onChange:function(e){setting('invert',e.target.checked);}}),' Invert steering'),
+        defs.map(function(d){var selected=(p.buttons||{})[d[0]]||d[2];return h('div',{className:'stem-input-row',key:d[0]},h('span',null,d[1]),h('select',{'aria-label':'Controller binding for '+d[1],value:selected,onChange:function(e){binding(d[0],e.target.value);}},h('option',{value:d[2]},'Default: '+d[2]),sources.filter(function(x){return x!==d[2];}).map(function(x){return h('option',{key:x,value:x},x==='none'?'Unassigned':x[0]==='b'?'Button '+x.slice(1):'Axis '+x.slice(1));})),id==='roadReady'&&(d[0]==='throttle'||d[0]==='brake')&&h('span',null,h('button',{type:'button',onClick:function(){calibration(d[0],'rest');}},'Save released'), ' ',h('button',{type:'button',onClick:function(){calibration(d[0],'full');}},'Save pressed')));}),
+        h('small',null,'Profiles are saved per tool and selected controller. For pedals on an axis, select the axis, save its released position, then its fully pressed position. Release all controls before closing this panel.')),
+      h('div',{role:'status'},note||message),
+      h('button',{type:'button',onClick:function(){delete profiles[profileKey(id)];rearm();persist();setCapture(null);setNote('Default bindings restored for this tool and controller.');}},'Reset bindings to defaults'));
+  }
+  function currentRawPad(){var pads=[];try{pads=Array.from(navigator.getGamepads?navigator.getGamepads():[]).filter(Boolean);}catch(_){}return prefs.device==='auto'?pads[0]:pads.find(function(p){return p.index+':'+p.id===prefs.device;});}
+  window.StemInput = {
+    subscribe:function(fn){listeners.push(fn);return function(){listeners=listeners.filter(function(x){return x!==fn;});};},
+    navigate:setNavigation, Panel:Panel, poll:poll, isSuspended:function(){return suspended || navigating;}, read:function(id){return tool()===id&&!blocked()?snapshot.actions||{}:{};},
+    setScope:function(id,el){navigating=false;navigationHeld={};navigationNeutral=true;rearm();scope=id?{tool:id,root:el||document.body}:null;ensureLoop();},
+    claim:function(id){claim=id;rearm();ensureLoop();return function(){if(claim===id){claim=null;navigating=false;rearm();ensureLoop();}};},
+    setContext:function(value){if(context!==value){context=value;rearm();}},
+    preferences:function(){return Object.assign({},prefs);},
+    configure:function(patch){Object.assign(prefs,patch);rearm();persist();ensureLoop();},
+    bind:function(id,field,map){profiles[profileKey(id)]=Object.assign({},profile(id));profiles[profileKey(id)][field]=Object.assign({},map);rearm();persist();},
+    suspend:function(value){suspended=!!value;rearm();},
+    bindingLabel:function(id,action){var d=definitions(id).find(function(x){return x[0]===action;});var code=(profile(id).buttons||{})[action]||(d&&d[2])||'Unassigned';var names={a0:'Left stick',b7:'RT',b6:'LT',b12:'D-pad up',b13:'D-pad down',b8:'Back / View',b9:'Start'};return names[code]||code;},
+    showTouch:showTouch, state:function(){return snapshot;}, keyLabel:function(id,code){return keyValue(keyMap(id)[code]||code);},
+    gamepad:function(id){if(tool()!==id||blocked()||!currentPad)return null;var a=snapshot.actions||{};var buttons=Array.from({length:16},function(){return {pressed:false,value:0};});var map={horn:0,camera:1,left:2,right:3,low:4,high:5,brake:6,throttle:7,park:8,pause:9,drive:12,reverse:13};Object.keys(map).forEach(function(k){var v=bound(a[k],0,1,0);buttons[map[k]]={pressed:v>0.5,value:v};});return {id:currentPad.id,index:currentPad.index,mapping:'standard',axes:[a.steer||0,0],buttons:buttons};}
+  };
+  ensureLoop();
+})();
+// STEM_INPUT_RUNTIME_END
+
+
 // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
@@ -618,7 +946,7 @@
 
           // Screen-space position of a part, for the HTML label chip. Returns null
           // when the part is behind the camera.
-          function project(id) {
+          function project(id, viewW, viewH) {
             var g = S.meshes[id];
             if (!g) return null;
             var v = new S.THREE.Vector3();
@@ -631,8 +959,7 @@
             }
             v.project(S.camera);
             if (v.z > 1) return null;
-            var r = S.renderer.domElement;
-            return { x: (v.x * 0.5 + 0.5) * r.clientWidth, y: (-v.y * 0.5 + 0.5) * r.clientHeight };
+            return { x: (v.x * 0.5 + 0.5) * viewW, y: (-v.y * 0.5 + 0.5) * viewH };
           }
 
           // Rendering pauses when the bay is off-screen or the tab is hidden. This
@@ -848,20 +1175,24 @@
                 if (el.style.opacity !== '0') el.style.opacity = '0';
                 continue;
               }
-              var at = project(pid);
+              var at = project(pid, viewW, viewH);
               if (!at) { if (el.style.opacity !== '0') el.style.opacity = '0'; continue; }
               if (el._strong !== strong) {
                 el._strong = strong;
                 el.style.cssText = S.chipCss(strong);
                 el._w = 0;                       // restyle changes the measured size
               }
-              // Measure once per style; offsetWidth forces layout, so never per-frame.
-              if (!el._w) {
-                el.style.opacity = '0.01';
-                el._w = el.offsetWidth || 90;
-                el._h = el.offsetHeight || 18;
+              placed.push({ el: el, x: at.x, y: at.y, strong: strong });
+            }
+            // Batch style writes before measuring chips to avoid one forced layout
+            // per visible label. Opacity does not affect the measured dimensions.
+            for (var mi = 0; mi < placed.length; mi++) {
+              var chip = placed[mi], chipEl = chip.el;
+              if (!chipEl._w) {
+                chipEl._w = chipEl.offsetWidth || 90;
+                chipEl._h = chipEl.offsetHeight || 18;
               }
-              placed.push({ el: el, x: at.x, y: at.y, w: el._w, h: el._h, strong: strong });
+              chip.w = chipEl._w; chip.h = chipEl._h;
             }
 
             // Label-everything mode put twelve chips on a small canvas and several
@@ -2801,6 +3132,11 @@
 
       // ── Keyboard Help State ──
       var [_showKeyHelp, _setShowKeyHelp] = React.useState(false);
+      var [_showControls, _setShowControls] = React.useState(false);
+      React.useEffect(function(){
+        window.StemInput.setScope(stemLabTab === 'explore' ? stemLabTool : null, _stemDialogRef.current);
+        return function(){window.StemInput.setScope(null);};
+      },[stemLabTool,stemLabTab]);
 
       // ── Canvas Narration Toggle (mirrors localStorage so the header button re-renders) ──
       var [_narrationOn, _setNarrationOn] = React.useState(function () {
@@ -3287,7 +3623,10 @@
       // once per element. Call window.__stemA11yReport() for a grouped summary.
       // Fix what it lists AT SOURCE -- persistent, correctly worded,
       // translatable -- and when the list stays empty this loop can be deleted.
-      if (!window._stemA11yFixerActive) {
+      React.useEffect(function () {
+        if (window._stemA11yFixerActive) return;
+        var modal = _stemDialogRef.current;
+        if (!modal) return;
         window._stemA11yFixerActive = true;
 
         // Findings accumulate across lab open/close. The signature dedupe is what
@@ -3325,16 +3664,12 @@
           return window.__stemA11yFindings.length;
         };
 
-        window._stemA11yFixerInterval = setInterval(function() {
+        var auditTimer = null;
+        var stopped = false;
+        function audit() {
+          auditTimer = null;
+          if (stopped || document.hidden || !modal.isConnected) return;
           try {
-            var modal = document.querySelector('.stem-lab-modal');
-            if (!modal) {
-              // Lab is closed — stop the polling loop and allow a clean restart on reopen.
-              try { clearInterval(window._stemA11yFixerInterval); } catch (e) {}
-              window._stemA11yFixerInterval = null;
-              window._stemA11yFixerActive = false;
-              return;
-            }
             // 1. REPORT ONLY. This used to copy textContent into aria-label,
             //    which changed nothing for a screen reader: role=button already
             //    computes its accessible name from its own content. The single
@@ -3404,153 +3739,36 @@
               _a11yReport('img-no-alt', el, 'img has no alt; needs alt="" if decorative, a description if not');
             });
           } catch(e) { /* safety net — never crash the app */ }
-        }, 2000); // Run every 2 seconds
-      }
-
-      // ── Gamepad API Adapter — maps controller inputs to keyboard events ──
-      // Runs a polling loop when a gamepad is connected. Synthesizes KeyboardEvents
-      // so all existing tools get controller support automatically (no per-tool changes).
-      // Supports Xbox, PlayStation, and generic HID controllers.
-      // Button mapping follows the W3C Standard Gamepad layout:
-      //   Left stick: WASD movement | Right stick: Arrow keys (camera/turn)
-      //   A/Cross: Space (jump/click) | B/Circle: Escape (close dialog)
-      //   X/Square: KeyE (interact) | Y/Triangle: KeyM (measure)
-      //   LB: KeyQ (cycle shape) | RB: right-click (place block)
-      //   LT: Shift (sprint) | RT: left-click (break block)
-      //   D-pad: 1-4 block selection | Start: KeyF (fly) | Select: KeyG (grid)
-      if (!window._stemGamepadActive) {
-        window._stemGamepadActive = true;
-        var _gpPrevButtons = {};
-        var _gpConnected = false;
-        var _gpDeadzone = 0.2;
-
-        window.addEventListener('gamepadconnected', function(e) {
-          _gpConnected = true;
-          console.log('[Gamepad] Connected: ' + e.gamepad.id);
-          if (typeof addToast === 'function') addToast('\uD83C\uDFAE Controller connected: ' + e.gamepad.id.substring(0, 40), 'success');
-        });
-        window.addEventListener('gamepaddisconnected', function() {
-          _gpConnected = false;
-          console.log('[Gamepad] Disconnected');
-        });
-
-        // Synthesize a keyboard event the same way the browser would
-        function _gpKey(code, type) {
-          try {
-            var ev = new KeyboardEvent(type, { code: code, key: code.replace('Key', '').toLowerCase(), bubbles: true, cancelable: true });
-            document.dispatchEvent(ev);
-            // Also dispatch to the focused element (for canvas listeners)
-            if (document.activeElement && document.activeElement !== document.body) {
-              document.activeElement.dispatchEvent(new KeyboardEvent(type, { code: code, key: code.replace('Key', '').toLowerCase(), bubbles: true, cancelable: true }));
-            }
-          } catch(e) {}
         }
-
-        // Synthesize mouse click for block place/break
-        function _gpClick(button) {
-          try {
-            var target = document.activeElement || document.querySelector('canvas');
-            if (target) {
-              var rect = target.getBoundingClientRect();
-              var cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
-              target.dispatchEvent(new MouseEvent('mousedown', { button: button, clientX: cx, clientY: cy, bubbles: true }));
-              setTimeout(function() {
-                target.dispatchEvent(new MouseEvent('mouseup', { button: button, clientX: cx, clientY: cy, bubbles: true }));
-              }, 50);
-            }
-          } catch(e) {}
+        // Coalesce structural/name changes; canvas frames, SVG path updates, styles,
+        // and numeric readouts do not warrant rescanning every control in the lab.
+        function scheduleAudit() {
+          if (!stopped && !document.hidden && auditTimer === null) auditTimer = setTimeout(audit, 250);
         }
-
-        // Button state tracker (press/release edge detection)
-        function _gpBtnPressed(idx, pressed) {
-          var wasPressed = !!_gpPrevButtons[idx];
-          _gpPrevButtons[idx] = pressed;
-          return pressed && !wasPressed; // true on rising edge only
-        }
-        function _gpBtnReleased(idx, pressed) {
-          var wasPressed = !!_gpPrevButtons[idx];
-          _gpPrevButtons[idx] = pressed;
-          return !pressed && wasPressed;
-        }
-
-        // Axis-to-key state tracking (hold behavior, not just press)
-        var _gpAxisKeys = {};
-        function _gpAxisToKey(axisVal, negKey, posKey, id) {
-          var negActive = axisVal < -_gpDeadzone;
-          var posActive = axisVal > _gpDeadzone;
-          var prevNeg = _gpAxisKeys[id + '_neg'];
-          var prevPos = _gpAxisKeys[id + '_pos'];
-          if (negActive && !prevNeg) _gpKey(negKey, 'keydown');
-          if (!negActive && prevNeg) _gpKey(negKey, 'keyup');
-          if (posActive && !prevPos) _gpKey(posKey, 'keydown');
-          if (!posActive && prevPos) _gpKey(posKey, 'keyup');
-          _gpAxisKeys[id + '_neg'] = negActive;
-          _gpAxisKeys[id + '_pos'] = posActive;
-        }
-
-        // Poll loop (requestAnimationFrame)
-        function _gpPoll() {
-          requestAnimationFrame(_gpPoll);
-          if (!_gpConnected) return;
-          var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-          var gp = null;
-          for (var gi = 0; gi < gamepads.length; gi++) { if (gamepads[gi]) { gp = gamepads[gi]; break; } }
-          if (!gp) return;
-
-          // Left stick → WASD
-          _gpAxisToKey(gp.axes[1], 'KeyW', 'KeyS', 'ls_y'); // Y-axis inverted: up = negative
-          _gpAxisToKey(gp.axes[0], 'KeyA', 'KeyD', 'ls_x');
-
-          // Right stick → Arrow keys (camera/turn)
-          if (gp.axes.length >= 4) {
-            _gpAxisToKey(gp.axes[3], 'ArrowUp', 'ArrowDown', 'rs_y');
-            _gpAxisToKey(gp.axes[2], 'ArrowLeft', 'ArrowRight', 'rs_x');
+        function relevantMutation(record) {
+          if (record.type === 'attributes') return true;
+          var target = record.target.nodeType === 1 ? record.target : record.target.parentElement;
+          if (target && target.closest('button,[role="button"]')) return true;
+          if (record.type === 'childList') {
+            return Array.prototype.some.call(record.addedNodes, function (node) { return node.nodeType === 1; });
           }
-
-          // Face buttons (Standard Gamepad mapping)
-          var btns = gp.buttons;
-          if (btns.length >= 4) {
-            // A/Cross (index 0) → Space
-            if (_gpBtnPressed(0, btns[0].pressed)) _gpKey('Space', 'keydown');
-            if (_gpBtnReleased(0, btns[0].pressed)) _gpKey('Space', 'keyup');
-            // B/Circle (1) → Escape
-            if (_gpBtnPressed(1, btns[1].pressed)) _gpKey('Escape', 'keydown');
-            if (_gpBtnReleased(1, btns[1].pressed)) _gpKey('Escape', 'keyup');
-            // X/Square (2) → KeyE (interact with NPC)
-            if (_gpBtnPressed(2, btns[2].pressed)) _gpKey('KeyE', 'keydown');
-            if (_gpBtnReleased(2, btns[2].pressed)) _gpKey('KeyE', 'keyup');
-            // Y/Triangle (3) → KeyM (measure)
-            if (_gpBtnPressed(3, btns[3].pressed)) _gpKey('KeyM', 'keydown');
-            if (_gpBtnReleased(3, btns[3].pressed)) _gpKey('KeyM', 'keyup');
-          }
-          if (btns.length >= 8) {
-            // LB (4) → KeyQ (cycle shape/tool)
-            if (_gpBtnPressed(4, btns[4].pressed)) _gpKey('KeyQ', 'keydown');
-            if (_gpBtnReleased(4, btns[4].pressed)) _gpKey('KeyQ', 'keyup');
-            // RB (5) → right-click (place block)
-            if (_gpBtnPressed(5, btns[5].pressed)) _gpClick(2);
-            // LT (6) → Shift (sprint)
-            if (btns[6].value > 0.3 && !_gpAxisKeys['lt']) { _gpKey('ShiftLeft', 'keydown'); _gpAxisKeys['lt'] = true; }
-            if (btns[6].value <= 0.3 && _gpAxisKeys['lt']) { _gpKey('ShiftLeft', 'keyup'); _gpAxisKeys['lt'] = false; }
-            // RT (7) → left-click (break block)
-            if (_gpBtnPressed(7, btns[7].pressed)) _gpClick(0);
-          }
-          if (btns.length >= 10) {
-            // Select/Back (8) → KeyG (grid toggle)
-            if (_gpBtnPressed(8, btns[8].pressed)) _gpKey('KeyG', 'keydown');
-            // Start (9) → KeyF (fly toggle)
-            if (_gpBtnPressed(9, btns[9].pressed)) _gpKey('KeyF', 'keydown');
-          }
-          // D-pad → Digit1-4 (block type selection)
-          if (btns.length >= 16) {
-            if (_gpBtnPressed(12, btns[12].pressed)) _gpKey('Digit1', 'keydown'); // Up
-            if (_gpBtnPressed(13, btns[13].pressed)) _gpKey('Digit2', 'keydown'); // Down
-            if (_gpBtnPressed(14, btns[14].pressed)) _gpKey('Digit3', 'keydown'); // Left
-            if (_gpBtnPressed(15, btns[15].pressed)) _gpKey('Digit4', 'keydown'); // Right
-          }
+          return false;
         }
-        _gpPoll();
-      }
+        var observer = typeof MutationObserver === 'function' ? new MutationObserver(function (records) {
+          if (records.some(relevantMutation)) scheduleAudit();
+        }) : null;
+        if (observer) observer.observe(modal, { subtree: true, childList: true, characterData: true,
+          attributes: true, attributeFilter: ['aria-label', 'aria-labelledby', 'role', 'alt', 'id', 'placeholder'] });
+        document.addEventListener('visibilitychange', scheduleAudit);
+        scheduleAudit();
+        return function () {
+          stopped = true;
+          if (auditTimer !== null) clearTimeout(auditTimer);
+          if (observer) observer.disconnect();
+          document.removeEventListener('visibilitychange', scheduleAudit);
+          window._stemA11yFixerActive = false;
+        };
+      }, []);
 
       // ── Canvas Narration: Dual-Channel (aria-live + TTS) with Smart Detection & Adaptive Verbosity ──
       // Dedupe + encounter maps MUST live on window so they persist across React renders
@@ -4804,11 +5022,11 @@
           title: _aiHintsOn ? 'AI hints ON: a stuck student can request an AI hint (their answer is sent to the AI). Practice only \u2014 turn OFF for graded work.' : 'AI hints OFF. Click to enable AI hints for stuck students (sends their answer to the AI; keep off during graded work).'
         }, '\uD83D\uDCA1', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, _aiHintsOn ? 'Hints' : 'Hints Off')),
         /*#__PURE__*/React.createElement("button", {
-          onClick: () => _setShowKeyHelp(v => !v),
+          onClick: () => _setShowControls(v => !v),
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors text-xs font-bold",
-          "aria-label": "Show keyboard shortcuts",
-          title: "Keyboard shortcuts (?)"
-        }, "?"),
+          "aria-label": "Controls settings",
+          title: "Controls settings"
+        }, "Controls"),
         /*#__PURE__*/React.createElement("button", {
           onClick: () => setShowStemLab(false),
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors",
@@ -4871,6 +5089,7 @@
         }, 'Play Watershed as a Field Journey'), React.createElement('span', {
           style: { display: 'inline-block', fontSize: 12, marginLeft: 12 }
         }, 'Optional pilot · separate journey saves')),
+        _showControls && React.createElement(window.StemInput.Panel, {React:React,toolId:stemLabTool,onClose:function(){_setShowControls(false);}}),
         // ── Keyboard Help Panel ──
         _showKeyHelp && React.createElement("div", {
           role: "region", "aria-label": "Keyboard shortcuts",
@@ -4891,39 +5110,7 @@
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "?"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Toggle this help panel")
           ),
-          // Gamepad controller mapping
-          React.createElement("div", { style: { marginTop: 12, paddingTop: 10, borderTop: '1px solid ' + _pal.border } },
-            React.createElement("h4", { style: { margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: isContrast ? '#facc15' : '#4f46e5' } }, "\uD83C\uDFAE Controller Support (Xbox / PlayStation / Generic)"),
-            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'auto 1fr auto 1fr', gap: '3px 14px', fontSize: 11 } },
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "L Stick"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Move (WASD)"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "R Stick"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Look / Turn"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "A / \u2A2F"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Jump / Click / Confirm"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "B / \u25CB"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Close / Back"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "X / \u25A1"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Interact (NPC)"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "Y / \u25B3"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Measure"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "LB"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Cycle tool/shape"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "RB"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Place block"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "LT"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Sprint"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "RT"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Break block"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "D-pad"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Select blocks 1-4"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "Start"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Toggle fly mode"),
-              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "Select"),
-              React.createElement("span", { style: { color: _pal.textMuted } }, "Toggle grid")
-            ),
-            React.createElement("p", { style: { margin: '6px 0 0', fontSize: 10, color: _pal.textMuted, fontStyle: 'italic' } }, "Just connect your controller \u2014 it\u2019s auto-detected. Works with all 3D tools including Geometry World, Echo Navigator, SkySchool, Moon Mission, and Solar System.")
-          )
+          React.createElement('button',{type:'button',onClick:function(){_setShowKeyHelp(false);_setShowControls(true);}},'Controller, keyboard and on-screen control settings')
         ),
         // ═══ XP Progress Overlay Panel ═══
         _showXpPanel && React.createElement("div", {

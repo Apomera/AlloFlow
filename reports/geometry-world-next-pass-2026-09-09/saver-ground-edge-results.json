@@ -1,0 +1,142 @@
+{
+  "scope": "Actual WebGL Saver ground edge draw cost, exact mesh/STL/raycast/history, and Studio quality roundtrip",
+  "errors": [],
+  "consoleErrors": [],
+  "checks": {
+    "drawComparison": {
+      "withEdges": {
+        "tier": "saver",
+        "look": "meadow",
+        "floor": 625,
+        "visibleFloor": 625,
+        "floorEdges": 625,
+        "visibleFloorEdges": 625,
+        "build": 150,
+        "buildEdges": 150,
+        "visibleBuildEdges": 150,
+        "draws": 1514,
+        "triangles": 12626,
+        "lines": 8856,
+        "shaderErrors": []
+      },
+      "withoutEdges": {
+        "tier": "saver",
+        "look": "meadow",
+        "floor": 625,
+        "visibleFloor": 625,
+        "floorEdges": 625,
+        "visibleFloorEdges": 0,
+        "build": 150,
+        "buildEdges": 150,
+        "visibleBuildEdges": 150,
+        "draws": 912,
+        "triangles": 12626,
+        "lines": 1632,
+        "shaderErrors": []
+      },
+      "savedDraws": 602
+    },
+    "roundtrip": {
+      "studioBalanced": {
+        "tier": "balanced",
+        "look": "studio",
+        "floor": 625,
+        "visibleFloor": 0,
+        "floorEdges": 625,
+        "visibleFloorEdges": 625,
+        "build": 150,
+        "buildEdges": 150,
+        "visibleBuildEdges": 150,
+        "draws": 303,
+        "triangles": 1582,
+        "lines": 1632,
+        "shaderErrors": []
+      },
+      "studioSaver": {
+        "tier": "saver",
+        "look": "studio",
+        "floor": 625,
+        "visibleFloor": 0,
+        "floorEdges": 625,
+        "visibleFloorEdges": 0,
+        "build": 150,
+        "buildEdges": 150,
+        "visibleBuildEdges": 150,
+        "draws": 303,
+        "triangles": 1582,
+        "lines": 1632,
+        "shaderErrors": []
+      },
+      "returned": {
+        "tier": "saver",
+        "look": "meadow",
+        "floor": 625,
+        "visibleFloor": 625,
+        "floorEdges": 625,
+        "visibleFloorEdges": 0,
+        "build": 150,
+        "buildEdges": 150,
+        "visibleBuildEdges": 150,
+        "draws": 912,
+        "triangles": 12626,
+        "lines": 1632,
+        "shaderErrors": []
+      },
+      "restored": {
+        "tier": "balanced",
+        "look": "meadow",
+        "floor": 625,
+        "visibleFloor": 625,
+        "floorEdges": 625,
+        "visibleFloorEdges": 625,
+        "build": 150,
+        "buildEdges": 150,
+        "visibleBuildEdges": 150,
+        "draws": 1514,
+        "triangles": 14802,
+        "lines": 8856,
+        "shaderErrors": []
+      },
+      "editing": {
+        "tier": "saver",
+        "look": "meadow",
+        "floor": 625,
+        "visibleFloor": 625,
+        "floorEdges": 625,
+        "visibleFloorEdges": 0,
+        "build": 150,
+        "buildEdges": 150,
+        "visibleBuildEdges": 150,
+        "draws": 935,
+        "triangles": 12902,
+        "lines": 1632,
+        "shaderErrors": []
+      }
+    },
+    "invariant": {
+      "meshHash": "7f0343b9fe59beec9c188966855d126af93bbd6838766e69d06c0486738d05ed",
+      "stlHash": "fcec4a5158452565fde809e983647bb251a48c40dcb2ef5365f7594dfdab7398",
+      "stlBytes": 31784,
+      "raycast": [
+        "E53E2456-63FE-4533-9ACD-86089B5B0216",
+        {
+          "x": 5,
+          "y": 0,
+          "z": 5
+        },
+        [
+          5.5,
+          1,
+          5.5
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        3
+      ]
+    }
+  },
+  "passed": true
+}

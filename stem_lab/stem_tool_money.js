@@ -45,6 +45,61 @@ window.StemLab = window.StemLab || {
   })();
 
   
+  function moneyChangeJourney(price, paid, scale) {
+    if (![price, paid, scale].every(Number.isFinite) || price < 0 || paid < price || paid > 1000000 || (scale !== 1 && scale !== 100)) return { ok: false, steps: [] };
+    var start = Math.round((price + Number.EPSILON) * scale), end = Math.round((paid + Number.EPSILON) * scale);
+    var current = start, steps = [];
+    [Math.ceil(start / scale) * scale, Math.ceil(start / (5 * scale)) * 5 * scale, end].forEach(function(target) {
+      target = Math.min(target, end);
+      if (target > current) { steps.push({ from: current, to: target, add: target - current }); current = target; }
+    });
+    return { ok: true, start: start, end: end, due: end - start, steps: steps };
+  }
+
+  function moneyPercentModel(mode, original, percent, extra, scale) {
+    if (['tip', 'discount'].indexOf(mode) < 0 || ![original, percent, extra, scale].every(Number.isFinite) || original < 0 || original > 1000000 || percent < 0 || percent > 100 || extra < 0 || extra > 1000000 || (scale !== 1 && scale !== 100)) return { ok: false };
+    if (mode === 'tip' && (!Number.isInteger(extra) || extra < 1 || extra > 100)) return { ok: false };
+    var units = Math.round((original + Number.EPSILON) * scale);
+    var part = Math.round((original * percent / 100 + Number.EPSILON) * scale);
+    if (mode === 'tip') {
+      var total = units + part, low = Math.floor(total / extra), higherCount = total % extra;
+      return { ok: true, mode: mode, original: units, percent: percent, part: part, total: total,
+        roundedShare: Math.round(total / extra), low: low, high: low + 1, lowerCount: extra - higherCount, higherCount: higherCount, diners: extra };
+    }
+    // Match the existing sale-price rounding: round the retained percentage first.
+    var afterPercent = Math.round((original * (1 - percent / 100) + Number.EPSILON) * scale);
+    var coupon = Math.min(afterPercent, Math.round((extra + Number.EPSILON) * scale));
+    return { ok: true, mode: mode, original: units, percent: percent, part: units - afterPercent,
+      afterPercent: afterPercent, coupon: coupon, unusedCoupon: Math.max(0, Math.round((extra + Number.EPSILON) * scale) - coupon), total: afterPercent - coupon };
+  }
+  function moneyBudgetModel(income, percentages, scale) {
+    if (!Number.isFinite(income) || income < 0 || income > 1000000 || (scale !== 1 && scale !== 100) || !Array.isArray(percentages) || !percentages.length || percentages.length > 12 || !percentages.every(function(pct) { return Number.isInteger(pct) && pct >= 0 && pct <= 100; })) return { ok: false };
+    var incomeUnits = Math.round((income + Number.EPSILON) * scale);
+    if (Math.abs(income - incomeUnits / scale) > 1e-9) return { ok: false };
+    var used = percentages.reduce(function(sum, pct) { return sum + pct; }, 0);
+    var allocated = Math.round(incomeUnits * used / 100);
+    var units = percentages.map(function(pct) { return Math.floor(incomeUnits * pct / 100); });
+    var remaining = allocated - units.reduce(function(sum, value) { return sum + value; }, 0);
+    var order = percentages.map(function(pct, index) { return { index: index, remainder: incomeUnits * pct % 100 }; }).sort(function(a, b) { return b.remainder - a.remainder || a.index - b.index; });
+    for (var i = 0; i < remaining; i++) units[order[i].index] += 1;
+    var tapes = Array.from({ length: Math.max(1, Math.ceil(used / 100)) }, function() { return []; });
+    var cursor = 0;
+    percentages.forEach(function(pct, index) {
+      var end = cursor + pct;
+      while (cursor < end) {
+        var tape = Math.floor(cursor / 100), width = Math.min(end - cursor, 100 - cursor % 100);
+        tapes[tape].push({ index: index, width: width }); cursor += width;
+      }
+    });
+    return { ok: true, incomeUnits: incomeUnits, used: used, allocated: allocated, left: incomeUnits - allocated, units: units, tapes: tapes, rounded: percentages.some(function(pct) { return incomeUnits * pct % 100 !== 0; }) };
+  }
+  function moneyBudgetTransfer(percentages, from, to, points) {
+    if (!Array.isArray(percentages) || !percentages.length || percentages.length > 12 || !percentages.every(function(pct) { return Number.isInteger(pct) && pct >= 0 && pct <= 100; }) || !Number.isInteger(from) || !Number.isInteger(to) || from < 0 || to < 0 || from >= percentages.length || to >= percentages.length || from === to || !Number.isInteger(points) || points < 1 || points > percentages[from] || percentages[to] + points > 100) return null;
+    return percentages.map(function(pct, index) { return pct + (index === from ? -points : index === to ? points : 0); });
+  }
+
+  window.MoneyMathLearning = { changeJourney: moneyChangeJourney, percentModel: moneyPercentModel, budgetModel: moneyBudgetModel, budgetTransfer: moneyBudgetTransfer };
+
   window.StemLab.registerTool('moneyMath', {
     icon: '\uD83D\uDCB5', label: 'Money Math',
     desc: 'Coins, bills, making change, grocery store sim, currency exchange, tips, budget, and personal finance.',
@@ -1549,6 +1604,7 @@ window.StemLab = window.StemLab || {
                 var largestPayment = paymentValues[paymentValues.length - 1] || 1;
                 paid = Math.ceil((price + smallestCashUnit) / largestPayment) * largestPayment;
               }
+              upd('changeLearning', null);
               upd('changePrice', price);
               upd('changePaid', paid);
               upd('changeAnswer', null);
@@ -1601,7 +1657,7 @@ window.StemLab = window.StemLab || {
               var tipPct = tipPcts[Math.floor(Math.random() * tipPcts.length)];
               var diners = Math.floor(Math.random() * 5) + 2;
               upd('tipBill', bill); upd('tipPct', tipPct); upd('tipDiners', diners);
-              upd('tipAnswer', null); upd('tipFeedback', null); upd('tipMode', 'tip');
+              upd('tipAnswer', null); upd('tipFeedback', null); upd('percentLearningKey', null); upd('tipMode', 'tip');
             };
             var genDiscountProblem = function () {
               beginMoneyRound('discount-calculation');
@@ -1611,13 +1667,13 @@ window.StemLab = window.StemLab || {
               var hasCoupon = Math.random() > 0.5 && gc.includePercent;
               var couponAmt = hasCoupon ? (isJPY ? [100, 200, 500][Math.floor(Math.random() * 3)] : [0.50, 1, 2, 5][Math.floor(Math.random() * 4)]) : 0;
               upd('discOriginal', original); upd('discPercent', disc); upd('discCoupon', couponAmt);
-              upd('discAnswer', null); upd('discFeedback', null); upd('tipMode', 'discount');
+              upd('discAnswer', null); upd('discFeedback', null); upd('percentLearningKey', null); upd('tipMode', 'discount');
             };
 
             // ── Budget planner state ──
             var budgetIncome = typeof d.budgetIncome === 'number' ? d.budgetIncome : (isJPY ? 300000 : (grade === 'elementary' ? 100 : grade === 'middle' ? 500 : grade === 'high' ? 1500 : 4000));
             var budgetPalette = ['#1d4ed8', '#047857', '#92400e', '#6d28d9', '#be185d', '#155e75', '#334155'];
-            var budgetCats = (d.budgetCats || [
+            var budgetDefaults = [
               { name: __alloT('stem.money.housing', '\uD83C\uDFE0 Housing'), pct: 30 },
               { name: __alloT('stem.money.food', '\uD83C\uDF5E Food'), pct: 20 },
               { name: __alloT('stem.money.transport', '\uD83D\uDE97 Transport'), pct: 15 },
@@ -1625,22 +1681,26 @@ window.StemLab = window.StemLab || {
               { name: __alloT('stem.money.entertainment', '\uD83C\uDFAE Entertainment'), pct: 10 },
               { name: __alloT('stem.money.savings', '\uD83D\uDCB0 Savings'), pct: 10 },
               { name: __alloT('stem.money.other', '\u2764\uFE0F Other'), pct: 5 }
-            ]).map(function (cat, index) {
-              return Object.assign({}, cat, { color: budgetPalette[index] || '#334155' });
+            ];
+            var budgetCats = (Array.isArray(d.budgetCats) && d.budgetCats.length ? d.budgetCats.slice(0, 12) : budgetDefaults).map(function(cat, index) {
+              return { name: cat && typeof cat.name === 'string' && cat.name.trim() ? cat.name.slice(0, 80) : (budgetDefaults[index % budgetDefaults.length].name), pct: cat && Number.isFinite(cat.pct) ? Math.max(0, Math.min(100, Math.round(cat.pct))) : 0, color: budgetPalette[index % budgetPalette.length] };
             });
+            var budgetIncomeRaw = moneyDraftValue('budgetIncomeDraft', Number.isFinite(budgetIncome) ? budgetIncome : '');
+            function validBudgetIncome(raw) { return String(raw).trim() !== '' && moneyBudgetModel(Number(raw), [100], changeScale).ok; }
+            if (validBudgetIncome(budgetIncomeRaw)) budgetIncome = Number(budgetIncomeRaw);
+            var budgetModel = moneyBudgetModel(budgetIncome, budgetCats.map(function(cat) { return cat.pct; }), changeScale);
+            var budgetReady = budgetModel.ok && validBudgetIncome(budgetIncomeRaw);
+            function editBudgetIncome(raw) {
+              var patch = { budgetIncomeDraft: raw };
+              if (validBudgetIncome(raw)) patch.budgetIncome = Number(raw);
+              updateBudgetPlan(patch);
+            }
             var budgetUsed = budgetCats.reduce(function (s, c) { return s + c.pct; }, 0);
-            var budgetAllocatedAmount = budgetIncome * budgetUsed / 100;
-            var budgetSavingsPct = budgetCats[5] ? budgetCats[5].pct : 0;
-            var budgetFlexiblePct = (budgetCats[4] ? budgetCats[4].pct : 0) + (budgetCats[6] ? budgetCats[6].pct : 0);
-            var budgetSavingsAmount = budgetIncome * budgetSavingsPct / 100;
-            var budgetFlexibleAmount = budgetIncome * budgetFlexiblePct / 100;
+            var budgetAllocatedAmount = budgetModel.ok ? budgetModel.allocated / changeScale : 0;
+            var budgetSavingsAmount = budgetModel.ok ? (budgetModel.units[5] || 0) / changeScale : 0;
+            var budgetFlexibleAmount = budgetModel.ok ? ((budgetModel.units[4] || 0) + (budgetModel.units[6] || 0)) / changeScale : 0;
             var budgetEssentialAmount = Math.max(0, budgetAllocatedAmount - budgetSavingsAmount - budgetFlexibleAmount);
-            var budgetUnallocatedAmount = budgetIncome - budgetAllocatedAmount;
-            var budgetReadiness = budgetSavingsPct >= 15
-              ? { label: __alloT('stem.money.strong_buffer', 'Strong buffer'), color: 'emerald', icon: '\uD83D\uDEE1\uFE0F' }
-              : budgetSavingsPct >= 10
-                ? { label: __alloT('stem.money.building_buffer', 'Building buffer'), color: 'amber', icon: '\uD83C\uDF31' }
-                : { label: __alloT('stem.money.thin_buffer', 'Thin buffer'), color: 'rose', icon: '\u26A0\uFE0F' };
+            var budgetUnallocatedAmount = budgetModel.ok ? budgetModel.left / changeScale : 0;
             var budgetEventDefinitions = [
               { id: 'repair', icon: grade === 'elementary' ? '\uD83D\uDEB2' : '\uD83D\uDE97', label: grade === 'elementary' ? __alloT('stem.money.bike_repair', 'Bike repair') : __alloT('stem.money.car_repair', 'Car repair'), detail: __alloT('stem.money.repair_event_detail', 'Transportation needs an unexpected repair.'), pct: 0.08 },
               { id: 'health', icon: '\uD83E\uDE79', label: __alloT('stem.money.health_expense', 'Health expense'), detail: __alloT('stem.money.health_event_detail', 'A surprise health cost arrives this month.'), pct: 0.06 },
@@ -1648,6 +1708,7 @@ window.StemLab = window.StemLab || {
               { id: 'school', icon: '\uD83C\uDF92', label: __alloT('stem.money.school_supplies_event', 'School supplies'), detail: __alloT('stem.money.school_event_detail', 'Required supplies were not in the original plan.'), pct: 0.04 },
               { id: 'phone', icon: '\uD83D\uDCF1', label: __alloT('stem.money.broken_phone', 'Broken phone'), detail: __alloT('stem.money.phone_event_detail', 'A necessary phone repair cannot wait.'), pct: 0.07 }
             ];
+            var availableBudgetEvents = budgetEventDefinitions.filter(function(event) { return Math.round(budgetIncome * event.pct * changeScale) > 0; });
             var budgetEventId = d.budgetEventId || null;
             var budgetEvent = budgetEventDefinitions.find(function (event) { return event.id === budgetEventId; }) || null;
             var budgetEventChoice = d.budgetEventChoice || null;
@@ -1658,13 +1719,14 @@ window.StemLab = window.StemLab || {
             var budgetEventCost = budgetEvent ? Math.round(budgetIncome * budgetEvent.pct * changeScale) / changeScale : 0;
             var budgetBorrowCost = Math.round(budgetEventCost * 1.15 * changeScale) / changeScale;
             var generateBudgetEvent = function () {
+              if (!budgetReady || budgetUsed !== 100 || budgetIncome <= 0 || !availableBudgetEvents.length) return;
               beginMoneyRound('budget-event');
-              var choices = budgetEventDefinitions.filter(function (event) { return event.id !== budgetEventId; });
-              var nextEvent = choices[Math.floor(Math.random() * choices.length)] || budgetEventDefinitions[0];
+              var choices = availableBudgetEvents.filter(function (event) { return event.id !== budgetEventId; });
+              var nextEvent = choices[Math.floor(Math.random() * choices.length)] || availableBudgetEvents[0];
               upd('budgetEventId', nextEvent.id); upd('budgetEventChoice', null); upd('budgetEventFb', null); upd('budgetEventResolved', false);
             };
             var chooseBudgetEventResponse = function (choice) {
-              if (!budgetEvent || budgetEventResolved) return;
+              if (!budgetEvent || budgetEventResolved || !budgetReady || budgetUsed !== 100 || budgetIncome <= 0 || budgetEventCost <= 0) return;
               var canCover = true;
               var points = 0;
               var message = '';
@@ -2047,6 +2109,214 @@ window.StemLab = window.StemLab || {
               if (tabButtons[next]) { tabButtons[next].focus(); tabButtons[next].click(); }
             };
 
+            var h = React.createElement;
+            var moneyInk = ctx.isContrast ? '#ffffff' : ctx.isDark ? '#e2e8f0' : '#172033';
+            var moneySurface = ctx.isContrast ? '#000000' : ctx.isDark ? '#162033' : '#ffffff';
+            var moneySoft = ctx.isContrast ? '#101010' : ctx.isDark ? '#101827' : '#f1f5f9';
+            var moneyAccent = ctx.isContrast ? '#ffff00' : ctx.isDark ? '#93c5fd' : '#1d4ed8';
+            var moneyGreen = ctx.isContrast ? '#00ff66' : ctx.isDark ? '#6ee7b7' : '#047857';
+            var moneyBorder = ctx.isContrast ? '#ffffff' : ctx.isDark ? '#94a3b8' : '#64748b';
+            var learningCard = { background: moneySurface, color: moneyInk, border: '1px solid ' + moneyBorder, minWidth: 0, overflowWrap: 'anywhere' };
+            var learningButton = Object.assign({ minHeight: 44 }, learningCard);
+            var changeKey = [currency, moneyRoundIds['making-change'] || 0, changePrice, changePaid].join('|');
+            var changeJourney = moneyChangeJourney(changePrice, changePaid, changeScale);
+            var changeSession = d.changeLearning && d.changeLearning.key === changeKey ? d.changeLearning : { key: changeKey, pieces: [], step: null, assisted: false, reveal: false };
+            var changeSolved = !!(changeFeedback && changeFeedback.ok && (!changeFeedback.key || changeFeedback.key === changeKey));
+            var changeRevealed = changeSolved || changeSession.reveal;
+            var changeTray = (changeSession.pieces || []).filter(function(units) { return changeDenominations.some(function(item) { return item.units === units; }); }).slice(0, 100);
+            var changeTrayTotal = changeTray.reduce(function(sum, units) { return sum + units; }, 0);
+            function changeLearn(patch) { upd('changeLearning', Object.assign({}, changeSession, patch, { key: changeKey })); }
+            function changeFeedbackText(ok, invalid, value) {
+              return invalid ? __alloT('stem.money.deep_valid_amount', 'Enter a non-negative amount using this currency’s precision before checking.') : ok
+                ? changeSession.assisted ? __alloT('stem.money.deep_supported', 'Completed with support. Explain how the change and price make the amount paid.') : __alloT('stem.money.deep_correct_change', 'Correct. The price plus your change equals the amount paid.')
+                : value < changeJourney.due ? __alloT('stem.money.deep_too_little', 'Too little change. Count up farther from the price toward the amount paid.') : __alloT('stem.money.deep_too_much', 'Too much change. The price plus your change is greater than the amount paid.');
+            }
+            function checkLearningChange(tray) {
+              if (changeSolved || !changeJourney.ok) return;
+              var raw = tray ? changeTrayTotal / changeScale : d.changeAnswer;
+              var valid = raw !== null && raw !== undefined && String(raw).trim() !== '' && Number(raw) >= 0 && hasCurrencyPrecision(raw, currency);
+              var amount = valid ? currencyUnits(raw, currency) : null;
+              var ok = valid && amount === changeJourney.due;
+              upd('changeFeedback', { ok: ok, key: changeKey, msg: changeFeedbackText(ok, !valid, amount) });
+              if (ok && !changeSession.assisted) awardMoneyXPOnce('making-change', [currency, changePrice, changePaid], 15, 'making change');
+            }
+            function renderChangeLearning() {
+              var active = d.changePrice != null && d.changePaid != null;
+              var feedback = changeFeedback && (changeFeedback.key === changeKey || (!changeFeedback.key && changeFeedback.ok)) ? changeFeedback : null;
+              var visibleSteps = changeSession.step == null ? [] : changeJourney.steps.slice(0, changeSession.step);
+              var reached = visibleSteps.length ? visibleSteps[visibleSteps.length - 1].to : changeJourney.start;
+              var trayGroups = changeDenominations.map(function(item) { return Object.assign({}, item, { count: changeTray.filter(function(units) { return units === item.units; }).length }); }).filter(function(item) { return item.count > 0; });
+              return h('div', Object.assign(moneyPanelProps('rounded-xl p-4 space-y-4'), { style: learningCard, 'data-money-change': true }),
+                h('h3', { className: 'font-bold text-lg' }, __alloT('stem.money.making_change_practice', 'Making Change Practice')),
+                h('p', { className: 'text-sm' }, __alloT('stem.money.deep_change_intro', 'Find the difference between the price and the amount paid. Type an amount or build the change using coins and bills.')),
+                !active ? h('button', { type: 'button', 'aria-label': __alloT('stem.money.generate_problem', 'Generate Problem'), onClick: genChangeProblem, className: 'rounded-lg px-4 py-2 font-bold', style: learningButton }, __alloT('stem.money.generate_problem', 'Generate Problem')) : !changeJourney.ok ? h('p', { role: 'status' }, __alloT('stem.money.deep_invalid_problem', 'This saved payment does not cover the price. Generate a new problem.')) : h(React.Fragment, null,
+                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' }, [[__alloT('stem.money.price', 'Price'), fmt(changePrice)], [__alloT('stem.money.customer_pays', 'Customer pays'), fmt(changePaid)], [__alloT('stem.money.change_due', 'Change due'), changeRevealed ? fmt(changeJourney.due / changeScale) : '?']].map(function(item) { return h('div', { key: item[0], className: 'rounded-lg p-3', style: { background: moneySoft } }, h('p', { className: 'text-sm' }, item[0]), h('p', { className: 'text-2xl font-black', style: { color: moneyAccent } }, item[1])); })),
+                  h('form', { noValidate: true, className: 'flex flex-wrap items-end gap-2', onSubmit: function(event) { event.preventDefault(); checkLearningChange(false); } },
+                    h('label', { className: 'text-sm font-bold' }, __alloT('stem.money.your_answer', 'Your answer:'),
+                      h('input', { id: 'money-change-answer', type: 'number', min: 0, step: isJPY ? 1 : 0.01, inputMode: 'decimal', 'aria-label': __alloT('stem.money.change_answer_aria', 'Enter the amount of change due'), value: d.changeAnswer == null ? '' : d.changeAnswer, disabled: changeSolved, onChange: function(event) { upd('changeAnswer', event.target.value); upd('changeFeedback', null); }, className: 'block mt-1 rounded-lg px-3 py-2 w-36', style: learningButton })),
+                    h('button', { type: 'submit', 'aria-label': __alloT('stem.money.check_3', 'Check'), disabled: changeSolved, className: 'rounded-lg px-4 py-2 font-bold', style: learningButton }, changeSolved ? __alloT('stem.money.solved', 'Solved') : __alloT('stem.money.check_3', 'Check'))
+                  ),
+                  feedback && h('p', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg p-3 text-sm font-bold', style: { background: moneySoft }, 'data-money-change-feedback': true }, feedback.msg),
+                  h('details', { className: 'rounded-lg p-3', style: learningCard, 'data-money-tray': true },
+                    h('summary', { className: 'font-bold cursor-pointer', style: { minHeight: 32 } }, __alloT('stem.money.deep_build_change', 'Build the change')),
+                    h('p', { className: 'my-3 text-sm' }, __alloT('stem.money.deep_tray_intro', 'Add money to your tray. Different combinations can make the same change. Check your tray when it is ready.')),
+                    h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': __alloT('stem.money.deep_money_choices', 'Money to add to the change tray') }, changeDenominations.filter(function(item) { return item.units <= changeJourney.end; }).map(function(item) {
+                      return h('button', { key: item.units, type: 'button', disabled: changeSolved || changeTray.length >= 100, onClick: function() { changeLearn({ pieces: changeTray.concat([item.units]) }); upd('changeFeedback', null); }, className: 'rounded-lg p-2 flex items-center gap-2 text-sm font-bold', style: learningButton, 'aria-label': __alloT('stem.money.deep_add', 'Add ') + item.name + ' (' + fmt(item.value) + ')' },
+                        h('span', { 'aria-hidden': true }, item.isBill ? renderBillVisual(item.definition, true) : renderCoinVisual(item.definition, true)), h('span', null, fmt(item.value)));
+                    })),
+                    h('div', { className: 'rounded-lg p-3 my-3 space-y-2', style: { background: moneySoft } },
+                      h('p', { className: 'font-bold', 'data-money-tray-total': true }, __alloT('stem.money.deep_tray_total', 'Your tray: ') + fmt(changeTrayTotal / changeScale)),
+                      h('p', { className: 'text-sm' }, __alloT('stem.money.deep_price_plus_tray', 'Price + your tray: ') + fmt(changePrice) + ' + ' + fmt(changeTrayTotal / changeScale) + ' = ' + fmt((changeJourney.start + changeTrayTotal) / changeScale)),
+                      trayGroups.map(function(item) { return h('p', { key: item.units, className: 'text-sm' }, item.count + ' × ' + item.name + ' = ' + fmt(item.count * item.value)); }),
+                      changeTray.length >= 100 && h('p', { role: 'status', className: 'text-sm' }, __alloT('stem.money.deep_tray_limit', 'The tray holds 100 pieces. Undo or clear pieces to try a different combination.'))
+                    ),
+                    h('div', { className: 'flex flex-wrap gap-2' },
+                      h('button', { type: 'button', disabled: !changeTray.length || changeSolved, onClick: function() { changeLearn({ pieces: changeTray.slice(0, -1) }); upd('changeFeedback', null); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_undo_piece', 'Undo last piece')),
+                      h('button', { type: 'button', disabled: !changeTray.length || changeSolved, onClick: function() { changeLearn({ pieces: [] }); upd('changeFeedback', null); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_clear_tray', 'Clear tray')),
+                      h('button', { type: 'button', disabled: changeSolved, onClick: function() { checkLearningChange(true); }, className: 'rounded-lg px-3 py-2 font-bold text-sm', style: learningButton }, __alloT('stem.money.deep_check_tray', 'Check tray'))
+                    )
+                  ),
+                  h('section', { className: 'rounded-lg p-3 space-y-3', style: learningCard, 'aria-label': __alloT('stem.money.count_up_change_aria', 'Count up from the price to the amount paid') },
+                    h('h4', { className: 'font-bold' }, __alloT('stem.money.deep_count_guide', 'Count-up guide')),
+                    h('p', { className: 'text-sm' }, __alloT('stem.money.deep_support_note', 'Use friendly amounts to find the missing difference. Opening the guide marks this problem as supported practice.')),
+                    h('div', { className: 'flex flex-wrap gap-2' },
+                      h('button', { type: 'button', onClick: function() { changeLearn({ step: 0, assisted: true }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_start_guide', 'Start count-up guide')),
+                      changeSession.step != null && h(React.Fragment, null,
+                        h('button', { type: 'button', disabled: changeSession.step === 0, onClick: function() { changeLearn({ step: Math.max(0, changeSession.step - 1) }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_previous_jump', 'Previous jump')),
+                        h('button', { type: 'button', disabled: changeSession.step >= changeJourney.steps.length, onClick: function() { changeLearn({ step: Math.min(changeJourney.steps.length, changeSession.step + 1) }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_next_jump', 'Next jump'))
+                      ),
+                      h('button', { type: 'button', onClick: function() { changeLearn({ step: changeJourney.steps.length, assisted: true, reveal: true }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_show_solution', 'Show worked solution'))
+                    ),
+                    changeSession.step != null && h('div', { className: 'space-y-3', 'data-money-count-guide': true },
+                      h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm font-bold' }, __alloT('stem.money.deep_reached', 'Reached: ') + fmt(reached / changeScale) + '. ' + __alloT('stem.money.deep_added', 'Added so far: ') + fmt((reached - changeJourney.start) / changeScale)),
+                      h('div', { 'aria-hidden': true, style: { height: 16, background: moneySoft, border: '1px solid ' + moneyBorder } }, h('div', { 'data-money-count-progress': true, style: { height: '100%', width: (changeJourney.due ? (reached - changeJourney.start) / changeJourney.due * 100 : 0) + '%', background: moneyGreen } })),
+                      h('div', { className: 'flex justify-between gap-2 text-sm' }, h('span', null, fmt(changePrice)), h('span', null, fmt(changePaid))),
+                      h('ol', { className: 'space-y-2' }, visibleSteps.map(function(step, index) { return h('li', { key: index, className: 'rounded-lg p-2 text-sm font-bold', style: { background: moneySoft }, 'data-money-count-step': true }, fmt(step.from / changeScale) + ' + ' + fmt(step.add / changeScale) + ' = ' + fmt(step.to / changeScale)); })),
+                      changeSession.step >= changeJourney.steps.length && h('p', { className: 'font-bold text-sm' }, changeJourney.due === 0 ? __alloT('stem.money.deep_exact_payment', 'The payment equals the price. No change is needed.') : visibleSteps.map(function(step) { return fmt(step.add / changeScale); }).join(' + ') + ' = ' + fmt(changeJourney.due / changeScale))
+                    )
+                  ),
+                  changeRevealed && h('section', { className: 'rounded-lg p-3 space-y-2', style: learningCard, 'data-money-change-solution': true },
+                    h('h4', { className: 'font-bold' }, __alloT('stem.money.deep_check_both_ways', 'Check both ways')),
+                    h('p', { className: 'text-sm' }, fmt(changePaid) + ' − ' + fmt(changePrice) + ' = ' + fmt(changeJourney.due / changeScale)),
+                    h('p', { className: 'text-sm' }, fmt(changePrice) + ' + ' + fmt(changeJourney.due / changeScale) + ' = ' + fmt(changePaid)),
+                    h('p', { className: 'text-sm font-bold' }, __alloT('stem.money.deep_one_cash_solution', 'One way to return the cash:')),
+                    changeJourney.due === 0 ? h('p', { className: 'text-sm' }, __alloT('stem.money.deep_exact_payment', 'The payment equals the price. No change is needed.')) : changePieces.map(function(item) { return h('p', { key: item.units, className: 'text-sm' }, item.count + ' × ' + item.name + ' = ' + fmt(item.subtotal)); }),
+                    changeRemainderUnits > 0 && h('p', { className: 'text-sm' }, __alloT('stem.money.deep_cash_remainder', 'The available cash leaves an amount that cannot be represented: ') + fmt(changeRemainderUnits / changeScale))
+                  )
+                ),
+                active && h('button', { type: 'button', 'aria-label': __alloT('stem.money.next_problem', 'Next Problem'), onClick: genChangeProblem, className: 'rounded-lg px-4 py-2 text-sm font-bold', style: learningButton }, __alloT('stem.money.next_problem', 'Next Problem'))
+              );
+            }
+
+            function percentLearningKey(mode) { return [currency, mode, moneyRoundIds[mode === 'tip' ? 'tip-calculation' : 'discount-calculation'] || 0, mode === 'tip' ? d.tipBill : d.discOriginal, mode === 'tip' ? d.tipPct : d.discPercent, mode === 'tip' ? d.tipDiners : d.discCoupon || 0].join('|'); }
+            function renderPercentLearning(mode) {
+              var tip = mode === 'tip', original = tip ? d.tipBill : d.discOriginal, percent = tip ? d.tipPct : d.discPercent;
+              var model = moneyPercentModel(mode, original, percent, tip ? d.tipDiners : d.discCoupon || 0, changeScale);
+              if (!model.ok) return null;
+              var key = percentLearningKey(mode), feedback = tip ? d.tipFeedback : d.discFeedback;
+              var show = !!(feedback && feedback.ok) || d.percentLearningKey === key;
+              var amount = function(units) { return fmt(units / changeScale); };
+              return h('section', { className: 'rounded-xl p-3 space-y-3', style: learningCard, 'data-money-percent': mode },
+                h('p', { className: 'text-sm' }, tip ? __alloT('stem.money.deep_tip_rounding', 'Round the tip to the currency’s smallest accounting unit first. Then add it to the bill and divide. Enter the rounded amount per person.') : __alloT('stem.money.deep_discount_order', 'Apply the percentage to the original price first, round the sale price, then subtract the coupon. The final price cannot fall below zero.')),
+                !show ? h('button', { type: 'button', className: 'rounded-lg px-3 py-2 text-sm font-bold', style: learningButton, onClick: function() { upd('percentLearningKey', key); } }, __alloT('stem.money.deep_show_percent', 'Show percentage model (supported practice)')) : h('div', { className: 'space-y-3', 'data-money-percent-worked': mode },
+                  h('h4', { className: 'font-bold' }, __alloT('stem.money.deep_percent_of_whole', 'Start with the whole: 100%')),
+                  h('p', { className: 'text-sm' }, tip ? amount(model.original) + ' × ' + percent + '/100 → ' + amount(model.part) : '100% = ' + amount(model.original)),
+                  h('div', { 'aria-hidden': true, style: { display: 'flex', height: 28, border: '1px solid ' + moneyBorder, background: moneySoft } },
+                    h('div', { 'data-money-percent-part': percent, style: { width: percent + '%', background: moneyAccent } }),
+                    h('div', { style: { width: (100 - percent) + '%', background: moneyGreen, borderLeft: percent > 0 && percent < 100 ? '2px solid ' + moneySurface : 'none' } })
+                  ),
+                  h('div', { className: 'flex flex-wrap justify-between gap-2 text-sm' }, h('span', null, percent + '%: ' + amount(model.part)), h('span', null, (100 - percent) + '%: ' + amount(model.original - model.part))),
+                  h('p', { className: 'text-xs' }, __alloT('stem.money.deep_percent_round_note', 'The bar shows the percentage of the original amount. Money labels follow the currency rounding used in this problem.')),
+                  tip ? h(React.Fragment, null,
+                    h('p', { className: 'text-sm font-bold' }, __alloT('stem.money.deep_add_tip', 'Add the tip to the whole bill: ') + amount(model.original) + ' + ' + amount(model.part) + ' = ' + amount(model.total)),
+                    h('p', { className: 'text-sm' }, amount(model.total) + ' ÷ ' + model.diners + ' ≈ ' + amount(model.roundedShare) + __alloT('stem.money.deep_per_person', ' per person')),
+                    h('section', { className: 'rounded-lg p-3 space-y-2', style: { background: moneySoft }, 'data-money-exact-split': true },
+                      h('h5', { className: 'font-bold text-sm' }, __alloT('stem.money.deep_every_unit', 'Make the actual payments add up')),
+                      model.higherCount === 0 ? h('p', { className: 'text-sm' }, model.diners + ' × ' + amount(model.low) + ' = ' + amount(model.total)) : h(React.Fragment, null,
+                        h('p', { className: 'text-sm' }, __alloT('stem.money.deep_split_rounding', 'If everyone pays the same rounded amount, the payments may miss the bill total. One exact split gives some people one smallest accounting unit more.')),
+                        h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, [[model.lowerCount, model.low], [model.higherCount, model.high]].map(function(row, index) { return h('p', { key: index, className: 'rounded-lg p-2 font-bold text-sm', style: learningCard }, row[0] + (row[0] === 1 ? __alloT('stem.money.deep_person_pays', ' person pays ') : __alloT('stem.money.deep_people_pay', ' people pay ')) + amount(row[1])); })),
+                        h('p', { className: 'font-bold text-sm', 'data-money-split-equation': true }, model.lowerCount + ' × ' + amount(model.low) + ' + ' + model.higherCount + ' × ' + amount(model.high) + ' = ' + amount(model.total))
+                      ),
+                      h('p', { className: 'text-xs' }, __alloT('stem.money.deep_split_accounting', 'These are accounting amounts. Cash payments may also need adjustment to the available coins.'))
+                    )
+                  ) : h(React.Fragment, null,
+                    h('p', { className: 'font-bold text-sm' }, __alloT('stem.money.deep_keep_percent', 'Keep the remaining percentage: ') + amount(model.original) + ' × ' + (100 - percent) + '/100 → ' + amount(model.afterPercent)),
+                    h('p', { className: 'text-sm' }, __alloT('stem.money.deep_then_coupon', 'Then apply the coupon: ') + amount(model.afterPercent) + ' − ' + amount(model.coupon) + ' = ' + amount(model.total)),
+                    model.unusedCoupon > 0 && h('p', { className: 'text-sm' }, __alloT('stem.money.deep_coupon_limit', 'The coupon exceeds the remaining price. This model reduces the price to zero; it does not create money back.')),
+                    h('p', { className: 'font-bold text-sm', 'data-money-discount-equation': true }, amount(model.part) + ' + ' + amount(model.coupon) + ' + ' + amount(model.total) + ' = ' + amount(model.original)),
+                    h('p', { className: 'text-xs' }, __alloT('stem.money.deep_discount_parts', 'Percentage savings + applied coupon + final price = original price.'))
+                  )
+                )
+              );
+            }
+
+            function resetBudgetDecision() { return { budgetEventChoice: null, budgetEventFb: null, budgetEventResolved: false }; }
+            function updateBudgetPlan(patch) {
+              setLabToolData(function(previous) { return Object.assign({}, previous, { moneyMath: Object.assign({}, previous.moneyMath, resetBudgetDecision(), patch) }); });
+            }
+            function budgetSnapshot() { return { currency: currency, income: budgetIncome, categories: budgetCats.map(function(cat) { return { name: cat.name, pct: cat.pct }; }) }; }
+            function budgetReferenceModel() {
+              var saved = d.budgetReference;
+              if (!saved || saved.currency !== currency || !Array.isArray(saved.categories) || saved.categories.length !== budgetCats.length || !saved.categories.every(function(cat, index) { return cat && cat.name === budgetCats[index].name; })) return null;
+              var model = moneyBudgetModel(saved.income, saved.categories.map(function(cat) { return cat.pct; }), changeScale);
+              return model.ok ? { saved: saved, model: model } : null;
+            }
+            function renderBudgetTape() {
+              return h('section', { className: 'rounded-xl p-3 space-y-3', style: learningCard, 'aria-label': __alloT('stem.money.budgetplan_scale_title', 'Allocations against one income'), 'data-budget-tapes': true },
+                h('h4', { className: 'font-bold text-sm' }, __alloT('stem.money.budgetplan_one_income', 'Each full strip represents 100% of one income: ') + fmt(budgetIncome)),
+                budgetModel.tapes.map(function(segments, index) {
+                  return h('div', { key: index, className: 'space-y-1' },
+                    h('p', { className: 'text-xs font-bold' }, index === 0 ? __alloT('stem.money.budgetplan_available_income', 'Available income: 0–100%') : __alloT('stem.money.budgetplan_excess_strip', 'Beyond the income: ') + (index * 100) + '–' + ((index + 1) * 100) + '%'),
+                    h('div', { 'aria-hidden': true, 'data-budget-strip': index, style: { display: 'flex', height: 28, background: moneySoft, border: '2px solid ' + moneyBorder } }, segments.map(function(segment) { return h('div', { key: segment.index, 'data-budget-segment': segment.index, style: { width: segment.width + '%', flexShrink: 0, background: budgetCats[segment.index].color, borderRight: '1px solid #ffffff', boxSizing: 'border-box', color: '#ffffff', textAlign: 'center', fontSize: 14, fontWeight: 700 } }, segment.width >= 7 ? String(segment.index + 1) : ''); }))
+                  );
+                }),
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, budgetCats.map(function(cat, index) { return h('p', { key: index, className: 'text-xs flex items-start gap-2', 'data-budget-key': index }, h('span', { 'aria-hidden': true, style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 20, height: 20, background: cat.color, color: '#ffffff', fontWeight: 700, borderRadius: 4 } }, String(index + 1)), h('span', null, cat.name + ': ' + cat.pct + '% · ' + fmt(budgetModel.units[index] / changeScale))); })),
+                h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm font-bold', 'data-budget-balance': true }, budgetUsed === 100 ? __alloT('stem.money.budgetplan_exact_allocation', 'The allocations equal the income.') : budgetUsed < 100 ? (100 - budgetUsed) + __alloT('stem.money.budgetplan_unallocated', '% is unallocated: ') + fmt(budgetModel.left / changeScale) : (budgetUsed - 100) + __alloT('stem.money.budgetplan_overallocated', '% is beyond the income: ') + fmt(-budgetModel.left / changeScale)),
+                h('p', { className: 'text-sm', 'data-budget-sum': true }, budgetUsed <= 100 ? fmt(budgetModel.allocated / changeScale) + ' + ' + fmt(budgetModel.left / changeScale) + ' = ' + fmt(budgetIncome) : fmt(budgetIncome) + ' + ' + fmt(-budgetModel.left / changeScale) + ' = ' + fmt(budgetModel.allocated / changeScale)),
+                budgetModel.rounded && h('p', { className: 'text-xs' }, __alloT('stem.money.budgetplan_rounding', 'For whole cents or yen, round each share down first, then give the remaining units to the largest fractional remainders. Ties follow category order. This keeps the displayed amounts equal to the rounded allocation total.')),
+                budgetIncome === 0 && h('p', { className: 'text-xs' }, __alloT('stem.money.budgetplan_zero_income', 'These percentages describe a plan. With zero income, every money amount is zero.'))
+              );
+            }
+            function renderBudgetTradeoff() {
+              if (!budgetReady || budgetCats.length < 2) return null;
+              var from = Number.isInteger(d.budgetTransferFrom) && d.budgetTransferFrom < budgetCats.length ? Math.max(0, d.budgetTransferFrom) : Math.min(4, budgetCats.length - 2);
+              var to = Number.isInteger(d.budgetTransferTo) && d.budgetTransferTo < budgetCats.length ? Math.max(0, d.budgetTransferTo) : Math.min(5, budgetCats.length - 1);
+              var raw = d.budgetTransferPoints == null ? '5' : String(d.budgetTransferPoints);
+              var points = raw.trim() === '' ? NaN : Number(raw);
+              var moved = moneyBudgetTransfer(budgetCats.map(function(cat) { return cat.pct; }), from, to, points);
+              var reference = budgetReferenceModel();
+              function select(label, key, value) { return h('label', { className: 'text-sm font-bold' }, label, h('select', { value: value, onChange: function(event) { upd(key, Number(event.target.value)); }, className: 'block mt-1 w-full rounded-lg px-2 py-2', style: learningButton }, budgetCats.map(function(cat, index) { return h('option', { key: index, value: index }, cat.name); }))); }
+              return h('section', { className: 'rounded-xl p-4 my-4 space-y-3', style: learningCard, 'data-budget-tradeoff': true },
+                h('h4', { className: 'font-bold' }, __alloT('stem.money.budgetplan_tradeoff_title', 'Try a budget tradeoff')),
+                h('p', { className: 'text-sm' }, __alloT('stem.money.budgetplan_transfer_intro', 'Move a share from one category to another. The total percentage stays the same. Five percentage points means 5% of the whole income, not 5% of the starting category.')),
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, select(__alloT('stem.money.budgetplan_from', 'Move from'), 'budgetTransferFrom', from), select(__alloT('stem.money.budgetplan_to', 'Move to'), 'budgetTransferTo', to)),
+                h('label', { className: 'block text-sm font-bold' }, __alloT('stem.money.budgetplan_points', 'Percentage points to move'), h('input', { type: 'number', min: 1, max: 100, step: 1, value: raw, onChange: function(event) { upd('budgetTransferPoints', event.target.value); }, className: 'block mt-1 rounded-lg px-3 py-2 w-32', style: learningButton, 'aria-invalid': !moved || undefined, 'aria-describedby': !moved ? 'budget-transfer-help' : undefined })),
+                moved ? h('p', { className: 'rounded-lg p-3 text-sm', style: { background: moneySoft }, 'data-budget-transfer-preview': true }, budgetCats[from].name + ': ' + budgetCats[from].pct + '% → ' + moved[from] + '%. ' + budgetCats[to].name + ': ' + budgetCats[to].pct + '% → ' + moved[to] + '%.') : h('p', { id: 'budget-transfer-help', role: 'status', className: 'text-sm' }, __alloT('stem.money.budgetplan_transfer_help', 'Choose two different categories and a whole number of points available in the first category. Neither category can exceed 100%.')),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', { type: 'button', disabled: !moved, className: 'rounded-lg px-3 py-2 font-bold text-sm', style: learningButton, onClick: function() { if (!moved) return; updateBudgetPlan({ budgetReference: reference ? d.budgetReference : budgetSnapshot(), budgetCats: budgetCats.map(function(cat, index) { return Object.assign({}, cat, { pct: moved[index] }); }) }); } }, __alloT('stem.money.budgetplan_apply', 'Move allocation')),
+                  h('button', { type: 'button', className: 'rounded-lg px-3 py-2 text-sm', style: learningButton, onClick: function() { upd('budgetReference', budgetSnapshot()); } }, reference ? __alloT('stem.money.budgetplan_replace_reference', 'Save current plan as reference') : __alloT('stem.money.budgetplan_save_reference', 'Save plan to compare')),
+                  reference && h('button', { type: 'button', className: 'rounded-lg px-3 py-2 text-sm', style: learningButton, onClick: function() { upd('budgetReference', null); } }, __alloT('stem.money.budgetplan_clear_reference', 'Clear saved plan'))
+                ),
+                reference && h('section', { className: 'space-y-3', 'data-budget-comparison': true, 'aria-label': __alloT('stem.money.budgetplan_compare_title', 'Saved and current budget plans') },
+                  h('h5', { className: 'font-bold text-sm' }, __alloT('stem.money.budgetplan_compare_title', 'Saved and current budget plans')),
+                  h('p', { className: 'text-sm' }, __alloT('stem.money.budgetplan_saved_income', 'Saved income: ') + fmt(reference.saved.income) + '. ' + __alloT('stem.money.budgetplan_current_income', 'Current income: ') + fmt(budgetIncome)),
+                  reference.saved.income !== budgetIncome && h('p', { className: 'text-sm font-bold' }, __alloT('stem.money.budgetplan_changed_income', 'The incomes differ. Money amounts can change even when the percentages stay the same.')),
+                  h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' }, budgetCats.map(function(cat, index) {
+                    var oldPct = reference.saved.categories[index].pct, delta = cat.pct - oldPct;
+                    var deltaMoney = budgetModel.units[index] - reference.model.units[index];
+                    return h('div', { key: index, className: 'rounded-lg p-3 space-y-1', style: { background: moneySoft }, 'data-budget-compare-category': index },
+                      h('p', { className: 'text-sm font-bold' }, cat.name),
+                      h('p', { className: 'text-sm' }, __alloT('stem.money.budgetplan_saved', 'Saved: ') + oldPct + '% · ' + fmt(reference.model.units[index] / changeScale)),
+                      h('p', { className: 'text-sm' }, __alloT('stem.money.budgetplan_current', 'Current: ') + cat.pct + '% · ' + fmt(budgetModel.units[index] / changeScale)),
+                      h('p', { className: 'text-xs font-bold' }, (delta > 0 ? '+' : '') + delta + __alloT('stem.money.budgetplan_point_change', ' percentage points; ') + (deltaMoney > 0 ? '+' : deltaMoney < 0 ? '−' : '') + fmt(Math.abs(deltaMoney) / changeScale))
+                    );
+                  })),
+                  h('p', { className: 'font-bold text-sm', role: 'status', 'data-budget-comparison-total': true }, __alloT('stem.money.budgetplan_total_allocation', 'Total allocation: ') + reference.model.used + '% → ' + budgetUsed + '%; ' + fmt(reference.model.allocated / changeScale) + ' → ' + fmt(budgetModel.allocated / changeScale)),
+                  h('p', { className: 'text-sm' }, __alloT('stem.money.budgetplan_reflect', 'Which category gained a share, and which gave it up? Explain what stayed the same and what changed.'))
+                )
+              );
+            }
+
             var renderMoneyStudioFocus = function () {
               var activeTab = tabs.filter(function (entry) { return entry.id === tab; })[0] || tabs[0];
               var gradeLabel = (GRADE_CONFIG[grade] && GRADE_CONFIG[grade].label) || grade;
@@ -2069,7 +2339,7 @@ window.StemLab = window.StemLab || {
                 {
                   id: 'change',
                   title: __alloT('stem.money.focus_change', 'Make change'),
-                  metric: changePaid ? fmt(changePaid - changePrice) : 'Ready',
+                  metric: changePaid ? (changeRevealed ? fmt(changePaid - changePrice) : '?') : 'Ready',
                   body: __alloT('stem.money.focus_change_body', 'Count up from price to payment.'),
                   tone: 'border-emerald-500 bg-emerald-50 text-emerald-900'
                 },
@@ -2219,13 +2489,13 @@ window.StemLab = window.StemLab || {
                     React.createElement("select", { value: currency, onChange: function (e) {
                       upd('currency', e.target.value);
                       [
-                        'coinGuess', 'coinGuessFb', 'changePrice', 'changePaid', 'changeAnswer', 'changeFeedback',
+                        'coinGuess', 'coinGuessFb', 'changePrice', 'changePaid', 'changeAnswer', 'changeFeedback', 'changeLearning', 'percentLearningKey',
                         'tipBill', 'tipAnswer', 'tipFeedback', 'discOriginal', 'discAnswer', 'discFeedback',
                         'wpProblem', 'wpAnswer', 'wpFeedback', 'exchFrom', 'exchTo', 'exchAmount', 'exchCorrect', 'exchAnswer', 'exchFeedback',
                         'fcTarget', 'fcOptimal', 'fcFeedback', 'upItem', 'upA', 'upB', 'upAnswer', 'upFeedback',
                         'estItems', 'estTotal', 'estAnswer', 'estFb', 'ccPrice', 'ccPaid', 'ccProposed', 'ccCorrectAmt', 'ccIsWrong', 'ccAnswer', 'ccFb',
                         'csOriginal', 'csDiscounts', 'csFinal', 'csAnswer', 'csFb', 'spText', 'spAnswers', 'spFb',
-                        'cdTarget', 'cdFb', 'cdStartTime', 'budgetIncome', 'budgetIncomeDraft', 'budgetEventId', 'budgetEventChoice', 'budgetEventFb',
+                        'cdTarget', 'cdFb', 'cdStartTime', 'budgetIncome', 'budgetIncomeDraft', 'budgetReference', 'budgetTransferFrom', 'budgetTransferTo', 'budgetTransferPoints', 'budgetEventId', 'budgetEventChoice', 'budgetEventFb',
                         'ciPrincipalDraft', 'ciRateDraft', 'ciYearsDraft', 'retMonthlyDraft', 'retMatchDraft',
                         'loanAmtDraft', 'loanRateDraft', 'loanTermDraft', 'sgTargetDraft', 'sgHaveDraft', 'sgMonthsDraft', 'sgRateDraft',
                         'weightInput', 'weightInputDraft', 'weightItemIdx'
@@ -2458,114 +2728,7 @@ window.StemLab = window.StemLab || {
                 )
               ),
 
-              // ═══ MAKING CHANGE TAB ═══
-              tab === 'change' && React.createElement("div", moneyPanelProps("bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200"),
-                React.createElement("h3", { className: "text-base font-bold text-blue-800 mb-4" }, __alloT('stem.money.making_change_practice', "\uD83D\uDCB5 Making Change Practice")),
-                !changePrice
-                  ? React.createElement("div", { className: "text-center py-8" },
-                      React.createElement("p", { className: "text-slate-600 text-sm mb-4" }, "Generate a problem to practice making change with " + cur.flag + " " + cur.name),
-                      React.createElement("button", { "aria-label": __alloT('stem.money.generate_problem', "Generate Problem"), onClick: genChangeProblem,
-                        className: "px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg text-sm"
-                      }, __alloT('stem.money.generate_problem_2', "\u2728 Generate Problem"))
-                    )
-                  : React.createElement("div", { className: "space-y-4" },
-                      React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-blue-100" },
-                        React.createElement("div", { className: "grid grid-cols-3 gap-4 text-center" },
-                          React.createElement("div", null,
-                            React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.price', "Price")),
-                            React.createElement("p", { className: "text-2xl font-black text-red-500" }, fmt(changePrice))
-                          ),
-                          React.createElement("div", null,
-                            React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.customer_pays', "Customer Pays")),
-                            React.createElement("p", { className: "text-2xl font-black text-blue-500" }, fmt(changePaid))
-                          ),
-                          React.createElement("div", null,
-                            React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.change_due', "Change Due")),
-                            React.createElement("p", { className: "text-2xl font-black text-emerald-600" },
-                              changeFeedback ? fmt(roundCurrency(changePaid - changePrice, currency)) : "?")
-                          )
-                        )
-                      ),
-                      React.createElement("div", { className: "flex flex-wrap items-center gap-3" },
-                        React.createElement("label", { htmlFor: "money-change-answer", className: "text-sm font-bold text-slate-600" }, __alloT('stem.money.your_answer', "Your answer:")),
-                        React.createElement("input", { id: "money-change-answer", type: "number", inputMode: "decimal", step: isJPY ? "1" : "0.01", placeholder: cur.symbol + "...",
-                          'aria-label': __alloT('stem.money.change_answer_aria', 'Enter the amount of change due'),
-                          value: changeAnswer !== null ? changeAnswer : '',
-                          onChange: function (e) { upd('changeAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('changeFeedback', null); },
-                          className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-32 focus:ring-2 focus:ring-blue-400 outline-none"
-                        }),
-                        React.createElement("button", { "aria-label": __alloT('stem.money.check_3', "Check"), onClick: function () {
-                            var correct = roundCurrency(changePaid - changePrice, currency);
-                            var isRight = sameCurrencyAmount(changeAnswer, correct, currency);
-                            upd('changeFeedback', isRight ? { ok: true, msg: '\u2705 Correct! ' + fmt(changePaid) + ' \u2212 ' + fmt(changePrice) + ' = ' + fmt(correct) } : { ok: false, msg: '\u274C Not quite. ' + fmt(changePaid) + ' \u2212 ' + fmt(changePrice) + ' = ' + fmt(correct) });
-                            if (isRight) awardMoneyXPOnce('making-change', [currency, changePrice, changePaid], 15, 'making change');
-                          },
-                          disabled: !!(changeFeedback && changeFeedback.ok),
-                          className: "px-5 py-2 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm disabled:opacity-50"
-                        }, changeFeedback && changeFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_4', "\u2714 Check"))
-                      ),
-                      changeFeedback && React.createElement("p", { role: "status", 'aria-live': "polite", className: "text-sm font-bold " + (changeFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, changeFeedback.msg),
-                      changeFeedback && React.createElement('section', { 'aria-label': __alloT('stem.money.count_up_change_aria', 'Count up from the price to the amount paid'), className: 'bg-white border-2 border-emerald-200 rounded-xl p-3' },
-                        React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3' },
-                          React.createElement('div', null,
-                            React.createElement('h4', { className: 'text-sm font-black text-emerald-800' }, __alloT('stem.money.count_up_change', 'Count up the change')),
-                            React.createElement('p', { className: 'text-[0.625rem] text-slate-600' }, __alloT('stem.money.smallest_to_largest', 'Start with the smallest useful coins, then move to larger money.'))
-                          ),
-                          React.createElement('span', { className: 'px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black' }, __alloT('stem.money.give_back', 'Give back') + ' ' + fmt(changeDue))
-                        ),
-                        React.createElement('div', { role: 'list', 'aria-label': __alloT('stem.money.counting_up_steps', 'Counting-up steps'), className: 'flex flex-wrap items-stretch gap-2 mb-3' },
-                          React.createElement('div', { role: 'listitem', className: 'min-w-[92px] rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-center' },
-                            React.createElement('p', { className: 'text-[0.625rem] font-bold uppercase text-red-600' }, __alloT('stem.money.start_at_price', 'Start at price')),
-                            React.createElement('p', { className: 'text-sm font-black text-red-700' }, fmt(changePrice))
-                          ),
-                          changeCountSteps.map(function (piece) {
-                            return React.createElement('div', { key: 'count-' + piece.name + '-' + piece.value, role: 'listitem', 'aria-label': 'Add ' + piece.count + ' times ' + fmt(piece.value) + ' to reach ' + fmt(piece.reaches), className: 'flex items-center gap-2' },
-                              React.createElement('span', { 'aria-hidden': true, className: 'text-emerald-500 text-lg font-black' }, '\u2192'),
-                              React.createElement('div', { className: 'min-w-[100px] rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-center' },
-                                React.createElement('p', { className: 'text-[0.625rem] font-bold text-emerald-700' }, '+' + piece.count + ' \u00D7 ' + fmt(piece.value)),
-                                React.createElement('p', { className: 'text-xs font-black text-slate-700' }, __alloT('stem.money.reach', 'Reach') + ' ' + fmt(piece.reaches))
-                              )
-                            );
-                          })
-                        ),
-                        React.createElement('div', { className: 'rounded-lg bg-slate-50 border border-slate-200 p-3' },
-                          React.createElement('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wide text-slate-600 mb-2' }, __alloT('stem.money.cash_to_return', 'Cash to return')),
-                          React.createElement('div', { role: 'list', className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
-                            changePieces.map(function (piece) {
-                              return React.createElement('div', { key: 'return-' + piece.name + '-' + piece.value, role: 'listitem', 'aria-label': piece.count + ' times ' + piece.name + ', subtotal ' + fmt(piece.subtotal), className: 'relative flex items-center gap-2 rounded-lg bg-white border border-slate-200 p-2 min-w-0' },
-                                React.createElement('div', { className: 'relative flex-shrink-0' },
-                                  piece.isBill ? renderBillVisual(piece.definition, true) : renderCoinVisual(piece.definition, true),
-                                  React.createElement('span', { className: 'absolute -right-1 -top-1 min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-700 text-white text-[0.625rem] font-black flex items-center justify-center shadow' }, '\u00D7' + piece.count)
-                                ),
-                                React.createElement('div', { className: 'min-w-0' },
-                                  React.createElement('p', { className: 'text-[0.625rem] font-bold text-slate-700 truncate' }, piece.name),
-                                  React.createElement('p', { className: 'text-xs font-black text-emerald-700' }, fmt(piece.subtotal))
-                                )
-                              );
-                            })
-                          )
-                        )
-                      ),
-                      // \u2500\u2500 Column subtraction worked-example shown after answer is checked \u2500\u2500
-                      // Makes the "paid \u2212 price = change" step visible the way it's done on paper.
-                      changeFeedback && (function() {
-                        var correctChange = Math.round((changePaid - changePrice) * 100) / 100;
-                        return React.createElement("div", { className: "bg-white border-2 border-blue-200 rounded-xl p-3 mt-1" },
-                          React.createElement("p", { className: "text-[0.6875rem] font-bold text-blue-700 uppercase tracking-wider mb-2 text-center" }, __alloT('stem.money.subtraction_step', "\uD83D\uDCD0 Subtraction step")),
-                          React.createElement("div", { className: "flex justify-center font-mono text-base font-bold leading-relaxed" },
-                            React.createElement("div", { className: "text-right" },
-                              React.createElement("div", { className: "text-blue-700" }, "  " + fmt(changePaid)),
-                              React.createElement("div", { className: "text-red-500" }, "\u2212 " + fmt(changePrice)),
-                              React.createElement("div", { className: "border-t-2 border-slate-700 mt-0.5 pt-0.5 text-emerald-700" }, "  " + fmt(correctChange))
-                            )
-                          )
-                        );
-                      })(),
-                      React.createElement("button", { "aria-label": __alloT('stem.money.next_problem', "Next Problem"), onClick: genChangeProblem,
-                        className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs"
-                      }, __alloT('stem.money.next_problem_2', "\u21BB Next Problem"))
-                    )
-              ),
+              tab === 'change' && renderChangeLearning(),
 
               // ═══ GROCERY STORE TAB ═══
               tab === 'store' && React.createElement("div", moneyPanelProps("space-y-4"),
@@ -3537,27 +3700,27 @@ window.StemLab = window.StemLab || {
               tab === 'tips' && React.createElement("div", moneyPanelProps("space-y-4"),
                 React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-5 border border-pink-200" },
                   React.createElement("h3", { className: "text-base font-bold text-pink-800 mb-3" }, __alloT('stem.money.tips_discounts_3', "\uD83D\uDCB3 Tips & Discounts")),
-                  React.createElement("div", { className: "flex gap-2 mb-4" },
-                    React.createElement("button", { onClick: genTipProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + ((d.tipMode || 'tip') === 'tip' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-700 border border-pink-700 hover:bg-pink-50') }, __alloT('stem.money.tip_calculator', "\uD83C\uDF7D Tip Calculator")),
-                    React.createElement("button", { "aria-label": __alloT('stem.money.discount_shopping', "Discount Shopping"), onClick: genDiscountProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + (d.tipMode === 'discount' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-700 border border-pink-700 hover:bg-pink-50') }, __alloT('stem.money.discount_shopping_2', "\uD83C\uDFF7\uFE0F Discount Shopping"))
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
+                    React.createElement("button", { onClick: genTipProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + ((d.tipMode || 'tip') === 'tip' ? 'bg-pink-700 text-white shadow-md' : 'bg-white text-pink-700 border border-pink-700 hover:bg-pink-50') }, __alloT('stem.money.tip_calculator', "\uD83C\uDF7D Tip Calculator")),
+                    React.createElement("button", { "aria-label": __alloT('stem.money.discount_shopping', "Discount Shopping"), onClick: genDiscountProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + (d.tipMode === 'discount' ? 'bg-pink-700 text-white shadow-md' : 'bg-white text-pink-700 border border-pink-700 hover:bg-pink-50') }, __alloT('stem.money.discount_shopping_2', "\uD83C\uDFF7\uFE0F Discount Shopping"))
                   ),
                   // Tip mode
                   (d.tipMode || 'tip') === 'tip' && (!d.tipBill
                     ? React.createElement("div", { className: "text-center py-6" },
                         React.createElement("p", { className: "text-sm text-slate-600 mb-3" }, __alloT('stem.money.practice_calculating_restaurant_tips_a', "Practice calculating restaurant tips and splitting bills")),
-                        React.createElement("button", { "aria-label": __alloT('stem.money.generate_tip_problem', "Generate Tip Problem"), onClick: genTipProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, __alloT('stem.money.generate_tip_problem_2', "\u2728 Generate Tip Problem"))
+                        React.createElement("button", { "aria-label": __alloT('stem.money.generate_tip_problem', "Generate Tip Problem"), onClick: genTipProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-700 to-rose-700 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, __alloT('stem.money.generate_tip_problem_2', "\u2728 Generate Tip Problem"))
                       )
                     : React.createElement("div", { className: "space-y-4" },
                         React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-pink-100" },
-                          React.createElement("div", { className: "grid grid-cols-3 gap-3 text-center" },
+                          React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-3 text-center" },
                             React.createElement("div", null, React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.bill_total', "Bill Total")), React.createElement("p", { className: "text-xl font-black text-pink-600" }, fmt(d.tipBill))),
-                            React.createElement("div", null, React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.tip', "Tip %")), React.createElement("p", { className: "text-xl font-black text-amber-500" }, d.tipPct + '%')),
-                            React.createElement("div", null, React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.diners', "Diners")), React.createElement("p", { className: "text-xl font-black text-blue-500" }, d.tipDiners))
+                            React.createElement("div", null, React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.tip', "Tip %")), React.createElement("p", { className: "text-xl font-black text-amber-700" }, d.tipPct + '%')),
+                            React.createElement("div", null, React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.diners', "Diners")), React.createElement("p", { className: "text-xl font-black text-blue-700" }, d.tipDiners))
                           ),
                           React.createElement("p", { className: "text-xs text-center text-slate-600 mt-3" }, "How much does each person pay (bill + tip, split " + d.tipDiners + " ways)?")
                         ),
-                        React.createElement("div", { className: "flex items-center gap-3" },
-                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: __alloT('stem.money.per_person', 'Per person...'),
+                        React.createElement("div", { className: "flex flex-wrap items-center gap-3" },
+                          React.createElement("input", { type: "number", min: 0, style: { background: moneySurface, color: moneyInk, minHeight: 44, maxWidth: '100%' }, step: isJPY ? '1' : '0.01', placeholder: __alloT('stem.money.per_person', 'Per person...'),
                             'aria-label': __alloT('stem.money.tip_per_person_answer', 'Tip per person answer'),
                             value: d.tipAnswer != null ? d.tipAnswer : '', onChange: function (e) { upd('tipAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('tipFeedback', null); },
                             className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
@@ -3568,14 +3731,15 @@ window.StemLab = window.StemLab || {
                               var perPerson = roundCurrency(totalWithTip / d.tipDiners, currency);
                               var isRight = sameCurrencyAmount(d.tipAnswer, perPerson, currency);
                               upd('tipFeedback', isRight
-                                ? { ok: true, msg: '\u2705 Correct! Tip: ' + fmt(tipAmt) + ' \u2192 Total: ' + fmt(totalWithTip) + ' \u00F7 ' + d.tipDiners + ' = ' + fmt(perPerson) + '/person' }
-                                : { ok: false, msg: '\u274C Tip: ' + fmt(tipAmt) + ' \u2192 Total: ' + fmt(totalWithTip) + ' \u00F7 ' + d.tipDiners + ' = ' + fmt(perPerson) + '/person' }
+                                ? { ok: true, msg: '\u2705 Correct! Tip: ' + fmt(tipAmt) + ' \u2192 Total: ' + fmt(totalWithTip) + ' \u00F7 ' + d.tipDiners + ' \u2248 ' + fmt(perPerson) + '/person' }
+                                : { ok: false, msg: __alloT('stem.money.deep_tip_retry', 'Recheck the tip, add it to the bill, then divide by the number of diners. Use the percentage model if you want worked support.') }
                               );
-                              if (isRight) awardMoneyXPOnce('tip-calculation', [currency, d.tipBill, d.tipPct, d.tipDiners], 15, 'tip calculation');
+                              if (isRight && d.percentLearningKey !== percentLearningKey('tip')) awardMoneyXPOnce('tip-calculation', [currency, d.tipBill, d.tipPct, d.tipDiners], 15, 'tip calculation');
                             }, disabled: !!(d.tipFeedback && d.tipFeedback.ok), className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm disabled:opacity-50"
                           }, d.tipFeedback && d.tipFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_10', "\u2714 Check"))
                         ),
-                        d.tipFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.tipFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.tipFeedback.msg),
+                        d.tipFeedback && React.createElement("p", { role: 'status', 'aria-live': 'polite', className: "text-sm font-bold " + (d.tipFeedback.ok ? 'text-emerald-700' : 'text-red-700') }, d.tipFeedback.msg),
+                        renderPercentLearning('tip'),
                         React.createElement("button", { "aria-label": __alloT('stem.money.next_problem_5', "Next Problem"), onClick: genTipProblem, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, __alloT('stem.money.next_problem_6', "\u21BB Next Problem"))
                       )
                   ),
@@ -3583,22 +3747,22 @@ window.StemLab = window.StemLab || {
                   d.tipMode === 'discount' && (!d.discOriginal
                     ? React.createElement("div", { className: "text-center py-6" },
                         React.createElement("p", { className: "text-sm text-slate-600 mb-3" }, "Calculate sale prices with percentage discounts" + (gc.includePercent ? ' and coupons' : '')),
-                        React.createElement("button", { "aria-label": __alloT('stem.money.generate_discount_problem', "Generate Discount Problem"), onClick: genDiscountProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, __alloT('stem.money.generate_discount_problem_2', "\u2728 Generate Discount Problem"))
+                        React.createElement("button", { "aria-label": __alloT('stem.money.generate_discount_problem', "Generate Discount Problem"), onClick: genDiscountProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-700 to-rose-700 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, __alloT('stem.money.generate_discount_problem_2', "\u2728 Generate Discount Problem"))
                       )
                     : React.createElement("div", { className: "space-y-4" },
                         React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-pink-100" },
                           React.createElement("div", { className: "text-center" },
                             React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.original_price', "Original Price")),
                             React.createElement("p", { className: "text-2xl font-black text-slate-600 line-through" }, fmt(d.discOriginal)),
-                            React.createElement("div", { className: "flex items-center justify-center gap-2 mt-2" },
+                            React.createElement("div", { className: "flex flex-wrap items-center justify-center gap-2 mt-2" },
                               React.createElement("span", { className: "px-3 py-1 bg-red-100 text-red-700 text-sm font-black rounded-full" }, d.discPercent + '% OFF'),
                               d.discCoupon > 0 && React.createElement("span", { className: "px-3 py-1 bg-amber-100 text-amber-800 text-sm font-black rounded-full" }, '+ ' + fmt(d.discCoupon) + ' coupon')
                             ),
                             React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, "What is the final price" + (d.discCoupon > 0 ? ' after discount AND coupon' : '') + '?')
                           )
                         ),
-                        React.createElement("div", { className: "flex items-center gap-3" },
-                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: __alloT('stem.money.sale_price_2', 'Sale price...'),
+                        React.createElement("div", { className: "flex flex-wrap items-center gap-3" },
+                          React.createElement("input", { type: "number", min: 0, style: { background: moneySurface, color: moneyInk, minHeight: 44, maxWidth: '100%' }, step: isJPY ? '1' : '0.01', placeholder: __alloT('stem.money.sale_price_2', 'Sale price...'),
                             'aria-label': __alloT('stem.money.sale_price_answer', 'Sale price answer'),
                             value: d.discAnswer != null ? d.discAnswer : '', onChange: function (e) { upd('discAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('discFeedback', null); },
                             className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
@@ -3608,14 +3772,15 @@ window.StemLab = window.StemLab || {
                               var final_ = roundCurrency(Math.max(0, discounted - (d.discCoupon || 0)), currency);
                               var isRight = sameCurrencyAmount(d.discAnswer, final_, currency);
                               upd('discFeedback', isRight
-                                ? { ok: true, msg: '\u2705 Correct! ' + fmt(d.discOriginal) + ' \u2212 ' + d.discPercent + '% = ' + fmt(discounted) + (d.discCoupon > 0 ? ' \u2212 ' + fmt(d.discCoupon) + ' coupon' : '') + ' = ' + fmt(final_) }
-                                : { ok: false, msg: '\u274C The sale price is ' + fmt(final_) + '. (' + fmt(d.discOriginal) + ' \u00D7 ' + (100 - d.discPercent) + '%)' + (d.discCoupon > 0 ? ' \u2212 ' + fmt(d.discCoupon) : '') }
+                                ? { ok: true, msg: '\u2705 Correct! ' + fmt(d.discOriginal) + ' \u00D7 ' + (100 - d.discPercent) + '/100 \u2192 ' + fmt(discounted) + (d.discCoupon > 0 ? ' \u2212 ' + fmt(Math.min(d.discCoupon, discounted)) + ' coupon' : '') + ' = ' + fmt(final_) }
+                                : { ok: false, msg: __alloT('stem.money.deep_discount_retry', 'Find the percentage of the original price that remains, then subtract the coupon. Use the percentage model if you want worked support.') }
                               );
-                              if (isRight) awardMoneyXPOnce('discount-calculation', [currency, d.discOriginal, d.discPercent, d.discCoupon || 0], 15, 'discount calculation');
+                              if (isRight && d.percentLearningKey !== percentLearningKey('discount')) awardMoneyXPOnce('discount-calculation', [currency, d.discOriginal, d.discPercent, d.discCoupon || 0], 15, 'discount calculation');
                             }, disabled: !!(d.discFeedback && d.discFeedback.ok), className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm disabled:opacity-50"
                           }, d.discFeedback && d.discFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_12', "\u2714 Check"))
                         ),
-                        d.discFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.discFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.discFeedback.msg),
+                        d.discFeedback && React.createElement("p", { role: 'status', 'aria-live': 'polite', className: "text-sm font-bold " + (d.discFeedback.ok ? 'text-emerald-700' : 'text-red-700') }, d.discFeedback.msg),
+                        renderPercentLearning('discount'),
                         React.createElement("button", { "aria-label": __alloT('stem.money.next_problem_7', "Next Problem"), onClick: genDiscountProblem, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, __alloT('stem.money.next_problem_8', "\u21BB Next Problem"))
                       )
                   )
@@ -3623,37 +3788,43 @@ window.StemLab = window.StemLab || {
               ),
 
               // ═══ BUDGET PLANNER TAB ═══
-              tab === 'budget' && React.createElement("div", moneyPanelProps("bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-5 border border-indigo-200"),
-                React.createElement("h3", { className: "text-base font-bold text-indigo-800 mb-2" }, __alloT('stem.money.budget_planner', "\uD83D\uDCCA Budget Planner")),
-                React.createElement("p", { className: "text-xs text-indigo-700 mb-4" }, __alloT('stem.money.allocate_your_monthly_income_across_sp', "Allocate your monthly income across spending categories")),
+              tab === 'budget' && React.createElement("div", Object.assign(moneyPanelProps("bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-5 border border-indigo-200"), { style: ctx.isContrast || ctx.isDark ? { background: moneySurface, color: moneyInk, borderColor: moneyBorder } : undefined }),
+                React.createElement("h3", { style: { color: ctx.isContrast || ctx.isDark ? moneyInk : undefined }, className: "text-base font-bold text-indigo-800 mb-2" }, __alloT('stem.money.budget_planner', "\uD83D\uDCCA Budget Planner")),
+                React.createElement("p", { style: { color: ctx.isContrast || ctx.isDark ? moneyInk : undefined }, className: "text-xs text-indigo-700 mb-4" }, __alloT('stem.money.allocate_your_monthly_income_across_sp', "Allocate your monthly income across spending categories")),
                 // Income input
                 React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-4" },
-                  React.createElement("label", { className: "text-sm font-bold text-slate-600" }, __alloT('stem.money.monthly_income', "Monthly Income:")),
-                  React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('budgetIncomeDraft', budgetIncome),
+                  React.createElement("label", { style: { color: ctx.isContrast || ctx.isDark ? moneyInk : undefined }, className: "text-sm font-bold text-slate-600" }, __alloT('stem.money.monthly_income', "Monthly Income:")),
+                  React.createElement("input", { type: "number", min: 0, max: 1000000, step: isJPY ? 1 : 0.01, style: { background: moneySurface, color: moneyInk, minHeight: 44 }, value: budgetIncomeRaw, 'aria-invalid': !budgetReady || undefined, 'aria-describedby': !budgetReady ? 'budget-income-help' : undefined,
                     'aria-label': __alloT('stem.money.monthly_income_2', 'Monthly income'),
-                    onChange: function (e) { updateMoneyNumberDraft('budgetIncomeDraft', 'budgetIncome', e.target.value, { min: 0 }); upd('budgetEventChoice', null); upd('budgetEventFb', null); upd('budgetEventResolved', false); },
-                    onBlur: function (e) { finishMoneyNumberDraft('budgetIncomeDraft', 'budgetIncome', e.target.value, { min: 0 }, budgetIncome); },
+                    onChange: function (e) { editBudgetIncome(e.target.value); },
+                    onBlur: function (e) { if (validBudgetIncome(e.target.value)) { var value = Number(e.target.value); setLabToolData(function(previous) { return Object.assign({}, previous, { moneyMath: Object.assign({}, previous.moneyMath, { budgetIncome: value, budgetIncomeDraft: null }) }); }); } },
                     className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-indigo-400 outline-none"
                   }),
-                  React.createElement("span", { className: "text-xs font-bold " + (budgetUsed === 100 ? 'text-emerald-700' : budgetUsed > 100 ? 'text-red-700' : 'text-amber-700') }, budgetUsed + '% allocated' + (budgetUsed !== 100 ? ' (' + (100 - budgetUsed) + '% remaining)' : ' \u2714'))
+                  budgetReady && React.createElement("span", { className: "text-xs font-bold", style: { color: moneyInk } }, budgetUsed + __alloT('stem.money.budgetplan_allocated', '% allocated'))
                 ),
+                !budgetReady && h('p', { id: 'budget-income-help', role: 'status', className: 'text-sm rounded-lg p-3', style: learningCard }, isJPY ? __alloT('stem.money.budgetplan_income_yen', 'Enter a monthly income from 0 to 1,000,000 in whole yen.') : __alloT('stem.money.budgetplan_income_cents', 'Enter a monthly income from 0 to 1,000,000 with no more than two decimal places.')),
+                budgetReady && h(React.Fragment, null,
+                renderBudgetTape(),
+                renderBudgetTradeoff(),
                 // Category sliders
+                h('h4', { className: 'font-bold text-sm mt-4', style: { color: moneyInk } }, __alloT('stem.money.budgetplan_adjust_title', 'Adjust individual percentages')),
+                h('p', { className: 'text-sm mb-3', style: { color: moneyInk } }, __alloT('stem.money.budgetplan_adjust_help', 'Each slider sets a share of the whole income. These controls change the total allocation; use them to reach 100%.')),
                 React.createElement("div", { className: "space-y-2 mb-4" },
                   budgetCats.map(function (cat, ci) {
-                    var amount = budgetIncome * (cat.pct / 100);
+                    var amount = budgetModel.units[ci] / changeScale;
                     return React.createElement("div", { key: ci, className: "bg-white rounded-lg p-3 border border-slate-100" },
-                      React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                      React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-1" },
                         React.createElement("span", { className: "text-xs font-bold text-slate-700" }, cat.name),
                         React.createElement("div", { className: "flex items-center gap-2" },
                           React.createElement("span", { className: "text-xs font-black", style: { color: cat.color } }, cat.pct + '%'),
                           React.createElement("span", { className: "text-xs font-bold text-slate-600" }, fmt(amount))
                         )
                       ),
-                      React.createElement("input", { type: "range", min: 0, max: 50, value: cat.pct,
-                        'aria-label': cat.name + ' budget percentage',
+                      React.createElement("input", { type: "range", min: 0, max: 100, step: 1, value: cat.pct,
+                        'aria-label': cat.name + __alloT('stem.money.budgetplan_slider_label', ' budget percentage'), 'aria-valuetext': cat.pct + '% · ' + fmt(amount),
                         onChange: function (e) {
                           var newCats = budgetCats.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { pct: parseInt(e.target.value) }) : c; });
-                          upd('budgetCats', newCats); upd('budgetEventChoice', null); upd('budgetEventFb', null); upd('budgetEventResolved', false);
+                          updateBudgetPlan({ budgetCats: newCats });
                         },
                         className: "w-full h-2 rounded-full appearance-none cursor-pointer",
                         style: { accentColor: cat.color }
@@ -3664,30 +3835,13 @@ window.StemLab = window.StemLab || {
                     );
                   })
                 ),
-                // Budget summary
-                React.createElement("div", { className: "bg-white rounded-xl p-4 border border-indigo-100" },
-                  React.createElement("p", { className: "text-xs font-bold text-slate-600 uppercase mb-2" }, __alloT('stem.money.budget_summary', "Budget Summary")),
-                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
-                    budgetCats.map(function (cat, ci) {
-                      return React.createElement("div", { key: ci, className: "text-center p-2 rounded-lg", style: { background: cat.color + '15' } },
-                        React.createElement("p", { className: "text-lg" }, cat.name.split(' ')[0]),
-                        React.createElement("p", { className: "text-xs font-black", style: { color: cat.color } }, fmt(budgetIncome * cat.pct / 100)),
-                        React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, cat.pct + '%')
-                      );
-                    })
-                  ),
-                  budgetUsed > 100 && React.createElement("p", { className: "text-xs font-bold text-red-500 text-center mt-3" }, "\u26A0\uFE0F Over budget by " + (budgetUsed - 100) + '%! Reduce some categories.'),
-                  budgetUsed === 100 && React.createElement("p", { className: "text-xs font-bold text-emerald-700 text-center mt-3" }, __alloT('stem.money.perfectly_balanced_budget', "\u2705 Perfectly balanced budget!"))
-                ),
-
                 // Visual monthly snapshot
                 React.createElement('div', { className: 'mt-4 rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm' },
                   React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3' },
                     React.createElement('div', null,
                       React.createElement('p', { className: 'text-[0.625rem] font-black uppercase tracking-widest text-indigo-700' }, __alloT('stem.money.monthly_snapshot', 'Monthly snapshot')),
                       React.createElement('p', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.money.where_income_goes', 'Where your income goes'))
-                    ),
-                    React.createElement('span', { className: 'rounded-full border px-2.5 py-1 text-[0.625rem] font-black ' + (budgetReadiness.color === 'emerald' ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : budgetReadiness.color === 'amber' ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-rose-300 bg-rose-50 text-rose-800') }, budgetReadiness.icon + ' ' + budgetReadiness.label)
+                    )
                   ),
                   React.createElement('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3' },
                     [
@@ -3702,30 +3856,18 @@ window.StemLab = window.StemLab || {
                       );
                     })
                   ),
-                  React.createElement('div', { role: 'img', 'aria-label': __alloT('stem.money.budget_allocation_chart', 'Budget allocation chart') + ': ' + budgetCats.map(function (cat) { return cat.name + ' ' + cat.pct + '%'; }).join(', '), className: 'overflow-hidden rounded-full bg-slate-100 h-5 flex border border-slate-200' },
-                    budgetCats.map(function (cat, catIndex) {
-                      return React.createElement('div', { key: 'budget-segment-' + catIndex, title: cat.name + ' ' + cat.pct + '%', style: { width: (cat.pct / Math.max(100, budgetUsed) * 100) + '%', backgroundColor: cat.color }, className: 'h-full border-r border-white/50 last:border-r-0' });
-                    })
-                  ),
-                  React.createElement('div', { className: 'mt-2 flex flex-wrap gap-x-3 gap-y-1' },
-                    budgetCats.map(function (cat, catIndex) {
-                      return React.createElement('span', { key: 'budget-key-' + catIndex, className: 'inline-flex items-center gap-1 text-[0.625rem] font-bold text-slate-600' },
-                        React.createElement('i', { 'aria-hidden': true, className: 'h-2 w-2 rounded-full', style: { backgroundColor: cat.color } }), cat.name.replace(/^[^\s]+\s/, '') + ' ' + cat.pct + '%'
-                      );
-                    })
-                  ),
                   budgetUnallocatedAmount !== 0 && React.createElement('p', { className: 'mt-3 rounded-lg px-3 py-2 text-xs font-bold ' + (budgetUnallocatedAmount > 0 ? 'bg-amber-50 text-amber-800' : 'bg-rose-50 text-rose-700') }, budgetUnallocatedAmount > 0
                     ? __alloT('stem.money.unallocated_income', 'Still unallocated') + ': ' + fmt(budgetUnallocatedAmount)
                     : __alloT('stem.money.over_budget_amount', 'Over budget by') + ': ' + fmt(Math.abs(budgetUnallocatedAmount)))
                 ),
 
                 // Unexpected expense decision simulator
-                React.createElement('div', { className: 'mt-4 rounded-2xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-4 shadow-sm' },
+                React.createElement('div', { 'data-budget-expense': true, style: ctx.isContrast || ctx.isDark ? { background: moneySurface, color: moneyInk, borderColor: moneyBorder } : undefined, className: 'mt-4 rounded-2xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-4 shadow-sm' },
                   React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-2 mb-3' },
                     React.createElement('div', null,
-                      React.createElement('p', { className: 'text-[0.625rem] font-black uppercase tracking-widest text-violet-700' }, __alloT('stem.money.real_life_budget_lab', 'Real-life budget lab')),
-                      React.createElement('h4', { className: 'text-sm font-black text-violet-900' }, __alloT('stem.money.unexpected_expense', '\u26A1 Unexpected Expense')),
-                      React.createElement('p', { className: 'text-xs text-violet-700' }, __alloT('stem.money.choose_tradeoff', 'Choose a response and see the tradeoff.'))
+                      React.createElement('p', { style: { color: ctx.isContrast || ctx.isDark ? moneyInk : undefined }, className: 'text-[0.625rem] font-black uppercase tracking-widest text-violet-700' }, __alloT('stem.money.real_life_budget_lab', 'Real-life budget lab')),
+                      React.createElement('h4', { style: { color: ctx.isContrast || ctx.isDark ? moneyInk : undefined }, className: 'text-sm font-black text-violet-900' }, __alloT('stem.money.unexpected_expense', '\u26A1 Unexpected Expense')),
+                      React.createElement('p', { style: { color: ctx.isContrast || ctx.isDark ? moneyInk : undefined }, className: 'text-xs text-violet-700' }, __alloT('stem.money.choose_tradeoff', 'Choose a response and see the tradeoff.'))
                     ),
                     React.createElement('div', { className: 'rounded-xl border border-violet-200 bg-white px-3 py-2 text-center' },
                       React.createElement('p', { className: 'text-[0.625rem] font-bold text-violet-700' }, __alloT('stem.money.resilience_score', 'Resilience score')),
@@ -3735,10 +3877,12 @@ window.StemLab = window.StemLab || {
                   !budgetEvent ? React.createElement('div', { className: 'rounded-xl border border-dashed border-violet-300 bg-white/80 p-5 text-center' },
                     React.createElement('div', { 'aria-hidden': true, className: 'text-4xl mb-2' }, '\uD83C\uDFB2'),
                     React.createElement('p', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.money.test_your_budget', 'Test your monthly budget')),
-                    React.createElement('p', { className: 'mx-auto mt-1 max-w-md text-xs text-slate-600' }, budgetUsed === 100
+                    React.createElement('p', { className: 'mx-auto mt-1 max-w-md text-xs text-slate-600' }, budgetUsed === 100 && !availableBudgetEvents.length
+                      ? __alloT('stem.money.budgetplan_minimum_expense', 'Increase the income to model an expense of at least one cent or yen.')
+                      : budgetUsed === 100
                       ? __alloT('stem.money.event_ready', 'Draw a surprise expense, then decide how to handle it.')
                       : __alloT('stem.money.balance_first', 'Allocate exactly 100% of income before drawing an expense.')),
-                    React.createElement('button', { type: 'button', disabled: budgetUsed !== 100 || budgetIncome <= 0, onClick: generateBudgetEvent, className: 'mt-3 rounded-xl bg-violet-700 px-5 py-2.5 text-sm font-black text-white shadow-md hover:bg-violet-600 disabled:cursor-not-allowed disabled:opacity-40' }, __alloT('stem.money.draw_expense', '\u26A1 Draw an Expense'))
+                    React.createElement('button', { type: 'button', disabled: budgetUsed !== 100 || budgetIncome <= 0 || !availableBudgetEvents.length, onClick: generateBudgetEvent, className: 'mt-3 rounded-xl bg-violet-700 px-5 py-2.5 text-sm font-black text-white shadow-md hover:bg-violet-600 disabled:cursor-not-allowed disabled:opacity-40' }, __alloT('stem.money.draw_expense', '\u26A1 Draw an Expense'))
                   ) : React.createElement('div', { className: 'space-y-3' },
                     React.createElement('div', { className: 'relative overflow-hidden rounded-2xl border border-violet-200 bg-white p-4 shadow-sm' },
                       React.createElement('div', { 'aria-hidden': true, className: 'absolute -right-3 -top-4 text-7xl opacity-10' }, budgetEvent.icon),
@@ -3751,6 +3895,7 @@ window.StemLab = window.StemLab || {
                         )
                       )
                     ),
+                    budgetEventCost <= 0 && h('p', { role: 'status', className: 'text-sm rounded-lg p-3', style: learningCard }, __alloT('stem.money.budgetplan_zero_expense', 'This expense rounds to zero. Increase the income before choosing a response.')),
                     budgetUsed !== 100 && React.createElement('p', { className: 'rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700' }, __alloT('stem.money.rebalance_before_decision', 'Rebalance the plan to exactly 100% before choosing.')),
                     React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                       [
@@ -3759,7 +3904,7 @@ window.StemLab = window.StemLab || {
                         { id: 'borrow', icon: '\uD83C\uDFE6', label: __alloT('stem.money.borrow', 'Borrow'), amount: budgetBorrowCost, note: __alloT('stem.money.repay_next_month', 'repay next month') }
                       ].map(function (option) {
                         var selected = budgetEventChoice === option.id;
-                        return React.createElement('button', { key: option.id, type: 'button', disabled: budgetEventResolved || budgetUsed !== 100, 'aria-pressed': selected, onClick: function () { chooseBudgetEventResponse(option.id); }, className: 'rounded-xl border-2 p-3 text-left transition-all disabled:cursor-not-allowed ' + (selected ? 'border-violet-500 bg-violet-100 shadow-md' : 'border-violet-100 bg-white hover:border-violet-300') + (budgetEventResolved && !selected ? ' opacity-45' : '') },
+                        return React.createElement('button', { key: option.id, type: 'button', disabled: budgetEventResolved || budgetUsed !== 100 || budgetIncome <= 0 || budgetEventCost <= 0, 'aria-pressed': selected, onClick: function () { chooseBudgetEventResponse(option.id); }, className: 'rounded-xl border-2 p-3 text-left transition-all disabled:cursor-not-allowed ' + (selected ? 'border-violet-500 bg-violet-100 shadow-md' : 'border-violet-100 bg-white hover:border-violet-300') + (budgetEventResolved && !selected ? ' opacity-45' : '') },
                           React.createElement('span', { 'aria-hidden': true, className: 'text-2xl' }, option.icon),
                           React.createElement('p', { className: 'mt-1 text-xs font-black text-slate-800' }, option.label),
                           React.createElement('p', { className: 'text-sm font-black ' + (option.id === 'borrow' ? 'text-rose-700' : 'text-violet-700') }, fmt(option.amount)),
@@ -3778,8 +3923,8 @@ window.StemLab = window.StemLab || {
                   ),
                   budgetEventHistory.length ? React.createElement('div', { className: 'mt-3 border-t border-violet-200 pt-3' },
                     React.createElement('div', { className: 'flex items-center justify-between gap-2 mb-2' },
-                      React.createElement('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-violet-600' }, __alloT('stem.money.recent_decisions', 'Recent decisions')),
-                      React.createElement('span', { className: 'text-[0.625rem] font-bold text-violet-700' }, budgetEventHistory.length + ' / 5')
+                      React.createElement('p', { style: { color: ctx.isContrast || ctx.isDark ? moneyInk : undefined }, className: 'text-[0.625rem] font-black uppercase tracking-wide text-violet-600' }, __alloT('stem.money.recent_decisions', 'Recent decisions')),
+                      React.createElement('span', { style: { color: ctx.isContrast || ctx.isDark ? moneyInk : undefined }, className: 'text-[0.625rem] font-bold text-violet-700' }, budgetEventHistory.length + ' / 5')
                     ),
                     React.createElement('div', { role: 'list', className: 'flex flex-wrap gap-2' },
                       budgetEventHistory.map(function (entry, historyIndex) {
@@ -3790,6 +3935,7 @@ window.StemLab = window.StemLab || {
                       })
                     )
                   ) : null
+                )
                 )
               ),
 
@@ -3914,7 +4060,7 @@ window.StemLab = window.StemLab || {
                     ),
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("input", { "aria-label": __alloT('stem.money.your_estimate', "Your estimate"), type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.estAnswer != null ? d.estAnswer : '', onChange: function (e) { upd('estAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('estFb', null); }, className: "flex-1 px-3 py-2 border border-indigo-600 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-400 outline-none" }),
-                      React.createElement("button", { "aria-label": __alloT('stem.money.gen_change_check', "Gen Change Check"), onClick: function () {
+                      React.createElement("button", { "aria-label": __alloT('stem.money.deep_check_estimate', 'Check estimated total'), onClick: function () {
                         if (d.estAnswer == null) return;
                         var tol = isJPY ? 0.5 : 0.015;
                         var ok = Math.abs(d.estAnswer - d.estTotal) < tol + d.estTotal * 0.005;
@@ -3932,7 +4078,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h4", { className: "text-sm font-bold text-rose-800" }, __alloT('stem.money.check_the_change', "\uD83E\uDDD0 Check the Change")),
-                    React.createElement("button", { "aria-label": __alloT('stem.money.item_costs', "Item costs:"), onClick: genChangeCheck, className: "px-3 py-1.5 bg-rose-700 text-white text-xs font-bold rounded-lg hover:bg-rose-600 transition-all" }, d.ccPrice == null ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { "aria-label": __alloT('stem.money.deep_new_change_check', 'Generate a change-check problem'), onClick: genChangeCheck, className: "px-3 py-1.5 bg-rose-700 text-white text-xs font-bold rounded-lg hover:bg-rose-600 transition-all" }, d.ccPrice == null ? '\u2728 Start' : '\u21BB New')
                   ),
                   d.ccPrice != null && React.createElement("div", { className: "space-y-3" },
                     React.createElement("div", { className: "bg-white rounded-lg border border-rose-100 p-4 text-center space-y-1" },
@@ -4156,22 +4302,22 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" },
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.principal', "Principal")),
-                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('ciPrincipalDraft', ciPrincipal), 'aria-label': __alloT('stem.money.principal_amount', 'Principal amount'), onChange: function (e) { updateMoneyNumberDraft('ciPrincipalDraft', 'ciPrincipal', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('ciPrincipalDraft', 'ciPrincipal', e.target.value, { min: 0 }, 1000); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "0", value: moneyDraftValue('ciPrincipalDraft', ciPrincipal), 'aria-label': __alloT('stem.money.principal_amount', 'Principal amount'), onChange: function (e) { updateMoneyNumberDraft('ciPrincipalDraft', 'ciPrincipal', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('ciPrincipalDraft', 'ciPrincipal', e.target.value, { min: 0 }, 1000); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.annual_rate', "Annual Rate %")),
-                      React.createElement("input", { type: "number", min: "0", step: "0.5", value: moneyDraftValue('ciRateDraft', ciRate), 'aria-label': __alloT('stem.money.annual_interest_rate', 'Annual interest rate'), onChange: function (e) { updateMoneyNumberDraft('ciRateDraft', 'ciRate', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('ciRateDraft', 'ciRate', e.target.value, { min: 0 }, 7); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "0", step: "0.5", value: moneyDraftValue('ciRateDraft', ciRate), 'aria-label': __alloT('stem.money.annual_interest_rate', 'Annual interest rate'), onChange: function (e) { updateMoneyNumberDraft('ciRateDraft', 'ciRate', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('ciRateDraft', 'ciRate', e.target.value, { min: 0 }, 7); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.years', "Years")),
-                      React.createElement("input", { type: "number", min: "1", max: "50", step: "1", value: moneyDraftValue('ciYearsDraft', ciYears), 'aria-label': __alloT('stem.money.number_of_years', 'Number of years'), onChange: function (e) { updateMoneyNumberDraft('ciYearsDraft', 'ciYears', e.target.value, { min: 1, max: 50, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('ciYearsDraft', 'ciYears', e.target.value, { min: 1, max: 50, integer: true }, 10); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "1", max: "50", step: "1", value: moneyDraftValue('ciYearsDraft', ciYears), 'aria-label': __alloT('stem.money.number_of_years', 'Number of years'), onChange: function (e) { updateMoneyNumberDraft('ciYearsDraft', 'ciYears', e.target.value, { min: 1, max: 50, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('ciYearsDraft', 'ciYears', e.target.value, { min: 1, max: 50, integer: true }, 10); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.compounding', "Compounding")),
-                      React.createElement("select", { value: ciFreq, 'aria-label': __alloT('stem.money.compounding_frequency', 'Compounding frequency'), onChange: function (e) { upd('ciFreq', e.target.value); },
+                      React.createElement("select", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, value: ciFreq, 'aria-label': __alloT('stem.money.compounding_frequency', 'Compounding frequency'), onChange: function (e) { upd('ciFreq', e.target.value); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" },
                         React.createElement("option", { value: "yearly" }, __alloT('stem.money.yearly', "Yearly")),
                         React.createElement("option", { value: "quarterly" }, __alloT('stem.money.quarterly', "Quarterly")),
@@ -4235,12 +4381,12 @@ window.StemLab = window.StemLab || {
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.monthly_contribution', "Monthly Contribution")),
-                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('retMonthlyDraft', retMonthly), 'aria-label': __alloT('stem.money.monthly_contribution_2', 'Monthly contribution'), onChange: function (e) { updateMoneyNumberDraft('retMonthlyDraft', 'retMonthly', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('retMonthlyDraft', 'retMonthly', e.target.value, { min: 0 }, 200); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "0", value: moneyDraftValue('retMonthlyDraft', retMonthly), 'aria-label': __alloT('stem.money.monthly_contribution_2', 'Monthly contribution'), onChange: function (e) { updateMoneyNumberDraft('retMonthlyDraft', 'retMonthly', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('retMonthlyDraft', 'retMonthly', e.target.value, { min: 0 }, 200); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-violet-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.employer_match', "Employer Match %")),
-                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('retMatchDraft', retMatch), 'aria-label': __alloT('stem.money.employer_match_percentage', 'Employer match percentage'), onChange: function (e) { updateMoneyNumberDraft('retMatchDraft', 'retMatch', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('retMatchDraft', 'retMatch', e.target.value, { min: 0 }, 50); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "0", value: moneyDraftValue('retMatchDraft', retMatch), 'aria-label': __alloT('stem.money.employer_match_percentage', 'Employer match percentage'), onChange: function (e) { updateMoneyNumberDraft('retMatchDraft', 'retMatch', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('retMatchDraft', 'retMatch', e.target.value, { min: 0 }, 50); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-violet-400 outline-none mt-1" })
                     )
                   ),
@@ -4305,17 +4451,17 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4" },
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.loan_amount_2', "Loan Amount")),
-                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('loanAmtDraft', loanAmt), 'aria-label': __alloT('stem.money.loan_amount_3', 'Loan amount'), onChange: function (e) { updateMoneyNumberDraft('loanAmtDraft', 'loanAmt', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('loanAmtDraft', 'loanAmt', e.target.value, { min: 0 }, 25000); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "0", value: moneyDraftValue('loanAmtDraft', loanAmt), 'aria-label': __alloT('stem.money.loan_amount_3', 'Loan amount'), onChange: function (e) { updateMoneyNumberDraft('loanAmtDraft', 'loanAmt', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('loanAmtDraft', 'loanAmt', e.target.value, { min: 0 }, 25000); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.interest_rate', "Interest Rate %")),
-                      React.createElement("input", { type: "number", min: "0", step: "0.25", value: moneyDraftValue('loanRateDraft', loanRate), 'aria-label': __alloT('stem.money.loan_interest_rate', 'Loan interest rate'), onChange: function (e) { updateMoneyNumberDraft('loanRateDraft', 'loanRate', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('loanRateDraft', 'loanRate', e.target.value, { min: 0 }, 5); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "0", step: "0.25", value: moneyDraftValue('loanRateDraft', loanRate), 'aria-label': __alloT('stem.money.loan_interest_rate', 'Loan interest rate'), onChange: function (e) { updateMoneyNumberDraft('loanRateDraft', 'loanRate', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('loanRateDraft', 'loanRate', e.target.value, { min: 0 }, 5); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.term_months', "Term (months)")),
-                      React.createElement("input", { type: "number", min: "1", step: "1", value: moneyDraftValue('loanTermDraft', loanTerm), 'aria-label': __alloT('stem.money.loan_term_in_months', 'Loan term in months'), onChange: function (e) { updateMoneyNumberDraft('loanTermDraft', 'loanTerm', e.target.value, { min: 1, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('loanTermDraft', 'loanTerm', e.target.value, { min: 1, integer: true }, 60); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "1", step: "1", value: moneyDraftValue('loanTermDraft', loanTerm), 'aria-label': __alloT('stem.money.loan_term_in_months', 'Loan term in months'), onChange: function (e) { updateMoneyNumberDraft('loanTermDraft', 'loanTerm', e.target.value, { min: 1, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('loanTermDraft', 'loanTerm', e.target.value, { min: 1, integer: true }, 60); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     )
                   ),
@@ -4398,22 +4544,22 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" },
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.target_amount_3', "Target Amount")),
-                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('sgTargetDraft', sgTarget), 'aria-label': __alloT('stem.money.savings_target_amount', 'Savings target amount'), onChange: function (e) { updateMoneyNumberDraft('sgTargetDraft', 'sgTarget', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('sgTargetDraft', 'sgTarget', e.target.value, { min: 0 }, sgGoals[sgGoal].target); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "0", value: moneyDraftValue('sgTargetDraft', sgTarget), 'aria-label': __alloT('stem.money.savings_target_amount', 'Savings target amount'), onChange: function (e) { updateMoneyNumberDraft('sgTargetDraft', 'sgTarget', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('sgTargetDraft', 'sgTarget', e.target.value, { min: 0 }, sgGoals[sgGoal].target); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.already_saved', "Already Saved")),
-                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('sgHaveDraft', sgHave), 'aria-label': __alloT('stem.money.amount_already_saved', 'Amount already saved'), onChange: function (e) { updateMoneyNumberDraft('sgHaveDraft', 'sgHave', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('sgHaveDraft', 'sgHave', e.target.value, { min: 0 }, 0); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "0", value: moneyDraftValue('sgHaveDraft', sgHave), 'aria-label': __alloT('stem.money.amount_already_saved', 'Amount already saved'), onChange: function (e) { updateMoneyNumberDraft('sgHaveDraft', 'sgHave', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('sgHaveDraft', 'sgHave', e.target.value, { min: 0 }, 0); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.timeline_months', "Timeline (months)")),
-                      React.createElement("input", { type: "number", min: "1", step: "1", value: moneyDraftValue('sgMonthsDraft', sgMonths), 'aria-label': __alloT('stem.money.savings_timeline_in_months', 'Savings timeline in months'), onChange: function (e) { updateMoneyNumberDraft('sgMonthsDraft', 'sgMonths', e.target.value, { min: 1, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('sgMonthsDraft', 'sgMonths', e.target.value, { min: 1, integer: true }, 24); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "1", step: "1", value: moneyDraftValue('sgMonthsDraft', sgMonths), 'aria-label': __alloT('stem.money.savings_timeline_in_months', 'Savings timeline in months'), onChange: function (e) { updateMoneyNumberDraft('sgMonthsDraft', 'sgMonths', e.target.value, { min: 1, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('sgMonthsDraft', 'sgMonths', e.target.value, { min: 1, integer: true }, 24); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.savings_rate', "Savings Rate %")),
-                      React.createElement("input", { type: "number", min: "0", step: "0.5", value: moneyDraftValue('sgRateDraft', sgRate), 'aria-label': __alloT('stem.money.savings_interest_rate', 'Savings interest rate'), onChange: function (e) { updateMoneyNumberDraft('sgRateDraft', 'sgRate', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('sgRateDraft', 'sgRate', e.target.value, { min: 0 }, 2); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "0", step: "0.5", value: moneyDraftValue('sgRateDraft', sgRate), 'aria-label': __alloT('stem.money.savings_interest_rate', 'Savings interest rate'), onChange: function (e) { updateMoneyNumberDraft('sgRateDraft', 'sgRate', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('sgRateDraft', 'sgRate', e.target.value, { min: 0 }, 2); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     )
                   ),
@@ -4496,7 +4642,9 @@ window.StemLab = window.StemLab || {
 
               // ══ COMPOUND INQUIRY widget (H7b'') ══
               tab === 'inquiry' && (function() {
-                var iq = d.compInquiry || { principal: 1000, ratePct: 7, years: 30, contribMonthly: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                var iq = Object.assign({ principal: 1000, ratePct: 7, years: 30, contribMonthly: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, d.compInquiry || {});
+                [['principal',50000,1000],['ratePct',15,7],['years',50,30],['contribMonthly',2000,100]].forEach(function(item){var v=Number(iq[item[0]]);iq[item[0]]=Math.max(item[0]==='years'?1:0,Math.min(item[1],Number.isFinite(v)?v:item[2]));});
+                iq.years=Math.round(iq.years); iq.log=Array.isArray(iq.log)?iq.log:[];
                 function setIQ(patch) { upd('compInquiry', Object.assign({}, iq, patch)); }
                 function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
                 var r = iq.ratePct / 100;
@@ -4510,14 +4658,14 @@ window.StemLab = window.StemLab || {
                 var fv = fvPrincipal + fvContrib;
                 var totalContrib = iq.principal + iq.contribMonthly * months;
                 var interest = fv - totalContrib;
-                var growthRatio = fv / Math.max(1, totalContrib);
+                var growthRatio = totalContrib > 0 ? fv / totalContrib : 0;
                 var state = growthRatio < 1.1 ? 'flat' : growthRatio < 1.5 ? 'modest' : growthRatio < 3 ? 'compounding' : growthRatio < 8 ? 'exponential' : 'astronomic';
                 var sm = ({
-                  flat: { label: __alloT('stem.money.flat', 'Flat'), color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: __alloT('stem.money.almost_no_growth_either_zero_rate_or_v', 'Almost no growth. Either zero rate or very short horizon.') },
-                  modest: { label: __alloT('stem.money.modest', 'Modest'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.money.money_grows_by_50_comparable_to_a_bond', 'Money grows by ~50%. Comparable to a bond fund or savings ladder.') },
-                  compounding: { label: __alloT('stem.money.compounding_2', 'Compounding'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.money.money_doubles_or_triples_the_textbook_', 'Money doubles or triples. The textbook "magic of compound interest" zone.') },
-                  exponential: { label: __alloT('stem.money.exponential', 'Exponential'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.money.money_grows_3_8x_long_horizon_good_rat', 'Money grows 3-8x. Long horizon + good rate. This is what 401(k) advice optimizes for.') },
-                  astronomic: { label: __alloT('stem.money.astronomic', 'Astronomic'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.money.money_grows_8x_long_horizons_40_years_', 'Money grows 8x+. Long horizons (40+ years) at 8-10% start producing fortune-class outcomes.') }
+                  flat: { label: __alloT('stem.money.flat', 'Flat'), color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: __alloT('stem.money.almost_no_growth_either_zero_rate_or_v', 'The modeled balance is less than 1.1 times the amount contributed. Check the rate and time.') },
+                  modest: { label: __alloT('stem.money.modest', 'Modest'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.money.money_grows_by_50_comparable_to_a_bond', 'The modeled balance is between 1.1 and 1.5 times the amount contributed.') },
+                  compounding: { label: __alloT('stem.money.compounding_2', 'Compounding'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.money.money_doubles_or_triples_the_textbook_', 'The modeled balance is between 1.5 and 3 times the amount contributed.') },
+                  exponential: { label: __alloT('stem.money.exponential', 'Exponential'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.money.money_grows_3_8x_long_horizon_good_rat', 'The modeled balance is between 3 and 8 times the amount contributed.') },
+                  astronomic: { label: __alloT('stem.money.astronomic', 'Astronomic'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.money.money_grows_8x_long_horizons_40_years_', 'The modeled balance is at least 8 times the amount contributed. Compare the contributions and modeled interest separately.') }
                 })[state];
                 // SVG: growth curve
                 var pts = [];
@@ -4539,75 +4687,76 @@ window.StemLab = window.StemLab || {
                 }
                 return React.createElement("div", Object.assign(moneyPanelProps("p-3 rounded-xl"), { style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }),
                   React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, __alloT('stem.money.compound_interest_inquiry_2', '🔬 Compound Interest Inquiry')),
-                  React.createElement("p", { className: "text-[0.625rem] opacity-85 mb-2 leading-snug" }, __alloT('stem.money.set_starting_balance_rate_time_horizon', 'Set starting balance, rate, time horizon, and monthly contribution, then observe how the growth ratio changes. The result updates live; record a hypothesis or pattern you notice.')),
-                  React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[0.625rem] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' · FV $' + fv.toFixed(0) + ' (' + growthRatio.toFixed(2) + 'x contributions)'),
-                  React.createElement("p", { className: "text-[0.625rem] opacity-80 mb-2" }, sm.desc),
-                  React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" },
+                  React.createElement("p", { className: "text-xs opacity-85 mb-2 leading-snug" }, __alloT('stem.money.deep_inquiry_intro', 'Change one setting at a time, then compare the balance with the money contributed. The results update immediately. Record what you notice.')),
+                  React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-xs font-bold mb-2", style: { background: ctx.isContrast ? '#000000' : sm.color, color: ctx.isContrast ? '#ffff00' : '#000', border: '1px solid ' + sm.color } }, sm.label + ' · ' + fmt(fv) + (totalContrib > 0 ? ' (' + growthRatio.toFixed(2) + '× ' + __alloT('stem.money.deep_contributions', 'contributions') + ')' : ' · ' + __alloT('stem.money.deep_no_contributions', 'No contributions yet'))),
+                  React.createElement("p", { className: "text-xs opacity-80 mb-2" }, sm.desc),
+                  React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3" },
                     [
-                      { label: __alloT('stem.money.future_value', 'Future value'), val: '$' + fv.toFixed(0) },
-                      { label: __alloT('stem.money.total_contributed', 'Total contributed'), val: '$' + totalContrib.toFixed(0) },
-                      { label: __alloT('stem.money.interest_earned', 'Interest earned'), val: '$' + interest.toFixed(0) }
+                      { label: __alloT('stem.money.future_value', 'Future value'), val: fmt(fv) },
+                      { label: __alloT('stem.money.total_contributed', 'Total contributed'), val: fmt(totalContrib) },
+                      { label: __alloT('stem.money.interest_earned', 'Interest earned'), val: fmt(interest) }
                     ].map(function(m) {
                       return React.createElement("div", { key: m.label, className: "p-1 rounded text-center", style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                        React.createElement("div", { className: "text-[0.5625rem] opacity-60" }, m.label),
-                        React.createElement("div", { className: "text-[0.6875rem] font-bold font-mono", style: { color: sm.color } }, m.val)
+                        React.createElement("div", { className: "text-xs " }, m.label),
+                        React.createElement("div", { className: "text-sm font-bold font-mono", style: { color: sm.color } }, m.val)
                       );
                     })
                   ),
-                  React.createElement("svg", { role: 'img', 'aria-label': __alloT('stem.money.chart_img', 'Chart of the current data'), width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
-                    React.createElement("line", { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
-                    React.createElement("line", { x1: 30, y1: 18, x2: 30, y2: 130, stroke: '#1e293b' }),
+                  React.createElement("svg", { role: 'img', 'aria-label': __alloT('stem.money.deep_growth_chart', 'Modeled balance and contributions over time'), 'aria-describedby': 'money-inquiry-chart-description', width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                    React.createElement("line", { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#94a3b8' }),
+                    React.createElement("line", { x1: 30, y1: 18, x2: 30, y2: 130, stroke: '#94a3b8' }),
                     React.createElement("polyline", { points: contribPts.join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' }),
                     React.createElement("polyline", { points: svgPts, fill: 'none', stroke: sm.color, strokeWidth: 2.5 }),
-                    React.createElement("text", { x: 30, y: 14, fill: '#94a3b8', fontSize: 9 }, '$' + maxY.toFixed(0)),
-                    React.createElement("text", { x: 160, y: 154, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, n + ' years · dashed = contributions only · solid = with compound interest')
+                    React.createElement("text", { x: 30, y: 14, fill: '#94a3b8', fontSize: 12 }, fmt(maxY)),
+                    React.createElement("text", { x: 160, y: 154, fill: '#94a3b8', fontSize: 12, textAnchor: 'middle' }, '0 → ' + n + ' ' + __alloT('stem.money.deep_years', 'years'))
                   ),
-                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
-                    React.createElement("label", { className: "text-[0.625rem]" },
-                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, __alloT('stem.money.starting_balance', 'Starting balance ($)')), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.principal)),
+                  h('p', { id:'money-inquiry-chart-description', className:'text-xs mb-3' }, __alloT('stem.money.deep_growth_description','Both lines use the same zero-based money scale. Dashed: money contributed. Solid: modeled balance, including interest. At the final year: ') + fmt(totalContrib) + ' + ' + fmt(interest) + ' = ' + fmt(fv)),
+                  React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" },
+                    React.createElement("label", { className: "text-xs" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, __alloT('stem.money.deep_starting_balance', 'Starting balance') + ' (' + currency + ')'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.principal)),
                       React.createElement("input", { type: 'range', min: 0, max: 50000, step: 100, value: iq.principal, onChange: function(e) { setKey('principal', parseInt(e.target.value, 10)); }, className: "w-full" })
                     ),
-                    React.createElement("label", { className: "text-[0.625rem]" },
+                    React.createElement("label", { className: "text-xs" },
                       React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, __alloT('stem.money.annual_rate_2', 'Annual rate (%)')), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.ratePct.toFixed(1))),
                       React.createElement("input", { type: 'range', min: 0, max: 15, step: 0.1, value: iq.ratePct, onChange: function(e) { setKey('ratePct', parseFloat(e.target.value)); }, className: "w-full" })
                     ),
-                    React.createElement("label", { className: "text-[0.625rem]" },
+                    React.createElement("label", { className: "text-xs" },
                       React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, __alloT('stem.money.years_2', 'Years')), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.years)),
                       React.createElement("input", { type: 'range', min: 1, max: 50, step: 1, value: iq.years, onChange: function(e) { setKey('years', parseInt(e.target.value, 10)); }, className: "w-full" })
                     ),
-                    React.createElement("label", { className: "text-[0.625rem]" },
-                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, __alloT('stem.money.monthly_add', 'Monthly add ($)')), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.contribMonthly)),
+                    React.createElement("label", { className: "text-xs" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, __alloT('stem.money.deep_monthly_contribution', 'Monthly contribution') + ' (' + currency + ')'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.contribMonthly)),
                       React.createElement("input", { type: 'range', min: 0, max: 2000, step: 25, value: iq.contribMonthly, onChange: function(e) { setKey('contribMonthly', parseInt(e.target.value, 10)); }, className: "w-full" })
                     )
                   ),
-                  React.createElement("div", { className: "flex gap-2 mb-2" },
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-2" },
                     React.createElement("button", { onClick: function() {
                       var t = new Date().toISOString().slice(11, 19);
-                      setIQ({ log: iq.log.concat([{ t: t, P: iq.principal, r: iq.ratePct, n: iq.years, m: iq.contribMonthly, fv: fv.toFixed(0), state: sm.label }]) });
-                    }, className: "flex-1 px-2 py-1 rounded text-[0.625rem] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.money.log_this_scenario', '📋 Log this scenario')),
-                    React.createElement("button", { onClick: function() { setIQ({ principal: 1000, ratePct: 7, years: 30, contribMonthly: 100 }); }, className: "px-2 py-1 rounded text-[0.625rem]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.money.reset_2', 'Reset'))
+                      setIQ({ log: iq.log.concat([{ t: t, currency: currency, P: iq.principal, r: iq.ratePct, n: iq.years, m: iq.contribMonthly, fv: fv.toFixed(0), state: sm.label }]) });
+                    }, className: "flex-1 px-2 py-1 rounded text-xs font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.money.log_this_scenario', '📋 Log this scenario')),
+                    React.createElement("button", { onClick: function() { setIQ({ principal: 1000, ratePct: 7, years: 30, contribMonthly: 100 }); }, className: "px-2 py-1 rounded text-xs", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.money.reset_2', 'Reset'))
                   ),
-                  iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[0.5625rem] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
-                    iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' · P$' + e.P + ' r' + e.r + '% n' + e.n + 'y +$' + e.m + '/mo → $' + e.fv); })
+                  iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-xs font-mono mb-2", tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.money.deep_scenario_log','Recorded growth scenarios'), style: { background: '#0a0a1a', maxHeight: 160, overflow: 'auto', border: '1px solid #1e293b' } },
+                    iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' · ' + (e.currency || 'USD') + ' · P ' + e.P + ' · ' + e.r + '% · ' + e.n + 'y · +' + e.m + '/mo → ' + e.fv); })
                   ),
-                  React.createElement("label", { className: "block text-[0.625rem] font-bold opacity-85 mb-1" }, __alloT('stem.money.your_hypothesis_which_lever_rate_time_', 'Your hypothesis (which lever — rate, time, or contribution — has the most asymmetric power?)')),
-                  React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.money.e_g_starting_10_years_earlier_with_0_s', 'e.g., starting 10 years earlier with $0 still beats waiting 10 years and starting with $20k...'), className: "w-full p-1.5 rounded text-[0.625rem] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[0.625rem] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.money.i_m_stuck_show_open_questions', "🤔 I'm stuck - show open questions")),
-                  iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-[0.625rem] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                  React.createElement("label", { htmlFor: 'money-inquiry-hypothesis', className: "block text-xs font-bold opacity-85 mb-1" }, __alloT('stem.money.deep_observation_label', 'Your prediction or observation')),
+                  React.createElement("textarea", { id: 'money-inquiry-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.money.deep_observation_example', 'If I keep the monthly contribution fixed and increase the time, I expect…'), className: "w-full p-1.5 rounded text-xs mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-xs font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.money.i_m_stuck_show_open_questions', "🤔 I'm stuck - show open questions")),
+                  iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-xs mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                     React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, __alloT('stem.money.open_questions_no_answer_key', 'Open questions (no answer key)')),
                     React.createElement("ul", { className: "pl-4 m-0" },
                       React.createElement("li", null, __alloT('stem.money.rule_of_72_years_to_double_72_rate_che', 'Rule of 72: years to double = 72/rate. Check it at r=6% (should be 12 yrs).')),
                       React.createElement("li", null, __alloT('stem.money.starting_at_25_with_200_mo_vs_45_with_', 'Starting at 25 with $200/mo vs 45 with $400/mo at age 65 — which gives more? Why?')),
-                      React.createElement("li", null, __alloT('stem.money.when_does_inflation_eat_your_gains_rea', 'When does inflation eat your gains? (Real rate = nominal rate - inflation.)')),
+                      React.createElement("li", null, __alloT('stem.money.when_does_inflation_eat_your_gains_rea', 'For an extension, compare nominal and inflation-adjusted growth: real rate = (1 + nominal rate) / (1 + inflation rate) - 1. Use decimal rates.')),
                       React.createElement("li", null, __alloT('stem.money.why_is_the_gap_between_dashed_and_soli', 'Why is the gap between dashed and solid line so much bigger in the last 10 years than the first 10?'))
                     )
                   ),
-                  React.createElement("label", { className: "flex items-center gap-2 text-[0.625rem] font-bold cursor-pointer mb-1" },
+                  React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold cursor-pointer mb-1" },
                     React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                     React.createElement("span", null, __alloT('stem.money.i_can_explain_why_this_principal_rate_', 'I can explain why this principal/rate/time/contribution combination produces this growth state.'))
                   ),
-                  iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.money.explain_in_your_own_words', 'Explain in your own words...'), className: "w-full p-1.5 rounded text-[0.625rem] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                  React.createElement("p", { className: "m-0 text-[0.5625rem] italic opacity-60" }, __alloT('stem.money.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget - no score, no reveal, no answer dump. Compound interest assumes constant rate, no taxes, no inflation. Real-world returns are volatile (sequence-of-returns risk) and net of taxes + inflation.'))
+                  iq.understood && React.createElement("textarea", { 'aria-label': __alloT('stem.money.deep_explain_growth','Explain the modeled growth'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.money.explain_in_your_own_words', 'Explain in your own words...'), className: "w-full p-1.5 rounded text-xs mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                  React.createElement("p", { className: "m-0 text-xs italic " }, __alloT('stem.money.inquiry_widget_no_score_no_reveal_no_a', 'This mathematical model compounds monthly at a fixed rate and adds contributions at the end of each month. It excludes taxes, fees, inflation, and changing rates. The settings are scenarios, not forecasts.'))
                 );
               })(),
 

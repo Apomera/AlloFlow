@@ -1,0 +1,127 @@
+{
+  "root": {
+    "files": 16,
+    "tests": 247,
+    "passed": 247,
+    "suites": [
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aifix_chunk_gates.test.js",
+        "evidence": "final-tests.json",
+        "tests": 20,
+        "passed": 20,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aifix_source_associations.test.js",
+        "evidence": "final-tests.json",
+        "tests": 39,
+        "passed": 39,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/auto_continue_candidate_evidence.test.js",
+        "evidence": "final-tests.json",
+        "tests": 10,
+        "passed": 10,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_acceptance.test.js",
+        "evidence": "final-tests.json",
+        "tests": 22,
+        "passed": 22,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_build_parity.test.js",
+        "evidence": "final-tests.json",
+        "tests": 1,
+        "passed": 1,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_deep_regression_fixes.test.js",
+        "evidence": "final-tests.json",
+        "tests": 14,
+        "passed": 14,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_fabrication.test.js",
+        "evidence": "final-tests.json",
+        "tests": 11,
+        "passed": 11,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_page_identity_behavior.test.js",
+        "evidence": "final-tests.json",
+        "tests": 17,
+        "passed": 17,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_progress_trace.test.js",
+        "evidence": "lifecycle-final.json",
+        "tests": 18,
+        "passed": 18,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_review_evidence.test.js",
+        "evidence": "final-tests.json",
+        "tests": 3,
+        "passed": 3,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_review_helpers.test.js",
+        "evidence": "final-tests.json",
+        "tests": 28,
+        "passed": 28,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_run_ownership_visibility.test.js",
+        "evidence": "final-tests.json",
+        "tests": 17,
+        "passed": 17,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_source_contract_integration.test.js",
+        "evidence": "final-tests.json",
+        "tests": 4,
+        "passed": 4,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_view_canonical_actions_20260723.test.js",
+        "evidence": "final-tests.json",
+        "tests": 8,
+        "passed": 8,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/violation_routing.test.js",
+        "evidence": "final-tests.json",
+        "tests": 20,
+        "passed": 20,
+        "status": "passed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/workbench_candidate_evidence.test.js",
+        "evidence": "final-tests.json",
+        "tests": 15,
+        "passed": 15,
+        "status": "passed"
+      }
+    ]
+  },
+  "remote": {
+    "tests": 21,
+    "passed": 21,
+    "evidence": "remote-report-tests.json"
+  },
+  "note": "Latest result per file, not a single uninterrupted invocation. The combined run had one 30-second AST-inspection timeout; the full 18-test lifecycle suite passed in isolation with a 120-second allowance (AST test: 23.8 seconds). No application changes were made between these runs."
+}

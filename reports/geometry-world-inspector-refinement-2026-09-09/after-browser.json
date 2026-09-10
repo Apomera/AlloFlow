@@ -1,0 +1,1368 @@
+{
+  "stage": "after",
+  "sources": {
+    "stem_tool_geometryworld.js": "a2127e6b153534bbcde4220acf14891d843f541d51c4e8c1369d258758ad5574",
+    "stem_tool_geometryworld_builder.js": "aef23025eabb67ad00852a9b7fc44d130e3fdade398456e2cc6219f5d0932371",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [],
+  "scales": [
+    {
+      "unit": 10,
+      "context": {
+        "unitMm": 10,
+        "aiUse": "NONE",
+        "aiDisclosure": "Student-made pavilion",
+        "customNote": "retained"
+      },
+      "dimensions": [
+        60,
+        40,
+        50
+      ],
+      "over": [],
+      "fit": "true",
+      "draft": "10",
+      "pressed": [
+        "false",
+        "true",
+        "false"
+      ],
+      "error": "",
+      "volume": "Prints solid at 48 cubic units = 48,000 mm³ at 10 mm per block (36 cubes, 24 half slabs)."
+    },
+    {
+      "unit": 20,
+      "context": {
+        "unitMm": 20,
+        "aiUse": "NONE",
+        "aiDisclosure": "Student-made pavilion",
+        "customNote": "retained"
+      },
+      "dimensions": [
+        120,
+        80,
+        100
+      ],
+      "over": [
+        "width"
+      ],
+      "fit": "false",
+      "draft": "20",
+      "pressed": [
+        "false",
+        "false",
+        "true"
+      ],
+      "error": "",
+      "volume": "Prints solid at 48 cubic units = 384,000 mm³ at 20 mm per block (36 cubes, 24 half slabs)."
+    },
+    {
+      "unit": 5,
+      "context": {
+        "unitMm": 5,
+        "aiUse": "NONE",
+        "aiDisclosure": "Student-made pavilion",
+        "customNote": "retained"
+      },
+      "dimensions": [
+        30,
+        20,
+        25
+      ],
+      "over": [],
+      "fit": "true",
+      "draft": "5",
+      "pressed": [
+        "true",
+        "false",
+        "false"
+      ],
+      "error": "",
+      "volume": "Prints solid at 48 cubic units = 6,000 mm³ at 5 mm per block (36 cubes, 24 half slabs)."
+    }
+  ],
+  "layouts": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "after-scale-1440x1000.png",
+      "controls": [
+        {
+          "label": "Use 5 millimeters per block",
+          "width": 82.65625,
+          "height": 44,
+          "left": 1125,
+          "top": 744.359375,
+          "right": 1207.65625,
+          "bottom": 788.359375,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Use 10 millimeters per block",
+          "width": 82.671875,
+          "height": 44,
+          "left": 1213.65625,
+          "top": 744.359375,
+          "right": 1296.328125,
+          "bottom": 788.359375,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Use 20 millimeters per block",
+          "width": 82.65625,
+          "height": 44,
+          "left": 1302.328125,
+          "top": 744.359375,
+          "right": 1384.984375,
+          "bottom": 788.359375,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "",
+          "width": 171.09375,
+          "height": 44,
+          "left": 1125,
+          "top": 822.859375,
+          "right": 1296.09375,
+          "bottom": 866.859375,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Apply scale",
+          "width": 81.90625,
+          "height": 44,
+          "left": 1303.09375,
+          "top": 822.859375,
+          "right": 1385,
+          "bottom": 866.859375,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "applyContrast": {
+        "color": "rgb(20, 59, 44)",
+        "background": "rgb(231, 240, 213)",
+        "ratio": 10.535341730086996
+      }
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "screenshot": "after-scale-390x844.png",
+      "controls": [
+        {
+          "label": "Use 5 millimeters per block",
+          "width": 94,
+          "height": 44,
+          "left": 48,
+          "top": 631.890625,
+          "right": 142,
+          "bottom": 675.890625,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Use 10 millimeters per block",
+          "width": 94,
+          "height": 44,
+          "left": 148,
+          "top": 631.890625,
+          "right": 242,
+          "bottom": 675.890625,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Use 20 millimeters per block",
+          "width": 94,
+          "height": 44,
+          "left": 248,
+          "top": 631.890625,
+          "right": 342,
+          "bottom": 675.890625,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "",
+          "width": 205.09375,
+          "height": 44,
+          "left": 48,
+          "top": 710.390625,
+          "right": 253.09375,
+          "bottom": 754.390625,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Apply scale",
+          "width": 81.90625,
+          "height": 44,
+          "left": 260.09375,
+          "top": 710.390625,
+          "right": 342,
+          "bottom": 754.390625,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "applyContrast": {
+        "color": "rgb(20, 59, 44)",
+        "background": "rgb(231, 240, 213)",
+        "ratio": 10.535341730086996
+      }
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "screenshot": "after-scale-320x700.png",
+      "controls": [
+        {
+          "label": "Use 5 millimeters per block",
+          "width": 70.65625,
+          "height": 44,
+          "left": 48,
+          "top": 517.546875,
+          "right": 118.65625,
+          "bottom": 561.546875,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        },
+        {
+          "label": "Use 10 millimeters per block",
+          "width": 70.671875,
+          "height": 44,
+          "left": 124.65625,
+          "top": 517.546875,
+          "right": 195.328125,
+          "bottom": 561.546875,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        },
+        {
+          "label": "Use 20 millimeters per block",
+          "width": 70.65625,
+          "height": 44,
+          "left": 201.328125,
+          "top": 517.546875,
+          "right": 271.984375,
+          "bottom": 561.546875,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        },
+        {
+          "label": "",
+          "width": 135.09375,
+          "height": 44,
+          "left": 48,
+          "top": 596.046875,
+          "right": 183.09375,
+          "bottom": 640.046875,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Apply scale",
+          "width": 81.90625,
+          "height": 44,
+          "left": 190.09375,
+          "top": 596.046875,
+          "right": 272,
+          "bottom": 640.046875,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "applyContrast": {
+        "color": "rgb(20, 59, 44)",
+        "background": "rgb(231, 240, 213)",
+        "ratio": 10.535341730086996
+      }
+    },
+    {
+      "size": {
+        "width": 844,
+        "height": 390
+      },
+      "screenshot": "after-scale-844x390.png",
+      "controls": [
+        {
+          "label": "Use 5 millimeters per block",
+          "width": 82.65625,
+          "height": 44,
+          "left": 529,
+          "top": 235.359375,
+          "right": 611.65625,
+          "bottom": 279.359375,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        },
+        {
+          "label": "Use 10 millimeters per block",
+          "width": 82.671875,
+          "height": 44,
+          "left": 617.65625,
+          "top": 235.359375,
+          "right": 700.328125,
+          "bottom": 279.359375,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        },
+        {
+          "label": "Use 20 millimeters per block",
+          "width": 82.65625,
+          "height": 44,
+          "left": 706.328125,
+          "top": 235.359375,
+          "right": 788.984375,
+          "bottom": 279.359375,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        },
+        {
+          "label": "",
+          "width": 171.09375,
+          "height": 44,
+          "left": 529,
+          "top": 313.859375,
+          "right": 700.09375,
+          "bottom": 357.859375,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Apply scale",
+          "width": 81.90625,
+          "height": 44,
+          "left": 707.09375,
+          "top": 313.859375,
+          "right": 789,
+          "bottom": 357.859375,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "applyContrast": {
+        "color": "rgb(20, 59, 44)",
+        "background": "rgb(231, 240, 213)",
+        "ratio": 10.535341730086996
+      }
+    }
+  ],
+  "coordinates": [
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "collapsed": false,
+      "open": false,
+      "controls": [
+        {
+          "label": "Position",
+          "width": 79.609375,
+          "height": 44,
+          "left": 19,
+          "top": 74,
+          "right": 98.609375,
+          "bottom": 118,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 191.5,
+          "right": 89.21875,
+          "bottom": 235.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        }
+      ],
+      "sr": null,
+      "screenshot": "after-position-320-bar-closed.png"
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "collapsed": false,
+      "open": true,
+      "controls": [
+        {
+          "label": "Position",
+          "width": 93.890625,
+          "height": 44,
+          "left": 19,
+          "top": 74,
+          "right": 112.890625,
+          "bottom": 118,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 176.5,
+          "right": 89.21875,
+          "bottom": 220.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "sr": {
+        "label": "Toggle coordinate screen-reader announcements (key C)",
+        "width": 70.21875,
+        "height": 44,
+        "left": 19,
+        "top": 176.5,
+        "right": 89.21875,
+        "bottom": 220.5,
+        "visible": true,
+        "inViewport": true,
+        "hit": true
+      },
+      "screenshot": "after-position-320-bar-open.png"
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "collapsed": true,
+      "open": false,
+      "controls": [
+        {
+          "label": "Position",
+          "width": 79.609375,
+          "height": 44,
+          "left": 19,
+          "top": 62,
+          "right": 98.609375,
+          "bottom": 106,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 179.5,
+          "right": 89.21875,
+          "bottom": 223.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        }
+      ],
+      "sr": null,
+      "screenshot": "after-position-320-collapsed-closed.png"
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "collapsed": true,
+      "open": true,
+      "controls": [
+        {
+          "label": "Position",
+          "width": 93.890625,
+          "height": 44,
+          "left": 19,
+          "top": 62,
+          "right": 112.890625,
+          "bottom": 106,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 164.5,
+          "right": 89.21875,
+          "bottom": 208.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "sr": {
+        "label": "Toggle coordinate screen-reader announcements (key C)",
+        "width": 70.21875,
+        "height": 44,
+        "left": 19,
+        "top": 164.5,
+        "right": 89.21875,
+        "bottom": 208.5,
+        "visible": true,
+        "inViewport": true,
+        "hit": true
+      },
+      "screenshot": "after-position-320-collapsed-open.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "collapsed": false,
+      "open": false,
+      "controls": [
+        {
+          "label": "Position",
+          "width": 79.609375,
+          "height": 44,
+          "left": 19,
+          "top": 74,
+          "right": 98.609375,
+          "bottom": 118,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 191.5,
+          "right": 89.21875,
+          "bottom": 235.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        }
+      ],
+      "sr": null,
+      "screenshot": "after-position-390-bar-closed.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "collapsed": false,
+      "open": true,
+      "controls": [
+        {
+          "label": "Position",
+          "width": 93.890625,
+          "height": 44,
+          "left": 19,
+          "top": 74,
+          "right": 112.890625,
+          "bottom": 118,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 176.5,
+          "right": 89.21875,
+          "bottom": 220.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "sr": {
+        "label": "Toggle coordinate screen-reader announcements (key C)",
+        "width": 70.21875,
+        "height": 44,
+        "left": 19,
+        "top": 176.5,
+        "right": 89.21875,
+        "bottom": 220.5,
+        "visible": true,
+        "inViewport": true,
+        "hit": true
+      },
+      "screenshot": "after-position-390-bar-open.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "collapsed": true,
+      "open": false,
+      "controls": [
+        {
+          "label": "Position",
+          "width": 79.609375,
+          "height": 44,
+          "left": 19,
+          "top": 62,
+          "right": 98.609375,
+          "bottom": 106,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 179.5,
+          "right": 89.21875,
+          "bottom": 223.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        }
+      ],
+      "sr": null,
+      "screenshot": "after-position-390-collapsed-closed.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "collapsed": true,
+      "open": true,
+      "controls": [
+        {
+          "label": "Position",
+          "width": 93.890625,
+          "height": 44,
+          "left": 19,
+          "top": 62,
+          "right": 112.890625,
+          "bottom": 106,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 164.5,
+          "right": 89.21875,
+          "bottom": 208.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "sr": {
+        "label": "Toggle coordinate screen-reader announcements (key C)",
+        "width": 70.21875,
+        "height": 44,
+        "left": 19,
+        "top": 164.5,
+        "right": 89.21875,
+        "bottom": 208.5,
+        "visible": true,
+        "inViewport": true,
+        "hit": true
+      },
+      "screenshot": "after-position-390-collapsed-open.png"
+    }
+  ],
+  "fixture": {
+    "selected": 60,
+    "total": 62
+  },
+  "initial": {
+    "world": [
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 9,
+        "y": 1,
+        "z": 7,
+        "type": "brick",
+        "shape": "quarter",
+        "rotation": 1
+      },
+      {
+        "x": 9,
+        "y": 1,
+        "z": 8,
+        "type": "brick",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 4,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      }
+    ],
+    "stl": "12f65177c6bda01cdc064b743c85828cfe7821ab44c8c20b24da5f3614c6d411",
+    "history": "[[{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":2,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":3,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":2,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":3,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":2,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":3,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":4,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":2,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":3,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":4,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":7,\"type\":\"brick\",\"shape\":\"quarter\",\"rotation\":1},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":8,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0}],[]]",
+    "selection": "{\"blocks\":[{\"x\":0,\"y\":1,\"z\":0},{\"x\":0,\"y\":5,\"z\":0},{\"x\":0,\"y\":1,\"z\":1},{\"x\":0,\"y\":5,\"z\":1},{\"x\":0,\"y\":1,\"z\":2},{\"x\":0,\"y\":5,\"z\":2},{\"x\":0,\"y\":1,\"z\":3},{\"x\":0,\"y\":5,\"z\":3},{\"x\":1,\"y\":1,\"z\":0},{\"x\":1,\"y\":5,\"z\":0},{\"x\":1,\"y\":1,\"z\":1},{\"x\":1,\"y\":5,\"z\":1},{\"x\":1,\"y\":1,\"z\":2},{\"x\":1,\"y\":5,\"z\":2},{\"x\":1,\"y\":1,\"z\":3},{\"x\":1,\"y\":5,\"z\":3},{\"x\":2,\"y\":1,\"z\":0},{\"x\":2,\"y\":5,\"z\":0},{\"x\":2,\"y\":1,\"z\":1},{\"x\":2,\"y\":5,\"z\":1},{\"x\":2,\"y\":1,\"z\":2},{\"x\":2,\"y\":5,\"z\":2},{\"x\":2,\"y\":1,\"z\":3},{\"x\":2,\"y\":5,\"z\":3},{\"x\":3,\"y\":1,\"z\":0},{\"x\":3,\"y\":5,\"z\":0},{\"x\":3,\"y\":1,\"z\":1},{\"x\":3,\"y\":5,\"z\":1},{\"x\":3,\"y\":1,\"z\":2},{\"x\":3,\"y\":5,\"z\":2},{\"x\":3,\"y\":1,\"z\":3},{\"x\":3,\"y\":5,\"z\":3},{\"x\":4,\"y\":1,\"z\":0},{\"x\":4,\"y\":5,\"z\":0},{\"x\":4,\"y\":1,\"z\":1},{\"x\":4,\"y\":5,\"z\":1},{\"x\":4,\"y\":1,\"z\":2},{\"x\":4,\"y\":5,\"z\":2},{\"x\":4,\"y\":1,\"z\":3},{\"x\":4,\"y\":5,\"z\":3},{\"x\":5,\"y\":1,\"z\":0},{\"x\":5,\"y\":5,\"z\":0},{\"x\":5,\"y\":1,\"z\":1},{\"x\":5,\"y\":5,\"z\":1},{\"x\":5,\"y\":1,\"z\":2},{\"x\":5,\"y\":5,\"z\":2},{\"x\":5,\"y\":1,\"z\":3},{\"x\":5,\"y\":5,\"z\":3},{\"x\":0,\"y\":2,\"z\":0},{\"x\":0,\"y\":3,\"z\":0},{\"x\":0,\"y\":4,\"z\":0},{\"x\":0,\"y\":2,\"z\":3},{\"x\":0,\"y\":3,\"z\":3},{\"x\":0,\"y\":4,\"z\":3},{\"x\":5,\"y\":2,\"z\":0},{\"x\":5,\"y\":3,\"z\":0},{\"x\":5,\"y\":4,\"z\":0},{\"x\":5,\"y\":2,\"z\":3},{\"x\":5,\"y\":3,\"z\":3},{\"x\":5,\"y\":4,\"z\":3}]}",
+    "camera": "[[11,9,13],[-0.20181838360080548,0.3022001225384191,0.06562807163226902,0.9293209252956443]]",
+    "count": 62,
+    "mesh": "[[\"D729C811-8D09-483A-9779-ECA42F4B1882\",\"0A79D547-CC95-439A-A21B-CF657E12128D\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"13955EF6-31F5-4408-A6C7-47218EC3CECF\",\"822353EF-5B48-460C-9571-7F01E0ECD285\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"2D352944-B272-4A77-9574-060630405172\",\"50BE19F8-1EFE-4EEC-872E-56B8CE186B73\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"3632C8B3-C5A5-4B59-A167-C136061B8068\",\"1B871F70-C297-486D-8F5E-0CC6CDF0727D\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"B38BBA44-159C-4C33-87C5-05CBDC28182F\",\"A387CF56-4251-49A9-A42C-8964951D967F\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"B9768631-255B-4329-8FC3-F05F9A2DFE28\",\"34F00BB0-89E6-4AD7-B6E4-284B440EDD96\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"2514B950-2DA5-457F-B887-1D334C678E6A\",\"EADE5757-55F7-428A-848F-8DF61C7A6C5A\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"8A66044C-C6BF-4796-A9FE-71F50D8E3646\",\"1A550F09-A445-4ABC-BE27-BDD47B6B15DA\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"BBA1C649-3479-49B7-AA43-3D58C9B814FA\",\"52B94F20-6090-4282-893E-1AEB4674865B\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"5BDA1F45-B8B0-4602-844A-21C2CE7A6658\",\"360CA10A-FAD4-4E89-AC8A-C439BFA84150\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"2B750EB8-56DF-4926-A434-2DBF16DA9D8D\",\"DF8662C6-E827-44C8-921B-5F092B261857\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"8530D994-5A58-4AE0-8A88-E6693ED502E9\",\"2BD3BFC2-E22C-4CB5-97DD-F90D14D4C061\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"F5C262D3-C977-48AE-B398-65E5A0C613E7\",\"CB1A70B6-857A-4C10-9AD4-53A8FA08D90A\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"9523BDF8-B2FA-46FF-B5DF-AA119CDB8A44\",\"DAA0FF5E-50B0-4342-A40C-ED6B039D4EAF\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"6C57847D-0D67-4156-AB36-16A779F48285\",\"DD31C634-81FA-48A6-9609-0C2A32E8EC9D\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"1E8EACD4-702B-4CA4-91B2-59E68E9A19FA\",\"3DB18B18-3092-446C-A21B-0A83EB7A6D88\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"1980F402-4509-4F86-945F-9E05E3435D68\",\"0D35D8CB-594C-4BAB-93FB-251192AAF81E\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"20233AED-1BE3-4912-A9CE-35F36431F093\",\"756660A1-3003-4A80-8DBD-1116CA53B18C\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"809BDD74-C59F-4E1A-BF80-4BE6BB80482A\",\"69C900EE-81E0-47F2-BF00-5E44A349E178\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"CBF36F0B-A48F-4F2F-A265-FB122B511A09\",\"8A6A8364-757A-4BAB-A987-769B7D7A30B1\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"413AC089-39B9-4444-A70E-40EF2EA17F11\",\"42FAAC3C-005E-49DF-ACFB-B50CF368A0B7\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"B594DFE5-DB9E-4602-86DD-A937086DD440\",\"7D55A96F-13BD-4DE1-83A1-39F1FB62F491\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"30B40703-99AA-42BD-8CC7-ACB886FED645\",\"CCC81495-8EDA-4727-88BE-4EF7C3C57BF2\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"8863704B-63B8-44FE-8EF4-A86A6DC69192\",\"43A5EEB5-AA4F-4F5C-9451-AE73C568A37A\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"ED6004C2-EB28-4A57-BDD8-D3B3F7EDBD58\",\"71C0D7EF-72B1-4CA8-8298-D2D538709C00\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"4ED9A996-DED9-414D-B8EE-2FF6787DB85C\",\"F8536836-DB04-4833-A752-85486F64AD4D\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"00C40073-93E9-4F5A-A34C-139994A7EE08\",\"0BCC772F-8657-4F3D-A4E7-51BFA0F3E732\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"827D0787-CAB9-4FC3-B3E8-096637C9ED3E\",\"7A23798B-C7D2-412B-870A-1AE322D43FA8\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"E268AB2D-E869-49C0-904B-F649177F3716\",\"20A87917-AE4C-447F-8769-87C3B6AACF61\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"0575312F-7C5E-4B91-9BD9-29F1009308E1\",\"6516AA1C-5F60-42BD-AF76-CE286243D4DC\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"9F0FEB6C-E5E4-44F7-8B80-0F80F64E650D\",\"F8E752E4-87E2-44D0-B349-6192659304ED\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"A83B67E5-FF0B-4708-A57B-AA60285F3C04\",\"13EBCE30-FFC1-40CE-9DB3-AF2CFDFA35DD\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"7B4BE7C4-246F-4D16-8E23-87D9AA2BA598\",\"CA7015CA-DCA6-4DB1-A538-F23C7103E03F\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"F75348D7-E232-4BDD-9778-B65ABE4D845C\",\"59B7831A-3ED7-4298-B20F-A493D888CA66\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"BCC07DF0-A0B9-4C91-87C8-167DCC079C11\",\"DEB4508D-CDF5-40F6-B660-632401AC432E\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"4DC7733F-BCF0-4DDD-82BD-403E99810116\",\"243D2EBC-9D34-4464-A42D-FC1C8FC99200\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"AA4BD968-55C5-4958-A5A0-DC02606B95F6\",\"6A37758F-175E-439F-98E0-7EA413EA0A3B\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"E9CC7A40-A0E7-4A54-8829-8FBF869A87A6\",\"426D7136-EADE-4213-9D7B-BEAE02CE4E9C\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"6B82D1F3-1D44-41B4-867E-83241C92B35E\",\"308BD35F-84BE-4A98-B4F9-E3E2CF0D9010\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"7D383698-8B67-4963-818B-E76BD30F3537\",\"B71E53ED-E62C-461B-8E18-89959567F26E\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"A57B03B8-1124-4C8A-B510-E81EB2EE34F7\",\"8DC4407E-41A8-48FF-8452-D85F561550F4\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"707FA15E-374F-4CAB-B043-3E15A6D79A3B\",\"9C1D3309-45F0-496E-8EA4-E7EDF0D634FC\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"36844253-AC9C-4B3B-874C-69ECE65D6785\",\"0C9DE06C-1150-4D9F-8736-436FCA71FBE9\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"DA5DC324-68BD-4CE5-8247-A7A25E155852\",\"43DAB831-E47A-4EFD-9FE6-6B5C054ACA93\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"07AD65CF-2897-434F-A43C-790C9092F004\",\"FCA93617-36B7-4163-B63A-C936AEAD1E8A\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"B8DA30B9-4298-4A1A-A73E-F85C1B71DDCE\",\"CC7B7331-481A-43E7-B496-9C2B56392C40\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"CF6B69DD-4167-4C5E-9806-E7D547A840A3\",\"8CCE855E-D771-4D82-BD8F-AA4A1E067B1F\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"464D5ADF-5963-4EB1-ABB4-6C3CC8020AAF\",\"BCEA9386-6E48-40DE-9FBF-860647A17882\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"EE4CF2FF-C7A3-499D-A0A0-652D271C1294\",\"F5956C75-7D35-4419-9719-B606191B9A7E\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"668939CE-13F3-4028-8B6C-07C32FF39A82\",\"4D509370-C613-4170-BF5B-3FFF221EB47F\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"E2166E5F-6C91-4E39-B29D-61ABF0D9A980\",\"B9C3A2A5-C910-4B46-9930-581FABC7ABEF\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"17F595DF-9FFB-4D55-8805-57FAF07A529D\",\"248CA7A1-ECA9-4C43-92C7-E5067488387A\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"70018FE3-DF4F-4A05-A2A7-AC13D33F455C\",\"88F930E9-9231-4302-912E-3F127BFB8CCD\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"3AB2EC43-12C8-43E2-80FF-F13D5B0EE539\",\"2B821DBF-DF4B-41CC-BB04-0A2EDB5B294F\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"71E702B3-93FD-44C1-8AF0-224A09974B04\",\"5A0DCBED-D754-4E16-95E0-5E51377D4CBF\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"2F72D4F9-3F28-470E-B465-981F2EDF76B8\",\"859C146B-0539-4AAE-B509-EBEEAA6C18CB\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"AFB5D475-1AD2-4747-B284-110903453C3F\",\"A3854937-19C3-48C1-A99E-7FF71DE64445\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"DA869CB0-CD7C-4268-B8FA-DD8A25220E32\",\"232E88E8-C5C5-486F-9886-EBBA37492437\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"9C8426E1-0926-4887-BF94-3717FB0D4F81\",\"31F861F3-BF06-4A2B-9D77-2AAABFF6485E\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"991D6075-795E-496F-AF94-EEC1666A8F9A\",\"93C5640C-CF5C-42A2-AD42-0D00405D81BC\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]]]"
+  },
+  "initialScale": {
+    "unit": 5,
+    "context": {
+      "unitMm": 5,
+      "aiUse": "NONE",
+      "aiDisclosure": "Student-made pavilion",
+      "customNote": "retained"
+    },
+    "dimensions": [
+      30,
+      20,
+      25
+    ],
+    "over": [],
+    "fit": "true",
+    "draft": "5",
+    "pressed": [
+      "true",
+      "false",
+      "false"
+    ],
+    "error": "",
+    "volume": "Prints solid at 48 cubic units = 6,000 mm³ at 5 mm per block (36 cubes, 24 half slabs)."
+  },
+  "beforeScreenshot": "after-inspector-1440x1000.png",
+  "custom": {
+    "unit": 12.5,
+    "context": {
+      "unitMm": 12.5,
+      "aiUse": "NONE",
+      "aiDisclosure": "Student-made pavilion",
+      "customNote": "retained"
+    },
+    "dimensions": [
+      75,
+      50,
+      62.5
+    ],
+    "over": [],
+    "fit": "true",
+    "draft": "12.5",
+    "pressed": [
+      "false",
+      "false",
+      "false"
+    ],
+    "error": "",
+    "volume": "Prints solid at 48 cubic units = 93,750 mm³ at 12.5 mm per block (36 cubes, 24 half slabs)."
+  },
+  "fullscreen": {
+    "summary": {
+      "label": "Position",
+      "width": 93.890625,
+      "height": 44,
+      "left": 19,
+      "top": 62,
+      "right": 112.890625,
+      "bottom": 106,
+      "visible": true,
+      "inViewport": true,
+      "hit": true
+    },
+    "screenshot": "after-position-fullscreen.png",
+    "sr": {
+      "label": "Toggle coordinate screen-reader announcements (key C)",
+      "width": 70.21875,
+      "height": 44,
+      "left": 19,
+      "top": 164.5,
+      "right": 89.21875,
+      "bottom": 208.5,
+      "visible": true,
+      "inViewport": true,
+      "hit": true
+    }
+  },
+  "stl": {
+    "bytes": 17684,
+    "triangles": 352,
+    "min": [
+      0,
+      -50,
+      0
+    ],
+    "max": [
+      75,
+      0,
+      56.25
+    ],
+    "dimensions": [
+      75,
+      50,
+      56.25
+    ]
+  },
+  "handoff": {
+    "toolData": {
+      "profile": {
+        "bedWidthMm": 100,
+        "bedDepthMm": 80,
+        "bedHeightMm": 100
+      },
+      "activeTab": "Design",
+      "recipe": null,
+      "unitMm": 12.5,
+      "preflight": null,
+      "preflightBinding": "",
+      "title": "Geometry World build - 60 blocks",
+      "description": "Created from the selected Geometry World student blocks. Virtual block materials are appearance labels; choose the physical filament in Print Lab.",
+      "aiUse": "NONE",
+      "aiDisclosure": "Student-made pavilion"
+    }
+  },
+  "printLabScreenshot": "after-print-lab.png",
+  "returned": {
+    "unit": 12.5,
+    "context": {
+      "unitMm": 12.5,
+      "aiUse": "NONE",
+      "aiDisclosure": "Student-made pavilion"
+    },
+    "dimensions": [
+      75,
+      50,
+      62.5
+    ],
+    "over": [],
+    "fit": "true",
+    "draft": "12.5",
+    "pressed": [
+      "false",
+      "false",
+      "false"
+    ],
+    "error": "",
+    "volume": "Prints solid at 48 cubic units = 93,750 mm³ at 12.5 mm per block (36 cubes, 24 half slabs)."
+  },
+  "shaders": [],
+  "pass": true
+}

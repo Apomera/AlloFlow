@@ -28,6 +28,7 @@ class FakeNode {
   set innerHTML(value) { this._innerHTML = String(value); this._queryCache = {}; }
   get innerHTML() { return this._innerHTML; }
   setAttribute(name, value) { this.attributes[name] = String(value); }
+  getAttribute(name) { return Object.prototype.hasOwnProperty.call(this.attributes, name) ? this.attributes[name] : null; }
   querySelectorAll(selector) {
     const attribute = selector.match(/^\[data-([a-z0-9-]+)\]$/i);
     if (!attribute) return [];
@@ -63,6 +64,27 @@ function mainBootstrap(role = 'student') {
   };
 }
 
+// Match the server's resumeAwardCoreOperation_ receipt, including the original
+// request and actor binding. An { ok: true } stub is not a confirmed award.
+function awardAcknowledgement(request, actor) {
+  return {
+    ok: true, balance: 125,
+    entry: {
+      id: 'entry-1', kind: 'EARN', studentId: request.studentId,
+      amount: request.amount, reason: request.reason, categoryId: request.categoryId,
+      idempotencyKey: request.idempotencyKey, actorEmail: actor.email, actorRole: actor.role,
+      referenceType: 'award', referenceId: '', reversesId: '', at: '2026-09-04T12:00:00.000Z',
+    },
+  };
+}
+
+function groupAwardAcknowledgement(request, recorded = request.studentIds.length) {
+  const results = request.studentIds.map((studentId, index) => index < recorded
+    ? { studentId, ok: true }
+    : { studentId, ok: false, code: 'temporary_failure', error: 'Temporary failure' });
+  return { ok: recorded === results.length, recorded, failed: results.length - recorded, results };
+}
+
 function createDocument() {
   const ids = [...PORTAL.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   const nodes = Object.fromEntries(ids.map(id => [id, new FakeNode(id)]));
@@ -86,7 +108,7 @@ function createDocument() {
     nodes,
     printTab: tabs.find(tab => tab.dataset.tab === 'print'),
     document: {
-      body: { appendChild() {} },
+      body: new FakeNode('body'),
       getElementById: id => nodes[id],
       querySelectorAll: selector => markers[selector] || Object.values(nodes).flatMap(node => node.querySelectorAll(selector)),
       createElement: () => new FakeNode(),
@@ -375,7 +397,9 @@ describe('School Rewards remaining save recovery', () => {
     const print = { actor: { role: 'admin' }, models: [], requests: [{ id: 'print-1', status: 'FULFILLED', modelId: 'model-1', quotePoints: 10, student: { firstName: 'Avery' } }], holds: [], communityModels: [] };
     const app = await runPortal({ role: 'admin', printBootstrap: print, rpcResponses: {
       getSchoolRewardsBootstrap: () => { if (++loads === 2) throw new Error('Refresh unavailable'); return main; },
-      [rpcName]: { ok: true, window: { id: 'window-1', status: 'OPEN' }, entry: { id: 'entry-1', studentId: 'student-1' } },
+      [rpcName]: argument => rpcName === 'awardSchoolRewardsPoints'
+        ? awardAcknowledgement(argument, main.actor)
+        : { ok: true, window: { id: 'window-1', status: 'OPEN' }, entry: { id: 'entry-1', studentId: 'student-1' } },
     } });
     expect(app.nodes.notice.className, app.nodes.notice.textContent).not.toContain('error');
     if (kind === 'settings') await app.nodes['save-settings'].onclick();
@@ -407,18 +431,18 @@ describe('School Rewards remaining save recovery', () => {
     main.categories = [{ id: 'category-1', name: 'Helping', active: true }];
     const app = await runPortal({ role: 'staff', rpcResponses: {
       getSchoolRewardsBootstrap: () => { if (++loads === 2) throw new Error('Refresh unavailable'); return main; },
-      awardSchoolRewardsPointsBatch: { recorded, failed: 2 - recorded, results: [{ studentId: 'student-2', ok: false, error: 'Temporary failure' }] },
+      awardSchoolRewardsPointsBatch: argument => groupAwardAcknowledgement(argument, recorded),
     } });
     app.nodes['award-group-mode'].checked = true; app.nodes['award-group-all'].onclick();
     app.nodes['award-category'].value = 'category-1'; app.nodes['award-amount'].value = '5'; app.nodes['award-reason'].value = 'Helped together';
     await app.nodes['award-form'].onsubmit({ preventDefault() {} });
     expect(app.nodes.notice.textContent).toContain(recorded + ' recorded; ' + (2 - recorded) + ' not recorded');
-    expect(app.nodes.notice.textContent).toContain('Retry the same group');
+    expect(app.nodes.notice.textContent).toContain('Use Retry pending award for the exact original group');
     expect(app.nodes.notice.textContent).toContain('could not refresh');
     expect(app.nodes['award-reason'].value).toBe('Helped together');
     const retryKey = [...app.sessionStorage.values.values()][0];
     await app.nodes['retry-saved-refresh'].onclick();
-    expect(app.nodes.notice.textContent).toContain('Retry the same group');
+    expect(app.nodes.notice.textContent).toContain('Use Retry pending award for the exact original group');
     expect(app.nodes.notice.className).toContain('error');
     expect(app.calls.filter(c => c.name === 'awardSchoolRewardsPointsBatch')).toHaveLength(1);
     expect([...app.sessionStorage.values.values()][0]).toBe(retryKey);
@@ -879,9 +903,7 @@ describe('School Rewards Print Lab portal', () => {
     let attempts = 0;
     const confirmations = [];
     const app = await runPortal({ role: 'staff', mainBootstrapData: main, confirm: message => { confirmations.push(message); return true; }, rpcResponses: {
-      awardSchoolRewardsPointsBatch: () => ++attempts === 1
-        ? { ok: false, recorded: 1, failed: 1, results: [{ studentId: 'student-1', ok: true }, { studentId: 'student-2', ok: false, error: 'Temporary failure' }] }
-        : { ok: true, recorded: 2, failed: 0 },
+      awardSchoolRewardsPointsBatch: argument => groupAwardAcknowledgement(argument, ++attempts === 1 ? 1 : argument.studentIds.length),
     } });
     app.nodes['award-group-mode'].checked = true;
     app.nodes['award-group-all'].onclick();
@@ -889,9 +911,11 @@ describe('School Rewards Print Lab portal', () => {
     app.nodes['award-amount'].value = '5';
     app.nodes['award-reason'].value = 'Helped together';
     await app.nodes['award-form'].onsubmit({ preventDefault() {} });
-    expect(confirmations[0]).toBe('Record 5 points for 2 students with the same explanation?');
+    expect(confirmations[0]).toContain('Review recognition');
+    for (const detail of ['Avery', 'Blake', '5 points each', 'Helping', 'Helped together']) expect(confirmations[0]).toContain(detail);
+    expect(confirmations[0].match(/Ref [A-F0-9]{6}/g)).toHaveLength(2);
     expect(app.sessionStorage.values.size).toBe(1);
-    expect(app.nodes.notice.textContent).toContain('Retry the same group');
+    expect(app.nodes.notice.textContent).toContain('Use Retry pending award for the exact original group');
     await app.nodes['award-form'].onsubmit({ preventDefault() {} });
     const calls = app.calls.filter(call => call.name === 'awardSchoolRewardsPointsBatch');
     expect(calls).toHaveLength(2);
@@ -980,7 +1004,7 @@ describe('School Rewards Print Lab portal', () => {
     await flush();
     expect(app.calls.filter(call => call.name === 'awardSchoolRewardsPoints')).toHaveLength(1);
     expect(app.nodes['award-submit'].disabled).toBe(true);
-    releaseAward({ ok: true, balance: 125 });
+    releaseAward(awardAcknowledgement(app.calls.find(call => call.name === 'awardSchoolRewardsPoints').argument, main.actor));
     await Promise.all([first, second]);
     await flush();
     expect(app.nodes['award-submit'].disabled).toBe(false);
@@ -1015,7 +1039,7 @@ describe('School Rewards Print Lab portal', () => {
       role: 'staff',
       mainBootstrapData: main,
       sessionStore: storage,
-      rpcResponses: { awardSchoolRewardsPoints: argument => { retriedKey = argument.idempotencyKey; return { ok: true }; } },
+      rpcResponses: { awardSchoolRewardsPoints: argument => { retriedKey = argument.idempotencyKey; return awardAcknowledgement(argument, main.actor); } },
     });
     secondApp.nodes['award-student'].value = 'student-1';
     secondApp.nodes['award-amount'].value = '5';
@@ -1041,7 +1065,7 @@ describe('School Rewards Print Lab portal', () => {
       role: 'staff',
       mainBootstrapData: main,
       sessionStore: unavailableStorage,
-      rpcResponses: { awardSchoolRewardsPoints: argument => { keys.push(argument.idempotencyKey); if (attempts++ === 0) throw new Error('Response was lost'); return { ok: true }; } },
+      rpcResponses: { awardSchoolRewardsPoints: argument => { keys.push(argument.idempotencyKey); if (attempts++ === 0) throw new Error('Response was lost'); return awardAcknowledgement(argument, main.actor); } },
     });
     const submit = async reason => {
       app.nodes['award-student'].value = 'student-1';

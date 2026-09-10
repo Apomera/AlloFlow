@@ -1,0 +1,64 @@
+{
+  "enhancement": "Held working-stroke inspection across six workshop mechanisms",
+  "addedTests": 28,
+  "sourceSha256": "9bbcf20c35bc695f5d2d0ceb6aaab22bcb2dd258b95c170562c2ad3aea1f6f1e",
+  "mirrorIdentical": true,
+  "fullSuiteBeforeFinalLabelFix": {
+    "total": 832,
+    "passed": 831,
+    "failed": 1,
+    "files": 25
+  },
+  "affectedFilesAfterFix": {
+    "total": 252,
+    "passed": 252,
+    "failed": 0,
+    "files": 4
+  },
+  "resolvedFailure": "Machine Lab a11y: interactive elements labels every slider, since the thumb carries no text",
+  "browser": {
+    "pass13-light-final": {
+      "shots": 12,
+      "checks": [
+        "Keyboard and held camera pose: pulley 390",
+        "Keyboard and held camera pose: wedge 390",
+        "Keyboard and held camera pose: pulley 320",
+        "Keyboard and held camera pose: wedge 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ],
+      "errors": [],
+      "overflow": false
+    },
+    "pass13-dark": {
+      "shots": 12,
+      "checks": [
+        "Keyboard and held camera pose: pulley 390",
+        "Keyboard and held camera pose: wedge 390",
+        "Keyboard and held camera pose: pulley 320",
+        "Keyboard and held camera pose: wedge 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ],
+      "errors": [],
+      "overflow": false
+    },
+    "pass13-contrast": {
+      "shots": 12,
+      "checks": [
+        "Keyboard and held camera pose: pulley 390",
+        "Keyboard and held camera pose: wedge 390",
+        "Keyboard and held camera pose: pulley 320",
+        "Keyboard and held camera pose: wedge 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ],
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "publication": "Local only; no commit, push, or deploy in this pass"
+}

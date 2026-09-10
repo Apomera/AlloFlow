@@ -1,0 +1,162 @@
+{
+  "measuredAt": "2026-09-10T04:07:24.402Z",
+  "policyVersion": "20260909-6",
+  "sourceSha256": "2a246d27928524c54ee16c8419dfd04904f4a05dfbacd07bd94ffb2825419909",
+  "sourceUnchangedDuringRun": true,
+  "browserVersion": "148.0.7778.96",
+  "scope": "Actual strict source gate plus mocked aiFixChunked transport and native Chromium AX names/descriptions. No downstream export or human-screen-reader conclusion.",
+  "results": [
+    {
+      "id": "unit-name-compatibility-fold",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"area\">Area (m²)</label><input id=\"area\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"area\">Area (m²)</label><input id=\"area\" aria-label=\"Area (m2)\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0277777777777777,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": true,
+      "browser": {
+        "source": {
+          "role": "textbox",
+          "name": "Area (m²)",
+          "description": "",
+          "aria": "- textbox \"Area (m²)\""
+        },
+        "candidate": {
+          "role": "textbox",
+          "name": "Area (m2)",
+          "description": "",
+          "aria": "- textbox \"Area (m2)\""
+        }
+      }
+    },
+    {
+      "id": "unit-description-compatibility-fold",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"area\">Area</label><input id=\"area\" aria-description=\"Answer in m²\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"area\">Area</label><input id=\"area\" aria-description=\"Answer in m2\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": true,
+      "browser": {
+        "source": {
+          "role": "textbox",
+          "name": "Area",
+          "description": "Answer in m²",
+          "aria": "- textbox \"Area\""
+        },
+        "candidate": {
+          "role": "textbox",
+          "name": "Area",
+          "description": "Answer in m2",
+          "aria": "- textbox \"Area\""
+        }
+      }
+    },
+    {
+      "id": "canonical-name-equivalence-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"area\">Café</label><input id=\"area\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"area\">Café</label><input id=\"area\" aria-label=\"Café\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.023086269744836,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "role": "textbox",
+          "name": "Café",
+          "description": "",
+          "aria": "- textbox \"Café\""
+        },
+        "candidate": {
+          "role": "textbox",
+          "name": "Café",
+          "description": "",
+          "aria": "- textbox \"Café\""
+        }
+      }
+    },
+    {
+      "id": "unit-name-preserving-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"area\">Area (m²)</label><input id=\"area\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"area\">Area (m²)</label><input id=\"area\" aria-label=\"Area (m²)\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0277777777777777,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "role": "textbox",
+          "name": "Area (m²)",
+          "description": "",
+          "aria": "- textbox \"Area (m²)\""
+        },
+        "candidate": {
+          "role": "textbox",
+          "name": "Area (m²)",
+          "description": "",
+          "aria": "- textbox \"Area (m²)\""
+        }
+      }
+    }
+  ]
+}

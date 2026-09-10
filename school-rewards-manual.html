@@ -50,6 +50,7 @@ body{margin:0;background:var(--bg);overflow-wrap:anywhere;color:var(--body);font
 h1{font-size:calc(30px * var(--fs));font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;color:var(--ink);}
 h2{font-size:calc(22px * var(--fs));font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink);}
 h3{font-size:calc(16px * var(--fs));font-weight:800;margin:24px 0 6px;color:var(--ink);}
+html{scroll-padding-top:calc(var(--reading-tools-height, 0px) + 14px);}
 p{margin:0 0 14px;}
 ul,ol{margin:0 0 16px;padding-left:22px;}
 li{margin:0 0 7px;}
@@ -65,6 +66,8 @@ th{background:var(--th);font-weight:700;color:var(--ink);}
 caption{text-align:left;padding:0 0 8px;font-weight:700;color:var(--ink);}
 .tablewrap{overflow-x:auto;margin:0 0 18px;}
 .tablewrap:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px;}
+.table-scroll-hint{display:none;}
+@media screen and (max-width:600px){.setup-states table{min-width:620px;}.table-scroll-hint{display:block;}}
 blockquote{margin:18px 0;padding:12px 16px;background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:4px solid #f59e0b;border-radius:10px;}
 blockquote p{margin:0;color:var(--warn-ink);font-size:calc(14.5px * var(--fs));}
 .good{margin:18px 0;padding:12px 16px;background:var(--ok-bg);border:1px solid var(--ok-bd);border-left:4px solid #22c55e;border-radius:10px;color:var(--ok-ink);font-size:calc(14.5px * var(--fs));}
@@ -218,7 +221,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <body>
 <main class="wrap">
 <p class="manual-home"><a href="https://apomera.github.io/AlloFlow/manuals.html">← All manuals and guides</a></p>
-<div class="banner">🎟️ <strong>Recognition first.</strong> School Rewards &amp; Store is a school-owned points economy: staff recognise students with a written reason, students see their growth, and a store opens for a fixed window each trimester. The ledger lives in your school's Google Workspace; AlloFlow keeps nothing about students.</div>
+<div class="banner">🎟️ <strong>Recognition first.</strong> School Rewards &amp; Store is a school-owned points economy: staff recognise students with a written reason, students see their growth, and a store opens for a fixed window each trimester. The official ledger lives in your school's Google Workspace; its launcher and classroom tools have separate roles.</div>
 <article>
 <h1>School Rewards &amp; Store: User Manual</h1>
 <p class="suite">Part of the Leadership Hub and the Educator Tools. For how this tool sits beside the rest of the suite, see <a href="https://alloflow-cdn.pages.dev/guide/for-school-leaders.html">For school leaders</a> in the AlloFlow teacher guide.</p>
@@ -226,14 +229,15 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p class="docmeta">
 <span>13 sections</span><span class="dot" aria-hidden="true"></span>
 <span>about 25 minutes end to end</span><span class="dot" aria-hidden="true"></span>
-<span>reviewed September 8, 2026</span><span class="dot" aria-hidden="true"></span>
+<span>reviewed September 9, 2026</span><span class="dot" aria-hidden="true"></span>
 <span>can be printed with your preferred paper size and margins</span>
 </p>
 
 <div class="start">
 <h2 class="start-heading">Where to start</h2>
-<p><strong>Principals and administrators:</strong> sections 2 and 3 are the setup; sections 5, 9, and 10 run and protect a trimester.</p>
-<p><strong>Teachers and cashiers:</strong> section 4 is awarding; section 5 is the register.</p>
+<p><strong>Trying it out:</strong> choose <a href="#path-practice">Try the demo</a> for fictional practice with no Google setup.</p>
+<p><strong>Teachers and cashiers:</strong> choose <a href="#path-join">Join my school’s existing Store</a>. Ask for the approved link; you do not create another Apps Script project. Then use section 4 for awarding or section 5 for checkout.</p>
+<p><strong>School administrators and technology coordinators:</strong> choose <a href="#path-setup">Set up a Store for my school</a>, then follow the ten-step checklist in section 3. Sections 9 and 10 cover operations and records.</p>
 <p><strong>Students and families:</strong> section 6 is written for you.</p>
 </div>
 
@@ -241,7 +245,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <strong>Contents</strong>
 <ol>
 <li><a href="#what">What it is and who it is for</a></li>
-<li><a href="#quickstart">Quick start for a principal</a></li>
+<li><a href="#quickstart">Choose practice, joining, or school setup</a></li>
 <li><a href="#setup">Setup, step by step</a></li>
 <li><a href="#awarding">Awarding points</a></li>
 <li><a href="#store">The store: windows, checkout, and receipts</a></li>
@@ -257,7 +261,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 </nav>
 
 <h2 id="what">1. What It Is and Who It Is For</h2>
-<p>School Rewards &amp; Store is a school-owned points economy for positive recognition. Staff award points with a written reason, students see their balance and growth, and a store opens for a fixed window each trimester. The ledger lives in a protected Google Sheet that a managed school account owns, the portal runs as a Google Apps Script web app restricted to your Google Workspace domain, and AlloFlow holds nothing but the launcher address and a setup checklist on the device that connects. It is a pilot design for one school, not a district platform, and it stays separate from AlloHaven experience points inside AlloFlow.</p>
+<p>School Rewards &amp; Store is a school-owned points economy for positive recognition. Staff award points with a written reason, students see their balance and growth, and a store opens for a fixed window each trimester. The ledger lives in a protected Google Sheet that a managed school account owns, the portal runs as a Google Apps Script web app restricted to your Google Workspace domain, and the AlloFlow Store launcher keeps its address and setup checklist on the connecting device. Classroom tools separately retain their pseudonymous lesson state. It is a pilot design for one school, not a district platform, and it stays separate from AlloHaven experience points inside AlloFlow.</p>
 <div class="tablewrap">
 <table>
 <caption>Roles and what each can do</caption>
@@ -315,47 +319,78 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <figcaption>Built-in help as a staff member sees it. Cashiers and administrators see their own sections; students see theirs.</figcaption>
 </figure>
 
-<h2 id="quickstart">2. Quick Start for a Principal</h2>
-<p>Inside AlloFlow, open <strong>Educator Tools &rarr; School Rewards &amp; Store</strong>, or <strong>Leadership Hub &rarr; School Rewards &amp; Store</strong>. The panel that opens is both the setup and the launcher. The first time, it shows a ten-step checklist; once a deployment is connected, it opens on the launcher with the checklist folded below.</p>
+<h2 id="quickstart">2. Choose Your Starting Path</h2>
+<p>Inside AlloFlow, open <strong>Educator Tools &rarr; School Rewards &amp; Store</strong>, or <strong>Leadership Hub &rarr; School Rewards &amp; Store</strong>. Choose the path that fits your role before opening technical setup. The same three choices are available from the local AlloBot setup guide.</p>
+<div id="store-setup-guide">
+<h3 id="path-practice" data-guide-path="practice">Try the demo</h3>
+<p>Explore with fictional data. No Google setup or real student records are needed. Use the <a href="https://alloflow-cdn.pages.dev/school-rewards-practice">public practice portal</a> to rehearse an award and a purchase, then reset. All roles, balances and delivery are simulated. More practice controls are described below.</p>
+<h3 id="path-join" data-guide-path="join">Join my school’s existing Store</h3>
+<p>For teachers and cashiers: use the Store your school has already approved. You do not need to create an Apps Script project.</p>
+<ol>
+<li><strong>Get the approved Store link.</strong> Ask your school administrator for the address ending in <code>/exec</code> and confirm your staff or cashier role. Keep the address, credentials and student details out of AlloBot chat.</li>
+<li><strong>Save the address on this device.</strong> Paste it into the Store connection field and choose <strong>Save address</strong>. This saves a launcher address only; it does not sign you in, grant access or verify the deployment. If you edit an existing address, choose <strong>Save address</strong> or <strong>Discard changes</strong> before opening the Store, opening its deployment check or sharing its link. Discard changes restores the saved address. Saving a blank field does not disconnect; use the separate <strong>Disconnect</strong> action when that is intended.</li>
+<li><strong>Open your school’s Store.</strong> Opening requests a new tab; the launcher cannot tell whether the tab opened or Google accepted the account. Look for the new tab, or use the direct fallback link shown after the attempt. Use your own managed school Google account. If access is denied, ask the administrator to check your account and role; do not create a replacement Store. The collapsed <strong>Help opening your Store</strong> section offers <a href="#opening-store-help">five local troubleshooting topics</a>.</li>
+<li><strong>Confirm your school and role.</strong> Read the separate deployment check with the administrator. Teachers award, cashiers check out, and students see only their own records. AlloBot cannot see or certify that Google page.</li>
+</ol>
+<h3 id="path-setup" data-guide-path="setup">Set up a Store for my school</h3>
+<p>For the school administrator or technology coordinator. This is a reviewed school-wide setup, not something every teacher repeats. Agree on ownership and district review, use the existing handoff packet when IT will do the technical work, then follow <a href="#setup">all ten setup steps</a>. Inside the signed-in Store, finish the <a href="#admin">first-week checklist</a> before inviting routine use.</p>
+<h3 id="allobot-setup-help">Ask AlloBot for setup guidance</h3>
+<p>In teacher AlloBot, type <strong>Help me set up School Store</strong>. Choose <strong>Try the demo</strong>, <strong>Join my school’s existing Store</strong>, or <strong>Set up a Store for my school</strong>. The supported setup request is handled locally and shows the shared guide; an explicit guide action opens the existing School Store panel or the relevant manual section. It does not send the setup request to AI, handle student data, authorize Google permissions, create a project, run setup, deploy code or write to the points ledger.</p>
+<p>Enter approved configuration only in the setup form and the approved URL only in the connection field. Ask the technical owner about blocked access. A chat answer, copied file or checked box is not evidence that Google access or district approval is complete.</p>
+</div>
 <figure>
 <img src="school-rewards-manual-assets/01-setup-checklist.jpg" width="1100" height="1150" loading="lazy" alt="The School Rewards and Store panel before a portal is connected. A red student-data boundary note, a Launch card reading Not connected yet, a progress bar, a Next step banner, and the first numbered steps of the setup checklist with Copy Code.gs and Copy Portal.html controls.">
-<figcaption>First open: the setup checklist. Each copy control fetches the reviewed file, checks its signature, and marks the step done.</figcaption>
+<figcaption>Earlier setup-panel screenshot, retained to identify the checklist controls. The current panel begins with the three starting paths above. A successful copy marks local checklist progress; it does not verify the installed project.</figcaption>
 </figure>
 <h3>Practice first</h3>
-<p>Before any Google setup, and before a staff meeting, open the <strong>practice portal</strong> from the panel's Launch card (<em>Practice with fictional data</em>) or directly at alloflow-cdn.pages.dev/school-rewards-practice. It is the real portal running on a fictional ledger in your browser: awards, group awards, undo, checkout, receipts, refunds, and the student view all work, and nothing reaches a real ledger. A bar at the top switches the <strong>role</strong> (staff, cashier, administrator, student), picks a <strong>scenario</strong> (a small school in preview, a shopping day with the store open, a large school), and offers <strong>Reset data</strong> to start clean. The page opens with a short introduction and a <strong>Demo guide</strong>: a five-minute walkthrough for presenting the system to administrators. The tour starts only when you press <strong>Start the tour</strong>, so the overview stays still while you talk. The data persists in that browser between visits, so a mistake made in a staff meeting can be undone or reset without consequence.</p>
+<p>Before any Google setup, and before a staff meeting, open the <strong>practice portal</strong> from the panel's Launch card (<em>Practice with fictional data</em>) or through the <a href="https://alloflow-cdn.pages.dev/school-rewards-practice">public practice page</a>. It is the real portal running on a fictional ledger in your browser: awards, group awards, undo, checkout, receipts, refunds, and the student view all work, and nothing reaches a real ledger. A bar at the top switches the <strong>role</strong> (staff, cashier, administrator, student), picks a <strong>scenario</strong> (a small school in preview, a shopping day with the store open, a large school), and offers <strong>Reset data</strong> to start clean. The page opens with a short introduction and a <strong>Demo guide</strong>: a five-minute walkthrough for presenting the system to administrators. The tour starts only when you press <strong>Start the tour</strong>, so the overview stays still while you talk. The data persists in that browser between visits, so a mistake made in a staff meeting can be undone or reset without consequence.</p>
 <figure>
 <img src="school-rewards-manual-assets/09-practice-portal.jpg" width="1180" height="900" loading="lazy" alt="The practice page. A dark purple bar across the top reads Practice mode, fictional data in this browser only, with Role Staff, Scenario Small school, and buttons for Customize, Start the tour, Demo guide, Reset data, and Manual. Below it a card titled Recognize effort, build progress, shop with points introduces the roles, with the Five-minute administrator demo expanded into six numbered steps. Under that, the real portal header shows Practice Elementary Rewards, a STAFF badge, the language menu, and a Help button.">
 <figcaption>The practice page: the role and scenario bar, the introduction, the five-minute demo guide, and the real portal underneath with its own Help button.</figcaption>
 </figure>
 <p>You do not need to customise anything to practise: pick a scenario and press <strong>Start the tour</strong>. <strong>Customize</strong> opens a panel for making the practice school look like yours: the school name, number of students, store status, starting points, the recognition categories and prizes as simple rows, and the <strong>tour steps</strong> as cards. Each card has a role, a tab to open, a control to highlight chosen from a list, a title, and a sentence or two; steps can be added, reordered, or removed, and <em>Use the built-in tour</em> puts the original back. Nothing has to be typed in a technical format. <em>Apply and reload</em> rebuilds the fictional ledger from those settings; <em>Export settings</em> and <em>Import settings</em> move the whole practice set, tour included, between schools as one file. The tour runs the steps for the current role, so a staff meeting can run the staff tour while cashiers run theirs at the register. Choosing Español in the portal's language menu switches the practice bar, introduction, demo guide, and tour as well, so a bilingual staff meeting can run the whole page in Spanish.</p>
 <ol>
-<li><strong>Confirm district review and the managed account</strong> that will own the ledger.</li>
+<li><strong>Confirm district review and the managed account</strong> that will own the ledger. This summary is for the school setup owner; teachers joining an existing Store use the approved link.</li>
 <li><strong>Create the private Apps Script project</strong> and paste the four files from the copy controls.</li>
 <li><strong>Run the one-time setup</strong> using the function the panel generates from your school name, domain, year, and growth thresholds.</li>
 <li><strong>Deploy as a web app</strong> restricted to your Workspace domain and paste the deployment URL into step 9.</li>
-<li><strong>Open the deployment check</strong>, then share the staff link from the Launch card.</li>
+<li><strong>Read the deployment check and test each role</strong> with approved fictional accounts before sharing the staff link through the school's approved channel.</li>
 </ol>
-<p>Section 3 walks through each step. Most of the time goes into the district conversation in step 1, not the clicks.</p>
+<p>Section 3 walks through each step. District review and technical ownership come before authorizing the project.</p>
+<h3 id="local-guided-demo">Separate local guided demo</h3>
+<p>A presenter with their own AlloFlow repository checkout and its existing dependencies can run <code>npm run demo:alloflow</code> from that repository. Open the address printed by the running presentation server on that same computer. A localhost address works only while that person's local server is running; it is not a public demo link for colleagues. For a link others can open without a local server, use the public practice portal above.</p>
+<p>The local walkthrough combines a prepared fictional class, an explicitly reviewed 5-point recognition, the student balance, and one 10-point Notebook purchase: 60 &rarr; 65 &rarr; 55 points when each action is completed once. It runs the actual Store rules against in-memory fictional services. Switching roles is a simulator, not Google sign-in. Reset restores the fictional records and prepared class links; reload older tabs after a reset.</p>
+<p>After the local demo's checkout, <strong>Preview student email</strong> displays the captured generated receipt, including its formatted and plain-text versions. It is labelled <strong>DEMO EMAIL — NOT SENT</strong>: no message is delivered. This preview is specific to the local guided demo and does not establish live email delivery, district access, browser microphone support or printer operation. The public practice page is a separate rehearsal with its own supported features.</p>
 <h2 id="setup">3. Setup, Step by Step</h2>
-<p>The checklist is resumable: it is saved on the device, and steps you tick stay ticked. Copy steps complete themselves when a copy succeeds.</p>
+<p><strong>Who completes this:</strong> the school's administrator or designated technology coordinator, after district review. Teachers and cashiers with an existing approved Store should use <a href="#path-join">Join my school’s existing Store</a>.</p>
+<p>The ten-step checklist is resumable on this device when browser storage is available. Copy steps complete when a copy succeeds, and manual checks record the operator's own confirmation. None of these local indicators automatically inspect the separate Google project.</p>
+<p id="setup-storage-warning"><strong>If the panel cannot save setup settings:</strong> heed its visible browser-storage warning. Setup-form and checklist changes are kept in this tab only and may be lost on reload. Use <strong>Retry saving</strong> to save the current state once browser storage is available. If saving an address or disconnecting fails, the previous saved address stays in place; an edited new address remains unsaved and must be saved or discarded before opening, checking or sharing. Retrying local storage does not rerun setup, change Google permissions or verify a deployment.</p>
+<p class="suite table-scroll-hint">Scroll the table sideways to read all three columns.</p>
+<div class="tablewrap setup-states"><table>
+<caption>Three different setup states</caption>
+<tr><th scope="col">State</th><th scope="col">What it establishes</th><th scope="col">What still needs a person</th></tr>
+<tr><th scope="row">URL saved</th><td>A valid-looking launcher address is stored on this device.</td><td>Open the approved deployment, sign in, and check the school and role. Saving is not deployment verification.</td></tr>
+<tr><th scope="row">Human-confirmed deployment verification</th><td>The operator records having read the deployment check and tested intended roles.</td><td>Repeat checks after relevant account, source or deployment changes. AlloBot cannot certify the separate page.</td></tr>
+<tr><th scope="row">District review</th><td>The school follows its own approval process for ownership, code, permissions, storage, mail and retention.</td><td>Keep that review with the technical owner. A local checkbox does not grant Google permission or prove approval.</td></tr>
+</table></div>
 <p><strong>Handing it to IT.</strong> Steps 2 to 8 happen in the Google Apps Script editor, and most principals delegate them. Fill in the school details under step 7, then use <strong>Download instructions for IT</strong> at the top of the checklist: one file with the eight steps in plain words, the four sources with copy buttons, and the setup function. <strong>Copy as email text</strong> gives the same steps with links to the sources. The coordinator sends back the link ending in <code>/exec</code>, which you paste in step 9.</p>
-<ol>
+<ol id="school-setup-checklist">
 <li><strong>Confirm district review and the managed account.</strong> The school or district reviews <code>Code.gs</code>, <code>Portal.html</code>, <code>Index.html</code>, and <code>appsscript.json</code>, plus Apps Script use, Sheet storage, mail sending, and retention. Sign in to the managed Google Education account that will own the ledger, the mail trigger, and the private print-model folder. A durable role account is safer than a personal one.</li>
 <li><strong>Create the private project.</strong> Open <a href="https://script.new/">script.new</a>, confirm the account again, and name the project <code>AlloFlow School Rewards</code>. In Project Settings turn on <em>Show appsscript.json manifest file in editor</em>.</li>
 <li><strong>Replace Code.gs.</strong> Code.gs is already open with a few starter lines. Click inside it, press Ctrl+A, paste the source over it, and save with Ctrl+S.</li>
 <li><strong>Add the Portal page.</strong> In the Files list on the left click the + beside Files and choose HTML. Type <code>Portal</code> (the editor adds .html), press Enter, select the starter lines, paste, save.</li>
 <li><strong>Add the Index page</strong> the same way, named exactly <code>Index</code>. It only wraps the Portal page.</li>
 <li><strong>Replace appsscript.json.</strong> The manifest restricts the web app to your domain, runs it as the deploying account, and declares the Sheets, Drive, mail, and trigger scopes.</li>
-<li><strong>Run the one-time setup.</strong> Fill in the school name, allowed domain, academic year, and growth thresholds; leave the default recognition categories on unless the school has its own. Copy the generated <code>runInitialSchoolRewardsSetup</code> function, paste it at the end of Code.gs, choose it in the function menu, and click Run. Approve the scopes once. The account that runs it becomes the first administrator, and the allowed domain must match its email domain. Staff, cashiers, and students are added later inside the portal.</li>
+<li><strong>Run the one-time setup.</strong> Fill in the school name, allowed domain, academic year, and growth thresholds; leave the default recognition categories on unless the school has its own. Copy the generated <code>runInitialSchoolRewardsSetup</code> function, paste it at the end of Code.gs, choose it in the function menu, and click Run. The technical owner checks the requested permissions against the district-approved source and manifest before authorizing. If Google shows a warning or district policy blocks access, stop and consult IT; do not bypass the warning. The account that runs it becomes the first administrator, and the allowed domain must match its email domain. Staff, cashiers, and students are added later inside the portal.</li>
 <li><strong>Deploy.</strong> Deploy &rarr; New deployment &rarr; Web app. Execute as <strong>Me</strong>; who has access: <strong>users in your Google Workspace domain</strong>, never Anyone. Copy the URL ending in <code>/exec</code>. Any later source change needs a new deployment version.</li>
-<li><strong>Paste the deployment URL and connect.</strong> Only an HTTPS <code>script.google.com</code> address ending in <code>/macros/s/&hellip;/exec</code> is accepted. It is saved on this device.</li>
-<li><strong>Verify.</strong> Open the deployment check; the page should say <em>Deployment check passed</em> with the school, domain, script version, and your role. Then open the portal once as each intended role and confirm each sees only its own surface.</li>
+<li><strong>Save the approved deployment URL.</strong> Only an HTTPS <code>script.google.com</code> address ending in <code>/macros/s/&hellip;/exec</code> is accepted. Saving it on this device does not publish code, grant access or establish that the deployment works.</li>
+<li><strong>Verify with approved test accounts.</strong> Open the deployment check; read <em>Deployment check passed</em> with the expected school, domain, script version, and role. Then test each intended role with approved accounts and fictional records. Record verification only after those checks; the local checkbox is human confirmation, not automatic evidence from AlloBot.</li>
 </ol>
 <figure>
 <img src="school-rewards-manual-assets/02-connected-launch.jpg" width="1100" height="1150" loading="lazy" alt="The panel after connecting: a Connected badge, the saved deployment URL, buttons to open the portal, open the deployment check, and disconnect, and a Share with staff box with a QR code, the staff link, and a Copy staff link button.">
-<figcaption>Connected: the Launch card, and the staff link that colleagues use with their own Google sign-in.</figcaption>
+<figcaption>Earlier launcher screenshot. A saved address lets colleagues open the approved Store with their own managed sign-in; the pictured Connected badge does not itself prove deployment verification.</figcaption>
 </figure>
-<p><strong>Sharing with staff.</strong> The staff link is the same portal address. It carries no secret, so posting it in a staff channel or on a poster is fine: sign-in and the roster decide what each person can do. The QR code is the same link.</p>
+<p><strong>Sharing with staff.</strong> Share the approved portal address or its QR code through the school's approved staff channel after verification. The address carries no sign-in credential: the managed account, roster and staff list still determine access. Do not include student information in links.</p>
 <p><strong>If the clipboard is blocked</strong> in your window, the copy control shows the verified source pre-selected in a box; press Ctrl+C (Cmd+C on a Mac) and paste it into the editor. Copying from the box marks the step done.</p>
 <h2 id="awarding">4. Awarding Points</h2>
 <p class="suite">Training day: the <a href="school-rewards-quick-cards.html">printable quick cards</a> hold this section and the next on one page each, for staff and for cashiers, plus a one-page card for students and families.</p>
@@ -444,7 +479,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>Families.</strong> Where a school has set up reviewed guardian connections, guardians receive bounded digests of positive progress. Digests omit staff notes and transaction-level reasons on purpose; the detailed view belongs to the signed-in student.</li>
 </ul>
 <h2 id="classroom">7. Connecting to the Classroom: Worksheet and Roster Bridge</h2>
-<p>AlloFlow and School Rewards use opposite identity models on purpose. Classroom sessions in AlloFlow run on codenames and hold no student names or emails; the rewards ledger is keyed by each student's managed Google identity. Two bridges respect that boundary.</p>
+<p>Classroom sessions in AlloFlow use codenames; the Store maintains its canonical school student records. The worksheet and CSV template below help staff prepare work without automatically sending points. Reviewed class links add an optional, separately approved identity workflow. Codenames and opaque IDs are pseudonymous, not anonymous; check that they do not contain real names.</p>
 <figure>
 <img src="school-rewards-manual-assets/08-recognition-worksheet.jpg" width="1100" height="1150" loading="lazy" alt="The lower part of the connected panel: the Share with staff box, the folded setup checklist, a Classroom roster bridge card listing Period 2 and Period 5 with learner counts and a Download roster template CSV button, and a Recognition worksheet table listing Blue Falcon with three tokens for Collaboration and Ready to learn, and Quiet Otter with one token for Self-regulation, with download and copy buttons.">
 <figcaption>The two classroom bridges. Both work with codenames only; the administrator adds real identities from the student information system.</figcaption>
@@ -453,6 +488,19 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>Recognition worksheet.</strong> During a live class session, recognition given in AlloHaven is summarised here by codename with the reasons and counts. A teacher awards it in the portal by picking the student, or with a group award when the reason is the same. Nothing is sent to the ledger automatically. The worksheet keeps recent sessions on this device (codenames only, the last forty sessions or ninety days), so a teacher who awards weekly sees a Sessions column and totals across those sessions rather than only the class on screen.</li>
 <li><strong>Classroom roster bridge.</strong> Exports the teacher's roster groups as a CSV template: the group becomes the homeroom and the codename a cross-reference column, while first name, last initial, grade, and managed email are left blank for an administrator to complete from the SIS before importing in the portal's Admin tab. The importer ignores the two extra columns. Nothing leaves the device in this step.</li>
 </ul>
+<h3 id="reviewed-class-links">Optional reviewed class links and Classroom import</h3>
+<ol>
+<li>For an established AlloFlow class, use the Teacher Portal's <strong>Store review file</strong>. It exports the existing class ID, learner IDs and codenames only. Preserve these stable identities for updates; do not regenerate IDs to resolve a conflict.</li>
+<li>After separate district review of mapping and historical retention, a Store administrator enables reviewed class links. They manually match each intended learner to an existing Store student, choose the staff grants, preview the exact changes and confirm. No first-name or email guessing is used.</li>
+<li>Granted staff load the class and codename in the Store, resolve the school student, review that identity, and use it in the ordinary award form. Lookup and form filling do not record points; the existing award confirmation remains required.</li>
+</ol>
+<p>The mapping stays in the school repository, outside the lesson roster and AI prompts. Historical associations remain retained; suspended or omitted links stop current lookup without rewriting history. A lost save response requires the original unchanged request and retry key. See the <a href="docs/school_store_class_links.md">class-link guide</a> for review and recovery.</p>
+<p>The separate <a href="docs/google_classroom_import.md">Google Classroom import helper</a> requires its own district-approved OAuth configuration. It reads an explicitly selected taught class and temporarily shows names beside codenames for review; its download excludes names, Google IDs and tokens. It creates a new identity set for a new or empty AlloFlow class, not repeat synchronization for an established class. It neither creates Store students nor grants Store roles. Classroom, Store, and <a href="docs/google_workspace_connections.md">Educator Evaluation permissions remain separate</a>.</p>
+<h3 id="typed-recognition">Typed recognition and optional on-device dictation</h3>
+<p>In the signed-in Store, load a reviewed class, select one class and an active recognition category, then type an exact-codename request such as <code>give Calm Otter 5 points for helping</code>. Choose <strong>Review typed recognition</strong>, check the canonical school student and every detail, then choose <strong>Use this student in the award form</strong> and confirm the award separately. The local parser supports bounded English and Spanish commands. The explanation does not select a category, and unknown or ambiguous learners are not guessed.</p>
+<p>AlloBot's supported typed award request offers an explicit clean Store launch without transferring the request. Re-enter it inside the Store; keep real student information out of ordinary chat. The <a href="docs/school_store_typed_recognition.md">typed-recognition guide</a> covers limits and exact pending retries.</p>
+<p><strong>Start on-device dictation</strong> is optional and dedicated to this Store draft. With a class and category chosen and an empty request, explicitly start one capture in English (United States) or Spanish (Spain). It requires secure-page local speech support and an already installed language pack, ends within 15 seconds including the readiness check, and fills editable text only. Review misheard words and follow the same typed review and separate award confirmation. Cancel or change context to discard unfinished capture.</p>
+<p>When local speech is unavailable or permission is denied, type instead. There is no cloud fallback or automatic language-pack installation. The ordinary AlloBot microphone and device dictation are not covered by this local-only gate. Real microphone support in a particular Apps Script deployment remains unverified; the <a href="docs/school_store_voice_awards.md">dedicated dictation guide</a> explains the browser boundary.</p>
 <h2 id="printlab">8. The 3D Print Lab</h2>
 <p>Students can submit a 3D design, receive a staff-reviewed point quote, and reserve points until the finished piece is collected. A new deployment starts with the tab <strong>hidden</strong>. An administrator enables it under <strong>School settings</strong> after arranging the school's printer and review process. Existing records remain in the ledger when the tab is hidden; visibility does not grant or remove account permissions.</p>
 <h3>Describe a piece, then edit it</h3>
@@ -470,7 +518,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 </ol>
 <p>Model files stay in school-managed storage. Students do not receive Drive links to private assets. If storage access cannot be verified, stop and have the deployment owner review it. The package README contains the full staff runbook.</p>
 <h2 id="admin">9. Administration</h2>
-<p><strong>First-week checklist.</strong> The top card on the Admin setup tab works itself out from the ledger: staff and cashier members, students on the roster, categories, a prize, a store window in preview, the first award, and the first checkout. Nothing is ticked by hand, and each open line names the card that completes it and carries a button that opens that card or tab. It is also the honest way to confirm each role works: when a teacher's first award appears, their sign-in and role are proven.</p>
+<p><strong>First-week checklist.</strong> The top card on the Admin setup tab works itself out from the ledger: staff and cashier members, students on the roster, categories, a prize, a store window in preview, the first award, and the first checkout. Nothing is ticked by hand, and each open line names the card that completes it and carries a button that opens that card or tab. These are recorded-activity checks, not proof that every intended role has been tested: an administrator can record an award too. Separately verify the intended staff, cashier and student accounts with approved fictional records before routine use.</p>
 <p><strong>How the tab is laid out.</strong> Admin setup opens with the checklist and School settings expanded and every other card collapsed, so a new administrator meets two cards rather than nineteen. The section links at the top expand a card, scroll to it, and move keyboard focus to its heading. <em>Adjust stock</em> on a prize opens the separate inventory card, because editing a prize never changes its stock.</p>
 <p><strong>Answering a records request.</strong> The Admin setup tab has a <strong>Records requests</strong> card. <em>Download this student’s full record</em> produces a file with every row the repository holds about one student, which is what a parent or district request usually asks for. <em>Redact permanently</em> replaces that student’s name, school email, and the words staff wrote about them with a placeholder, and parks the account so it cannot sign in. Points, dates, and record ids stay, so balances still reconcile and the audit check still passes.</p>
 <p><strong>Do not delete rows in the spreadsheet.</strong> The audit trail is a chain in which each entry carries the fingerprint of the one before it. Removing a row breaks that chain permanently, and the integrity check will report a break from then on with no sign of what caused it. Redaction is the supported path because it edits in place and adds an entry, which extends the chain instead of breaking it.</p>
@@ -496,11 +544,11 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p>A Google spreadsheet holds ten million cells. A school will not approach that for years, but whole-sheet reads slow down long before the limit, so it is worth checking once a year, at the same time as closing the year.</p>
 <h2 id="privacy">10. Privacy, Records, and Boundaries</h2>
 <ul>
-<li><strong>Where data lives.</strong> Names, managed emails, balances, roles, and reasons live in the school-owned Sheet and Drive folder. AlloFlow stores the launcher URL and the setup checklist on the connecting device, and nothing about students.</li>
+<li><strong>Where data lives.</strong> Names, managed emails, balances, roles, and reasons live in the school-owned Sheet and Drive folder. The AlloFlow Store launcher stores the URL and setup checklist on the connecting device. Classroom tools separately hold pseudonymous lesson state, and approved review files contain the specified codenames and identifiers.</li>
 <li><strong>Who can see what</strong> is decided server-side from the roster and staff list after Google sign-in. Students see only themselves. Staff never see receipts.</li>
 <li><strong>What not to write.</strong> Reasons are student-facing. Do not put disability, discipline, behaviour narratives, protected-category labels, or other sensitive information in a reason or a prize description.</li>
 <li><strong>Corrections are entries, not edits.</strong> The ledger is append-only; an undo or correction is a new reversal entry, and every mutation is journaled and audited with a tamper-evident hash chain.</li>
-<li><strong>The classroom bridges never move identity.</strong> Codenames cross; names and emails do not.</li>
+<li><strong>Classroom and Store identity.</strong> Worksheet and review-file exports contain codenames and the specified lesson identifiers. The optional reviewed link maps them to existing school students only inside the Store repository. It is not automatic Classroom synchronization, a shared OAuth grant or permission for AI to receive student data.</li>
 <li><strong>Records policy.</strong> Retention, export, and deletion follow the district's schedule. This package is technical infrastructure; it is not a FERPA or local-policy determination, and this manual is not legal advice.</li>
 </ul>
 <h2 id="access">11. Themes, Phones, Languages, and Accessibility</h2>
@@ -518,18 +566,32 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <figcaption>A student's phone view in Spanish, with the tab bar pinned to the bottom of the screen.</figcaption>
 </figure>
 <h2 id="troubleshooting">12. Troubleshooting</h2>
+<h3 id="opening-store-help">Help opening your Store</h3>
+<p>In the AlloFlow Store launcher, expand <strong>Help opening your Store</strong> for these five fixed local topics. It starts collapsed and does not inspect a Google page, send the request to AI, collect student data, grant access or change settings. Keep approved addresses in the connection field and never put passwords or student records in chat.</p>
+<dl id="store-troubleshooting-topics">
+<dt data-troubleshooting-topic="new-tab">Nothing opened in a new tab</dt><dd>An opening request is not confirmation that a new tab appeared. Check your other tabs, then use the direct fallback link shown after your attempt. If your browser or district blocks it, ask your technology coordinator about the approved browser settings. Do not bypass a Google or district security warning.</dd>
+<dt data-troubleshooting-topic="sign-in">Google asks me to sign in</dt><dd>Use your own managed school Google account and the school-approved Store link. Being signed into Gemini or a personal Google account does not grant Store access. If the wrong account appears, use the account-switching method approved by your school; do not share passwords or accounts.</dd>
+<dt data-troubleshooting-topic="role-access">I can sign in, but access is denied</dt><dd>Ask the Store administrator to confirm the approved deployment, allowed school domain and your assigned role. A teacher or cashier needs the corresponding staff access; students use their own managed identity. The launcher cannot grant a role, and creating another Store will not fix access to the existing one.</dd>
+<dt data-troubleshooting-topic="address">My Store link will not save, or looks wrong</dt><dd>Ask the administrator for the approved HTTPS script.google.com deployment address ending in /macros/s/{deployment}/exec, without extra query parameters or a fragment. Do not use the editor address or a /dev test link. An edited address must be saved or discarded before launching. The saved-address badge does not verify which school is behind the link.</dd>
+<dt data-troubleshooting-topic="connections">Which Google connection do I need?</dt><dd>The school-managed Store has its own sign-in and staff roles. Classroom authorization is a separate read-only roster import and does not grant Store access. Canvas and desktop launch the Store; they do not hold its official ledger. Educator Evaluation has separate personnel records and permissions. A Clever launch link does not replace these approvals.</dd>
+</dl>
 <ul><li><strong>A reward is missing:</strong> choose <strong>Clear filters</strong> and refresh availability. A sold-out prize can remain your saving goal; only an active catalog item is shown.</li><li><strong>The saving goal is different on another device or next year:</strong> goals are browser preferences scoped to the student, school, and academic year, not a purchase or a cross-device reservation.</li><li><strong>Print quote fields are disabled after verification:</strong> wait for the refresh to finish. If it fails, use the saved-change refresh control before continuing; do not assume a quoted amount was saved.</li></ul>
 <p><strong>"The ledger needs an administrator to review it."</strong> The portal shows this sentence in place of any internal integrity message. Nothing was changed. <em>Show details</em> reveals the exact text for the administrator, who runs the integrity report from Admin setup. The deployment check page and the portal's day-to-day messages are written to say what happened and what to do next; if one is still unclear, quote it when asking for help.</p>
 <ul>
-<li><strong>The card only shows the setup checklist:</strong> no deployment URL is saved on this device. Paste it in step 9, or ask the administrator for the staff link.</li>
+<li><strong>I am a teacher or cashier and see setup choices:</strong> choose <strong>Join my school’s existing Store</strong> and ask the administrator for the approved link. A missing saved URL does not mean the school needs a new Store.</li>
+<li><strong>The URL is saved but access is denied:</strong> saving only remembers an address. Check the managed account and ask the administrator to confirm the approved deployment and your role. Do not mark verification complete until the actual check and role tests pass.</li>
+<li><strong>I edited the address and cannot open, check or share:</strong> review the edited address and choose <strong>Save address</strong>, or choose <strong>Discard changes</strong> to restore the saved address. These actions stay unavailable while the address has unsaved changes; a blank Save does not disconnect an existing Store.</li>
+<li><strong>The panel warns that settings were not saved:</strong> see <a href="#setup-storage-warning">the browser-storage warning</a>. Retry the setup settings save when storage is available; do not assume unsaved form or checklist changes will survive closing or reloading the page. A failed address save or Disconnect leaves the previous saved address unchanged.</li>
+<li><strong>Google shows a warning or policy block:</strong> stop and consult the district technical owner. Do not bypass the warning or switch to public access.</li>
+<li><strong>The local guided demo will not open:</strong> its presentation server must be running from your own repository on the same computer. Use the public practice page for a rehearsal that does not require that server.</li>
 <li><strong>Deployment check failed:</strong> you are not signed in to a managed account in the allowed domain, the one-time setup has not run, or the deployment is an older version. The page names the reason.</li>
-<li><strong>The portal was blocked:</strong> allow pop-ups for AlloFlow and try again, or open the staff link directly.</li>
+<li><strong>I cannot see a new Store tab:</strong> follow <a href="#opening-store-help">Help opening your Store</a>, look for another tab or window, and use the direct fallback link if needed. The launcher cannot determine whether a browser blocked the request, a tab opened elsewhere, or Google accepted sign-in; opening a link does not verify access.</li>
 <li><strong>Copy Code.gs shows “Clipboard is blocked in this window”:</strong> use the pre-selected source box and Ctrl+C, or the view source link.</li>
 <li><strong>Unexpected source received; nothing copied:</strong> the fetched file did not match its expected signature. Use the view source link and compare with the repository.</li>
 <li><strong>An award went to the wrong student:</strong> choose Undo in the notice within fifteen minutes; otherwise an administrator records a correction from Progress &amp; activity.</li>
 <li><strong>A group award reported failures:</strong> the students named were not recorded; the rest were. Fix the cause and award only the missing students.</li>
 <li><strong>A checkout timed out or the result is ambiguous:</strong> do not submit again with a new request. Keep the screen, note the time and cart, and follow the runbook; the portal keeps a stable retry key for an exact retry.</li>
-<li><strong>Practice shows “not available in practice mode”:</strong> bulk mail, guardian digests, the Print Lab, and integrity recovery need a real deployment; everything a staff member or cashier does on a normal day works in practice.</li>
+<li><strong>Practice shows “not available in practice mode”:</strong> the public rehearsal covers its displayed fictional award, checkout and student workflows. It does not verify live mail, reviewed class links, dictation, private Print Lab storage or recovery. The separate local guided demo's email preview is generated but never sent.</li>
 <li><strong>A student sees English in the portal after choosing Spanish:</strong> the choice is per browser; some staff-facing strings are English by design. The practice page follows the same menu: its bar, introduction, demo guide, customize panel, and tour switch to Spanish with the portal. Category and prize names you type into the customize panel stay as you wrote them.</li>
 <li><strong>Not sure what a screen is asking:</strong> press <strong>Help</strong> at the top of the portal. The answers are short, specific to your role, and do not need an outside connection.</li>
 </ul>
@@ -541,7 +603,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <dt>Shopping window</dt><dd>The trimester record whose state decides whether prizes are previewed, sold, or closed.</dd>
 <dt>Group award</dt><dd>One explanation recorded as separate awards for up to sixty students.</dd>
 <dt>Undo window</dt><dd>The fifteen minutes in which the awarding staff member can reverse their own award.</dd>
-<dt>Deployment check</dt><dd>The portal page at the deployment URL with <code>?api=status</code> that confirms the service, version, school, domain, and your role.</dd>
+<dt>Deployment check</dt><dd>The separate portal page at the deployment URL with <code>?api=status</code>. Read its service, version, school, domain and role. Saving its address or ticking a local verification box does not run or certify that check.</dd>
 <dt>Codename</dt><dd>The classroom-session identity AlloFlow uses instead of a student's name.</dd>
 <dt>Roster bridge</dt><dd>The CSV template that carries groups and codenames, never names or emails, from AlloFlow to the portal importer.</dd>
 <dt>Built-in help</dt><dd>The Help panel in the portal header: role-specific answers, the two kinds of points, and links to this manual and the quick cards.</dd>
@@ -709,6 +771,12 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
   var bar = el('div', { class: 'rtools', id: 'rtools', lang: 'en', role: 'region', 'aria-label': 'Reading tools' },
     [el('div', { class: 'rtools-in' }, [toggle, panel])]);
   d.body.insertBefore(bar, d.body.firstChild);
+  // Keep fragment-linked headings below the toolbar, including its expanded state.
+  function updateAnchorOffset() {
+    root.style.setProperty('--reading-tools-height', bar.getBoundingClientRect().height + 'px');
+  }
+  window.addEventListener('resize', updateAnchorOffset);
+  updateAnchorOffset();
   d.body.appendChild(el('div', { id: 'rtools-ruler', 'aria-hidden': 'true' }));
   Array.prototype.forEach.call(d.querySelectorAll('.tablewrap'), function (wrap, index) {
     var caption = wrap.querySelector('caption');
@@ -749,6 +817,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
     var open = panel.hasAttribute('hidden');
     if (open) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    updateAnchorOffset();
   });
 
   var ruler = $('rtools-ruler');
@@ -782,7 +851,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 </script>
 
 <footer>
-<p>AlloFlow School Rewards &amp; Store. User manual, September 2026. Screenshots use fictional data; nothing in them represents a real student or school. This manual describes how the tool works; retention, records, and family-communication decisions belong to your district.</p>
+<p>AlloFlow School Rewards &amp; Store. User manual, September 2026. Screenshots use fictional data; nothing in them represents a real student or school. Earlier screenshots remain to identify established controls; the current starting paths and later optional features are described in the text. This manual describes how the tool works; retention, records, and family-communication decisions belong to your district.</p>
 </footer>
 </main>
 </body>

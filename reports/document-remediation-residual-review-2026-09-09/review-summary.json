@@ -1,0 +1,30 @@
+{
+  "reviewedAt": "2026-09-10T02:49:42.663Z",
+  "policyVersion": "20260909-5",
+  "findings": 8,
+  "priorities": {
+    "P1": 1,
+    "P2": 5,
+    "P3": 2
+  },
+  "probeCount": 17,
+  "defectReproductions": 9,
+  "controls": 8,
+  "applicationCodeChanged": false,
+  "implementationHashesVerified": true,
+  "implementationHashes": {
+    "doc_pipeline_source.jsx": "a2c1ea9c7ba90b18ac0546dac54a66ab0e423a1902a375433807ef7363b92abb",
+    "doc_pipeline_module.js": "156f2ec3d8eb4003240ce049c0118fd25981eb8a71c860965b9dd49457b388c6",
+    "desktop/web-app/public/doc_pipeline_module.js": "156f2ec3d8eb4003240ce049c0118fd25981eb8a71c860965b9dd49457b388c6",
+    "dev-tools/rendered_document_fidelity.cjs": "c8310dbf87f169b8c84534ebd86ee887685bf6b2e8b37b78c0483331938818cb",
+    "dev-tools/document_export_at_acceptance.cjs": "1bb823da6503375243d25211d55d17b1de1a425c26071f614088abc2754fa590"
+  },
+  "evidence": [
+    "live/results.json",
+    "export/results.json",
+    "rendered-results.json"
+  ],
+  "liveModelCalls": 0,
+  "humanValidation": "not-run",
+  "deployment": "not-run"
+}

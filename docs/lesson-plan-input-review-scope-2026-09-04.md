@@ -1,6 +1,6 @@
 # Product scope: review changed planning inputs
 Date: 2026-09-04  
-Status: scoped; application feature not implemented.
+Status: generation-time records and saved-input disclosure implemented September 8, 2026; comparison and review acknowledgement remain scoped.
 
 ## Decision
 
@@ -152,3 +152,8 @@ Use a clickable prototype or first implementation with three to five educators; 
 Check whether they can identify what needs inspection, understand that the plan is not automatically wrong, preserve their edits, and correctly interpret the unavailable state. Also test the quiz-wording-only limitation explicitly.
 
 Advance if most participants can complete those tasks without explanation and find the information useful during their normal plan review. If they read the status as a blanket accuracy guarantee, revise the wording/scope before expansion. If they mainly need full-material comparison, reassess that separate opportunity rather than overstating this detector's coverage.
+
+
+## September 8 implementation update
+
+Generation-time summary/inventory records and the saved-input disclosure are implemented in both creation paths, including local-model cutoffs and Full Pack scopes. Input-change comparison and reviewed-version acknowledgement remain future work. See the [implementation and validation report](../reports/map-planning-refinements-2026-09-08/REVIEW.md).

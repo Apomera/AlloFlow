@@ -1,0 +1,12 @@
+[
+  {
+    "path": "doc_pipeline_module.js",
+    "sha256": "47fb7a1e4baf183813a69077f41f8b86d9081f9da304cfce962c4533a18f0ba3",
+    "mirrorMatches": true
+  },
+  {
+    "path": "view_pdf_audit_module.js",
+    "sha256": "0d811811db0eccc89980784f5de8d416f0ebef7836e56a71818e7af38da907ce",
+    "mirrorMatches": true
+  }
+]

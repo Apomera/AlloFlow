@@ -42,7 +42,71 @@
   var GitMerge = _lazyIcon('GitMerge');
   var X = _lazyIcon('X');
 
-  function LessonPlanView(props) {
+  function PlanningInputsSummary(props) {
+  const record = props.resource?.config?.generationInputs;
+  const label = (key, fallback) => {
+    const value = typeof props.t === 'function' ? props.t('lesson_plan.inputs.' + key) : '';
+    return typeof value === 'string' && value && value !== 'lesson_plan.inputs.' + key ? value : fallback;
+  };
+  const valid = record?.version === 1 && ['teacher', 'study', 'family'].includes(record.mode) && Array.isArray(record.summaries) && Array.isArray(record.inventory);
+  if (!valid) return /*#__PURE__*/React.createElement("p", {
+    className: "mb-4 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+  }, label('not_recorded', 'Input versions were not recorded for this saved guide.'));
+  const history = Array.isArray(props.history) ? props.history : [];
+  const renderInput = (item, index) => {
+    if (!item || typeof item !== 'object' || typeof item.title !== 'string') return null;
+    const matches = item.id == null ? [] : history.filter(resource => resource && String(resource.id) === String(item.id));
+    const canOpen = item.id != null && matches.length === 1 && typeof props.onOpen === 'function';
+    return /*#__PURE__*/React.createElement("li", {
+      key: String(item.id || 'source') + ':' + index,
+      className: "flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white p-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "min-w-0 flex-1 basis-48 break-words"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-semibold text-slate-900"
+    }, item.title), typeof item.kind === 'string' && /*#__PURE__*/React.createElement("span", {
+      className: "block text-sm text-slate-700"
+    }, item.kind, item.partial ? ' · ' + label('partial', 'partial excerpt') : ''), item.id != null && matches.length !== 1 && /*#__PURE__*/React.createElement("span", {
+      className: "block text-sm text-amber-900"
+    }, matches.length ? label('ambiguous', 'More than one resource has this ID; opening is unavailable.') : label('missing', 'This resource is not in the current library.'))), canOpen && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => props.onOpen(item.id),
+      "aria-label": label('open', 'Open current resource') + ': ' + item.title,
+      className: "min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-semibold text-indigo-800 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+    }, label('open', 'Open current resource')));
+  };
+  return /*#__PURE__*/React.createElement("details", {
+    key: String(props.resource?.id),
+    className: "mb-4 rounded-xl border border-indigo-200 bg-white/80 text-slate-900"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "min-h-11 cursor-pointer rounded-xl px-4 py-3 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, label('title', 'Inputs supplied at generation time')), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4 px-4 pb-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700"
+  }, label(record.mode, record.mode === 'teacher' ? 'Teacher lesson plan' : record.mode === 'study' ? 'Student study guide' : 'Family guide'), ". ", label('scope', 'This records the summaries and inventory supplied to generation. It does not prove every resource was used or verify the plan’s accuracy.')), !record.traceComplete && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-amber-900"
+  }, label('untraced', 'Detailed input tracking was unavailable for this generation.')), record.summaries.length > 0 && /*#__PURE__*/React.createElement("section", {
+    "aria-label": label('summaries', 'Supplied summaries')
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "mb-2 text-sm font-bold"
+  }, label('summaries', 'Supplied summaries')), /*#__PURE__*/React.createElement("ul", {
+    className: "space-y-2"
+  }, record.summaries.map(renderInput))), record.inventoryStatus === 'recorded' && record.inventory.length > 0 && /*#__PURE__*/React.createElement("section", {
+    "aria-label": label('inventory', 'Available assets')
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "mb-2 text-sm font-bold"
+  }, label('inventory', 'Available assets')), /*#__PURE__*/React.createElement("p", {
+    className: "mb-2 text-sm text-slate-700"
+  }, label('inventory_note', 'Titles and resource IDs were supplied as an inventory; this is separate from the summaries above.')), /*#__PURE__*/React.createElement("ul", {
+    className: "space-y-2"
+  }, record.inventory.map(renderInput))), record.inventoryStatus === 'untraced' && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-amber-900"
+  }, label('custom_inventory', 'A custom inventory was supplied, but its resource identities were not recorded.')), record.projection === 'local-excerpt-v1' && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700"
+  }, label('local', 'Only the context excerpt supplied to the local model is listed. No asset inventory was supplied.'))));
+}
+function LessonPlanView(props) {
   var t = props.t;
   var generatedContent = props.generatedContent;
   var sourceTopic = props.sourceTopic;
@@ -110,9 +174,12 @@
     "aria-label": t('lesson_plan.tooltip_pdf')
   }, /*#__PURE__*/React.createElement(FileDown, {
     size: 14
-  }), " ", t('lesson_plan.pdf_button')))), /*#__PURE__*/React.createElement("div", {
-    className: "text-xs font-bold text-indigo-500 mb-4 bg-white/50 px-3 py-1.5 rounded-lg border border-indigo-100 inline-block"
-  }, t('lesson_plan.based_on'), ": ", history.find(h => h && h.type === 'analysis') ? `${t('lesson_plan.analysis_lbl')}, ` : '', history.find(h => h && h.type === 'simplified') ? `${t('lesson_plan.leveled_text_lbl')}, ` : '', history.find(h => h && h.type === 'quiz') ? `${t('lesson_plan.quiz_lbl')}, ` : '', history.find(h => h && h.type === 'glossary') ? t('lesson_plan.glossary_lbl') : t('lesson_plan.source_lbl')), isTeacherMode && !isParentMode && !isIndependentMode && typeof props.onGenerateTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
+  }), " ", t('lesson_plan.pdf_button')))), /*#__PURE__*/React.createElement(PlanningInputsSummary, {
+    resource: generatedContent,
+    history: history,
+    t: t,
+    onOpen: props.onOpenPlanningResource
+  }), isTeacherMode && !isParentMode && !isIndependentMode && typeof props.onGenerateTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
     className: "mb-6"
   }, window.AlloModules?.LessonTeachingScriptView && (!props.teachingScriptLoadState || props.teachingScriptLoadState === 'ready') ? React.createElement(window.AlloModules.LessonTeachingScriptView, {
     key: String(generatedContent.id),

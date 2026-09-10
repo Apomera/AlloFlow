@@ -1,0 +1,113 @@
+{
+  "measuredAt": "2026-09-09T23:27:46.054Z",
+  "changes": [
+    "desktop/mobile/print rendering profiles",
+    "NFC text preservation",
+    "animation and unresolved media coverage",
+    "self-contained HTML review",
+    "artifact and source byte stability",
+    "calibration input stability"
+  ],
+  "tests": {
+    "rendered": {
+      "startTime": "2026-09-09T23:00:23.982Z",
+      "duration": 530735.6449999999,
+      "expected": 42,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "exportInitial": {
+      "startTime": "2026-09-09T23:10:12.581Z",
+      "duration": 584166.384,
+      "expected": 13,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "exportRetry": {
+      "startTime": "2026-09-09T23:20:41.895Z",
+      "duration": 74409.74699999999,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "unit": {
+      "passed": 11,
+      "files": 2
+    },
+    "distinctPassed": 67
+  },
+  "calibration": {
+    "total": 29,
+    "matched": 29,
+    "metrics": {
+      "harmfulCases": 18,
+      "validRepairs": 8,
+      "falseAccepts": 0,
+      "falseRejections": 0,
+      "falseAcceptanceRate": 0,
+      "falseRejectionRate": 0,
+      "unexpectedlyUnavailable": 0
+    },
+    "evidence": {
+      "complete": true,
+      "changedInputs": []
+    }
+  },
+  "review": {
+    "cliExitCode": 1,
+    "status": "review-required",
+    "checks": [
+      {
+        "id": "desktop",
+        "main": 1,
+        "heading": "Rendered fidelity review",
+        "viewportWidth": 1100,
+        "documentWidth": 1100,
+        "scripts": 0,
+        "profiles": 3
+      },
+      {
+        "id": "mobile",
+        "main": 1,
+        "heading": "Rendered fidelity review",
+        "viewportWidth": 390,
+        "documentWidth": 390,
+        "scripts": 0,
+        "profiles": 3
+      }
+    ],
+    "humanValidation": "not-run"
+  },
+  "files": [
+    {
+      "path": "dev-tools/rendered_document_fidelity.cjs",
+      "sha256": "c827afccd8d145e9bb069eefcaa0a44d69f723bf24efaf8764560337782b83d8"
+    },
+    {
+      "path": "dev-tools/calibrate_rendered_fidelity.cjs",
+      "sha256": "7c612d2685a2d1d49a1fcf8532584fadad68a2ad7ac6f254cb2aeb566d77822c"
+    },
+    {
+      "path": "dev-tools/rendered_fidelity_review.cjs",
+      "sha256": "14522a1177d34ed6d4ac1a6fe8848dfae866b7365aa71523db56ff5b6742427d"
+    },
+    {
+      "path": "dev-tools/document_export_at_acceptance.cjs",
+      "sha256": "e07b9b02f0796f2010bb3d344e1e42a2787c09ff7ea896c6b8a0b3a6d7788aea"
+    },
+    {
+      "path": "tests/fixtures/rendered_fidelity/cases.cjs",
+      "sha256": "252f63c85acd3a606112f951c413369348077f64c4b2e55448436d48651a8da4"
+    },
+    {
+      "path": "tests/fixtures/rendered_fidelity/extended_cases.cjs",
+      "sha256": "f80ef9dc54e29d4f30d72e796f26f5bc87aad90a41a1c04acf800c8168491910"
+    }
+  ],
+  "humanValidation": "not-run",
+  "deployment": "not-run",
+  "liveModelCalls": 0
+}

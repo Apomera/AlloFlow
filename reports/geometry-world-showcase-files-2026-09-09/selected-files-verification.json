@@ -1,0 +1,210 @@
+{
+  "success": true,
+  "uniqueTests": 39,
+  "passed": 39,
+  "failed": 0,
+  "syntax": true,
+  "mirrorIdentical": true,
+  "sha256": "2158809aa2f2b5a3198730d7a2b25d4fa44b254c8166638fa15b61112a315f88",
+  "sources": [
+    "selected-files-tests.json",
+    "selected-files-retry-tests.json"
+  ],
+  "tests": [
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World production build-to-print geometry agrees on asymmetric physical dimensions across the bridge and the STL reader",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World production build-to-print geometry joins a half slab beside a cube into one closed mesh without changing volume",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World production build-to-print geometry identifies the actual gap above a half slab",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World production build-to-print geometry preserves volumes and closes all area-connected shape pairs across rotations and axes",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World production build-to-print geometry joins a mixed row to a continuous base without open edges",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World production build-to-print geometry creates a source file that the editable-world importer accepts",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World production build-to-print geometry preserves a genuine pinched edge warning in a dense mixed sculpture",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World local project continuity restores every creation, positions, history, camera, and chosen print scale",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World local project continuity never restores a transient shape cue through Print Lab (legacy snapshot=false)",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World local project continuity never restores a transient shape cue through Print Lab (legacy snapshot=true)",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World local project continuity does not restore an unrelated project token",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World local project continuity sends a retained selection instead of whichever creation is currently aimed at",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World transient interaction fidelity ignores placement pop scale when preparing a printable mesh",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_print_workflow.test.js",
+      "name": "Geometry World transient interaction fidelity blocks the synthesized click even if a touch moves a different action under the finger",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "portable selected Geometry World editable files exports only the fresh selected creation, including disconnected retained parts, centered above the floor",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "portable selected Geometry World editable files imports the portable file into a fresh sandbox with the exact same printable geometry",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "portable selected Geometry World editable files rejects missing selection without exporting whichever build is aimed at",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "portable selected Geometry World editable files rejects stale selection without exporting whichever build is aimed at",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "portable selected Geometry World editable files rejects incomplete selection without exporting whichever build is aimed at",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "portable selected Geometry World editable files rejects a selected span that cannot fit the portable schema without clipping or moving the world",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "portable selected Geometry World editable files downloads validated JSON and stays in the exact current Showcase without replacing pending work",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "selected STL download scale and lifecycle scales a binary copy by 0.01 mm per block, preserving normals, attributes and source bytes",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "selected STL download scale and lifecycle scales a binary copy by 5 mm per block, preserving normals, attributes and source bytes",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "selected STL download scale and lifecycle scales a binary copy by 12.5 mm per block, preserving normals, attributes and source bytes",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "selected STL download scale and lifecycle scales a binary copy by 1000 mm per block, preserving normals, attributes and source bytes",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "selected STL download scale and lifecycle rejects truncated binary triangles before creating a download",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "selected STL download scale and lifecycle downloads only the live selected bundle at the current print scale and leaves Showcase open",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "selected STL download scale and lifecycle saveSelectedEditableWorld returns false and cleans its temporary link when downloading fails",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "selected STL download scale and lifecycle selectedBuildStlDownload returns false and cleans its temporary link when downloading fails",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "selected STL download scale and lifecycle does not use an aimed fallback when a direct STL selection disappears",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "Showcase file operation guards and Print Lab return camera saveSelectedEditableWorld rejects same-tick activation while a Showcase image is encoding",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "Showcase file operation guards and Print Lab return camera selectedBuildStlDownload rejects same-tick activation while a Showcase image is encoding",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "Showcase file operation guards and Print Lab return camera openSelectedBuildInPrintLab rejects same-tick activation while a Showcase image is encoding",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "Showcase file operation guards and Print Lab return camera captures the restored building camera and pre-Showcase dock state despite stale React state (collapsed=false)",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "Showcase file operation guards and Print Lab return camera captures the restored building camera and pre-Showcase dock state despite stale React state (collapsed=true)",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "Showcase file operation guards and Print Lab return camera keeps presentation and pending work intact when the selected bundle cannot be prepared",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_selected_files.test.js",
+      "name": "Showcase file operation guards and Print Lab return camera does not silently send an unrelated aimed creation if a Showcase selection has disappeared",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_standalone_export.test.js",
+      "name": "standalone Geometry World STL millimeter sizing applies 'default' scale to downloaded vertices without scaling the editable handoff",
+      "status": "passed"
+    },
+    {
+      "suite": "geometry_world_standalone_export.test.js",
+      "name": "standalone Geometry World STL millimeter sizing applies 'retained fractional' scale to downloaded vertices without scaling the editable handoff",
+      "status": "passed"
+    }
+  ]
+}

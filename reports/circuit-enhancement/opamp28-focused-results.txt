@@ -1,0 +1,259 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_diodes.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > normalizes named models without accepting arbitrary unvalidated parameters
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > evaluates the silicon exponential and its slope including reverse leakage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > evaluates the schottky exponential and its slope including reverse leakage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > matches an independent load-line root for a silicon diode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > matches an independent load-line root for a schottky diode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > keeps reverse leakage signed and solves the reverse load line
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > matches the inverse Shockley relation for a current-driven junction
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > solves two series diodes with a shared load rather than independent branches
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > retains differential readings in a floating diode loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > solves parallel and antiparallel junctions without invented voltage drops
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > handles a same-node diode and reports zero electrical power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > rejects excessive ideal forward drive without a clipped or infinite reading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > rejects an impossible reverse current beyond this non-breakdown model
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > preserves pure linear results and skips nonlinear iteration for legacy circuits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > matches half-wave rectification against independent roots at every time sample
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···············stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > rectifies both polarities through a four-diode floating-source bridge
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > charges and holds a rectifier filter capacitor through negative half cycles
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > carries flyback current into a diode at a timed opening
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > keeps a failed diode transient from exposing partial frames or exports
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > exports named diode model parameters and convergence iteration counts
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > diode transient reference and presentation > matches an independent small-step RK4 capacitor reference through rectifier charging pulses
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_diodes.test.js > diode transient reference and presentation > matches a separate RK4 flyback-current reference after commutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > diode transient reference and presentation > renders diode polarity, model selection, and current-dependent reference drops
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > diode transient reference and presentation > describes component shapes, polarity bands, switch position, and voltage overlays
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > diode transient reference and presentation > keeps diode controls visible with no invalid trace or numerical readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_controlled.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > normalizes voltage controls, signed gains, and invalid sense references without mutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCVS with gain 3 without drawing input current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCVS with gain -3 without drawing input current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCVS with gain 0 without drawing input current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCCS with signed transconductance 0.002 A/V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCCS with signed transconductance -0.002 A/V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCCS with signed transconductance 0 A/V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > senses a voltage difference in an otherwise floating control loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > keeps unsupplied control nodes and their output unknown instead of treating them as ground
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > knows a zero-gain output even when its sensing voltage is unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves feedback simultaneously using the closed-loop gain
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > preserves self-feedback ambiguity and rejects inconsistent feedback
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > copies a sensed branch current with gain 2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > copies a sensed branch current with gain -2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > copies a sensed branch current with gain 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > converts current into voltage with transresistance 1000 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > converts current into voltage with transresistance -1000 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > converts current into voltage with transresistance 0 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > uses the actual signed source current, including negative supplying current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > can sense another controlled voltage source independent of component order
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > rejects missing or non-voltage sense sources with a recoverable message
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > keeps ambiguous sensed currents unknown while resolving a zero-gain output
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > follows periodic inputs through a controlled amplifier at each actual sample
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·······················stdout | tests/circuit_network_controlled.test.js > controlled source networks > senses transient capacitor current through a zero-volt series sensor
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_controlled.test.js > controlled source networks > combines nonlinear diode iteration with a controlled voltage source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > exports gain units, sensing connections, and the actual control reading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > renders sensing controls and explains ideal source limits without calling it an op-amp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_opamp.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > normalizes positive gain and bounded limits without mutating the source or swapping reversed limits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a finite-gain follower at gain 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a finite-gain follower at gain 10
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a finite-gain follower at gain 100000
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a finite-gain follower at gain 1000000
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input -10
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input -5
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input -1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input 5
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input 10
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > respects asymmetric limits and a floating output reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > does not confuse control common mode with the defined differential input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > diagnoses an unknown input rather than selecting a rail
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > rejects an invalid output window {"lower":5,"upper":5}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > rejects an invalid output window {"lower":12,"upper":-12}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a single-ended output window and merges the coincident boundary solutions
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > rejects contradictory ideal output drive instead of displaying the unclipped source result
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > diagnoses multiple positive-feedback equilibria without choosing an arbitrary latch state
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a resistor-ratio inverting amplifier using finite gain
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > checks four amplifiers together and gives a bounded-work diagnostic for five
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > supports sensing the actual output branch current with a controlled current source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > combines amplifier output limiting with nonlinear diode conduction
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > returns from both output limits during a sine wave and satisfies the clamped law at every frame
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > matches a finite-gain active RC filter analytical startup
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··························stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > exports reproducible limits, signed error, clipping state and remaining headroom
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > renders output-limited controls, board state, and explicit model boundaries
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··
+
+ Test Files  3 passed (3)
+      Tests  80 passed (80)
+   Start at  01:46:19
+   Duration  5.33s (transform 44ms, setup 50ms, import 136ms, tests 2.77s, environment 1.99s)
+

@@ -5,18 +5,21 @@
 // the hub card was a bare launcher and the connect form lived in Project
 // Settings, while Educator Evaluation and the Class Mailbox both carry their
 // setup inside the tool. This panel follows the Educator Evaluation pattern.
-// Connected: the launcher, the saved deployment, and a deployment check.
+// A saved address is a launcher, not evidence of a working deployment.
 // Not connected: the same resumable checklist shape as the principal Drive
 // helper, with copy-source controls for the four package files, a generated
-// one-time setup call, and the paste-URL step. AlloFlow stores nothing but the
-// launcher URL and this checklist on the device; the ledger, roster, and roles
-// live only in the school's Google Workspace repository.
+// one-time setup call, and the paste-URL step. This launcher stores its URL and
+// checklist, not the school ledger. Classroom tools separately keep pseudonymous
+// class state; the managed Store owns its roster, ledger and roles.
 
 const SR_PORTAL_URL_KEY = 'allo_school_rewards_portal_url_v1';
 const SR_SETUP_KEY = 'allo_school_rewards_setup_v1';
 const SR_SOURCE_DIR = 'apps_script/school_rewards/';
 const SR_CDN_BASE = 'https://alloflow-cdn.pages.dev/';
 const SR_DEFAULT_THRESHOLDS = [0, 25, 75, 150, 300];
+const SR_PATHS = ['practice', 'join', 'setup'];
+const SR_LAUNCH_SUFFIXES = Object.freeze({ portal: '', recognition: '?view=recognition', check: '?api=status' });
+const SR_GUIDE_TARGETS = Object.freeze({ practice: 'sr-path-practice', connection: 'schoolrewards-portal-url', launch: 'sr-path-launch', check: 'sr-path-check', approval: 'sr-card-approval', handoff: 'sr-path-handoff', files: 'sr-card-code', configuration: 'sr-card-setup', deploy: 'sr-card-deployed' });
 
 // Signatures are checked before anything is copied, so a wrong or partial file
 // (a CDN 404 page, a stale mirror) never reaches the principal's project.
@@ -52,12 +55,13 @@ function srReadSetup() {
     return {
       steps: Array.isArray(parsed.steps) ? parsed.steps.filter((step) => SR_STEP_ORDER.indexOf(step) !== -1) : [],
       form: parsed.form && typeof parsed.form === 'object' ? parsed.form : {},
+      verifiedPortalUrl: srNormalizePortalUrl(parsed.verifiedPortalUrl || srReadLocalPortalUrl()),
     };
   } catch (_) { return fallback; }
 }
 
 function srWriteSetup(setup) {
-  try { window.localStorage.setItem(SR_SETUP_KEY, JSON.stringify(setup)); } catch (_) {}
+  try { window.localStorage.setItem(SR_SETUP_KEY, JSON.stringify(setup)); return true; } catch (_) { return false; }
 }
 
 // Clipboard writes are refused by permissions policy inside the Gemini Canvas
@@ -142,9 +146,9 @@ function srHandoffSteps(form) {
     ['Add the Portal page', 'In the Files list on the left click the + beside Files and choose HTML. Type Portal as the name (the editor adds .html itself) and press Enter. Select its starter lines with Ctrl+A, paste the Portal.html source, and save.'],
     ['Add the Index page', 'Same again: click the + beside Files, choose HTML, name it Index, press Enter, select the starter lines, paste the Index.html source, and save.'],
     ['Replace appsscript.json', 'Click appsscript.json in the Files list, select everything with Ctrl+A, paste the manifest source, and save.'],
-    ['Run the one-time setup', 'Open Code.gs, press Ctrl+End to reach the bottom, paste the setup function (below), and save. In the toolbar, the dropdown beside Debug lists the functions: choose runInitialSchoolRewardsSetup, then click Run. Google shows an authorisation screen: pick the account, click Advanced, then "Go to AlloFlow School Rewards (unsafe)" (that wording appears for every in-house script that is not published to the store), then Allow. The Execution log should end with "ok": true. You may delete the pasted function afterwards.'],
+    ['Run the one-time setup', 'Open Code.gs, press Ctrl+End to reach the bottom, paste the setup function (below), and save. In the toolbar, the dropdown beside Debug lists the functions: choose runInitialSchoolRewardsSetup, then click Run. Review the managed account and each requested permission with the district-approved technical owner. Authorise only the reviewed permissions. If Google or district policy blocks access, stop and consult IT; do not bypass a warning. The Execution log should end with "ok": true. You may delete the pasted function afterwards.'],
     ['Deploy privately', 'Click Deploy (top right), then New deployment. Beside "Select type" click the gear and choose Web app. Description: School Rewards. Execute as: Me. Who has access: your organisation (the domain), never Anyone. Click Deploy and copy the Web app URL that ends in /exec.'],
-    ['Send the link back', 'Send that /exec link to the person who gave you this packet (for ' + school + '). They paste it into AlloFlow and the tool is live. If any file changes later, use Deploy, Manage deployments, edit, New version, or the change will not go live.'],
+    ['Send the link back', 'Send that /exec link to the person who gave you this packet (for ' + school + '). They save the launcher address in AlloFlow, then separately check the deployment and each intended role with approved test accounts. Saving the address does not verify the Store. If any file changes later, use Deploy, Manage deployments, edit, New version, or the change will not go live.'],
   ];
 }
 function srHandoffText(form, snippet) {
@@ -218,10 +222,9 @@ const SR_BTN_SECONDARY = SR_BTN + ' border border-emerald-700 bg-white text-emer
 const SR_BTN_QUIET = SR_BTN + ' border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 focus:ring-emerald-600';
 const SR_INPUT = 'w-full min-h-11 rounded-xl border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600';
 
-// One copy control per package file. Prefetches on mount so the click copies
-// inside its own user gesture (execCommand needs the click's activation), and
-// when every clipboard path is refused shows the verified source pre-selected
-// so a manual Ctrl+C still completes the step.
+// Package files are fetched only after an explicit copy action, never on path
+// selection. If activation expires while fetching, the manual copy fallback
+// keeps the validated source selectable for a fresh user gesture.
 function SrCopySource({ file, onCopied, tt }) {
   const [state, setState] = React.useState('idle');
   const [manualSource, setManualSource] = React.useState('');
@@ -233,7 +236,6 @@ function SrCopySource({ file, onCopied, tt }) {
     if (source) sourceRef.current = source;
     return source;
   }, [file]);
-  React.useEffect(() => { fetchSource().catch(() => ''); }, [fetchSource]);
   const finishCopied = () => {
     setManualSource('');
     setState('copied');
@@ -279,19 +281,17 @@ function SrCopySource({ file, onCopied, tt }) {
 function SrShareWithStaff({ portalUrl, tt, addToast }) {
   const [svg, setSvg] = React.useState('');
   const [copied, setCopied] = React.useState(false);
-  React.useEffect(() => {
-    let cancelled = false;
-    setSvg('');
-    (async () => {
+  const qrRequest = React.useRef(0);
+  React.useEffect(() => { qrRequest.current++; setSvg(''); return () => { qrRequest.current++; }; }, [portalUrl]);
+  const createQr = async () => {
+    const request = ++qrRequest.current;
       try {
         if (typeof window !== 'undefined' && typeof window.__alloMakeQrSvg === 'function') {
           const markup = await window.__alloMakeQrSvg(portalUrl, 'School Rewards');
-          if (!cancelled && typeof markup === 'string' && markup) setSvg(markup);
+          if (request === qrRequest.current && typeof markup === 'string' && markup) setSvg(markup);
         }
-      } catch (_) { if (!cancelled) setSvg(''); }
-    })();
-    return () => { cancelled = true; };
-  }, [portalUrl]);
+      } catch (_) { if (request === qrRequest.current) setSvg(''); }
+  };
   const copyLink = async () => {
     if (await srCopyText(portalUrl)) { setCopied(true); window.setTimeout(() => setCopied(false), 2000); return; }
     addToast(tt('schoolrewards.share_copy_failed', 'Clipboard is blocked here. Select the link and press Ctrl+C.'), 'info');
@@ -300,6 +300,7 @@ function SrShareWithStaff({ portalUrl, tt, addToast }) {
     <h4 className="text-sm font-black text-slate-900">{tt('schoolrewards.share_title', 'Share with staff')}</h4>
     <p className="mt-1 text-xs leading-relaxed text-slate-700">{tt('schoolrewards.share_help', 'Teachers, cashiers, and administrators open this same link with their school Google sign-in; the server decides what each role can do. The link holds no secret, so posting it in a staff channel is fine.')}</p>
     <div className="mt-2 flex flex-wrap items-center gap-3">
+      {!svg && <button type="button" className={SR_BTN_QUIET} onClick={createQr} data-help-key="schoolrewards_share_qr">{tt('schoolrewards.share_make_qr', 'Create staff-link QR code')}</button>}
       {svg ? <figure className="m-0" aria-label={tt('schoolrewards.share_qr_label', 'QR code for the School Rewards portal')}><div className="rounded-lg border border-slate-300 bg-white p-1" style={{ width: 132, height: 132 }} dangerouslySetInnerHTML={{ __html: svg }} /></figure> : null}
       <div className="min-w-[220px] flex-1">
         <label htmlFor="schoolrewards-share-link" className="block text-xs font-black text-slate-800">{tt('schoolrewards.share_link', 'Staff link')}</label>
@@ -490,76 +491,148 @@ function SchoolRewardsPanel(props) {
   const { onClose, t, onSavePortalUrl, onOpenPortal } = props;
   const addToast = typeof props.addToast === 'function' ? props.addToast : () => {};
   const tt = React.useMemo(() => srMakeTt(t), [t]);
-  const [portalUrl, setPortalUrl] = React.useState(() => srNormalizePortalUrl(typeof props.portalUrl === 'string' && props.portalUrl ? props.portalUrl : srReadLocalPortalUrl()));
+  const [portalUrl, setPortalUrl] = React.useState(() => typeof props.portalUrl === 'string' ? srNormalizePortalUrl(props.portalUrl) : srReadLocalPortalUrl());
   React.useEffect(() => { if (typeof props.portalUrl === 'string') setPortalUrl(srNormalizePortalUrl(props.portalUrl)); }, [props.portalUrl]);
   const connected = Boolean(portalUrl);
   const [setup, setSetup] = React.useState(() => srReadSetup());
-  React.useEffect(() => { srWriteSetup(setup); }, [setup]);
-  const [showSetup, setShowSetup] = React.useState(() => !srReadLocalPortalUrl() && !(typeof props.portalUrl === 'string' && props.portalUrl));
+  const lastWrittenSetup = React.useRef(setup);
+  const [setupSaveFailed, setSetupSaveFailed] = React.useState(false);
+  const persistSetup = value => {
+    const saved = srWriteSetup(value);
+    if (saved) lastWrittenSetup.current = value;
+    setSetupSaveFailed(!saved);
+    return saved;
+  };
+  React.useEffect(() => { if (lastWrittenSetup.current !== setup) persistSetup(setup); }, [setup]);
+  const [path, setPath] = React.useState(() => SR_PATHS.includes(props.initialPath) ? props.initialPath : (portalUrl ? 'join' : ''));
+  const [guideOpen, setGuideOpen] = React.useState(() => props.initialGuide === true && SR_PATHS.includes(props.initialPath));
+  const [guideIndex, setGuideIndex] = React.useState(0);
+  const [focusTarget, setFocusTarget] = React.useState('');
+  const guide = React.useMemo(() => typeof createSchoolStoreSetupGuide === 'function' ? createSchoolStoreSetupGuide() : null, []);
+  const troubleshooting = guide && typeof guide.getTroubleshooting === 'function' ? guide.getTroubleshooting() : [];
+  const guidePath = guide && guide.getPath(path);
+  const guideStep = guidePath && guidePath.steps[Math.min(guideIndex, guidePath.steps.length - 1)];
+  const [showSetup, setShowSetup] = React.useState(() => props.initialPath === 'setup');
+  const lastHostPath = React.useRef({ path: props.initialPath, guide: props.initialGuide, serial: props.guideRequestSerial });
+  React.useEffect(() => {
+    if (lastHostPath.current.path === props.initialPath && lastHostPath.current.guide === props.initialGuide && lastHostPath.current.serial === props.guideRequestSerial) return;
+    lastHostPath.current = { path: props.initialPath, guide: props.initialGuide, serial: props.guideRequestSerial };
+    const next = SR_PATHS.includes(props.initialPath) ? props.initialPath : (portalUrl ? 'join' : '');
+    setPath(next); setGuideIndex(0); setGuideOpen(props.initialGuide === true && !!next); if (next === 'setup') setShowSetup(true);
+    setFocusTarget(next ? (props.initialGuide === true ? 'sr-local-guide' : 'sr-path-heading') : 'sr-path-choices');
+  }, [props.initialPath, props.initialGuide, props.guideRequestSerial, portalUrl]);
   const [urlDraft, setUrlDraft] = React.useState(portalUrl);
   React.useEffect(() => { setUrlDraft(portalUrl); }, [portalUrl]);
   const [urlMessage, setUrlMessage] = React.useState({ text: '', tone: 'info' });
+  const urlDirty = String(urlDraft || '').trim() !== portalUrl;
+  const [launchAttempt, setLaunchAttempt] = React.useState(null);
+  React.useEffect(() => { setLaunchAttempt(null); }, [urlDraft, portalUrl]);
+  const launchTarget = kind => !urlDirty && portalUrl && srNormalizePortalUrl(portalUrl) === portalUrl
+    && Object.prototype.hasOwnProperty.call(SR_LAUNCH_SUFFIXES, kind) ? portalUrl + SR_LAUNCH_SUFFIXES[kind] : '';
+  const fallbackTarget = launchAttempt && launchAttempt.baseUrl === portalUrl ? launchTarget(launchAttempt.kind) : '';
   const [snippetState, setSnippetState] = React.useState('idle');
   const dialogRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!focusTarget) return;
+    const target = dialogRef.current && Array.from(dialogRef.current.querySelectorAll('[id]')).find(node => node.id === focusTarget);
+    if (target && !target.closest('[hidden]')) { target.focus(); if (typeof target.scrollIntoView === 'function') target.scrollIntoView({ block: 'nearest' }); }
+    setFocusTarget('');
+  }, [focusTarget, path, showSetup, guideOpen, guideIndex]);
+  const choosePath = next => {
+    if (!SR_PATHS.includes(next)) return;
+    setPath(next); setGuideIndex(0); if (next === 'setup') setShowSetup(true); setFocusTarget(guideOpen ? 'sr-local-guide' : 'sr-path-heading');
+  };
+  const focusGuideSection = () => {
+    const target = guideStep && Object.prototype.hasOwnProperty.call(SR_GUIDE_TARGETS, guideStep.target) && SR_GUIDE_TARGETS[guideStep.target];
+    if (!target) return;
+    if (path === 'setup') setShowSetup(true);
+    setFocusTarget(target);
+  };
 
   const completed = React.useMemo(() => {
     const set = new Set(setup.steps);
     if (connected) set.add('connected'); else set.delete('connected');
+    if (!connected || setup.verifiedPortalUrl !== portalUrl) set.delete('verified');
     return set;
-  }, [setup.steps, connected]);
+  }, [setup.steps, setup.verifiedPortalUrl, connected, portalUrl]);
   const doneCount = SR_STEP_ORDER.filter((step) => completed.has(step)).length;
   const nextStep = SR_STEP_ORDER.find((step) => !completed.has(step));
   const setStep = React.useCallback((step, on) => {
     setSetup((current) => {
       const steps = current.steps.filter((item) => item !== step);
       if (on) steps.push(step);
-      return Object.assign({}, current, { steps });
+      return Object.assign({}, current, { steps }, step === 'verified' ? { verifiedPortalUrl: on ? portalUrl : '' } : {});
     });
-  }, []);
+  }, [portalUrl]);
   const setForm = React.useCallback((key, value) => {
     setSetup((current) => Object.assign({}, current, { form: Object.assign({}, current.form, { [key]: value }) }));
   }, []);
   const form = setup.form || {};
   const snippet = React.useMemo(() => srSetupSnippet(form), [form]);
 
-  const savePortalUrl = (value) => {
+  const savePortalUrl = (value, remove = false) => {
     const raw = String(value || '').trim();
+    if (!raw && !remove) { setUrlMessage({ text: tt('schoolrewards.url_blank', 'Enter the approved Store address. To remove a saved address, use Disconnect on this device.'), tone: 'error', invalid: true }); return; }
+    if (raw && !srNormalizePortalUrl(raw)) { setUrlMessage({ text: tt('schoolrewards.url_invalid', 'Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec.'), tone: 'error', invalid: true }); return; }
     if (typeof onSavePortalUrl === 'function') {
-      const result = onSavePortalUrl(raw);
+      let result;
+      try { result = onSavePortalUrl(raw); } catch (_) { setUrlMessage({ text: tt('schoolrewards.url_save_failed', 'This browser could not save the launcher URL.'), tone: 'error' }); return; }
       if (result && result.ok === false) { setUrlMessage({ text: result.error || tt('schoolrewards.url_invalid', 'Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec.'), tone: 'error' }); return; }
-      const saved = result && typeof result.url === 'string' ? result.url : srNormalizePortalUrl(raw);
-      setPortalUrl(saved);
+      if (!result || result.ok !== true || typeof result.url !== 'string' || typeof result.then === 'function') { setUrlMessage({ text: tt('schoolrewards.url_save_unconfirmed', 'Saving this address was not confirmed. The previous destination was kept; try again or discard your changes.'), tone: 'error' }); return; }
+      const saved = srNormalizePortalUrl(result.url);
+      if (saved !== srNormalizePortalUrl(raw) || (result.url !== '' && !saved)) { setUrlMessage({ text: tt('schoolrewards.url_save_unconfirmed', 'Saving this address was not confirmed. The previous destination was kept; try again or discard your changes.'), tone: 'error' }); return; }
+      setPortalUrl(saved); setUrlDraft(saved); setLaunchAttempt(null);
       setUrlMessage({ text: saved ? tt('schoolrewards.url_saved', 'Launcher saved on this device. Open the deployment check to confirm the portal answers.') : tt('schoolrewards.url_cleared', 'Launcher removed from this device.'), tone: 'info' });
       return;
     }
     const normalized = raw ? srNormalizePortalUrl(raw) : '';
     if (raw && !normalized) { setUrlMessage({ text: tt('schoolrewards.url_invalid', 'Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec.'), tone: 'error' }); return; }
     try { if (normalized) window.localStorage.setItem(SR_PORTAL_URL_KEY, normalized); else window.localStorage.removeItem(SR_PORTAL_URL_KEY); } catch (_) { setUrlMessage({ text: tt('schoolrewards.url_save_failed', 'This browser could not save the launcher URL.'), tone: 'error' }); return; }
-    setPortalUrl(normalized);
+    setPortalUrl(normalized); setUrlDraft(normalized); setLaunchAttempt(null);
     setUrlMessage({ text: normalized ? tt('schoolrewards.url_saved', 'Launcher saved on this device. Open the deployment check to confirm the portal answers.') : tt('schoolrewards.url_cleared', 'Launcher removed from this device.'), tone: 'info' });
   };
 
-  const openWindow = (url, blockedText) => {
+  const openWindow = (kind, useHost = false) => {
+    const target = launchTarget(kind);
+    if (!target) return false;
     try {
-      const popup = window.open(url, '_blank', 'noopener,noreferrer');
-      if (!popup) { addToast(blockedText, 'error'); return false; }
-      popup.opener = null;
-      return true;
-    } catch (_) { addToast(blockedText, 'error'); return false; }
+      // noopener can return null even when a new tab opens. No page visibility,
+      // Google authorization or successful navigation can be inferred here.
+      const dispatched = useHost && typeof onOpenPortal === 'function' ? onOpenPortal() !== false : (window.open(target, '_blank', 'noopener,noreferrer'), true);
+      setLaunchAttempt({ baseUrl: portalUrl, kind, dispatched });
+      return dispatched;
+    } catch (_) { setLaunchAttempt({ baseUrl: portalUrl, kind, dispatched: false }); return false; }
   };
   const openPortal = () => {
-    if (!connected) return;
-    if (typeof onOpenPortal === 'function') { onOpenPortal(); return; }
-    openWindow(portalUrl, tt('schoolrewards.popup_blocked', 'School Rewards was blocked. Allow pop-ups for AlloFlow and try again.'));
+    openWindow('portal', true);
+  };
+  const openRecognition = () => {
+    // Navigation only: no identities, transcript, amount or reason cross this boundary.
+    openWindow('recognition');
   };
   // Code.gs answers ?api=status with a plain-language check page (and
   // ?api=health with JSON), but only for a signed-in domain account, so the
   // check opens in the browser rather than being fetched from this frame.
   const [healthHint, setHealthHint] = React.useState(false);
+  const previousPortalUrl = React.useRef(portalUrl);
+  React.useEffect(() => {
+    const changed = previousPortalUrl.current !== portalUrl;
+    previousPortalUrl.current = portalUrl;
+    if (changed) setHealthHint(false);
+    setSetup(current => current.steps.includes('verified') && (changed || !portalUrl || current.verifiedPortalUrl !== portalUrl)
+      ? Object.assign({}, current, { steps: current.steps.filter(step => step !== 'verified'), verifiedPortalUrl: '' }) : current);
+  }, [portalUrl]);
+  const editUrl = value => {
+    setUrlDraft(value); setUrlMessage({ text: '', tone: 'info' }); setLaunchAttempt(null);
+    if (srNormalizePortalUrl(value) !== portalUrl) { setStep('verified', false); setHealthHint(false); }
+  };
+  const discardUrl = () => {
+    setUrlDraft(portalUrl); setUrlMessage({ text: tt('schoolrewards.url_discarded', 'Unsaved address changes discarded. The saved destination was not changed.'), tone: 'info' });
+    setLaunchAttempt(null); setHealthHint(false); setFocusTarget('schoolrewards-portal-url');
+  };
   const openHealth = () => {
-    if (!connected) return;
-    setHealthHint(true);
-    openWindow(portalUrl + '?api=status', tt('schoolrewards.popup_blocked_check', 'The deployment check was blocked. Allow pop-ups for AlloFlow and try again.'));
+    if (!launchTarget('check')) return;
+    setHealthHint(openWindow('check'));
   };
   const copySnippet = async () => {
     if (await srCopyText(snippet)) { setSnippetState('copied'); window.setTimeout(() => setSnippetState('idle'), 2400); return; }
@@ -576,8 +649,17 @@ function SchoolRewardsPanel(props) {
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+      'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let parent = el.parentElement; parent && parent !== dialog; parent = parent.parentElement) {
+        if (parent.tagName === 'DETAILS' && !parent.open) {
+          const summary = Array.from(parent.children).find(child => child.tagName === 'SUMMARY');
+          if (!summary || !summary.contains(el)) return false;
+        }
+      }
+      return true;
+    });
     const first = getFocusable()[0];
     (first || dialog).focus();
     const onKeyDown = (event) => {
@@ -618,7 +700,7 @@ function SchoolRewardsPanel(props) {
     const derived = step === 'connected';
     const number = SR_STEP_ORDER.indexOf(step) + 1;
     const inputId = 'sr-step-' + step;
-    return <li key={step} className={'rounded-2xl border p-4 ' + (done ? 'border-emerald-300 bg-emerald-50/60' : (nextStep === step ? 'border-emerald-700 bg-white shadow-sm' : 'border-slate-200 bg-white'))} data-help-key={'schoolrewards_step_' + step}>
+    return <li key={step} id={'sr-card-' + step} tabIndex={-1} className={'rounded-2xl border p-4 focus:outline-none focus:ring-2 focus:ring-emerald-600 ' + (done ? 'border-emerald-300 bg-emerald-50/60' : (nextStep === step ? 'border-emerald-700 bg-white shadow-sm' : 'border-slate-200 bg-white'))} data-help-key={'schoolrewards_step_' + step}>
       <div className="flex items-start gap-3">
         <input id={inputId} type="checkbox" className="mt-1 h-5 w-5 shrink-0 accent-emerald-700" checked={done} disabled={derived} onChange={derived ? undefined : (event) => setStep(step, event.target.checked)} aria-describedby={inputId + '-body'} />
         <div className="min-w-0 flex-1">
@@ -630,48 +712,123 @@ function SchoolRewardsPanel(props) {
     </li>;
   };
   const fileCard = (file, title, body) => stepCard(file.step, title, body, <SrCopySource file={file} tt={tt} onCopied={() => setStep(file.step, true)} />);
+  const portalUrlForm = <form className="mt-3" noValidate onSubmit={event => { event.preventDefault(); savePortalUrl(urlDraft); }}>
+    <label htmlFor="schoolrewards-portal-url" className="block text-xs font-black text-slate-800">{tt('schoolrewards.approved_url_label', 'Approved school Store address')}</label>
+    <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+      <input id="schoolrewards-portal-url" className={SR_INPUT} type="url" inputMode="url" autoComplete="off" spellCheck={false} value={urlDraft} onChange={event => editUrl(event.target.value)} placeholder="https://script.google.com/macros/s/.../exec" aria-describedby="schoolrewards-portal-url-help" aria-invalid={urlMessage.invalid === true ? 'true' : undefined} />
+      <button type="submit" className={SR_BTN_PRIMARY + ' shrink-0'} data-help-key="schoolrewards_connect">{tt('schoolrewards.save_address', 'Save address')}</button>
+      {urlDirty && <button type="button" className={SR_BTN_QUIET + ' shrink-0'} onClick={discardUrl} data-help-key="schoolrewards_discard_address">{tt('schoolrewards.discard_address', 'Discard changes')}</button>}
+    </div>
+    <p id="schoolrewards-portal-url-help" className={'mt-2 text-xs leading-relaxed ' + (urlMessage.tone === 'error' ? 'text-rose-900' : 'text-slate-700')} role={urlMessage.text ? 'status' : undefined}>{urlMessage.text || tt('schoolrewards.url_help', 'Only an HTTPS script.google.com address ending in /macros/s/{deployment}/exec is accepted.')}</p>
+  </form>;
 
   return <div className="sr-root fixed inset-0 z-[260] flex items-center justify-center bg-slate-900/60 p-3 sm:p-6" style={{ zIndex: 260 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
     <style>{SR_THEME_STYLES}</style>
     <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="schoolrewards-title" aria-describedby="schoolrewards-subtitle" tabIndex={-1} className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus:outline-none">
-      <header className="flex items-start justify-between gap-3 border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 px-5 py-4">
-        <div>
+      <header className="border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 px-5 py-4">
+        <div className="flex items-start justify-between gap-3">
           <h2 id="schoolrewards-title" className="flex items-center gap-2 text-xl font-black text-slate-900"><span aria-hidden="true">{'🎟️'}</span> {tt('schoolrewards.title', 'School Rewards & Store')}</h2>
-          <p id="schoolrewards-subtitle" className="mt-1 text-sm text-slate-700">{tt('schoolrewards.subtitle', 'A school-owned rewards ledger for staff recognition, private student balances, prize previews, and locked trimester store checkout. Setup and launch live here.')}</p>
-        </div>
         <div className="flex shrink-0 items-center gap-2">
           <a className="inline-flex min-h-11 items-center rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-600" href="https://alloflow-cdn.pages.dev/school-rewards-manual" target="_blank" rel="noopener noreferrer" data-help-key="schoolrewards_manual">{tt('schoolrewards.manual', 'Manual')}</a>
           <button type="button" onClick={onClose} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600" aria-label={tt('schoolrewards.close', 'Close School Rewards & Store')}>{'✕'}</button>
         </div>
+        </div>
+        <p id="schoolrewards-subtitle" className="mt-2 text-sm text-slate-700">{tt('schoolrewards.path_subtitle', 'Practice with fictional data, join your school’s Store, or set up a shared rewards ledger.')}</p>
       </header>
       <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5">
+        {setupSaveFailed && <div className="rounded-xl border border-amber-500 bg-amber-50 p-4 text-sm text-amber-950" role="status" data-help-key="schoolrewards_persistence_warning">
+          <p>{tt('schoolrewards.setup_local_only', 'Your latest checklist and form changes are kept in this tab only. Local saving failed; closing this tab may lose those changes. Your approvals were not changed.')}</p>
+          <button type="button" className={SR_BTN_SECONDARY + ' mt-2'} onClick={() => persistSetup(setup)} data-help-key="schoolrewards_retry_setup_save">{tt('schoolrewards.retry_setup_save', 'Retry saving')}</button>
+        </div>}
+        <section aria-labelledby="sr-path-choices" data-help-key="schoolrewards_paths">
+          <h3 id="sr-path-choices" tabIndex={-1} className="text-base font-black text-slate-900">{tt('schoolrewards.choose_path', 'What would you like to do?')}</h3>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {[['practice', 'Try demo'], ['join', 'Join existing Store'], ['setup', 'Set up school Store']].map(([id, label]) => <button key={id} type="button" className={path === id ? SR_BTN_PRIMARY : SR_BTN_SECONDARY} aria-pressed={path === id} onClick={() => choosePath(id)} data-store-path={id}>{tt('schoolrewards.path_' + id, label)}</button>)}
+          </div>
+          {!path && <p className="mt-3 text-sm text-slate-700">{tt('schoolrewards.choose_path_help', 'Teachers usually join their existing school Store. A district-approved administrator sets up the shared Store once.')}</p>}
+        </section>
+        {path && <section aria-labelledby="sr-path-heading">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 id="sr-path-heading" tabIndex={-1} className="text-base font-black text-slate-900">{guidePath ? guidePath.title : path === 'practice' ? 'Try the demo' : path === 'join' ? 'Join existing Store' : 'Set up school Store'}</h3>
+            <button type="button" className={SR_BTN_SECONDARY} disabled={!guidePath} aria-expanded={guideOpen} aria-controls="sr-local-guide" onClick={() => { setGuideOpen(value => !value); setFocusTarget(guideOpen ? 'sr-path-heading' : 'sr-local-guide'); }} data-help-key="schoolrewards_guide">{tt('schoolrewards.guide_me', 'Guide me')}</button>
+          </div>
+          <p className="mt-2 text-sm text-slate-700">{guidePath ? guidePath.intro : tt('schoolrewards.guide_unavailable', 'The local guide is unavailable in this version. Use the controls below or the manual.')}</p>
+          {guideOpen && guideStep && <section id="sr-local-guide" tabIndex={-1} aria-labelledby="sr-guide-title" className="mt-3 rounded-xl border border-sky-300 bg-sky-50 p-4 focus:outline-none focus:ring-2 focus:ring-emerald-600">
+            <p className="text-xs font-bold text-slate-700" aria-live="polite">{tt('schoolrewards.guide_step', 'Guide step')} {guideIndex + 1} / {guidePath.steps.length}</p>
+            <h4 id="sr-guide-title" className="mt-1 text-base font-black text-slate-900">{guideStep.title}</h4>
+            <p className="mt-2 text-sm text-slate-800">{guideStep.body}</p>
+            <p className="mt-2 text-xs text-slate-700">{tt('schoolrewards.guide_local_only', 'Local guidance only. Next does not save, approve, verify, or complete any step.')}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" className={SR_BTN_QUIET} disabled={guideIndex === 0} onClick={() => { setGuideIndex(index => index - 1); setFocusTarget('sr-local-guide'); }} data-help-key="schoolrewards_guide_back">{tt('schoolrewards.guide_back', 'Back')}</button>
+              <button type="button" className={SR_BTN_PRIMARY} onClick={focusGuideSection} disabled={!Object.prototype.hasOwnProperty.call(SR_GUIDE_TARGETS, guideStep.target)} data-help-key="schoolrewards_guide_section">{tt('schoolrewards.guide_section', 'Show this section')}</button>
+              <button type="button" className={SR_BTN_QUIET} disabled={guideIndex === guidePath.steps.length - 1} onClick={() => { setGuideIndex(index => index + 1); setFocusTarget('sr-local-guide'); }} data-help-key="schoolrewards_guide_next">{tt('schoolrewards.guide_next', 'Next')}</button>
+              <a className={SR_BTN_QUIET} href={SR_CDN_BASE + 'school-rewards-manual' + (/^[a-z0-9-]+$/.test(guideStep.manualHash) ? '#' + guideStep.manualHash : '')} target="_blank" rel="noopener noreferrer">{tt('schoolrewards.guide_manual', 'Read this in the manual')}</a>
+            </div>
+          </section>}
+        </section>}
+        {path === 'practice' && <section id="sr-path-practice" tabIndex={-1} aria-labelledby="sr-practice-title" className="rounded-xl border border-sky-200 bg-sky-50 p-4">
+          <h3 id="sr-practice-title" className="text-base font-black text-slate-900">{tt('schoolrewards.practice_title', 'Fictional practice, no school setup')}</h3>
+          <p className="mt-2 text-sm text-slate-800">{tt('schoolrewards.practice_help', 'The real portal running on a fictional ledger in your browser: award, undo, group awards, checkout, and the student view, with a role switcher, scenario presets, and a tour you can edit. Nothing reaches a real ledger.')}</p>
+          <a className={SR_BTN_PRIMARY + ' mt-3'} href="https://alloflow-cdn.pages.dev/school-rewards-practice" target="_blank" rel="noopener noreferrer" data-help-key="schoolrewards_practice">{tt('schoolrewards.practice', 'Practice with fictional data')}</a>
+          <p className="mt-3 text-xs text-slate-700">{tt('schoolrewards.local_demo_separate', 'The separate local guided demo is optional and needs its presentation server running. It is not the public practice link. See the manual for that walkthrough; do not use real student data in either demo.')}</p>
+        </section>}
         <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-950" role="note">
-          <strong>{tt('schoolrewards.boundary_title', 'Student-data boundary:')}</strong> {tt('schoolrewards.boundary_body', 'names, managed emails, balances, and roles live only in the ledger your managed Google Education account owns. AlloFlow stores this launcher address and your checklist on this device, nothing else. The pilot stays separate from AlloHaven XP.')}
+          <strong>{tt('schoolrewards.boundary_title', 'Student-data boundary:')}</strong> {tt('schoolrewards.launcher_boundary_body', 'This Store launcher stores its address and setup checklist on this device; it does not copy the school ledger. Classroom tools may separately keep codename-based class state. Names, managed emails, balances and Store roles belong in the school-managed repository. The Store stays separate from AlloHaven XP.')}
         </div>
 
-        <section aria-labelledby="schoolrewards-launch-title" className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4">
+        {(path === 'join' || path === 'setup') && <section id="sr-path-launch" tabIndex={-1} aria-labelledby="schoolrewards-launch-title" className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 id="schoolrewards-launch-title" className="text-base font-black text-slate-900">{tt('schoolrewards.launch_title', 'Launch')}</h3>
-            <span className={'rounded-full px-3 py-1 text-xs font-black ' + (connected ? 'bg-emerald-700 text-white' : 'border border-amber-500 bg-white text-amber-900')} data-help-key="schoolrewards_status">{connected ? tt('schoolrewards.status_connected', 'Connected') : tt('schoolrewards.status_not_connected', 'Not connected yet')}</span>
+            <span className={'rounded-full px-3 py-1 text-xs font-black ' + (connected ? 'bg-emerald-700 text-white' : 'border border-amber-500 bg-white text-amber-900')} data-help-key="schoolrewards_status">{connected ? tt('schoolrewards.status_address_saved', 'Store address saved') : tt('schoolrewards.status_no_address', 'No Store address saved')}</span>
           </div>
+          {urlDirty && <div className="mt-3 rounded-xl border border-amber-500 bg-amber-50 p-3 text-sm text-amber-950" role="status" data-help-key="schoolrewards_unsaved_address">
+            <p>{tt('schoolrewards.unsaved_address', 'You have unsaved address changes. Save or discard them before opening, checking or sharing the Store. The saved destination has not changed.')}</p>
+            <button type="button" className={SR_BTN_QUIET + ' mt-2'} onClick={() => { if (path === 'setup') setShowSetup(true); setFocusTarget('schoolrewards-portal-url'); }} data-help-key="schoolrewards_review_address">{tt('schoolrewards.review_address', 'Review address changes')}</button>
+          </div>}
           {connected ? <div className="mt-3 space-y-3">
             <label htmlFor="schoolrewards-saved-url" className="block text-xs font-black text-slate-800">{tt('schoolrewards.saved_url', 'Saved deployment')}</label>
             <input id="schoolrewards-saved-url" className={SR_INPUT + ' font-mono text-xs'} readOnly value={portalUrl} onFocus={(event) => event.target.select()} />
             <div className="flex flex-wrap gap-2">
-              <button type="button" className={SR_BTN_PRIMARY} onClick={openPortal} data-help-key="schoolrewards_open_portal">{tt('schoolrewards.open_portal', 'Open School Rewards portal')}</button>
-              <button type="button" className={SR_BTN_SECONDARY} onClick={openHealth} data-help-key="schoolrewards_open_check">{tt('schoolrewards.open_check', 'Open deployment check')}</button>
-              <button type="button" className={SR_BTN_QUIET} onClick={() => savePortalUrl('')} data-help-key="schoolrewards_disconnect">{tt('schoolrewards.disconnect', 'Disconnect on this device')}</button>
+              <button type="button" className={SR_BTN_PRIMARY} onClick={openPortal} disabled={urlDirty} data-help-key="schoolrewards_open_portal">{tt('schoolrewards.open_portal', 'Open School Rewards portal')}</button>
+              <button type="button" className={SR_BTN_SECONDARY} onClick={openRecognition} disabled={urlDirty} data-help-key="schoolrewards_open_recognition">{tt('schoolrewards.open_recognition', 'Open recognition')}</button>
+              <button id="sr-path-check" type="button" className={SR_BTN_SECONDARY} onClick={openHealth} disabled={urlDirty} data-help-key="schoolrewards_open_check">{tt('schoolrewards.open_check', 'Open deployment check')}</button>
+              <button type="button" className={SR_BTN_QUIET} onClick={() => savePortalUrl('', true)} data-help-key="schoolrewards_disconnect">{tt('schoolrewards.disconnect', 'Disconnect on this device')}</button>
             </div>
-            <SrShareWithStaff portalUrl={portalUrl} tt={tt} addToast={addToast} />
+            {path === 'setup' && !urlDirty && <SrShareWithStaff portalUrl={portalUrl} tt={tt} addToast={addToast} />}
             <p className="text-xs leading-relaxed text-slate-700">{tt('schoolrewards.launch_help', 'The portal opens in a new tab under Google sign-in; server-side roles decide who can award, check out, or administer. The deployment check page should say "Deployment check passed" and show the school, domain, and your role.')}</p>
-          </div> : <p className="mt-2 text-sm leading-relaxed text-slate-700">{tt('schoolrewards.not_connected_help', 'Work through the checklist below. Step 9 saves the deployment URL on this device and turns this card into the launcher.')}</p>}
-          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-emerald-200 pt-3">
-            <a className={SR_BTN_SECONDARY} href="https://alloflow-cdn.pages.dev/school-rewards-practice" target="_blank" rel="noopener noreferrer" data-help-key="schoolrewards_practice">{tt('schoolrewards.practice', 'Practice with fictional data')}</a>
-            <span className="text-xs leading-relaxed text-slate-700">{tt('schoolrewards.practice_help', 'The real portal running on a fictional ledger in your browser: award, undo, group awards, checkout, and the student view, with a role switcher, scenario presets, and a tour you can edit. Nothing reaches a real ledger.')}</span>
-          </div>
-        </section>
+          </div> : <p id="sr-path-check" tabIndex={-1} className="mt-2 text-sm leading-relaxed text-slate-700">{tt('schoolrewards.get_approved_address', 'Ask your school administrator for the approved Store address and your staff or cashier access. Save the address here, then open it with your managed school account. Saving does not grant access or verify the deployment.')}</p>}
+          {path === 'join' && portalUrlForm}
+          {fallbackTarget && <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-slate-900" role="status" data-help-key="schoolrewards_launch_feedback">
+            <p>{launchAttempt.dispatched
+              ? tt('schoolrewards.launch_unconfirmed', 'An opening request was sent to your browser. AlloFlow cannot confirm whether a new tab opened or whether Google allowed access.')
+              : tt('schoolrewards.launch_rejected', 'The opening request could not be dispatched. No Store access or deployment result was verified.')}</p>
+            <a className={SR_BTN_SECONDARY + ' mt-2'} href={fallbackTarget} target="_blank" rel="noopener noreferrer" data-help-key="schoolrewards_launch_fallback">{launchAttempt.kind === 'check' ? tt('schoolrewards.direct_check', 'Open deployment check directly') : launchAttempt.kind === 'recognition' ? tt('schoolrewards.direct_recognition', 'Open recognition directly') : tt('schoolrewards.direct_store', 'Open saved Store directly')}</a>
+            <p className="mt-2 text-xs">{tt('schoolrewards.launch_fallback_help', 'If nothing appeared, try the direct link. Use your managed school account; contact your administrator if access is denied.')}</p>
+          </div>}
+          <p className="mt-3 text-xs leading-relaxed text-slate-700">{tt('schoolrewards.address_is_not_verification', 'A saved address is not a connection test. Read the separate deployment check; AlloFlow and AlloBot cannot see or certify that Google page.')}</p>
+          {healthHint && <p className="mt-2 text-xs text-slate-800" role="status" data-help-key="schoolrewards_health_hint">{tt('schoolrewards.health_self_check', 'Read the check in the separate tab and confirm the expected school and role. No verification box was changed automatically.')}</p>}
+          {Array.isArray(troubleshooting) && troubleshooting.length > 0 && <details className="mt-3 rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-900" data-help-key="schoolrewards_opening_help">
+            <summary className="min-h-11 cursor-pointer py-2 font-bold">{tt('schoolrewards.opening_help', 'Help opening your Store')}</summary>
+            <p className="mt-2 text-xs text-slate-700">{tt('schoolrewards.opening_help_local', 'General local guidance, not a diagnosis of your Google account or Store. Nothing is checked or sent by opening these notes.')}</p>
+            {troubleshooting.filter(item => item && typeof item.id === 'string' && typeof item.title === 'string' && typeof item.body === 'string' && /^[a-z0-9-]+$/.test(item.manualHash)).map(item => <details key={item.id} className="mt-2 border-t border-slate-200 pt-2" data-help-key="schoolrewards_troubleshooting_item">
+              <summary className="min-h-11 cursor-pointer py-2 font-bold">{item.title}</summary>
+              <p className="mt-2 leading-relaxed">{item.body}</p>
+              <a className="mt-2 inline-flex min-h-11 items-center font-bold text-emerald-900 underline" href={SR_CDN_BASE + 'school-rewards-manual#' + item.manualHash} target="_blank" rel="noopener noreferrer">{tt('schoolrewards.guide_manual', 'Read this in the manual')}</a>
+            </details>)}
+          </details>}
+          {path === 'join' && <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-slate-900" data-help-key="schoolrewards_voice_boundary">
+            <h4 className="font-black">{tt('schoolrewards.voice_boundary_title', 'Voice awards belong inside the signed-in Store')}</h4>
+            <p className="mt-2">{tt('schoolrewards.voice_boundary_body', 'Open recognition, load your reviewed class links, and select a class and category. The Store can use on-device speech to fill a draft when the browser supports it. Review the student and confirm the award separately. If local speech is unavailable or blocked, type instead. Do not use the ordinary Allobot microphone for student awards; its selected engine may use remote transcription.')}</p>
+            <p className="mt-2">{tt('schoolrewards.voice_pathways', 'Canvas and desktop are launchers, not the points ledger. Classroom authorization only imports rosters. The managed Store records official points; practice uses fictional data. Educator Evaluation has its own personnel records and permissions, and receives no award transcript.')}</p>
+          </div>}
+        </section>}
 
-        <section aria-labelledby="schoolrewards-setup-title">
+        {path === 'setup' && <><section aria-labelledby="schoolrewards-setup-title">
+          <div className="mb-4 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-slate-900" role="note" data-help-key="schoolrewards_voice_boundary">
+            <h3 className="font-black">{tt('schoolrewards.voice_boundary_title', 'Voice awards belong inside the signed-in Store')}</h3>
+            <p className="mt-2">{tt('schoolrewards.voice_boundary_body', 'Open recognition, load your reviewed class links, and select a class and category. The Store can use on-device speech to fill a draft when the browser supports it. Review the student and confirm the award separately. If local speech is unavailable or blocked, type instead. Do not use the ordinary Allobot microphone for student awards; its selected engine may use remote transcription.')}</p>
+            <p className="mt-2">{tt('schoolrewards.voice_pathways', 'Canvas and desktop are launchers, not the points ledger. Classroom authorization only imports rosters. The managed Store records official points; practice uses fictional data. Educator Evaluation has its own personnel records and permissions, and receives no award transcript.')}</p>
+          </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 id="schoolrewards-setup-title" className="text-base font-black text-slate-900">{tt('schoolrewards.setup_title', 'Setup checklist')}</h3>
             <button type="button" className={SR_BTN_QUIET} aria-expanded={showSetup} aria-controls="schoolrewards-setup-body" onClick={() => setShowSetup((value) => !value)} data-help-key="schoolrewards_toggle_setup">{showSetup ? tt('schoolrewards.hide_setup', 'Hide checklist') : tt('schoolrewards.show_setup', 'Show checklist')}</button>
@@ -680,9 +837,10 @@ function SchoolRewardsPanel(props) {
             <div className="h-full rounded-full bg-emerald-700" style={{ width: Math.round((doneCount / SR_STEP_ORDER.length) * 100) + '%' }} />
           </div>
           <p className="mt-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-950" role="status" data-help-key="schoolrewards_next_step">
-            {nextStep ? <><strong>{tt('schoolrewards.next_step', 'Next step:')}</strong> {stepLabels[nextStep]}</> : <strong>{tt('schoolrewards.all_done', 'Setup complete. The portal is connected and verified on this device.')}</strong>}
+            {nextStep ? <><strong>{tt('schoolrewards.next_step', 'Next step:')}</strong> {stepLabels[nextStep]}</> : <strong>{tt('schoolrewards.checklist_attested_complete', 'Your checklist is complete. These are your confirmations, not automatic deployment verification.')}</strong>}
           </p>
-          {showSetup && <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-4" data-help-key="schoolrewards_handoff">
+          <p className="mt-2 text-xs text-slate-700">{tt('schoolrewards.setup_once_attested', 'The district-approved technical owner completes this shared setup once. Checkboxes record your own confirmations; neither copying files nor AlloBot verifies the installed Store.')}</p>
+          {showSetup && <div id="sr-path-handoff" tabIndex={-1} className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-4" data-help-key="schoolrewards_handoff">
             <p className="m-0 text-sm font-black text-slate-900">{tt('schoolrewards.handoff_title', 'Not doing the editor steps yourself?')}</p>
             <p className="m-0 mt-1 text-sm leading-relaxed text-slate-800">{tt('schoolrewards.handoff_body', 'Steps 2 to 8 happen in the Google Apps Script editor. Fill in the school details under step 7 first, then hand the whole job to your technology coordinator as one file. They send back a link and you paste it in step 9.')}</p>
             <SrHandoff form={form} snippet={snippet} tt={tt} />
@@ -694,7 +852,7 @@ function SchoolRewardsPanel(props) {
             {fileCard(SR_FILES[1], tt('schoolrewards.step_portal', 'Add the Portal page'), <>{tt('schoolrewards.step_portal_body_a', 'In the Files list on the left, click the + beside Files and choose HTML. A new file appears with its name selected: type ')}<code className="rounded bg-slate-100 px-1">Portal</code>{tt('schoolrewards.step_portal_body_b', ' (the editor adds .html itself) and press Enter. Select its starter lines with Ctrl+A, paste this source, and save with Ctrl+S.')}</>)}
             {fileCard(SR_FILES[2], tt('schoolrewards.step_index', 'Add the Index page'), <>{tt('schoolrewards.step_index_body_a', 'Same as the Portal page: click the + beside Files, choose HTML, type ')}<code className="rounded bg-slate-100 px-1">Index</code>{tt('schoolrewards.step_index_body_b', ', press Enter, select the starter lines, paste this source, and save. This page only wraps the Portal page; it is what the web address opens.')}</>)}
             {fileCard(SR_FILES[3], tt('schoolrewards.step_manifest', 'Replace appsscript.json'), tt('schoolrewards.step_manifest_body', 'In the Files list click appsscript.json (it appears once the Project Settings option from step 2 is on). Select everything in it with Ctrl+A, paste this manifest, and save. It restricts the web app to your domain, runs it as the deploying account, and declares the Sheets, Drive, mail, and trigger scopes the ledger needs.'))}
-            {stepCard('setup', tt('schoolrewards.step_setup', 'Run the one-time repository setup'), tt('schoolrewards.step_setup_body', 'Fill in the school details below and copy the generated function. In the editor open Code.gs, press Ctrl+End to reach the bottom, paste it there, and save. In the toolbar the dropdown beside Debug lists the functions: choose runInitialSchoolRewardsSetup and click Run. Google asks you to authorise once: pick the account, click Advanced, then "Go to AlloFlow School Rewards (unsafe)" (that wording appears for every in-house script), then Allow. The Execution log should end with "ok": true. The account that runs it becomes the first administrator, and the domain must match its email. Staff, cashiers, and students are added later inside the portal.'),
+            {stepCard('setup', tt('schoolrewards.step_setup', 'Run the one-time repository setup'), tt('schoolrewards.step_setup_reviewed_body', 'Fill in the school details below and copy the generated function. In the editor open Code.gs, press Ctrl+End to reach the bottom, paste it there, and save. In the toolbar the dropdown beside Debug lists the functions: choose runInitialSchoolRewardsSetup and click Run only after district review. Confirm the managed account and approve only the reviewed permissions. If Google or district policy blocks access, stop and consult IT; do not bypass a warning. The Execution log should end with "ok": true. The account that runs it becomes the first administrator, and the domain must match its email. Staff, cashiers, and students are added later inside the portal.'),
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_school', 'School name')}<input className={SR_INPUT + ' mt-1 font-normal'} value={form.schoolName || ''} onChange={(event) => setForm('schoolName', event.target.value)} placeholder="Example Elementary" /></label>
                 <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_domain', 'School sign-in domain')}<span className="block font-normal text-slate-700">{tt('schoolrewards.form_domain_help', 'The part after the @ in your school email, for example lincoln.k12.example. Only accounts on this domain can sign in.')}</span><input className={SR_INPUT + ' mt-1 font-normal'} value={form.allowedDomain || ''} onChange={(event) => setForm('allowedDomain', event.target.value)} placeholder="school.example" inputMode="url" autoComplete="off" spellCheck={false} /></label>
@@ -711,26 +869,18 @@ function SchoolRewardsPanel(props) {
                 </div>
               </div>)}
             {stepCard('deployed', tt('schoolrewards.step_deployed', 'Deploy as a domain-restricted web app'), tt('schoolrewards.step_deployed_body', 'Click Deploy (top right), then New deployment. Beside "Select type" click the gear and choose Web app. Execute as: Me. Who has access: your organisation (the domain), never Anyone. Click Deploy, approve if asked, and copy the Web app URL that ends in /exec. Any later change to a file needs Deploy, Manage deployments, New version before it goes live.'))}
-            {stepCard('connected', tt('schoolrewards.step_connected', 'Paste the deployment URL and connect'), tt('schoolrewards.step_connected_body', 'Saved on this device only; each leader who needs the launcher pastes it once. Google sign-in still decides what each person can see.'),
-              <form className="mt-3" onSubmit={(event) => { event.preventDefault(); savePortalUrl(urlDraft); }}>
-                <label htmlFor="schoolrewards-portal-url" className="block text-xs font-black text-slate-800">{tt('schoolrewards.url_label', 'School or district Apps Script web-app URL')}</label>
-                <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-                  <input id="schoolrewards-portal-url" className={SR_INPUT} type="url" inputMode="url" autoComplete="off" spellCheck={false} value={urlDraft} onChange={(event) => setUrlDraft(event.target.value)} placeholder="https://script.google.com/macros/s/.../exec" aria-describedby="schoolrewards-portal-url-help" />
-                  <button type="submit" className={SR_BTN_PRIMARY + ' shrink-0'} data-help-key="schoolrewards_connect">{connected ? tt('schoolrewards.update', 'Update connection') : tt('schoolrewards.connect', 'Connect')}</button>
-                </div>
-                <p id="schoolrewards-portal-url-help" className={'mt-2 text-xs leading-relaxed ' + (urlMessage.tone === 'error' ? 'text-rose-900' : 'text-slate-700')} role={urlMessage.text ? 'status' : undefined}>{urlMessage.text || tt('schoolrewards.url_help', 'Only an HTTPS script.google.com address ending in /macros/s/{deployment}/exec is accepted.')}</p>
-              </form>)}
-            {stepCard('verified', tt('schoolrewards.step_verified', 'Verify the deployment and each role'), tt('schoolrewards.step_verified_body', 'Open the deployment check: a page should say "Deployment check passed" with your school and your role. Then open the portal: the Admin setup tab has a First-week checklist that ticks itself as staff, students, prizes, and the first award appear, so you can see each role working without borrowing accounts.'),
+            {stepCard('connected', tt('schoolrewards.step_saved_address', 'Save the approved Store address'), tt('schoolrewards.step_connected_body', 'Saved on this device only; each leader who needs the launcher pastes it once. Google sign-in still decides what each person can see.'), portalUrlForm)}
+            {stepCard('verified', tt('schoolrewards.step_verified_self', 'I personally checked the deployment and intended roles'), tt('schoolrewards.step_verified_self_body', 'Read the deployment check for the expected school and role. Test each intended role with approved test accounts and fictional records, then use Admin setup for the first-week checklist. This checkbox records your confirmation only; AlloFlow and AlloBot cannot inspect or certify the separate signed-in Google page.'),
               <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" className={SR_BTN_SECONDARY} onClick={openHealth} disabled={!connected}>{tt('schoolrewards.open_check', 'Open deployment check')}</button>
-                <button type="button" className={SR_BTN_SECONDARY} onClick={openPortal} disabled={!connected}>{tt('schoolrewards.open_portal', 'Open School Rewards portal')}</button>
-                {healthHint && <p className="m-0 w-full text-xs leading-relaxed text-slate-800" role="status" data-help-key="schoolrewards_health_hint">{tt('schoolrewards.health_hint', 'A new tab opened. If Google asks you to sign in, use your school account. A green "Deployment check passed" means the link works: come back and tick this step. Red means the page says what to check.')}</p>}
+                <button type="button" className={SR_BTN_SECONDARY} onClick={openHealth} disabled={!connected || urlDirty}>{tt('schoolrewards.open_check', 'Open deployment check')}</button>
+                <button type="button" className={SR_BTN_SECONDARY} onClick={openPortal} disabled={!connected || urlDirty}>{tt('schoolrewards.open_portal', 'Open School Rewards portal')}</button>
               </div>)}
           </ol>
         </section>
 
         <SrRosterBridge tt={tt} addToast={addToast} />
         <SrRecognitionWorksheet recognition={props.recognition || null} tt={tt} addToast={addToast} />
+        </>}
       </div>
     </div>
   </div>;

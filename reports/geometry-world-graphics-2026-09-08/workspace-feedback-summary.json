@@ -1,0 +1,47 @@
+{
+  "verifiedAt": "2026-09-09T01:14:30.887Z",
+  "passedTests": 341,
+  "testsByFile": {
+    "geometry_world_block_fidelity.test.js": 31,
+    "geometry_world_keyboard_access.test.js": 61,
+    "geometry_world_placement_transaction.test.js": 24,
+    "geometry_world_rotated_placement.test.js": 19,
+    "geometry_world_visual_pipeline.test.js": 55,
+    "geometry_world_display_controls.test.js": 27,
+    "geometry_world_engine_lifecycle.test.js": 9,
+    "geometry_world_material_graphics.test.js": 4,
+    "geometry_world_printlab_bridge.test.js": 28,
+    "geometry_world_print_workflow.test.js": 12,
+    "geometry_world_stl_export.test.js": 22,
+    "geometry_world_input_transitions.test.js": 12,
+    "geometry_world_pointer_lock.test.js": 11,
+    "geometry_world_measurement_annotations.test.js": 9,
+    "geometry_world_showcase_export.test.js": 11,
+    "geometry_world_retained_selection.test.js": 6
+  },
+  "evidenceByFile": {
+    "geometry_world_block_fidelity.test.js": "placement-transaction-tests.json",
+    "geometry_world_keyboard_access.test.js": "history-refresh-tests.json",
+    "geometry_world_placement_transaction.test.js": "history-refresh-tests.json",
+    "geometry_world_rotated_placement.test.js": "placement-transaction-tests.json",
+    "geometry_world_visual_pipeline.test.js": "workspace-feedback-visual-tests.json",
+    "geometry_world_display_controls.test.js": "history-refresh-tests.json",
+    "geometry_world_engine_lifecycle.test.js": "input-transition-tests.json",
+    "geometry_world_material_graphics.test.js": "building-controls-tests.json",
+    "geometry_world_printlab_bridge.test.js": "retained-selection-tests.json",
+    "geometry_world_print_workflow.test.js": "retained-selection-tests.json",
+    "geometry_world_stl_export.test.js": "building-controls-tests.json",
+    "geometry_world_input_transitions.test.js": "input-transition-tests.json",
+    "geometry_world_pointer_lock.test.js": "input-transition-tests.json",
+    "geometry_world_measurement_annotations.test.js": "workspace-feedback-tests.json",
+    "geometry_world_showcase_export.test.js": "highres-export-tests.json",
+    "geometry_world_retained_selection.test.js": "retained-selection-tests.json"
+  },
+  "syntax": "passed",
+  "desktopMirrors": "byte-identical",
+  "sourceSHA256": {
+    "stem_tool_geometryworld.js": "c05cbc4e2c474f0d25e671a517281ea02b1799b696a1c97007bda67d741ba481",
+    "stem_tool_geometryworld_builder.js": "83dd9e8661568139e666c6a1e3d0066b2bf739e48b52c826d3e335241dfb319e",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  }
+}

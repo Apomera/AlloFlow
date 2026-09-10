@@ -1,0 +1,96 @@
+{
+  "success": true,
+  "tests": {
+    "passed": 122,
+    "total": 122,
+    "files": 6,
+    "success": true,
+    "failed": 0
+  },
+  "sources": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "sha256": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+      "mirrorMatches": true,
+      "syntax": true,
+      "browserSourceMatches": true
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "sha256": "12cf96338ea1af852fe76743a3b52eafb3847c24fe809087e97f4baf3a57715a",
+      "mirrorMatches": true,
+      "syntax": true,
+      "browserSourceMatches": true
+    },
+    {
+      "name": "stem_tool_printlab.js",
+      "sha256": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742",
+      "mirrorMatches": true,
+      "syntax": true,
+      "browserSourceMatches": true
+    }
+  ],
+  "browser": {
+    "beforePass": true,
+    "afterPass": true,
+    "errors": [],
+    "consoleErrors": [],
+    "failures": [],
+    "captures": [
+      {
+        "file": "after-build-balanced-1200x820.png",
+        "cameraMatches": true,
+        "drawCalls": 381,
+        "triangles": 8214,
+        "renderWorkUnchanged": true
+      },
+      {
+        "file": "after-build-saver-1200x820.png",
+        "cameraMatches": true,
+        "drawCalls": 238,
+        "triangles": 6038,
+        "renderWorkUnchanged": true
+      },
+      {
+        "file": "after-build-saver-390x844.png",
+        "cameraMatches": true,
+        "drawCalls": 238,
+        "triangles": 6038,
+        "renderWorkUnchanged": true
+      },
+      {
+        "file": "after-studio-saver-1200x820.png",
+        "cameraMatches": true,
+        "drawCalls": 87,
+        "triangles": 502,
+        "renderWorkUnchanged": true
+      }
+    ],
+    "exactWorld": true,
+    "exactGeometry": true,
+    "exactStl": true,
+    "beforeTransitionsPreserveModel": true,
+    "afterTransitionsPreserveModel": true
+  },
+  "texture": {
+    "before": {
+      "width": 256,
+      "height": 256,
+      "encoding": 3001,
+      "mean": 147.68104369810567,
+      "std": 6.1330264600686055,
+      "min": 120.0946,
+      "max": 165.9542
+    },
+    "after": {
+      "width": 256,
+      "height": 256,
+      "encoding": 3001,
+      "mean": 164.05588018180788,
+      "std": 3.0099695140737146,
+      "min": 148.1548,
+      "max": 183.50779999999997
+    },
+    "sameDimensions": true
+  }
+}

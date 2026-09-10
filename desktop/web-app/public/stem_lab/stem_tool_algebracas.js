@@ -369,7 +369,47 @@
     }
 
 
-    return { balanceTrial:balanceTrial, linearSide:linearSide, balanceOperation:balanceOperation, normalize: normalize, evalAt: evalAt, parseEquation: parseEquation, extractRoots: extractRoots, verifySolution: verifySolution, gradeAnswer: gradeAnswer };
+
+    function solveLinear(equation) {
+      var parts = normalize(equation).split('=');
+      if (parts.length !== 2) return { ok: false };
+      var left = linearSide(parts[0]), right = linearSide(parts[1]);
+      if (!left || !right) return { ok: false };
+      var coefficient = rAdd(left.a, rNeg(right.a)), constant = rAdd(right.b, rNeg(left.b));
+      var kind = coefficient.n ? 'unique' : constant.n ? 'contradiction' : 'identity';
+      var answer = kind === 'unique' ? rText(rDiv(constant, coefficient)) : kind === 'identity' ? 'All real numbers' : 'No solution';
+      var steps = ['STEP 1: ' + rText(coefficient) + 'x = ' + rText(constant) + ' [Collect variable terms on the left and constants on the right]'];
+      if (kind === 'unique') steps.push('STEP 2: x = ' + answer + ' [Divide both sides by ' + rText(coefficient) + ']');
+      else steps.push('STEP 2: ' + (kind === 'identity' ? 'Both sides agree for every real x.' : 'Zero cannot equal a nonzero constant.') + ' [Compare constants]');
+      var trial = kind === 'unique' ? balanceTrial(equation, answer) : null;
+      return { ok: true, kind: kind, answer: answer, text: steps.join('\n') + '\nANSWER: ' + answer,
+        verify: { decidable: true, verified: true, exact: true, detail: trial && trial.ok ? 'x=' + answer + ': LHS=' + trial.left + ', RHS=' + trial.right : 'Exact comparison of the linear coefficients and constants.' } };
+    }
+    function checkLinearStep(before, after) {
+      var a = solveLinear(before), b = solveLinear(after);
+      if (!a.ok || !b.ok) return { ok: false, detail: 'Use two complete linear equations in x, with constant nonzero denominators.' };
+      var equivalent = a.kind === b.kind && (a.kind !== 'unique' || a.answer === b.answer);
+      return { ok: true, equivalent: equivalent, detail: equivalent ? 'These equations have exactly the same solution set.' : 'This step changes the solution set. Check that the operation preserves both sides.' };
+    }
+    function linearPractice(level, index) {
+      var i = Math.abs(Math.floor(Number(index) || 0)) % 36, a = 2 + i % 7, b = i % 9 - 4, x = i % 11 - 5;
+      var problem = level === 'advanced' ? '(' + a + 'x + ' + b + ')/3 = ' + (a*x+b) + '/3' :
+        level === 'middle' ? a + '(x + ' + b + ') = ' + (a*x+a*b-x) + ' + x' : a + 'x + ' + b + ' = ' + (a*x+b);
+      problem = problem.replace(/\+ -/g, '- ');
+      var solution = solveLinear(problem);
+      return { problem: problem, answer: solution.answer, solution: solution.text, source: 'local-linear', hint: 'Apply the same reversible operation to both sides; collect x terms before dividing.' };
+    }
+    function gradeLinear(equation, answer) {
+      var solved = solveLinear(equation);
+      if (!solved.ok) return { decidable: false };
+      var candidate = normalize(answer).replace(/^x=/i, '');
+      if (solved.kind !== 'unique') return { decidable: true, correct: candidate.toLowerCase() === normalize(solved.answer).toLowerCase(), detail: 'Compare whether the equation is an identity or a contradiction.' };
+      var value = linearSide(candidate);
+      if (!value || value.a.n) return { decidable: false, detail: 'Enter one number or fraction, optionally starting with x =.' };
+      return { decidable: true, correct: rText(value.b) === solved.answer, detail: 'Checked against the exact linear solution.' };
+    }
+
+    return { solveLinear:solveLinear, checkLinearStep:checkLinearStep, linearPractice:linearPractice, gradeLinear:gradeLinear, balanceTrial:balanceTrial, linearSide:linearSide, balanceOperation:balanceOperation, normalize: normalize, evalAt: evalAt, parseEquation: parseEquation, extractRoots: extractRoots, verifySolution: verifySolution, gradeAnswer: gradeAnswer };
   })();
   try { window.__alloCASPure = __alloCASPure; } catch (_e) {}
 
@@ -605,8 +645,18 @@ onSpeak: function(formats) {
 
         /* ============ HANDLERS ============ */
         var handleSolve = function() {
-          if (!expression.trim() || !callGemini || isLoading) return;
-          upd('isLoading', true); upd('result', null);
+          if (!expression.trim() || isLoading) return;
+          var local = mode === 'solve' ? __alloCASPure.solveLinear(expression) : { ok: false };
+          if (local.ok) {
+            var localHistory = history.slice(-9).concat([{ expr: expression, mode: mode, result: local.text, verify: local.verify, ts: Date.now() }]);
+            var localModes=Object.assign({},d._modesUsed||{},{solve:true}),localCount=(d._solveCount||0)+1;
+            updMulti({ result: local.text, verify: local.verify, history: localHistory, isLoading: false, _solveCount:localCount, _modesUsed:localModes });
+            if(awardStemXP)awardStemXP('algebraCAS',5,'Exact local solve');
+            checkBadges(Object.assign({},d,{_solveCount:localCount,_modesUsed:localModes,history:localHistory}));
+            return;
+          }
+          if (!callGemini) { updMulti({ result: 'Local solving supports linear equations in x, including fractions and parentheses. Use the Balance tab or enter a linear equation. This expression or mode needs the AI provider.', verify: { unavailable: true } }); return; }
+          updMulti({ isLoading: true, result: null, verify: null });
           if (SOUNDS[mode]) SOUNDS[mode]();
           var modeLabel = mode.charAt(0).toUpperCase() + mode.slice(1);
           var prompt = 'You are a math CAS tutor for a grade ' + (gradeLevel || 5) + ' student.\n' +
@@ -620,7 +670,7 @@ onSpeak: function(formats) {
               var _aM = res.match(/ANSWER:\s*(.+)/i);
               var _chk = (_aM && _aM[1].trim()) ? __alloCASPure.verifySolution(expression, _aM[1].trim()) : { decidable: false };
               var newH = history.slice(-9);
-              newH.push({ expr: expression, mode: mode, result: res, ts: Date.now() });
+              newH.push({ expr: expression, mode: mode, result: res, verify: _chk, ts: Date.now() });
               var sc = (d._solveCount || 0) + 1;
               var fc = (d._factorCount || 0) + (mode === 'factor' ? 1 : 0);
               var mu = Object.assign({}, d._modesUsed || {}); mu[mode] = true;
@@ -633,8 +683,13 @@ onSpeak: function(formats) {
           });
         };
 
+        function startLocalPractice() {
+          var index = (d.localPracticeIndex || 0) + 1;
+          updMulti({ practiceQ: __alloCASPure.linearPractice(difficulty, index), localPracticeIndex: index, practiceFeedback: null, practiceAnswer: '', practiceNotice: '', showSolution: false, isLoading: false });
+        }
         var handlePracticeGen = function() {
-          if (!callGemini || isLoading) return;
+          if (isLoading) return;
+          if (!callGemini || (practiceQ && practiceQ.source === 'local-linear')) { startLocalPractice(); return; }
           updMulti({ isLoading: true, practiceFeedback: null, practiceAnswer: '', showSolution: false });
           if (difficulty === 'advanced') upd('_triedAdvanced', true);
           var diffDesc = difficulty === 'elementary' ? 'single-variable linear (e.g. 3x + 7 = 22)' :
@@ -654,7 +709,17 @@ onSpeak: function(formats) {
         };
 
         var handlePracticeCheck = function() {
-          if (!practiceQ || !practiceAnswer.trim() || !callGemini) return;
+          if (!practiceQ || !practiceAnswer.trim() || practiceFeedback || isLoading) return;
+          if (practiceQ.source === 'local-linear') {
+            var localGrade = __alloCASPure.gradeLinear(practiceQ.problem, practiceAnswer);
+            if (!localGrade.decidable) { upd('practiceNotice', localGrade.detail); return; }
+            var streak = localGrade.correct ? practiceStreak + 1 : 0;
+            updMulti({ practiceNotice: '', practiceFeedback: { correct: localGrade.correct, text: 'FEEDBACK: ' + (localGrade.correct ? 'Your value satisfies the equation.' : 'Your value does not satisfy the equation. Compare the reversible steps below.') + '\nSOLUTION:\n' + practiceQ.solution, gradeSource: 'verified', gradeDetail: localGrade.detail }, practiceScore: practiceScore + (localGrade.correct ? 1 : 0), practiceStreak: streak, _maxStreak: Math.max(d._maxStreak || 0, streak), showSolution: !localGrade.correct });
+            if (localGrade.correct && awardStemXP) awardStemXP('algebraCAS', 10, 'Exact linear practice');
+            checkBadges(Object.assign({},d,{_maxStreak:Math.max(d._maxStreak||0,streak)}));
+            return;
+          }
+          if (!callGemini) { upd('practiceNotice', 'This generated problem needs the AI provider. Start local linear practice to continue.'); return; }
           upd('isLoading', true);
           var prompt = 'Student solving:\nPROBLEM: ' + practiceQ.problem + '\nCORRECT: ' + practiceQ.answer +
             '\nSTUDENT: ' + practiceAnswer.trim() + '\n\nRespond EXACTLY:\nCORRECT: yes/no\nFEEDBACK: (1-2 sentences)\n' +
@@ -692,7 +757,7 @@ onSpeak: function(formats) {
         };
         var sendBuilderToSolver = function() {
           var eq = builderToString();
-          if (eq) { updMulti({ expression: eq, tab: 'solve' }); }
+          if (eq) { updMulti({ expression: eq, tab: 'solve', result: null, verify: null, stepCheck: null }); }
         };
 
         /* -- Scale helpers -- */
@@ -746,9 +811,9 @@ onSpeak: function(formats) {
             var isAns = /^ANSWER:/i.test(trimmed);
             var ruleM = line.match(/\[([^\]]+)\]/);
             if (isAns) return h('div', { key: i, style: { marginTop: '8px', padding: '8px', borderRadius: '8px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', fontWeight: '700', animation: 'casStepIn 300ms ease-out both', animationDelay: Math.min(i * 40, 320) + 'ms' } }, '\u2705 ' + trimmed);
-            if (isStep) return h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: '6px', padding: '4px 0', animation: 'casStepIn 240ms ease-out both', animationDelay: Math.min(i * 40, 280) + 'ms' } },
-              h('span', { style: { flex: '1' } }, ruleM ? line.replace(ruleM[0], '').trim() : trimmed),
-              ruleM ? h('span', { style: { padding: '2px 6px', borderRadius: '99px', fontSize: '10px', fontWeight: '700', background: 'rgba(99,102,241,0.15)', color: ACCENT, border: '1px solid rgba(99,102,241,0.35)', whiteSpace: 'nowrap' } }, ruleM[1]) : null
+            if (isStep) return h('div', { key: i, style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: '6px', padding: '4px 0', animation: 'casStepIn 240ms ease-out both', animationDelay: Math.min(i * 40, 280) + 'ms' } },
+              h('span', { style: { flex: '1 1 160px', minWidth: 0, overflowWrap: 'anywhere' } }, ruleM ? line.replace(ruleM[0], '').trim() : trimmed),
+              ruleM ? h('span', { style: { padding: '2px 6px', borderRadius: '99px', fontSize: '10px', fontWeight: '700', background: 'rgba(99,102,241,0.15)', color: ACCENT, border: '1px solid rgba(99,102,241,0.35)', whiteSpace: 'normal', maxWidth: '100%', overflowWrap: 'anywhere', borderRadius: '8px' } }, ruleM[1]) : null
             );
             if (/^SOLUTION:/i.test(trimmed)) return null;
             return h('div', { key: i, style: { padding: '2px 0' } }, trimmed);
@@ -793,17 +858,17 @@ onSpeak: function(formats) {
           return h('div', null,
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '6px', marginBottom: '10px' } },
               MODES.map(function(m) {
-                return h('button', { key: m.id, onClick: function() { updMulti({ mode: m.id, result: null }); }, title: m.desc, 'aria-pressed': mode === m.id, style: btnStyle(mode === m.id) }, m.label);
+                return h('button', { key: m.id, onClick: function() { updMulti({ mode: m.id, result: null, verify: null }); }, title: m.desc, 'aria-pressed': mode === m.id, style: btnStyle(mode === m.id) }, m.label);
               })
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' } },
-              h('input', { type: 'text', value: expression, onChange: function(e) { upd('expression', e.target.value); },
+              h('input', { type: 'text', value: expression, onChange: function(e) { updMulti({ expression: e.target.value, result: null, verify: null, stepCheck: null }); },
                 onKeyDown: function(e) { if (e.key === 'Enter') handleSolve(); },
                 placeholder: 'e.g. ' + ((EXAMPLES[mode] || [])[0] || '2x + 5 = 13'),
                 'aria-label': t('stem.algebraCAS.algebra_expression_input', 'Algebra expression input'),
                 style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
-              mathInputButton(expression, function(value) { upd('expression', value); }, 'Enter an algebra expression'),
+              mathInputButton(expression, function(value) { updMulti({ expression: value, result: null, verify: null, stepCheck: null }); }, 'Enter an algebra expression'),
               h('button', { 'aria-label': 'TRY:', onClick: handleSolve, disabled: isLoading || !expression.trim(),
                 style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', opacity: (isLoading || !expression.trim()) ? 0.5 : 1, border: 'none' }
               }, isLoading ? '\u23F3 ...' : '\u25B6 ' + (mode.charAt(0).toUpperCase() + mode.slice(1)))
@@ -811,20 +876,29 @@ onSpeak: function(formats) {
             h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '10px' } },
               h('span', { style: { fontSize: '10px', fontWeight: '700', color: MUTED } }, 'TRY:'),
               (EXAMPLES[mode] || []).map(function(ex, i) {
-                return h('button', { 'aria-label': t('stem.algebraCAS.step_by_step_solution', 'Step-by-Step Solution'), key: i, onClick: function() { upd('expression', ex); },
+                return h('button', { 'aria-label': t('stem.algebraCAS.step_by_step_solution', 'Step-by-Step Solution'), key: i, onClick: function() { updMulti({ expression: ex, result: null, verify: null, stepCheck: null }); },
                   style: { padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontFamily: 'monospace', background: CARD, border: '1px solid ' + BORDER, color: ACCENT, cursor: 'pointer' } }, ex);
               })
             ),
             result ? h('div', { style: Object.assign({}, cardStyle, { marginBottom: '10px' }) },
               h('div', { style: { fontSize: '11px', fontWeight: '700', color: ACCENT, marginBottom: '8px' } }, t('stem.algebraCAS.step_by_step_solution_2', '\uD83D\uDCCB Step-by-Step Solution')),
               h('div', { style: { fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: '1.6' } }, renderSteps(typeof result === 'string' ? result : '')),
-              verify && verify.decidable ? h('div', { style: { marginTop: '8px', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '700', background: verify.verified ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)', color: verify.verified ? '#34d399' : '#f59e0b', border: '1px solid ' + (verify.verified ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)') } }, verify.verified ? ('✓ ' + t('stem.algebraCAS.verified_check', 'Verified by the math engine') + (verify.detail ? ' — ' + verify.detail : '')) : ('⚠ ' + t('stem.algebraCAS.verify_warning', 'This answer does not check out') + (verify.detail ? ' — ' + verify.detail : ''))) : null
+              h('p', { role: 'status', 'data-cas-verification': verify && verify.exact ? 'exact' : 'ai', style: { color: TEXT, fontSize: 12, lineHeight: 1.6 } },
+                verify && verify.unavailable ? 'No AI provider is connected. The local linear solver and local practice are available.' : verify && verify.exact ? 'Exact local solution and algebraic steps. ' + verify.detail :
+                  'AI explanation: steps are not independently checked. ' + (verify && verify.decidable ? (verify.verified ? 'Listed roots pass a numerical substitution check; this does not prove all roots were found. ' : 'The proposed answer fails substitution. ') + (verify.detail || '') : 'The answer could not be checked locally.'))
             ) : null,
+            h('details', { style: cardStyle, 'data-linear-step-checker': true },
+              h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Check my next algebra step'),
+              h('p', null, 'Compare the equation above with your next line. This checks the solution set of linear equations in x.'),
+              h('label', { htmlFor: 'cas-next-step' }, 'My next equation'),
+              h('input', { id: 'cas-next-step', value: d.nextEquation || '', maxLength: 500, onChange: function(e) { updMulti({ nextEquation: e.target.value, stepCheck: null }); }, style: { display: 'block', width: '100%', boxSizing: 'border-box', padding: 10, background: CARD, color: TEXT, border: '1px solid ' + BORDER } }),
+              h('button', { type: 'button', style: btnStyle(false), onClick: function() { upd('stepCheck', __alloCASPure.checkLinearStep(expression, d.nextEquation || '')); } }, 'Check this step'),
+              d.stepCheck ? h('p', { role: 'status' }, d.stepCheck.detail) : null),
             history.length > 0 ? h('div', null,
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, marginBottom: '6px' } }, '\uD83D\uDCDC Recent (' + history.length + ')'),
               h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 history.slice().reverse().slice(0, 5).map(function(hi, i) {
-                  return h('button', { key: i, onClick: function() { updMulti({ expression: hi.expr, mode: hi.mode, result: hi.result }); },
+                  return h('button', { key: i, onClick: function() { updMulti({ expression: hi.expr, mode: hi.mode, result: hi.result, verify: hi.verify || null, stepCheck: null }); },
                     style: { padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontFamily: 'monospace', background: CARD, border: '1px solid ' + BORDER, color: TEXT, cursor: 'pointer' } },
                     hi.mode + ': ' + hi.expr.substring(0, 20));
                 })
@@ -836,6 +910,9 @@ onSpeak: function(formats) {
         /* ============ TAB: PRACTICE ============ */
         var renderPractice = function() {
           return h('div', null,
+            h('p', { style: { color: MUTED, fontSize: 12 } }, 'Local practice uses exact linear equations: one-step, brackets, or fractions at the selected level.'),
+            h('button', { type: 'button', style: btnStyle(false), disabled: isLoading, onClick: startLocalPractice }, 'Start local linear practice'),
+            d.practiceNotice ? h('p', { role: 'status' }, d.practiceNotice) : null,
             (practiceScore > 0 || practiceStreak > 0) ? h('div', { style: { display: 'flex', gap: '10px', marginBottom: '8px' } },
               practiceScore > 0 ? h('span', { style: { fontSize: '11px', fontWeight: '700', color: 'rgba(34,197,94,0.9)' } }, '\u2B50 ' + practiceScore + ' correct') : null,
               practiceStreak > 1 ? h('span', { style: { fontSize: '11px', fontWeight: '700', color: '#f97316' } }, '\uD83D\uDD25 ' + practiceStreak + ' streak') : null

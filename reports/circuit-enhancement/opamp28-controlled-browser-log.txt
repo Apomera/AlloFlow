@@ -1,0 +1,23 @@
+{
+  "scenarios": [
+    "Camera perspectives, tilt extremes, zoom, keyboard pan and reset preserve parts, time and undo",
+    "Controlled-source focus, signed gain, input reversal and electrical undo",
+    "Current sensing sign, removed-reference diagnostic, disabled export and undo recovery",
+    "Desktop and phone layout, accessibility and mouse drag panning"
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

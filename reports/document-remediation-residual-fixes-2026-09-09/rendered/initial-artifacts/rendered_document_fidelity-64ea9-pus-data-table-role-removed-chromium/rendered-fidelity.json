@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "2b78f9624893e6b6489091dc69d269e38699a35545e3c873bf25334f239aaf81",
+    "bytes": 486
+  },
+  "candidate": {
+    "sha256": "35303acd0a921a41f47a0e834db56dbd93b11db12cb9d93fd83e09e3a7179d0a",
+    "bytes": 506
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 576.4534999999996,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "results-table-semantics",
+      "sourceSelector": "#results",
+      "candidateSelector": "#results",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Trial resultsTrialScoreA95",
+          "candidate": "Trial resultsTrialScoreA95"
+        },
+        {
+          "property": "role",
+          "status": "failed",
+          "source": "table",
+          "candidate": "none"
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "exposed",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        },
+        {
+          "property": "visibleText",
+          "status": "passed",
+          "source": "Trial resultsTrialScoreA95",
+          "candidate": "Trial resultsTrialScoreA95",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                5
+              ],
+              [
+                6,
+                26
+              ]
+            ],
+            "candidate": [
+              [
+                0,
+                5
+              ],
+              [
+                6,
+                26
+              ]
+            ]
+          }
+        },
+        {
+          "property": "exposedText",
+          "status": "failed",
+          "source": "Trial resultsTrialScoreA95",
+          "candidate": "",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                5
+              ],
+              [
+                6,
+                26
+              ]
+            ],
+            "candidate": []
+          }
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

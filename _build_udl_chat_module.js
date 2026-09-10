@@ -9,11 +9,15 @@ const OUTPUT = path.join(ROOT, 'udl_chat_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'udl_chat_module.js');
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
+const recognitionTools = fs.readFileSync(path.join(ROOT, 'school_store_recognition.js'), 'utf8');
+const setupGuide = fs.readFileSync(path.join(ROOT, 'school_store_setup_guide.js'), 'utf8');
 
 const outputCode =
 `(function() {
 'use strict';
 if (window.AlloModules && window.AlloModules.UdlChatModule) { console.log('[CDN] UdlChatModule already loaded, skipping'); return; }
+${recognitionTools}
+${setupGuide}
 ${source}
 window.AlloModules.UdlChatModule = true;
 console.log('[UdlChat] handleSendUDLMessage registered');

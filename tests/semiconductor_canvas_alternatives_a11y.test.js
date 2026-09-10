@@ -95,7 +95,7 @@ describe('descriptions carry live values, not just titles', () => {
     expect(m).toMatch(/Selected year 2024/);
     expect(m).toMatch(/NVIDIA B200/);
     expect(m).toMatch(/208 billion transistors/);
-    expect(m).toMatch(/doubling prediction for 2024/);
+    expect(m).toMatch(/doubling reference for 2024/);
     // The old fixed string conveyed nothing about the data.
     expect(m).not.toBe("Moore's Law graph showing transistor counts from 1965 to 2030");
   });
@@ -104,7 +104,7 @@ describe('descriptions carry live values, not just titles', () => {
     const early = label({ subtool: 'moorelaw', mooreYear: 1971 });
     expect(early).toMatch(/Intel 4004/);
     expect(early).toMatch(/2,300 transistors/);
-    expect(early).toMatch(/10.m process/);
+    expect(early).toMatch(/10\s*µm process/);
   });
 });
 

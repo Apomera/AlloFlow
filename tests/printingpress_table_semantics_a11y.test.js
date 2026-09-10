@@ -88,12 +88,25 @@ describe('Printing Press table semantics', () => {
     expect(table.querySelectorAll('th:not([scope])')).toHaveLength(0);
   });
 
-  it('keeps the sole Printing Press table fully scoped in source', () => {
+  it('keeps both Printing Press tables fully scoped in source', () => {
     const source = readFileSync(SOURCE, 'utf8');
-    expect(source.match(/h\('table'/g)).toHaveLength(1);
-    expect(source.match(/h\('caption'/g)).toHaveLength(1);
-    expect(source.match(/scope: 'col'/g)).toHaveLength(4);
-    expect(source.match(/scope: 'row'/g)).toHaveLength(1);
+    expect(source.match(/h\('table'/g)).toHaveLength(2);
+    expect(source.match(/h\('caption'/g)).toHaveLength(2);
+    expect(source.match(/scope: 'col'/g)).toHaveLength(7);
+    expect(source.match(/scope: 'row'/g)).toHaveLength(2);
+  });
+
+  it('renders the screw comparison with scoped measurements and setup headers', async () => {
+    const Component = () => config.render(makeCtx({ toolData: { printingPress: { view: 'pressMechanism' } } }));
+    await act(async () => { root.render(React.createElement(Component)); });
+    const keep = Array.from(host.querySelectorAll('button')).find(button => button.textContent === 'Keep these settings as A');
+    expect(keep).toBeTruthy();
+    await act(async () => { keep.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const table = host.querySelector('#pp-screw-comparison table');
+    expect(table.querySelector('caption').textContent).toBe('Settings and travel during one full turn');
+    expect(Array.from(table.querySelectorAll('thead th[scope="col"]'), el => el.textContent)).toEqual(['Measurement','Setup A','Setup B']);
+    expect(Array.from(table.querySelectorAll('tbody th[scope="row"]'), el => el.textContent)).toEqual(['Bar length','Thread pitch','Hand travel','Platen travel']);
+    expect(table.querySelectorAll('th:not([scope])')).toHaveLength(0);
   });
 
   it('preserves byte-for-byte deploy parity', () => {

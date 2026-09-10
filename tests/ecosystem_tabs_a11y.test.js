@@ -5,7 +5,7 @@ describe('Ecosystem Explorer mode tabs accessibility', () => {
   it('keeps mirrored source aligned and exposes keyboard-operable tabs', () => {
     const source = readFileSync('stem_lab/stem_tool_ecosystem.js', 'utf8');
     expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_ecosystem.js', 'utf8')).toBe(source);
-    expect(source).toContain("var ECO_TAB_ORDER = ['explore', 'sandbox', 'conserve', 'inquiry', 'quiz', 'badges'];");
+    expect(source).toContain("var ECO_TAB_ORDER = ['explore', 'sandbox', 'foodweb', 'conserve', 'inquiry', 'quiz', 'badges'];");
     expect(source).toContain("role: 'tablist'");
     expect(source).toContain("id: 'stem-ecosystem-tab-' + t2");
     expect(source).toContain("'aria-controls': 'stem-ecosystem-panel-' + t2");

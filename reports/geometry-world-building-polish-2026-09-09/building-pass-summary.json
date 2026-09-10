@@ -1,0 +1,131 @@
+{
+  "success": true,
+  "uniquePassedTests": 336,
+  "uniqueTestFiles": 14,
+  "failures": [],
+  "runs": [
+    {
+      "name": "building-regression-tests.json",
+      "success": true,
+      "passed": 110,
+      "failed": 0,
+      "failedSuites": 0
+    },
+    {
+      "name": "empty-guidance-tests.json",
+      "success": true,
+      "passed": 22,
+      "failed": 0,
+      "failedSuites": 0
+    },
+    {
+      "name": "accurate-preview-tests.json",
+      "success": true,
+      "passed": 156,
+      "failed": 0,
+      "failedSuites": 0
+    },
+    {
+      "name": "shape-controls-tests.json",
+      "success": true,
+      "passed": 93,
+      "failed": 0,
+      "failedSuites": 0
+    },
+    {
+      "name": "return-feedback-tests.json",
+      "success": true,
+      "passed": 14,
+      "failed": 0,
+      "failedSuites": 0
+    }
+  ],
+  "sources": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "sha256": "008e1f7c870efa53b2ddaa3e624ed79c88ca27f03d5f54a7f713496bcd672ec8",
+      "syntax": true,
+      "mirrorMatches": true,
+      "finalBrowserMatches": true,
+      "fullSnapshotMatchesReport": true,
+      "controlsSnapshotMatchesReport": true,
+      "controlsSourceDiffIsOnlyReturnCorrection": true,
+      "fullSourceDiffIsOnlyVerifiedCorrections": true
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "sha256": "12cf96338ea1af852fe76743a3b52eafb3847c24fe809087e97f4baf3a57715a",
+      "syntax": true,
+      "mirrorMatches": true,
+      "finalBrowserMatches": true,
+      "fullSnapshotMatchesReport": true,
+      "controlsSnapshotMatchesReport": true,
+      "controlsSourceDiffIsOnlyReturnCorrection": true,
+      "fullSourceDiffIsOnlyVerifiedCorrections": true
+    },
+    {
+      "name": "stem_tool_printlab.js",
+      "sha256": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742",
+      "syntax": true,
+      "mirrorMatches": true,
+      "finalBrowserMatches": true,
+      "fullSnapshotMatchesReport": true,
+      "controlsSnapshotMatchesReport": true,
+      "controlsSourceDiffIsOnlyReturnCorrection": true,
+      "fullSourceDiffIsOnlyVerifiedCorrections": true
+    }
+  ],
+  "browser": {
+    "firstBrowserIssuesFullyAccountedFor": true,
+    "firstBrowserIssues": [
+      "Native rotate Space activates exactly once at 1440",
+      "Native rotate Enter activates exactly once at 1440",
+      "Visible feedback includes the current angle at 1440",
+      "Rotation cue is readable in-bounds without covering controls at 1440",
+      "Native rotate Space activates exactly once at 390",
+      "Native rotate Enter activates exactly once at 390",
+      "Visible feedback includes the current angle at 390",
+      "Rotation cue is readable in-bounds without covering controls at 390",
+      "Native rotate Space activates exactly once at 320",
+      "Native rotate Enter activates exactly once at 320",
+      "Visible feedback includes the current angle at 320",
+      "Rotation cue is readable in-bounds without covering controls at 320"
+    ],
+    "fullPreviewPass": true,
+    "previewsPreserveSource": true,
+    "deniedPlacementPreservesSource": true,
+    "controlsPass": true,
+    "controlsInitialIssues": [
+      "Returning from Print Lab does not resurrect a stale shape cue"
+    ],
+    "finalBrowserPass": true,
+    "finalFailures": [],
+    "finalErrors": [],
+    "finalPreview": {
+      "ghostError": 0,
+      "hoverError": 0,
+      "outlineError": 0
+    },
+    "viewports": [
+      {
+        "width": 1440,
+        "height": 900
+      },
+      {
+        "width": 390,
+        "height": 844
+      },
+      {
+        "width": 320,
+        "height": 700
+      },
+      {
+        "width": 844,
+        "height": 390
+      }
+    ],
+    "cueBeforeUnmount": "Quarter wedge · 0°",
+    "cueAfterUnmount": "",
+    "cueAfterReturn": ""
+  }
+}

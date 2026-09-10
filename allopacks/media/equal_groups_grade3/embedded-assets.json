@@ -1,0 +1,290 @@
+[
+  {
+    "id": "eq-term-1",
+    "kind": "term",
+    "file": "eq-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four enclosed groups each contain three teal counters.",
+    "altHash": "img-e7j-90dc778e"
+  },
+  {
+    "id": "eq-term-2",
+    "kind": "term",
+    "file": "eq-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Twelve teal counters form three rows of four.",
+    "altHash": "img-9hj-a85cffe7"
+  },
+  {
+    "id": "eq-term-3",
+    "kind": "term",
+    "file": "eq-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An array has one horizontal row highlighted and one vertical column outlined.",
+    "altHash": "img-avj-2fe0a2ac"
+  },
+  {
+    "id": "eq-term-4",
+    "kind": "term",
+    "file": "eq-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Twenty counters form four straight rows of five.",
+    "altHash": "img-dkf-cf65fa22"
+  },
+  {
+    "id": "eq-term-5",
+    "kind": "term",
+    "file": "eq-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The top horizontal line of four counters is highlighted in a three-row array.",
+    "altHash": "img-alz-be37a321"
+  },
+  {
+    "id": "eq-term-6",
+    "kind": "term",
+    "file": "eq-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The left vertical line of three counters is highlighted in an array.",
+    "altHash": "img-ai7-5e0e7641"
+  },
+  {
+    "id": "eq-term-7",
+    "kind": "term",
+    "file": "eq-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five counters sit together inside one enclosing outline.",
+    "altHash": "img-70f-cb0e8023"
+  },
+  {
+    "id": "eq-term-8",
+    "kind": "term",
+    "file": "eq-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two enclosed groups each contain four counters.",
+    "altHash": "img-9lb-ebf76f36"
+  },
+  {
+    "id": "eq-term-9",
+    "kind": "term",
+    "file": "eq-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three enclosed groups hold two, five and one counters.",
+    "altHash": "img-anz-eace4a55"
+  },
+  {
+    "id": "eq-term-10",
+    "kind": "term",
+    "file": "eq-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four enclosed groups each repeat a pair of counters.",
+    "altHash": "img-c33-4e72ddf0"
+  },
+  {
+    "id": "eq-anchor-1",
+    "kind": "anchor",
+    "file": "eq-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four outlined sets each contain three counters.",
+    "altHash": "img-e7j-90dc778e"
+  },
+  {
+    "id": "eq-anchor-2",
+    "kind": "anchor",
+    "file": "eq-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three groups of three crackers appear above groups containing two, five and one cracker.",
+    "altHash": "img-e73-7e7befa7"
+  },
+  {
+    "id": "eq-anchor-3",
+    "kind": "anchor",
+    "file": "eq-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two arrays show twelve counters each, arranged as three-by-four and four-by-three.",
+    "altHash": "img-fgv-70b078fb"
+  },
+  {
+    "id": "eq-anchor-4",
+    "kind": "anchor",
+    "file": "eq-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten rows of six counters appear, with the last row enclosed by a dashed gold outline.",
+    "altHash": "img-10xj-b75f750b"
+  },
+  {
+    "id": "eq-sort-1",
+    "kind": "sort",
+    "file": "eq-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four oval plates each hold three crackers.",
+    "altHash": "img-o4v-d425f7d5"
+  },
+  {
+    "id": "eq-sort-2",
+    "kind": "sort",
+    "file": "eq-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Six vases each hold five flowers, with one bloom per stem.",
+    "altHash": "img-1793-412b9bdc"
+  },
+  {
+    "id": "eq-sort-3",
+    "kind": "sort",
+    "file": "eq-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three straight rows each contain eight chairs.",
+    "altHash": "img-eon-8ed675f3"
+  },
+  {
+    "id": "eq-sort-4",
+    "kind": "sort",
+    "file": "eq-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five outlined bags each contain two apples.",
+    "altHash": "img-l13-d533c7bb"
+  },
+  {
+    "id": "eq-sort-5",
+    "kind": "sort",
+    "file": "eq-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular carton contains two rows of six eggs.",
+    "altHash": "img-a8r-bc60c697"
+  },
+  {
+    "id": "eq-sort-6",
+    "kind": "sort",
+    "file": "eq-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three oval plates hold two, five and one cracker.",
+    "altHash": "img-lsf-d25b0c22"
+  },
+  {
+    "id": "eq-sort-7",
+    "kind": "sort",
+    "file": "eq-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two shelves hold four books and seven books.",
+    "altHash": "img-6ij-d96df53a"
+  },
+  {
+    "id": "eq-sort-8",
+    "kind": "sort",
+    "file": "eq-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three rows contain four, four and six chairs.",
+    "altHash": "img-9tz-a237482b"
+  },
+  {
+    "id": "eq-sort-9",
+    "kind": "sort",
+    "file": "eq-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two outlined bags contain six marbles and three marbles.",
+    "altHash": "img-c9v-a0672b4a"
+  },
+  {
+    "id": "eq-sort-10",
+    "kind": "sort",
+    "file": "eq-sort-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five boxes contain ten, ten, ten, ten and seven crayons.",
+    "altHash": "img-g13-15a71535"
+  },
+  {
+    "id": "eq-lesson-1",
+    "kind": "lesson",
+    "file": "eq-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four enclosed groups each hold three crackers.",
+    "altHash": "img-bc3-4502d8bd"
+  },
+  {
+    "id": "eq-lesson-2",
+    "kind": "lesson",
+    "file": "eq-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three outlined groups contain two, five and one cracker.",
+    "altHash": "img-973-85a094f7"
+  },
+  {
+    "id": "eq-lesson-3",
+    "kind": "lesson",
+    "file": "eq-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Twenty-four chairs form three straight rows of eight.",
+    "altHash": "img-erj-f323d469"
+  },
+  {
+    "id": "eq-lesson-4",
+    "kind": "lesson",
+    "file": "eq-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two arrangements each contain twelve counters: three rows of four and four rows of three.",
+    "altHash": "img-fgv-70b078fb"
+  },
+  {
+    "id": "eq-lesson-5",
+    "kind": "lesson",
+    "file": "eq-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten rows of six counters are visible, with the final six enclosed by a dashed gold outline.",
+    "altHash": "img-10xj-b75f750b"
+  },
+  {
+    "id": "eq-lesson-6",
+    "kind": "lesson",
+    "file": "eq-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four enclosed group spaces are empty.",
+    "altHash": "img-7mz-28924327"
+  },
+  {
+    "id": "eq-lesson-7",
+    "kind": "lesson",
+    "file": "eq-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four outlined groups each contain six crayons.",
+    "altHash": "img-dqz-ac6c49fc"
+  },
+  {
+    "id": "eq-lesson-8",
+    "kind": "lesson",
+    "file": "eq-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three rows of chairs contain four, four and six chairs.",
+    "altHash": "img-9tz-a237482b"
+  }
+]

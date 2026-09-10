@@ -56,6 +56,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
     var st = document.createElement('style');
     st.id = 'printingpress-print-css';
     st.textContent = [
+      '.pp-workshop { font-family: system-ui, sans-serif; }',
+      '.pp-workbench { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(310px, 1fr); gap: 18px; align-items: start; margin-bottom: 22px; }',
+      '.pp-scene, .pp-guide { min-width: 0; }',
+      '.pp-guide { background: #2a1f15; border: 1px solid #5c4630; border-radius: 14px; padding: 18px; }',
+      '.pp-workshop button, .pp-workshop input, .pp-workshop select, .pp-workshop textarea { font-family: inherit; }',
+      '.pp-workshop button { min-height: 44px; }',
+      '.pp-workshop :is(button,input,textarea,summary,a):focus-visible { outline: 3px solid #f5d77e; outline-offset: 3px; }',
+      '.pp-cycle-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; margin: 0 0 16px; padding: 0; list-style: none; }',
+      '.pp-cycle-steps li { padding: 8px 3px; border-bottom: 3px solid #5c4630; color: #d4c4a0; text-align: center; font-size: 12px; line-height: 1.4; }',
+      '.pp-cycle-steps li[aria-current] { border-color: #f5d77e; color: #f5d77e; background: #3b2b16; border-radius: 5px 5px 0 0; font-weight: 750; }',
+      '.pp-cycle-steps li[data-done=true] { border-color: #7fb069; }',
+      '.pp-cycle-steps span { display: block; font-size: 16px; font-weight: 750; margin-bottom: 3px; }',
+      '.pp-prediction { border: 1px solid #5c4630; border-radius: 10px; padding: 12px; margin: 16px 0 0; min-width: 0; }',
+      '.pp-prediction button { width: 100%; text-align: left; margin-top: 6px; }',
+      '.pp-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }',
+      '.pp-comparison > div { min-width: 0; padding: 12px 8px; border-radius: 8px; }',
+      '.pp-screw-lab { margin: 20px 0; padding: 20px; background: #241b12; border: 1px solid #856537; border-radius: 14px; }',
+      '.pp-screw-diagrams { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; max-width: 620px; margin: 0 auto 16px; }',
+      '.pp-screw-diagrams svg { display: block; width: 100%; max-width: 280px; margin: auto; background: #19140e; border-radius: 10px; }',
+      '@media(max-width:480px) { .pp-screw-diagrams { grid-template-columns: minmax(0,1fr); } }',
+      '.pp-screw-controls, .pp-screw-results { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }',
+      '.pp-screw-results { grid-template-columns: repeat(3,minmax(0,1fr)); margin: 16px 0; gap: 10px; }',
+      '.pp-screw-results > div { padding: 14px; border: 1px solid #5c4630; border-radius: 10px; background: #19140e; min-width: 0; }',
+      '.pp-screw-results strong { display: block; color: #f5d77e; font: 700 26px/1.3 Georgia,serif; margin: 5px 0; }',
+      '.pp-screw-comparison { margin-top: 16px; padding: 16px; border: 1px solid #856537; border-radius: 10px; background: #19140e; }',
+      '.pp-screw-comparison table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }',
+      '.pp-screw-comparison th, .pp-screw-comparison td { padding: 10px 6px; border-bottom: 1px solid #5c4630; text-align: left; overflow-wrap: anywhere; }',
+      '.pp-screw-comparison th { color: #eee0bc; }',
+      '.pp-force-bar { height: 12px; border-radius: 3px; margin: 6px 0 12px; min-width: 2px; }',
+      '.pp-screw-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }',
+      '@media(max-width:480px) { .pp-screw-comparison { padding: 12px; } .pp-screw-actions button { width: 100%; } }',
+      '.pp-screw-lab input[type=range] { display: block; width: 100%; height: 44px; margin: 4px 0; accent-color: #e8bd70; }',
+      '@media(max-width:640px) { .pp-screw-lab { padding: 14px; } .pp-screw-controls, .pp-screw-results { grid-template-columns: minmax(0,1fr); } }',
+      '.pp-proof-review { margin: 18px 0; padding: 20px; border: 1px solid #c69b51; border-radius: 12px; background: #241b12; }',
+      '.pp-review-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 22px; align-items: start; }',
+      '.pp-letter-picker { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }',
+      '.pp-letter-picker button { min-width: 44px; padding: 6px; font: 700 20px Georgia,serif; }',
+      '.pp-letter-pair { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }',
+      '.pp-letter-pair > div { text-align: center; border-radius: 8px; padding: 14px 6px; min-width: 0; }',
+      '.pp-letter-pair small { display: block; font: 700 11px system-ui,sans-serif; letter-spacing: 1px; }',
+      '.pp-letter-pair span { display: block; font: 700 72px/1.3 Georgia,serif; }',
+      '.pp-proof-review:focus { outline: 3px solid #f5d77e; outline-offset: 3px; }',
+      '@media (max-width: 640px) { .pp-review-layout { grid-template-columns: minmax(0,1fr); gap: 14px; } .pp-proof-review { padding: 14px; } }',
+      '.pp-proof-gallery { max-height: 430px; overflow-y: auto; scrollbar-gutter: stable; padding: 3px !important; }',
+      '@media (max-width: 780px) { .pp-workbench { grid-template-columns: minmax(0, 1fr); } .pp-guide { padding: 14px; } .pp-workshop { padding: 14px !important; } .pp-workshop h2 { font-size: 24px !important; } }',
+      '@media print { .pp-workbench { display: block; } .pp-proof-gallery { max-height: none; overflow: visible; } }',
       '@media print {',
       '  .printingpress-no-print { display: none !important; }',
       '  body { background: white !important; }',
@@ -174,6 +220,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
     slot.impl = impl;
     return slot.Type;
   }
+  // Bounded, plain-data print records; animation state is deliberately not restored.
+  // Single-start, frictionless screw; effort is tangential at the bar end.
+  function ppScrewModel(barCm, pitchMm) {
+    var handTravelMm = 2 * Math.PI * barCm * 10;
+    var advantage = handTravelMm / pitchMm;
+    return { advantage: advantage, forceN: 10 * advantage, handTravelMm: handTravelMm, platenTravelMm: pitchMm };
+  }
+
+  function ppNormalizePressRun(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    var seen = {};
+    var proofs = (Array.isArray(raw.proofs) ? raw.proofs : []).slice(-12).filter(function(proof) {
+      if (!proof || typeof proof.phrase !== 'string' || !Number.isSafeInteger(proof.number) || proof.number < 1 || seen[proof.number]) return false;
+      seen[proof.number] = true;
+      return true;
+    }).map(function(proof) {
+      return { number: proof.number, phrase: Array.from(proof.phrase.toUpperCase()).slice(0, 14).join(''),
+        timestamp: typeof proof.timestamp === 'string' && isFinite(Date.parse(proof.timestamp)) ? new Date(proof.timestamp).toISOString() : '',
+        mode: proof.mode === 'guided' ? 'guided' : 'manual', prediction: ['readable', 'mirrored', 'unsure'].indexOf(proof.prediction) >= 0 ? proof.prediction : null };
+    }).sort(function(a, b) { return a.number - b.number; });
+    return {
+      phrase: typeof raw.phrase === 'string' ? Array.from(raw.phrase).slice(0, 14).join('') : 'FIAT LUX',
+      count: Math.max(Number.isSafeInteger(raw.count) && raw.count >= 0 ? raw.count : 0, proofs.length ? proofs[proofs.length - 1].number : 0),
+      proofs: proofs,
+      notes: typeof raw.notes === 'string' ? raw.notes.slice(0, 4000) : '',
+      showLabels: raw.showLabels === true,
+      prediction: ['readable', 'mirrored', 'unsure'].indexOf(raw.prediction) >= 0 ? raw.prediction : null
+    };
+  }
+
   window.StemLab.registerTool('printingPress', {
     name: 'PrintingPress',
     icon: '📜',
@@ -206,36 +282,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       var badges = d.badges || {};
       var bigQuizState = d.bigQuizState || { idx: 0, score: 0, answered: false, lastChoice: null, picks: {} };
 
-      // Hydration: window slot → localStorage → host state
-      var _hydratedRef = useRef(false);
-      if (!_hydratedRef.current) {
-        _hydratedRef.current = true;
-        try {
-          var winState = (typeof window !== 'undefined' && window.__alloflowPrintingPress) || null;
-          var lsState = null;
-          try { lsState = JSON.parse(localStorage.getItem('printingPress.state.v1') || 'null'); } catch (e) {}
-          var seed = winState || lsState || null;
-          if (seed && typeof seed === 'object') {
-            var merge = {};
-            if (seed.badges && d.badges === undefined) merge.badges = seed.badges;
-            if (seed.modulesVisited && d.modulesVisited === undefined) merge.modulesVisited = seed.modulesVisited;
-            if (Object.keys(merge).length > 0) updMulti(merge);
-          }
-        } catch (e) {}
+      // Read once, then hydrate in an effect so rendering never updates the host.
+      var _savedStateRef = useRef(undefined);
+      if (_savedStateRef.current === undefined) {
+        var storedState = null;
+        try { storedState = JSON.parse(localStorage.getItem('printingPress.state.v1') || 'null'); } catch (e) {}
+        _savedStateRef.current = window.__alloflowPrintingPress || storedState || {};
       }
-
-      // Persist on change
+      var savedState = _savedStateRef.current;
+      var _draftSaveRaw = useState(false);
+      var draftSaved = _draftSaveRaw[0], setDraftSaved = _draftSaveRaw[1];
       useEffect(function() {
+        var merge = {};
+        ['badges', 'modulesVisited', 'broadsideDraft', 'pressRun'].forEach(function(key) {
+          if (savedState[key] && d[key] === undefined) merge[key] = savedState[key];
+        });
+        if (Object.keys(merge).length) updMulti(merge);
+      }, []);
+      useEffect(function() {
+        var snap = { _ts: Date.now() };
+        ['badges', 'modulesVisited', 'broadsideDraft', 'pressRun'].forEach(function(key) {
+          snap[key] = d[key] === undefined ? (savedState[key] || null) : d[key];
+        });
+        window.__alloflowPrintingPress = snap;
         try {
-          var snap = {
-            badges: d.badges || {},
-            modulesVisited: d.modulesVisited || {},
-            _ts: Date.now()
-          };
-          window.__alloflowPrintingPress = snap;
           localStorage.setItem('printingPress.state.v1', JSON.stringify(snap));
-        } catch (e) {}
-      }, [d.badges, d.modulesVisited]);
+          setDraftSaved(true);
+        } catch (e) { setDraftSaved(false); }
+      }, [d.badges, d.modulesVisited, d.broadsideDraft, d.pressRun]);
 
       // SR live region
       var _liveRef = useRef(null);
@@ -1559,13 +1633,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
                 h('div', { style: { fontSize: 10, color: T.accentHi, textTransform: 'uppercase', letterSpacing: 0, fontWeight: 800, fontFamily: 'Georgia, serif', marginBottom: 4 } }, 'Print shop dashboard'),
                 h('div', { style: { fontSize: 18, color: T.text, fontWeight: 800, fontFamily: 'Georgia, serif', lineHeight: 1.15, marginBottom: 6 } }, 'Start with the craft, then open the archive.'),
-                h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } }, 'The full tool is huge. These routes keep the first screen focused while the complete module library stays available below.')
+                h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } }, 'Follow a message from metal type to printed paper. Operate the press, compose your words, then publish a broadside. Explore the archive when you want to go further.')
               ),
               [
-                { id: 'pressMechanism', title: 'Pull the press', body: 'Learn the screw, platen, bed, pressure, and proof cycle.', tone: T.accentHi },
-                { id: 'setType', title: 'Set your type', body: 'Compose, proofread, and understand movable-type constraints.', tone: T.warn },
-                { id: 'broadside', title: 'Make an artifact', body: 'Create a printed broadside as a shareable class product.', tone: T.ok },
-                { id: 'printGlossary', title: 'Review vocabulary', body: 'Use the glossary and quiz when students need consolidation.', tone: T.dim }
+                { id: 'pressMechanism', title: '1 · Operate the press', body: 'Predict what will print. Make a proof and explain how the screw moves the platen.', tone: T.accentHi },
+                { id: 'setType', title: '2 · Compose a message', body: 'Arrange movable type, check its direction, and catch errors before printing.', tone: T.warn },
+                { id: 'broadside', title: '3 · Publish a broadside', body: 'Design for a reader. Choose a clear title and readable type, then print your message.', tone: T.ok },
+                { id: 'printGlossary', title: 'Review vocabulary', body: 'Connect workshop words to the parts and actions you have used.', tone: T.dim }
               ].map(function(route) {
                 return h('button', { key: route.id,
                   onClick: function() { upd('view', route.id); markVisited(route.id); announce(__alloFill(__alloT('stem.printingpress.sr_opening', 'Opening {value1}'), { value1: route.title })); },
@@ -1730,10 +1804,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       //   6. REVEALED — see the printed phrase. Action: "Print another" (→ CLEAN).
       // Counter tracks impressions made. Screw angle is derived from state.
       function renderPressMechanism() {
+        var barRaw = useState(20), pitchRaw = useState(10);
+        var barCm = barRaw[0], setBarCm = barRaw[1];
+        var pitchMm = pitchRaw[0], setPitchMm = pitchRaw[1];
+        var screwModel = ppScrewModel(barCm, pitchMm);
+        var baselineRaw = useState(null), evidenceRaw = useState('');
+        var baseline = baselineRaw[0], setBaseline = baselineRaw[1];
+        var evidenceMessage = evidenceRaw[0], setEvidenceMessage = evidenceRaw[1];
+        var baselineModel = baseline ? ppScrewModel(baseline.barCm, baseline.pitchMm) : null;
+        var changedSettings = baseline ? Number(barCm !== baseline.barCm) + Number(pitchMm !== baseline.pitchMm) : 0;
+        function comparisonRecord() {
+          if (!baseline) return '';
+          function describeSetup(label, bar, pitch) {
+            var result = ppScrewModel(bar, pitch);
+            return label + ': ' + __alloFill(__alloT('stem.printingpress.screw_record_values', 'bar {bar} cm; pitch {pitch} mm; ideal force {force} N; hand travel {hand} cm; platen travel {platen} mm per turn.'), { bar: bar, pitch: pitch, force: Math.round(result.forceN), hand: (result.handTravelMm / 10).toFixed(1), platen: pitch });
+          }
+          return [__alloT('stem.printingpress.screw_record_heading', 'Screw experiment — ideal model, 10 N input, no friction.'),
+            describeSetup(__alloT('stem.printingpress.screw_setup_a', 'Setup A'), baseline.barCm, baseline.pitchMm),
+            describeSetup(__alloT('stem.printingpress.screw_setup_b', 'Setup B'), barCm, pitchMm)].join('\n');
+        }
+        function saveComparison() {
+          var record = comparisonRecord();
+          var currentNotes = runRef.current.notes;
+          if (!record || !changedSettings) return;
+          if (currentNotes.includes(record)) { setEvidenceMessage(__alloT('stem.printingpress.screw_evidence_already_saved', 'This comparison is already in your notebook.')); return; }
+          var nextNotes = currentNotes + (currentNotes ? '\n\n' : '') + record;
+          if (nextNotes.length > 4000) { setEvidenceMessage(__alloT('stem.printingpress.screw_evidence_no_room', 'Your notebook is nearly full. Shorten your notes before adding this comparison; your writing has been kept.')); return; }
+          updateRun({ notes: nextNotes });
+          setEvidenceMessage(__alloT('stem.printingpress.screw_evidence_saved', 'Comparison added to your notebook. Add your explanation in your own words.'));
+        }
         var stateRaw = useState('clean');
         var pressState = stateRaw[0], setPressState = stateRaw[1];
-        var countRaw = useState(0);
-        var count = countRaw[0], setCount = countRaw[1];
+        var run = ppNormalizePressRun(d.pressRun === undefined ? savedState.pressRun : d.pressRun);
+        var count = run.count;
+        var runRef = useRef(run);
+        runRef.current = run;
+        function updateRun(patch) { runRef.current = Object.assign({}, runRef.current, patch); upd('pressRun', runRef.current); }
+        var cyclePhraseRef = useRef(null);
+        var cyclePredictionRef = useRef(null);
+        var tourStartCountRef = useRef(count);
+        var notebookMessageRaw = useState('');
+        var notebookMessage = notebookMessageRaw[0], setNotebookMessage = notebookMessageRaw[1];
+        var reviewRaw = useState(null);
+        var reviewNumber = reviewRaw[0], setReviewNumber = reviewRaw[1];
+        var letterRaw = useState(0);
+        var letterIndex = letterRaw[0], setLetterIndex = letterRaw[1];
+        var reviewProof = run.proofs.find(function(proof) { return proof.number === reviewNumber; }) || null;
+        var reviewLetters = reviewProof ? Array.from(reviewProof.phrase) : [];
+        var reviewLetter = reviewLetters[letterIndex] || '';
+        useEffect(function() {
+          if (reviewNumber === null) return;
+          var panel = document.getElementById('pp-proof-review');
+          if (panel) { panel.focus(); panel.scrollIntoView({ block: 'nearest' }); }
+        }, [reviewNumber]);
+        function openProofReview(proof) {
+          setReviewNumber(proof.number);
+          setLetterIndex(Math.max(0, Array.from(proof.phrase).findIndex(function(letter) { return letter.trim(); })));
+          if (reviewNumber === proof.number) {
+            var panel = document.getElementById('pp-proof-review');
+            if (panel) { panel.focus(); panel.scrollIntoView({ block: 'nearest' }); }
+          }
+        }
         var inkAnimRaw = useState(0);  // 0..1 progress for ink animation
         var inkAnim = inkAnimRaw[0], setInkAnim = inkAnimRaw[1];
         // Guided tour state — auto-advance through all 6 states for a hands-
@@ -1747,22 +1878,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         // first major use was the Bible). Capped at 14 chars to fit visually
         // in the type forme. Auto-uppercased because metal type was case-
         // separated and the simulation only renders one case.
-        var phraseRaw = useState('FIAT LUX');
-        var phrase = phraseRaw[0], setPhrase = phraseRaw[1];
-        var safePhrase = (phrase || 'FIAT LUX').toUpperCase().slice(0, 14);
+        var phrase = run.phrase;
+        function setPhrase(value) { updateRun({ phrase: value }); }
+        var safePhrase = Array.from((phrase.trim() || 'FIAT LUX').toUpperCase()).slice(0, 14).join('');
+        var printedPhrase = run.proofs.length ? run.proofs[run.proofs.length - 1].phrase : safePhrase;
+        var phraseLocked = pressState !== 'clean' && pressState !== 'revealed';
+        var displayedTypePhrase = pressState === 'revealed' ? printedPhrase : (phraseLocked ? cyclePhraseRef.current || safePhrase : safePhrase);
         // Labels overlay — when on, the SVG shows leader lines + part names
         // for the major press components. Off by default so the simulation
         // stays clean during pure demo; on for "let me explain the parts."
-        var showLabelsRaw = useState(false);
-        var showLabels = showLabelsRaw[0], setShowLabels = showLabelsRaw[1];
+        var showLabels = run.showLabels;
+        function setShowLabels(value) { updateRun({ showLabels: value }); }
 
         // Ink balls animation when state === 'inking'
         useEffect(function() {
           if (pressState !== 'inking') return;
           var start = Date.now();
-          var DURATION = 1200;
+          var DURATION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1200;
           var iv = setInterval(function() {
-            var t = Math.min(1, (Date.now() - start) / DURATION);
+            var t = DURATION === 0 ? 1 : Math.min(1, (Date.now() - start) / DURATION);
             setInkAnim(t);
             if (t >= 1) {
               clearInterval(iv);
@@ -1783,7 +1917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           if (pressState === 'inking') return;  // ink animation handles its own timing
           var DELAY = pressState === 'revealed' ? 3500 : 2500;  // hold the reveal longer
           var to = setTimeout(function() {
-            if (pressState === 'clean' && count >= 1) {
+            if (pressState === 'clean' && count > tourStartCountRef.current) {
               setTourActive(false);
               announce(__alloT('stem.printingpress.sr_guided_tour_complete_click_any_button_to_take_the', 'Guided tour complete. Click any button to take the controls.'));
               return;
@@ -1795,18 +1929,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
 
         function advance() {
           if (pressState === 'clean') {
+            cyclePhraseRef.current = Array.from((runRef.current.phrase.trim() || 'FIAT LUX').toUpperCase()).slice(0, 14).join('');
+            cyclePredictionRef.current = runRef.current.prediction;
             setPressState('inking');
-            announce(__alloT('stem.printingpress.sr_step_2_inking_the_type_with_the_leather_ink_balls', 'Step 2: Inking the type with the leather ink balls.'));
+            announce(__alloT('stem.printingpress.sr_step_2_inking_the_type_with_the_leather_ink_balls', 'Step 1: Inking the type with the leather ink balls.'));
           } else if (pressState === 'inked') {
             setPressState('papered');
-            announce(__alloT('stem.printingpress.sr_step_4_paper_laid_on_the_tympan_now_pull_the_bar', 'Step 4: Paper laid on the tympan. Now pull the bar.'));
+            announce(__alloT('stem.printingpress.sr_step_4_paper_laid_on_the_tympan_now_pull_the_bar', 'Step 2 complete: Paper laid on the tympan. Now pull the bar.'));
           } else if (pressState === 'papered') {
             setPressState('pressed');
-            announce(__alloT('stem.printingpress.sr_step_5_bar_pulled_screw_turning_platen_down_press', 'Step 5: Bar pulled, screw turning, platen down. Pressure applied to the type forme.'));
+            announce(__alloT('stem.printingpress.sr_step_5_bar_pulled_screw_turning_platen_down_press', 'Step 3 complete: Bar pulled, screw turning, platen down. Pressure applied to the type forme.'));
           } else if (pressState === 'pressed') {
             setPressState('revealed');
-            var nextCount = count + 1;
-            setCount(nextCount);
+            var nextCount = runRef.current.count + 1;
+            var proof = { number: nextCount, phrase: cyclePhraseRef.current || safePhrase, timestamp: new Date().toISOString(), mode: tourActive ? 'guided' : 'manual', prediction: cyclePredictionRef.current };
+            updateRun({ count: nextCount, proofs: runRef.current.proofs.concat([proof]).slice(-12) });
             // Milestone celebrations at meaningful production thresholds.
             // The 1st is "First Impression," 5 is "Journeyman" (the
             // apprenticeship benchmark), 25 was a typical morning's
@@ -1818,11 +1955,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             if (nextCount === 25) awardBadge('morning_crew', 'Morning Crew (25 impressions)');
             if (nextCount === 50) awardBadge('half_day_run', 'Half-Day Run (50 impressions)');
             if (nextCount === 100) awardBadge('master_printer_run', 'Master Printer (100 impressions)');
-            announce(__alloFill(__alloT('stem.printingpress.sr_step_6_impression_complete_total_the_paper_bears', 'Step 6: Impression complete. {value1} total. The paper bears the printed text.'), { value1: nextCount }));
+            announce(__alloFill(__alloT('stem.printingpress.sr_step_6_impression_complete_total_the_paper_bears', 'Step 4 complete: Impression revealed. {value1} total. The paper bears the printed text.'), { value1: nextCount }));
           } else if (pressState === 'revealed') {
             setPressState('clean');
             announce(__alloT('stem.printingpress.sr_press_reset_ready_for_the_next_impression', 'Press reset. Ready for the next impression.'));
           }
+        }
+
+        function downloadNotebook() {
+          try {
+            var text = [__alloT('stem.printingpress.run_notebook', 'Print-run notebook'),
+              __alloFill(__alloT('stem.printingpress.run_total', 'Completed impressions: {count}'), { count: count }),
+              __alloT('stem.printingpress.recent_proofs', 'Most recent proofs (up to 12)'), ''];
+            run.proofs.forEach(function(proof) {
+              text.push('#' + proof.number + ' — ' + proof.phrase + ' — ' + (proof.mode === 'guided' ? __alloT('stem.printingpress.guided_proof', 'Guided tour') : __alloT('stem.printingpress.manual_proof', 'Hands-on')) + (proof.timestamp ? ' — ' + proof.timestamp : '') + (proof.prediction ? ' — ' + __alloT('stem.printingpress.prediction_record', 'Prediction') + ': ' + predictionLabels[proof.prediction] : ''));
+            });
+            text.push('', __alloT('stem.printingpress.run_notes', 'My observations'), run.notes || __alloT('stem.printingpress.no_run_notes', 'No observations yet.'));
+            var url = URL.createObjectURL(new Blob([text.join('\n')], { type: 'text/plain;charset=utf-8' }));
+            var link = document.createElement('a'); link.href = url; link.download = 'printing-press-notebook.txt';
+            document.body.appendChild(link); link.click(); link.remove();
+            setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+            setNotebookMessage(__alloT('stem.printingpress.notebook_downloaded', 'Notebook downloaded with your recent proofs and observations.'));
+          } catch (e) { setNotebookMessage(__alloT('stem.printingpress.notebook_download_failed', 'Download could not start. Your notebook is still here; try again.')); }
+        }
+        function useProofAsTitle(proof) {
+          var current = (d.broadsideDraft === undefined ? savedState.broadsideDraft : d.broadsideDraft) || {};
+          function transfer() {
+            var body = typeof current.content === 'string' ? current.content.split('\n').slice(1).join('\n') : '';
+            updMulti({ broadsideDraft: Object.assign({}, current, { content: proof.phrase + (body ? '\n' + body : '') }), view: 'broadside' });
+            announce(__alloT('stem.printingpress.proof_sent_to_broadside', 'Proof copied to your broadside title.'));
+          }
+          if (typeof current.content === 'string' && current.content.split('\n')[0].trim() && current.content.split('\n')[0] !== proof.phrase) {
+            requestConfirmation({ title: __alloT('stem.printingpress.replace_broadside_title', 'Replace your broadside title?'),
+              message: __alloT('stem.printingpress.replace_broadside_title_message', 'Use this printed phrase as your broadside title. Your body text and design settings stay the same.'),
+              confirmLabel: __alloT('stem.printingpress.use_proof_title', 'Use printed title'),
+              cancelLabel: __alloT('stem.printingpress.keep_broadside_title', 'Keep current title'), onConfirm: transfer });
+          } else transfer();
         }
 
         function nextAction() {
@@ -1853,54 +2021,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var paperShown = (pressState === 'papered' || pressState === 'pressed' || pressState === 'revealed');
         var paperPrinted = (pressState === 'revealed');
 
-        return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
+        var stepIndex = { clean: 0, inking: 0, inked: 1, papered: 2, pressed: 3, revealed: 4 }[pressState];
+        var guide = {
+          clean: { title: __alloT('stem.printingpress.guide_clean_title', 'Start with the type'), watch: __alloT('stem.printingpress.guide_clean_watch', 'Look at the letters on the bed. Make a prediction, then coat the raised type with ink.'), hint: __alloT('stem.printingpress.guide_clean_hint', 'Trace the first letter in the type preview. Which way does it face?') },
+          inking: { title: __alloT('stem.printingpress.guide_inking_title', 'Ink the raised surfaces'), watch: __alloT('stem.printingpress.guide_inking_watch', 'Watch the ink balls dab the type. The letter faces carry the ink that will meet the paper.'), hint: __alloT('stem.printingpress.guide_inking_hint', 'The spaces sit below the letter faces, so they do not make the same inked contact.') },
+          inked: { title: __alloT('stem.printingpress.guide_inked_title', 'Bring paper to the type'), watch: __alloT('stem.printingpress.guide_inked_watch', 'The type is ready. Lay the sheet on the paper-holding frame, called the tympan.'), hint: __alloT('stem.printingpress.guide_inked_hint', 'The paper needs to stay in position so the impression does not shift.') },
+          papered: { title: __alloT('stem.printingpress.guide_papered_title', 'Turn the bar. Watch the platen.'), watch: __alloT('stem.printingpress.guide_papered_watch', 'Pull the bar and track two movements: the screw turns and the flat platen moves down.'), hint: __alloT('stem.printingpress.guide_papered_hint', 'A screw converts turning motion into movement along its length. The platen spreads the pressing force.') },
+          pressed: { title: __alloT('stem.printingpress.guide_pressed_title', 'Contact makes an impression'), watch: __alloT('stem.printingpress.guide_pressed_watch', 'The paper is pressed against the inked type. Lift and reveal to test your prediction.'), hint: __alloT('stem.printingpress.guide_pressed_hint', 'Imagine pressing two palms together, then opening them like a book. The facing surfaces have opposite orientations.') },
+          revealed: { title: __alloT('stem.printingpress.guide_revealed_title', 'Read your evidence'), watch: __alloT('stem.printingpress.guide_revealed_watch', 'Compare type and paper below the press. Describe the reversal and the movement that made the impression.'), hint: __alloT('stem.printingpress.guide_revealed_hint', 'Use a specific letter from your proof as evidence, then explain what the screw and platen did.') }
+        }[pressState];
+        var latestProof = run.proofs.length ? run.proofs[run.proofs.length - 1] : null;
+        var predictionLabels = { readable: __alloT('stem.printingpress.predict_readable', 'It will read normally'), mirrored: __alloT('stem.printingpress.predict_mirrored', 'It will stay mirror-reversed'), unsure: __alloT('stem.printingpress.predict_unsure', 'I am not sure yet') };
+
+        return h('div', { className: 'pp-workshop', style: { padding: 20, maxWidth: 1180, margin: '0 auto', color: T.text } },
           backBar('⚙️ The Press Mechanism'),
-          dropCapPara('A working Gutenberg-style screw press. Each step is what a journeyman printer in 1450 would have done, in the same order, with the same tools. Click the action button to advance.'),
-
-          // ── Custom phrase input ──
-          // Lets the demo audience pick what gets printed. Cap at 14 chars so
-          // it fits on the type forme. Disabled mid-cycle so changing the
-          // phrase while inking doesn't desync the paper from the type.
-          h('div', { className: 'printingpress-no-print', style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
-            h('label', { htmlFor: 'pp-phrase', style: { fontSize: 13, color: T.text, fontWeight: 600, fontFamily: 'Georgia, serif', whiteSpace: 'nowrap' } },
-              __alloT('stem.printingpress.what_should_the_press_print', '🪶 What should the press print?')),
-            h('input', {
-              id: 'pp-phrase',
-              type: 'text',
-              value: phrase,
-              maxLength: 14,
-              disabled: pressState !== 'clean' && pressState !== 'revealed',
-              onChange: function(e) { setPhrase(e.target.value); },
-              placeholder: __alloT('stem.printingpress.up_to_14_characters', 'Up to 14 characters'),
-              style: { flex: 1, minWidth: 160, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 14, fontFamily: 'Georgia, serif', fontWeight: 700, letterSpacing: '0.05em' }
-            }),
-            h('button', {
-              onClick: function() { setPhrase('FIAT LUX'); announce(__alloT('stem.printingpress.sr_phrase_reset_to_fiat_lux', 'Phrase reset to FIAT LUX.')); },
-              disabled: pressState !== 'clean' && pressState !== 'revealed',
-              style: btn({ padding: '6px 10px', fontSize: 11, opacity: (pressState !== 'clean' && pressState !== 'revealed') ? 0.5 : 1 })
-            }, __alloT('stem.printingpress.fiat_lux', '↺ FIAT LUX')),
-            h('div', { style: { width: '100%', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.4 } },
-              __alloT('stem.printingpress.your_phrase_appears_mirror_reversed_on', 'Your phrase appears mirror-reversed on the type forme and reads correctly on the paper after pressing. '),
-              h('strong', { style: { color: T.text } }, __alloT('stem.printingpress.try_your_name_the_date_or_any_short_ph', 'Try your name, the date, or any short phrase.')))
-          ),
-
-          // ── Tour narration banner (only visible during guided tour) ──
-          tourActive && h('div', {
-            'aria-live': 'polite',
-            style: { background: 'linear-gradient(90deg, ' + T.accent + ' 0%, ' + T.accentHi + ' 100%)', color: T.ink, padding: '10px 14px', borderRadius: 8, marginBottom: 12, fontSize: 14, fontWeight: 700, textAlign: 'center', fontFamily: 'Georgia, serif', boxShadow: '0 2px 8px rgba(201,161,74,0.4)' } },
-            '🎬 ',
-            ({clean: 'Step 1: The press is empty. Type forme rests on the bed; ink balls hang ready.',
-              inking: 'Step 2: Inking the type — leather-and-wool ink balls dab oil-based ink onto the metal type.',
-              inked: 'Step 3: Type is fully inked. Time to lay paper on the tympan.',
-              papered: 'Step 4: Paper laid on the tympan. The pressman pulls the bar.',
-              pressed: 'Step 5: The screw turns, the platen descends, and pressure transfers ink from type to paper.',
-              revealed: 'Step 6: A perfect impression. About 250 of these in a working day, ~180 Bibles in 3 years.'})[pressState]
+          h('div', { style: { marginBottom: 18 } },
+            h('h2', { style: { fontFamily: 'Georgia, serif', fontSize: 28, lineHeight: 1.2, margin: '0 0 8px', color: T.accentHi } }, __alloT('stem.printingpress.workshop_title', 'Turn motion into a message')),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 15, lineHeight: 1.6 } }, __alloT('stem.printingpress.workshop_goal', 'Predict the result. Make a proof. Explain how the press turns motion into a readable message.'))
           ),
 
           // ── The simulation ──
-          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginBottom: 18 } },
+          h('div', { className: 'pp-workbench' },
             h('div', {
-                className: tourActive ? 'printingpress-tour-active' : '',
+                className: 'pp-scene' + (tourActive ? ' printingpress-tour-active' : ''),
                 style: {
                   // Workshop-floor texture: faint flagstone pattern made
                   // from layered radial gradients. Subtle ambient "the press
@@ -1916,6 +2059,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   border: '2px solid ' + (tourActive ? T.accent : T.border), borderRadius: 12, padding: 12, textAlign: 'center', transition: 'border-color 0.3s ease',
                   position: 'relative'
                 } },
+          // ── Custom phrase input ──
+          // Lets the demo audience pick what gets printed. Cap at 14 chars so
+          // it fits on the type forme. Disabled mid-cycle so changing the
+          // phrase while inking doesn't desync the paper from the type.
+          h('div', { className: 'printingpress-no-print', style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+            h('label', { htmlFor: 'pp-phrase', style: { fontSize: 13, color: T.text, fontWeight: 600, fontFamily: 'Georgia, serif' } },
+              __alloT('stem.printingpress.what_should_the_press_print', '🪶 What should the press print?')),
+            h('input', {
+              id: 'pp-phrase', 'aria-describedby': 'pp-phrase-stage pp-phrase-help',
+              type: 'text',
+              value: phrase,
+              maxLength: 14,
+              disabled: phraseLocked,
+              onChange: function(e) { setPhrase(e.target.value); },
+              placeholder: __alloT('stem.printingpress.up_to_14_characters', 'Up to 14 characters'),
+              style: { flex: 1, minWidth: 160, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 14, fontFamily: 'Georgia, serif', fontWeight: 700, letterSpacing: '0.05em' }
+            }),
+            h('button', {
+              onClick: function() { setPhrase('FIAT LUX'); announce(__alloT('stem.printingpress.sr_phrase_reset_to_fiat_lux', 'Phrase reset to FIAT LUX.')); },
+              disabled: phraseLocked,
+              style: btn({ padding: '8px 10px', fontSize: 13, cursor: phraseLocked ? 'not-allowed' : 'pointer', borderStyle: phraseLocked ? 'dashed' : 'solid' })
+            }, __alloT('stem.printingpress.fiat_lux', '↺ FIAT LUX')),
+            h('div', { id: 'pp-phrase-stage', role: 'status', style: { width: '100%', padding: '8px 10px', boxSizing: 'border-box', borderLeft: '3px solid ' + T.accentHi, background: '#302417', color: T.text, fontSize: 13, lineHeight: 1.5, textAlign: 'left' } },
+              phraseLocked ? __alloT('stem.printingpress.phrase_stage_locked', 'Type locked for this impression. Finish the cycle to edit your next phrase.') : pressState === 'revealed' ? __alloT('stem.printingpress.phrase_stage_next', 'Editing the next impression. The press below still shows your completed proof.') : __alloT('stem.printingpress.phrase_stage_ready', 'Ready to set type. Edit your phrase, then ink the letters.')
+            ),
+            h('div', { id: 'pp-phrase-help', style: { width: '100%', fontSize: 12, color: T.muted, lineHeight: 1.5, textAlign: 'left' } },
+              pressState === 'revealed' ? __alloT('stem.printingpress.next_phrase_action', 'Choose your next phrase above, then select Print another to set up the next cycle.') : phraseLocked ? __alloT('stem.printingpress.locked_phrase_action', 'Use the gold action button to continue printing.') : __alloT('stem.printingpress.ready_phrase_action', 'Try your name or a short phrase. Inspect the type below and predict how it will look on paper.'))
+          ),
+
+              h('button', {
+                  onClick: nextAction,
+                  disabled: actionDisabled,
+                  'aria-label': actionLabel + (tourActive ? ' (cancels guided tour)' : ''),
+                  className: 'pp-primary-action',
+                  style: btnPrimary({ marginBottom: 12, padding: '14px 16px', fontSize: 16, opacity: actionDisabled ? 0.65 : 1, width: '100%', minWidth: 0 })
+                }, actionLabel),
               // Transient onomatopoeia overlay. Re-mounted via key whenever
               // pressState changes so the CSS keyframe replays. Pure
               // atmosphere; aria-hidden so screen readers don't get spam.
@@ -1952,7 +2131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 }, lab.txt);
               })(),
               h('svg', {
-                width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 520, display: 'block', margin: '0 auto', background: '#1f1610', borderRadius: 8 },
+                width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 680, maxHeight: 390, display: 'block', margin: '0 auto', background: '#1f1610', borderRadius: 8 },
                 role: 'img',
                 'aria-label': __alloFill(__alloT('stem.printingpress.a11y_side_view_of_a_gutenberg_style_screw_press_in_s', 'Side view of a Gutenberg-style screw press in state: {value1}'), { value1: pressState })},
                 // ── SVG defs: wood grain pattern + paper aging filter ──
@@ -2235,10 +2414,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   x: 240, y: 268,
                   textAnchor: 'middle',
                   fill: T.parchment, opacity: 0.45,
-                  fontSize: safePhrase.length > 10 ? 11 : 14, fontWeight: 700, fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontSize: displayedTypePhrase.length > 10 ? 11 : 14, fontWeight: 700, fontFamily: 'Georgia, "Times New Roman", serif',
                   letterSpacing: '0.1em',
                   transform: 'translate(480 0) scale(-1 1)'  // mirror-reversed, centered around x=240
-                }, safePhrase),
+                }, displayedTypePhrase),
 
                 // ── Paper (when laid) ──
                 // Smooth y-transition gives the paper a "sliding into
@@ -2266,19 +2445,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   textAnchor: 'middle',
                   fill: T.ink,
                   opacity: 0.4,
-                  fontSize: safePhrase.length > 10 ? 11 : 14, fontWeight: 700, fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontSize: printedPhrase.length > 10 ? 11 : 14, fontWeight: 700, fontFamily: 'Georgia, "Times New Roman", serif',
                   letterSpacing: '0.1em'
-                }, safePhrase),
+                }, printedPhrase),
                 paperPrinted && h('text', {
                   x: 240, y: 270,
                   textAnchor: 'middle',
                   fill: T.ink,
-                  fontSize: safePhrase.length > 10 ? 11 : 14, fontWeight: 700, fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontSize: printedPhrase.length > 10 ? 11 : 14, fontWeight: 700, fontFamily: 'Georgia, "Times New Roman", serif',
                   letterSpacing: '0.1em',
                   // Paper-grain filter softens the letter edges so the
                   // printed phrase reads as hand-pressed, not digital crisp
                   filter: 'url(#pp-paper-grain)'
-                }, safePhrase),
+                }, printedPhrase),
                 // Tiny ink dots scattered on the paper — real impressions
                 // pick up flecks of ink from the surrounding type bed.
                 paperPrinted && h('g', { 'aria-hidden': 'true', opacity: 0.5 },
@@ -2393,33 +2572,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 ),
                 // ── State label ──
                 h('text', { x: W / 2, y: 22, fill: T.accentHi, fontSize: 13, fontWeight: 700, textAnchor: 'middle', fontFamily: 'Georgia, serif' },
-                  ({clean: 'Step 1: Bed empty', inking: 'Step 2: Inking…', inked: 'Step 3: Type inked', papered: 'Step 4: Paper on tympan', pressed: 'Step 5: Pressure applied', revealed: 'Step 6: Impression complete'})[pressState])
+                  ({clean: '1 · Type ready', inking: '1 · Inking', inked: '2 · Lay paper', papered: '3 · Pull the bar', pressed: '4 · Reveal the proof', revealed: 'Impression complete'})[pressState])
               ),
-              // ── Status + counter ──
-              h('div', { style: { marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: T.muted, flexWrap: 'wrap', gap: 10 } },
-                h('span', null, 'State: ', h('strong', { style: { color: T.accentHi, fontFamily: 'ui-monospace, monospace' } }, pressState.toUpperCase())),
-                h('span', null, 'Impressions: ', h('strong', { style: { color: T.text } }, count))
+              h('div', { className: 'pp-comparison', role: 'group', 'aria-label': __alloT('stem.printingpress.type_paper_comparison', 'Compare type and paper') },
+                h('div', { style: { background: '#383b3b', border: '1px solid #888a80' } },
+                  h('div', { style: { fontSize: 11, letterSpacing: '0.08em', color: '#f5ecd9', fontWeight: 750, marginBottom: 8 } }, __alloT('stem.printingpress.type_surface', 'TYPE SURFACE')),
+                  h('div', { role: 'img', 'aria-label': __alloFill(__alloT('stem.printingpress.mirrored_phrase_preview', 'Mirror-reversed type: {phrase}'), { phrase: displayedTypePhrase }), style: { padding: '8px 4px', background: '#d9d4c5', color: '#17130f', borderRadius: 3 } },
+                    h('span', { 'aria-hidden': true, style: { display: 'block', transform: 'scaleX(-1)', font: 'bold 22px Georgia, serif', overflowWrap: 'anywhere' } }, displayedTypePhrase))
+                ),
+                h('div', { style: { background: T.parchment, color: T.ink, border: '1px solid #c9a14a' } },
+                  h('div', { style: { fontSize: 11, letterSpacing: '0.08em', fontWeight: 750, marginBottom: 8 } }, __alloT('stem.printingpress.paper_proof', 'PAPER PROOF')),
+                  h('div', { id: 'pp-paper-preview', style: { minHeight: 42, display: 'grid', placeItems: 'center', font: pressState === 'revealed' ? 'bold 22px Georgia, serif' : '14px system-ui, sans-serif', overflowWrap: 'anywhere' } }, pressState === 'revealed' ? printedPhrase : __alloT('stem.printingpress.wait_for_reveal', 'Reveal to find out'))
+                )
+              )
+            ),
+            h('aside', { className: 'pp-guide', 'aria-label': __alloT('stem.printingpress.apprentice_guide', 'Apprentice guide') },
+              h('ol', { className: 'pp-cycle-steps', 'aria-label': __alloT('stem.printingpress.press_cycle_steps', 'The four actions in a print cycle') },
+                [__alloT('stem.printingpress.step_ink', 'Ink'), __alloT('stem.printingpress.step_paper', 'Paper'), __alloT('stem.printingpress.step_pull', 'Pull'), __alloT('stem.printingpress.step_reveal', 'Reveal')].map(function(label, index) {
+                  return h('li', { key: index, 'aria-current': index === stepIndex ? 'step' : undefined, 'data-done': index < stepIndex }, h('span', { 'aria-hidden': true }, index < stepIndex ? '✓' : index + 1), label);
+                })
+              ),
+              h('div', { role: 'status', 'aria-atomic': true },
+                h('div', { style: { color: T.accentHi, fontSize: 12, fontWeight: 750, marginBottom: 6 } }, tourActive ? __alloT('stem.printingpress.tour_running', 'GUIDED TOUR RUNNING') : __alloT('stem.printingpress.your_turn', 'YOUR TURN')),
+                h('h3', { style: { fontFamily: 'Georgia, serif', fontSize: 22, lineHeight: 1.25, margin: '0 0 8px' } }, guide.title),
+                h('p', { style: { fontSize: 14, color: T.muted, lineHeight: 1.6, margin: 0 } }, guide.watch)
               ),
               // ── Action row ──
               // The Guided Tour button is the demo-day affordance: hit it
               // once, the press cycles automatically while the presenter
               // talks. A manual click on the action button cancels the tour
               // and hands control back to the user.
-              h('div', { className: 'printingpress-no-print', style: { marginTop: 10, display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
-                h('button', {
-                  onClick: nextAction,
-                  disabled: actionDisabled,
-                  'aria-label': actionLabel + (tourActive ? ' (cancels guided tour)' : ''),
-                  style: btnPrimary({ padding: '12px 22px', fontSize: 15, opacity: actionDisabled ? 0.5 : 1, minWidth: 200 })
-                }, actionLabel),
+              h('div', { className: 'printingpress-no-print', style: { marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 !tourActive && h('button', {
                   onClick: function() {
                     if (pressState !== 'clean') { setPressState('clean'); }
+                    tourStartCountRef.current = count;
                     setTourActive(true);
                     announce(__alloT('stem.printingpress.sr_guided_tour_starting_the_press_will_cycle_automat', 'Guided tour starting. The press will cycle automatically.'));
                   },
                   'aria-label': __alloT('stem.printingpress.start_a_hands_free_guided_tour_through', 'Start a hands-free guided tour through the full press cycle'),
-                  style: btn({ padding: '12px 16px', fontSize: 13, background: T.accentHi, color: T.ink, border: '1px solid ' + T.accentHi, fontWeight: 700 })
+                  style: btn({ padding: '12px 16px', fontSize: 13, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, fontWeight: 700 })
                 }, __alloT('stem.printingpress.guided_tour', '▶ Guided Tour')),
                 tourActive && h('button', {
                   onClick: function() { setTourActive(false); announce(__alloT('stem.printingpress.sr_guided_tour_stopped', 'Guided tour stopped.')); },
@@ -2436,39 +2628,186 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     fontWeight: showLabels ? 700 : 600 })
                 }, showLabels ? '🔖 Labels: On' : '🔖 Show parts'),
                 count > 0 && !tourActive && h('button', {
-                  onClick: function() { setCount(0); setPressState('clean'); announce(__alloT('stem.printingpress.sr_counter_reset', 'Counter reset.')); },
+                  'aria-haspopup': 'dialog',
+                  onClick: function() { requestConfirmation({
+                    title: __alloT('stem.printingpress.new_run_title', 'Start a new print run?'),
+                    message: __alloT('stem.printingpress.new_run_message', 'This clears the impression counter, saved proofs, and notebook notes. Download your notebook first if you want to keep it. Your badges and broadside stay saved.'),
+                    confirmLabel: __alloT('stem.printingpress.new_run_confirm', 'Start new run'),
+                    cancelLabel: __alloT('stem.printingpress.keep_run', 'Keep this run'),
+                    onConfirm: function() { updateRun({ count: 0, proofs: [], notes: '', prediction: null }); setPressState('clean'); setReviewNumber(null); cyclePhraseRef.current = null; setNotebookMessage(''); announce(__alloT('stem.printingpress.sr_counter_reset', 'Counter reset.')); }
+                  }); },
                   style: btn({ padding: '12px 16px', fontSize: 13 })
                 }, __alloT('stem.printingpress.reset_run', '↺ Reset run'))
-              )
+              ),
+              h('details', { key: pressState, style: { fontSize: 13, lineHeight: 1.6, marginTop: 14, color: T.muted } },
+                h('summary', { style: { cursor: 'pointer', color: T.accentHi, minHeight: 32, paddingTop: 6 } }, __alloT('stem.printingpress.show_step_hint', 'Show a hint')),
+                h('p', { style: { margin: '4px 0 8px' } }, guide.hint)
+              ),
+              pressState === 'clean' && h('fieldset', { className: 'pp-prediction printingpress-no-print' },
+                h('legend', { style: { padding: '0 5px', fontSize: 14, fontWeight: 750, color: T.text } }, __alloT('stem.printingpress.predict_before_printing', 'Predict before printing')),
+                h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 13, lineHeight: 1.5 } }, __alloT('stem.printingpress.prediction_question', 'How will your phrase look on the paper? Choose an idea, or explore first.')),
+                Object.keys(predictionLabels).map(function(key) { return h('button', { key: key, 'aria-pressed': run.prediction === key, onClick: function() { updateRun({ prediction: key }); }, style: btn({ padding: '8px 10px', fontSize: 13, color: run.prediction === key ? T.accentHi : T.text, borderColor: run.prediction === key ? T.accentHi : T.border, background: run.prediction === key ? '#3b2b16' : T.cardAlt }) }, predictionLabels[key]); })
+              ),
+              pressState === 'revealed' && latestProof && h('div', { id: 'pp-proof-feedback', role: 'status', style: { marginTop: 16, padding: 14, background: '#203028', border: '1px solid #7fb069', borderRadius: 10, lineHeight: 1.6, fontSize: 14 } },
+                h('strong', { style: { color: '#bce4ba' } }, latestProof.prediction === 'readable' ? __alloT('stem.printingpress.prediction_supported', 'Your proof supports your prediction.') : latestProof.prediction === 'mirrored' ? __alloT('stem.printingpress.prediction_revise', 'Use this evidence to revise your prediction.') : __alloT('stem.printingpress.prediction_observe', 'You have evidence to explain.')),
+                h('p', { style: { margin: '6px 0 10px', color: T.text } }, __alloT('stem.printingpress.reversal_explanation', 'The proof reads normally. Face-to-face contact reverses the mirrored type as ink transfers to paper. Turning the screw lowers the platen to press the surfaces together.')),
+                h('button', { onClick: function() { var notes = document.getElementById('pp-run-notes'); if (notes) { notes.focus(); notes.scrollIntoView({ block: 'center' }); } }, style: btn({ width: '100%', background: T.cardAlt }) }, __alloT('stem.printingpress.explain_in_notebook', 'Explain in my notebook'))
+              ),
+              h('div', { id: 'pp-impression-count', style: { borderTop: '1px solid ' + T.border, marginTop: 16, paddingTop: 12, fontSize: 13, color: T.muted } }, 'Impressions: ', h('strong', { style: { color: T.text } }, count))
             )
           ),
 
-          // ── The physics ──
-          sectionHeader('⚙️', 'The mechanical advantage of the screw'),
-          keyPointBlock(
-            'The screw press is one of the six classical simple machines. It trades distance for force.',
-            [
-              { k: 'Mechanical advantage formula', v: 'MA = (2 × π × bar length) ÷ (pitch of the screw thread). The EFFECTIVE MA of a Gutenberg-era press (after thread friction) was roughly 15:1 to 30:1 — the ideal screw geometry gives far more, but friction in a hand-cut wooden thread eats most of it — a printer applying ~30 lb of pull at the bar generated 450 to 900 lb of pressure on the platen.' },
-              { k: 'Why a screw and not a lever?', v: 'A lever needs a long throw and a fulcrum at a fixed position. A screw converts continuous rotation into linear motion in a compact vertical space. It also self-holds — the friction in the threads keeps the platen down without you having to keep pulling.' },
-              { k: 'Why the platen is heavy and flat', v: 'Mass distributes pressure evenly across the type forme. Uneven pressure means uneven inking, which means an unreadable print. Platen flatness was a craftsmanship metric: master printers had platens machined flat to thousandths of an inch.' },
-              { k: 'The "kiss"', v: 'A perfect impression presses just hard enough to transfer ink, not hard enough to dent the paper. Too soft = pale print. Too hard = embossed (you can feel the letter on the back of the page). Modern letterpress fans call good pressure "kiss impression" and bad pressure "deboss."' }
-            ]
+          h('section', { id: 'pp-run-notebook', 'aria-labelledby': 'pp-run-notebook-title', style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 20 } },
+            h('h3', { id: 'pp-run-notebook-title', style: { margin: '0 0 8px', color: T.accentHi, fontFamily: 'Georgia, serif' } }, __alloT('stem.printingpress.run_notebook', 'Print-run notebook')),
+            h('p', { role: 'status', style: { fontSize: 12, color: T.muted } }, draftSaved ? __alloT('stem.printingpress.run_saved', 'Run saved on this browser. The most recent 12 proofs and your observations are kept; an unfinished cycle restarts with a clean press.') : __alloT('stem.printingpress.run_session', 'Run available in this session. Download your notebook to keep a copy.')),
+            !run.proofs.length && h('p', { style: { color: T.text, fontSize: 14 } }, __alloT('stem.printingpress.proof_empty', 'Make an impression to collect your first proof. Ink the type, lay paper, pull the bar, then lift and reveal.')),
+            run.proofs.length > 0 && h('ol', { className: 'pp-proof-gallery', tabIndex: 0, 'aria-label': __alloT('stem.printingpress.saved_proofs', 'Saved proofs, newest first'), style: { listStyle: 'none', padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 10 } },
+              run.proofs.slice().reverse().map(function(proof) {
+                return h('li', { key: proof.number, 'data-proof-number': proof.number, style: { minWidth: 0, padding: 12, borderRadius: 8, border: '1px solid ' + (reviewNumber === proof.number ? T.accentHi : T.border), background: T.cardAlt } },
+                  h('div', { style: { fontSize: 12, color: T.muted } }, '#' + proof.number + ' · ' + (proof.mode === 'guided' ? __alloT('stem.printingpress.guided_proof', 'Guided tour') : __alloT('stem.printingpress.manual_proof', 'Hands-on'))),
+                  h('p', { style: { margin: '8px 0', padding: 12, background: T.parchment, color: T.ink, fontSize: 20, fontWeight: 700, fontFamily: 'Georgia, serif', textAlign: 'center', overflowWrap: 'anywhere' } }, proof.phrase),
+                  proof.prediction && h('div', { className: 'pp-proof-prediction', style: { fontSize: 12, lineHeight: 1.5, color: T.muted, marginBottom: 8 } },
+                    h('strong', null, __alloT('stem.printingpress.prediction_record', 'Prediction') + ': '), predictionLabels[proof.prediction]),
+                  proof.timestamp && h('time', { dateTime: proof.timestamp, style: { display: 'block', fontSize: 11, color: T.muted, marginBottom: 8 } }, new Date(proof.timestamp).toLocaleString()),
+                  h('button', { id: 'pp-review-button-' + proof.number, className: 'printingpress-no-print', 'aria-pressed': reviewNumber === proof.number, onClick: function() { openProofReview(proof); }, 'aria-label': __alloFill(__alloT('stem.printingpress.review_proof_label', 'Review proof {number}'), { number: proof.number }), style: btn({ width: '100%', marginBottom: 6, color: T.accentHi, borderColor: reviewNumber === proof.number ? T.accentHi : T.border }) }, reviewNumber === proof.number ? __alloT('stem.printingpress.reviewing_proof', 'Reviewing this proof') : __alloT('stem.printingpress.review_proof', 'Look closely')),
+                  h('button', { className: 'printingpress-no-print', onClick: function() { useProofAsTitle(proof); }, 'aria-label': __alloFill(__alloT('stem.printingpress.use_proof_label', 'Use proof {number} as broadside title'), { number: proof.number }), style: btn({ padding: '8px 10px', fontSize: 12, width: '100%' }) }, __alloT('stem.printingpress.use_as_broadside_title', 'Use as broadside title'))
+                );
+              })
+            ),
+            reviewProof && h('section', { id: 'pp-proof-review', className: 'pp-proof-review', tabIndex: -1, 'aria-labelledby': 'pp-proof-review-title' },
+              h('div', { style: { display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 12, marginBottom: 14 } },
+                h('h4', { id: 'pp-proof-review-title', style: { color: T.accentHi, font: '700 22px/1.3 Georgia,serif', margin: 0 } }, __alloFill(__alloT('stem.printingpress.review_title', 'Look closely at proof #{number}'), { number: reviewProof.number })),
+                h('button', { className: 'printingpress-no-print', onClick: function() { var trigger = document.getElementById('pp-review-button-' + reviewNumber); setReviewNumber(null); if (trigger) trigger.focus(); }, style: btn({ padding: '6px 10px', fontSize: 12 }) }, __alloT('stem.printingpress.close_review', 'Close review'))
+              ),
+              h('div', { className: 'pp-review-layout' },
+                h('div', { style: { minWidth: 0 } },
+                  h('div', { style: { color: T.muted, fontSize: 12, marginBottom: 8 } }, __alloT('stem.printingpress.saved_paper_proof', 'Your saved paper proof')),
+                  h('div', { id: 'pp-reviewed-phrase', style: { background: T.parchment, color: T.ink, padding: '22px 14px', borderRadius: 4, boxShadow: '0 6px 16px #0003', font: '700 28px/1.5 Georgia,serif', textAlign: 'center', overflowWrap: 'anywhere' } }, reviewProof.phrase),
+                  h('p', { style: { fontSize: 13, lineHeight: 1.6, color: T.muted } }, h('strong', null, __alloT('stem.printingpress.prediction_record', 'Prediction') + ': '), reviewProof.prediction ? predictionLabels[reviewProof.prediction] : __alloT('stem.printingpress.no_prediction_recorded', 'No prediction recorded for this proof.')),
+                  h('p', { style: { fontSize: 14, lineHeight: 1.6, color: T.text } }, __alloT('stem.printingpress.review_evidence_prompt', 'Choose a letter. Compare its shape on the type and the paper. What changed, and what stayed the same?')),
+                  h('p', { style: { fontSize: 13, lineHeight: 1.6, color: T.muted } }, __alloT('stem.printingpress.review_symmetry_hint', 'Some letters look similar in a mirror. Try an R, F, or P in your next print if you need clearer evidence.'))
+                ),
+                h('div', { style: { minWidth: 0 } },
+                  h('div', { id: 'pp-letter-picker-label', style: { fontSize: 13, fontWeight: 700, color: T.text } }, __alloT('stem.printingpress.choose_evidence_letter', 'Choose a letter to inspect')),
+                  h('div', { className: 'pp-letter-picker printingpress-no-print', role: 'group', 'aria-labelledby': 'pp-letter-picker-label' }, reviewLetters.map(function(letter, index) {
+                    return letter.trim() ? h('button', { key: index, 'aria-pressed': letterIndex === index, 'aria-label': __alloFill(__alloT('stem.printingpress.inspect_letter', 'Inspect {letter}, position {position}'), { letter: letter, position: index + 1 }), onClick: function() { setLetterIndex(index); }, style: btn({ background: letterIndex === index ? T.parchment : T.cardAlt, color: letterIndex === index ? T.ink : T.text, borderColor: letterIndex === index ? T.accentHi : T.border }) }, letter) : null;
+                  })),
+                  h('div', { className: 'pp-letter-pair', role: 'group', 'aria-label': __alloFill(__alloT('stem.printingpress.letter_comparison', 'Letter {letter}: mirrored on type, readable on paper'), { letter: reviewLetter }), 'aria-live': 'polite', 'aria-atomic': true },
+                    h('div', { style: { background: '#17130f', color: '#e0ceb0', border: '1px solid ' + T.border } }, h('small', null, __alloT('stem.printingpress.type_surface_label', 'TYPE SURFACE')), h('span', { 'aria-hidden': true, style: { transform: 'scaleX(-1)' } }, reviewLetter)),
+                    h('div', { style: { background: T.parchment, color: T.ink } }, h('small', null, __alloT('stem.printingpress.paper_proof_label', 'PAPER PROOF')), h('span', { 'aria-hidden': true }, reviewLetter))
+                  ),
+                  h('p', { style: { color: T.muted, fontSize: 12, lineHeight: 1.5 } }, __alloT('stem.printingpress.review_face_on', 'Both surfaces are shown face-on, after separating the paper from the type.'))
+                )
+              ),
+              h('div', { style: { borderTop: '1px solid ' + T.border, marginTop: 16, paddingTop: 14 } },
+                h('p', { style: { color: T.text, fontSize: 14, lineHeight: 1.6, margin: '0 0 10px' } }, __alloT('stem.printingpress.review_explain_prompt', 'Build your explanation: name the proof and a letter, describe what you notice, then connect it to contact between inked type and paper. How did the screw and platen make that contact?')),
+                h('button', { className: 'printingpress-no-print', style: btn({ width: '100%' }), onClick: function() { var notes = document.getElementById('pp-run-notes'); if (notes) { notes.focus(); notes.scrollIntoView({ block: 'center' }); } } }, __alloFill(__alloT('stem.printingpress.explain_selected_proof', 'Explain proof #{number} below'), { number: reviewProof.number }))
+              )
+            ),
+            h('label', { htmlFor: 'pp-run-notes', style: { display: 'block', fontWeight: 700, fontSize: 13, color: T.text, marginTop: 12 } }, __alloT('stem.printingpress.run_notes', 'My observations')),
+            h('p', { id: 'pp-run-notes-help', style: { color: T.muted, fontSize: 12, margin: '6px 0' } }, __alloT('stem.printingpress.run_notes_prompt', 'Why is the type reversed but the proof readable? What does turning the screw change? Use your print run as evidence.'), reviewProof && h('span', { style: { display: 'block', color: T.accentHi, marginTop: 6 } }, __alloFill(__alloT('stem.printingpress.notes_review_context', 'Reviewing proof #{number}: {phrase}. Include the proof number in your explanation.'), { number: reviewProof.number, phrase: reviewProof.phrase }))),
+            h('details', { style: { color: T.muted, fontSize: 14, lineHeight: 1.6, marginBottom: 10 } },
+              h('summary', { style: { cursor: 'pointer', color: T.accentHi, padding: '6px 0' } }, __alloT('stem.printingpress.explanation_starters', 'Need a starting point?')),
+              h('ul', { style: { margin: '4px 0', paddingLeft: 22 } },
+                h('li', null, __alloT('stem.printingpress.starter_prediction', 'I predicted ___. In proof #___, I observed ___.')),
+                h('li', null, __alloT('stem.printingpress.starter_motion', 'When I turned the bar, the screw ___ and the platen ___.')),
+                h('li', null, __alloT('stem.printingpress.starter_transfer', 'The letters read normally because ___. A letter that shows this is ___.'))
+              )
+            ),
+            h('textarea', { id: 'pp-run-notes', value: run.notes, rows: 3, maxLength: 4000, 'aria-describedby': 'pp-run-notes-help', onChange: function(e) { updateRun({ notes: e.target.value }); }, style: { width: '100%', boxSizing: 'border-box', padding: 10, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt, color: T.text, resize: 'vertical', fontSize: 14 } }),
+            h('button', { className: 'printingpress-no-print', onClick: downloadNotebook, disabled: !count && !run.notes.trim(), style: btn({ marginTop: 10 }) }, __alloT('stem.printingpress.download_run_notebook', 'Download notebook')),
+            h('p', { role: 'status', style: { fontSize: 12, color: T.muted, marginBottom: 0 } }, notebookMessage)
           ),
 
-          calloutBox('info', 'Why this matters for engineering students',
-            'The screw press is a working example of mechanical advantage. The relationship between input force, output force, and the geometry of the screw is the same physics as a car jack, a vise, a wine press, or the leadscrew in a 3D printer. The Gutenberg press is engineering history you can put on a graph.'),
+          // ── The physics ──
+          h('section', { id: 'pp-screw-lab', className: 'pp-screw-lab', 'aria-labelledby': 'pp-screw-title' },
+            h('div', { style: { fontSize: 12, color: T.accentHi, fontWeight: 700, letterSpacing: '0.08em' } }, __alloT('stem.printingpress.screw_eyebrow', 'INVESTIGATE · FORCE AND DISTANCE')),
+            h('h3', { id: 'pp-screw-title', style: { margin: '8px 0', color: T.text, font: '700 26px/1.2 Georgia,serif' } }, __alloT('stem.printingpress.screw_title', 'What makes a press easier to turn?')),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.6 } }, __alloT('stem.printingpress.screw_intro', 'Keep the push at 10 newtons (N). Predict what a longer bar or wider thread spacing will change, then move one slider at a time.')),
+            h('div', { className: 'pp-screw-diagrams' },
+            h('svg', { viewBox: '20 0 180 170', role: 'img', 'aria-label': __alloFill(__alloT('stem.printingpress.screw_diagram_alt', 'Screw model: bar length {bar} centimetres; thread pitch {pitch} millimetres. A full turn moves the platen by one pitch. Diagrams use different scales.'), { bar: barCm, pitch: pitchMm }), },
+              h('circle', { cx: 110, cy: 77, r: barCm * 0.9, fill: 'none', stroke: '#a98249', strokeDasharray: '4 5', strokeWidth: 2 }),
+              h('line', { x1: 110, y1: 77, x2: 110 + barCm * 0.9, y2: 77, stroke: '#e8bd70', strokeWidth: 8, strokeLinecap: 'round' }),
+              h('circle', { cx: 110, cy: 77, r: 7, fill: '#eee0bc' }),
+              h('text', { x: 110, y: 148, textAnchor: 'middle', fill: '#eee0bc', fontSize: 13 }, __alloFill(__alloT('stem.printingpress.screw_bar_visual', 'Bar: {value} cm'), { value: barCm })),
+            ),
+            h('svg', { viewBox: '258 0 180 170', role: 'img', 'aria-label': __alloFill(__alloT('stem.printingpress.screw_pitch_diagram_alt', 'Screw side view: thread pitch {pitch} millimetres; the platen advances this distance per full turn.'), { pitch: pitchMm }) },
+              h('rect', { x: 330, y: 22, width: 36, height: 91, rx: 4, fill: '#6a4b2c', stroke: '#cda86d' }),
+              Array.from({ length: Math.floor(80 / (pitchMm * 2)) + 1 }, function(_, i) { return h('line', { key: i, x1: 332, y1: 27 + i * pitchMm * 2, x2: 364, y2: 34 + i * pitchMm * 2, stroke: '#e8bd70', strokeWidth: 3 }); }),
+              h('rect', { x: 306, y: 114, width: 84, height: 13, rx: 3, fill: '#c6a46a' }),
+              h('text', { x: 348, y: 148, textAnchor: 'middle', fill: '#eee0bc', fontSize: 13 }, __alloFill(__alloT('stem.printingpress.screw_pitch_visual', 'Pitch: {value} mm'), { value: pitchMm }))
+            )),
+            h('div', { className: 'pp-screw-controls printingpress-no-print' },
+              h('div', null,
+                h('label', { htmlFor: 'pp-bar-length', style: { color: T.text, fontSize: 14, fontWeight: 700 } }, __alloT('stem.printingpress.screw_bar_label', 'Bar length'), ' · ', barCm, ' cm'),
+                h('input', { id: 'pp-bar-length', type: 'range', min: 10, max: 60, step: 1, value: barCm, 'aria-valuetext': barCm + ' centimetres', 'aria-describedby': 'pp-bar-help', onChange: function(e) { setBarCm(Number(e.target.value)); setEvidenceMessage(''); } }),
+                h('p', { id: 'pp-bar-help', style: { color: T.muted, fontSize: 12, margin: 0, lineHeight: 1.5 } }, __alloT('stem.printingpress.screw_bar_help', 'From the screw centre to your hand. A full turn follows the dotted circle.'))
+              ),
+              h('div', null,
+                h('label', { htmlFor: 'pp-thread-pitch', style: { color: T.text, fontSize: 14, fontWeight: 700 } }, __alloT('stem.printingpress.screw_pitch_label', 'Thread pitch'), ' · ', pitchMm, ' mm'),
+                h('input', { id: 'pp-thread-pitch', type: 'range', min: 5, max: 20, step: 1, value: pitchMm, 'aria-valuetext': pitchMm + ' millimetres', 'aria-describedby': 'pp-pitch-help', onChange: function(e) { setPitchMm(Number(e.target.value)); setEvidenceMessage(''); } }),
+                h('p', { id: 'pp-pitch-help', style: { color: T.muted, fontSize: 12, margin: 0, lineHeight: 1.5 } }, __alloT('stem.printingpress.screw_pitch_help', 'Spacing between threads. Here, one full turn advances the platen by this distance.'))
+              )
+            ),
+            h('div', { className: 'pp-screw-results', role: 'status', 'aria-atomic': true },
+              h('div', null, h('span', { style: { color: T.muted, fontSize: 12 } }, __alloT('stem.printingpress.screw_multiplier', 'Ideal force multiplier')), h('strong', { id: 'pp-screw-advantage' }, screwModel.advantage.toFixed(1) + '×'), h('small', { style: { color: T.muted } }, __alloT('stem.printingpress.screw_no_friction', 'Assuming no friction'))),
+              h('div', null, h('span', { style: { color: T.muted, fontSize: 12 } }, __alloT('stem.printingpress.screw_output', 'Ideal platen force')), h('strong', { id: 'pp-screw-force' }, Math.round(screwModel.forceN).toLocaleString() + ' N'), h('small', { style: { color: T.muted } }, __alloT('stem.printingpress.screw_input', 'From a 10 N push'))),
+              h('div', null, h('span', { style: { color: T.muted, fontSize: 12 } }, __alloT('stem.printingpress.screw_travel', 'Platen travel per turn')), h('strong', { id: 'pp-screw-travel' }, pitchMm + ' mm'), h('small', { style: { color: T.muted } }, __alloFill(__alloT('stem.printingpress.screw_hand_travel', 'Your hand travels {distance} cm'), { distance: (screwModel.handTravelMm / 10).toFixed(1) })))
+            ),
+            h('div', { style: { borderLeft: '3px solid ' + T.accentHi, paddingLeft: 12, color: T.text, fontSize: 14, lineHeight: 1.6 } }, __alloT('stem.printingpress.screw_inquiry', 'Try doubling the bar from 20 to 40 cm. Then reset and double the pitch from 10 to 20 mm. Which change increases force? Which moves the platen farther per turn?')),
+            h('div', { className: 'pp-screw-actions printingpress-no-print' },
+              h('button', { onClick: function() { setBaseline({ barCm: barCm, pitchMm: pitchMm }); setEvidenceMessage(''); }, style: btn({ borderColor: T.accentHi, color: T.accentHi }) }, baseline ? __alloT('stem.printingpress.screw_replace_baseline', 'Use current settings as A') : __alloT('stem.printingpress.screw_pin_baseline', 'Keep these settings as A')),
+              h('button', { onClick: function() { setBarCm(20); setPitchMm(10); setBaseline(null); setEvidenceMessage(''); }, style: btn() }, __alloT('stem.printingpress.screw_reset', 'Reset experiment'))
+            ),
+            !baseline && h('p', { style: { fontSize: 12, lineHeight: 1.5, color: T.muted } }, __alloT('stem.printingpress.screw_compare_help', 'Keep a starting setup, then change one slider to compare it with setup B. Add the measurements to your notebook when you are ready.')),
+            baseline && h('section', { id: 'pp-screw-comparison', className: 'pp-screw-comparison', 'aria-labelledby': 'pp-screw-comparison-title' },
+              h('h4', { id: 'pp-screw-comparison-title', style: { margin: '0 0 8px', font: '700 21px/1.3 Georgia,serif', color: T.accentHi } }, __alloT('stem.printingpress.screw_comparison_title', 'Compare two setups')),
+              h('p', { style: { color: T.muted, fontSize: 13, lineHeight: 1.6, margin: '6px 0' } }, __alloT('stem.printingpress.screw_comparison_key', 'A is your kept setup. B follows the sliders. Both use the same 10 N push and ideal model.')),
+              h('p', { id: 'pp-screw-change-message', role: 'status', style: { padding: 10, borderLeft: '3px solid ' + T.accentHi, background: '#2a2116', color: T.text, fontSize: 13, lineHeight: 1.6 } },
+                changedSettings === 0 ? __alloT('stem.printingpress.screw_no_change', 'A and B match. Change one slider to start your comparison.') : changedSettings === 2 ? __alloT('stem.printingpress.screw_two_changes', 'Both settings changed. To find the effect of one variable, return either bar length or pitch to its A value.') : barCm !== baseline.barCm ? __alloT('stem.printingpress.screw_bar_changed', 'Only bar length changed; pitch stayed the same. Compare force and hand travel.') : __alloT('stem.printingpress.screw_pitch_changed', 'Only pitch changed; bar length stayed the same. Compare force and platen travel.')),
+              h('table', null,
+                h('caption', { style: { textAlign: 'left', color: T.muted, fontSize: 12, paddingBottom: 8 } }, __alloT('stem.printingpress.screw_table_caption', 'Settings and travel during one full turn')),
+                h('thead', null, h('tr', null, h('th', { scope: 'col' }, __alloT('stem.printingpress.screw_measurement', 'Measurement')), h('th', { scope: 'col' }, __alloT('stem.printingpress.screw_setup_a', 'Setup A')), h('th', { scope: 'col' }, __alloT('stem.printingpress.screw_setup_b', 'Setup B')))),
+                h('tbody', null,
+                  [[__alloT('stem.printingpress.screw_bar_label', 'Bar length'), baseline.barCm + ' cm', barCm + ' cm'],
+                   [__alloT('stem.printingpress.screw_pitch_label', 'Thread pitch'), baseline.pitchMm + ' mm', pitchMm + ' mm'],
+                   [__alloT('stem.printingpress.screw_hand_distance', 'Hand travel'), (baselineModel.handTravelMm / 10).toFixed(1) + ' cm', (screwModel.handTravelMm / 10).toFixed(1) + ' cm'],
+                   [__alloT('stem.printingpress.screw_platen_distance', 'Platen travel'), baseline.pitchMm + ' mm', pitchMm + ' mm']].map(function(row, index) { return h('tr', { key: index }, h('th', { scope: 'row' }, row[0]), h('td', null, row[1]), h('td', null, row[2])); })
+                )
+              ),
+              h('div', { id: 'pp-force-comparison', role: 'group', 'aria-label': __alloT('stem.printingpress.screw_force_comparison', 'Ideal platen force comparison'), style: { fontSize: 13, color: T.text, marginTop: 18 } },
+                h('div', null, __alloT('stem.printingpress.screw_setup_a', 'Setup A') + ' · ' + Math.round(baselineModel.forceN).toLocaleString() + ' N'),
+                h('div', { className: 'pp-force-bar', 'aria-hidden': true, style: { background: '#b9b0a0', width: (100 * baselineModel.forceN / Math.max(baselineModel.forceN, screwModel.forceN)) + '%' } }),
+                h('div', null, __alloT('stem.printingpress.screw_setup_b', 'Setup B') + ' · ' + Math.round(screwModel.forceN).toLocaleString() + ' N'),
+                h('div', { className: 'pp-force-bar', 'aria-hidden': true, style: { background: '#e8bd70', width: (100 * screwModel.forceN / Math.max(baselineModel.forceN, screwModel.forceN)) + '%' } }),
+                h('p', { style: { color: T.muted, fontSize: 12, lineHeight: 1.5 } }, __alloFill(__alloT('stem.printingpress.screw_force_ratio', 'B produces {ratio}× the ideal force of A. Both bars start at zero and use the same scale.'), { ratio: (screwModel.forceN / baselineModel.forceN).toFixed(2) }))
+              ),
+              h('p', { style: { color: T.text, fontSize: 14, lineHeight: 1.6 } }, __alloT('stem.printingpress.screw_comparison_prompt', 'Explain the tradeoff: what changed, what did you keep constant, and what distance was exchanged for force? Use measurements from A and B.')),
+              h('div', { className: 'pp-screw-actions printingpress-no-print' },
+                h('button', { disabled: !changedSettings, onClick: saveComparison, style: btn({ opacity: changedSettings ? 1 : 0.5 }) }, __alloT('stem.printingpress.screw_add_evidence', 'Add comparison to notebook')),
+                h('button', { onClick: function() { var notes = document.getElementById('pp-run-notes'); if (notes) { notes.focus(); notes.scrollIntoView({ block: 'center' }); } }, style: btn() }, __alloT('stem.printingpress.screw_write_explanation', 'Write my explanation'))
+              ),
+              h('p', { role: 'status', style: { color: T.muted, fontSize: 12, lineHeight: 1.5, marginBottom: 0 } }, evidenceMessage || __alloT('stem.printingpress.screw_unsaved_comparison', 'This comparison is temporary until you add it to your notebook.'))
+            ),
+            h('details', { style: { marginTop: 14, fontSize: 13, color: T.muted, lineHeight: 1.6 } },
+              h('summary', { style: { color: T.accentHi, cursor: 'pointer', padding: '6px 0' } }, __alloT('stem.printingpress.screw_math', 'See the calculation and model limits')),
+              h('p', null, __alloFill(__alloT('stem.printingpress.screw_equation', 'Ideal advantage = 2 × π × bar length ÷ pitch = 2 × π × {bar} mm ÷ {pitch} mm ≈ {ratio}. Multiply by 10 N to get the ideal output force.'), { bar: barCm * 10, pitch: pitchMm, ratio: screwModel.advantage.toFixed(1) })),
+              h('p', null, __alloT('stem.printingpress.screw_limits', 'This model uses a single-start screw and a push perpendicular to the bar. It ignores friction and deformation. Real output force is lower; it cannot be determined from bar length and pitch alone. The diagram is schematic.')),
+              h('a', { href: 'https://openstax.org/books/physics/pages/9-3-simple-machines', target: '_blank', rel: 'noopener noreferrer', style: { color: T.accentHi } }, __alloT('stem.printingpress.screw_source', 'Explore simple machines · OpenStax'))
+            )
+          ),
 
           sectionHeader('🎭', 'Scenarios'),
           scenarioCard('pressMechanism', 0, {
-            prompt: __alloT('stem.printingpress.a_1450_print_shop_has_a_screw_press_wi', 'A 1450 print shop has a screw press with a 60 cm bar and 5 mm screw pitch. The journeyman pulls with about 15 kg of force. Approximately how much force lands on the platen?'),
+            prompt: __alloT('stem.printingpress.screw_ideal_scenario', 'An ideal screw press has a 20 cm bar and a 10 mm pitch. You push perpendicular to the bar with 10 N. Ignoring friction, what is the approximate platen force?'),
             choices: [
-              'About 15 kg — a screw press transmits force without multiplying it',
-              'About 1,100 kg (~1.1 tonnes — after friction the EFFECTIVE advantage is roughly 75:1 here)',
-              'About 60 kg — the bar length alone sets the advantage, 60 cm to 1 cm',
-              'About 300 kg — the 5 mm screw pitch multiplies the bar force about twenty-fold, before friction is taken off'
+              'About 10 N — the input force passes through unchanged.',
+              'About 1,260 N — the input force is multiplied about 126 times.',
+              'About 126 N — the distance ratio becomes the output force.',
+              'About 20 N — the bar length is divided by the pitch as written.'
             ],
             correct: 1,
-            explain: 'MA = (2 × π × 60 cm) ÷ 0.5 cm ≈ 754. That is the IDEAL advantage — frictionless, 15 kg of pull would give ~110,000 N (~11 tonnes). But a hand-cut wooden screw loses most of that to thread friction, so the realistic EFFECTIVE platen force is on the order of ~1 tonne — still a roughly 75x multiplier on the printer\'s pull.)'
+            explain: 'Use matching units: 20 cm = 200 mm. Ideal advantage = 2 × π × 200 ÷ 10 ≈ 126. Output force = 10 N × 126 ≈ 1,260 N. This is an ideal estimate; a real press loses energy to friction.'
           }),
           scenarioCard('pressMechanism', 1, {
             prompt: __alloT('stem.printingpress.a_printer_pulls_the_bar_but_the_print_', 'A printer pulls the bar but the print comes out faint and patchy on the right side. What is the most likely cause?'),
@@ -7329,30 +7668,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sample: 'THE FALMOUTH GAZETTE\nAND WEEKLY ADVERTISER\n\nVol. I, No. I\nFalmouth, in Maine,\nthe 1st of January, 1785.\n\nTo the inhabitants\nof the District of Maine:\n\nWe propose, by the\nblessing of Providence,\nto publish a Weekly\nNews-Paper, containing\nthe latest Intelligence\nfrom Europe and America.\n\nSubscriptions\nat 8 shillings\nper annum,\npayable quarterly.\n\nPrinted by\nThomas B. Wait\nand Benjamin Titcomb.' }
         ];
 
-        var templateRaw = useState(0);
-        var templateIdx = templateRaw[0], setTemplateIdx = templateRaw[1];
-        var contentRaw = useState(TEMPLATES[0].sample);
-        var content = contentRaw[0], setContent = contentRaw[1];
-        var fontRaw = useState('Georgia');
-        var font = fontRaw[0], setFont = fontRaw[1];
-        var titleSizeRaw = useState(48);
-        var titleSize = titleSizeRaw[0], setTitleSize = titleSizeRaw[1];
-        // Border style: visual frame around the broadside. Real broadsides
-        // used printer's flowers ("fleurons") and rule borders for visual
-        // weight. Each option renders as SVG corners + edges that print.
-        var borderStyleRaw = useState('classical');
-        var borderStyle = borderStyleRaw[0], setBorderStyle = borderStyleRaw[1];
-        // Design-your-own-mark state. Each picker is a small ordered choice.
-        var markSymbolRaw = useState(0);
-        var markSymbol = markSymbolRaw[0], setMarkSymbol = markSymbolRaw[1];
-        var markMottoRaw = useState(0);
-        var markMotto = markMottoRaw[0], setMarkMotto = markMottoRaw[1];
-        var markFinishRaw = useState('gold');
-        var markFinish = markFinishRaw[0], setMarkFinish = markFinishRaw[1];
-
+        var rawDraft = (d.broadsideDraft === undefined ? savedState.broadsideDraft : d.broadsideDraft) || {};
+        function choice(value, choices, fallback) { return choices.indexOf(value) >= 0 ? value : fallback; }
+        function bounded(value, min, max, fallback) { return typeof value === 'number' && isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback; }
+        var draft = {
+          templateIdx: Math.round(bounded(rawDraft.templateIdx, 0, TEMPLATES.length - 1, 0)),
+          content: typeof rawDraft.content === 'string' ? rawDraft.content : TEMPLATES[0].sample,
+          font: choice(rawDraft.font, ['Georgia', '"Times New Roman"', '"Courier New"', '"Helvetica Neue"', 'Verdana'], 'Georgia'),
+          titleSize: bounded(rawDraft.titleSize, 24, 80, 48),
+          bodySize: bounded(rawDraft.bodySize, 12, 32, 16),
+          leading: bounded(rawDraft.leading, 1, 2, 1.5),
+          alignment: choice(rawDraft.alignment, ['left', 'center', 'right'], 'center'),
+          borderStyle: choice(rawDraft.borderStyle, ['none', 'simple', 'classical', 'ornate', 'floral', 'script'], 'classical'),
+          markSymbol: Math.round(bounded(rawDraft.markSymbol, 0, 5, 0)),
+          markMotto: Math.round(bounded(rawDraft.markMotto, 0, 5, 0)),
+          markFinish: choice(rawDraft.markFinish, ['gold', 'copper', 'silver'], 'gold')
+        };
+        function changeDraft(patch) { upd('broadsideDraft', Object.assign({}, draft, patch)); }
+        var templateIdx = draft.templateIdx, content = draft.content, font = draft.font, titleSize = draft.titleSize;
+        var borderStyle = draft.borderStyle, markSymbol = draft.markSymbol, markMotto = draft.markMotto, markFinish = draft.markFinish;
+        function setContent(value) { changeDraft({ content: value }); }
+        function setFont(value) { changeDraft({ font: value }); }
+        function setTitleSize(value) { changeDraft({ titleSize: value }); }
+        function setBorderStyle(value) { changeDraft({ borderStyle: value }); }
+        function setMarkSymbol(value) { changeDraft({ markSymbol: value }); }
+        function setMarkMotto(value) { changeDraft({ markMotto: value }); }
+        function setMarkFinish(value) { changeDraft({ markFinish: value }); }
+        var previousRaw = useState(null), previousDraft = previousRaw[0], setPreviousDraft = previousRaw[1];
+        var sheetRef = useRef(null);
+        var outputRaw = useState(''), outputMessage = outputRaw[0], setOutputMessage = outputRaw[1];
         function loadTemplate(i) {
-          setTemplateIdx(i);
-          setContent(TEMPLATES[i].sample);
+          function applyTemplate() {
+            setPreviousDraft(draft);
+            changeDraft({ templateIdx: i, content: TEMPLATES[i].sample });
+          }
+          if (content !== TEMPLATES[templateIdx].sample) {
+            requestConfirmation({
+              title: __alloT('stem.printingpress.replace_draft_title', 'Replace your broadside text?'),
+              message: __alloT('stem.printingpress.replace_draft_message', 'This template replaces your text. Your font, border, and layout stay the same. You can undo this template change in the composer.'),
+              confirmLabel: __alloT('stem.printingpress.replace_draft_confirm', 'Use template'),
+              cancelLabel: __alloT('stem.printingpress.keep_draft', 'Keep my text'),
+              onConfirm: applyTemplate
+            });
+          } else applyTemplate();
+        }
+        function broadsideDocument() {
+          var sheet = sheetRef.current.cloneNode(true);
+          sheet.removeAttribute('id');
+          sheet.style.clipPath = 'none';
+          sheet.style.overflow = 'visible';
+          sheet.style.boxShadow = 'none';
+          var title = document.createElement('title');
+          title.textContent = content.split('\n')[0] || 'My broadside';
+          return '<!doctype html><html lang="' + (document.documentElement.lang || 'en').replace(/[^a-z0-9-]/gi, '') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + title.outerHTML +
+            '<style>html{color-scheme:light}body{margin:24px auto;max-width:720px;padding:0 12px}*{box-sizing:border-box}@page{margin:12mm}@media print{body{margin:0;padding:0;max-width:none}body>div{border-radius:0!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>' + sheet.outerHTML + '</body></html>';
+        }
+        function exportBroadside(printOnly) {
+          try {
+            var html = broadsideDocument();
+            if (printOnly) {
+              var popup = window.open('', '_blank');
+              if (!popup) throw new Error('popup');
+              popup.opener = null;
+              popup.document.write(html);
+              popup.document.close();
+              popup.focus();
+              popup.print();
+              setOutputMessage(__alloT('stem.printingpress.print_opened', 'Broadside opened for printing. Choose Save as PDF in the print dialog to keep a PDF.'));
+            } else {
+              var url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+              var link = document.createElement('a');
+              link.href = url;
+              link.download = (content.split('\n')[0].replace(/[^a-z0-9 _-]/gi, '').trim().slice(0, 60) || 'My broadside') + '.html';
+              document.body.appendChild(link); link.click(); link.remove();
+              setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+              setOutputMessage(__alloT('stem.printingpress.download_ready', 'Broadside downloaded. Open the HTML file in a browser to view or print it offline.'));
+            }
+          } catch (e) {
+            setOutputMessage(printOnly ? __alloT('stem.printingpress.print_blocked', 'The print window could not open. Allow pop-ups or download the broadside and print the file.') : __alloT('stem.printingpress.download_failed', 'The download could not start. Your draft is still here; try printing the broadside.'));
+          }
         }
 
         var lines = content.split('\n');
@@ -7495,7 +7889,205 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
 
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
           backBar('📰 Build a Broadside'),
-          dropCapPara('A "broadside" was a single-sheet print, often political, advertising, or poetic. Compose your own. Pick a template, customize the text, choose a font, and print it. (Yes, the 🖨️ Print button at the top really prints.)'),
+          dropCapPara('Make a single-sheet announcement, poem, or manifesto. Compose your message, adjust the typography, and print or download your broadside. The top Print button creates a lesson handout.'),
+
+          // ── Editor ──
+          // Composer controls use a darker variant of the parchment palette
+          // so the editor visually echoes the preview below. Faint radial
+          // foxing in the corners (same treatment as the preview, dimmer).
+          // The brass border ties the composer to the broader brass/wood
+          // material vocabulary of the rest of the tool.
+          h('div', { className: 'printingpress-no-print', style: {
+              background: 'radial-gradient(ellipse at 8% 12%, rgba(201,161,74,0.06) 0%, transparent 35%), radial-gradient(ellipse at 92% 88%, rgba(201,161,74,0.06) 0%, transparent 35%), ' + T.card,
+              border: '1px solid ' + T.accent,
+              borderRadius: 12, padding: 16, marginBottom: 14,
+              boxShadow: 'inset 0 0 18px rgba(201,161,74,0.05)'
+            } },
+            sectionHeader('📝', 'Composer'),
+            h('p', { role: 'status', style: { fontSize: 12, color: T.muted, margin: '0 0 12px' } }, draftSaved ? __alloT('stem.printingpress.draft_saved', 'Draft saved on this browser. Return here to continue editing.') : __alloT('stem.printingpress.draft_session', 'Draft available in this session. Download a copy to keep your work.')),
+            previousDraft && h('button', { onClick: function() { upd('broadsideDraft', previousDraft); setPreviousDraft(null); }, style: btn({ marginBottom: 12 }) }, __alloT('stem.printingpress.undo_template', 'Undo template change')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 } },
+              TEMPLATES.map(function(tpl, i) {
+                return h('button', { key: i,
+                  onClick: function() { loadTemplate(i); },
+                  'aria-pressed': i === templateIdx,
+                  'aria-haspopup': content !== TEMPLATES[templateIdx].sample ? 'dialog' : undefined,
+                  style: i === templateIdx ? btnPrimary({ padding: '6px 12px', fontSize: 12 }) : btn({ padding: '6px 12px', fontSize: 12 })
+                }, tpl.label);
+              })
+            ),
+            h('label', { htmlFor: 'pp-content', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } },
+              __alloT('stem.printingpress.your_text_first_line_is_the_title_rest', 'Your text (first line is the title, rest is body):')),
+            h('textarea', {
+              id: 'pp-content', value: content, 'aria-describedby': 'pp-text-stats',
+              onChange: function(e) { setContent(e.target.value); },
+              rows: 8,
+              style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }
+            }),
+            h('p', { id: 'pp-text-stats', style: { fontSize: 12, color: T.muted, margin: '6px 0' } },
+              __alloFill(__alloT('stem.printingpress.composer_stats', '{words} words · {lines} lines. Check the print preview for page breaks.'), { words: content.trim() ? content.trim().split(/\s+/).length : 0, lines: lines.length })),
+            h('div', { style: { display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' } },
+              h('div', { style: { flex: 1, minWidth: 180 } },
+                h('label', { htmlFor: 'pp-font', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } }, 'Font:'),
+                h('select', { id: 'pp-font', value: font,
+                  onChange: function(e) { setFont(e.target.value); },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 13 }
+                },
+                  ['Georgia', '"Times New Roman"', '"Courier New"', '"Helvetica Neue"', 'Verdana'].map(function(f) {
+                    return h('option', { key: f, value: f, style: { fontFamily: f } }, f.replace(/"/g, ''));
+                  })
+                )
+              ),
+              h('div', { style: { flex: 1, minWidth: 180 } },
+                h('label', { htmlFor: 'pp-size', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } },
+                  __alloT('stem.printingpress.title_size', 'Title size: '), h('strong', null, titleSize + 'px')),
+                h('input', { id: 'pp-size', type: 'range', min: 24, max: 80, value: titleSize,
+                  onChange: function(e) { setTitleSize(parseInt(e.target.value, 10)); },
+                  style: { width: '100%', accentColor: T.accent }
+                })
+              ),
+              [['bodySize', 'pp-body-size', __alloT('stem.printingpress.body_size', 'Body size'), 12, 32, 1, 'px'], ['leading', 'pp-leading', __alloT('stem.printingpress.line_spacing', 'Line spacing'), 1, 2, 0.1, '×']].map(function(control) {
+                return h('div', { key: control[0], style: { flex: 1, minWidth: 180 } },
+                  h('label', { htmlFor: control[1], style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } }, control[2] + ': ' + draft[control[0]] + control[6]),
+                  h('input', { id: control[1], type: 'range', min: control[3], max: control[4], step: control[5], value: draft[control[0]], 'aria-valuetext': draft[control[0]] + control[6], onChange: function(e) { var patch = {}; patch[control[0]] = Number(e.target.value); changeDraft(patch); }, style: { width: '100%', accentColor: T.accent } })
+                );
+              }),
+              h('div', { style: { flex: 1, minWidth: 180 } },
+                h('label', { htmlFor: 'pp-alignment', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } }, __alloT('stem.printingpress.body_alignment', 'Body alignment')),
+                h('select', { id: 'pp-alignment', value: draft.alignment, onChange: function(e) { changeDraft({ alignment: e.target.value }); }, style: { width: '100%', padding: 8, borderRadius: 6, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } },
+                  [['left', __alloT('stem.printingpress.align_left', 'Left')], ['center', __alloT('stem.printingpress.align_center', 'Center')], ['right', __alloT('stem.printingpress.align_right', 'Right')]].map(function(option) { return h('option', { key: option[0], value: option[0] }, option[1]); }))
+              ),
+              h('div', { style: { flex: '1 0 100%', minWidth: 180 } },
+                h('label', { htmlFor: 'pp-border', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } }, __alloT('stem.printingpress.ornamental_border', 'Ornamental border:')),
+                h('select', { id: 'pp-border', value: borderStyle,
+                  onChange: function(e) { setBorderStyle(e.target.value); },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 13 }
+                },
+                  BORDER_OPTIONS.map(function(b) { return h('option', { key: b.id, value: b.id }, b.label); })
+                )
+              )
+            )
+          ),
+
+          h('div', { className: 'printingpress-no-print', style: { marginBottom: 16 } },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              h('button', { disabled: !content.trim(), onClick: function() { exportBroadside(true); }, style: btnPrimary() }, __alloT('stem.printingpress.print_broadside', 'Print broadside / Save PDF')),
+              h('button', { disabled: !content.trim(), onClick: function() { exportBroadside(false); }, style: btn() }, __alloT('stem.printingpress.download_broadside', 'Download broadside'))
+            ),
+            h('p', { role: 'status', style: { fontSize: 12, color: T.muted, marginTop: 8 } }, outputMessage || __alloT('stem.printingpress.broadside_output_hint', 'These buttons export just your broadside. Download keeps a standalone HTML copy.'))
+          ),
+          // ── Preview (this is what prints) ──
+          // Position: relative so the absolute-positioned border SVG aligns
+          // exactly with the broadside page boundary.
+          // Broadside preview: aged-parchment treatment.
+          // Background combines a base parchment color with two radial
+          // gradients at the corners to simulate aging/foxing, plus a subtle
+          // SVG-based grain pattern at very low opacity. This is pure CSS so
+          // it prints cleanly via the @media print rule (no big background
+          // images to worry about).
+          // Broadside preview wrapped in a div that provides a page-curl
+          // shadow underneath. The inner div is the actual sheet; the outer
+          // div casts a layered shadow that simulates the paper being slightly
+          // curled at the corners — a real printed sheet doesn't sit flat on
+          // a desk. Drop-shadow stack: subtle ground shadow + sharper top-edge
+          // shadow for the "lifted" feel.
+          h('div', { style: {
+              position: 'relative',
+              marginBottom: 4,
+              filter: 'drop-shadow(0 12px 18px rgba(0,0,0,0.4)) drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+            } },
+          h('div', { id: 'pp-broadside-sheet', ref: sheetRef, style: {
+              position: 'relative', overflowWrap: 'anywhere', minWidth: 0,
+              background: 'radial-gradient(ellipse at 8% 12%, rgba(180,140,80,0.18) 0%, transparent 30%), radial-gradient(ellipse at 92% 88%, rgba(180,140,80,0.18) 0%, transparent 30%), radial-gradient(ellipse at 92% 12%, rgba(180,140,80,0.10) 0%, transparent 25%), radial-gradient(ellipse at 8% 88%, rgba(180,140,80,0.10) 0%, transparent 25%), ' + T.parchment,
+              color: T.ink, padding: 36, border: '2px solid ' + T.border, borderRadius: 6, minHeight: 480, fontFamily: font, overflow: 'hidden',
+              boxShadow: 'inset 0 0 30px rgba(120,90,40,0.08)',
+              // Page-curl: clip-path with subtle corner bends for a hint of
+              // physical paper. Modest values so the broadside still reads
+              // as a rectangular page, just with slight imperfection.
+              clipPath: 'polygon(0% 1%, 1% 0%, 99% 0%, 100% 1%, 100% 99%, 99% 100%, 1% 100%, 0% 99%)'
+            } },
+            // Border decoration overlay (behind text)
+            renderBorder(borderStyle),
+            // Faint vertical fold-mark down the center of the broadside —
+            // real broadsides were often folded into halves or quarters for
+            // distribution by hand or by post. The subtle crease (gradient
+            // shadow + thin highlight on either side) suggests the sheet
+            // was once folded and reopened.
+            h('div', { 'aria-hidden': 'true', style: {
+              position: 'absolute',
+              top: 0, bottom: 0,
+              left: '50%',
+              width: 3,
+              transform: 'translateX(-50%)',
+              background: 'linear-gradient(90deg, rgba(180,140,80,0.15) 0%, rgba(120,90,40,0.18) 50%, rgba(180,140,80,0.15) 100%)',
+              pointerEvents: 'none',
+              opacity: 0.7
+            } }),
+            // Content (positioned above border via z-index inheritance).
+            // Title rendered with an illuminated drop-cap on the first
+            // letter — the medieval-into-Renaissance convention for
+            // formal printed pieces. The first character gets a small
+            // ornamented "block" (gold-bordered, slightly darker ground)
+            // sized proportionally to titleSize. Falls back to a normal
+            // title when there's no titleLine (placeholder text).
+            h('div', { style: { position: 'relative', zIndex: 1 } },
+              h('div', { style: { fontSize: titleSize, fontWeight: 800, textAlign: 'center', marginBottom: 16, lineHeight: 1.1, borderBottom: '3px double ' + T.ink, paddingBottom: 12, fontFamily: font, position: 'relative' } },
+                // Illuminated first letter when there's a real title (>= 2 chars)
+                titleLine && titleLine.length >= 2 ? h(React.Fragment, null,
+                  h('span', { style: {
+                    display: 'inline-block',
+                    fontSize: Math.round(titleSize * 1.15),
+                    background: 'linear-gradient(180deg, #f5d77e 0%, #d4914f 35%, #7c4f1f 100%)',
+                    color: T.ink,
+                    padding: '2px 10px 0',
+                    border: '2px solid #7c4f1f',
+                    borderRadius: 3,
+                    marginRight: 6,
+                    textShadow: '1px 1px 0 rgba(0,0,0,0.25)',
+                    fontFamily: font,
+                    verticalAlign: 'baseline',
+                    lineHeight: 1
+                  } }, titleLine.charAt(0)),
+                  titleLine.slice(1)
+                ) : (titleLine || '(your title)')),
+              bodyLines.map(function(line, i) {
+                return h('div', { key: i, style: { fontSize: draft.bodySize, lineHeight: draft.leading, textAlign: draft.alignment, whiteSpace: 'pre-wrap', marginBottom: 6, fontFamily: font } },
+                  line || h('span', { style: { color: 'transparent' } }, '·'));
+              }),
+              // Footer with stationer's mark + composition stamp. Echoes the
+              // period convention of printers ending a broadside with their
+              // colophon. Tiny dolphin-and-anchor mark to the left (Aldine
+              // tribute reused from the disclaimer), composition date to the
+              // right, separated by a thin rule.
+              h('div', { style: { marginTop: 24, paddingTop: 8, borderTop: '1px solid ' + T.border, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 } },
+                // Tiny dolphin-and-anchor — same mark as the disclaimer
+                h('svg', { width: 18, height: 22, viewBox: '0 0 38 46', 'aria-hidden': 'true',
+                  style: { display: 'block', opacity: 0.6 } },
+                  h('line', { x1: 19, y1: 6, x2: 19, y2: 38, stroke: '#7c2d12', strokeWidth: 2, strokeLinecap: 'round' }),
+                  h('line', { x1: 11, y1: 12, x2: 27, y2: 12, stroke: '#7c2d12', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  h('circle', { cx: 19, cy: 5, r: 2.5, fill: 'none', stroke: '#7c2d12', strokeWidth: 1.2 }),
+                  h('path', { d: 'M 19 38 Q 8 38 7 30 Q 9 34 13 35', fill: 'none', stroke: '#7c2d12', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  h('path', { d: 'M 19 38 Q 30 38 31 30 Q 29 34 25 35', fill: 'none', stroke: '#7c2d12', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  h('path', { d: 'M 11 18 Q 6 22 11 28 Q 19 31 26 26 Q 31 22 26 17 Q 21 14 19 18',
+                    fill: 'none', stroke: '#7c2d12', strokeWidth: 1.4, strokeLinecap: 'round' }),
+                  h('circle', { cx: 13, cy: 20, r: 0.8, fill: '#7c2d12' })
+                ),
+                h('div', { style: { fontSize: 10, color: '#5c4630', fontStyle: 'italic', fontFamily: 'Georgia, serif' } },
+                  __alloT('stem.printingpress.composed_in_printingpress', 'Composed in PrintingPress · '), new Date().toLocaleDateString()),
+                // Hand-drawn printer's signature — period convention. Most
+                // 16th-17th century broadsides ended with the printer's name
+                // in script as a sort of seal. We render a stylized SVG
+                // signature flourish (looks like a quick scribed signature)
+                // so the broadside reads as "signed by the printer."
+                h('svg', { width: 60, height: 18, viewBox: '0 0 60 18', 'aria-hidden': 'true',
+                  style: { opacity: 0.6 } },
+                  h('path', { d: 'M 2 12 Q 8 4 14 10 Q 18 14 22 8 Q 26 4 30 10 Q 34 16 38 8 Q 44 4 50 12 Q 54 16 58 14',
+                    stroke: '#7c2d12', strokeWidth: 1.2, fill: 'none', strokeLinecap: 'round' }),
+                  h('circle', { cx: 58, cy: 14, r: 1.2, fill: '#7c2d12' })
+                )
+              )
+            )
+          )),  // close inner sheet div, then outer drop-shadow wrapper
 
           // ── Real printer's marks gallery ──
           // Before students design their own colophon, show them five
@@ -7730,7 +8322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             var mot = MOTTOES[markMotto] || MOTTOES[0];
             var fin = FINISHES.find(function(f) { return f.key === markFinish; }) || FINISHES[0];
             return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 220px) 1fr', gap: 18, alignItems: 'center' } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 18, alignItems: 'center' } },
                 // Left: live preview
                 h('div', { style: { background: T.parchment, color: T.ink, border: '3px double ' + T.wood, borderRadius: 8, padding: 14, textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' } },
                   h('div', { style: { fontSize: 10, color: '#7c2d12', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } }, __alloT('stem.printingpress.your_mark', 'Your mark')),
@@ -7809,180 +8401,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 __alloT('stem.printingpress.a_real_shop_kept_its_mark_for_generati', 'A real shop kept its mark for generations. The Estiennes used the olive tree for over 100 years across three printer-generations. Your mark would have appeared on every book your shop made.'))
             );
           })(),
-
-          // ── Editor ──
-          // Composer controls use a darker variant of the parchment palette
-          // so the editor visually echoes the preview below. Faint radial
-          // foxing in the corners (same treatment as the preview, dimmer).
-          // The brass border ties the composer to the broader brass/wood
-          // material vocabulary of the rest of the tool.
-          h('div', { className: 'printingpress-no-print', style: {
-              background: 'radial-gradient(ellipse at 8% 12%, rgba(201,161,74,0.06) 0%, transparent 35%), radial-gradient(ellipse at 92% 88%, rgba(201,161,74,0.06) 0%, transparent 35%), ' + T.card,
-              border: '1px solid ' + T.accent,
-              borderRadius: 12, padding: 16, marginBottom: 14,
-              boxShadow: 'inset 0 0 18px rgba(201,161,74,0.05)'
-            } },
-            sectionHeader('📝', 'Composer'),
-            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 } },
-              TEMPLATES.map(function(tpl, i) {
-                return h('button', { key: i,
-                  onClick: function() { loadTemplate(i); },
-                  style: i === templateIdx ? btnPrimary({ padding: '6px 12px', fontSize: 12 }) : btn({ padding: '6px 12px', fontSize: 12 })
-                }, tpl.label);
-              })
-            ),
-            h('label', { htmlFor: 'pp-content', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } },
-              __alloT('stem.printingpress.your_text_first_line_is_the_title_rest', 'Your text (first line is the title, rest is body):')),
-            h('textarea', {
-              id: 'pp-content', value: content,
-              onChange: function(e) { setContent(e.target.value); },
-              rows: 8,
-              style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }
-            }),
-            h('div', { style: { display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' } },
-              h('div', { style: { flex: 1, minWidth: 180 } },
-                h('label', { htmlFor: 'pp-font', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } }, 'Font:'),
-                h('select', { id: 'pp-font', value: font,
-                  onChange: function(e) { setFont(e.target.value); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 13 }
-                },
-                  ['Georgia', '"Times New Roman"', '"Courier New"', '"Helvetica Neue"', 'Verdana'].map(function(f) {
-                    return h('option', { key: f, value: f, style: { fontFamily: f } }, f.replace(/"/g, ''));
-                  })
-                )
-              ),
-              h('div', { style: { flex: 1, minWidth: 180 } },
-                h('label', { htmlFor: 'pp-size', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } },
-                  __alloT('stem.printingpress.title_size', 'Title size: '), h('strong', null, titleSize + 'px')),
-                h('input', { id: 'pp-size', type: 'range', min: 24, max: 80, value: titleSize,
-                  onChange: function(e) { setTitleSize(parseInt(e.target.value, 10)); },
-                  style: { width: '100%', accentColor: T.accent }
-                })
-              ),
-              h('div', { style: { flex: '1 0 100%', minWidth: 180 } },
-                h('label', { htmlFor: 'pp-border', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } }, __alloT('stem.printingpress.ornamental_border', 'Ornamental border:')),
-                h('select', { id: 'pp-border', value: borderStyle,
-                  onChange: function(e) { setBorderStyle(e.target.value); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 13 }
-                },
-                  BORDER_OPTIONS.map(function(b) { return h('option', { key: b.id, value: b.id }, b.label); })
-                )
-              )
-            )
-          ),
-
-          // ── Preview (this is what prints) ──
-          // Position: relative so the absolute-positioned border SVG aligns
-          // exactly with the broadside page boundary.
-          // Broadside preview: aged-parchment treatment.
-          // Background combines a base parchment color with two radial
-          // gradients at the corners to simulate aging/foxing, plus a subtle
-          // SVG-based grain pattern at very low opacity. This is pure CSS so
-          // it prints cleanly via the @media print rule (no big background
-          // images to worry about).
-          // Broadside preview wrapped in a div that provides a page-curl
-          // shadow underneath. The inner div is the actual sheet; the outer
-          // div casts a layered shadow that simulates the paper being slightly
-          // curled at the corners — a real printed sheet doesn't sit flat on
-          // a desk. Drop-shadow stack: subtle ground shadow + sharper top-edge
-          // shadow for the "lifted" feel.
-          h('div', { style: {
-              position: 'relative',
-              marginBottom: 4,
-              filter: 'drop-shadow(0 12px 18px rgba(0,0,0,0.4)) drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
-            } },
-          h('div', { style: {
-              position: 'relative',
-              background: 'radial-gradient(ellipse at 8% 12%, rgba(180,140,80,0.18) 0%, transparent 30%), radial-gradient(ellipse at 92% 88%, rgba(180,140,80,0.18) 0%, transparent 30%), radial-gradient(ellipse at 92% 12%, rgba(180,140,80,0.10) 0%, transparent 25%), radial-gradient(ellipse at 8% 88%, rgba(180,140,80,0.10) 0%, transparent 25%), ' + T.parchment,
-              color: T.ink, padding: 36, border: '2px solid ' + T.border, borderRadius: 6, minHeight: 480, fontFamily: font, overflow: 'hidden',
-              boxShadow: 'inset 0 0 30px rgba(120,90,40,0.08)',
-              // Page-curl: clip-path with subtle corner bends for a hint of
-              // physical paper. Modest values so the broadside still reads
-              // as a rectangular page, just with slight imperfection.
-              clipPath: 'polygon(0% 1%, 1% 0%, 99% 0%, 100% 1%, 100% 99%, 99% 100%, 1% 100%, 0% 99%)'
-            } },
-            // Border decoration overlay (behind text)
-            renderBorder(borderStyle),
-            // Faint vertical fold-mark down the center of the broadside —
-            // real broadsides were often folded into halves or quarters for
-            // distribution by hand or by post. The subtle crease (gradient
-            // shadow + thin highlight on either side) suggests the sheet
-            // was once folded and reopened.
-            h('div', { 'aria-hidden': 'true', style: {
-              position: 'absolute',
-              top: 0, bottom: 0,
-              left: '50%',
-              width: 3,
-              transform: 'translateX(-50%)',
-              background: 'linear-gradient(90deg, rgba(180,140,80,0.15) 0%, rgba(120,90,40,0.18) 50%, rgba(180,140,80,0.15) 100%)',
-              pointerEvents: 'none',
-              opacity: 0.7
-            } }),
-            // Content (positioned above border via z-index inheritance).
-            // Title rendered with an illuminated drop-cap on the first
-            // letter — the medieval-into-Renaissance convention for
-            // formal printed pieces. The first character gets a small
-            // ornamented "block" (gold-bordered, slightly darker ground)
-            // sized proportionally to titleSize. Falls back to a normal
-            // title when there's no titleLine (placeholder text).
-            h('div', { style: { position: 'relative', zIndex: 1 } },
-              h('div', { style: { fontSize: titleSize, fontWeight: 800, textAlign: 'center', marginBottom: 16, lineHeight: 1.1, borderBottom: '3px double ' + T.ink, paddingBottom: 12, fontFamily: font, position: 'relative' } },
-                // Illuminated first letter when there's a real title (>= 2 chars)
-                titleLine && titleLine.length >= 2 ? h(React.Fragment, null,
-                  h('span', { style: {
-                    display: 'inline-block',
-                    fontSize: Math.round(titleSize * 1.15),
-                    background: 'linear-gradient(180deg, #f5d77e 0%, #d4914f 35%, #7c4f1f 100%)',
-                    color: T.ink,
-                    padding: '2px 10px 0',
-                    border: '2px solid #7c4f1f',
-                    borderRadius: 3,
-                    marginRight: 6,
-                    textShadow: '1px 1px 0 rgba(0,0,0,0.25)',
-                    fontFamily: font,
-                    verticalAlign: 'baseline',
-                    lineHeight: 1
-                  } }, titleLine.charAt(0)),
-                  titleLine.slice(1)
-                ) : (titleLine || '(your title)')),
-              bodyLines.map(function(line, i) {
-                return h('div', { key: i, style: { fontSize: Math.max(14, titleSize / 3), lineHeight: 1.5, textAlign: 'center', marginBottom: 6, fontFamily: font } },
-                  line || h('span', { style: { color: 'transparent' } }, '·'));
-              }),
-              // Footer with stationer's mark + composition stamp. Echoes the
-              // period convention of printers ending a broadside with their
-              // colophon. Tiny dolphin-and-anchor mark to the left (Aldine
-              // tribute reused from the disclaimer), composition date to the
-              // right, separated by a thin rule.
-              h('div', { style: { marginTop: 24, paddingTop: 8, borderTop: '1px solid ' + T.border, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 } },
-                // Tiny dolphin-and-anchor — same mark as the disclaimer
-                h('svg', { width: 18, height: 22, viewBox: '0 0 38 46', 'aria-hidden': 'true',
-                  style: { display: 'block', opacity: 0.6 } },
-                  h('line', { x1: 19, y1: 6, x2: 19, y2: 38, stroke: '#7c2d12', strokeWidth: 2, strokeLinecap: 'round' }),
-                  h('line', { x1: 11, y1: 12, x2: 27, y2: 12, stroke: '#7c2d12', strokeWidth: 1.5, strokeLinecap: 'round' }),
-                  h('circle', { cx: 19, cy: 5, r: 2.5, fill: 'none', stroke: '#7c2d12', strokeWidth: 1.2 }),
-                  h('path', { d: 'M 19 38 Q 8 38 7 30 Q 9 34 13 35', fill: 'none', stroke: '#7c2d12', strokeWidth: 1.5, strokeLinecap: 'round' }),
-                  h('path', { d: 'M 19 38 Q 30 38 31 30 Q 29 34 25 35', fill: 'none', stroke: '#7c2d12', strokeWidth: 1.5, strokeLinecap: 'round' }),
-                  h('path', { d: 'M 11 18 Q 6 22 11 28 Q 19 31 26 26 Q 31 22 26 17 Q 21 14 19 18',
-                    fill: 'none', stroke: '#7c2d12', strokeWidth: 1.4, strokeLinecap: 'round' }),
-                  h('circle', { cx: 13, cy: 20, r: 0.8, fill: '#7c2d12' })
-                ),
-                h('div', { style: { fontSize: 10, color: '#5c4630', fontStyle: 'italic', fontFamily: 'Georgia, serif' } },
-                  __alloT('stem.printingpress.composed_in_printingpress', 'Composed in PrintingPress · '), new Date().toLocaleDateString()),
-                // Hand-drawn printer's signature — period convention. Most
-                // 16th-17th century broadsides ended with the printer's name
-                // in script as a sort of seal. We render a stylized SVG
-                // signature flourish (looks like a quick scribed signature)
-                // so the broadside reads as "signed by the printer."
-                h('svg', { width: 60, height: 18, viewBox: '0 0 60 18', 'aria-hidden': 'true',
-                  style: { opacity: 0.6 } },
-                  h('path', { d: 'M 2 12 Q 8 4 14 10 Q 18 14 22 8 Q 26 4 30 10 Q 34 16 38 8 Q 44 4 50 12 Q 54 16 58 14',
-                    stroke: '#7c2d12', strokeWidth: 1.2, fill: 'none', strokeLinecap: 'round' }),
-                  h('circle', { cx: 58, cy: 14, r: 1.2, fill: '#7c2d12' })
-                )
-              )
-            )
-          )),  // close inner sheet div, then outer drop-shadow wrapper
 
           sectionHeader('💡', 'About broadsides'),
           keyPointBlock(

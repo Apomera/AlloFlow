@@ -1,0 +1,79 @@
+{
+  "pass": 10,
+  "scope": "Wedge assembly, timber contact, ratio-correct geometry and movement",
+  "fullSuite": {
+    "passed": 763,
+    "failed": 0,
+    "files": 25
+  },
+  "finalArrowRefinement": {
+    "passed": 107,
+    "failed": 0
+  },
+  "browser": [
+    {
+      "folder": "pass10-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop10-wedge-ready",
+        "workshop10-wedge-split",
+        "workshop10-wedge-thin",
+        "workshop10-wedge-thick",
+        "workshop10-wedge-square",
+        "workshop10-wedge-rear"
+      ]
+    },
+    {
+      "folder": "pass10-dark",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop10-wedge-ready",
+        "workshop10-wedge-split",
+        "workshop10-wedge-thin",
+        "workshop10-wedge-thick",
+        "workshop10-wedge-square",
+        "workshop10-wedge-rear"
+      ]
+    },
+    {
+      "folder": "pass10-contrast",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop10-wedge-ready",
+        "workshop10-wedge-split",
+        "workshop10-wedge-thin",
+        "workshop10-wedge-thick",
+        "workshop10-wedge-square",
+        "workshop10-wedge-rear"
+      ]
+    }
+  ],
+  "mirrorIdentical": true,
+  "syntax": "passed",
+  "whitespace": "passed",
+  "publication": "Local changes only; deployment remains paused."
+}

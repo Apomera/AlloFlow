@@ -1,0 +1,178 @@
+{
+  "checks": [
+    "Slider, Home/End, swatches and Escape work with focus handoff. Previewing preserves all experiment data and the existing viewer. Additions update only the live sample; notebook saves retain actual readings. Reference survives view changes.",
+    "Indicator/preset changes reset reference choices. Methyl orange keeps its 3.75 midpoint, universal and redox use their own scales, and preview/inspection modes stay distinct. WebGL fallback retains the explorer.",
+    "Reference controls remain keyboard operable with forced colors and reduced motion."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "name": "acid-base",
+      "view": "2D diagram",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "view": "2D diagram",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "view": "2D diagram",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "view": "2D diagram",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "view": "3D bench",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "view": "3D bench",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "view": "3D bench",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "view": "3D bench",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "universal",
+      "view": "2D diagram",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "universal",
+      "view": "2D diagram",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "universal",
+      "view": "2D diagram",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "universal",
+      "view": "2D diagram",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "universal",
+      "view": "3D bench",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "universal",
+      "view": "3D bench",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "universal",
+      "view": "3D bench",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "universal",
+      "view": "3D bench",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "view": "2D diagram",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "view": "2D diagram",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "view": "2D diagram",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "view": "2D diagram",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "view": "3D bench",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "view": "3D bench",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "view": "3D bench",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "view": "3D bench",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Sine filter",
+    "ok": true,
+    "samples": 4859,
+    "elapsedMs": 400
+  },
+  {
+    "name": "Pulse smoothing",
+    "ok": true,
+    "samples": 3659,
+    "elapsedMs": 193.40000000596046
+  }
+]

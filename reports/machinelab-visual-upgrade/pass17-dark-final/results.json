@@ -1,0 +1,37 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "lever-focus",
+    "lever-focus-rear",
+    "pulley-focus",
+    "pulley-focus-rear",
+    "windlass-focus",
+    "windlass-focus-rear",
+    "ramp-focus",
+    "ramp-focus-rear",
+    "wedge-focus",
+    "wedge-focus-rear",
+    "screw-focus",
+    "screw-focus-rear",
+    "reverse-trade",
+    "equal-trade",
+    "equal-trade-grayscale"
+  ],
+  "checks": [
+    "Keyboard focus toggle and held camera pose: pulley 390",
+    "Keyboard focus toggle and held camera pose: wedge 390",
+    "Keyboard focus toggle and held camera pose: pulley 320",
+    "Keyboard focus toggle and held camera pose: wedge 320",
+    "Reduced motion holds half stroke",
+    "Old timer cannot interrupt newer run",
+    "Next station starts at rest and retains focus preference"
+  ]
+}

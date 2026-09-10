@@ -1,0 +1,17 @@
+{
+  "errors": [],
+  "axeViolations": [],
+  "checks": [
+    "keyboard practice open",
+    "start resets probes only",
+    "prediction required",
+    "wrong and reversed placement feedback",
+    "successful measurement",
+    "feedback updates when probes move",
+    "circuit-change invalidation and undo",
+    "restart clears prediction",
+    "reverse-source task",
+    "390px layout",
+    "undetermined task"
+  ]
+}

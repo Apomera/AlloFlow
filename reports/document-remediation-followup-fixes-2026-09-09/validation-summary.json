@@ -1,0 +1,26 @@
+{
+  "exitCode": 1,
+  "signal": null,
+  "error": null,
+  "requestedFiles": [
+    "tests/remediation_followup_fidelity.test.js",
+    "tests/remediation_form_association_index.test.js",
+    "tests/remediation_semantic_fidelity.test.js",
+    "tests/aifix_source_associations.test.js",
+    "tests/aifix_chunk_gates.test.js",
+    "tests/remediation_review_evidence.test.js",
+    "tests/remediation_review_helpers.test.js",
+    "tests/remediation_source_contract_integration.test.js",
+    "tests/source_remediation_contract.test.js",
+    "tests/doc_pipeline_build_parity.test.js"
+  ],
+  "reportedFiles": 10,
+  "missing": [],
+  "failed": [
+    "tests/source_remediation_contract.test.js",
+    "tests/doc_pipeline_build_parity.test.js"
+  ],
+  "tests": 177,
+  "passed": 175,
+  "complete": false
+}

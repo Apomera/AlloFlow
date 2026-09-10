@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "checks": [
+    "precise value commit",
+    "invalid and empty values preserve solution/history",
+    "escape restores value",
+    "reference immutable across edits",
+    "capture outside history",
+    "single and multiple changes",
+    "restore with undo",
+    "shared-axis overlays",
+    "mixed-axis guard",
+    "workspace persistence",
+    "direct probes in 3D and schematic",
+    "keyboard node placement",
+    "same-node zero",
+    "measurement shortcuts",
+    "probe/view edits outside history",
+    "CSV full settings",
+    "390/320 px overflow",
+    "phone node hit targets and scrolling"
+  ],
+  "axeViolations": 0
+}

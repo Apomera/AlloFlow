@@ -1,0 +1,114 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_active_electronics.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > normalizes bounded physical settings without mutating the saved state
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > has no base or collector current at input 0 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > has no base or collector current at input 0.3 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > has no base or collector current at input 0.7 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > matches a hand-calculated forward-active operating point
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > limits collector current at saturation while base current keeps increasing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > remains continuous at the active-to-saturated boundary
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > solves a loaded equal-resistor divider and accounts for current in both legs
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > keeps a cutoff divider unloaded while its own supply current continues flowing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > reverses sensor response by swapping the two divider elements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > conserves current and power throughout the manual input range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+········stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > conserves current and power throughout the light input range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > conserves current and power throughout the dark input range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > includes base input dissipation inside the transistor power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > provides consistent reversed and same-node voltmeter readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > exports the actual sweep and leaves the input state unchanged
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > renders the manual experiment with probes and declared model bounds
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > renders the light experiment with probes and declared model bounds
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > renders the dark experiment with probes and declared model bounds
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+······stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+·stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all ten SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+x·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all ten SVG declarations an explicit image role and name
+AssertionError: expected [ [ …(2), index: 30824, …(2) ], …(11) ] to have a length of 10 but got 12
+
+- Expected
++ Received
+
+- 10
++ 12
+
+ ❯ tests/circuit_svg_alternatives_a11y.test.js:58:26
+     56|   it('gives all ten SVG declarations an explicit image role and name',…
+     57|     const declarations = [...source.matchAll(/h\('svg', \{([^}]*)\}/g)…
+     58|     expect(declarations).toHaveLength(10);
+       |                          ^
+     59|     for (const declaration of declarations) {
+     60|       expect(declaration[1]).toContain("role: 'img'");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 22 passed (23)
+   Start at  00:24:49
+   Duration  33.03s (transform 609ms, setup 1.77s, import 1.27s, tests 13.00s, environment 15.30s)
+

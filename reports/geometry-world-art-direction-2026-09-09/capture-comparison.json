@@ -1,0 +1,118 @@
+{
+  "beforePassed": true,
+  "afterPassed": true,
+  "comparison": [
+    {
+      "file": "after-pavilion-meadow-balanced.png",
+      "cameraMatches": true,
+      "beforeDraws": 1512,
+      "afterDraws": 1516,
+      "beforeTriangles": 13190,
+      "afterTriangles": 14850,
+      "normalMaps": 146,
+      "roughnessMaps": 146,
+      "stlBytes": 31784,
+      "stlTriangles": 634
+    },
+    {
+      "file": "after-pavilion-studio-balanced.png",
+      "cameraMatches": true,
+      "beforeDraws": 302,
+      "afterDraws": 303,
+      "beforeTriangles": 1580,
+      "afterTriangles": 1582,
+      "normalMaps": 146,
+      "roughnessMaps": 146,
+      "stlBytes": 31784,
+      "stlTriangles": 634
+    },
+    {
+      "file": "after-pavilion-meadow-saver.png",
+      "cameraMatches": true,
+      "beforeDraws": 1512,
+      "afterDraws": 1515,
+      "beforeTriangles": 13190,
+      "afterTriangles": 12650,
+      "normalMaps": 0,
+      "roughnessMaps": 0,
+      "stlBytes": 31784,
+      "stlTriangles": 634
+    },
+    {
+      "file": "after-pavilion-studio-saver.png",
+      "cameraMatches": true,
+      "beforeDraws": 302,
+      "afterDraws": 303,
+      "beforeTriangles": 1580,
+      "afterTriangles": 1582,
+      "normalMaps": 0,
+      "roughnessMaps": 0,
+      "stlBytes": 31784,
+      "stlTriangles": 634
+    },
+    {
+      "file": "after-materials-meadow-balanced.png",
+      "cameraMatches": true,
+      "beforeDraws": 1342,
+      "afterDraws": 1344,
+      "beforeTriangles": 12394,
+      "afterTriangles": 14006,
+      "normalMaps": 93,
+      "roughnessMaps": 89,
+      "stlBytes": 28884,
+      "stlTriangles": 576
+    },
+    {
+      "file": "after-materials-studio-balanced.png",
+      "cameraMatches": true,
+      "beforeDraws": 200,
+      "afterDraws": 201,
+      "beforeTriangles": 1192,
+      "afterTriangles": 1194,
+      "normalMaps": 93,
+      "roughnessMaps": 89,
+      "stlBytes": 28884,
+      "stlTriangles": 576
+    },
+    {
+      "file": "after-materials-meadow-saver.png",
+      "cameraMatches": true,
+      "beforeDraws": 1342,
+      "afterDraws": 1344,
+      "beforeTriangles": 12394,
+      "afterTriangles": 11830,
+      "normalMaps": 4,
+      "roughnessMaps": 0,
+      "stlBytes": 28884,
+      "stlTriangles": 576
+    },
+    {
+      "file": "after-materials-studio-saver.png",
+      "cameraMatches": true,
+      "beforeDraws": 200,
+      "afterDraws": 201,
+      "beforeTriangles": 1192,
+      "afterTriangles": 1194,
+      "normalMaps": 4,
+      "roughnessMaps": 0,
+      "stlBytes": 28884,
+      "stlTriangles": 576
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "pavilion",
+      "profiles": 4,
+      "stlIdentical": true,
+      "meshIdentical": true,
+      "historyIdentical": true
+    },
+    {
+      "kind": "materials",
+      "profiles": 4,
+      "stlIdentical": true,
+      "meshIdentical": true,
+      "historyIdentical": true
+    }
+  ]
+}

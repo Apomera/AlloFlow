@@ -182,7 +182,7 @@ describe('Actual Aquarium sizing controls and simulation', () => {
   it('renders species diagnostics and representative scope for the actual selected resident', () => {
     const examples = [
       {id:'neon', label:'Neon tetra', anatomy:'Blue lateral stripe; red on the rear half.'},
-      {id:'cory', label:'Corydoras catfish', anatomy:'Short armored body, mottling and short mouth barbels.', variation:'Representative Corydoras group.'}
+      {id:'cory', label:'Corydoras catfish', anatomy:'Arched back, two rows of flank armor, mottling and short mouth barbels.', variation:'Representative Corydoras group.'}
     ];
     for (const example of examples) {
       const view = tank({tankFish:[example.id],ecosystemFocusType:'fish',ecosystemFocusId:'fish-1'});

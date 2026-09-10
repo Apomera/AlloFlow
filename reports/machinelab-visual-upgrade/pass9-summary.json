@@ -1,0 +1,108 @@
+{
+  "pass": 9,
+  "scope": [
+    "supported lever assembly and connected forces",
+    "ribbed ramp deck and adaptive supports",
+    "ratio-aware lever observations"
+  ],
+  "tests": {
+    "total": 754,
+    "passed": 754,
+    "failed": 0,
+    "files": 25
+  },
+  "browser": [
+    {
+      "folder": "pass9-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop9-lever-ready",
+        "workshop9-lever-lift",
+        "workshop9-lever-long-effort",
+        "workshop9-lever-long-load",
+        "workshop9-ramp-ready",
+        "workshop9-ramp-lift",
+        "workshop9-ramp-low",
+        "workshop9-ramp-steep",
+        "workshop9-ramp-vertical"
+      ]
+    },
+    {
+      "folder": "pass9-dark",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop9-lever-ready",
+        "workshop9-lever-lift",
+        "workshop9-lever-long-effort",
+        "workshop9-lever-long-load",
+        "workshop9-ramp-ready",
+        "workshop9-ramp-lift",
+        "workshop9-ramp-low",
+        "workshop9-ramp-steep",
+        "workshop9-ramp-vertical"
+      ]
+    },
+    {
+      "folder": "pass9-contrast",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop9-lever-ready",
+        "workshop9-lever-lift",
+        "workshop9-lever-long-effort",
+        "workshop9-lever-long-load",
+        "workshop9-ramp-ready",
+        "workshop9-ramp-lift",
+        "workshop9-ramp-low",
+        "workshop9-ramp-steep",
+        "workshop9-ramp-vertical"
+      ]
+    },
+    {
+      "folder": "pass9-captions",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop9-lever-ready",
+        "workshop9-lever-lift",
+        "workshop9-lever-long-effort",
+        "workshop9-lever-equal",
+        "workshop9-lever-long-load"
+      ]
+    }
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "mirrorIdentical": true,
+  "publication": "Local changes only; deployment remains paused."
+}

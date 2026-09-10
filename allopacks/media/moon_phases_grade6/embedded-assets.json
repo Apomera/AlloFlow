@@ -1,0 +1,299 @@
+[
+  {
+    "id": "mn-term-1",
+    "kind": "term",
+    "file": "mn-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A Sun at left sends arrows rightward toward Earth and four Moon positions; every small Moon has its left half illuminated.",
+    "altHash": "img-enf-940be2ed"
+  },
+  {
+    "id": "mn-term-2",
+    "kind": "term",
+    "file": "mn-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Eight disks form two rows: dark, right crescent, right half, right gibbous; full, left gibbous, left half, left crescent.",
+    "altHash": "img-mfr-24d088ac"
+  },
+  {
+    "id": "mn-term-3",
+    "kind": "term",
+    "file": "mn-term-3.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A thin pale crescent follows the right rim of a dark circular Moon against navy.",
+    "altHash": "img-4b7-57f268c6"
+  },
+  {
+    "id": "mn-term-4",
+    "kind": "term",
+    "file": "mn-term-4.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A mostly pale circular Moon has a narrow dark region along its left rim.",
+    "altHash": "img-9oj-10216989"
+  },
+  {
+    "id": "mn-term-5",
+    "kind": "term",
+    "file": "mn-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three Moon disks progress from a right-lit crescent to a right-lit half and a right-lit gibbous.",
+    "altHash": "img-d1n-394089cd"
+  },
+  {
+    "id": "mn-term-6",
+    "kind": "term",
+    "file": "mn-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three Moon disks progress from a left-lit gibbous to a left-lit half and a left-lit crescent.",
+    "altHash": "img-d7f-c28b34a7"
+  },
+  {
+    "id": "mn-term-7",
+    "kind": "term",
+    "file": "mn-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+    "altHash": "img-a6b-574e233f"
+  },
+  {
+    "id": "mn-term-8",
+    "kind": "term",
+    "file": "mn-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Earth blocks light from a Sun at left, leaving a dark narrowing region containing a small Moon to its right.",
+    "altHash": "img-a6b-574e233f"
+  },
+  {
+    "id": "mn-term-9",
+    "kind": "term",
+    "file": "mn-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four Moon positions circle Earth; a golden surface marker on each Moon is turned inward toward Earth.",
+    "altHash": "img-gw7-cdf9b869"
+  },
+  {
+    "id": "mn-term-10",
+    "kind": "term",
+    "file": "mn-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A lamp on a stand shines toward a pale-and-dark ball on a blunt handle.",
+    "altHash": "img-84b-1fac33f0"
+  },
+  {
+    "id": "mn-anchor-1",
+    "kind": "anchor",
+    "file": "mn-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Light arrows from a golden source at left point toward a sphere whose left half is pale and right half dark.",
+    "altHash": "img-9er-bfa9e1a2"
+  },
+  {
+    "id": "mn-anchor-2",
+    "kind": "anchor",
+    "file": "mn-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Eight disks form two rows: dark, right crescent, right half, right gibbous; full, left gibbous, left half, left crescent.",
+    "altHash": "img-mfr-24d088ac"
+  },
+  {
+    "id": "mn-anchor-3",
+    "kind": "anchor",
+    "file": "mn-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three Moon disks progress from a right-lit crescent to a right-lit half and a right-lit gibbous.",
+    "altHash": "img-d1n-394089cd"
+  },
+  {
+    "id": "mn-anchor-4",
+    "kind": "anchor",
+    "file": "mn-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+    "altHash": "img-a6b-574e233f"
+  },
+  {
+    "id": "mn-anchor-5",
+    "kind": "anchor",
+    "file": "mn-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four Moon positions circle Earth; a golden surface marker on each Moon is turned inward toward Earth.",
+    "altHash": "img-gw7-cdf9b869"
+  },
+  {
+    "id": "mn-sort-1",
+    "kind": "sort",
+    "file": "mn-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A thin pale crescent follows the right rim of a dark circular Moon against navy.",
+    "altHash": "img-3cj-70422df7"
+  },
+  {
+    "id": "mn-sort-2",
+    "kind": "sort",
+    "file": "mn-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A complete copper-red Moon with subtle dark mottling sits against a navy background.",
+    "altHash": "img-4fj-bf229e6c"
+  },
+  {
+    "id": "mn-sort-3",
+    "kind": "sort",
+    "file": "mn-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+    "altHash": "img-8fr-5004323a"
+  },
+  {
+    "id": "mn-sort-4",
+    "kind": "sort",
+    "file": "mn-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "The right semicircle of the Moon is pale, and the left semicircle is dark, separated by a vertical boundary.",
+    "altHash": "img-53b-8f0439bd"
+  },
+  {
+    "id": "mn-sort-5",
+    "kind": "sort",
+    "file": "mn-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+    "altHash": "img-8fr-5004323a"
+  },
+  {
+    "id": "mn-sort-6",
+    "kind": "sort",
+    "file": "mn-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+    "altHash": "img-a6b-574e233f"
+  },
+  {
+    "id": "mn-sort-7",
+    "kind": "sort",
+    "file": "mn-sort-7.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A mostly pale circular Moon has a narrow dark region along its left rim.",
+    "altHash": "img-7az-2a6decfb"
+  },
+  {
+    "id": "mn-sort-8",
+    "kind": "sort",
+    "file": "mn-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The Moon lies between a Sun at left and Earth at right; its pale half faces the Sun and its dark half faces Earth.",
+    "altHash": "img-8kv-b64aa08e"
+  },
+  {
+    "id": "mn-sort-9",
+    "kind": "sort",
+    "file": "mn-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+    "altHash": "img-8fr-5004323a"
+  },
+  {
+    "id": "mn-sort-10",
+    "kind": "sort",
+    "file": "mn-sort-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Earth blocks light from a Sun at left, leaving a dark narrowing region containing a small Moon to its right.",
+    "altHash": "img-a6b-574e233f"
+  },
+  {
+    "id": "mn-lesson-1",
+    "kind": "lesson",
+    "file": "mn-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Light arrows from a golden source at left point toward a sphere whose left half is pale and right half dark.",
+    "altHash": "img-9er-bfa9e1a2"
+  },
+  {
+    "id": "mn-lesson-2",
+    "kind": "lesson",
+    "file": "mn-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Eight disks form two rows: dark, right crescent, right half, right gibbous; full, left gibbous, left half, left crescent.",
+    "altHash": "img-mfr-24d088ac"
+  },
+  {
+    "id": "mn-lesson-3",
+    "kind": "lesson",
+    "file": "mn-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three Moon disks progress from a right-lit crescent to a right-lit half and a right-lit gibbous.",
+    "altHash": "img-d1n-394089cd"
+  },
+  {
+    "id": "mn-lesson-4",
+    "kind": "lesson",
+    "file": "mn-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three Moon disks progress from a left-lit gibbous to a left-lit half and a left-lit crescent.",
+    "altHash": "img-d7f-c28b34a7"
+  },
+  {
+    "id": "mn-lesson-5",
+    "kind": "lesson",
+    "file": "mn-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The Sun, Earth and a small copper Moon align from left to right; a narrowing dark region extends from Earth around the Moon.",
+    "altHash": "img-a6b-574e233f"
+  },
+  {
+    "id": "mn-lesson-6",
+    "kind": "lesson",
+    "file": "mn-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The Sun, a smaller dark Moon and Earth align left to right; a narrow shadow cone reaches a small spot on Earth.",
+    "altHash": "img-8fr-5004323a"
+  },
+  {
+    "id": "mn-lesson-7",
+    "kind": "lesson",
+    "file": "mn-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four Moon positions circle Earth; a golden surface marker on each Moon is turned inward toward Earth.",
+    "altHash": "img-gw7-cdf9b869"
+  },
+  {
+    "id": "mn-lesson-8",
+    "kind": "lesson",
+    "file": "mn-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A lamp on a stand shines toward a pale-and-dark ball on a blunt handle.",
+    "altHash": "img-84b-1fac33f0"
+  }
+]

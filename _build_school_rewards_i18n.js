@@ -107,6 +107,16 @@ const portalPath = path.join(PKG, 'Portal.html');
 const original = fs.readFileSync(portalPath, 'utf8');
 const crlf = original.includes('\r\n');
 let portal = original.replace(/\r\n/g, '\n');
+// Embed the same local recognition grammar as the Allobot bundles.
+const recognitionTools = fs.readFileSync(path.join(ROOT, 'school_store_recognition.js'), 'utf8').replace(/\r\n/g, '\n');
+const recognitionBlock = /\/\* SR_RECOGNITION_TOOLS_START \*\/[\s\S]*?\/\* SR_RECOGNITION_TOOLS_END \*\//;
+if (!recognitionBlock.test(portal) || /<\/script/i.test(recognitionTools)) throw new Error('Invalid Store recognition embedding boundary');
+portal = portal.replace(recognitionBlock, () => '/* SR_RECOGNITION_TOOLS_START */\n' + recognitionTools + '\n/* SR_RECOGNITION_TOOLS_END */');
+// Voice capture is a separate strict on-device boundary, never the global voice router.
+const voiceCapture = fs.readFileSync(path.join(ROOT, 'school_store_voice_capture.js'), 'utf8').replace(/\r\n/g, '\n');
+const voiceBlock = /\/\* SR_VOICE_CAPTURE_START \*\/[\s\S]*?\/\* SR_VOICE_CAPTURE_END \*\//;
+if (!voiceBlock.test(portal) || /<\/script/i.test(voiceCapture)) throw new Error('Invalid Store voice embedding boundary');
+portal = portal.replace(voiceBlock, () => '/* SR_VOICE_CAPTURE_START */\n' + voiceCapture + '\n/* SR_VOICE_CAPTURE_END */');
 const START = '    /* SR_I18N_DATA_START */\n';
 const END = '    /* SR_I18N_DATA_END */';
 const from = portal.indexOf(START);
@@ -128,6 +138,7 @@ const body = [
 portal = portal.slice(0, from + START.length) + body + portal.slice(to);
 fs.writeFileSync(portalPath, crlf ? portal.replace(/\n/g, '\r\n') : portal);
 fs.writeFileSync(path.join(PUBLIC_PKG, 'Portal.html'), fs.readFileSync(portalPath));
+write('Index.html', fs.readFileSync(path.join(PKG, 'Index.html'), 'utf8'));
 console.log('  embedded packs in Portal.html:', embedded.join(', ') || 'none');
 
 // --- the repository's accepted language codes -------------------------------

@@ -1,0 +1,576 @@
+{
+  "checkerSha256": "8f6933b7fb1a97930a6b77b9cf9917e5519d1b9226e5d60680fe77e8b7c17333",
+  "sourceChanged": false,
+  "browserVersion": "148.0.7778.96",
+  "results": [
+    {
+      "id": "hidden-negation-in-checkpoint",
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\hidden-negation-in-checkpoint\\source.html",
+          "sha256": "4d44fc3a5487e07c34f8691efad10d21e4cc8774c924c282c7bb9e3ce8ce48db",
+          "bytes": 166
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\hidden-negation-in-checkpoint\\candidate.html",
+          "sha256": "0e8ac6e2d849ba843831619e73c03f1bf98da6f9f921aa32265280a70f82c4a6",
+          "bytes": 187
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 348.74529999999993,
+        "status": "passed",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "passed",
+            "properties": [
+              {
+                "property": "text",
+                "status": "passed",
+                "source": "Do not open the container.",
+                "candidate": "Do not open the container."
+              },
+              {
+                "property": "visible",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              },
+              {
+                "property": "exposed",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      },
+      "observations": {
+        "source": {
+          "textContent": "Do not open the container.",
+          "innerText": "Do not open the container.",
+          "ownVisible": true,
+          "parentOpacity": "1",
+          "selectedOptions": null,
+          "literalHref": null,
+          "aria": "- paragraph: Do not open the container."
+        },
+        "candidate": {
+          "textContent": "Do not open the container.",
+          "innerText": "Do open the container.",
+          "ownVisible": true,
+          "parentOpacity": "1",
+          "selectedOptions": null,
+          "literalHref": null,
+          "aria": "- paragraph: Do open the container."
+        }
+      }
+    },
+    {
+      "id": "display-contents-opacity",
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\display-contents-opacity\\source.html",
+          "sha256": "9e4f7da48eebdf55088759c4b8db8d4aa6c83b9958bda24764af9c9b48bbf3c5",
+          "bytes": 193
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\display-contents-opacity\\candidate.html",
+          "sha256": "8f297eb53467a58152703d094cbf9e88936d5087f802b635f9df1de83d45cb5e",
+          "bytes": 211
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 279.97500000000014,
+        "status": "passed",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "passed",
+            "properties": [
+              {
+                "property": "text",
+                "status": "passed",
+                "source": "Keep the required instruction.",
+                "candidate": "Keep the required instruction."
+              },
+              {
+                "property": "visible",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              },
+              {
+                "property": "exposed",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      },
+      "observations": {
+        "source": {
+          "textContent": "Keep the required instruction.",
+          "innerText": "Keep the required instruction.",
+          "ownVisible": false,
+          "parentOpacity": "1",
+          "selectedOptions": null,
+          "literalHref": null,
+          "aria": "- paragraph: Keep the required instruction."
+        },
+        "candidate": {
+          "textContent": "Keep the required instruction.",
+          "innerText": "Keep the required instruction.",
+          "ownVisible": false,
+          "parentOpacity": "0",
+          "selectedOptions": null,
+          "literalHref": null,
+          "aria": "- paragraph: Keep the required instruction."
+        }
+      }
+    },
+    {
+      "id": "duplicate-option-values",
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\duplicate-option-values\\source.html",
+          "sha256": "e8bc6fade6737ef0ff753dac53b9bb9a0c6738626bae56d22b7115138ae6d571",
+          "bytes": 258
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\duplicate-option-values\\candidate.html",
+          "sha256": "706c8255b379943a7d6b386a14900e9e1242e03099cbab99771532fe4e8895dd",
+          "bytes": 258
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 305.61389999999983,
+        "status": "passed",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "passed",
+            "properties": [
+              {
+                "property": "selected",
+                "status": "passed",
+                "source": [
+                  "direction"
+                ],
+                "candidate": [
+                  "direction"
+                ]
+              },
+              {
+                "property": "value",
+                "status": "passed",
+                "source": "direction",
+                "candidate": "direction"
+              },
+              {
+                "property": "text",
+                "status": "passed",
+                "source": "NorthSouth",
+                "candidate": "NorthSouth"
+              },
+              {
+                "property": "name",
+                "status": "passed",
+                "source": "Direction",
+                "candidate": "Direction"
+              },
+              {
+                "property": "role",
+                "status": "passed",
+                "source": "combobox",
+                "candidate": "combobox"
+              },
+              {
+                "property": "disabled",
+                "status": "passed",
+                "source": false,
+                "candidate": false
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      },
+      "observations": {
+        "source": {
+          "textContent": "NorthSouth",
+          "innerText": "North\nSouth",
+          "ownVisible": true,
+          "parentOpacity": "1",
+          "selectedOptions": [
+            {
+              "label": "North",
+              "value": "direction",
+              "index": 0
+            }
+          ],
+          "literalHref": null,
+          "aria": "- combobox \"Direction\":\n  - option \"North\" [selected]\n  - option \"South\""
+        },
+        "candidate": {
+          "textContent": "NorthSouth",
+          "innerText": "North\nSouth",
+          "ownVisible": true,
+          "parentOpacity": "1",
+          "selectedOptions": [
+            {
+              "label": "South",
+              "value": "direction",
+              "index": 1
+            }
+          ],
+          "literalHref": null,
+          "aria": "- combobox \"Direction\":\n  - option \"North\"\n  - option \"South\" [selected]"
+        }
+      }
+    },
+    {
+      "id": "relative-link-root-collapse",
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\relative-link-root-collapse\\source.html",
+          "sha256": "b10d83acb63f448935a639884746b9ab0237d41921666bdc4459bf3f743b12ba",
+          "bytes": 164
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\relative-link-root-collapse\\candidate.html",
+          "sha256": "4fbec1a5d2c608743d46c25d3ebd831c646aadc6d0828b93de1a41e6b75978e2",
+          "bytes": 165
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 321.8060999999998,
+        "status": "passed",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "passed",
+            "properties": [
+              {
+                "property": "href",
+                "status": "passed",
+                "source": "https://rendered-fidelity.invalid/chapter.pdf",
+                "candidate": "https://rendered-fidelity.invalid/chapter.pdf"
+              },
+              {
+                "property": "text",
+                "status": "passed",
+                "source": "Read the chapter",
+                "candidate": "Read the chapter"
+              },
+              {
+                "property": "name",
+                "status": "passed",
+                "source": "Read the chapter",
+                "candidate": "Read the chapter"
+              },
+              {
+                "property": "role",
+                "status": "passed",
+                "source": "link",
+                "candidate": "link"
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      },
+      "observations": {
+        "source": {
+          "textContent": "Read the chapter",
+          "innerText": "Read the chapter",
+          "ownVisible": true,
+          "parentOpacity": "1",
+          "selectedOptions": null,
+          "literalHref": "./chapter.pdf",
+          "aria": "- link \"Read the chapter\":\n  - /url: ./chapter.pdf",
+          "actualFileDestination": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/document-remediation-bug-review-2026-09-09/relative-link-root-collapse/chapter.pdf"
+        },
+        "candidate": {
+          "textContent": "Read the chapter",
+          "innerText": "Read the chapter",
+          "ownVisible": true,
+          "parentOpacity": "1",
+          "selectedOptions": null,
+          "literalHref": "../chapter.pdf",
+          "aria": "- link \"Read the chapter\":\n  - /url: ../chapter.pdf",
+          "actualFileDestination": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/document-remediation-bug-review-2026-09-09/chapter.pdf"
+        }
+      }
+    },
+    {
+      "id": "unrequested-large-text",
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\unrequested-large-text\\source.html",
+          "sha256": "70c132df71cbe68d0bb7f51985895be3600ecbc91a0c308fb7e6a2553527d0ba",
+          "bytes": 10940
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\unrequested-large-text\\candidate.html",
+          "sha256": "70c132df71cbe68d0bb7f51985895be3600ecbc91a0c308fb7e6a2553527d0ba",
+          "bytes": 10940
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 298.75109999999995,
+        "status": "unavailable",
+        "coverage": {
+          "requested": 1,
+          "inspected": 0,
+          "complete": false,
+          "wholeDocument": false,
+          "reasons": [
+            "incomplete-checkpoint"
+          ]
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "unavailable",
+            "source": {
+              "id": "p",
+              "status": "unavailable",
+              "reason": "observation-too-large"
+            },
+            "candidate": {
+              "id": "p",
+              "status": "unavailable",
+              "reason": "observation-too-large"
+            }
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      },
+      "observations": {
+        "source": {
+          "textContent": "Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. ",
+          "innerText": "Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. ",
+          "ownVisible": true,
+          "parentOpacity": "1",
+          "selectedOptions": null,
+          "literalHref": null,
+          "aria": "- main:\n  - paragraph: Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Origi"
+        },
+        "candidate": {
+          "textContent": "Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. ",
+          "innerText": "Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. ",
+          "ownVisible": true,
+          "parentOpacity": "1",
+          "selectedOptions": null,
+          "literalHref": null,
+          "aria": "- main:\n  - paragraph: Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Original reading. Origi"
+        }
+      }
+    }
+  ]
+}

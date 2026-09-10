@@ -1,0 +1,15 @@
+{
+  "command": "npx vitest run tests/allopack_ tests/catalog_index.test.js --maxWorkers=1",
+  "suites": 23,
+  "passedSuites": 22,
+  "tests": 646,
+  "passedTests": 645,
+  "failure": {
+    "suite": "tests/allopack_eq_illustrated.test.js",
+    "test": "embeds the selected reviewed files and retains an auditable manifest",
+    "reason": "Default 5000 ms timeout",
+    "durationMs": 5429
+  },
+  "newPackTests": 4,
+  "newPackPassed": 4
+}

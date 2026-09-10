@@ -1,0 +1,143 @@
+{
+  "success": true,
+  "environment": {
+    "node": "v24.11.1",
+    "platform": "win32",
+    "arch": "arm64"
+  },
+  "method": "Final complete-selection/frontier cache versus actual source core measureStructure and its measurement helpers. 625 protected floor cells; retained student selections. 20 warm-up calls, 7 samples, median milliseconds per synchronous invocation. Measures polling helper versus fresh selectionMeasurement only, not browser frames or downstream STL/render work.",
+  "results": [
+    {
+      "selectedBlocks": 1,
+      "groundBlocks": 625,
+      "worldBlocks": 626,
+      "repeatsPerSample": 150,
+      "samples": 7,
+      "idleCached": {
+        "polls": 40,
+        "measurements": 0,
+        "acceptedBlockVisits": 0
+      },
+      "idleUncached": {
+        "polls": 40,
+        "measurements": 40,
+        "candidateVisits": 80,
+        "acceptedBlockVisits": 40
+      },
+      "cachedTiming": {
+        "medianMs": 0.00700333333333333,
+        "samplesMs": [
+          0.01382666666666675,
+          0.00776866666666668,
+          0.013979333333333368,
+          0.00700333333333333,
+          0.005950666666666772,
+          0.006964000000000018,
+          0.006015333333333501
+        ]
+      },
+      "uncachedTiming": {
+        "medianMs": 0.012349333333333257,
+        "samplesMs": [
+          0.011970000000000027,
+          0.013497999999999972,
+          0.014129333333333232,
+          0.012349333333333257,
+          0.00915333333333327,
+          0.007045999999999898,
+          0.023984
+        ]
+      },
+      "cachedToUncachedRatio": 0.5671021377672242,
+      "signatureCharacters": 467
+    },
+    {
+      "selectedBlocks": 45,
+      "groundBlocks": 625,
+      "worldBlocks": 670,
+      "repeatsPerSample": 60,
+      "samples": 7,
+      "idleCached": {
+        "polls": 40,
+        "measurements": 0,
+        "acceptedBlockVisits": 0
+      },
+      "idleUncached": {
+        "polls": 40,
+        "measurements": 40,
+        "candidateVisits": 2840,
+        "acceptedBlockVisits": 1800
+      },
+      "cachedTiming": {
+        "medianMs": 0.32106833333333307,
+        "samplesMs": [
+          0.5346983333333336,
+          0.744068333333333,
+          0.22961999999999988,
+          0.18435666666666653,
+          0.32106833333333307,
+          0.5893866666666667,
+          0.22689166666666552
+        ]
+      },
+      "uncachedTiming": {
+        "medianMs": 0.7563600000000008,
+        "samplesMs": [
+          0.825051666666667,
+          0.7563600000000008,
+          0.2855416666666656,
+          0.5623366666666659,
+          1.1287500000000004,
+          0.2326366666666672,
+          1.0631700000000004
+        ]
+      },
+      "cachedToUncachedRatio": 0.42449142383697275,
+      "signatureCharacters": 12625
+    },
+    {
+      "selectedBlocks": 875,
+      "groundBlocks": 625,
+      "worldBlocks": 1500,
+      "repeatsPerSample": 15,
+      "samples": 7,
+      "idleCached": {
+        "polls": 40,
+        "measurements": 0,
+        "acceptedBlockVisits": 0
+      },
+      "idleUncached": {
+        "polls": 40,
+        "measurements": 40,
+        "candidateVisits": 41760,
+        "acceptedBlockVisits": 35000
+      },
+      "cachedTiming": {
+        "medianMs": 11.385360000000007,
+        "samplesMs": [
+          18.01880666666666,
+          13.752746666666674,
+          19.866106666666685,
+          10.177019999999994,
+          9.83678,
+          9.083026666666683,
+          11.385360000000007
+        ]
+      },
+      "uncachedTiming": {
+        "medianMs": 10.610246666666656,
+        "samplesMs": [
+          29.328186666666657,
+          10.610246666666656,
+          27.811393333333367,
+          11.363713333333301,
+          7.003086666666665,
+          6.226953333333343,
+          8.23181333333329
+        ]
+      },
+      "cachedToUncachedRatio": 1.073053281199245,
+      "signatureCharacters": 189469
+    }
+  ]
+}

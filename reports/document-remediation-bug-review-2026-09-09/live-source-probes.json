@@ -1,0 +1,329 @@
+{
+  "measuredAt": "2026-09-10T01:41:29.247Z",
+  "sourceSha256": "ffd04f44ecaf611379e999396417be56a336d1fa7a05e220f6d17cc33910d343",
+  "policyVersion": "20260909-4",
+  "sourceUnchangedDuringRun": true,
+  "scope": "Strict live candidate gate and aiFixChunked with transport mocked. Optional local ARIA snapshots establish observable fixture differences; no downstream export conclusion.",
+  "results": [
+    {
+      "id": "native-label-aria-override",
+      "expected": "reject",
+      "selector": "#student",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"student\">Student name</label><input id=\"student\" value=\"Ada\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"student\">Student name</label><input aria-label=\"Teacher name\" id=\"student\" value=\"Ada\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0306242638398115,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": true,
+      "browser": {
+        "source": {
+          "aria": "- textbox \"Student name\": Ada",
+          "dom": {
+            "html": "<input id=\"student\" value=\"Ada\">",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        },
+        "candidate": {
+          "aria": "- textbox \"Teacher name\": Ada",
+          "dom": {
+            "html": "<input aria-label=\"Teacher name\" id=\"student\" value=\"Ada\">",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        }
+      }
+    },
+    {
+      "id": "field-description-reassigned",
+      "expected": "reject",
+      "selector": "#weight",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"weight\">Weight</label><input id=\"weight\" aria-describedby=\"kg\"><p id=\"kg\">Enter weight in kilograms.</p><p id=\"lb\">Enter weight in pounds.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"weight\">Weight</label><input id=\"weight\" aria-describedby=\"lb\"><p id=\"kg\">Enter weight in kilograms.</p><p id=\"lb\">Enter weight in pounds.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": true,
+      "browser": {
+        "source": {
+          "aria": "- textbox \"Weight\"",
+          "dom": {
+            "html": "<input id=\"weight\" aria-describedby=\"kg\">",
+            "labelledby": null,
+            "describedby": "kg",
+            "descriptionText": "Enter weight in kilograms."
+          }
+        },
+        "candidate": {
+          "aria": "- textbox \"Weight\"",
+          "dom": {
+            "html": "<input id=\"weight\" aria-describedby=\"lb\">",
+            "labelledby": null,
+            "describedby": "lb",
+            "descriptionText": "Enter weight in pounds."
+          }
+        }
+      }
+    },
+    {
+      "id": "linked-exponent-base-moved",
+      "expected": "reject",
+      "selector": "a",
+      "source": "<!doctype html><html lang=\"en\"><body><main><p>Compute <a href=\"https://school.example/expression\">x<sup>2</sup> plus y2</a> for this expression.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><p>Compute <a href=\"https://school.example/expression\">x2 plus y<sup>2</sup></a> for this expression.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": true,
+      "browser": {
+        "source": {
+          "aria": "- link \"x2 plus y2\":\n  - /url: https://school.example/expression\n  - text: x\n  - superscript: \"2\"\n  - text: plus y2",
+          "dom": {
+            "html": "<a href=\"https://school.example/expression\">x<sup>2</sup> plus y2</a>",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        },
+        "candidate": {
+          "aria": "- link \"x2 plus y2\":\n  - /url: https://school.example/expression\n  - text: x2 plus y\n  - superscript: \"2\"",
+          "dom": {
+            "html": "<a href=\"https://school.example/expression\">x2 plus y<sup>2</sup></a>",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        }
+      }
+    },
+    {
+      "id": "exponent-moved-between-links",
+      "expected": "reject",
+      "selector": "p",
+      "source": "<!doctype html><html lang=\"en\"><body><main><p>Compute <a href=\"https://school.example/first\">x<sup>2</sup></a> plus <a href=\"https://school.example/second\">y2</a>.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><p>Compute <a href=\"https://school.example/first\">x2</a> plus <a href=\"https://school.example/second\">y<sup>2</sup></a>.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": true,
+      "browser": {
+        "source": {
+          "aria": "- paragraph:\n  - text: Compute\n  - link \"x2\":\n    - /url: https://school.example/first\n    - text: x\n    - superscript: \"2\"\n  - text: plus\n  - link \"y2\":\n    - /url: https://school.example/second\n  - text: .",
+          "dom": {
+            "html": "<p>Compute <a href=\"https://school.example/first\">x<sup>2</sup></a> plus <a href=\"https://school.example/second\">y2</a>.</p>",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        },
+        "candidate": {
+          "aria": "- paragraph:\n  - text: Compute\n  - link \"x2\":\n    - /url: https://school.example/first\n  - text: plus\n  - link \"y2\":\n    - /url: https://school.example/second\n    - text: \"y\"\n    - superscript: \"2\"\n  - text: .",
+          "dom": {
+            "html": "<p>Compute <a href=\"https://school.example/first\">x2</a> plus <a href=\"https://school.example/second\">y<sup>2</sup></a>.</p>",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        }
+      }
+    },
+    {
+      "id": "header-role-downgrade",
+      "expected": "reject",
+      "selector": "table",
+      "source": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><table><tr><th role=\"cell\" scope=\"col\">Group</th><th role=\"cell\" scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0270880361173815,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": true,
+      "browser": {
+        "source": {
+          "aria": "- table:\n  - rowgroup:\n    - row \"Group Score\":\n      - columnheader \"Group\"\n      - columnheader \"Score\"\n    - row \"North 95\":\n      - cell \"North\"\n      - cell \"95\"",
+          "dom": {
+            "html": "<table><tbody><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></tbody></table>",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        },
+        "candidate": {
+          "aria": "- table:\n  - rowgroup:\n    - row \"Group Score\":\n      - cell \"Group\"\n      - cell \"Score\"\n    - row \"North 95\":\n      - cell \"North\"\n      - cell \"95\"",
+          "dom": {
+            "html": "<table><tbody><tr><th role=\"cell\" scope=\"col\">Group</th><th role=\"cell\" scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></tbody></table>",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        }
+      }
+    },
+    {
+      "id": "fixed-linked-script-kind-control",
+      "expected": "reject",
+      "selector": "a",
+      "source": "<!doctype html><html lang=\"en\"><body><main><p>Compute <a href=\"https://school.example/expression\">x<sup>2</sup></a> for this expression.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><p>Compute <a href=\"https://school.example/expression\">x<sub>2</sub></a> for this expression.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": false,
+        "reason": "math-content-changed",
+        "sourceLocation": "document"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "math-content-changed",
+              "sourceLocation": "document"
+            }
+          ]
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "aria": "- link \"x2\":\n  - /url: https://school.example/expression\n  - text: x\n  - superscript: \"2\"",
+          "dom": {
+            "html": "<a href=\"https://school.example/expression\">x<sup>2</sup></a>",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        },
+        "candidate": {
+          "aria": "- link \"x2\":\n  - /url: https://school.example/expression\n  - text: x\n  - subscript: \"2\"",
+          "dom": {
+            "html": "<a href=\"https://school.example/expression\">x<sub>2</sub></a>",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        }
+      }
+    },
+    {
+      "id": "equivalent-native-name-control",
+      "expected": "accept",
+      "selector": "#student",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"student\">Student name</label><input id=\"student\" value=\"Ada\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"student\">Student name</label><input aria-label=\"Student name\" id=\"student\" value=\"Ada\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0306242638398115,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "aria": "- textbox \"Student name\": Ada",
+          "dom": {
+            "html": "<input id=\"student\" value=\"Ada\">",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        },
+        "candidate": {
+          "aria": "- textbox \"Student name\": Ada",
+          "dom": {
+            "html": "<input aria-label=\"Student name\" id=\"student\" value=\"Ada\">",
+            "labelledby": null,
+            "describedby": null,
+            "descriptionText": ""
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+const { defineConfig } = require('@playwright/test');
+module.exports = defineConfig({
+  testDir: '../../tests/e2e',
+  testMatch: ['cell-study-workflow.spec.ts', 'cell-visual-workbench.spec.ts'],
+  timeout: 120000,
+  expect: { timeout: 15000 },
+  workers: 1,
+  retries: 0,
+  reporter: 'list',
+  outputDir: './verified-browser-results',
+  use: {
+    browserName: 'chromium',
+    headless: true,
+    launchOptions: { args: ['--disable-gpu'] },
+    screenshot: 'only-on-failure',
+    trace: 'retain-on-failure',
+    video: 'off'
+  }
+});

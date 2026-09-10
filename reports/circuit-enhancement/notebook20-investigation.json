@@ -1,0 +1,72 @@
+{
+  "format": "circuit-investigation-v1",
+  "model": "npn-piecewise-dc-v1",
+  "design": {
+    "project": "manual",
+    "supply": 5,
+    "input": 1.5,
+    "light": 50,
+    "baseResistance": 10000,
+    "loadResistance": 220,
+    "dividerResistance": 10000,
+    "beta": 100
+  },
+  "reference": {
+    "version": 1,
+    "design": {
+      "project": "manual",
+      "supply": 5,
+      "input": 1,
+      "light": 50,
+      "baseResistance": 10000,
+      "loadResistance": 220,
+      "dividerResistance": 10000,
+      "beta": 100
+    }
+  },
+  "probes": {
+    "red": "base",
+    "black": "drive"
+  },
+  "view": "3d",
+  "lessonId": "gain",
+  "activity": null,
+  "notebook": {
+    "title": "A small input controls a larger current",
+    "question": "How does raising the input change lamp current when the supply and resistors stay the same?",
+    "prediction": "The lamp current will increase because more base current flows.",
+    "explanation": "The prediction was supported: lamp current rose from 3 mA to 8 mA. Only input voltage changed; the 5 V supply, 10 kΩ base resistor, and 220 Ω lamp stayed fixed. The supply provides the lamp energy.",
+    "observations": [
+      {
+        "design": {
+          "project": "manual",
+          "supply": 5,
+          "input": 1,
+          "light": 50,
+          "baseResistance": 10000,
+          "loadResistance": 220,
+          "dividerResistance": 10000,
+          "beta": 100
+        },
+        "probeRed": "base",
+        "probeBlack": "drive",
+        "note": "At 1.0 V, the lamp carries 3 mA. The reversed probes read −0.30 V across the base resistor."
+      },
+      {
+        "design": {
+          "project": "manual",
+          "supply": 5,
+          "input": 1.5,
+          "light": 50,
+          "baseResistance": 10000,
+          "loadResistance": 220,
+          "dividerResistance": 10000,
+          "beta": 100
+        },
+        "probeRed": "collector",
+        "probeBlack": "emitter",
+        "note": "At 1.5 V, the lamp carries 8 mA and VCE drops to 3.24 V."
+      }
+    ]
+  }
+}

@@ -1,9 +1,216 @@
 (function() {
 'use strict';
 if (window.AlloModules && window.AlloModules.UdlChatModule) { console.log('[CDN] UdlChatModule already loaded, skipping'); return; }
+// Shared local-only recognition grammar. Build tools embed this factory verbatim.
+// The detector is deliberately broader than the parser: callers must run it before
+// chat persistence, AI, or tool routing. It is NOT a universal personal-data detector.
+// Neither function resolves people, chooses categories, authorizes, or awards points.
+function createSchoolStoreRecognitionTools() {
+  'use strict';
+  var invisible = /[\p{Cf}\u034f\u180b-\u180d\ufe00-\ufe0f]/gu;
+  var forbidden = /[\u0000-\u001f\u007f-\u009f\u2028\u2029\p{Cf}\u034f\u180b-\u180d\ufe00-\ufe0f\ud800-\udfff]/u;
+  var points = /\b(?:points?|pts?|puntos?)\b/i;
+  var numberPoints = /(?:[+\-]?\d[\d.,]*|\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|hundred|cero|un|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez))\s*(?:points?|pts?|puntos?)\b/i;
+  var action = /\b(?:give|award|grant|add|assign|credit|deduct|remove|revoke|reward|recognize|gets?|receives?|earns?|deserves?|gains?|wins?|otorga|otorgar|da|dar|dale|suma|añade|recompensa|recibe|gana|merece)\b/i;
+  var additional = /(?:\b(?:and|then|also|y|luego|también|después)\s+|[.!?]\s*)(?:please\s+)?(?:give|award|grant|add|assign|credit|deduct|remove|revoke|reward|send|delete|open|write|summari[sz]e|translate|explain|show|ignore|otorga|da|suma|añade|envía|borra|abre|escribe|resume|traduce|explica)\b/i;
+
+  function isRecognitionRequest(raw) {
+    if (typeof raw !== 'string' || !raw.trim()) return false;
+    // Normalize compatibility characters and strip invisible obfuscators ONLY for
+    // detection. The strict parser rejects invisible/control characters outright.
+    var text = raw.normalize('NFKC').replace(invisible, '').toLowerCase();
+    var words = text.replace(/[_-]/g, ' ');
+    // Check both control-as-space and control-as-obfuscation interpretations.
+    words = words.replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ') + ' ' + words.replace(/[\u0000-\u001f\u007f-\u009f]/g, '');
+    // Exact academic topics only, with no trailing recipient or extra directive.
+    // Do not generalize this into an exemption for arbitrary "explain ..." text.
+    if (/^(?:please\s+)?(?:(?:explain|what\s+is)\s+(?:speech|pattern|image|optical\s+character|facial)\s+recognition|create\s+a\s+lesson\s+about\s+(?:the\s+)?nobel\s+(?:prizes|awards))[.!?]?\s*$/.test(text)) return false;
+    // A tightly bounded ordinary academic list request is not a recognition draft.
+    // Any extra directive, sentence, reward/person marker defeats this exception.
+    var academic = /^(?:please\s+)?give\s+me\s+(?:\d+|five|ten|three)\s+(?:bullet|key|main|talking)\s+points\s+(?:about|on|explaining)\s+[^\r\n;.!?{}<>]+[.!?]?\s*$/.test(text);
+    if (academic && !additional.test(text) && !/\b(?:student|learner|codename|award|reward|recognition|earned|deserves?|give|grant)\b/.test(text.replace(/^(?:please\s+)?give\b/, '')) && !numberPoints.test(text.replace(/^.*?\bpoints\b/, ''))) return false;
+    if (/\b(?:school\s+(?:store|rewards?)|alloflow\s+(?:store|rewards?))\b/.test(words)) return true;
+    if (/\b(?:award|awards|awarded|awarding|reward|rewarded|rewarding|recognize|recognise|recognition)\b/.test(words)) return true;
+    if (points.test(words) && (action.test(words) || numberPoints.test(words))) return true;
+    // Typed/JSON-like tool sentinels must not sneak past the natural-language guard.
+    if (/[{}<>]/.test(text) && /(?:award|recognition|reward|give[ _-]?points)/.test(text)) return true;
+    if (/[{}]/.test(text) && /["'](?:codename|learnerid|studentid)["']\s*:/.test(text) && /["'](?:amount|points)["']\s*:/.test(text)) return true;
+    if (points.test(words) && /\b(?:student|learner|codename|studentid|learnerid|amount|reason)\b/.test(words)) return true;
+    return false;
+  }
+
+  function failure(code) { return { ok: false, code: code }; }
+
+  function parseRecognitionRequest(raw) {
+    if (typeof raw !== 'string' || !raw.trim()) return failure('INPUT_REQUIRED');
+    if (raw.length > 512) return failure('TOO_LONG');
+    if (forbidden.test(raw)) return failure('INVALID_CHARACTERS');
+    var text = raw.normalize('NFKC').trim();
+    if (text.length > 512) return failure('TOO_LONG');
+    if (/[;]|&&|\|\|/.test(text) || additional.test(text)) return failure('MULTIPLE_COMMANDS');
+    var match, codename, amountText, reason;
+    // Amount-first is deliberately only the explicit award/otorga ... to/a form.
+    match = /^(?:award) +(\S+) +points? +to +(.+?) +for(?: +(.*))?$/i.exec(text);
+    if (!match) match = /^otorga +(\S+) +puntos? +a +(.+?) +por(?: +(.*))?$/i.exec(text);
+    if (match) { amountText = match[1]; codename = match[2]; reason = match[3] || ''; }
+    else {
+      match = /^(?:give|award) +(.+?) +(\S+) +points? +for(?: +(.*))?$/i.exec(text);
+      if (!match) match = /^(?:da|otorga) +(.+?) +(\S+) +puntos? +por(?: +(.*))?$/i.exec(text);
+      if (!match) return failure('UNSUPPORTED_FORMAT');
+      codename = match[1]; amountText = match[2]; reason = match[3] || '';
+    }
+    // Reject signs, fractions, exponent notation, words and leading zeros. Never
+    // coerce, round, truncate, infer a recipient, or parse several awards at once.
+    if (!/^[1-9]\d{0,3}$/.test(amountText) || Number(amountText) > 1000 || /(?:^| )[-+]$/.test(codename)) return failure('INVALID_AMOUNT');
+    codename = codename.trim();
+    reason = reason.trim();
+    if (!codename || codename.length > 80 || !/[\p{L}\p{N}]/u.test(codename) || /[{}\[\]<>;,]|\s(?:and|y)\s/i.test(codename) || /^(?:__proto__|prototype|constructor)$/i.test(codename)) return failure('INVALID_CODENAME');
+    if (!reason || reason.length > 180) return failure('INVALID_REASON');
+    if (numberPoints.test(reason) || (action.test(reason) && points.test(reason))) return failure('MULTIPLE_COMMANDS');
+    return { ok: true, codename: codename, amount: Number(amountText), reason: reason };
+  }
+
+  return { isRecognitionRequest: isRecognitionRequest, parseRecognitionRequest: parseRecognitionRequest };
+}
+
+// Shared, deterministic guidance. No network, storage, identities or mutations.
+// Embedded locally in the School Rewards panel and both AlloBot modules.
+function createSchoolStoreSetupGuide() {
+  const paths = [
+    { id: 'practice', title: 'Try the demo', intro: 'Explore with fictional data. No Google setup or real student records are needed.', steps: [
+      { id: 'understand', title: 'Start with fictional data', body: 'Practice uses simulated accounts, balances and delivery. It does not connect to a school ledger. The separate local guided demo also needs its presentation server running.', target: 'practice', manualHash: 'quickstart' },
+      { id: 'try', title: 'Try an award and a purchase', body: 'Open practice, use its fictional roles, review the learner, award points and complete a reviewed checkout. Reset to rehearse again. No real email or printer command is sent.', target: 'practice', manualHash: 'store' }
+    ] },
+    { id: 'join', title: 'Join my school’s existing Store', intro: 'For teachers and cashiers: use the Store your school has already approved. You do not need to create an Apps Script project.', steps: [
+      { id: 'link', title: 'Get the approved Store link', body: 'Ask your school administrator for the managed Store web-app address ending in /exec and confirm that they have granted your staff or cashier role. Do not put the address, credentials or student details in chat.', target: 'connection', manualHash: 'setup' },
+      { id: 'save', title: 'Save the address on this device', body: 'Paste the approved address into the Store connection field and choose Save address. If you edit a saved address, save or discard the change before opening the Store. Only Disconnect removes the saved address. Saving does not sign you in, grant access or verify the deployment.', target: 'connection', manualHash: 'setup' },
+      { id: 'open', title: 'Open your school’s Store', body: 'Open the Store with your own managed school Google account. An opening attempt is not proof that the tab opened or that access was granted. If no tab appears, use the direct fallback link. If access is denied, ask the administrator rather than creating another Store. More local tips are under Help opening your Store.', target: 'launch', manualHash: 'access' },
+      { id: 'check', title: 'Confirm your school and role', body: 'Open the deployment check and read its result. Confirm the expected school and role with the administrator. AlloBot cannot see or certify that separate Google page. Teachers award; cashiers check out; students see only their own records.', target: 'check', manualHash: 'troubleshooting' }
+    ] },
+    { id: 'setup', title: 'Set up a Store for my school', intro: 'For the school administrator or technology coordinator. This is a reviewed school-wide setup, not something every teacher repeats.', steps: [
+      { id: 'approval', title: 'Confirm district review and ownership', body: 'Identify the managed account and technical owner. Obtain district review of the code, requested permissions, storage, email and retention. Stop and consult IT if Google or district policy blocks access; do not bypass a warning.', target: 'approval', manualHash: 'privacy' },
+      { id: 'handoff', title: 'Choose who will do the technical work', body: 'The technology coordinator can use the existing handoff packet. Enter school configuration only in the setup form, not in AlloBot. The packet contains configuration and source files and should go to the intended coordinator.', target: 'handoff', manualHash: 'setup' },
+      { id: 'files', title: 'Prepare the reviewed project files', body: 'Follow the existing checklist for Code.gs, Portal.html, Index.html and appsscript.json. Copying a file or ticking a box does not verify the installed project. Have the technical owner check the actual files.', target: 'files', manualHash: 'setup' },
+      { id: 'configuration', title: 'Run the reviewed one-time setup', body: 'Check the school configuration and managed account. The technical owner runs the generated setup function only after approval and verifies its result. AlloBot does not execute it or approve Google permissions.', target: 'configuration', manualHash: 'setup' },
+      { id: 'deploy', title: 'Deploy privately and save the link', body: 'Use the domain-restricted deployment described in the checklist, never public access. Save its /exec address locally. Source changes require a new reviewed deployment version; saving a URL does not publish code.', target: 'deploy', manualHash: 'setup' },
+      { id: 'verify', title: 'Verify with approved test accounts', body: 'Read the deployment check and test each intended role with approved test accounts and fictional records. A recorded verification checkbox is your confirmation, not automatic evidence from AlloBot.', target: 'check', manualHash: 'setup' },
+      { id: 'first-week', title: 'Finish the Store’s first-week checklist', body: 'Inside the signed-in Store, use Admin setup for staff, roster, categories, prizes and shopping windows. Add optional class links, Classroom imports or Print Lab only after their own review. Educator Evaluation remains separate.', target: 'launch', manualHash: 'admin' }
+    ] }
+  ];
+  const troubleshooting = [
+    { id: 'new-tab', title: 'Nothing opened in a new tab', body: 'An opening request is not confirmation that a new tab appeared. Check your other tabs, then use the direct fallback link shown after your attempt. If your browser or district blocks it, ask your technology coordinator about the approved browser settings. Do not bypass a Google or district security warning.', manualHash: 'troubleshooting' },
+    { id: 'sign-in', title: 'Google asks me to sign in', body: 'Use your own managed school Google account and the school-approved Store link. Being signed into Gemini or a personal Google account does not grant Store access. If the wrong account appears, use the account-switching method approved by your school; do not share passwords or accounts.', manualHash: 'access' },
+    { id: 'role-access', title: 'I can sign in, but access is denied', body: 'Ask the Store administrator to confirm the approved deployment, allowed school domain and your assigned role. A teacher or cashier needs the corresponding staff access; students use their own managed identity. The launcher cannot grant a role, and creating another Store will not fix access to the existing one.', manualHash: 'troubleshooting' },
+    { id: 'address', title: 'My Store link will not save, or looks wrong', body: 'Ask the administrator for the approved HTTPS script.google.com deployment address ending in /macros/s/{deployment}/exec, without extra query parameters or a fragment. Do not use the editor address or a /dev test link. An edited address must be saved or discarded before launching. The saved-address badge does not verify which school is behind the link.', manualHash: 'setup' },
+    { id: 'connections', title: 'Which Google connection do I need?', body: 'The school-managed Store has its own sign-in and staff roles. Classroom authorization is a separate read-only roster import and does not grant Store access. Canvas and desktop launch the Store; they do not hold its official ledger. Educator Evaluation has separate personnel records and permissions. A Clever launch link does not replace these approvals.', manualHash: 'classroom' }
+  ];
+  function freeze(value) { if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; }
+  freeze(paths);
+  freeze(troubleshooting);
+  return Object.freeze({ version: 1, getPaths: () => paths, getPath: id => paths.find(path => path.id === id) || null, getTroubleshooting: () => troubleshooting });
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { createSchoolStoreSetupGuide };
+
 // udl_chat_source.jsx - handleSendUDLMessage extracted from AlloFlowANTI.txt 2026-04-25.
 // (args, deps) => pattern. Body is byte-identical to original; closure-captured
 // state and helpers are passed via the deps object and destructured at top.
+
+// Bundled locally, not a lazy dependency: recognition text must never fall
+// through to a cloud router because the command module is unavailable.
+const _storeRecognitionTools = typeof createSchoolStoreRecognitionTools === 'function' ? createSchoolStoreRecognitionTools() : null;
+const _isStoreRecognitionRequest = value => {
+  try { return _isStoreSetupGuideRequest(value) || !_storeRecognitionTools || _storeRecognitionTools.isRecognitionRequest(value); }
+  catch (_) { return true; }
+};
+function _isStoreRecognitionValue(value) {
+  const seen = new Set(); let count = 0;
+  function inspect(item, depth) {
+    if (++count > 256 || depth > 8) return true;
+    if (typeof item === 'string') return _isStoreRecognitionRequest(item);
+    if (item == null || typeof item === 'number' || typeof item === 'boolean') return false;
+    if (typeof item !== 'object' || seen.has(item)) return true;
+    seen.add(item);
+    return Object.keys(item).some(key => _isStoreRecognitionRequest(key) || inspect(item[key], depth + 1));
+  }
+  try { return inspect(value, 0); } catch (_) { return true; }
+}
+function _isStoreGuideSentinel(value) {
+  return typeof value === 'string' && /^__allo_store_guide_/i.test(value.normalize('NFKC').replace(/[\p{Cf}\u034f\u180b-\u180d\ufe00-\ufe0f\u0000-\u001f\u007f-\u009f]/gu, '').trim());
+}
+function _isStoreSetupGuideRequest(value) {
+  if (typeof value !== 'string') return false;
+  if (_isStoreGuideSentinel(value)) return true;
+  if (value.length > 200 || /[\u0000-\u001f\u007f-\u009f\p{Cf}]/u.test(value)) return false;
+  const text = value.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ').replace(/[.!?]$/, '');
+  const products = ['school store', 'school rewards', 'alloflow school store', 'alloflow school rewards'];
+  return products.some(product => [
+    'help me set up ' + product, 'help me setup ' + product, 'help me use ' + product, 'help me with ' + product,
+    'set up ' + product, 'setup ' + product, 'how do i set up ' + product, 'how can i set up ' + product,
+    product + ' setup help', product + ' setup guide', product + ' setup', product + ' help', product + ' guide', product + ' manual',
+    'open ' + product + ' manual', 'show ' + product + ' manual', 'show me the ' + product + ' manual'
+  ].some(alias => text === alias || text === 'please ' + alias));
+}
+function _handleStoreSetupGuide(value, deps) {
+  if (typeof deps.setUdlInput === 'function') deps.setUdlInput('');
+  const emit = (text, choices) => { if (typeof deps.setUdlMessages === 'function') deps.setUdlMessages(prev => [...prev, { role: 'model', localOnly: true, text, ...(choices ? { type: 'choices', choices } : {}) }]); };
+  if (deps._planRunRef && deps._planRunRef.current && deps._planRunRef.current.running) { emit('Wait for the current plan to finish or stop it first. No School Store setup action was taken.'); return true; }
+  for (const key of ['_pendingBotCmdRef', '_pendingBotPlanRef']) if (deps[key]) deps[key].current = null;
+  if (deps._botCommandPlanningRef) { const previous = deps._botCommandPlanningRef.current || {}; try { if (previous.controller) previous.controller.abort(); } catch (_) {} deps._botCommandPlanningRef.current = { controller: null, serial: (Number(previous.serial) || 0) + 1 }; }
+  let ctx = {}; try { ctx = typeof deps._alloCmdCtx === 'function' ? deps._alloCmdCtx() || {} : {}; } catch (_) {}
+  const teacher = ctx.isTeacherMode === true && !ctx.isParentMode && !ctx.isIndependentMode && !ctx.isStudentLinkMode && (!ctx.commandAudience || ctx.commandAudience === 'teacher');
+  const token = typeof value === 'string' && value.startsWith('__allo_store_guide_') ? value.slice('__allo_store_guide_'.length) : null;
+  if (token === 'dismiss') { emit('School Store guide closed. No settings or records were changed.'); return true; }
+  if (!teacher) { emit('School Store setup guidance is available from the teacher launcher. Ask your school administrator for the approved staff or student portal. No settings or records were changed.'); return true; }
+  if ((token !== null && !['practice', 'join', 'setup', 'start'].includes(token)) || (_isStoreGuideSentinel(value) && token === null)) { emit('That School Store guide choice is unavailable. Ask for School Store setup help to choose a current path.'); return true; }
+  let guide;
+  try { guide = typeof createSchoolStoreSetupGuide === 'function' ? createSchoolStoreSetupGuide() : null; } catch (_) {}
+  if (!guide || typeof guide.getPath !== 'function' || typeof guide.getPaths !== 'function' || typeof ctx.openSchoolStoreGuide !== 'function') { emit('The local School Store setup guide is unavailable in this view. Open School Rewards & Store from the teacher tools and use its manual. No setup information was sent to AI.'); return true; }
+  let paths; try { paths = ['practice', 'join', 'setup'].map(id => guide.getPath(id)); } catch (_) { emit('The local School Store guide could not be loaded. Use the manual in the School Rewards & Store launcher.'); return true; }
+  if (paths.some((path, index) => !path || path.id !== ['practice', 'join', 'setup'][index] || typeof path.title !== 'string' || typeof path.intro !== 'string' || !Array.isArray(path.steps))) { emit('The local School Store guide could not be loaded. Use the manual in the School Rewards & Store launcher.'); return true; }
+  if (token && token !== 'start') {
+    const path = paths.find(item => item.id === token); let opened = false;
+    try { opened = ctx.openSchoolStoreGuide(path.id) !== false; } catch (_) {}
+    emit(path.title + '\n\n' + path.intro + '\n\n' + (opened ? 'The launcher guide is open. Follow its reviewed steps there; no permissions, settings or records were changed.' : 'The launcher could not open. Open School Rewards & Store from teacher tools to follow this path.') + '\n\nKeep student details, credentials and deployment configuration out of this chat.'); return true;
+  }
+  emit('Choose a School Store guide. These local steps do not configure accounts or change school records. Keep student details, credentials and deployment configuration out of this chat.', paths.map(path => ({ label: path.title, value: '__allo_store_guide_' + path.id })).concat([{ label: 'Cancel', value: '__allo_store_guide_dismiss' }]));
+  return true;
+}
+function _handleStoreRecognitionBoundary(value, deps = {}) {
+  // Only exact non-award guide phrases may precede the broad private guard.
+  if (_isStoreSetupGuideRequest(value)) return _handleStoreSetupGuide(value, deps);
+  const open = value === '__allo_store_open', dismiss = value === '__allo_store_dismiss';
+  if (!open && !dismiss && !_isStoreRecognitionValue(value)) return false;
+  if (typeof deps.setUdlInput === 'function') deps.setUdlInput('');
+  if (deps._planRunRef && deps._planRunRef.current && deps._planRunRef.current.running) {
+    if (typeof deps.setUdlMessages === 'function') deps.setUdlMessages(prev => [...prev, { role: 'model', localOnly: true, text: _chatText(deps.t, 'schoolrewards.recognition_busy', 'Wait for the current plan to finish or stop it first. No point award was sent.') }]);
+    return true;
+  }
+  for (const key of ['_pendingBotCmdRef', '_pendingBotPlanRef']) if (deps[key]) deps[key].current = null;
+  if (deps._botCommandPlanningRef) {
+    const previous = deps._botCommandPlanningRef.current || {};
+    try { if (previous.controller) previous.controller.abort(); } catch (_) {}
+    deps._botCommandPlanningRef.current = { controller: null, serial: (Number(previous.serial) || 0) + 1 };
+  }
+  let ctx = {};
+  try { ctx = typeof deps._alloCmdCtx === 'function' ? deps._alloCmdCtx() || {} : {}; } catch (_) {}
+  const teacher = ctx.isTeacherMode === true && !ctx.isParentMode && !ctx.isIndependentMode && !ctx.isStudentLinkMode && (!ctx.commandAudience || ctx.commandAudience === 'teacher');
+  const canOpen = teacher && typeof ctx.openSchoolStoreRecognition === 'function';
+  let text = _chatText(deps.t, 'schoolrewards.private_command_voice_notice', 'Your request was not added to this chat. Open the signed-in School Store, select your linked class, and re-enter the request by typing or its dedicated on-device dictation when available. Do not use the ordinary Allobot microphone for student awards. Review the student and confirm separately. Nothing has been awarded.');
+  if (dismiss) text = _chatText(deps.t, 'schoolrewards.private_command_cancelled', 'Cancelled. No point award was sent.');
+  else if (open) {
+    try { if (canOpen) ctx.openSchoolStoreRecognition(); } catch (_) {}
+    text = canOpen
+      ? _chatText(deps.t, 'schoolrewards.private_command_voice_opened', 'Use the School Store that opens, or its launcher if setup is needed. Select your linked class and re-enter the request by typing or the Store on-device dictation when available. No student details were transferred and no points were awarded.')
+      : _chatText(deps.t, 'schoolrewards.private_command_unavailable', 'School Store recognition is unavailable in this view. Use the approved staff portal. No request was sent.');
+  }
+  const message = { role: 'model', text, localOnly: true };
+  if (canOpen && !open && !dismiss) Object.assign(message, { type: 'choices', choices: [
+    { label: _chatText(deps.t, 'schoolrewards.open_recognition', 'Open School Store'), value: '__allo_store_open' },
+    { label: _chatText(deps.t, 'schoolrewards.cancel_recognition', 'Cancel'), value: '__allo_store_dismiss' }
+  ] });
+  if (typeof deps.setUdlMessages === 'function') deps.setUdlMessages(prev => [...prev, message]);
+  return true;
+}
 
 const _normalizeBlueprintSourceText = (value) => String(value || '').trim().replace(/\s+/g, ' ');
 
@@ -19,8 +226,9 @@ const _lessonHandoffText = (value, max = 1400) => String(value == null ? '' : va
 const _lessonHandoffSignal = /\b(lesson|unit|teach|teacher|student|learner|class|grade|standard|objective|goal|topic|reading|text|source|activity|assessment|quiz|vocab|scaffold|differentiat|accommodat|udl|blueprint|resource|generate|create|plan)\b/i;
 
 const buildLessonConversationHandoff = (messages, options = {}) => {
+  if (_isStoreRecognitionValue(options.latestRequest)) return '';
   const rows = (Array.isArray(messages) ? messages : [])
-    .filter((message) => message && !message.isWelcome && message.type !== 'choices' && message.type !== 'blueprint')
+    .filter((message) => message && !message.localOnly && !_isStoreRecognitionRequest(message.text) && !message.isWelcome && message.type !== 'choices' && message.type !== 'blueprint')
     .map((message) => {
       const text = _lessonHandoffText(message.text);
       if (!text || /^__allo_/i.test(text)) return '';
@@ -148,6 +356,7 @@ const normalizeSourceGenerationConfig = (rawConfig) => {
 };
 
 const inferLessonConversationHandoff = async (options = {}, deps = {}) => {
+  if (_isStoreRecognitionValue(options.conversationContext) || _isStoreRecognitionValue(options.latestRequest)) return normalizeSourceGenerationConfig(options.fallbackConfig || {});
   const conversationContext = _lessonHandoffText(options.conversationContext, _LESSON_HANDOFF_MAX_CHARS);
   const latestRequest = _lessonHandoffText(options.latestRequest, 1200);
   const fallback = normalizeSourceGenerationConfig(options.fallbackConfig || {});
@@ -351,13 +560,14 @@ const _blueprintChatMessage = (config, text) => ({
 });
 
 const _generateStandardChatResponse = async (userText, deps = {}) => {
+  if (_handleStoreRecognitionBoundary(userText, deps)) return { ok: false, localOnly: true };
   const {
     udlMessages, history, inputText, isParentMode, isIndependentMode,
     currentUiLanguage, gradeLevel, getGroupDifferentiationContext,
     callGemini, setUdlMessages, warnLog, t,
   } = deps;
   try {
-    const historyText = (udlMessages || []).slice(-20).map(m => `${m.role === 'user' ? 'User' : 'Expert'}: ${m.text}`).join('\n');
+    const historyText = (udlMessages || []).filter(m => m && !m.localOnly && !_isStoreRecognitionRequest(m.text)).slice(-20).map(m => `${m.role === 'user' ? 'User' : 'Expert'}: ${m.text}`).join('\n');
     const resourceContext = history.length > 0
       ? history.map(h => `- ${h.type}: ${h.title}`).join('\n')
       : 'No resources generated yet.';
@@ -513,6 +723,7 @@ ${toolList}
 };
 
 const handleSendUDLMessage = async (manualText = null, deps) => {
+  if (_handleStoreRecognitionBoundary(manualText != null ? manualText : deps.udlInput, deps)) return { ok: false, localOnly: true };
   // Phase E hotfix: comprehensive deps list (was missing isShowMeMode, isBotVisible,
   // history, inputText, standardsInput, targetStandards, dokLevel, sourceLength,
   // sourceTone, quizMcqCount, differentiationRange, outlineType, visualStyle,
@@ -2322,15 +2533,19 @@ function _commandWorkflowLibraryCard(service, ctx, t, mode, prefix, hasCurrentPl
 // AlloBot command-planning layer — extracted to UdlChat (2026-07-20).
 // Every host binding arrives via deps; the host wrapper is contract-gated.
 async function planAndSendUdlMessage(manualText, deps) {
+  const recognitionCandidate = manualText != null ? manualText : deps.udlInput;
+  if (_handleStoreRecognitionBoundary(recognitionCandidate, deps)) return { ok: false, localOnly: true };
   const {
     captureIntentSnapshot, restoreIntentSnapshot, inputText, setInputText, answerUdlQuestion, setIsChatProcessing = () => {},
-    _alloCmdCtx, _botCommandPlanningRef, _pendingBotCmdRef, _pendingBotPlanRef, _planRunRef, _planUndoRef, lastIntentSnapshotRef, setActiveView, setGeneratedContent, setHistory, setUdlInput, setUdlMessages, udlInput, udlMessages, _sendUdlToChat, activeView, generatedContent, history, t,
+    _alloCmdCtx, _botCommandPlanningRef, _pendingBotCmdRef, _pendingBotPlanRef, _planRunRef, _planUndoRef, lastIntentSnapshotRef, setActiveView, setGeneratedContent, setHistory, setUdlInput, setUdlMessages, udlInput, udlMessages, _sendUdlToChat: sendOrdinaryUdlChat, activeView, generatedContent, history, t,
   } = deps;
 
+    const _sendUdlToChat = text => _handleStoreRecognitionBoundary(text == null ? udlInput : text, deps) ? { ok: false, localOnly: true } : sendOrdinaryUdlChat(text);
     const _AC = window.AlloModules && window.AlloModules.AlloCommands;
     const _inputAction = manualText && typeof manualText === 'object' ? manualText : null;
     const _rawUtter = _inputAction ? '' : String((manualText != null ? manualText : udlInput) || '');
     const answerQuestion = async text => {
+      if (_handleStoreRecognitionBoundary(text, deps)) return { ok: false, localOnly: true };
       setIsChatProcessing(true);
       try {
         if (typeof answerUdlQuestion === 'function') return await answerUdlQuestion(text);

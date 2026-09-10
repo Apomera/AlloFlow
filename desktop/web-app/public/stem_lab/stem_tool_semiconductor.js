@@ -664,7 +664,460 @@ window.StemLab = window.StemLab || {
     return n>=1e15?n.toExponential(2):n>=1e12?(n/1e12).toFixed(2)+' trillion':formatTransistorCount(n);
   }
 
+
+  var SEMI_LESSONS = {bandgap:'Band Gap',doping:'Doping',pnjunction:'P-N Junction',transistor:'Transistor',gates:'Logic Gates',ivcurve:'I–V Curves',sandbox:'Circuit Lab',waferfab:'Wafer Fab',ledspec:'LED Spectrum',solarcell:'Solar Cell',moorelaw:"Moore’s Law",qwell:'Quantum Wells',memory:'Memory Cells',amplifier:'Amplifier',dopeHunt:'Doping Discovery'};
+  var SEMI_ROUTES = [
+    {id:'charge',question:'How do materials control charge?',steps:['bandgap','doping','pnjunction','dopeHunt']},
+    {id:'light',question:'How do devices exchange light and energy?',steps:['ledspec','solarcell','ivcurve','qwell','amplifier']},
+    {id:'logic',question:'How does a chip switch, calculate and remember?',steps:['transistor','gates','memory','sandbox']},
+    {id:'manufacture',question:'How are chips made and compared?',steps:['waferfab','moorelaw']}
+  ];
+  var semiSnapshotSequence=0;
+  function semiCopy(value){try{return JSON.parse(JSON.stringify(value));}catch(e){return null;}}
+  function semiWorkspaceField(workspace,key){
+    var exact={bandgap:['material','temperature','showPhoton','photonNm','showFermi'],
+      doping:['dopant','dopantCount','crystalSize','dopingTemp','showResistivity','crystalView'],
+      transistor:['transistorType','gateVoltage','drainVoltage','showCurrentFlow','showCMOS','deviceView'],
+      gates:['gateType','inputA','inputB','gateChain','showTruthGrid','gateExperiment','gateRecorded'],
+      dopeHunt:['dopeHunt']};
+    if(exact[workspace])return exact[workspace].indexOf(key)>=0;
+    var prefix={pnjunction:'pn',ivcurve:'iv',sandbox:'circuit',waferfab:'fab',ledspec:'led',solarcell:'solar',moorelaw:'moore',qwell:'qw',memory:'mem',amplifier:'amp'}[workspace];
+    return !!prefix&&key.indexOf(prefix)===0;
+  }
+  function semiEvidenceRows(rows){
+    var seen={};return (Array.isArray(rows)?rows:[]).filter(function(row){
+      if(!Array.isArray(row)||typeof row[0]!=='string'||!row[0]||Object.prototype.hasOwnProperty.call(seen,row[0]))return false;
+      Object.defineProperty(seen,row[0],{value:true,enumerable:true});return true;
+    }).map(function(row){return [row[0],typeof row[1]==='string'||typeof row[1]==='boolean'||typeof row[1]==='number'&&isFinite(row[1])?String(row[1]):'Not recorded'];});
+  }
+  function semiCapture(state,label,evidence,meta){
+    state=state||{};meta=meta||{};
+    var workspace=Object.prototype.hasOwnProperty.call(SEMI_LESSONS,state.subtool)?state.subtool:'bandgap';
+    var data=Object.assign({},state,{snapshotVersion:2,subtool:workspace,mode:state.mode||'explore'});
+    ['guidedSubtool','guidedObservation','guidedPrediction','guidedEvidence','guidedObservationSaved'].forEach(function(key){delete data[key];});
+    data.recordedEvidence=semiEvidenceRows(evidence);
+    if(typeof meta.guidedObservation==='string'){
+      data.guidedSubtool=workspace;data.guidedObservation=meta.guidedObservation;data.guidedPrediction=meta.guidedPrediction||'';
+      data.guidedEvidence={baseline:semiEvidenceRows((meta.guidedEvidence||{}).baseline),observed:semiEvidenceRows((meta.guidedEvidence||{}).observed)};
+      data.guidedObservationSaved=workspace;
+    }
+    var now=Date.now();
+    return {id:(data.guidedObservation?'semi-guided-':'semi-')+now+'-'+(++semiSnapshotSequence),tool:'semiconductor',label:label,data:semiCopy(data),timestamp:now};
+  }
+  function semiNotebookEntries(snapshots){
+    return (Array.isArray(snapshots)?snapshots:[]).map(function(entry,i){
+      if(!entry||entry.tool!=='semiconductor')return null;
+      var data=entry.data&&typeof entry.data==='object'?entry.data:{},mode=data.mode||'explore',id=data.guidedSubtool||data.subtool;
+      var workspace=mode==='explore'&&Object.prototype.hasOwnProperty.call(SEMI_LESSONS,id)?id:null;
+      var observation=typeof data.guidedObservation==='string'?data.guidedObservation:'',prediction=typeof data.guidedPrediction==='string'?data.guidedPrediction:'';
+      return {key:String(entry.id||'legacy')+'@'+i,label:typeof entry.label==='string'?entry.label:'Saved Semiconductor Lab state',
+        workspace:workspace,mode:mode,observation:observation,prediction:prediction,
+        evidence:semiEvidenceRows(data.recordedEvidence||(data.guidedEvidence||{}).observed),
+        baseline:semiEvidenceRows((data.guidedEvidence||{}).baseline),data:data,
+        timestamp:typeof entry.timestamp==='number'&&isFinite(entry.timestamp)?entry.timestamp:null};
+    }).filter(Boolean);
+  }
+  function semiRestore(current,entry){
+    if(!entry||!entry.workspace||!Object.prototype.hasOwnProperty.call(SEMI_LESSONS,entry.workspace))return null;
+    var next=Object.assign({},current||{});
+    Object.keys(next).forEach(function(key){if(semiWorkspaceField(entry.workspace,key))delete next[key];});
+    Object.keys(entry.data||{}).forEach(function(key){if(semiWorkspaceField(entry.workspace,key))next[key]=semiCopy(entry.data[key]);});
+    next.subtool=entry.workspace;next.mode='explore';next.guidedSetupSubtool=null;next.guidedObservationSaved=null;next.aiExplain=null;
+    return next;
+  }
+  function semiCompare(a,b){
+    if(!a||!b)return {reason:'Choose two entries to compare.',rows:[]};
+    if(!a.workspace||a.workspace!==b.workspace)return {reason:'Choose two entries from the same lesson. Different lessons use different quantities.',rows:[]};
+    var left=semiEvidenceRows(a.evidence),right=semiEvidenceRows(b.evidence),labels=left.map(function(r){return r[0];});
+    right.forEach(function(r){if(labels.indexOf(r[0])<0)labels.push(r[0]);});
+    return {reason:labels.length?'':'These older entries do not contain recorded numerical evidence.',rows:labels.map(function(label){
+      var l=left.find(function(r){return r[0]===label;}),r=right.find(function(r){return r[0]===label;});
+      return [label,l?l[1]:'Not recorded',r?r[1]:'Not recorded'];
+    })};
+  }
+  function semiRouteProgress(routeId,entries){
+    var route=SEMI_ROUTES.find(function(r){return r.id===routeId;});if(!route)return null;
+    var done=route.steps.filter(function(id){return (entries||[]).some(function(e){return e.workspace===id&&e.observation.trim().length>=12;});});
+    return {route:route,done:done,next:route.steps.find(function(id){return done.indexOf(id)<0;})||null};
+  }
+  function semiNotebookMarkdown(entries){
+    function text(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/[\\\x60*_{}\[\]#|]/g,function(c){return '\\'+c;}).replace(/\r?\n/g,' ');}
+    var lines=['# Semiconductor Lab notebook','','Recorded teaching-model evidence. Saved values may come from an earlier model version.',''];
+    (entries||[]).forEach(function(e){
+      lines.push('## '+text(e.label),'','Lesson: '+text(e.workspace?SEMI_LESSONS[e.workspace]:e.mode+' session'),'');
+      if(e.prediction)lines.push('Prediction: '+text(e.prediction),'');
+      if(e.observation)lines.push('Observation: '+text(e.observation),'');
+      if(e.evidence.length){lines.push('| Quantity | Recorded value |','| --- | --- |');e.evidence.forEach(function(r){lines.push('| '+text(r[0])+' | '+text(r[1])+' |');});lines.push('');}
+      else lines.push('No numerical evidence was stored with this entry.','');
+    });
+    return lines.join('\n');
+  }
+
+
+  // Controlled experiments reuse the same teaching models as the live workspaces.
+  function semiSweepSpec(state, materials, solarMaterials, variable) {
+    state=state||{};var id=state.subtool||'bandgap',p=state.transistorType==='mosfet-p';
+    if(id==='bandgap'){
+      var key=state.material||'silicon',mat=materials&&materials[key];
+      if(['silicon','germanium','gaas'].indexOf(key)<0||!mat)return {unavailable:'Temperature sweeps currently support silicon, germanium and GaAs. Select one of these materials in the simulation.'};
+      return {workspace:id,field:'temperature',xLabel:'Temperature',xUnit:'K',min:50,max:800,start:200,end:500,step:10,
+        settings:{material:key,temperature:semiNumber(state.temperature,300,50,800)},material:mat,
+        held:mat.name||key,outputs:[{id:'gap',label:'Band gap',unit:'eV',scale:'linear'},{id:'intrinsic',label:'Intrinsic carrier concentration',unit:'cm⁻³',scale:'log'}],
+        question:'As temperature increases, how will the band gap and intrinsic carrier concentration change?',
+        scope:'Intrinsic thermal-equilibrium estimates using the workspace model. Carrier concentration uses a logarithmic axis: equal vertical steps represent equal ratios. These are model predictions, not measured data.'};
+    }
+    if(id==='solarcell'){
+      var sk=state.solarMaterial||'silicon',sm=solarMaterials&&(solarMaterials[sk]||solarMaterials.silicon);
+      if(!sm)return {unavailable:'Solar material data is unavailable.'};
+      if(!Object.prototype.hasOwnProperty.call(solarMaterials,sk))sk='silicon';
+      var heating=variable==='temperature',ss={solarMaterial:sk,solarIrradiance:semiNumber(state.solarIrradiance,1000,0,1200),
+        solarTemp:semiNumber(state.solarTemp,300,270,370),solarArea:semiNumber(state.solarArea,100,10,500),
+        solarLoadR:semiNumber(state.solarLoadR,100,0,10000),solarOpen:!!state.solarOpen};
+      var load=ss.solarOpen?'open circuit':ss.solarLoadR===0?'short circuit':semiSweepValue(ss.solarLoadR)+' Ω resistor';
+      return {workspace:id,field:heating?'solarTemp':'solarIrradiance',variable:heating?'temperature':'irradiance',
+        variables:[{id:'irradiance',label:'Irradiance (W/m²)'},{id:'temperature',label:'Temperature (K)'}],
+        xLabel:heating?'Temperature':'Irradiance',xUnit:heating?'K':'W/m²',min:heating?270:0,max:heating?370:1200,start:heating?270:0,end:heating?370:1200,
+        settings:ss,material:sm,held:sm.name+'; area '+ss.solarArea+' cm²; '+load+'; '+(heating?'irradiance '+ss.solarIrradiance+' W/m²':'temperature '+ss.solarTemp+' K'),
+        outputs:[{id:'power',label:'Delivered power',unit:'W',scale:'linear'}],reference:{label:'Available maximum power',unit:'W'},
+        question:heating?'With irradiance and load fixed, will heating change available and delivered power in the same way?':'With the same load connected, will more light increase available and delivered power by the same amount?',
+        scope:'Empirical solar I–V teaching model with a resistive load. The dashed maximum-power curve assumes an optimally matched load at every sample; the solid delivered-power curve keeps your selected load fixed. These are calculated estimates, not measured cell performance.'};
+    }
+    if(id==='pnjunction')return {workspace:id,field:'pnBias',xLabel:'Junction bias',xUnit:'V',min:-3,max:3,start:-1,end:.5,step:.1,
+      settings:{pnBias:semiNumber(state.pnBias,0,-3,3)},held:'Silicon; 300 K; equal donor and acceptor densities of 10¹⁶ cm⁻³; built-in potential 0.7 V',
+      outputs:[{id:'width',label:'Depletion width',unit:'µm',scale:'linear'}],
+      question:'Will the depletion region widen or narrow as you move from reverse toward forward bias?',
+      scope:'Abrupt-junction depletion approximation. At bias ≥ 0.65 V this model withholds depletion width; gaps in the plot are not zero width. Junction settings other than bias are fixed by this teaching model.'};
+    if(id==='transistor'){
+      if(state.showCMOS||state.transistorType==='bjt-npn')return {unavailable:'Select N-MOSFET or P-MOSFET in the simulation to sweep gate voltage. BJT and CMOS views do not calculate a matching drain-current curve.'};
+      return {workspace:id,field:'gateVoltage',xLabel:'Gate voltage VGS',xUnit:'V',min:p?-5:0,max:p?0:5,start:p?-5:0,end:p?0:5,step:.1,
+        settings:{transistorType:p?'mosfet-p':'mosfet-n',showCMOS:false,gateVoltage:semiNumber(state.gateVoltage,0,p?-5:0,p?0:5),drainVoltage:semiNumber(state.drainVoltage,p?-5:5,p?-10:0,p?0:10)},
+        held:(p?'P':'N')+'-MOSFET; VDS = '+semiNumber(state.drainVoltage,p?-5:5,p?-10:0,p?0:10)+' V; |threshold| = 1.5 V; fixed model geometry',
+        outputs:[{id:'current',label:'Signed drain current',unit:'mA',scale:'linear'}],
+        question:'Where will the channel turn on, and how will drain current change beyond that point?',
+        scope:'Ideal long-channel MOSFET model with fixed threshold and geometry. P-channel current is negative by the workspace sign convention. Leakage, heating and short-channel effects are omitted.'};
+    }
+    return null;
+  }
+  function semiSweepRun(state, options, materials, solarMaterials) {
+    options=options||{};var spec=semiSweepSpec(state,materials,solarMaterials,options.variable);
+    if(!spec||spec.unavailable)return {error:spec?spec.unavailable:'Sweeps are not available for this lesson.'};
+    function endpoint(value,fallback){return value==null?fallback:typeof value==='string'&&!value.trim()?NaN:Number(value);}
+    var start=endpoint(options.start,spec.start),end=endpoint(options.end,spec.end);
+    if(!isFinite(start)||!isFinite(end)||start<spec.min||end>spec.max||start>=end)
+      return {error:'Enter a start smaller than the end, both within '+spec.min+' to '+spec.max+' '+spec.xUnit+'.'};
+    var output=spec.outputs.find(function(o){return o.id===options.output;})||spec.outputs[0];
+    function sample(x){
+      var y=null,status='Calculated',extra={};
+      if(spec.workspace==='bandgap'){var gap=semiBandGap(spec.material,x,spec.settings.material);y=output.id==='gap'?gap:semiIntrinsic(spec.material,x,gap);}
+      if(spec.workspace==='pnjunction'){var pn=semiJunction(x);y=pn.valid?pn.widthUm:null;status=pn.valid?pn.regime:'Outside depletion approximation';}
+      if(spec.workspace==='transistor'){var mos=semiMOS(spec.settings.transistorType,x,spec.settings.drainVoltage);y=mos.currentA==null?null:mos.currentA*1000;status=mos.region;}
+      if(spec.workspace==='solarcell'){
+        var ss=Object.assign({},spec.settings);ss[spec.field]=x;
+        var model=semiSolar(spec.material,ss.solarIrradiance,ss.solarTemp,ss.solarArea,ss.solarLoadR,ss.solarOpen);
+        y=model.loadPower;extra={reference:model.Pmax,voltage:model.loadV,current:model.loadI,fraction:model.Pmax>0?model.loadPower/model.Pmax:null};
+        status=model.G===0?'No illumination':ss.solarOpen?'Open circuit':ss.solarLoadR===0?'Short circuit':'Fixed resistive load';
+      }
+      return Object.assign({x:x,y:y!=null&&isFinite(y)?y:null,status:status},extra);
+    }
+    var points=Array.from({length:11},function(_,i){return sample(i===10?end:start+(end-start)*i/10);});
+    return {version:1,workspace:spec.workspace,field:spec.field,xLabel:spec.xLabel,xUnit:spec.xUnit,output:semiCopy(output),
+      reference:spec.reference?semiCopy(spec.reference):null,variable:spec.variable||null,
+      start:start,end:end,points:points,baseline:sample(spec.settings[spec.field]),settings:semiCopy(spec.settings),
+      held:spec.held,scope:spec.scope,prediction:typeof options.prediction==='string'?options.prediction.slice(0,500):''};
+  }
+  function semiSweepValue(value){return value==null||!isFinite(value)?'Not calculated':value===0?'0':Math.abs(value)<.001||Math.abs(value)>=10000?value.toExponential(3):String(Number(value.toPrecision(5)));}
+  function semiSweepGeometry(run) {
+    var log=run.output.scale==='log',all=run.points.concat([run.baseline]),reference=run.reference?all.map(function(p){return {x:p.x,y:p.reference};}):[];
+    all=all.concat(reference);
+    function valid(p){return p.y!=null&&isFinite(p.y)&&(!log||p.y>0);}
+    function transform(y){return log?Math.log10(y):y;}
+    var values=all.filter(valid).map(function(p){return transform(p.y);}),lo=values.length?Math.min.apply(null,values):0,hi=values.length?Math.max.apply(null,values):1;
+    if(!log){lo=Math.min(0,lo);hi=Math.max(0,hi);}
+    var pad=hi===lo?Math.max(1,Math.abs(hi)*.1):(hi-lo)*.08;lo-=pad;hi+=pad;
+    var xmin=Math.min(run.start,run.baseline.x),xmax=Math.max(run.end,run.baseline.x);
+    function xy(p){return {x:80+(p.x-xmin)/(xmax-xmin)*540,y:valid(p)?260-(transform(p.y)-lo)/(hi-lo)*220:null};}
+    function pathsFor(points){var paths=[],path='';
+      points.forEach(function(p){var q=xy(p);if(q.y==null){if(path)paths.push(path);path='';}else path+=(path?' L':'M')+q.x+' '+q.y;});
+      if(path)paths.push(path);return paths;
+    }var paths=pathsFor(run.points);
+    return {points:run.points.map(xy),baseline:xy(run.baseline),paths:paths,referencePaths:run.reference?pathsFor(reference.slice(0,-1)):[],
+      xTicks:Array.from({length:5},function(_,i){return {x:80+i*135,label:semiSweepValue(xmin+(xmax-xmin)*i/4)};}),
+      yTicks:Array.from({length:5},function(_,i){var value=lo+(hi-lo)*i/4;return {y:260-i*55,label:log?'10^'+Number(value.toFixed(1)):semiSweepValue(Number(value.toPrecision(3)))};})};
+  }
+  function semiSweepApply(current,run,index) {
+    if(!run||run.version!==1||!Array.isArray(run.points)||!run.points[index])return null;
+    var next=Object.assign({},current||{},semiCopy(run.settings));next[run.field]=run.points[index].x;
+    next.subtool=run.workspace;next.mode='explore';next.guidedObservationSaved=null;return next;
+  }
+  function semiSweepEvidence(run) {
+    var rows=[['Experiment','Controlled parameter sweep'],['Held constant',run.held],['Plotted output',run.output.label+' ('+run.output.unit+')'],['Axis scale',run.output.scale==='log'?'Logarithmic':'Linear'],
+      ['Baseline at '+semiSweepValue(run.baseline.x)+' '+run.xUnit,semiSweepValue(run.baseline.y)+' '+(run.baseline.y==null?'':run.output.unit)],
+      ['Model scope',run.scope]].concat(run.points.map(function(p,i){return ['Sample '+(i+1)+' · '+run.xLabel+' = '+semiSweepValue(p.x)+' '+run.xUnit,semiSweepValue(p.y)+(p.y==null?' · '+p.status:' '+run.output.unit+' · '+p.status)];}));
+    if(run.reference){
+      rows.push(['Reference curve',run.reference.label+' ('+run.reference.unit+')'],['Reference baseline',semiSweepValue(run.baseline.reference)+' '+run.reference.unit]);
+      run.points.forEach(function(p,i){rows.push(['Sample '+(i+1)+' · '+run.reference.label,semiSweepValue(p.reference)+' '+run.reference.unit+'; load voltage '+semiSweepValue(p.voltage)+' V; load current '+semiSweepValue(p.current)+' A']);});
+    }
+    return rows;
+  }
+
+  function semiSweepCompare(run, aIndex, bIndex) {
+    if(!run||!Array.isArray(run.points)||!Number.isInteger(aIndex)||!Number.isInteger(bIndex)||!run.points[aIndex]||!run.points[bIndex])
+      return {error:'Choose two samples from this recorded run.',rows:[]};
+    if(aIndex===bIndex)return {error:'Choose different samples for A and B.',rows:[]};
+    var a=run.points[aIndex],b=run.points[bIndex];
+    function finite(v){return typeof v==='number'&&isFinite(v);}
+    function row(label,unit,av,bv){
+      var delta=finite(av)&&finite(bv)?bv-av:null;if(!finite(delta))delta=null;
+      var ratio=finite(av)&&finite(bv)&&av>0&&bv>=0?bv/av:null;
+      var percent=ratio!=null?(ratio-1)*100:null;
+      if(!finite(ratio))ratio=null;if(!finite(percent))percent=null;
+      var reason=!finite(av)||!finite(bv)?'A reading is outside the model.':av===0?'Relative change is undefined because A is zero.':av<0||bv<0?'Signed values: use B − A rather than a growth percentage.':ratio==null?'Relative change exceeds the numeric range.':'';
+      return {label:label,unit:unit,a:finite(av)?av:null,b:finite(bv)?bv:null,delta:delta,ratio:ratio,percent:percent,reason:reason};
+    }
+    var rows=[row(run.output.label,run.output.unit,a.y,b.y)];
+    if(run.reference)rows.push(row(run.reference.label,run.reference.unit,a.reference,b.reference));
+    return {aIndex:aIndex,bIndex:bIndex,a:semiCopy(a),b:semiCopy(b),rows:rows,error:'',
+      scope:'This compares two recorded samples, not the shape of the whole curve. Differences use unrounded values; displayed readings are rounded.'};
+  }
+  function semiSweepComparisonEvidence(run, comparison) {
+    if(!comparison||comparison.error||!comparison.rows.length)return [];
+    var rows=[['Comparison A','Sample '+(comparison.aIndex+1)+' · '+semiSweepValue(comparison.a.x)+' '+run.xUnit],
+      ['Comparison B','Sample '+(comparison.bIndex+1)+' · '+semiSweepValue(comparison.b.x)+' '+run.xUnit],
+      ['Comparison scope',comparison.scope]];
+    comparison.rows.forEach(function(r){rows.push(['Comparison · '+r.label,
+      'A: '+semiSweepValue(r.a)+' '+r.unit+'; B: '+semiSweepValue(r.b)+' '+r.unit+'; B − A: '+semiSweepValue(r.delta)+' '+r.unit+
+      (r.reason?'; '+r.reason:'; B / A: '+semiSweepValue(r.ratio)+'; relative change: '+semiSweepValue(r.percent)+'%')]);});
+    return rows;
+  }
+  function SemiSweepComparison(props) {
+    var h=props.React.createElement,run=props.run,box=props.box,update=props.update;
+    var ai=Number.isInteger(box.compareA)?box.compareA:0,bi=Number.isInteger(box.compareB)?box.compareB:run.points.length-1;
+    var comparison=semiSweepCompare(run,ai,bi);
+    function select(label,value,key){return h('label',null,label,h('select',{'aria-label':label,value:value,style:{display:'block',width:'100%',minHeight:44,padding:8,marginTop:6,background:'#020617',color:'#f8fafc',border:'1px solid #64748b',borderRadius:8},onChange:function(e){var patch={saved:false};patch[key]=Number(e.target.value);update(patch);}},
+      run.points.map(function(p,i){return h('option',{key:i,value:i},'Sample '+(i+1)+' · '+semiSweepValue(p.x)+' '+run.xUnit);}))); }
+    return h('section',{'aria-label':'Compare sweep samples','data-sweep-comparison':true,style:{margin:'16px 0',padding:12,border:'1px solid #475569',borderRadius:10}},
+      h('button',{type:'button','aria-expanded':!!box.comparisonOpen,onClick:function(){update({comparisonOpen:!box.comparisonOpen,saved:false});}},box.comparisonOpen?'Hide sample comparison':'Compare two samples'),
+      box.comparisonOpen&&h('div',null,
+        h('p',null,'Choose A as your reference and B as your comparison. This reads the saved run and does not change the simulation.'),
+        h('div',{className:'semi-study-grid'},select('Comparison sample A',ai,'compareA'),select('Comparison sample B',bi,'compareB')),
+        comparison.error?h('p',{role:'status'},comparison.error):h('div',null,
+          comparison.rows.map(function(r){return h('section',{key:r.label,'aria-label':r.label+' comparison'},
+            h('h4',{style:{marginTop:16}},r.label+' ('+r.unit+')'),
+            h('table',null,h('caption',null,'A → B · '+r.label),
+              h('tbody',null,[['A',semiSweepValue(r.a)+' '+r.unit],['B',semiSweepValue(r.b)+' '+r.unit],['Change (B − A)',semiSweepValue(r.delta)+' '+r.unit]].map(function(row){return h('tr',{key:row[0]},h('th',{scope:'row'},row[0]),h('td',null,row[1]));}))),
+            h('p',null,r.reason||('B / A = '+semiSweepValue(r.ratio)+' ×; relative change = '+semiSweepValue(r.percent)+'%.')),
+            r.a<0&&r.b<0&&h('p',null,'A more negative current can have a larger magnitude. Distinguish the current’s sign from its size.'));}),
+          h('p',null,comparison.scope),
+          h('p',null,'Use these readings as evidence: “When '+run.xLabel.toLowerCase()+' changed from '+semiSweepValue(comparison.a.x)+' to '+semiSweepValue(comparison.b.x)+' '+run.xUnit+', … changed because …”. Check another pair before describing the full curve.'),
+          run.output.scale==='log'&&h('p',null,'On this logarithmic axis, equal vertical distances represent equal ratios. The difference above is in the original units, not log units.'),
+          h('p',null,'This selected comparison will be included when you save the sweep. Your explanation below remains your own.'))));
+  }
+
+
+  function semiSavedSweep(entry) {
+    var run=entry&&entry.data&&entry.data.parameterSweep;if(!run)return {run:null,error:''};
+    var fields={bandgap:['temperature'],pnjunction:['pnBias'],transistor:['gateVoltage'],solarcell:['solarIrradiance','solarTemp']};
+    function finite(v){return typeof v==='number'&&isFinite(v);}
+    function label(v){return typeof v==='string'&&v.length>0&&v.length<=1000;}
+    function point(p){return p&&(p.status==null||typeof p.status==='string')&&finite(p.x)&&(p.y===null||finite(p.y))&&(!run.reference||p.reference===null||finite(p.reference));}
+    if(run.version!==1||!Object.prototype.hasOwnProperty.call(fields,entry.workspace)||run.workspace!==entry.workspace||fields[entry.workspace].indexOf(run.field)<0||
+      !Array.isArray(run.points)||run.points.length!==11||!run.points.every(point)||!point(run.baseline)||
+      !finite(run.start)||!finite(run.end)||run.start>=run.end||run.points[0].x!==run.start||run.points[10].x!==run.end||
+      run.points.some(function(p,i){return i>0&&p.x<=run.points[i-1].x;})||
+      !run.output||!label(run.output.label)||!label(run.output.unit)||['linear','log'].indexOf(run.output.scale)<0||
+      !label(run.xLabel)||!label(run.xUnit)||!label(run.held)||!label(run.scope)||
+      (run.reference&&(!label(run.reference.label)||!label(run.reference.unit)))||
+      (run.output.scale==='log'&&run.points.concat([run.baseline]).some(function(p){return p.y!==null&&p.y<=0;})))
+      return {run:null,error:'This entry’s saved plot data is incomplete or unsupported. Its recorded notebook evidence is still available above.'};
+    var copy=semiCopy(run);if(!copy)return {run:null,error:'Saved plot data could not be read.'};
+    return {run:copy,error:''};
+  }
+  function SemiSavedSweep(props) {
+    var h=props.React.createElement,parsed=semiSavedSweep(props.entry),run=parsed.run;
+    var selection=props.React.useState(0),index=selection[0],setIndex=selection[1];
+    if(parsed.error)return h('p',null,parsed.error);
+    if(!run)return null;
+    var g=semiSweepGeometry(run),p=run.points[index]||run.points[0],saved=props.entry.data.sweepComparison;
+    var comparison=saved?semiSweepCompare(run,saved.aIndex,saved.bIndex):null;
+    return h('details',{'data-saved-sweep':true,style:{margin:'14px 0',padding:12,border:'1px solid #64748b',borderRadius:10}},
+      h('summary',null,'Review saved sweep plot'),
+      h('p',null,'Recorded run · values are shown as saved. Reviewing a sample does not change your live simulation, drafts or current sweep. Restoring experiment settings uses the current model and may produce different results.'),
+      h('h4',null,run.output.label+(run.reference?' and '+run.reference.label:'')+' ('+run.output.unit+')'),
+      h('p',null,run.xLabel+' ('+run.xUnit+') · '+(run.output.scale==='log'?'Logarithmic':'Linear')+' output axis.'),
+      h('p',null,'Held constant: '+run.held+'.'),
+      h('svg',{viewBox:'0 0 660 330',role:'img','aria-label':'Saved '+run.output.label+' curve with '+run.points.length+' recorded samples. Select a sample below for its reading.',style:{width:'100%',display:'block',background:'#07111f',borderRadius:8}},
+        g.yTicks.map(function(t,i){return h('g',{key:'y'+i},h('line',{x1:80,x2:620,y1:t.y,y2:t.y,stroke:'#334155'}),h('text',{x:73,y:t.y+4,textAnchor:'end',fill:'#e2e8f0',fontSize:15},t.label));}),
+        g.xTicks.map(function(t,i){return h('text',{key:'x'+i,x:t.x,y:282,textAnchor:'middle',fill:'#e2e8f0',fontSize:16},t.label);}),
+        h('text',{x:350,y:313,textAnchor:'middle',fill:'#e2e8f0',fontSize:17},run.xLabel+' ('+run.xUnit+')'),
+        g.referencePaths.map(function(path,i){return h('path',{key:'r'+i,d:path,fill:'none',stroke:'#c4b5fd',strokeWidth:3,strokeDasharray:'8 6'});}),
+        g.paths.map(function(path,i){return h('path',{key:'p'+i,d:path,fill:'none',stroke:'#67e8f9',strokeWidth:3});}),
+        g.points.map(function(point,i){return point.y!==null&&h('circle',{key:i,cx:point.x,cy:point.y,r:i===index?7:4,fill:i===index?'#fff':'#67e8f9'});}),
+        g.baseline.y!==null&&h('path',{d:'M'+g.baseline.x+' '+(g.baseline.y-7)+' l7 7 l-7 7 l-7 -7 Z',fill:'#fbbf24',stroke:'#07111f',strokeWidth:2})),
+      h('p',null,'Cyan: recorded samples. White dot: selected sample. Amber diamond: saved baseline. '+(run.reference?'Dashed lavender: '+run.reference.label+'. ':'')+'Lines connect the stored samples as a guide; no new simulation is run.'),
+      h('p',null,'Saved baseline: '+semiSweepValue(run.baseline.x)+' '+run.xUnit+' → '+semiSweepValue(run.baseline.y)+' '+run.output.unit+(run.reference?'; available maximum '+semiSweepValue(run.baseline.reference)+' '+run.reference.unit:'')+'.'),
+      h('label',null,'Review sample',h('select',{'aria-label':'Review sample',value:index,onChange:function(e){setIndex(Number(e.target.value));},style:{display:'block',width:'100%',minHeight:44,margin:'8px 0',padding:8,background:'#020617',color:'#f8fafc',border:'1px solid #64748b',borderRadius:8}},
+        run.points.map(function(point,i){return h('option',{key:i,value:i},'Sample '+(i+1)+' · '+semiSweepValue(point.x)+' '+run.xUnit);}))),
+      h('div',{role:'status'},h('p',null,'Sample '+(index+1)+': '+semiSweepValue(p.x)+' '+run.xUnit+' → '+semiSweepValue(p.y)+(p.y===null?'':' '+run.output.unit)+'. '+(p.status||'')),
+        run.reference&&h('p',null,run.reference.label+': '+semiSweepValue(p.reference)+' '+run.reference.unit)),
+      h('details',null,h('summary',null,'Saved model assumptions'),h('p',null,run.scope)),
+      comparison&&!comparison.error&&h('div',null,h('h4',null,'Saved comparison'),
+        h('p',null,'A: sample '+(comparison.aIndex+1)+' ('+semiSweepValue(comparison.a.x)+' '+run.xUnit+'); B: sample '+(comparison.bIndex+1)+' ('+semiSweepValue(comparison.b.x)+' '+run.xUnit+').'),
+        h('p',null,'The pair is restored from your saved selection. Differences below are calculated from the stored readings, not the current model.'),
+        comparison.rows.map(function(row){return h('p',{key:row.label},row.label+': B − A = '+semiSweepValue(row.delta)+' '+row.unit+'. '+(row.reason||('B / A = '+semiSweepValue(row.ratio)+'; relative change = '+semiSweepValue(row.percent)+'%.')));})),
+      saved&&(!comparison||comparison.error)&&h('p',null,'The saved comparison selection is unavailable. The original recorded evidence remains above.'));
+  }
+
+
+  function semiSweepOverlay(aEntry,bEntry) {
+    if(!aEntry||!bEntry)return {error:'',runs:[]};
+    var aResult=semiSavedSweep(aEntry),bResult=semiSavedSweep(bEntry);
+    if(!aResult.run||!bResult.run)return {error:'Curve overlay needs two complete saved sweeps. Their recorded evidence can still be compared below.',runs:[]};
+    var a=aResult.run,b=bResult.run;
+    if(a.workspace!==b.workspace||a.field!==b.field||a.xUnit!==b.xUnit||a.output.id!==b.output.id||
+      a.output.label!==b.output.label||a.output.unit!==b.output.unit||a.output.scale!==b.output.scale)
+      return {error:'Choose sweeps from the same lesson with the same input variable, plotted quantity, units and scale.',runs:[]};
+    var all=a.points.concat(b.points),combined=Object.assign({},a,{points:all,start:Math.min(a.start,b.start),end:Math.max(a.end,b.end),baseline:a.points[0],reference:null});
+    var geometry=semiSweepGeometry(combined);
+    if(geometry.points.some(function(p){return !isFinite(p.x)||(p.y!==null&&!isFinite(p.y));}))
+      return {error:'These stored values exceed the supported plotting range. Use the recorded evidence below.',runs:[]};
+    function segments(points){var paths=[],path='';points.forEach(function(p){if(p.y===null){if(path)paths.push(path);path='';}else path+=(path?' L':'M')+p.x+' '+p.y;});if(path)paths.push(path);return paths;}
+    var pointsA=geometry.points.slice(0,a.points.length),pointsB=geometry.points.slice(a.points.length);
+    var xs=Array.from(new Set(all.map(function(p){return p.x;}))).sort(function(x,y){return x-y;});
+    var rows=xs.map(function(x){var ap=a.points.find(function(p){return p.x===x;}),bp=b.points.find(function(p){return p.x===x;});
+      var av=ap?ap.y:null,bv=bp?bp.y:null,delta=av!==null&&bv!==null?bv-av:null;
+      return {x:x,a:av,b:bv,aPresent:!!ap,bPresent:!!bp,delta:delta!==null&&isFinite(delta)?delta:null};});
+    var names={material:'Material',transistorType:'Device type',drainVoltage:'Drain voltage (V)',showCMOS:'CMOS view',
+      solarMaterial:'Solar material',solarIrradiance:'Irradiance (W/m²)',solarTemp:'Temperature (K)',solarArea:'Cell area (cm²)',solarLoadR:'Load resistance (Ω)',solarOpen:'Open circuit'};
+    var keys=Array.from(new Set(Object.keys(a.settings||{}).concat(Object.keys(b.settings||{})))).filter(function(k){return k!==a.field&&semiWorkspaceField(a.workspace,k);});
+    function display(v){return v==null?'Not recorded':typeof v==='boolean'?(v?'Yes':'No'):typeof v==='string'||typeof v==='number'?String(v):'Recorded structure';}
+    var settings=keys.map(function(k){var av=(a.settings||{})[k],bv=(b.settings||{})[k];return {key:k,label:names[k]||k,a:display(av),b:display(bv),changed:JSON.stringify(av)!==JSON.stringify(bv)};});
+    return {error:'',runs:[a,b],geometry:geometry,pointsA:pointsA,pointsB:pointsB,pathsA:segments(pointsA),pathsB:segments(pointsB),rows:rows,
+      shared:rows.filter(function(r){return r.aPresent&&r.bPresent;}).length,settings:settings,changed:settings.filter(function(s){return s.changed;}).length,
+      assumptionsDiffer:a.scope!==b.scope||a.held!==b.held};
+  }
+  function SemiSweepOverlay(props) {
+    var h=props.React.createElement,overlay=semiSweepOverlay(props.a,props.b);
+    if(!props.a||!props.b)return null;
+    if(!props.a.data.parameterSweep&&!props.b.data.parameterSweep)return null;
+    if(overlay.error)return h('p',{'data-sweep-overlay-message':true},overlay.error);
+    var run=overlay.runs[0],g=overlay.geometry;
+    function reading(value,present){return !present?'Not sampled':value===null?'Outside model':semiSweepValue(value);}
+    return h('details',{'data-sweep-overlay':true,style:{margin:'14px 0',padding:12,border:'1px solid #64748b',borderRadius:10}},
+      h('summary',null,'Overlay saved sweep curves'),
+      h('h4',{style:{marginTop:12}},run.output.label+' ('+run.output.unit+')'),
+      h('p',null,'Same axes · '+run.xLabel+' ('+run.xUnit+') · '+(run.output.scale==='log'?'logarithmic':'linear')+' output scale. Curves use stored samples; no new simulation or interpolation is performed.'),
+      h('p',null,'A · solid cyan line and circles: '+props.a.label),
+      h('p',null,'B · dashed lavender line and squares: '+props.b.label),
+      run.reference&&h('p',null,'This overlay compares delivered power only. Review each saved sweep to see its available-maximum reference curve.'),
+      h('svg',{viewBox:'0 0 660 330',role:'img','aria-label':'Overlay of two saved '+run.output.label+' sweeps. Shared-input comparisons follow in the table.',style:{width:'100%',display:'block',background:'#07111f',borderRadius:8}},
+        g.yTicks.map(function(t,i){return h('g',{key:'y'+i},h('line',{x1:80,x2:620,y1:t.y,y2:t.y,stroke:'#334155'}),h('text',{x:73,y:t.y+4,textAnchor:'end',fill:'#e2e8f0',fontSize:17},t.label));}),
+        g.xTicks.map(function(t,i){return h('text',{key:'x'+i,x:t.x,y:285,textAnchor:'middle',fill:'#e2e8f0',fontSize:18},t.label);}),
+        h('text',{x:350,y:316,textAnchor:'middle',fill:'#e2e8f0',fontSize:19},run.xLabel+' ('+run.xUnit+')'),
+        overlay.pathsA.map(function(path,i){return h('path',{key:'a'+i,d:path,fill:'none',stroke:'#67e8f9',strokeWidth:3});}),
+        overlay.pathsB.map(function(path,i){return h('path',{key:'b'+i,d:path,fill:'none',stroke:'#c4b5fd',strokeWidth:3,strokeDasharray:'8 6'});}),
+        overlay.pointsA.map(function(p,i){return p.y!==null&&h('circle',{key:'ac'+i,cx:p.x,cy:p.y,r:4,fill:'#67e8f9'});}),
+        overlay.pointsB.map(function(p,i){return p.y!==null&&h('rect',{key:'bs'+i,x:p.x-4,y:p.y-4,width:8,height:8,fill:'#07111f',stroke:'#c4b5fd',strokeWidth:2});})),
+      h('h4',{style:{marginTop:14}},'Check the comparison conditions'),
+      h('p',null,'A held constant: '+overlay.runs[0].held+'.'),
+      h('p',null,'B held constant: '+overlay.runs[1].held+'.'),
+      h('p',null,overlay.changed===0?'No recorded fixed settings differ. This alone does not prove the models or conditions were identical.':overlay.changed===1?'One recorded fixed setting differs. Check model assumptions before attributing the curve change to that setting.':overlay.changed+' recorded fixed settings differ. This comparison cannot isolate the effect of one variable.'),
+      overlay.settings.length>0&&h('table',null,h('caption',null,'Fixed settings across the saved runs'),
+        h('thead',null,h('tr',null,h('th',{scope:'col'},'Setting'),h('th',{scope:'col'},'A'),h('th',{scope:'col'},'B'))),
+        h('tbody',null,overlay.settings.map(function(s){return h('tr',{key:s.key},h('th',{scope:'row'},s.label+(s.changed?' · changed':'')),h('td',null,s.a),h('td',null,s.b));}))),
+      overlay.assumptionsDiffer&&h('p',null,'The saved descriptions or assumptions differ. Check both entries before drawing a causal conclusion.'),
+      h('h4',{style:{marginTop:14}},'Compare shared inputs'),
+      h('p',null,overlay.shared+' exactly shared input values. “Not sampled” means the other run has no reading at that input; “Outside model” means a stored sample has no calculated output. Lines are visual guides, not extra data points.'),
+      h('details',null,h('summary',null,'Read overlay values'),
+        h('table',null,h('caption',null,'Recorded '+run.output.label+' ('+run.output.unit+') · B − A at shared inputs'),
+          h('thead',null,h('tr',null,h('th',{scope:'col'},run.xLabel+' ('+run.xUnit+')'),h('th',{scope:'col'},'A'),h('th',{scope:'col'},'B'),h('th',{scope:'col'},'B − A'))),
+          h('tbody',null,overlay.rows.map(function(r,i){return h('tr',{key:i},h('th',{scope:'row'},semiSweepValue(r.x)),h('td',null,reading(r.a,r.aPresent)),h('td',null,reading(r.b,r.bPresent)),h('td',null,r.delta===null?'Not compared':semiSweepValue(r.delta)));})))),
+      h('p',null,'Use a shared input to describe the numerical difference, then identify what changed between runs. Your live experiment and saved entries stay unchanged.'));
+  }
+
+  function SemiSweepPanel(props) {
+    var h=props.React.createElement,d=props.data,id=d.subtool||'bandgap',box=(d.experimentSweeps||{})[id]||{};
+    var spec=semiSweepSpec(d,props.materials,props.solarMaterials,box.variable);
+    if(!spec)return null;
+    var run=box.run&&box.run.version===1?box.run:null;
+    function update(patch){props.setData(function(prev){var state=prev.semiconductor||{},map=Object.assign({},state.experimentSweeps||{});map[id]=Object.assign({},map[id]||{},patch);return Object.assign({},prev,{semiconductor:Object.assign({},state,{experimentSweeps:map})});});}
+    var control={display:'block',width:'100%',boxSizing:'border-box',minHeight:44,margin:'6px 0 12px',padding:10,border:'1px solid #64748b',borderRadius:8,background:'#020617',color:'#f8fafc'};
+    var opts={start:box.start,end:box.end,output:box.output,prediction:box.prediction,variable:box.variable},candidate=!spec.unavailable?semiSweepRun(d,opts,props.materials,props.solarMaterials):null;
+    function apply(index){props.setData(function(prev){var state=prev.semiconductor||{},next=semiSweepApply(state,run,index);if(!next)return prev;next.experimentSweeps=Object.assign({},state.experimentSweeps||{});next.experimentSweeps[id]=Object.assign({},box,{selected:index,notice:'Applied sample '+(index+1)+' to the simulation using this run’s fixed settings.'});return Object.assign({},prev,{semiconductor:next});});}
+    function save(){
+      var comparison=box.comparisonOpen?semiSweepCompare(run,Number.isInteger(box.compareA)?box.compareA:0,Number.isInteger(box.compareB)?box.compareB:run.points.length-1):null;
+      var rows=semiSweepEvidence(run).concat(semiSweepComparisonEvidence(run,comparison)),entry=semiCapture(Object.assign({subtool:id,mode:'explore'},run.settings),'Sweep: '+SEMI_LESSONS[id]+' · '+run.output.label,rows,
+        {guidedObservation:(box.note||'').trim(),guidedPrediction:run.prediction,guidedEvidence:{observed:rows}});
+      entry.data.parameterSweep=semiCopy(run);
+      if(comparison&&!comparison.error)entry.data.sweepComparison=semiCopy(comparison);
+      props.setSnapshots(function(prev){return (prev||[]).concat([entry]);});
+      update({notice:'Saved the complete sweep, prediction and explanation to your notebook.',saved:true});
+    }
+    var g=run?semiSweepGeometry(run):null,selected=run&&run.points[box.selected];
+    var stale=run&&(!!spec.unavailable||Object.keys(run.settings).some(function(k){return k!==run.field&&spec.settings&&spec.settings[k]!==run.settings[k];}));
+    return h('details',{className:'semi-study','data-parameter-sweep':id},
+      h('summary',null,'Controlled experiment · sweep one variable'),
+      h('style',null,'.semi-sweep-plot text{font-size:15px}@media(max-width:640px){.semi-sweep-plot text{font-size:20px}.semi-sweep-plot .semi-sweep-y-label{font-size:17px}}'),
+      h('p',null,'Predict → run 11 evenly spaced samples → inspect → explain. Running a sweep keeps the live simulation unchanged.'),
+      spec.unavailable?h('p',null,spec.unavailable):h('div',null,
+        h('h4',null,'1. Set up a fair comparison'),
+        spec.variables&&h('label',null,'Variable to sweep',h('select',{'aria-label':'Variable to sweep',value:spec.variable,style:control,onChange:function(e){update({variable:e.target.value,start:null,end:null});}},
+          spec.variables.map(function(v){return h('option',{key:v.id,value:v.id},v.label);}))),
+        h('p',null,'Change: '+spec.xLabel+'. Hold constant: '+spec.held+'.'),
+        h('div',{className:'semi-study-grid'},
+          h('label',null,'Sweep start ('+spec.xUnit+')',h('input',{type:'number',step:'any',min:spec.min,max:spec.max,value:box.start==null?spec.start:box.start,onChange:function(e){update({start:e.target.value});},style:control})),
+          h('label',null,'Sweep end ('+spec.xUnit+')',h('input',{type:'number',step:'any',min:spec.min,max:spec.max,value:box.end==null?spec.end:box.end,onChange:function(e){update({end:e.target.value});},style:control}))),
+        h('label',null,'Plot quantity',h('select',{'aria-label':'Plot quantity',value:box.output||spec.outputs[0].id,onChange:function(e){update({output:e.target.value});},style:control},
+          spec.outputs.map(function(o){return h('option',{key:o.id,value:o.id},o.label+' ('+o.unit+')');}))),
+        h('p',null,spec.question),
+        h('label',null,'Your sweep prediction (optional)',h('textarea',{'aria-label':'Your sweep prediction (optional)',rows:2,maxLength:500,value:box.prediction||'',onChange:function(e){update({prediction:e.target.value});},style:control})),
+        candidate.error&&h('p',{role:'status'},candidate.error),
+        h('button',{type:'button',disabled:!!candidate.error,onClick:function(){update({run:candidate,selected:null,note:'',saved:false,comparisonOpen:false,compareA:0,compareB:10,notice:'Sweep complete. Select a sample to inspect it in the simulation.'});}},'Run sweep')),
+      run&&h('section',{'aria-label':'Sweep results'},
+        h('h4',{style:{marginTop:20}},'2. Inspect the recorded curve'),
+        h('p',null,run.output.label+' ('+run.output.unit+') versus '+run.xLabel+' ('+run.xUnit+'). '+(run.output.scale==='log'?'Logarithmic y-axis.':'Linear y-axis.')),
+        h('p',null,'This run holds constant: '+run.held+'.'),
+        spec.field&&spec.field!==run.field&&h('p',{role:'status'},'The setup now varies '+spec.xLabel.toLowerCase()+'. Run again to replace the recorded '+run.xLabel.toLowerCase()+' sweep.'),
+        h('p',null,run.scope),
+        stale&&h('p',{role:'status'},'The simulation’s fixed settings have changed. This recorded curve stays unchanged. Selecting a sample reapplies the settings listed above.'),
+        run.prediction&&h('p',null,'Prediction recorded before this run: '+run.prediction),
+        h('svg',{className:'semi-sweep-plot',viewBox:'0 0 660 310',role:'img','aria-label':run.output.label+(run.reference?' and '+run.reference.label:'')+' sweep. Eleven samples; readings and inspection buttons follow in the table.',style:{width:'100%',display:'block',background:'#07111f',borderRadius:10}},
+          h('title',null,run.output.label+(run.reference?' and '+run.reference.label:'')+' versus '+run.xLabel),
+          g.yTicks.map(function(t,i){return h('g',{key:'y'+i},h('line',{x1:80,x2:620,y1:t.y,y2:t.y,stroke:'#334155'}),h('text',{className:'semi-sweep-y-label',x:72,y:t.y+4,textAnchor:'end',fill:'#e2e8f0',fontSize:12},t.label));}),
+          g.xTicks.map(function(t,i){return h('g',{key:'x'+i},h('line',{x1:t.x,x2:t.x,y1:40,y2:260,stroke:'#1e293b'}),h('text',{x:t.x,y:281,textAnchor:'middle',fill:'#e2e8f0',fontSize:12},t.label));}),
+          h('text',{x:350,y:302,textAnchor:'middle',fill:'#e2e8f0',fontSize:13},run.xLabel+' ('+run.xUnit+')'),
+          g.referencePaths.map(function(path,i){return h('path',{key:'reference'+i,'data-sweep-reference':true,d:path,fill:'none',stroke:'#c4b5fd',strokeWidth:3,strokeDasharray:'8 6'});}),
+          g.paths.map(function(path,i){return h('path',{key:i,d:path,fill:'none',stroke:'#67e8f9',strokeWidth:3});}),
+          g.points.map(function(p,i){return p.y!=null&&h('circle',{key:i,cx:p.x,cy:p.y,r:box.selected===i?7:4,fill:box.selected===i?'#fff':'#67e8f9'});}),
+          g.baseline.y!=null&&h('path',{d:'M'+g.baseline.x+' '+(g.baseline.y-7)+' l7 7 l-7 7 l-7 -7 Z',fill:'#fbbf24',stroke:'#07111f',strokeWidth:2})),
+        h('p',null,'Cyan line and dots: calculated samples, joined as a visual guide. Amber diamond: the simulation baseline before this run. Axes include the baseline even when it is outside the sweep range. The white dot marks the last sample applied.'),
+        run.reference&&h('p',null,'Dashed lavender line: '+run.reference.label+' (W), using the same power axis. It assumes a separately matched load at every sample.'),
+        run.reference&&h('p',null,'Power = voltage × current. Open circuit has zero load current; short circuit has zero load voltage. Both deliver zero power even when maximum available power is positive. Use the live simulation’s load controls to test a different fixed load, then run again.'),
+        run.points.every(function(p){return p.y==null;})&&h('p',{role:'status'},'No samples fall within the model’s valid range. Choose a different range and run again.'),
+        h('p',null,'Baseline: '+semiSweepValue(run.baseline.x)+' '+run.xUnit+' → '+semiSweepValue(run.baseline.y)+(run.baseline.y==null?'':(' '+run.output.unit))+'.'),
+        run.reference&&h('p',null,'Available maximum at baseline: '+semiSweepValue(run.baseline.reference)+' W.'),
+        h('label',null,'Inspect sample',h('input',{type:'range',min:0,max:10,step:1,value:box.selected==null?0:box.selected,'aria-valuetext':box.selected==null?'No sample applied. Use the table or move this slider.':'Sample '+(box.selected+1)+': '+semiSweepValue(selected.x)+' '+run.xUnit,onChange:function(e){apply(Number(e.target.value));},style:{width:'100%',minHeight:44}})),
+        h('p',null,'Use the slider or a table button to apply a sample to the simulation above, including its 3D view when enabled.'),
+        selected&&h('p',null,'Last applied: '+semiSweepValue(selected.x)+' '+run.xUnit+' → '+semiSweepValue(selected.y)+(selected.y==null?'':(' '+run.output.unit))+' · '+selected.status),
+        run.reference&&selected&&h('p',{'data-solar-sweep-reading':true},'At this sample: '+semiSweepValue(selected.voltage)+' V × '+semiSweepValue(selected.current)+' A = '+semiSweepValue(selected.y)+' W delivered; '+semiSweepValue(selected.reference)+' W available. '+(selected.fraction==null?'No available power, so a delivered/available percentage is not defined.':semiSweepValue(selected.fraction*100)+'% of available power delivered.')),
+        h('button',{type:'button',onClick:function(){var el=document.querySelector('.semi-workspace');if(el){el.setAttribute('tabindex','-1');el.focus();el.scrollIntoView({block:'start'});}}},'View linked simulation'),
+        h('details',null,h('summary',null,'All 11 readings and inspection buttons'),
+          h('table',null,h('caption',null,'Sweep readings · '+run.output.label+' ('+run.output.unit+')'),
+            h('thead',null,h('tr',null,h('th',{scope:'col'},run.xLabel+' ('+run.xUnit+')'),h('th',{scope:'col'},run.output.label+' ('+run.output.unit+')'),h('th',{scope:'col'},'Inspect'))),
+            h('tbody',null,run.points.map(function(p,i){return h('tr',{key:i},h('th',{scope:'row'},semiSweepValue(p.x)),h('td',null,run.reference?'Delivered: '+semiSweepValue(p.y):semiSweepValue(p.y),run.reference&&h('div',null,'Available: '+semiSweepValue(p.reference)),h('div',null,p.status)),h('td',null,h('button',{type:'button','aria-label':'Apply sample '+(i+1)+': '+semiSweepValue(p.x)+' '+run.xUnit,'aria-pressed':box.selected===i,onClick:function(){apply(i);}},'Apply '+(i+1))));})))),
+        h(SemiSweepComparison,{React:props.React,run:run,box:box,update:update}),
+        h('h4',{style:{marginTop:20}},'3. Explain the pattern'),
+        h('p',null,'Compare two readings. What changed, what stayed fixed, and did the result support your prediction? Use the curve’s model limits in your explanation.'),
+        h('label',null,'Sweep explanation',h('textarea',{'aria-label':'Sweep explanation',rows:3,maxLength:1500,value:box.note||'',onChange:function(e){update({note:e.target.value,saved:false});},style:control})),
+        h('button',{type:'button',disabled:!props.setSnapshots||(box.note||'').trim().length<12||!!box.saved,onClick:save},box.saved?'Sweep saved':'Save sweep to notebook'),
+        h('p',null,'Write at least 12 characters to save your explanation with all 11 readings and the baseline.'),
+        box.notice&&h('p',{role:'status'},box.notice)));
+  }
+
   window.__SemiconductorCore = {
+    sweepOverlay:semiSweepOverlay, savedSweep:semiSavedSweep,
+    sweepCompare:semiSweepCompare, sweepComparisonEvidence:semiSweepComparisonEvidence,
+    sweepSpec:semiSweepSpec, sweepRun:semiSweepRun, sweepGeometry:semiSweepGeometry, sweepApply:semiSweepApply, sweepEvidence:semiSweepEvidence,
+    capture:semiCapture, notebookEntries:semiNotebookEntries, restoreNotebook:semiRestore, compareNotebook:semiCompare, notebookMarkdown:semiNotebookMarkdown, routeProgress:semiRouteProgress, routes:SEMI_ROUTES,
     moore:semiMoore, doubling:semiDoubling, milestones:SEMI_MILESTONES,
     logic:semiLogic, nandTrace:semiNandTrace, cmos:semiCMOS, logicExperiment:semiLogicExperiment,
     led:semiLed, ledSpectrum:semiLedSpectrum, ledEmitters:SEMI_LED_EMITTERS,
@@ -4144,30 +4597,15 @@ window.StemLab = window.StemLab || {
       var snapshotButtonCount = Array.isArray(toolSnapshots) ? toolSnapshots.filter(function(item) { return item && item.tool === 'semiconductor'; }).length : 0;
       if (snapshotButtonCount > 0) snapshotLabel += ' (' + snapshotButtonCount + ')';
       var snapshotBtn = h('button', { onClick: function() {
-          var label = tab === 'explore' ? subtool : tab;
-          var detail = '';
-          if (subtool === 'bandgap') detail = ' ' + (MATERIALS[d.material] || {}).name + ' ' + d.temperature + 'K';
-          else if (subtool === 'pnjunction') detail = ' V=' + (d.pnBias || 0).toFixed(1) + 'V';
-          else if (subtool === 'transistor') detail = ' ' + d.transistorType + ' Vg=' + (d.gateVoltage || 0).toFixed(1);
-          else if (subtool === 'gates') detail = ' ' + d.gateType + ' A=' + (d.inputA ? 1 : 0) + (d.inputB !== undefined ? ' B=' + (d.inputB ? 1 : 0) : '');
-          else if (subtool === 'ivcurve') detail = ' ' + d.ivDevice + ' V=' + (d.ivSweepV || 0).toFixed(1) + 'V';
-          else if (subtool === 'waferfab') detail = ' Stage ' + ((d.fabStage || 0) + 1) + '/8';
-          else if (subtool === 'ledspec') detail = ' ' + (d.ledMaterial || 'GaAs') + (d.ledMixMode ? ' RGB-Mix' : '');
-          else if (subtool === 'solarcell') detail = ' ' + (d.solarMaterial || 'silicon') + ' ' + (d.solarIrradiance || 1000) + 'W/m²';
-          else if (subtool === 'moorelaw') detail = ' Year=' + (d.mooreYear || 2024);
-          else if (subtool === 'qwell') detail = ' ' + (d.qwWidth || 5) + 'nm ' + (d.qwMaterial || 'gaas-algaas');
-          else if (subtool === 'memory') detail = ' ' + (d.memType || 'sram') + ' bit=' + (d.memBitValue || 0);
-          else if (subtool === 'amplifier') detail = ' ' + (d.ampType || 'common-source') + ' Vin=' + ((d.ampVin || 0.01) * 1000).toFixed(0) + 'mV';
+          var rows=tab==='explore'?experimentEvidence(d):[];
+          var label='Semi: '+(tab==='explore'?getSubtoolLabel(subtool):tab)+(rows.length?' — '+rows.slice(0,2).map(function(row){return row[0]+': '+String(row[1]).slice(0,100);}).join(' · '):' session');
+          var entry=semiCapture(Object.assign({},d,{subtool:subtool,mode:tab}),label,rows);
           setToolSnapshots(function(prev) {
             var snapshots = Array.isArray(prev) ? prev : [];
-            return snapshots.concat([{
-              id: 'semi-' + Date.now(), tool: 'semiconductor',
-              label: 'Semi: ' + label + detail,
-              data: Object.assign({}, d), timestamp: Date.now()
-            }]);
+            return snapshots.concat([entry]);
           });
-          addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
-          if (announceToSR) announceToSR('Snapshot saved');
+          addToast('Snapshot and live values saved to your notebook.','success');
+          if(announceToSR)announceToSR('Snapshot saved');
         },
         className: 'semi-snapshot mt-3 ml-auto px-5 py-2 text-xs font-black text-white bg-gradient-to-r from-cyan-700 to-indigo-600 rounded-full hover:from-cyan-700 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all',
         'aria-label': snapshotLabel + '. Save the current Semiconductor Lab state to your notebook.',
@@ -4327,6 +4765,8 @@ window.StemLab = window.StemLab || {
       var guidedNotebookCount = semiconductorSnapshots.filter(function(item) { return String(item.id || '').indexOf('semi-guided-') === 0; }).length;
       var currentSubtoolIndex = SUBTOOLS.findIndex(function(item) { return item.id === subtool; });
       var nextSubtool = SUBTOOLS[(currentSubtoolIndex + 1 + SUBTOOLS.length) % SUBTOOLS.length] || SUBTOOLS[0];
+      var activeRoute=SEMI_ROUTES.find(function(r){return r.id===d.learningRoute;});
+      if(activeRoute&&activeRoute.steps.indexOf(subtool)>=0){var nextRouteId=activeRoute.steps[(activeRoute.steps.indexOf(subtool)+1)%activeRoute.steps.length];nextSubtool=SUBTOOLS.find(function(st){return st.id===nextRouteId;})||nextSubtool;}
       var progressText = tab === 'challenge' ? 'Answer one question to earn XP.' : tab === 'battle' ? 'Defend the chip one round at a time.' : tab === 'learn' ? 'Read one concept, then test it in Explore.' : guidedSaved ? 'Complete — choose another workspace to keep going.' : guidedChanged ? 'Explain your change to finish this experiment.' : guidedReady ? 'Change one variable to continue.' : 'Start with a guided setup.';
       var guidedProgressStep = guidedSaved ? 3 : guidedChanged ? 2 : guidedReady ? 1 : 0;
       var guidedProgressPercent = Math.round((guidedProgressStep / 3) * 100);
@@ -4481,23 +4921,15 @@ window.StemLab = window.StemLab || {
 
       function saveGuidedObservation() {
         if (guidedNote.trim().length < 12 || guidedSaved) return;
-        var capturedAt = Date.now();
-        var capturedData = Object.assign({}, d, {
-          guidedSubtool: subtool,
-          guidedObservation: guidedNote.trim(),
-          guidedPrediction: prediction.trim(),
-          guidedEvidence: {baseline:baselineEvidence,observed:currentEvidence},
-          guidedObservationSaved: subtool
-        });
+        var entry=semiCapture(Object.assign({},d,{subtool:subtool,mode:'explore'}),
+          'Guided: '+getSubtoolLabel(subtool)+' — '+guidedNote.trim().slice(0,72),currentEvidence,{
+            guidedObservation: guidedNote.trim(),
+            guidedPrediction: prediction.trim(),
+            guidedEvidence:{baseline:baselineEvidence,observed:currentEvidence}
+          });
         setToolSnapshots(function(prev) {
           var snapshots = Array.isArray(prev) ? prev : [];
-          return snapshots.concat([{
-            id: 'semi-guided-' + capturedAt,
-            tool: 'semiconductor',
-            label: 'Guided: ' + getSubtoolLabel(subtool) + ' — ' + guidedNote.trim().slice(0, 72),
-            data: capturedData,
-            timestamp: capturedAt
-          }]);
+          return snapshots.concat([entry]);
         });
         upd('guidedObservationSaved', subtool);
         addToast('Observation saved to your lab notebook.', 'success');
@@ -4562,13 +4994,94 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'px-3 pb-3' }, commandPanel)
       ) : null;
 
-      var notebookPreview = notebookCount > 0 ? h('details', { id: 'semiconductor-notebook-preview', className: 'semi-notebook-preview mt-2 ml-auto w-full max-w-xl rounded-lg border border-slate-500 bg-slate-900/90' },
-        h('summary', { className: 'cursor-pointer px-3 py-2 text-xs font-bold text-cyan-200 hover:text-white' }, 'Recent notebook entries · ' + notebookCount + ' saved'),
-        h('ol', { className: 'space-y-1 px-3 pb-3 text-xs text-slate-200' }, semiconductorSnapshots.slice(-3).reverse().map(function(entry, index) {
-          return h('li', { key: entry.id || index, className: 'rounded-md border border-slate-700 bg-slate-950/60 px-2 py-1.5 leading-relaxed' }, String(entry.label || 'Saved Semiconductor Lab state'));
-        }))
-      ) : null;
 
+      var notebookEntries=semiNotebookEntries(toolSnapshots),routeProgress=semiRouteProgress(d.learningRoute,notebookEntries);
+      function focusExperiment(){requestAnimationFrame(function(){var el=document.getElementById('semiconductor-simulation-select');if(el){el.focus();el.scrollIntoView({block:'nearest'});}});}
+      function openRouteLesson(id){updMulti({subtool:id,mode:'explore',guidedSetupSubtool:null,guidedObservationSaved:null,aiExplain:null});focusExperiment();}
+      function openNotebook(){upd('notebookOpen',true);requestAnimationFrame(function(){var el=document.querySelector('#semiconductor-notebook-preview summary');if(el){el.focus();el.scrollIntoView({block:'nearest'});}});}
+      var learningRoutes=tab==='explore'&&h('details',{className:'semi-study','data-learning-routes':true},
+        h('summary',null,'Choose a question / learning route'),
+        h('p',null,'Choose a route, then continue to its first lesson without a saved explanation. You can open any lesson directly; selecting a route does not reset an experiment.'),
+        h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Learning routes'},SEMI_ROUTES.map(function(route){
+          return h('button',{key:route.id,type:'button','aria-pressed':d.learningRoute===route.id,onClick:function(){upd('learningRoute',route.id);},style:{whiteSpace:'normal',textAlign:'left'}},route.question);
+        })),
+        routeProgress&&h('div',null,
+          h('h4',null,routeProgress.route.question),
+          h('p',{role:'status'},routeProgress.done.length+' / '+routeProgress.route.steps.length+' lessons with saved explanations. This tracks notebook work, not mastery.'),
+          h('ol',null,routeProgress.route.steps.map(function(id){return h('li',{key:id},
+            h('button',{type:'button','aria-current':subtool===id?'step':undefined,onClick:function(){openRouteLesson(id);},style:{minHeight:'44px',textAlign:'left'}},'Open '+SEMI_LESSONS[id]),
+            ' · '+(routeProgress.done.indexOf(id)>=0?'Explanation saved':subtool===id?'Current lesson':'No saved explanation'));})),
+          h('div',{className:'semi-inspector-controls'},btn(routeProgress.next?'Continue route: '+SEMI_LESSONS[routeProgress.next]:'Review route from the beginning',function(){openRouteLesson(routeProgress.next||routeProgress.route.steps[0]);}),
+            btn('Leave route',function(){upd('learningRoute',null);})))
+      );
+      var notebookFilter=d.notebookFilter||'all';
+      var filteredEntries=notebookEntries.filter(function(entry){return notebookFilter==='all'||entry.workspace===notebookFilter;}).slice().reverse();
+      var comparisonKeys=Array.isArray(d.notebookCompare)?d.notebookCompare:[],comparisonEntries=notebookEntries.filter(function(entry){return comparisonKeys.indexOf(entry.key)>=0;}).slice(0,2);
+      var comparison=semiCompare(comparisonEntries[0],comparisonEntries[1]);
+      var notebookLimit=Math.round(semiNumber(d.notebookLimit,20,20,10000));
+      function toggleComparison(entry){
+        var keys=comparisonEntries.map(function(e){return e.key;}),index=keys.indexOf(entry.key);
+        if(index>=0)keys.splice(index,1);else if(keys.length<2)keys.push(entry.key);
+        upd('notebookCompare',keys);
+      }
+      function restoreNotebook(entry){
+        if(!entry.workspace)return;
+        setLabToolData(function(prev){prev=prev||{};var next=semiRestore(prev.semiconductor,entry);if(!next)return prev;
+          next.notebookNotice='Restored '+SEMI_LESSONS[entry.workspace]+'. Other lessons and drafts were preserved. Saved evidence remains as recorded.';
+          return Object.assign({},prev,{semiconductor:next});
+        });
+        focusExperiment();
+        if(announceToSR)announceToSR('Restored '+SEMI_LESSONS[entry.workspace]+' experiment settings.');
+      }
+      function exportNotebook(){
+        var blob=new Blob([semiNotebookMarkdown(filteredEntries)],{type:'text/markdown;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+        link.href=url;link.download='semiconductor-notebook.md';document.body.appendChild(link);link.click();link.remove();
+        setTimeout(function(){URL.revokeObjectURL(url);},1000);
+        upd('notebookNotice','Exported '+filteredEntries.length+' notebook entries as Markdown.');
+      }
+      var notebookPreview=h('details',{id:'semiconductor-notebook-preview',className:'semi-notebook-preview semi-study',open:!!d.notebookOpen,
+        onToggle:function(e){var value=e.currentTarget.open;if(value!==!!d.notebookOpen)upd('notebookOpen',value);}},
+        h('summary',null,'Recent notebook entries · '+notebookCount+' saved'),
+        h('p',null,'Inspect the saved evidence, compare two entries from one lesson, or restore experiment settings. Restore preserves other lessons and your draft text. Older saved states may lack numerical evidence; restored settings run through the current model.'),
+        notebookCount===0&&h('p',null,'Your notebook is empty. Save a snapshot to capture settings and live values, or save a guided observation to include your explanation.'),
+        h('label',{htmlFor:'semi-notebook-filter'},'Filter notebook by lesson'),
+        h('select',{id:'semi-notebook-filter',value:notebookFilter,onChange:function(e){updMulti({notebookFilter:e.target.value,notebookLimit:20,notebookCompare:[]});},
+          style:{display:'block',maxWidth:'100%',padding:'10px',margin:'8px 0',background:'#0f172a',color:'#f8fafc',border:'1px solid #64748b',borderRadius:'8px'}},
+          h('option',{value:'all'},'All lessons'),Object.keys(SEMI_LESSONS).map(function(id){return h('option',{key:id,value:id},SEMI_LESSONS[id]);})),
+        h('div',{className:'semi-inspector-controls'},h('button',{type:'button',disabled:!filteredEntries.length,onClick:exportNotebook},'Export filtered entries (.md)'),
+          comparisonEntries.length>0&&btn('Clear comparison',function(){upd('notebookCompare',[]);})),
+        d.notebookNotice&&h('p',{role:'status'},d.notebookNotice),
+        h('section',{'aria-label':'Notebook comparison'},
+          h('h4',null,'Compare recorded evidence'),
+          h('p',null,comparisonEntries.length===2?'Two entries selected. Uncheck one before choosing another.':'Select up to two entries using their Compare checkboxes.'),
+          comparisonEntries.map(function(entry,i){return h('p',{key:entry.key},(i===0?'A: ':'B: ')+entry.label);}),
+          comparison.reason&&h('p',{role:'status'},comparison.reason),
+          h(SemiSweepOverlay,{React:React,a:comparisonEntries[0],b:comparisonEntries[1]}),
+          comparison.rows.length>0&&h('table',null,h('caption',null,'Recorded values · no recalculation'),
+            h('thead',null,h('tr',null,h('th',{scope:'col'},'Quantity'),h('th',{scope:'col'},'Entry A'),h('th',{scope:'col'},'Entry B'))),
+            h('tbody',null,comparison.rows.map(function(row){return h('tr',{key:row[0]},h('th',{scope:'row'},row[0]),h('td',null,row[1]),h('td',null,row[2]));})))
+        ),
+        filteredEntries.length===0&&notebookCount>0&&h('p',null,'No saved entries for this lesson. Choose All lessons to see the rest.'),
+        h('ol',{style:{paddingLeft:'20px'}},filteredEntries.slice(0,notebookLimit).map(function(entry){
+          var checked=comparisonEntries.some(function(e){return e.key===entry.key;});
+          return h('li',{key:entry.key,style:{marginTop:'12px',overflowWrap:'anywhere'}},
+            h('details',{'data-notebook-entry':entry.key},
+              h('summary',null,entry.label),
+              h('p',null,entry.workspace?SEMI_LESSONS[entry.workspace]+' · '+(entry.observation?'Guided observation':'Snapshot'):'Saved '+entry.mode+' session · experiment restoration unavailable'),
+              entry.prediction&&h('p',null,h('strong',null,'Prediction: '),entry.prediction),
+              entry.observation&&h('p',null,h('strong',null,'Observation: '),entry.observation),
+              entry.evidence.length?h('table',null,h('caption',null,'Evidence recorded at save time'),
+                h('thead',null,h('tr',null,h('th',{scope:'col'},'Quantity'),h('th',{scope:'col'},'Recorded value'))),
+                h('tbody',null,entry.evidence.map(function(row){return h('tr',{key:row[0]},h('th',{scope:'row'},row[0]),h('td',null,row[1]));})))
+                :h('p',null,'No numerical evidence was stored with this older entry.'),
+              h(SemiSavedSweep,{React:React,entry:entry}),
+              h('div',{className:'semi-inspector-controls'},
+                h('label',null,h('input',{type:'checkbox',checked:checked,disabled:!entry.workspace||!checked&&comparisonEntries.length>=2,onChange:function(){toggleComparison(entry);},'aria-label':'Compare '+entry.label}),' Compare this entry'),
+                h('button',{type:'button',disabled:!entry.workspace,onClick:function(){restoreNotebook(entry);},'aria-label':'Restore '+entry.label},'Restore experiment'))
+            ));
+        })),
+        filteredEntries.length>notebookLimit&&btn('Show more entries',function(){upd('notebookLimit',notebookLimit+20);})
+      );
       var labHeader = h('header', { className: 'semi-lab-header' },
         h('span', { className: 'semi-brand-mark', 'aria-hidden': 'true' }, '\uD83D\uDCA1'),
         h('div', { className: 'semi-header-copy' },
@@ -4604,12 +5117,15 @@ window.StemLab = window.StemLab || {
           tabHero,
           subtoolNav,
           tab === 'explore' && h('div',{className:'semi-inspector-controls'},h('button',{type:'button','aria-pressed':!!d.motionPaused,onClick:function(){upd('motionPaused',!d.motionPaused);}},d.motionPaused ? t('stem.semiconductor.resume_motion','Resume particle motion') : t('stem.semiconductor.pause_motion','Pause particle motion'))),
+          h('div',{className:'semi-inspector-controls'},btn('Open notebook ('+notebookCount+')',openNotebook)),
+          learningRoutes,
           quickStart,
           tab === 'explore' && guidedReady && baselineEvidence && h('div',{className:'semi-study'},
             h('label',{htmlFor:'semi-prediction'},t('stem.semiconductor.predict_prompt','Before changing a setting: what do you predict? (optional)')),
             h('textarea',{id:'semi-prediction',rows:2,maxLength:500,value:prediction,style:{display:'block',width:'100%',boxSizing:'border-box',marginTop:8,padding:10,border:'1px solid #64748b',borderRadius:8,background:'#020617',color:'#f8fafc'},
               onChange:function(e){var next=Object.assign({},predictions);next[subtool]=e.target.value;upd('guidedPredictions',next);}})),
           h('div', { className: 'semi-workspace flex-1' }, content),
+          tab === 'explore' && h(SemiSweepPanel,{key:subtool,React:React,data:d,materials:MATERIALS,solarMaterials:SOLAR_MATS,setData:setLabToolData,setSnapshots:setToolSnapshots}),
           studyEvidence,
           guidedReflection,
           commandDrawer),

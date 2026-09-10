@@ -26,7 +26,7 @@ async function mount(page: Page, sourceHtml = html) {
     const initial: any = {
       accessibleHtml: source, verificationState: 'complete', afterScoreVerified: true,
       candidateRejectionCount: 1,
-      candidateRejections: [{ pass: 1, chunkId: 'all', phase: 'single', reason: 'table-cell-transposition' }],
+      candidateRejections: [{ pass: 1, chunkId: 'all', phase: 'single', reason: 'table-cell-transposition', sourceLocation: 'table:1/row:2/cell:2' }],
     };
     Object.defineProperties(initial, {
       _verificationHtmlSnapshot: { value: source, enumerable: false },
@@ -102,6 +102,7 @@ test('review component: keyboard acknowledgment preserves the strict host proof;
   await page.keyboard.press('Tab');
   await expect(page.locator('summary')).toBeFocused();
   await page.keyboard.press('Enter');
+  await expect(page.getByText('Location in the input for this attempt: table 1, row 2, cell 2.')).toBeVisible();
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Acknowledge', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');

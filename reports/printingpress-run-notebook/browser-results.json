@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "checks": [
+    "manual cycle",
+    "immutable printed phrase",
+    "repeated guided tours after manual printing",
+    "notes and phrase edits during tour",
+    "unfinished-cycle restart",
+    "cross-page storage recovery",
+    "labels restored",
+    "notebook download",
+    "broadside handoff cancel/confirm",
+    "12-proof retention with continuing total",
+    "reset cancellation and confirmation",
+    "existing broadside preserved",
+    "storage failure feedback",
+    "mobile geometry",
+    "notebook accessibility"
+  ],
+  "sizes": [
+    {
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "viewport": 320,
+      "document": 320
+    }
+  ],
+  "accessibility": [],
+  "errors": []
+}

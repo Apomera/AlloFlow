@@ -1,0 +1,22 @@
+[
+  {
+    "variant": "solar irradiance comparison",
+    "violations": []
+  },
+  {
+    "variant": "solar temperature comparison",
+    "violations": []
+  },
+  {
+    "variant": "open circuit power comparison",
+    "violations": []
+  },
+  {
+    "variant": "no-light temperature sweep",
+    "violations": []
+  },
+  {
+    "variant": "solar notebook evidence",
+    "violations": []
+  }
+]

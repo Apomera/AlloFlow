@@ -1,0 +1,82 @@
+{
+  "enhancement": "Traveled-distance fills for all six machines",
+  "tests": {
+    "passed": 370,
+    "files": 5,
+    "added": 22
+  },
+  "browser": {
+    "light": {
+      "desktopScenarios": 22,
+      "mobileScenarios": 12,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: lever 390",
+        "Keyboard and held camera pose: pulley 390",
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: ramp 390",
+        "Keyboard and held camera pose: wedge 390",
+        "Keyboard and held camera pose: screw 390",
+        "Keyboard and held camera pose: lever 320",
+        "Keyboard and held camera pose: pulley 320",
+        "Keyboard and held camera pose: windlass 320",
+        "Keyboard and held camera pose: ramp 320",
+        "Keyboard and held camera pose: wedge 320",
+        "Keyboard and held camera pose: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "dark": {
+      "desktopScenarios": 22,
+      "mobileScenarios": 12,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: lever 390",
+        "Keyboard and held camera pose: pulley 390",
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: ramp 390",
+        "Keyboard and held camera pose: wedge 390",
+        "Keyboard and held camera pose: screw 390",
+        "Keyboard and held camera pose: lever 320",
+        "Keyboard and held camera pose: pulley 320",
+        "Keyboard and held camera pose: windlass 320",
+        "Keyboard and held camera pose: ramp 320",
+        "Keyboard and held camera pose: wedge 320",
+        "Keyboard and held camera pose: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "contrast": {
+      "desktopScenarios": 22,
+      "mobileScenarios": 12,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: lever 390",
+        "Keyboard and held camera pose: pulley 390",
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: ramp 390",
+        "Keyboard and held camera pose: wedge 390",
+        "Keyboard and held camera pose: screw 390",
+        "Keyboard and held camera pose: lever 320",
+        "Keyboard and held camera pose: pulley 320",
+        "Keyboard and held camera pose: windlass 320",
+        "Keyboard and held camera pose: ramp 320",
+        "Keyboard and held camera pose: wedge 320",
+        "Keyboard and held camera pose: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "sourceSha256": "64ba50a26aea75880309fd85738d88adbab2236784caf647879765fc352b50b5",
+  "published": false
+}

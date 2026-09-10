@@ -99,13 +99,13 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
     <p className="text-xs mt-1">{evidence.candidateRejectionCount ? `${evidence.candidateRejectionCount} suggestions were rejected to protect the document. ${pending} recorded items need acknowledgment.` : 'Inspect stable references for tables, cells, and images.'} Acknowledging an item does not resolve accessibility findings or change verification.</p>
     {items.length > 0 && <details className="mt-2"><summary className="cursor-pointer text-xs font-semibold">Review rejected suggestions ({items.length})</summary>
       <ol className="mt-2 space-y-2">{items.map(item => <li key={item.key} className="rounded border border-amber-200 bg-white p-2 text-xs">
-        <p>{item.description}</p><p className="mt-1 text-slate-600">{item.pass ? `Pass ${item.pass} · ` : ''}{item.chunkId === 'all' ? 'Whole document' : `Section ${item.chunkId}`} · {item.phase}</p>
+        <p>{item.description}</p>{item.locationLabel && <p className="mt-1 text-slate-600">{item.locationLabel}</p>}<p className="mt-1 text-slate-600">{item.pass ? `Pass ${item.pass} · ` : ''}{item.chunkId === 'all' ? 'Whole document' : `Section ${item.chunkId}`} · {item.phase}</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <button type="button" className="rounded border px-2 py-1" aria-pressed={item.reviewed} onClick={() => {
             const token = captureToken();
             commitMetadata(token, prev => { const acknowledgments = { ...(prev.preservationAcknowledgments || {}) }; if (acknowledgments[item.key]) delete acknowledgments[item.key]; else acknowledgments[item.key] = Date.now(); return { ...prev, preservationAcknowledgments: acknowledgments }; });
           }}>{item.reviewed ? 'Acknowledged — undo' : 'Acknowledge'}</button>
-          <button type="button" className="rounded border px-2 py-1" onClick={() => onWorkbench(`Review accessibility issues in ${item.chunkId === 'all' ? 'the document' : 'section ' + item.chunkId}. A previous suggestion was rejected: ${item.description} Preserve the source wording, table values, and image identity.`)}>Prepare Workbench review</button>
+          <button type="button" className="rounded border px-2 py-1" onClick={() => onWorkbench(`Review accessibility issues in ${item.chunkId === 'all' ? 'the document' : 'section ' + item.chunkId}. A previous suggestion was rejected: ${item.description} ${item.locationLabel || ""} Preserve the source wording, table values, and image identity.`)}>Prepare Workbench review</button>
         </div>
       </li>)}</ol>
     </details>}
@@ -113,7 +113,7 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
     <button ref={inspectButton} type="button" aria-disabled={busy} className="mt-2 rounded border border-amber-500 px-2 py-1 text-xs" onClick={() => { if (!busy) openStructure(); }}>Inspect document references</button>
     <p role="status" className="text-xs mt-1">{message}</p>
     {expanded && model && <div className="mt-2">
-      <p className="text-xs mb-2">References describe the document when this index was created. Rejection records identify a section, not an exact affected cell or image. Changed or ambiguous elements cannot be located automatically.</p>
+      <p className="text-xs mb-2">References describe the document when this index was created. Rejection locations describe the input for that attempt; they are not automatically matched to this preview. Changed or ambiguous elements cannot be located automatically.</p>
       <label className="text-xs">Document element <select value={selected} onChange={event => { cancelNavigation(); setSelected(event.target.value); setMessage(''); }} className="border rounded max-w-full p-1">
         <option value="">Choose an element</option>{model.references.map(ref => <option key={ref.id} value={ref.id}>{ref.label}</option>)}
       </select></label>

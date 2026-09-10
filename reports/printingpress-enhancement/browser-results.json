@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "checks": [
+    "composer placement",
+    "template cancel and undo",
+    "navigation recovery",
+    "browser storage recovery",
+    "all layout and mark settings restored",
+    "safe standalone HTML export",
+    "isolated print content",
+    "blocked popup feedback",
+    "empty output disabled",
+    "unavailable storage feedback",
+    "invalid saved settings normalized",
+    "responsive layout",
+    "composer accessibility"
+  ],
+  "sizes": [
+    {
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "viewport": 320,
+      "document": 320
+    }
+  ],
+  "accessibility": [],
+  "errors": []
+}

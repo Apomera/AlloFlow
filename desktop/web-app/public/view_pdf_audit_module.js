@@ -32,6 +32,10 @@ var X = _lazyIcon('X');
   'use strict';
   var MAX_RECORDS = 100, MAX_REFERENCES = 700;
   var reasons = {
+    "source-visibility-changed": "The suggestion hid source content from view or assistive technology; the original was retained.",
+    "table-semantics-changed": "Existing table headers or associations lost their meaning; the original table was retained.",
+    "form-state-changed": "A form value, state, label association, or destination changed; the original form was retained.",
+    "math-content-changed": "Mathematical notation or structure changed; the original expression was retained.",
     'no-original': 'The suggestion had no usable source for comparison and was rejected.',
     'empty-output': 'The suggestion was empty; the original content was retained.',
     'no-doc-markers': 'The suggestion did not contain a complete document; the original was retained.',
@@ -43,6 +47,13 @@ var X = _lazyIcon('X');
     'image-reference-uncheckable': 'The image references could not be verified; the original images were retained.',
     'image-reference-changed': 'Image identity or order changed; the original images were retained.',
     'invalid-json-wrapper': 'The suggestion could not be read as HTML; the original was retained.',
+    "table-content-changed": "Table values, cells, or spans changed; the original table was retained.",
+    "source-value-changed": "A source number, sign, or unit changed or was added; the original content was retained.",
+    "link-destination-changed": "A link destination or link order changed; the original links were retained.",
+    "image-association-changed": "An image moved relative to its source content or caption; the original placement was retained.",
+    "source-reading-order-changed": "Source wording or reading order changed; the original content was retained.",
+    "source-content-added": "The suggestion added unsupported source content; the original was retained.",
+    "source-contract-uncheckable": "Source preservation could not be checked; the original content was retained.",
     'content-not-preserved': 'The suggestion did not preserve the document; the original was retained.'
   };
   function count(value) { return Number.isSafeInteger(value) && value >= 0 ? Math.min(value, 1000000) : 0; }
@@ -56,6 +67,7 @@ var X = _lazyIcon('X');
     }).map(function (r) {
       var item = { chunkId: r.chunkId, phase: r.phase, reason: r.reason };
       if (Number.isSafeInteger(r.pass) && r.pass >= 1 && r.pass <= 1000000) item.pass = r.pass;
+      if (typeof r.sourceLocation === 'string' && /^(?:document|(?:table|row|cell|link|figure|control|math):[1-9][0-9]{0,7}(?:\/(?:row|cell):[1-9][0-9]{0,7}){0,2})$/.test(r.sourceLocation)) item.sourceLocation = r.sourceLocation;
       return item;
     });
   }
@@ -80,6 +92,7 @@ var X = _lazyIcon('X');
     return records(value && value.candidateRejections).map(function (r, index) {
       var key = ['preservation', index, r.pass, r.chunkId, r.phase, r.reason].join('|');
       return Object.assign({}, r, { key: key, reviewed: !!(reviewed && reviewed[key]), description: reasons[r.reason] || reasons['content-not-preserved'],
+        locationLabel: r.sourceLocation ? 'Location in the input for this attempt: ' + r.sourceLocation.replace(/:/g, ' ').replace(/\//g, ', ') + '.' : '',
         referenceKind: /table/i.test(r.reason) ? 'table' : /image|asset|placeholder/i.test(r.reason) ? 'figure' : null });
     });
   }
@@ -306,7 +319,7 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
       if (current()) setBusy(false);
     }
   };
-  return /* @__PURE__ */ React.createElement("section", { "aria-label": "Preservation review", className: "mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-slate-900" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold" }, "Preservation review"), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1" }, evidence.candidateRejectionCount ? `${evidence.candidateRejectionCount} suggestions were rejected to protect the document. ${pending} recorded items need acknowledgment.` : "Inspect stable references for tables, cells, and images.", " Acknowledging an item does not resolve accessibility findings or change verification."), items.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-semibold" }, "Review rejected suggestions (", items.length, ")"), /* @__PURE__ */ React.createElement("ol", { className: "mt-2 space-y-2" }, items.map((item) => /* @__PURE__ */ React.createElement("li", { key: item.key, className: "rounded border border-amber-200 bg-white p-2 text-xs" }, /* @__PURE__ */ React.createElement("p", null, item.description), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-slate-600" }, item.pass ? `Pass ${item.pass} \xB7 ` : "", item.chunkId === "all" ? "Whole document" : `Section ${item.chunkId}`, " \xB7 ", item.phase), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "rounded border px-2 py-1", "aria-pressed": item.reviewed, onClick: () => {
+  return /* @__PURE__ */ React.createElement("section", { "aria-label": "Preservation review", className: "mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-slate-900" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold" }, "Preservation review"), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1" }, evidence.candidateRejectionCount ? `${evidence.candidateRejectionCount} suggestions were rejected to protect the document. ${pending} recorded items need acknowledgment.` : "Inspect stable references for tables, cells, and images.", " Acknowledging an item does not resolve accessibility findings or change verification."), items.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-semibold" }, "Review rejected suggestions (", items.length, ")"), /* @__PURE__ */ React.createElement("ol", { className: "mt-2 space-y-2" }, items.map((item) => /* @__PURE__ */ React.createElement("li", { key: item.key, className: "rounded border border-amber-200 bg-white p-2 text-xs" }, /* @__PURE__ */ React.createElement("p", null, item.description), item.locationLabel && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-slate-600" }, item.locationLabel), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-slate-600" }, item.pass ? `Pass ${item.pass} \xB7 ` : "", item.chunkId === "all" ? "Whole document" : `Section ${item.chunkId}`, " \xB7 ", item.phase), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "rounded border px-2 py-1", "aria-pressed": item.reviewed, onClick: () => {
     const token = captureToken();
     commitMetadata(token, (prev) => {
       const acknowledgments = { ...prev.preservationAcknowledgments || {} };
@@ -314,9 +327,9 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
       else acknowledgments[item.key] = Date.now();
       return { ...prev, preservationAcknowledgments: acknowledgments };
     });
-  } }, item.reviewed ? "Acknowledged \u2014 undo" : "Acknowledge"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "rounded border px-2 py-1", onClick: () => onWorkbench(`Review accessibility issues in ${item.chunkId === "all" ? "the document" : "section " + item.chunkId}. A previous suggestion was rejected: ${item.description} Preserve the source wording, table values, and image identity.`) }, "Prepare Workbench review")))))), evidence.candidateRejectionCount > items.length && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-2" }, "Showing ", items.length, " of ", evidence.candidateRejectionCount, " rejection records. Additional details were not retained."), /* @__PURE__ */ React.createElement("button", { ref: inspectButton, type: "button", "aria-disabled": busy, className: "mt-2 rounded border border-amber-500 px-2 py-1 text-xs", onClick: () => {
+  } }, item.reviewed ? "Acknowledged \u2014 undo" : "Acknowledge"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "rounded border px-2 py-1", onClick: () => onWorkbench(`Review accessibility issues in ${item.chunkId === "all" ? "the document" : "section " + item.chunkId}. A previous suggestion was rejected: ${item.description} ${item.locationLabel || ""} Preserve the source wording, table values, and image identity.`) }, "Prepare Workbench review")))))), evidence.candidateRejectionCount > items.length && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-2" }, "Showing ", items.length, " of ", evidence.candidateRejectionCount, " rejection records. Additional details were not retained."), /* @__PURE__ */ React.createElement("button", { ref: inspectButton, type: "button", "aria-disabled": busy, className: "mt-2 rounded border border-amber-500 px-2 py-1 text-xs", onClick: () => {
     if (!busy) openStructure();
-  } }, "Inspect document references"), /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs mt-1" }, message), expanded && model && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-2" }, "References describe the document when this index was created. Rejection records identify a section, not an exact affected cell or image. Changed or ambiguous elements cannot be located automatically."), /* @__PURE__ */ React.createElement("label", { className: "text-xs" }, "Document element ", /* @__PURE__ */ React.createElement("select", { value: selected, onChange: (event) => {
+  } }, "Inspect document references"), /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs mt-1" }, message), expanded && model && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-2" }, "References describe the document when this index was created. Rejection locations describe the input for that attempt; they are not automatically matched to this preview. Changed or ambiguous elements cannot be located automatically."), /* @__PURE__ */ React.createElement("label", { className: "text-xs" }, "Document element ", /* @__PURE__ */ React.createElement("select", { value: selected, onChange: (event) => {
     cancelNavigation();
     setSelected(event.target.value);
     setMessage("");
@@ -7544,6 +7557,11 @@ function PdfAuditView(props) {
     try {
       const result = await refixChunk(chunkIndex, {
         onProgress: (message) => _setRemediationOperationStep(operationTicket, message),
+        onPassEvidence: (delta) => {
+          if (!_remediationOperationIsCurrent(operationTicket)) return;
+          const review = typeof window !== "undefined" && window.AlloModules && window.AlloModules.RemediationReview;
+          if (review) _commitAsyncHtmlIfCurrent(operationTicket.htmlToken, (prev) => ({ ...prev, ...review.mergeEvidence(prev, delta) }));
+        },
         currentHtml: source.accessibleHtml,
         persistedState: source.chunkState,
         documentEpoch: operationTicket.documentEpoch,
@@ -9947,7 +9965,7 @@ Return ONLY JSON:
             sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
             preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
-            candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120) })) : [],
+            candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120), ...typeof entry.sourceLocation === "string" ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {} })) : [],
             reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
             _audioJobMeta: project._audioJobMeta || null,
             _translation: project._translation || null,
@@ -13781,7 +13799,7 @@ Return ONLY JSON:
             sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
             preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
-            candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120) })) : [],
+            candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120), ...typeof entry.sourceLocation === "string" ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {} })) : [],
             reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
             _audioJobMeta: project._audioJobMeta || null,
             _translation: project._translation || null,

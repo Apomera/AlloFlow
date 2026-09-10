@@ -1,0 +1,1521 @@
+{
+  "scope": "One actual local React/Three WebGL browser; Focus creation, exact editor/print invariants; no app source edits",
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [
+    "wide-1440x900: handler releases held keyboard/touch/velocity input",
+    "wide-1440x900: return restores exact camera, projection and navigation mode",
+    "wide-390x844: handler releases held keyboard/touch/velocity input",
+    "wide-390x844: return restores exact camera, projection and navigation mode",
+    "wide-320x700: handler releases held keyboard/touch/velocity input",
+    "wide-320x700: return restores exact camera, projection and navigation mode",
+    "tall-1440x900: handler releases held keyboard/touch/velocity input",
+    "tall-1440x900: return restores exact camera, projection and navigation mode",
+    "tall-390x844: handler releases held keyboard/touch/velocity input",
+    "tall-390x844: return restores exact camera, projection and navigation mode",
+    "tall-320x700: handler releases held keyboard/touch/velocity input",
+    "tall-320x700: return restores exact camera, projection and navigation mode",
+    "offcenter-1440x900: handler releases held keyboard/touch/velocity input",
+    "offcenter-1440x900: return restores exact camera, projection and navigation mode",
+    "offcenter-390x844: handler releases held keyboard/touch/velocity input",
+    "offcenter-390x844: return restores exact camera, projection and navigation mode",
+    "offcenter-320x700: handler releases held keyboard/touch/velocity input",
+    "offcenter-320x700: return restores exact camera, projection and navigation mode"
+  ],
+  "cases": [
+    {
+      "label": "wide-1440x900",
+      "fixture": {
+        "kind": "wide",
+        "expected": 69,
+        "world": 70,
+        "origin": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "before": {
+        "position": [
+          0.5,
+          4.2,
+          3.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 69,
+        "vertices": 1656,
+        "minX": -0.343194260801338,
+        "maxX": 0.9170003813796627,
+        "minY": -0.38883124582097917,
+        "maxY": 0.23725216443614885,
+        "minZ": 0.988098695693119,
+        "maxZ": 0.996636125091166,
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "width": 1418,
+          "height": 825
+        },
+        "camera": {
+          "position": [
+            18.925457504526655,
+            11.0475655373708,
+            23.34756730561305
+          ],
+          "quaternion": [
+            -0.16276767998822747,
+            0.32786043083366007,
+            0.05745448769158173,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.9410437235543019,
+          "right": 0.9410437235543019,
+          "bottom": -0.5312,
+          "top": 0.6766545454545455
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          3,
+          -2,
+          4
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          18.925457504526655,
+          11.0475655373708,
+          23.34756730561305
+        ],
+        "quaternion": [
+          -0.16276767998822747,
+          0.32786043083366007,
+          0.05745448769158173,
+          0.9288235581039676
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "restored": {
+        "position": [
+          0.5577867832006638,
+          4.2,
+          3.5770490442675515
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    },
+    {
+      "label": "wide-390x844",
+      "fixture": {
+        "kind": "wide",
+        "expected": 69,
+        "world": 70,
+        "origin": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "before": {
+        "position": [
+          0.5,
+          4.2,
+          3.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 69,
+        "vertices": 1656,
+        "minX": -0.6210462709586775,
+        "maxX": 0.8718830830656543,
+        "minY": 0.3227060742282461,
+        "maxY": 0.4740217077201956,
+        "minZ": 0.9976380653295024,
+        "maxZ": 0.9987367881282878,
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 376,
+          "height": 777
+        },
+        "camera": {
+          "position": [
+            48.3789686404347,
+            15.69854004759727,
+            59.869921114139025
+          ],
+          "quaternion": [
+            -0.22463679710257606,
+            0.323273950956573,
+            0.07929333449453715,
+            0.9158301311516021
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.8885106382978722,
+          "right": 0.8885106382978722,
+          "bottom": 0.17588159588159588,
+          "top": 0.649086229086229
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          3,
+          -2,
+          4
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          48.3789686404347,
+          15.69854004759727,
+          59.869921114139025
+        ],
+        "quaternion": [
+          -0.22463679710257606,
+          0.323273950956573,
+          0.07929333449453715,
+          0.9158301311516021
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "restored": {
+        "position": [
+          0.5785314019398761,
+          4.199999999999999,
+          3.6047085359198348
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    },
+    {
+      "label": "wide-320x700",
+      "fixture": {
+        "kind": "wide",
+        "expected": 69,
+        "world": 70,
+        "origin": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "before": {
+        "position": [
+          0.5,
+          4.2,
+          3.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 69,
+        "vertices": 1656,
+        "minX": -0.38589273366758803,
+        "maxX": 0.47639689574790867,
+        "minY": -0.019774139900253476,
+        "maxY": 0.10470747610509687,
+        "minZ": 0.999199520713443,
+        "maxZ": 0.999585818430758,
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 306,
+          "height": 633
+        },
+        "camera": {
+          "position": [
+            76.02960138022155,
+            40.606794631053994,
+            94.15670571147473
+          ],
+          "quaternion": [
+            -0.16276767998822747,
+            0.32786043083366007,
+            0.05745448769158173,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.48,
+          "right": 0.48,
+          "bottom": -0.28600000000000003,
+          "top": 0.386
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          3,
+          -2,
+          4
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          76.02960138022155,
+          40.606794631053994,
+          94.15670571147473
+        ],
+        "quaternion": [
+          -0.16276767998822747,
+          0.32786043083366007,
+          0.05745448769158173,
+          0.9288235581039676
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "restored": {
+        "position": [
+          0.5985743395657792,
+          4.200000000000003,
+          3.6314324527543724
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    },
+    {
+      "label": "tall-1440x900",
+      "fixture": {
+        "kind": "tall",
+        "expected": 36,
+        "world": 37,
+        "origin": {
+          "x": -25,
+          "z": 22
+        }
+      },
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "before": {
+        "position": [
+          -23.5,
+          4.2,
+          25.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 36,
+        "vertices": 864,
+        "minX": -0.07620177419789913,
+        "maxX": 0.07468913162314872,
+        "minY": -0.43618327687963954,
+        "maxY": 0.6597884693034246,
+        "minZ": 0.9905875291082883,
+        "maxZ": 0.9942115253999271,
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "width": 1418,
+          "height": 825
+        },
+        "camera": {
+          "position": [
+            -8.940222266617576,
+            17.70182731758576,
+            41.554124389394204
+          ],
+          "quaternion": [
+            -0.16276767998822747,
+            0.32786043083366007,
+            0.05745448769158172,
+            0.9288235581039678
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.9410437235543019,
+          "right": 0.9410437235543019,
+          "bottom": -0.5312,
+          "top": 0.6766545454545455
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          3,
+          -2,
+          4
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          -8.940222266617576,
+          17.70182731758576,
+          41.554124389394204
+        ],
+        "quaternion": [
+          -0.16276767998822747,
+          0.32786043083366007,
+          0.05745448769158172,
+          0.9288235581039678
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "restored": {
+        "position": [
+          -23.442213216799335,
+          4.199999999999999,
+          25.57704904426755
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    },
+    {
+      "label": "tall-390x844",
+      "fixture": {
+        "kind": "tall",
+        "expected": 36,
+        "world": 37,
+        "origin": {
+          "x": -25,
+          "z": 22
+        }
+      },
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "before": {
+        "position": [
+          -23.5,
+          4.2,
+          25.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 36,
+        "vertices": 864,
+        "minX": -0.10146786059097944,
+        "maxX": 0.10074678661218883,
+        "minY": 0.19576403946909277,
+        "maxY": 0.6482006832112527,
+        "minZ": 0.997316294278548,
+        "maxZ": 0.9979965840150772,
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 376,
+          "height": 777
+        },
+        "camera": {
+          "position": [
+            15.55675275871608,
+            21.7205016319234,
+            71.93037342080794
+          ],
+          "quaternion": [
+            -0.22463679710257606,
+            0.323273950956573,
+            0.07929333449453715,
+            0.9158301311516021
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.8885106382978722,
+          "right": 0.8885106382978722,
+          "bottom": 0.17588159588159588,
+          "top": 0.649086229086229
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          3,
+          -2,
+          4
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          15.55675275871608,
+          21.7205016319234,
+          71.93037342080794
+        ],
+        "quaternion": [
+          -0.22463679710257606,
+          0.323273950956573,
+          0.07929333449453715,
+          0.9158301311516021
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "restored": {
+        "position": [
+          -23.421081989042126,
+          4.199999999999999,
+          25.6052240146105
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    },
+    {
+      "label": "tall-320x700",
+      "fixture": {
+        "kind": "tall",
+        "expected": 36,
+        "world": 37,
+        "origin": {
+          "x": -25,
+          "z": 22
+        }
+      },
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "before": {
+        "position": [
+          -23.5,
+          4.2,
+          25.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 36,
+        "vertices": 864,
+        "minX": -0.15499328054792208,
+        "maxX": 0.15321814172560025,
+        "minY": -0.26428075925704264,
+        "maxY": 0.3820955102559884,
+        "minZ": 0.9952696572953171,
+        "maxZ": 0.9965709778500507,
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 306,
+          "height": 633
+        },
+        "camera": {
+          "position": [
+            0.36673539082628537,
+            22.8704329318671,
+            53.0947518846246
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.32786043083366007,
+            0.057454487691581735,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.48,
+          "right": 0.48,
+          "bottom": -0.28600000000000003,
+          "top": 0.386
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          3,
+          -2,
+          4
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          0.36673539082628537,
+          22.8704329318671,
+          53.0947518846246
+        ],
+        "quaternion": [
+          -0.1627676799882275,
+          0.32786043083366007,
+          0.057454487691581735,
+          0.9288235581039676
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "restored": {
+        "position": [
+          -23.442213216799335,
+          4.199999999999999,
+          25.57704904426755
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    },
+    {
+      "label": "offcenter-1440x900",
+      "fixture": {
+        "kind": "offcenter",
+        "expected": 44,
+        "world": 45,
+        "origin": {
+          "x": 31,
+          "z": -27
+        }
+      },
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "before": {
+        "position": [
+          32.5,
+          4.2,
+          -23.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 44,
+        "vertices": 1056,
+        "minX": -0.2272911279484212,
+        "maxX": 0.23632449820346463,
+        "minY": -0.3776464189250419,
+        "maxY": 0.43819044753756903,
+        "minZ": 0.9721366780914518,
+        "maxZ": 0.9864800454328053,
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "width": 1418,
+          "height": 825
+        },
+        "camera": {
+          "position": [
+            39.83911372276514,
+            6.2879896954291254,
+            -17.759498983771223
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.3278604308336601,
+            0.057454487691581756,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.9410437235543019,
+          "right": 0.9410437235543019,
+          "bottom": -0.5312,
+          "top": 0.6766545454545455
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          3,
+          -2,
+          4
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          39.83911372276514,
+          6.2879896954291254,
+          -17.759498983771223
+        ],
+        "quaternion": [
+          -0.1627676799882275,
+          0.3278604308336601,
+          0.057454487691581756,
+          0.9288235581039676
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "keyboardMovement": {
+        "forward": true,
+        "manual": true,
+        "pose": {
+          "position": [
+            38.70721721394074,
+            6.2879896954291254,
+            -19.16020436296902
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.3278604308336601,
+            0.057454487691581756,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        }
+      },
+      "restored": {
+        "position": [
+          32.43954041042698,
+          4.2,
+          -23.57496988794943
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    },
+    {
+      "label": "offcenter-390x844",
+      "fixture": {
+        "kind": "offcenter",
+        "expected": 44,
+        "world": 45,
+        "origin": {
+          "x": 31,
+          "z": -27
+        }
+      },
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "before": {
+        "position": [
+          32.5,
+          4.2,
+          -23.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 44,
+        "vertices": 1056,
+        "minX": -0.4115178890358479,
+        "maxX": 0.40548901098357387,
+        "minY": 0.2091088645701799,
+        "maxY": 0.6073500762871682,
+        "minZ": 0.9889522481665319,
+        "maxZ": 0.9925839387289593,
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 376,
+          "height": 777
+        },
+        "camera": {
+          "position": [
+            46.688792474705636,
+            7.064106299641886,
+            -9.265897331365007
+          ],
+          "quaternion": [
+            -0.2246367971025761,
+            0.3232739509565729,
+            0.07929333449453715,
+            0.9158301311516021
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.8885106382978722,
+          "right": 0.8885106382978722,
+          "bottom": 0.17588159588159588,
+          "top": 0.649086229086229
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          3,
+          -2,
+          4
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          46.688792474705636,
+          7.064106299641886,
+          -9.265897331365007
+        ],
+        "quaternion": [
+          -0.2246367971025761,
+          0.3232739509565729,
+          0.07929333449453715,
+          0.9158301311516021
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "restored": {
+        "position": [
+          32.58918117147308,
+          4.2,
+          -23.381091771369224
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    },
+    {
+      "label": "offcenter-320x700",
+      "fixture": {
+        "kind": "offcenter",
+        "expected": 44,
+        "world": 45,
+        "origin": {
+          "x": 31,
+          "z": -27
+        }
+      },
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "before": {
+        "position": [
+          32.5,
+          4.2,
+          -23.5
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "fitted": {
+        "count": 44,
+        "vertices": 1056,
+        "minX": -0.3713024423543329,
+        "maxX": 0.37793994362164823,
+        "minY": -0.14307986127102784,
+        "maxY": 0.23849744919518825,
+        "minZ": 0.9902200856897863,
+        "maxZ": 0.993125475703216,
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "width": 306,
+          "height": 633
+        },
+        "camera": {
+          "position": [
+            46.76332042802195,
+            9.981697924016476,
+            -9.173482669252785
+          ],
+          "quaternion": [
+            -0.16276767998822747,
+            0.3278604308336601,
+            0.057454487691581735,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "fov": 75,
+          "near": 0.1,
+          "far": 200,
+          "flyMode": true
+        },
+        "safeRect": {
+          "left": -0.48,
+          "right": 0.48,
+          "bottom": -0.28600000000000003,
+          "top": 0.386
+        },
+        "manual": false,
+        "transitioning": false,
+        "dockCollapsed": true,
+        "overflow": false,
+        "engineValid": true,
+        "activeElement": "geoworld-fs-wrap"
+      },
+      "input": {
+        "move": false,
+        "look": false,
+        "touchLook": null,
+        "touchMove": null,
+        "touchVector": {
+          "x": 0,
+          "z": 0
+        },
+        "velocity": [
+          3,
+          -2,
+          4
+        ],
+        "pointerLock": false
+      },
+      "stable": {
+        "position": [
+          46.76332042802195,
+          9.981697924016476,
+          -9.173482669252785
+        ],
+        "quaternion": [
+          -0.16276767998822747,
+          0.3278604308336601,
+          0.057454487691581735,
+          0.9288235581039676
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      },
+      "restored": {
+        "position": [
+          32.59647548552145,
+          4.2,
+          -23.37136601930474
+        ],
+        "quaternion": [
+          -0.3582637671833657,
+          0,
+          0,
+          0.9336204116896669
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": true
+      }
+    }
+  ],
+  "walking": {
+    "fitted": {
+      "count": 44,
+      "vertices": 1056,
+      "minX": -0.3713024423543329,
+      "maxX": 0.37793994362164823,
+      "minY": -0.14307986127102784,
+      "maxY": 0.23849744919518825,
+      "minZ": 0.9902200856897863,
+      "maxZ": 0.993125475703216,
+      "canvas": {
+        "x": 7,
+        "y": 60,
+        "width": 306,
+        "height": 633
+      },
+      "camera": {
+        "position": [
+          46.76332042802195,
+          9.981697924016476,
+          -9.173482669252785
+        ],
+        "quaternion": [
+          -0.16276767998822747,
+          0.3278604308336601,
+          0.057454487691581735,
+          0.9288235581039676
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75,
+        "near": 0.1,
+        "far": 200,
+        "flyMode": false
+      },
+      "safeRect": {
+        "left": -0.48,
+        "right": 0.48,
+        "bottom": -0.28600000000000003,
+        "top": 0.386
+      },
+      "manual": false,
+      "transitioning": false,
+      "dockCollapsed": true,
+      "overflow": false,
+      "engineValid": true,
+      "activeElement": "geoworld-fs-wrap"
+    },
+    "stable": {
+      "position": [
+        46.76332042802195,
+        9.981697924016476,
+        -9.173482669252785
+      ],
+      "quaternion": [
+        -0.16276767998822747,
+        0.3278604308336601,
+        0.057454487691581735,
+        0.9288235581039676
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fov": 75,
+      "near": 0.1,
+      "far": 200,
+      "flyMode": false
+    }
+  },
+  "showcase": {
+    "count": 44,
+    "vertices": 1056,
+    "minX": -0.5350454252970077,
+    "maxX": 0.4590789577153361,
+    "minY": -0.15008047949502018,
+    "maxY": 0.17243170104358482,
+    "minZ": 0.9943781562250514,
+    "maxZ": 0.9953184055177468,
+    "canvas": {
+      "x": 7,
+      "y": 60,
+      "width": 306,
+      "height": 633
+    },
+    "camera": {
+      "position": [
+        34,
+        36.215894744729276,
+        -25
+      ],
+      "quaternion": [
+        -0.7071067811865475,
+        0,
+        0,
+        0.7071067811865476
+      ],
+      "up": [
+        0,
+        0,
+        -1
+      ],
+      "fov": 42,
+      "near": 0.1,
+      "far": 200,
+      "flyMode": true
+    },
+    "safeRect": null,
+    "manual": false,
+    "transitioning": false,
+    "dockCollapsed": true,
+    "overflow": false,
+    "engineValid": true,
+    "activeElement": null
+  },
+  "printHandoff": {
+    "exact": true,
+    "count": 44,
+    "bytes": 15484
+  },
+  "printReturn": {
+    "world": true,
+    "selection": true,
+    "undo": true,
+    "redo": true,
+    "camera": true,
+    "quaternion": true,
+    "flyMode": true,
+    "blocks": 45
+  },
+  "shaderErrors": [],
+  "pass": false
+}

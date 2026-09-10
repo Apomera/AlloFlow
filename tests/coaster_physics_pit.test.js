@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 const source = readFileSync('stem_lab/stem_tool_coasterlab.js', 'utf8');
 const block = source.slice(source.indexOf('/* @clab-physics-pit-start */'), source.indexOf('/* @clab-physics-pit-end */'));
-const { normalize, progress, notebookText, stops } = new Function(block + '; return { normalize: normalizePhysicsPit, progress: physicsPitProgress, notebookText: physicsPitNotebookText, stops: PHYSICS_PIT_STOPS };')();
+const { normalize, progress, notebookText, stops, notebookStatus } = new Function(block + '; return { normalize: normalizePhysicsPit, progress: physicsPitProgress, notebookText: physicsPitNotebookText, stops: PHYSICS_PIT_STOPS, notebookStatus: physicsPitNotebookStatus };')();
 describe('Physics pit stop response recovery', () => {
   it.each([null, [], false, 12, 'broken'])('recovers a usable empty state from %j', raw => {
     const state = normalize(raw);
@@ -59,5 +59,21 @@ describe('Physics pit investigation notebooks', () => {
     expect(text).toContain('0.2 g at crest\n<img src=x> is just text');
     expect(text).toContain('(No notes yet)');
     expect(text).toContain('not automatically captured telemetry');
+  });
+});
+
+describe('Notebook continuation and note counts', () => {
+  it('treats missing, blank, and non-text values as empty prompts', () => {
+    expect(notebookStatus(null)).toMatchObject({count:0,next:'change'});
+    expect(notebookStatus({change:'  \n',fixed:42,prediction:false})).toMatchObject({count:0,next:'change'});
+  });
+  it('resumes the first missing prompt rather than skipping a gap', () => {
+    const result=notebookStatus({change:'Move node',prediction:'Less side g',baseline:'2 g',explanation:'Still uncertain'});
+    expect(result).toEqual({count:4,next:'fixed',groups:[{count:2,total:3},{count:1,total:2},{count:1,total:1}]});
+  });
+  it('counts notes without interpreting their scientific accuracy', () => {
+    const notes={change:'?',fixed:'?',prediction:'?',baseline:'?',revised:'?',explanation:'?'};
+    expect(notebookStatus(notes)).toMatchObject({count:6,next:'explanation'});
+    notes.baseline='';expect(notebookStatus(notes)).toMatchObject({count:5,next:'baseline'});
   });
 });

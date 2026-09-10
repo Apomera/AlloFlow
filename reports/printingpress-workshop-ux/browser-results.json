@@ -1,0 +1,60 @@
+{
+  "passed": true,
+  "checks": [
+    "desktop action visibility",
+    "four-step progression",
+    "no early result feedback",
+    "per-step hints",
+    "prediction revision feedback",
+    "supported prediction feedback",
+    "unsure feedback",
+    "immutable prediction snapshots",
+    "prediction recovery",
+    "notebook focus handoff",
+    "sentence starters",
+    "prediction export",
+    "responsive workshop and guide",
+    "workbench WCAG A/AA",
+    "keyboard proof selection and return focus",
+    "letter inspection",
+    "immutable saved proof review",
+    "observation preservation",
+    "proof context for writing",
+    "reopened proof review",
+    "responsive review",
+    "notebook WCAG A/AA"
+  ],
+  "sizes": [
+    {
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "viewport": 320,
+      "document": 320
+    }
+  ],
+  "accessibility": [
+    {
+      "label": "ready",
+      "violations": []
+    },
+    {
+      "label": "revealed",
+      "violations": []
+    },
+    {
+      "label": "proof notebook",
+      "violations": []
+    },
+    {
+      "label": "phone",
+      "violations": []
+    }
+  ],
+  "errors": []
+}

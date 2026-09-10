@@ -1,0 +1,2914 @@
+{
+  "scope": "Frozen-source baseline in one actual React/Three WebGL browser; fixture camera is controlled, all selection/dock/measurement/Print Lab actions are actual UI",
+  "sources": {
+    "stem_tool_geometryworld.js": "a7833b8ea0faff3a59ad44849b4348ad81ce33c7c276c6d665a52d113d8f9398",
+    "stem_tool_geometryworld_builder.js": "6398bebccaa896c2bb2056022d72d359fd4094f027c810cf5d46d60a8da62809",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [],
+  "cases": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "screenshots": [
+        "after-dock-1440x900.png",
+        "after-measurement-1440x900.png",
+        "after-selection-1440x900.png",
+        "after-focus-1440x900.png",
+        "after-envelope-1440x900.png"
+      ],
+      "expanded": {
+        "selectionCount": 44,
+        "measureCount": 44,
+        "dockText": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nYour outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.\n\nYour creation\n45\nPlaced\n44\nSelected\n6×4×5\nBlock bounds\nFocus creation\nShowcase creation\nExplore measurements\nClear selection\nPrint Lab block envelope\nFits profile\nWidth, depth, height: 30 × 20 × 25 mm.\nWidth\n30\nmm\nDepth\n20\nmm\nHeight\n25\nmm\n\n5 mm per block · Bed 220 × 220 × 250 mm\n\nPrinter profile & scale\n3 separate pieces\n\nSome shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.\n\nBuilding with\nMaterial\n🪨 Stone\nShape / rotation\n⬜ Cube - 0°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+        "dock": {
+          "x": 1082,
+          "y": 118,
+          "width": 346,
+          "height": 770,
+          "visible": true
+        },
+        "dockCollapsed": false,
+        "inspector": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        "inspectorText": "📏 Composite structure×Length6Width4Height5Occupied volume37 3/4 cubic unitsExplore measurement detailsOccupied volume = 37 3/4 cubic unitsBounding box 120 − empty 82 1/4 = 37 3/4 (31% filled)Surface area needs partial-face analysis (press N)Layer explorerAll layersReveal through layerAllTop layer 5Show all layersEquivalent viewCompose fractional piecesWhole-cube equivalentOccupied unit cubes32×1 + 10×1/2 + 1×1/2 + 1×1/4 = 37 3/4Views compared: 1/2Compare 2 viewsExplore one more view, then explain how the representations match.Connect: Which fractional pieces could combine to make another whole cubic unit?44 blocks (32×1 + 1×½ + 1×¼ + 10×½)Materials: 15 stone, 9 wood, 19 brick, 1 sand🧱 Build This!",
+        "axes": [
+          {
+            "axis": "width",
+            "over": "false",
+            "value": "30",
+            "text": "Width30mm"
+          },
+          {
+            "axis": "depth",
+            "over": "false",
+            "value": "20",
+            "text": "Depth20mm"
+          },
+          {
+            "axis": "height",
+            "over": "false",
+            "value": "25",
+            "text": "Height25mm"
+          }
+        ],
+        "envelope": "Print Lab block envelopeFits profileWidth, depth, height: 30 × 20 × 25 mm.Width30mmDepth20mmHeight25mm5 mm per block · Bed 220 × 220 × 250 mmPrinter profile & scaleFits the 220 × 220 × 250 mm printer profile at 5 mm per block. Advisory preflight is still required.Measured from whole blocks against Print Lab’s default printer profile. Set a school printer in Print Lab to check against the real bed.Prints solid at 37 3/4 cubic units = 4,718.75 mm³ at 5 mm per block (32 cubes, 10 diagonal halves, 1 half slab, 1 quarter wedge).Print Lab scale: 5 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.",
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 4,
+            "visible": 4
+          },
+          "_selectionGlows": {
+            "all": 29,
+            "visible": 29
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Close measurement inspector",
+            "disabled": false,
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 0,
+              "height": 0,
+              "visible": false
+            },
+            "hit": false,
+            "fontSize": "18px",
+            "color": "rgb(237, 242, 227)",
+            "background": "rgb(34, 74, 62)"
+          },
+          {
+            "name": "Collapse Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 1368,
+              "y": 133,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          },
+          {
+            "name": "Select and measure aimed build",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 232,
+              "width": 153,
+              "height": 48,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(42, 80, 66)"
+          },
+          {
+            "name": "Send selected build to Print Lab",
+            "disabled": false,
+            "rect": {
+              "x": 1259,
+              "y": 232,
+              "width": 153,
+              "height": 48,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(17, 45, 43)",
+            "background": "rgb(212, 232, 202)"
+          },
+          {
+            "name": "Focus creation",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 482.375,
+              "width": 314,
+              "height": 48,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(23, 59, 53)",
+            "background": "rgb(212, 232, 202)"
+          },
+          {
+            "name": "Showcase creation",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 538.375,
+              "width": 153,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(23, 59, 53)",
+            "background": "rgb(245, 240, 229)"
+          },
+          {
+            "name": "Explore measurements",
+            "disabled": false,
+            "rect": {
+              "x": 1259,
+              "y": 538.375,
+              "width": 153,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "Clear selection",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 590.375,
+              "width": 83.3125,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(186, 207, 192)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "name": "💾 Save editable world",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 1144.625,
+              "width": 153,
+              "height": 51.1875,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "📂 Open editable world",
+            "disabled": false,
+            "rect": {
+              "x": 1259,
+              "y": 1144.625,
+              "width": 153,
+              "height": 51.1875,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "📘 Choose guided lesson",
+            "disabled": false,
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 0,
+              "height": 0,
+              "visible": false
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "✨ Start a fresh sandbox",
+            "disabled": false,
+            "rect": {
+              "x": 1259,
+              "y": 1259.8125,
+              "width": 153,
+              "height": 51.1875,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            45,
+            11,
+            -12
+          ],
+          "quaternion": [
+            -0.2045375315703685,
+            0.3356982215246657,
+            0.07492370372998941,
+            0.9164374178653215
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "keyboardFocus": {
+        "active": true,
+        "outline": "rgb(248, 250, 252) solid 3px",
+        "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+      },
+      "measuring": {
+        "selectionCount": 44,
+        "measureCount": 44,
+        "dockText": "Build",
+        "dock": {
+          "x": 1360,
+          "y": 657,
+          "width": 68,
+          "height": 59,
+          "visible": true
+        },
+        "dockCollapsed": true,
+        "inspector": {
+          "x": 642,
+          "y": 64,
+          "width": 430,
+          "height": 620,
+          "visible": true
+        },
+        "inspectorText": "📏 Composite structure\n×\nLength\n6\nWidth\n4\nHeight\n5\nOccupied volume\n37 3/4 cubic units\nOccupied volume = 37 3/4 cubic units\nBounding box 120 − empty 82 1/4 = 37 3/4 (31% filled)\nSurface area needs partial-face analysis (press N)\nLAYER EXPLORER\nAll layers\nReveal through layer\nAll\nTop layer 5\nShow all layers\nEquivalent view\nCompose fractional pieces\nWhole-cube equivalent\nOccupied unit cubes\n32×1 + 10×1/2 + 1×1/2 + 1×1/4 = 37 3/4\nViews compared: 1/2\nCompare 2 views\nExplore one more view, then explain how the representations match.\nConnect: Which fractional pieces could combine to make another whole cubic unit?\n44 blocks (32×1 + 1×½ + 1×¼ + 10×½)\nMaterials: 15 stone, 9 wood, 19 brick, 1 sand\n🧱 Build This!",
+        "axes": [],
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 8,
+            "visible": 8
+          },
+          "_selectionGlows": {
+            "all": 44,
+            "visible": 44
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Close measurement inspector",
+            "disabled": false,
+            "rect": {
+              "x": 1019,
+              "y": 64.5,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "18px",
+            "color": "rgb(237, 242, 227)",
+            "background": "rgb(34, 74, 62)"
+          },
+          {
+            "name": "Expand Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 1377,
+              "y": 664,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            45,
+            11,
+            -12
+          ],
+          "quaternion": [
+            -0.2045375315703685,
+            0.3356982215246657,
+            0.07492370372998941,
+            0.9164374178653215
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "closeTarget": {
+        "width": 44,
+        "height": 44,
+        "hit": true
+      },
+      "closed": {
+        "selectionCount": 44,
+        "measureCount": null,
+        "dockText": "Build",
+        "dock": {
+          "x": 1320,
+          "y": 118,
+          "width": 108,
+          "height": 59,
+          "visible": true
+        },
+        "dockCollapsed": true,
+        "inspector": null,
+        "inspectorText": null,
+        "axes": [],
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 8,
+            "visible": 8
+          },
+          "_selectionGlows": {
+            "all": 44,
+            "visible": 44
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Expand Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 1377,
+              "y": 125,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            45,
+            11,
+            -12
+          ],
+          "quaternion": [
+            -0.2045375315703685,
+            0.3356982215246657,
+            0.07492370372998941,
+            0.9164374178653215
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "focused": {
+        "selectionCount": 44,
+        "measureCount": null,
+        "dockText": "Build",
+        "dock": {
+          "x": 1320,
+          "y": 118,
+          "width": 108,
+          "height": 59,
+          "visible": true
+        },
+        "dockCollapsed": true,
+        "inspector": null,
+        "inspectorText": null,
+        "axes": [],
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 0,
+            "visible": 0
+          },
+          "_selectionGlows": {
+            "all": 0,
+            "visible": 0
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Expand Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 1377,
+              "y": 125,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            39.83911372276514,
+            6.2879896954291254,
+            -17.759498983771223
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.3278604308336601,
+            0.057454487691581756,
+            0.9288235581039676
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "focusFit": {
+        "minX": -0.2272911279484212,
+        "maxX": 0.23632449820346463,
+        "minY": -0.3776464189250419,
+        "maxY": 0.43819044753756903,
+        "minZ": 0.9721366780914518,
+        "maxZ": 0.9864800454328053
+      },
+      "showcase": {
+        "Meadow": {
+          "hidden": true,
+          "fit": {
+            "minX": -0.2370186514225065,
+            "maxX": 0.24184110635362044,
+            "minY": -0.4479224145195932,
+            "maxY": 0.43379797416983973,
+            "minZ": 0.9884908145621656,
+            "maxZ": 0.9922409398108721
+          },
+          "screenshot": "after-showcase-meadow-1440x900.png"
+        },
+        "Studio": {
+          "hidden": true,
+          "fit": {
+            "minX": -0.2370186514225065,
+            "maxX": 0.24184110635362044,
+            "minY": -0.4479224145195932,
+            "maxY": 0.43379797416983973,
+            "minZ": 0.9884908145621656,
+            "maxZ": 0.9922409398108721
+          },
+          "screenshot": "after-showcase-studio-1440x900.png"
+        },
+        "flashes": 0,
+        "returned": {
+          "selectionCount": 44,
+          "measureCount": null,
+          "dockText": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nYour outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.\n\nYour creation\n45\nPlaced\n44\nSelected\n6×4×5\nBlock bounds\nFocus creation\nShowcase creation\nExplore measurements\nClear selection\nPrint Lab block envelope\nFits profile\nWidth, depth, height: 30 × 20 × 25 mm.\nWidth\n30\nmm\nDepth\n20\nmm\nHeight\n25\nmm\n\n5 mm per block · Bed 220 × 220 × 250 mm\n\nPrinter profile & scale\n3 separate pieces\n\nSome shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.\n\nBuilding with\nMaterial\n🪨 Stone\nShape / rotation\n⬜ Cube - 0°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+          "dock": {
+            "x": 1082,
+            "y": 118,
+            "width": 346,
+            "height": 770,
+            "visible": true
+          },
+          "dockCollapsed": false,
+          "inspector": null,
+          "inspectorText": null,
+          "axes": [
+            {
+              "axis": "width",
+              "over": "false",
+              "value": "30",
+              "text": "Width30mm"
+            },
+            {
+              "axis": "depth",
+              "over": "false",
+              "value": "20",
+              "text": "Depth20mm"
+            },
+            {
+              "axis": "height",
+              "over": "false",
+              "value": "25",
+              "text": "Height25mm"
+            }
+          ],
+          "envelope": "Print Lab block envelopeFits profileWidth, depth, height: 30 × 20 × 25 mm.Width30mmDepth20mmHeight25mm5 mm per block · Bed 220 × 220 × 250 mmPrinter profile & scaleFits the 220 × 220 × 250 mm printer profile at 5 mm per block. Advisory preflight is still required.Measured from whole blocks against Print Lab’s default printer profile. Set a school printer in Print Lab to check against the real bed.Prints solid at 37 3/4 cubic units = 4,718.75 mm³ at 5 mm per block (32 cubes, 10 diagonal halves, 1 half slab, 1 quarter wedge).Print Lab scale: 5 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.",
+          "helpers": [
+            {
+              "type": "LineSegments",
+              "name": "gwe-selection-frame",
+              "needsReview": true,
+              "vertices": 48,
+              "visible": true,
+              "color": "e09034",
+              "opacity": 0.82,
+              "depthTest": false,
+              "renderOrder": 998
+            }
+          ],
+          "counts": {
+            "_dimLines": {
+              "all": 0,
+              "visible": 0
+            },
+            "_selectionGlows": {
+              "all": 0,
+              "visible": 0
+            },
+            "_layerGhosts": {
+              "all": 0,
+              "visible": 0
+            },
+            "_angleHelpers": {
+              "all": 0,
+              "visible": 0
+            },
+            "_netHelpers": {
+              "all": 0,
+              "visible": 0
+            }
+          },
+          "buttons": [
+            {
+              "name": "Collapse Free Build Studio",
+              "disabled": false,
+              "rect": {
+                "x": 1368,
+                "y": 133,
+                "width": 44,
+                "height": 44,
+                "visible": true
+              },
+              "hit": true,
+              "fontSize": "15px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgba(17, 45, 43, 0.4)"
+            },
+            {
+              "name": "Select and measure aimed build",
+              "disabled": false,
+              "rect": {
+                "x": 1098,
+                "y": 232,
+                "width": 153,
+                "height": 48,
+                "visible": true
+              },
+              "hit": true,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            },
+            {
+              "name": "Send selected build to Print Lab",
+              "disabled": false,
+              "rect": {
+                "x": 1259,
+                "y": 232,
+                "width": 153,
+                "height": 48,
+                "visible": true
+              },
+              "hit": true,
+              "fontSize": "12px",
+              "color": "rgb(17, 45, 43)",
+              "background": "rgb(212, 232, 202)"
+            },
+            {
+              "name": "Focus creation",
+              "disabled": false,
+              "rect": {
+                "x": 1098,
+                "y": 482.375,
+                "width": 314,
+                "height": 48,
+                "visible": true
+              },
+              "hit": true,
+              "fontSize": "12px",
+              "color": "rgb(23, 59, 53)",
+              "background": "rgb(212, 232, 202)"
+            },
+            {
+              "name": "Showcase creation",
+              "disabled": false,
+              "rect": {
+                "x": 1098,
+                "y": 538.375,
+                "width": 153,
+                "height": 44,
+                "visible": true
+              },
+              "hit": true,
+              "fontSize": "12px",
+              "color": "rgb(23, 59, 53)",
+              "background": "rgb(245, 240, 229)"
+            },
+            {
+              "name": "Explore measurements",
+              "disabled": false,
+              "rect": {
+                "x": 1259,
+                "y": 538.375,
+                "width": 153,
+                "height": 44,
+                "visible": true
+              },
+              "hit": true,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            },
+            {
+              "name": "Clear selection",
+              "disabled": false,
+              "rect": {
+                "x": 1098,
+                "y": 590.375,
+                "width": 83.3125,
+                "height": 44,
+                "visible": true
+              },
+              "hit": true,
+              "fontSize": "12px",
+              "color": "rgb(186, 207, 192)",
+              "background": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "name": "💾 Save editable world",
+              "disabled": false,
+              "rect": {
+                "x": 1098,
+                "y": 1144.625,
+                "width": 153,
+                "height": 51.1875,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            },
+            {
+              "name": "📂 Open editable world",
+              "disabled": false,
+              "rect": {
+                "x": 1259,
+                "y": 1144.625,
+                "width": 153,
+                "height": 51.1875,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            },
+            {
+              "name": "📘 Choose guided lesson",
+              "disabled": false,
+              "rect": {
+                "x": 1098,
+                "y": 1259.8125,
+                "width": 153,
+                "height": 51.1875,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            },
+            {
+              "name": "✨ Start a fresh sandbox",
+              "disabled": false,
+              "rect": {
+                "x": 1259,
+                "y": 1259.8125,
+                "width": 153,
+                "height": 51.1875,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            }
+          ],
+          "overflow": false,
+          "camera": {
+            "position": [
+              39.83911372276514,
+              6.2879896954291254,
+              -17.759498983771223
+            ],
+            "quaternion": [
+              -0.1627676799882275,
+              0.3278604308336601,
+              0.057454487691581756,
+              0.9288235581039676
+            ],
+            "fov": 75
+          },
+          "shaderErrors": []
+        }
+      },
+      "clearTarget": {
+        "width": 83.3125,
+        "height": 44,
+        "hit": true
+      },
+      "envelope": {
+        "selectionCount": 44,
+        "measureCount": null,
+        "dockText": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nYour outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.\n\nYour creation\n45\nPlaced\n44\nSelected\n6×4×5\nBlock bounds\nFocus creation\nShowcase creation\nExplore measurements\nClear selection\nPrint Lab block envelope\nFits profile\nWidth, depth, height: 30 × 20 × 25 mm.\nWidth\n30\nmm\nDepth\n20\nmm\nHeight\n25\nmm\n\n5 mm per block · Bed 220 × 220 × 250 mm\n\nPrinter profile & scale\n3 separate pieces\n\nSome shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.\n\nBuilding with\nMaterial\n🪨 Stone\nShape / rotation\n⬜ Cube - 0°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+        "dock": {
+          "x": 1082,
+          "y": 118,
+          "width": 346,
+          "height": 770,
+          "visible": true
+        },
+        "dockCollapsed": false,
+        "inspector": null,
+        "inspectorText": null,
+        "axes": [
+          {
+            "axis": "width",
+            "over": "false",
+            "value": "30",
+            "text": "Width30mm"
+          },
+          {
+            "axis": "depth",
+            "over": "false",
+            "value": "20",
+            "text": "Depth20mm"
+          },
+          {
+            "axis": "height",
+            "over": "false",
+            "value": "25",
+            "text": "Height25mm"
+          }
+        ],
+        "envelope": "Print Lab block envelopeFits profileWidth, depth, height: 30 × 20 × 25 mm.Width30mmDepth20mmHeight25mm5 mm per block · Bed 220 × 220 × 250 mmPrinter profile & scaleFits the 220 × 220 × 250 mm printer profile at 5 mm per block. Advisory preflight is still required.Measured from whole blocks against Print Lab’s default printer profile. Set a school printer in Print Lab to check against the real bed.Prints solid at 37 3/4 cubic units = 4,718.75 mm³ at 5 mm per block (32 cubes, 10 diagonal halves, 1 half slab, 1 quarter wedge).Print Lab scale: 5 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.",
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 0,
+            "visible": 0
+          },
+          "_selectionGlows": {
+            "all": 0,
+            "visible": 0
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Collapse Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 1368,
+              "y": 133,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          },
+          {
+            "name": "Select and measure aimed build",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 232,
+              "width": 153,
+              "height": 48,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "Send selected build to Print Lab",
+            "disabled": false,
+            "rect": {
+              "x": 1259,
+              "y": 232,
+              "width": 153,
+              "height": 48,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(17, 45, 43)",
+            "background": "rgb(212, 232, 202)"
+          },
+          {
+            "name": "Focus creation",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 482.375,
+              "width": 314,
+              "height": 48,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(23, 59, 53)",
+            "background": "rgb(212, 232, 202)"
+          },
+          {
+            "name": "Showcase creation",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 538.375,
+              "width": 153,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(23, 59, 53)",
+            "background": "rgb(245, 240, 229)"
+          },
+          {
+            "name": "Explore measurements",
+            "disabled": false,
+            "rect": {
+              "x": 1259,
+              "y": 538.375,
+              "width": 153,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "Clear selection",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 590.375,
+              "width": 83.3125,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(186, 207, 192)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "name": "💾 Save editable world",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 1144.625,
+              "width": 153,
+              "height": 51.1875,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "📂 Open editable world",
+            "disabled": false,
+            "rect": {
+              "x": 1259,
+              "y": 1144.625,
+              "width": 153,
+              "height": 51.1875,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "📘 Choose guided lesson",
+            "disabled": false,
+            "rect": {
+              "x": 1098,
+              "y": 1259.8125,
+              "width": 153,
+              "height": 51.1875,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "✨ Start a fresh sandbox",
+            "disabled": false,
+            "rect": {
+              "x": 1259,
+              "y": 1259.8125,
+              "width": 153,
+              "height": 51.1875,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            39.83911372276514,
+            6.2879896954291254,
+            -17.759498983771223
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.3278604308336601,
+            0.057454487691581756,
+            0.9288235581039676
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "signature": {
+        "world": "[{\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3}]",
+        "selection": "[{\"x\":32,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-26},{\"x\":31,\"y\":1,\"z\":-26},{\"x\":32,\"y\":1,\"z\":-25},{\"x\":32,\"y\":1,\"z\":-27},{\"x\":34,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-25},{\"x\":33,\"y\":1,\"z\":-27},{\"x\":31,\"y\":1,\"z\":-25},{\"x\":31,\"y\":1,\"z\":-27},{\"x\":35,\"y\":1,\"z\":-26},{\"x\":34,\"y\":1,\"z\":-25},{\"x\":34,\"y\":1,\"z\":-27},{\"x\":33,\"y\":1,\"z\":-24},{\"x\":31,\"y\":2,\"z\":-25},{\"x\":31,\"y\":2,\"z\":-27},{\"x\":36,\"y\":1,\"z\":-26},{\"x\":35,\"y\":1,\"z\":-25},{\"x\":35,\"y\":1,\"z\":-27},{\"x\":31,\"y\":3,\"z\":-25},{\"x\":31,\"y\":3,\"z\":-27},{\"x\":35,\"y\":2,\"z\":-25},{\"x\":35,\"y\":2,\"z\":-27},{\"x\":31,\"y\":4,\"z\":-25},{\"x\":31,\"y\":4,\"z\":-27},{\"x\":35,\"y\":3,\"z\":-25},{\"x\":35,\"y\":3,\"z\":-27},{\"x\":31,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-27},{\"x\":35,\"y\":4,\"z\":-25},{\"x\":35,\"y\":4,\"z\":-27},{\"x\":32,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-26},{\"x\":32,\"y\":5,\"z\":-27},{\"x\":35,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-25},{\"x\":32,\"y\":5,\"z\":-26},{\"x\":33,\"y\":5,\"z\":-27},{\"x\":34,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-26}]",
+        "count": 44,
+        "hash": "cde7f332aec709c0ff1d071171fbaf918899cf406200670cf4f2a2979a21c3be",
+        "undo": "[{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"action\":\"place\",\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1}]",
+        "redo": "[]"
+      }
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "screenshots": [
+        "after-dock-390x844.png",
+        "after-measurement-390x844.png",
+        "after-measurement-expanded-390x844.png",
+        "after-selection-390x844.png",
+        "after-focus-390x844.png",
+        "after-envelope-390x844.png"
+      ],
+      "expanded": {
+        "selectionCount": 44,
+        "measureCount": null,
+        "dockText": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nYour outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.\n\nYour creation\n45\nPlaced\n44\nSelected\n6×4×5\nBlock bounds\nFocus creation\nShowcase creation\nExplore measurements\nClear selection\nPrint Lab block envelope\nFits profile\nWidth, depth, height: 30 × 20 × 25 mm.\nWidth\n30\nmm\nDepth\n20\nmm\nHeight\n25\nmm\n\n5 mm per block · Bed 220 × 220 × 250 mm\n\nPrinter profile & scale\n3 separate pieces\n\nSome shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.\n\nBuilding with\nMaterial\n🪨 Stone\nShape / rotation\n⬜ Cube - 0°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+        "dock": {
+          "x": 7,
+          "y": 473.53125,
+          "width": 376,
+          "height": 354.46875,
+          "visible": true
+        },
+        "dockCollapsed": false,
+        "inspector": null,
+        "inspectorText": null,
+        "axes": [
+          {
+            "axis": "width",
+            "over": "false",
+            "value": "30",
+            "text": "Width30mm"
+          },
+          {
+            "axis": "depth",
+            "over": "false",
+            "value": "20",
+            "text": "Depth20mm"
+          },
+          {
+            "axis": "height",
+            "over": "false",
+            "value": "25",
+            "text": "Height25mm"
+          }
+        ],
+        "envelope": "Print Lab block envelopeFits profileWidth, depth, height: 30 × 20 × 25 mm.Width30mmDepth20mmHeight25mm5 mm per block · Bed 220 × 220 × 250 mmPrinter profile & scaleFits the 220 × 220 × 250 mm printer profile at 5 mm per block. Advisory preflight is still required.Measured from whole blocks against Print Lab’s default printer profile. Set a school printer in Print Lab to check against the real bed.Prints solid at 37 3/4 cubic units = 4,718.75 mm³ at 5 mm per block (32 cubes, 10 diagonal halves, 1 half slab, 1 quarter wedge).Print Lab scale: 5 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.",
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 0,
+            "visible": 0
+          },
+          "_selectionGlows": {
+            "all": 0,
+            "visible": 0
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Collapse Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 325,
+              "y": 484.53125,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          },
+          {
+            "name": "Select and measure aimed build",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 577.53125,
+              "width": 170,
+              "height": 48,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "Send selected build to Print Lab",
+            "disabled": false,
+            "rect": {
+              "x": 199,
+              "y": 577.53125,
+              "width": 170,
+              "height": 48,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(17, 45, 43)",
+            "background": "rgb(212, 232, 202)"
+          },
+          {
+            "name": "Focus creation",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 818.90625,
+              "width": 348,
+              "height": 48,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(23, 59, 53)",
+            "background": "rgb(212, 232, 202)"
+          },
+          {
+            "name": "Showcase creation",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 874.90625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(23, 59, 53)",
+            "background": "rgb(245, 240, 229)"
+          },
+          {
+            "name": "Explore measurements",
+            "disabled": false,
+            "rect": {
+              "x": 199,
+              "y": 874.90625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "Clear selection",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 926.90625,
+              "width": 83.3125,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(186, 207, 192)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "name": "💾 Save editable world",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 1473.15625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "📂 Open editable world",
+            "disabled": false,
+            "rect": {
+              "x": 199,
+              "y": 1473.15625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "📘 Choose guided lesson",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 1579.15625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "✨ Start a fresh sandbox",
+            "disabled": false,
+            "rect": {
+              "x": 199,
+              "y": 1579.15625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            48,
+            14,
+            -7
+          ],
+          "quaternion": [
+            -0.2107786330440455,
+            0.3163759478248459,
+            0.07231978256166977,
+            0.9220891912067112
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "keyboardFocus": {
+        "active": true,
+        "outline": "rgb(248, 250, 252) solid 3px",
+        "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+      },
+      "measuring": {
+        "selectionCount": 44,
+        "measureCount": 44,
+        "dockText": "Build",
+        "dock": {
+          "x": 161,
+          "y": 588,
+          "width": 68,
+          "height": 59,
+          "visible": true
+        },
+        "dockCollapsed": true,
+        "inspector": {
+          "x": 6,
+          "y": 8,
+          "width": 378,
+          "height": 198.984375,
+          "visible": true
+        },
+        "inspectorText": "📏 Composite structure\n×\nLength\n6\nWidth\n4\nHeight\n5\nOccupied volume\n37 3/4 cubic units\nExplore measurement details",
+        "axes": [],
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 0,
+            "visible": 0
+          },
+          "_selectionGlows": {
+            "all": 0,
+            "visible": 0
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Close measurement inspector",
+            "disabled": false,
+            "rect": {
+              "x": 331,
+              "y": 15,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "18px",
+            "color": "rgb(237, 242, 227)",
+            "background": "rgb(34, 74, 62)"
+          },
+          {
+            "name": "Expand Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 178,
+              "y": 595,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            48,
+            14,
+            -7
+          ],
+          "quaternion": [
+            -0.2107786330440455,
+            0.3163759478248459,
+            0.07231978256166977,
+            0.9220891912067112
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "closeTarget": {
+        "width": 44,
+        "height": 44,
+        "hit": true
+      },
+      "expandedMeasurement": {
+        "selectionCount": 44,
+        "measureCount": 44,
+        "dockText": "Build",
+        "dock": {
+          "x": 161,
+          "y": 588,
+          "width": 68,
+          "height": 59,
+          "visible": true
+        },
+        "dockCollapsed": true,
+        "inspector": {
+          "x": 6,
+          "y": 8,
+          "width": 378,
+          "height": 708,
+          "visible": true
+        },
+        "inspectorText": "📏 Composite structure\n×\nLength\n6\nWidth\n4\nHeight\n5\nOccupied volume\n37 3/4 cubic units\nExplore measurement details\nOccupied volume = 37 3/4 cubic units\nBounding box 120 − empty 82 1/4 = 37 3/4 (31% filled)\nSurface area needs partial-face analysis (press N)\nLAYER EXPLORER\nAll layers\nReveal through layer\nAll\nTop layer 5\nShow all layers\nEquivalent view\nCompose fractional pieces\nWhole-cube equivalent\nOccupied unit cubes\n32×1 + 10×1/2 + 1×1/2 + 1×1/4 = 37 3/4\nViews compared: 1/2\nCompare 2 views\nExplore one more view, then explain how the representations match.\nConnect: Which fractional pieces could combine to make another whole cubic unit?\n44 blocks (32×1 + 1×½ + 1×¼ + 10×½)\nMaterials: 15 stone, 9 wood, 19 brick, 1 sand\n🧱 Build This!",
+        "axes": [],
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 0,
+            "visible": 0
+          },
+          "_selectionGlows": {
+            "all": 0,
+            "visible": 0
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Close measurement inspector",
+            "disabled": false,
+            "rect": {
+              "x": 331,
+              "y": 8.5,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "18px",
+            "color": "rgb(237, 242, 227)",
+            "background": "rgb(34, 74, 62)"
+          },
+          {
+            "name": "Expand Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 178,
+              "y": 595,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            48,
+            14,
+            -7
+          ],
+          "quaternion": [
+            -0.2107786330440455,
+            0.3163759478248459,
+            0.07231978256166977,
+            0.9220891912067112
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "closed": {
+        "selectionCount": 44,
+        "measureCount": null,
+        "dockText": "Build",
+        "dock": {
+          "x": 161,
+          "y": 581,
+          "width": 68,
+          "height": 59,
+          "visible": true
+        },
+        "dockCollapsed": true,
+        "inspector": null,
+        "inspectorText": null,
+        "axes": [],
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 0,
+            "visible": 0
+          },
+          "_selectionGlows": {
+            "all": 0,
+            "visible": 0
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Expand Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 178,
+              "y": 588,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            48,
+            14,
+            -7
+          ],
+          "quaternion": [
+            -0.2107786330440455,
+            0.3163759478248459,
+            0.07231978256166977,
+            0.9220891912067112
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "focused": {
+        "selectionCount": 44,
+        "measureCount": null,
+        "dockText": "Build",
+        "dock": {
+          "x": 161,
+          "y": 581,
+          "width": 68,
+          "height": 59,
+          "visible": true
+        },
+        "dockCollapsed": true,
+        "inspector": null,
+        "inspectorText": null,
+        "axes": [],
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 0,
+            "visible": 0
+          },
+          "_selectionGlows": {
+            "all": 0,
+            "visible": 0
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Expand Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 178,
+              "y": 588,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            43.62783552917161,
+            6.171119740061057,
+            -14.520016084614719
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.32786043083366,
+            0.05745448769158173,
+            0.9288235581039676
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "focusFit": {
+        "minX": -0.7227376943826437,
+        "maxX": 0.39175352094541416,
+        "minY": -0.0716197925115836,
+        "maxY": 0.45698360780721536,
+        "minZ": 0.9836018026711574,
+        "maxZ": 0.9900951948447625
+      },
+      "showcase": {
+        "Meadow": {
+          "hidden": true,
+          "fit": {
+            "minX": -0.4820400518157586,
+            "maxX": 0.4876074662241177,
+            "minY": -0.24895132311891222,
+            "maxY": 0.25992822852423286,
+            "minZ": 0.9943612054203047,
+            "maxZ": 0.9955904546427842
+          },
+          "screenshot": "after-showcase-meadow-390x844.png"
+        },
+        "Studio": {
+          "hidden": true,
+          "fit": {
+            "minX": -0.4820400518157586,
+            "maxX": 0.4876074662241177,
+            "minY": -0.24895132311891222,
+            "maxY": 0.25992822852423286,
+            "minZ": 0.9943612054203047,
+            "maxZ": 0.9955904546427842
+          },
+          "screenshot": "after-showcase-studio-390x844.png"
+        },
+        "export": {
+          "filename": "after-studio-export-phone.png",
+          "bytes": 393474,
+          "width": 991,
+          "height": 2048,
+          "png": true
+        },
+        "flashes": 0,
+        "returned": {
+          "selectionCount": 44,
+          "measureCount": null,
+          "dockText": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nYour outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.\n\nYour creation\n45\nPlaced\n44\nSelected\n6×4×5\nBlock bounds\nFocus creation\nShowcase creation\nExplore measurements\nClear selection\nPrint Lab block envelope\nFits profile\nWidth, depth, height: 30 × 20 × 25 mm.\nWidth\n30\nmm\nDepth\n20\nmm\nHeight\n25\nmm\n\n5 mm per block · Bed 220 × 220 × 250 mm\n\nPrinter profile & scale\n3 separate pieces\n\nSome shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.\n\nBuilding with\nMaterial\n🪨 Stone\nShape / rotation\n⬜ Cube - 0°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+          "dock": {
+            "x": 7,
+            "y": 473.53125,
+            "width": 376,
+            "height": 354.46875,
+            "visible": true
+          },
+          "dockCollapsed": false,
+          "inspector": null,
+          "inspectorText": null,
+          "axes": [
+            {
+              "axis": "width",
+              "over": "false",
+              "value": "30",
+              "text": "Width30mm"
+            },
+            {
+              "axis": "depth",
+              "over": "false",
+              "value": "20",
+              "text": "Depth20mm"
+            },
+            {
+              "axis": "height",
+              "over": "false",
+              "value": "25",
+              "text": "Height25mm"
+            }
+          ],
+          "envelope": "Print Lab block envelopeFits profileWidth, depth, height: 30 × 20 × 25 mm.Width30mmDepth20mmHeight25mm5 mm per block · Bed 220 × 220 × 250 mmPrinter profile & scaleFits the 220 × 220 × 250 mm printer profile at 5 mm per block. Advisory preflight is still required.Measured from whole blocks against Print Lab’s default printer profile. Set a school printer in Print Lab to check against the real bed.Prints solid at 37 3/4 cubic units = 4,718.75 mm³ at 5 mm per block (32 cubes, 10 diagonal halves, 1 half slab, 1 quarter wedge).Print Lab scale: 5 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.",
+          "helpers": [
+            {
+              "type": "LineSegments",
+              "name": "gwe-selection-frame",
+              "needsReview": true,
+              "vertices": 48,
+              "visible": true,
+              "color": "e09034",
+              "opacity": 0.82,
+              "depthTest": false,
+              "renderOrder": 998
+            }
+          ],
+          "counts": {
+            "_dimLines": {
+              "all": 0,
+              "visible": 0
+            },
+            "_selectionGlows": {
+              "all": 0,
+              "visible": 0
+            },
+            "_layerGhosts": {
+              "all": 0,
+              "visible": 0
+            },
+            "_angleHelpers": {
+              "all": 0,
+              "visible": 0
+            },
+            "_netHelpers": {
+              "all": 0,
+              "visible": 0
+            }
+          },
+          "buttons": [
+            {
+              "name": "Collapse Free Build Studio",
+              "disabled": false,
+              "rect": {
+                "x": 325,
+                "y": 484.53125,
+                "width": 44,
+                "height": 44,
+                "visible": true
+              },
+              "hit": true,
+              "fontSize": "15px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgba(17, 45, 43, 0.4)"
+            },
+            {
+              "name": "Select and measure aimed build",
+              "disabled": false,
+              "rect": {
+                "x": 21,
+                "y": 577.53125,
+                "width": 170,
+                "height": 48,
+                "visible": true
+              },
+              "hit": true,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            },
+            {
+              "name": "Send selected build to Print Lab",
+              "disabled": false,
+              "rect": {
+                "x": 199,
+                "y": 577.53125,
+                "width": 170,
+                "height": 48,
+                "visible": true
+              },
+              "hit": true,
+              "fontSize": "12px",
+              "color": "rgb(17, 45, 43)",
+              "background": "rgb(212, 232, 202)"
+            },
+            {
+              "name": "Focus creation",
+              "disabled": false,
+              "rect": {
+                "x": 21,
+                "y": 818.90625,
+                "width": 348,
+                "height": 48,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(23, 59, 53)",
+              "background": "rgb(212, 232, 202)"
+            },
+            {
+              "name": "Showcase creation",
+              "disabled": false,
+              "rect": {
+                "x": 21,
+                "y": 874.90625,
+                "width": 170,
+                "height": 44,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(23, 59, 53)",
+              "background": "rgb(245, 240, 229)"
+            },
+            {
+              "name": "Explore measurements",
+              "disabled": false,
+              "rect": {
+                "x": 199,
+                "y": 874.90625,
+                "width": 170,
+                "height": 44,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            },
+            {
+              "name": "Clear selection",
+              "disabled": false,
+              "rect": {
+                "x": 21,
+                "y": 926.90625,
+                "width": 83.3125,
+                "height": 44,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(186, 207, 192)",
+              "background": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "name": "💾 Save editable world",
+              "disabled": false,
+              "rect": {
+                "x": 21,
+                "y": 1473.15625,
+                "width": 170,
+                "height": 44,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            },
+            {
+              "name": "📂 Open editable world",
+              "disabled": false,
+              "rect": {
+                "x": 199,
+                "y": 1473.15625,
+                "width": 170,
+                "height": 44,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            },
+            {
+              "name": "📘 Choose guided lesson",
+              "disabled": false,
+              "rect": {
+                "x": 21,
+                "y": 1579.15625,
+                "width": 170,
+                "height": 44,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            },
+            {
+              "name": "✨ Start a fresh sandbox",
+              "disabled": false,
+              "rect": {
+                "x": 199,
+                "y": 1579.15625,
+                "width": 170,
+                "height": 44,
+                "visible": true
+              },
+              "hit": false,
+              "fontSize": "12px",
+              "color": "rgb(245, 240, 229)",
+              "background": "rgb(28, 64, 55)"
+            }
+          ],
+          "overflow": false,
+          "camera": {
+            "position": [
+              43.62783552917161,
+              6.171119740061057,
+              -14.520016084614719
+            ],
+            "quaternion": [
+              -0.1627676799882275,
+              0.32786043083366,
+              0.05745448769158173,
+              0.9288235581039676
+            ],
+            "fov": 75
+          },
+          "shaderErrors": []
+        }
+      },
+      "clearTarget": {
+        "width": 83.3125,
+        "height": 44,
+        "hit": true
+      },
+      "envelope": {
+        "selectionCount": 44,
+        "measureCount": null,
+        "dockText": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nYour outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.\n\nYour creation\n45\nPlaced\n44\nSelected\n6×4×5\nBlock bounds\nFocus creation\nShowcase creation\nExplore measurements\nClear selection\nPrint Lab block envelope\nFits profile\nWidth, depth, height: 30 × 20 × 25 mm.\nWidth\n30\nmm\nDepth\n20\nmm\nHeight\n25\nmm\n\n5 mm per block · Bed 220 × 220 × 250 mm\n\nPrinter profile & scale\n3 separate pieces\n\nSome shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.\n\nBuilding with\nMaterial\n🪨 Stone\nShape / rotation\n⬜ Cube - 0°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+        "dock": {
+          "x": 7,
+          "y": 473.53125,
+          "width": 376,
+          "height": 354.46875,
+          "visible": true
+        },
+        "dockCollapsed": false,
+        "inspector": null,
+        "inspectorText": null,
+        "axes": [
+          {
+            "axis": "width",
+            "over": "false",
+            "value": "30",
+            "text": "Width30mm"
+          },
+          {
+            "axis": "depth",
+            "over": "false",
+            "value": "20",
+            "text": "Depth20mm"
+          },
+          {
+            "axis": "height",
+            "over": "false",
+            "value": "25",
+            "text": "Height25mm"
+          }
+        ],
+        "envelope": "Print Lab block envelopeFits profileWidth, depth, height: 30 × 20 × 25 mm.Width30mmDepth20mmHeight25mm5 mm per block · Bed 220 × 220 × 250 mmPrinter profile & scaleFits the 220 × 220 × 250 mm printer profile at 5 mm per block. Advisory preflight is still required.Measured from whole blocks against Print Lab’s default printer profile. Set a school printer in Print Lab to check against the real bed.Prints solid at 37 3/4 cubic units = 4,718.75 mm³ at 5 mm per block (32 cubes, 10 diagonal halves, 1 half slab, 1 quarter wedge).Print Lab scale: 5 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.",
+        "helpers": [
+          {
+            "type": "LineSegments",
+            "name": "gwe-selection-frame",
+            "needsReview": true,
+            "vertices": 48,
+            "visible": true,
+            "color": "e09034",
+            "opacity": 0.82,
+            "depthTest": false,
+            "renderOrder": 998
+          }
+        ],
+        "counts": {
+          "_dimLines": {
+            "all": 0,
+            "visible": 0
+          },
+          "_selectionGlows": {
+            "all": 0,
+            "visible": 0
+          },
+          "_layerGhosts": {
+            "all": 0,
+            "visible": 0
+          },
+          "_angleHelpers": {
+            "all": 0,
+            "visible": 0
+          },
+          "_netHelpers": {
+            "all": 0,
+            "visible": 0
+          }
+        },
+        "buttons": [
+          {
+            "name": "Collapse Free Build Studio",
+            "disabled": false,
+            "rect": {
+              "x": 325,
+              "y": 484.53125,
+              "width": 44,
+              "height": 44,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "15px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgba(17, 45, 43, 0.4)"
+          },
+          {
+            "name": "Select and measure aimed build",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 577.53125,
+              "width": 170,
+              "height": 48,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "Send selected build to Print Lab",
+            "disabled": false,
+            "rect": {
+              "x": 199,
+              "y": 577.53125,
+              "width": 170,
+              "height": 48,
+              "visible": true
+            },
+            "hit": true,
+            "fontSize": "12px",
+            "color": "rgb(17, 45, 43)",
+            "background": "rgb(212, 232, 202)"
+          },
+          {
+            "name": "Focus creation",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 472.90625,
+              "width": 348,
+              "height": 48,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(23, 59, 53)",
+            "background": "rgb(212, 232, 202)"
+          },
+          {
+            "name": "Showcase creation",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 528.90625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(23, 59, 53)",
+            "background": "rgb(245, 240, 229)"
+          },
+          {
+            "name": "Explore measurements",
+            "disabled": false,
+            "rect": {
+              "x": 199,
+              "y": 528.90625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "Clear selection",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 580.90625,
+              "width": 83.3125,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(186, 207, 192)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "name": "💾 Save editable world",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 1127.15625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "📂 Open editable world",
+            "disabled": false,
+            "rect": {
+              "x": 199,
+              "y": 1127.15625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "📘 Choose guided lesson",
+            "disabled": false,
+            "rect": {
+              "x": 21,
+              "y": 1233.15625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          },
+          {
+            "name": "✨ Start a fresh sandbox",
+            "disabled": false,
+            "rect": {
+              "x": 199,
+              "y": 1233.15625,
+              "width": 170,
+              "height": 44,
+              "visible": true
+            },
+            "hit": false,
+            "fontSize": "12px",
+            "color": "rgb(245, 240, 229)",
+            "background": "rgb(28, 64, 55)"
+          }
+        ],
+        "overflow": false,
+        "camera": {
+          "position": [
+            43.62783552917161,
+            6.171119740061057,
+            -14.520016084614719
+          ],
+          "quaternion": [
+            -0.1627676799882275,
+            0.32786043083366,
+            0.05745448769158173,
+            0.9288235581039676
+          ],
+          "fov": 75
+        },
+        "shaderErrors": []
+      },
+      "signature": {
+        "world": "[{\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3}]",
+        "selection": "[{\"x\":32,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-26},{\"x\":31,\"y\":1,\"z\":-26},{\"x\":32,\"y\":1,\"z\":-25},{\"x\":32,\"y\":1,\"z\":-27},{\"x\":34,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-25},{\"x\":33,\"y\":1,\"z\":-27},{\"x\":31,\"y\":1,\"z\":-25},{\"x\":31,\"y\":1,\"z\":-27},{\"x\":35,\"y\":1,\"z\":-26},{\"x\":34,\"y\":1,\"z\":-25},{\"x\":34,\"y\":1,\"z\":-27},{\"x\":33,\"y\":1,\"z\":-24},{\"x\":31,\"y\":2,\"z\":-25},{\"x\":31,\"y\":2,\"z\":-27},{\"x\":36,\"y\":1,\"z\":-26},{\"x\":35,\"y\":1,\"z\":-25},{\"x\":35,\"y\":1,\"z\":-27},{\"x\":31,\"y\":3,\"z\":-25},{\"x\":31,\"y\":3,\"z\":-27},{\"x\":35,\"y\":2,\"z\":-25},{\"x\":35,\"y\":2,\"z\":-27},{\"x\":31,\"y\":4,\"z\":-25},{\"x\":31,\"y\":4,\"z\":-27},{\"x\":35,\"y\":3,\"z\":-25},{\"x\":35,\"y\":3,\"z\":-27},{\"x\":31,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-27},{\"x\":35,\"y\":4,\"z\":-25},{\"x\":35,\"y\":4,\"z\":-27},{\"x\":32,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-26},{\"x\":32,\"y\":5,\"z\":-27},{\"x\":35,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-25},{\"x\":32,\"y\":5,\"z\":-26},{\"x\":33,\"y\":5,\"z\":-27},{\"x\":34,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-26}]",
+        "count": 44,
+        "hash": "cde7f332aec709c0ff1d071171fbaf918899cf406200670cf4f2a2979a21c3be",
+        "undo": "[{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"action\":\"place\",\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1}]",
+        "redo": "[]"
+      }
+    }
+  ],
+  "fixture": {
+    "kind": "offcenter",
+    "expected": 44,
+    "world": 45,
+    "origin": {
+      "x": 31,
+      "z": -27
+    }
+  },
+  "initial": {
+    "world": "[{\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3}]",
+    "selection": "[{\"x\":32,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-26},{\"x\":31,\"y\":1,\"z\":-26},{\"x\":32,\"y\":1,\"z\":-25},{\"x\":32,\"y\":1,\"z\":-27},{\"x\":34,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-25},{\"x\":33,\"y\":1,\"z\":-27},{\"x\":31,\"y\":1,\"z\":-25},{\"x\":31,\"y\":1,\"z\":-27},{\"x\":35,\"y\":1,\"z\":-26},{\"x\":34,\"y\":1,\"z\":-25},{\"x\":34,\"y\":1,\"z\":-27},{\"x\":33,\"y\":1,\"z\":-24},{\"x\":31,\"y\":2,\"z\":-25},{\"x\":31,\"y\":2,\"z\":-27},{\"x\":36,\"y\":1,\"z\":-26},{\"x\":35,\"y\":1,\"z\":-25},{\"x\":35,\"y\":1,\"z\":-27},{\"x\":31,\"y\":3,\"z\":-25},{\"x\":31,\"y\":3,\"z\":-27},{\"x\":35,\"y\":2,\"z\":-25},{\"x\":35,\"y\":2,\"z\":-27},{\"x\":31,\"y\":4,\"z\":-25},{\"x\":31,\"y\":4,\"z\":-27},{\"x\":35,\"y\":3,\"z\":-25},{\"x\":35,\"y\":3,\"z\":-27},{\"x\":31,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-27},{\"x\":35,\"y\":4,\"z\":-25},{\"x\":35,\"y\":4,\"z\":-27},{\"x\":32,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-26},{\"x\":32,\"y\":5,\"z\":-27},{\"x\":35,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-25},{\"x\":32,\"y\":5,\"z\":-26},{\"x\":33,\"y\":5,\"z\":-27},{\"x\":34,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-26}]",
+    "count": 44,
+    "hash": "cde7f332aec709c0ff1d071171fbaf918899cf406200670cf4f2a2979a21c3be",
+    "undo": "[{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"action\":\"place\",\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1}]",
+    "redo": "[]"
+  },
+  "customEnvelope": {
+    "selectionCount": 44,
+    "measureCount": null,
+    "dockText": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nYour outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.\n\nYour creation\n45\nPlaced\n44\nSelected\n6×4×5\nBlock bounds\nFocus creation\nShowcase creation\nExplore measurements\nClear selection\nPrint Lab block envelope\nReview size\nWidth, depth, height: 120 × 80 × 100 mm. width, depth and height exceed the printer bed.\nWidth\n120\nmm\nOver limit\nDepth\n80\nmm\nOver limit\nHeight\n100\nmm\nOver limit\n\n20 mm per block · Bed 100 × 70 × 80 mm\n\nPrinter profile & scale\n\nThe width, depth and height dimensions are larger than the 100 × 70 × 80 mm printer profile at 20 mm per block. Reduce the build or choose a smaller scale in Print Lab.\n\nMeasured from whole blocks against the printer profile saved in Print Lab. Print Lab measures the exported mesh, so a build made of wedges can report a slightly smaller envelope there.\n\nPrints solid at 37 3/4 cubic units = 302,000 mm³ at 20 mm per block (32 cubes, 10 diagonal halves, 1 half slab, 1 quarter wedge).\n\nPrint Lab scale: 20 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.\n\n3 separate pieces\n\nSome shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.\n\nBuilding with\nMaterial\n🪨 Stone\nShape / rotation\n⬜ Cube - 0°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+    "dock": {
+      "x": 7,
+      "y": 473.53125,
+      "width": 376,
+      "height": 354.46875,
+      "visible": true
+    },
+    "dockCollapsed": false,
+    "inspector": null,
+    "inspectorText": null,
+    "axes": [
+      {
+        "axis": "width",
+        "over": "true",
+        "value": "120",
+        "text": "Width120mmOver limit"
+      },
+      {
+        "axis": "depth",
+        "over": "true",
+        "value": "80",
+        "text": "Depth80mmOver limit"
+      },
+      {
+        "axis": "height",
+        "over": "true",
+        "value": "100",
+        "text": "Height100mmOver limit"
+      }
+    ],
+    "envelope": "Print Lab block envelopeReview sizeWidth, depth, height: 120 × 80 × 100 mm. width, depth and height exceed the printer bed.Width120mmOver limitDepth80mmOver limitHeight100mmOver limit20 mm per block · Bed 100 × 70 × 80 mmPrinter profile & scaleThe width, depth and height dimensions are larger than the 100 × 70 × 80 mm printer profile at 20 mm per block. Reduce the build or choose a smaller scale in Print Lab.Measured from whole blocks against the printer profile saved in Print Lab. Print Lab measures the exported mesh, so a build made of wedges can report a slightly smaller envelope there.Prints solid at 37 3/4 cubic units = 302,000 mm³ at 20 mm per block (32 cubes, 10 diagonal halves, 1 half slab, 1 quarter wedge).Print Lab scale: 20 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.",
+    "helpers": [
+      {
+        "type": "LineSegments",
+        "name": "gwe-selection-frame",
+        "needsReview": true,
+        "vertices": 48,
+        "visible": true,
+        "color": "e09034",
+        "opacity": 0.82,
+        "depthTest": false,
+        "renderOrder": 998
+      }
+    ],
+    "counts": {
+      "_dimLines": {
+        "all": 0,
+        "visible": 0
+      },
+      "_selectionGlows": {
+        "all": 0,
+        "visible": 0
+      },
+      "_layerGhosts": {
+        "all": 0,
+        "visible": 0
+      },
+      "_angleHelpers": {
+        "all": 0,
+        "visible": 0
+      },
+      "_netHelpers": {
+        "all": 0,
+        "visible": 0
+      }
+    },
+    "buttons": [
+      {
+        "name": "Collapse Free Build Studio",
+        "disabled": false,
+        "rect": {
+          "x": 325,
+          "y": 484.53125,
+          "width": 44,
+          "height": 44,
+          "visible": true
+        },
+        "hit": true,
+        "fontSize": "15px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgba(17, 45, 43, 0.4)"
+      },
+      {
+        "name": "Select and measure aimed build",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 577.53125,
+          "width": 170,
+          "height": 48,
+          "visible": true
+        },
+        "hit": true,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      },
+      {
+        "name": "Send selected build to Print Lab",
+        "disabled": false,
+        "rect": {
+          "x": 199,
+          "y": 577.53125,
+          "width": 170,
+          "height": 48,
+          "visible": true
+        },
+        "hit": true,
+        "fontSize": "12px",
+        "color": "rgb(17, 45, 43)",
+        "background": "rgb(227, 239, 220)"
+      },
+      {
+        "name": "Focus creation",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 308.90625,
+          "width": 348,
+          "height": 48,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(23, 59, 53)",
+        "background": "rgb(212, 232, 202)"
+      },
+      {
+        "name": "Showcase creation",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 364.90625,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(23, 59, 53)",
+        "background": "rgb(245, 240, 229)"
+      },
+      {
+        "name": "Explore measurements",
+        "disabled": false,
+        "rect": {
+          "x": 199,
+          "y": 364.90625,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      },
+      {
+        "name": "Clear selection",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 416.90625,
+          "width": 83.3125,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(186, 207, 192)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      {
+        "name": "💾 Save editable world",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 1260.09375,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      },
+      {
+        "name": "📂 Open editable world",
+        "disabled": false,
+        "rect": {
+          "x": 199,
+          "y": 1260.09375,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      },
+      {
+        "name": "📘 Choose guided lesson",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 1366.09375,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      },
+      {
+        "name": "✨ Start a fresh sandbox",
+        "disabled": false,
+        "rect": {
+          "x": 199,
+          "y": 1366.09375,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      }
+    ],
+    "overflow": false,
+    "camera": {
+      "position": [
+        43.62783552917161,
+        6.171119740061057,
+        -14.520016084614719
+      ],
+      "quaternion": [
+        -0.1627676799882275,
+        0.32786043083366,
+        0.05745448769158173,
+        0.9288235581039676
+      ],
+      "fov": 75
+    },
+    "shaderErrors": []
+  },
+  "customEnvelopeScreenshot": "after-envelope-over-limit-390x844.png",
+  "singleOverEnvelope": {
+    "selectionCount": 44,
+    "measureCount": null,
+    "dockText": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nYour outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.\n\nYour creation\n45\nPlaced\n44\nSelected\n6×4×5\nBlock bounds\nFocus creation\nShowcase creation\nExplore measurements\nClear selection\nPrint Lab block envelope\nReview size\nWidth, depth, height: 120 × 80 × 100 mm. width exceeds the printer bed.\nWidth\n120\nmm\nOver limit\nDepth\n80\nmm\nHeight\n100\nmm\n\n20 mm per block · Bed 100 × 100 × 110 mm\n\nPrinter profile & scale\n\nThe width dimension is larger than the 100 × 100 × 110 mm printer profile at 20 mm per block. Reduce the build or choose a smaller scale in Print Lab.\n\nMeasured from whole blocks against the printer profile saved in Print Lab. Print Lab measures the exported mesh, so a build made of wedges can report a slightly smaller envelope there.\n\nPrints solid at 37 3/4 cubic units = 302,000 mm³ at 20 mm per block (32 cubes, 10 diagonal halves, 1 half slab, 1 quarter wedge).\n\nPrint Lab scale: 20 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.\n\n3 separate pieces\n\nSome shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.\n\nBuilding with\nMaterial\n🪨 Stone\nShape / rotation\n⬜ Cube - 0°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+    "dock": {
+      "x": 7,
+      "y": 473.53125,
+      "width": 376,
+      "height": 354.46875,
+      "visible": true
+    },
+    "dockCollapsed": false,
+    "inspector": null,
+    "inspectorText": null,
+    "axes": [
+      {
+        "axis": "width",
+        "over": "true",
+        "value": "120",
+        "text": "Width120mmOver limit"
+      },
+      {
+        "axis": "depth",
+        "over": "false",
+        "value": "80",
+        "text": "Depth80mm"
+      },
+      {
+        "axis": "height",
+        "over": "false",
+        "value": "100",
+        "text": "Height100mm"
+      }
+    ],
+    "envelope": "Print Lab block envelopeReview sizeWidth, depth, height: 120 × 80 × 100 mm. width exceeds the printer bed.Width120mmOver limitDepth80mmHeight100mm20 mm per block · Bed 100 × 100 × 110 mmPrinter profile & scaleThe width dimension is larger than the 100 × 100 × 110 mm printer profile at 20 mm per block. Reduce the build or choose a smaller scale in Print Lab.Measured from whole blocks against the printer profile saved in Print Lab. Print Lab measures the exported mesh, so a build made of wedges can report a slightly smaller envelope there.Prints solid at 37 3/4 cubic units = 302,000 mm³ at 20 mm per block (32 cubes, 10 diagonal halves, 1 half slab, 1 quarter wedge).Print Lab scale: 20 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.",
+    "helpers": [
+      {
+        "type": "LineSegments",
+        "name": "gwe-selection-frame",
+        "needsReview": true,
+        "vertices": 48,
+        "visible": true,
+        "color": "e09034",
+        "opacity": 0.82,
+        "depthTest": false,
+        "renderOrder": 998
+      }
+    ],
+    "counts": {
+      "_dimLines": {
+        "all": 0,
+        "visible": 0
+      },
+      "_selectionGlows": {
+        "all": 0,
+        "visible": 0
+      },
+      "_layerGhosts": {
+        "all": 0,
+        "visible": 0
+      },
+      "_angleHelpers": {
+        "all": 0,
+        "visible": 0
+      },
+      "_netHelpers": {
+        "all": 0,
+        "visible": 0
+      }
+    },
+    "buttons": [
+      {
+        "name": "Collapse Free Build Studio",
+        "disabled": false,
+        "rect": {
+          "x": 325,
+          "y": 484.53125,
+          "width": 44,
+          "height": 44,
+          "visible": true
+        },
+        "hit": true,
+        "fontSize": "15px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgba(17, 45, 43, 0.4)"
+      },
+      {
+        "name": "Select and measure aimed build",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 577.53125,
+          "width": 170,
+          "height": 48,
+          "visible": true
+        },
+        "hit": true,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      },
+      {
+        "name": "Send selected build to Print Lab",
+        "disabled": false,
+        "rect": {
+          "x": 199,
+          "y": 577.53125,
+          "width": 170,
+          "height": 48,
+          "visible": true
+        },
+        "hit": true,
+        "fontSize": "12px",
+        "color": "rgb(17, 45, 43)",
+        "background": "rgb(227, 239, 220)"
+      },
+      {
+        "name": "Focus creation",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 308.90625,
+          "width": 348,
+          "height": 48,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(23, 59, 53)",
+        "background": "rgb(212, 232, 202)"
+      },
+      {
+        "name": "Showcase creation",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 364.90625,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(23, 59, 53)",
+        "background": "rgb(245, 240, 229)"
+      },
+      {
+        "name": "Explore measurements",
+        "disabled": false,
+        "rect": {
+          "x": 199,
+          "y": 364.90625,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      },
+      {
+        "name": "Clear selection",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 416.90625,
+          "width": 83.3125,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(186, 207, 192)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      {
+        "name": "💾 Save editable world",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 1260.09375,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      },
+      {
+        "name": "📂 Open editable world",
+        "disabled": false,
+        "rect": {
+          "x": 199,
+          "y": 1260.09375,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      },
+      {
+        "name": "📘 Choose guided lesson",
+        "disabled": false,
+        "rect": {
+          "x": 21,
+          "y": 1366.09375,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      },
+      {
+        "name": "✨ Start a fresh sandbox",
+        "disabled": false,
+        "rect": {
+          "x": 199,
+          "y": 1366.09375,
+          "width": 170,
+          "height": 44,
+          "visible": true
+        },
+        "hit": false,
+        "fontSize": "12px",
+        "color": "rgb(245, 240, 229)",
+        "background": "rgb(28, 64, 55)"
+      }
+    ],
+    "overflow": false,
+    "camera": {
+      "position": [
+        43.62783552917161,
+        6.171119740061057,
+        -14.520016084614719
+      ],
+      "quaternion": [
+        -0.1627676799882275,
+        0.32786043083366,
+        0.05745448769158173,
+        0.9288235581039676
+      ],
+      "fov": 75
+    },
+    "shaderErrors": []
+  },
+  "print": {
+    "phoneScreenshot": "after-print-entry-390x844.png",
+    "phoneText": "ADDITIVE MANUFACTURING STUDIO\n\nPrint Lab\n\nShape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.\n\n1. Design\n2. Preflight\n3. Materials\n4. Submit\n\nLOCAL CONNECTED-TOOL HANDOFF\n\nFrom Geometry World\n\nThe STL preview is physical geometry. A separate editable block recipe is held only in this open session so shapes and rotations are not lost.\n\nDefault: 5 mm / block\nCONNECTED BLOCKS\n44\nSHAPED PIECES\n12\nSTL TRIANGLES\n308\nBLOCK ENVELOPE\n6 × 4 × 5 blocks\n\nCURRENT PHYSICAL SIZE\n\n120 × 80 × 100 mm\n\nExact STL mesh envelope at 20 mm per Geometry World block. Width × depth × height.\n\nReset to 5 mm / block\nCheck this model\nRevise in Geometry World\nDownload editable block source\n\nVirtual Stone, Wood, Gold, and other block labels describe appearance only. Select the actual school filament in Materials after reviewing its properties and end-of-life limits.\n\nStart a different model\n3D preview\n\nDrag to orbit. Use the controls below for a keyboard path.\n\n↶\n↷\n+\n−\nReset\n\nThis preview is a still picture of the model. Use the rotate, zoom and reset buttons above it to change the view; the Preflight tab holds the full text report of dimensions and printability checks.\n\nPhysical scale\n\nSCALE PRESETS\n\nDraft\n2.5 mm / block\nDefault\n5 mm / block\nLarge\n10 mm / block\nMillimeters per Geometry World block\n\nCurrent mesh envelope: 120 × 80 × 100 mm (width × depth × height).\n\nOutside the current printer envelope. The width dimension is too large for 100 × 100 × 110 mm. Choose a smaller scale or revise the model.\nSuggested safe-fit scale: 15 mm per block\n\nWidth is the limiting dimension. This targets a usable 90 × 90 × 100 mm envelope, preserving 5 mm on every edge. Printer clips, purge lines, and machine keep-out zones still require slicer and staff review.\n\nCURRENT ENVELOPE\n120 × 80 × 100 mm\nSUGGESTED ENVELOPE\n90 × 60 × 75 mm\nSCALE REDUCTION\n25%\nHow this scale was calculated\nUse 15 mm / block\n\nSTL does not store units. Confirm this value and orientation again in the school slicer.\n\nContinue to Preflight\nLoaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.\nSelected build prepared locally. Opening Print Lab.",
+    "transfer": {
+      "exact": true,
+      "count": 44,
+      "bytes": 15484,
+      "unitMm": 20,
+      "storedUnit": 20
+    },
+    "desktopScreenshot": "after-print-entry-1440x900.png",
+    "returned": {
+      "world": true,
+      "selection": true,
+      "undo": true,
+      "redo": true,
+      "blocks": 45,
+      "unitMm": 20
+    }
+  },
+  "final": {
+    "world": "[{\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3}]",
+    "selection": "[{\"x\":32,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-26},{\"x\":31,\"y\":1,\"z\":-26},{\"x\":32,\"y\":1,\"z\":-25},{\"x\":32,\"y\":1,\"z\":-27},{\"x\":34,\"y\":1,\"z\":-26},{\"x\":33,\"y\":1,\"z\":-25},{\"x\":33,\"y\":1,\"z\":-27},{\"x\":31,\"y\":1,\"z\":-25},{\"x\":31,\"y\":1,\"z\":-27},{\"x\":35,\"y\":1,\"z\":-26},{\"x\":34,\"y\":1,\"z\":-25},{\"x\":34,\"y\":1,\"z\":-27},{\"x\":33,\"y\":1,\"z\":-24},{\"x\":31,\"y\":2,\"z\":-25},{\"x\":31,\"y\":2,\"z\":-27},{\"x\":36,\"y\":1,\"z\":-26},{\"x\":35,\"y\":1,\"z\":-25},{\"x\":35,\"y\":1,\"z\":-27},{\"x\":31,\"y\":3,\"z\":-25},{\"x\":31,\"y\":3,\"z\":-27},{\"x\":35,\"y\":2,\"z\":-25},{\"x\":35,\"y\":2,\"z\":-27},{\"x\":31,\"y\":4,\"z\":-25},{\"x\":31,\"y\":4,\"z\":-27},{\"x\":35,\"y\":3,\"z\":-25},{\"x\":35,\"y\":3,\"z\":-27},{\"x\":31,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-27},{\"x\":35,\"y\":4,\"z\":-25},{\"x\":35,\"y\":4,\"z\":-27},{\"x\":32,\"y\":5,\"z\":-25},{\"x\":31,\"y\":5,\"z\":-26},{\"x\":32,\"y\":5,\"z\":-27},{\"x\":35,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-25},{\"x\":32,\"y\":5,\"z\":-26},{\"x\":33,\"y\":5,\"z\":-27},{\"x\":34,\"y\":5,\"z\":-25},{\"x\":35,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-27},{\"x\":33,\"y\":5,\"z\":-26},{\"x\":34,\"y\":5,\"z\":-26}]",
+    "count": 44,
+    "hash": "cde7f332aec709c0ff1d071171fbaf918899cf406200670cf4f2a2979a21c3be",
+    "undo": "[{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":32,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":34,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-27,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-26,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":1,\"z\":-25,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-27,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-27,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":2,\"z\":-25,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":3,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":35,\"y\":4,\"z\":-25,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":31,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":32,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":33,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":34,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-27,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-26,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":3},{\"action\":\"place\",\"x\":35,\"y\":5,\"z\":-25,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":3},{\"action\":\"place\",\"x\":36,\"y\":1,\"z\":-26,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":2},{\"action\":\"place\",\"x\":33,\"y\":1,\"z\":-24,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":3},{\"action\":\"place\",\"x\":39,\"y\":1,\"z\":-20,\"type\":\"glass\",\"shape\":\"quarter\",\"rotation\":1}]",
+    "redo": "[]"
+  },
+  "pass": true
+}

@@ -1,0 +1,77 @@
+{
+  "pass": true,
+  "exports": [
+    {
+      "stage": "before",
+      "quality": "saver",
+      "file": "before-saver-export.png",
+      "width": 2048,
+      "height": 785,
+      "sky": [
+        241,
+        238,
+        232
+      ],
+      "floor": [
+        241,
+        238,
+        231
+      ],
+      "contrast": 1
+    },
+    {
+      "stage": "before",
+      "quality": "detail",
+      "file": "before-detail-export.png",
+      "width": 2048,
+      "height": 785,
+      "sky": [
+        241,
+        238,
+        232
+      ],
+      "floor": [
+        241,
+        238,
+        231
+      ],
+      "contrast": 1
+    },
+    {
+      "stage": "after",
+      "quality": "saver",
+      "file": "after-saver-export.png",
+      "width": 2048,
+      "height": 785,
+      "sky": [
+        241,
+        238,
+        232
+      ],
+      "floor": [
+        241,
+        238,
+        231
+      ],
+      "contrast": 1
+    },
+    {
+      "stage": "after",
+      "quality": "detail",
+      "file": "after-detail-export.png",
+      "width": 2048,
+      "height": 785,
+      "sky": [
+        241,
+        238,
+        232
+      ],
+      "floor": [
+        241,
+        238,
+        231
+      ],
+      "contrast": 1
+    }
+  ]
+}

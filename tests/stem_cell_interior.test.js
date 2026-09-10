@@ -181,6 +181,7 @@ describe('Cell — interior organelle catalogue (the biology behind the visual)'
       bezierCurveTo: noop, quadraticCurveTo: noop, translate: noop, rotate: noop, setLineDash: noop,
       fillText(value) { labels.push(value); },
       createRadialGradient() { return { addColorStop: noop }; },
+      createLinearGradient() { return { addColorStop: noop }; },
     };
 
     C.drawCellMicrodissection(context, 760, 440, 'plant', 0, 'cellWall', true, 4, 'laser', 62, 'fluorescence');

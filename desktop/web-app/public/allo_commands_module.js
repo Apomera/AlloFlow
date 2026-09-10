@@ -11,6 +11,154 @@
   var React = window.React;
   if (!React) { console.error('[AlloCommands] React not found on window'); return; }
 
+// Shared local-only recognition grammar. Build tools embed this factory verbatim.
+// The detector is deliberately broader than the parser: callers must run it before
+// chat persistence, AI, or tool routing. It is NOT a universal personal-data detector.
+// Neither function resolves people, chooses categories, authorizes, or awards points.
+function createSchoolStoreRecognitionTools() {
+  'use strict';
+  var invisible = /[\p{Cf}\u034f\u180b-\u180d\ufe00-\ufe0f]/gu;
+  var forbidden = /[\u0000-\u001f\u007f-\u009f\u2028\u2029\p{Cf}\u034f\u180b-\u180d\ufe00-\ufe0f\ud800-\udfff]/u;
+  var points = /\b(?:points?|pts?|puntos?)\b/i;
+  var numberPoints = /(?:[+\-]?\d[\d.,]*|\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|hundred|cero|un|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez))\s*(?:points?|pts?|puntos?)\b/i;
+  var action = /\b(?:give|award|grant|add|assign|credit|deduct|remove|revoke|reward|recognize|gets?|receives?|earns?|deserves?|gains?|wins?|otorga|otorgar|da|dar|dale|suma|añade|recompensa|recibe|gana|merece)\b/i;
+  var additional = /(?:\b(?:and|then|also|y|luego|también|después)\s+|[.!?]\s*)(?:please\s+)?(?:give|award|grant|add|assign|credit|deduct|remove|revoke|reward|send|delete|open|write|summari[sz]e|translate|explain|show|ignore|otorga|da|suma|añade|envía|borra|abre|escribe|resume|traduce|explica)\b/i;
+
+  function isRecognitionRequest(raw) {
+    if (typeof raw !== 'string' || !raw.trim()) return false;
+    // Normalize compatibility characters and strip invisible obfuscators ONLY for
+    // detection. The strict parser rejects invisible/control characters outright.
+    var text = raw.normalize('NFKC').replace(invisible, '').toLowerCase();
+    var words = text.replace(/[_-]/g, ' ');
+    // Check both control-as-space and control-as-obfuscation interpretations.
+    words = words.replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ') + ' ' + words.replace(/[\u0000-\u001f\u007f-\u009f]/g, '');
+    // Exact academic topics only, with no trailing recipient or extra directive.
+    // Do not generalize this into an exemption for arbitrary "explain ..." text.
+    if (/^(?:please\s+)?(?:(?:explain|what\s+is)\s+(?:speech|pattern|image|optical\s+character|facial)\s+recognition|create\s+a\s+lesson\s+about\s+(?:the\s+)?nobel\s+(?:prizes|awards))[.!?]?\s*$/.test(text)) return false;
+    // A tightly bounded ordinary academic list request is not a recognition draft.
+    // Any extra directive, sentence, reward/person marker defeats this exception.
+    var academic = /^(?:please\s+)?give\s+me\s+(?:\d+|five|ten|three)\s+(?:bullet|key|main|talking)\s+points\s+(?:about|on|explaining)\s+[^\r\n;.!?{}<>]+[.!?]?\s*$/.test(text);
+    if (academic && !additional.test(text) && !/\b(?:student|learner|codename|award|reward|recognition|earned|deserves?|give|grant)\b/.test(text.replace(/^(?:please\s+)?give\b/, '')) && !numberPoints.test(text.replace(/^.*?\bpoints\b/, ''))) return false;
+    if (/\b(?:school\s+(?:store|rewards?)|alloflow\s+(?:store|rewards?))\b/.test(words)) return true;
+    if (/\b(?:award|awards|awarded|awarding|reward|rewarded|rewarding|recognize|recognise|recognition)\b/.test(words)) return true;
+    if (points.test(words) && (action.test(words) || numberPoints.test(words))) return true;
+    // Typed/JSON-like tool sentinels must not sneak past the natural-language guard.
+    if (/[{}<>]/.test(text) && /(?:award|recognition|reward|give[ _-]?points)/.test(text)) return true;
+    if (/[{}]/.test(text) && /["'](?:codename|learnerid|studentid)["']\s*:/.test(text) && /["'](?:amount|points)["']\s*:/.test(text)) return true;
+    if (points.test(words) && /\b(?:student|learner|codename|studentid|learnerid|amount|reason)\b/.test(words)) return true;
+    return false;
+  }
+
+  function failure(code) { return { ok: false, code: code }; }
+
+  function parseRecognitionRequest(raw) {
+    if (typeof raw !== 'string' || !raw.trim()) return failure('INPUT_REQUIRED');
+    if (raw.length > 512) return failure('TOO_LONG');
+    if (forbidden.test(raw)) return failure('INVALID_CHARACTERS');
+    var text = raw.normalize('NFKC').trim();
+    if (text.length > 512) return failure('TOO_LONG');
+    if (/[;]|&&|\|\|/.test(text) || additional.test(text)) return failure('MULTIPLE_COMMANDS');
+    var match, codename, amountText, reason;
+    // Amount-first is deliberately only the explicit award/otorga ... to/a form.
+    match = /^(?:award) +(\S+) +points? +to +(.+?) +for(?: +(.*))?$/i.exec(text);
+    if (!match) match = /^otorga +(\S+) +puntos? +a +(.+?) +por(?: +(.*))?$/i.exec(text);
+    if (match) { amountText = match[1]; codename = match[2]; reason = match[3] || ''; }
+    else {
+      match = /^(?:give|award) +(.+?) +(\S+) +points? +for(?: +(.*))?$/i.exec(text);
+      if (!match) match = /^(?:da|otorga) +(.+?) +(\S+) +puntos? +por(?: +(.*))?$/i.exec(text);
+      if (!match) return failure('UNSUPPORTED_FORMAT');
+      codename = match[1]; amountText = match[2]; reason = match[3] || '';
+    }
+    // Reject signs, fractions, exponent notation, words and leading zeros. Never
+    // coerce, round, truncate, infer a recipient, or parse several awards at once.
+    if (!/^[1-9]\d{0,3}$/.test(amountText) || Number(amountText) > 1000 || /(?:^| )[-+]$/.test(codename)) return failure('INVALID_AMOUNT');
+    codename = codename.trim();
+    reason = reason.trim();
+    if (!codename || codename.length > 80 || !/[\p{L}\p{N}]/u.test(codename) || /[{}\[\]<>;,]|\s(?:and|y)\s/i.test(codename) || /^(?:__proto__|prototype|constructor)$/i.test(codename)) return failure('INVALID_CODENAME');
+    if (!reason || reason.length > 180) return failure('INVALID_REASON');
+    if (numberPoints.test(reason) || (action.test(reason) && points.test(reason))) return failure('MULTIPLE_COMMANDS');
+    return { ok: true, codename: codename, amount: Number(amountText), reason: reason };
+  }
+
+  return { isRecognitionRequest: isRecognitionRequest, parseRecognitionRequest: parseRecognitionRequest };
+}
+
+// Shared, deterministic guidance. No network, storage, identities or mutations.
+// Embedded locally in the School Rewards panel and both AlloBot modules.
+function createSchoolStoreSetupGuide() {
+  const paths = [
+    { id: 'practice', title: 'Try the demo', intro: 'Explore with fictional data. No Google setup or real student records are needed.', steps: [
+      { id: 'understand', title: 'Start with fictional data', body: 'Practice uses simulated accounts, balances and delivery. It does not connect to a school ledger. The separate local guided demo also needs its presentation server running.', target: 'practice', manualHash: 'quickstart' },
+      { id: 'try', title: 'Try an award and a purchase', body: 'Open practice, use its fictional roles, review the learner, award points and complete a reviewed checkout. Reset to rehearse again. No real email or printer command is sent.', target: 'practice', manualHash: 'store' }
+    ] },
+    { id: 'join', title: 'Join my school’s existing Store', intro: 'For teachers and cashiers: use the Store your school has already approved. You do not need to create an Apps Script project.', steps: [
+      { id: 'link', title: 'Get the approved Store link', body: 'Ask your school administrator for the managed Store web-app address ending in /exec and confirm that they have granted your staff or cashier role. Do not put the address, credentials or student details in chat.', target: 'connection', manualHash: 'setup' },
+      { id: 'save', title: 'Save the address on this device', body: 'Paste the approved address into the Store connection field and choose Save address. If you edit a saved address, save or discard the change before opening the Store. Only Disconnect removes the saved address. Saving does not sign you in, grant access or verify the deployment.', target: 'connection', manualHash: 'setup' },
+      { id: 'open', title: 'Open your school’s Store', body: 'Open the Store with your own managed school Google account. An opening attempt is not proof that the tab opened or that access was granted. If no tab appears, use the direct fallback link. If access is denied, ask the administrator rather than creating another Store. More local tips are under Help opening your Store.', target: 'launch', manualHash: 'access' },
+      { id: 'check', title: 'Confirm your school and role', body: 'Open the deployment check and read its result. Confirm the expected school and role with the administrator. AlloBot cannot see or certify that separate Google page. Teachers award; cashiers check out; students see only their own records.', target: 'check', manualHash: 'troubleshooting' }
+    ] },
+    { id: 'setup', title: 'Set up a Store for my school', intro: 'For the school administrator or technology coordinator. This is a reviewed school-wide setup, not something every teacher repeats.', steps: [
+      { id: 'approval', title: 'Confirm district review and ownership', body: 'Identify the managed account and technical owner. Obtain district review of the code, requested permissions, storage, email and retention. Stop and consult IT if Google or district policy blocks access; do not bypass a warning.', target: 'approval', manualHash: 'privacy' },
+      { id: 'handoff', title: 'Choose who will do the technical work', body: 'The technology coordinator can use the existing handoff packet. Enter school configuration only in the setup form, not in AlloBot. The packet contains configuration and source files and should go to the intended coordinator.', target: 'handoff', manualHash: 'setup' },
+      { id: 'files', title: 'Prepare the reviewed project files', body: 'Follow the existing checklist for Code.gs, Portal.html, Index.html and appsscript.json. Copying a file or ticking a box does not verify the installed project. Have the technical owner check the actual files.', target: 'files', manualHash: 'setup' },
+      { id: 'configuration', title: 'Run the reviewed one-time setup', body: 'Check the school configuration and managed account. The technical owner runs the generated setup function only after approval and verifies its result. AlloBot does not execute it or approve Google permissions.', target: 'configuration', manualHash: 'setup' },
+      { id: 'deploy', title: 'Deploy privately and save the link', body: 'Use the domain-restricted deployment described in the checklist, never public access. Save its /exec address locally. Source changes require a new reviewed deployment version; saving a URL does not publish code.', target: 'deploy', manualHash: 'setup' },
+      { id: 'verify', title: 'Verify with approved test accounts', body: 'Read the deployment check and test each intended role with approved test accounts and fictional records. A recorded verification checkbox is your confirmation, not automatic evidence from AlloBot.', target: 'check', manualHash: 'setup' },
+      { id: 'first-week', title: 'Finish the Store’s first-week checklist', body: 'Inside the signed-in Store, use Admin setup for staff, roster, categories, prizes and shopping windows. Add optional class links, Classroom imports or Print Lab only after their own review. Educator Evaluation remains separate.', target: 'launch', manualHash: 'admin' }
+    ] }
+  ];
+  const troubleshooting = [
+    { id: 'new-tab', title: 'Nothing opened in a new tab', body: 'An opening request is not confirmation that a new tab appeared. Check your other tabs, then use the direct fallback link shown after your attempt. If your browser or district blocks it, ask your technology coordinator about the approved browser settings. Do not bypass a Google or district security warning.', manualHash: 'troubleshooting' },
+    { id: 'sign-in', title: 'Google asks me to sign in', body: 'Use your own managed school Google account and the school-approved Store link. Being signed into Gemini or a personal Google account does not grant Store access. If the wrong account appears, use the account-switching method approved by your school; do not share passwords or accounts.', manualHash: 'access' },
+    { id: 'role-access', title: 'I can sign in, but access is denied', body: 'Ask the Store administrator to confirm the approved deployment, allowed school domain and your assigned role. A teacher or cashier needs the corresponding staff access; students use their own managed identity. The launcher cannot grant a role, and creating another Store will not fix access to the existing one.', manualHash: 'troubleshooting' },
+    { id: 'address', title: 'My Store link will not save, or looks wrong', body: 'Ask the administrator for the approved HTTPS script.google.com deployment address ending in /macros/s/{deployment}/exec, without extra query parameters or a fragment. Do not use the editor address or a /dev test link. An edited address must be saved or discarded before launching. The saved-address badge does not verify which school is behind the link.', manualHash: 'setup' },
+    { id: 'connections', title: 'Which Google connection do I need?', body: 'The school-managed Store has its own sign-in and staff roles. Classroom authorization is a separate read-only roster import and does not grant Store access. Canvas and desktop launch the Store; they do not hold its official ledger. Educator Evaluation has separate personnel records and permissions. A Clever launch link does not replace these approvals.', manualHash: 'classroom' }
+  ];
+  function freeze(value) { if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; }
+  freeze(paths);
+  freeze(troubleshooting);
+  return Object.freeze({ version: 1, getPaths: () => paths, getPath: id => paths.find(path => path.id === id) || null, getTroubleshooting: () => troubleshooting });
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { createSchoolStoreSetupGuide };
+
+const _commandRecognitionTools = typeof createSchoolStoreRecognitionTools === "function" ? createSchoolStoreRecognitionTools() : null;
+function _isPrivateRecognitionText(value) {
+  try {
+    return _isCommandStoreSetupGuideRequest(value) || /^__allo_store_/.test(String(value || "")) || !_commandRecognitionTools || _commandRecognitionTools.isRecognitionRequest(value);
+  } catch (_) {
+    return true;
+  }
+}
+function _isCommandStoreSetupGuideRequest(value) {
+  if (typeof value !== "string") return false;
+  if (/^__allo_store_guide_/i.test(value.normalize("NFKC").replace(/[\p{Cf}\u034f\u180b-\u180d\ufe00-\ufe0f\u0000-\u001f\u007f-\u009f]/gu, "").trim())) return true;
+  if (value.length > 200 || /[\u0000-\u001f\u007f-\u009f\p{Cf}]/u.test(value)) return false;
+  const text = value.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ").replace(/[.!?]$/, "");
+  const products = ["school store", "school rewards", "alloflow school store", "alloflow school rewards"];
+  return products.some((product) => [
+    "help me set up " + product,
+    "help me setup " + product,
+    "help me use " + product,
+    "help me with " + product,
+    "set up " + product,
+    "setup " + product,
+    "how do i set up " + product,
+    "how can i set up " + product,
+    product + " setup help",
+    product + " setup guide",
+    product + " setup",
+    product + " help",
+    product + " guide",
+    product + " manual",
+    "open " + product + " manual",
+    "show " + product + " manual",
+    "show me the " + product + " manual"
+  ].some((alias) => text === alias || text === "please " + alias));
+}
+function _privateRecognitionResult(rawText) {
+  if (_isCommandStoreSetupGuideRequest(rawText)) return { handled: true, ok: false, localOnly: true, reason: "school-store-setup-guide", narration: "Ask Allobot chat for School Store setup help, then choose a local guide path. Nothing opens until you choose. Keep student details and credentials out of chat; no school settings or records were changed." };
+  return { handled: true, ok: false, localOnly: true, reason: "school-store-recognition", narration: "Use the signed-in School Store. Type there or use its dedicated on-device dictation when available, then review and confirm the award. The ordinary Allobot microphone may use remote transcription and is not for student awards. No points were awarded. This recognition command does not use the AI router." };
+}
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
 const _mkT = (rawT) => (k, f) => {
   let r = null;
@@ -2952,6 +3100,7 @@ function _sanitizeLearnerScopedParams(command, params) {
   }, {});
 }
 async function routeScopedUtterance(ctx, rawText, meta = {}) {
+  if (_isPrivateRecognitionText(rawText)) return null;
   const text = String(rawText || "").trim();
   if (!text || text.length > 200) return null;
   _throwIfCommandPlanningAborted(meta && meta.signal);
@@ -3206,6 +3355,10 @@ function createCommandKernel(ctxFactory, opts = {}) {
     return { handled: hadPending || hadActive, ok: false, cancelled: true, reason: reason || "cancelled", narration: cancelOpts.silent ? "" : "Cancelled." };
   }
   async function handleUtterance(rawText, meta = {}) {
+    if (_isPrivateRecognitionText(rawText)) {
+      pendingConfirmation = null;
+      return _privateRecognitionResult(rawText);
+    }
     if (destroyed) return { handled: false, ok: false, reason: "destroyed" };
     const text = String(rawText || "").trim();
     if (!text || text.length > 200) return null;
@@ -3354,6 +3507,7 @@ function commandOfferPrompt(command, ctx, params) {
   return lead + detail + " " + t("voice_control.offer_tail", "Say yes to do it, or just keep talking and I will listen.");
 }
 async function routeUtterance(ctx, rawText, opts = {}) {
+  if (_isPrivateRecognitionText(rawText)) return _privateRecognitionResult(rawText);
   const text = String(rawText || "").trim();
   const t = _mkT(ctx && ctx.t);
   const _looksLikeReadingFind = /^(?:find|recommend|suggest|show|get|help me find)\s+(?:me\s+)?(?:a\s+|some\s+|the\s+)?(?:books|book|readings|reading|stories|story|articles|article|sources|source|texts|text)\b/i.test(text);
@@ -3764,6 +3918,7 @@ function _cleanPlanParams(p) {
   return out;
 }
 async function planUtterance(ctx, rawText, opts = {}) {
+  if (_isPrivateRecognitionText(rawText)) return null;
   const text = String(rawText || "").trim();
   if (!text) return null;
   if (text.length > 12e3) {

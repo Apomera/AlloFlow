@@ -1,0 +1,131 @@
+{
+  "modules": [
+    {
+      "file": "utils_pure_module.js",
+      "sha256": "bfbed0c1ad6290f510ed2b25b6ac0895fc05407c3bfea215ba01d6ff9a5ff207",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "concept_map_handlers_module.js",
+      "sha256": "81f8f77811db3a463e6d69d3684f4a8aeccd29861333f6a82dd9ef83dd76d81c",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "sha256": "6a50d6e8557b1c4aec41bb3e189183d46c4286d8825cf97cdb87af9a5906fcf5",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_lesson_plan_module.js",
+      "sha256": "af4df13a4abced9c7297c27eafc24f09740bc4b0f65cd94e1a4cda665ac55cf1",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "export_handlers_module.js",
+      "sha256": "4743b95665da38a59906339b065fcb486c814aab1f6c4d2b4b3b9abbaa1cf0ac",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    }
+  ],
+  "pins": [
+    {
+      "host": "AlloFlowANTI.txt",
+      "module": "utils_pure_module.js",
+      "count": 1,
+      "version": "bfbed0c1"
+    },
+    {
+      "host": "AlloFlowANTI.txt",
+      "module": "concept_map_handlers_module.js",
+      "count": 1,
+      "version": "81f8f778"
+    },
+    {
+      "host": "AlloFlowANTI.txt",
+      "module": "generate_dispatcher_module.js",
+      "count": 1,
+      "version": "6a50d6e8"
+    },
+    {
+      "host": "AlloFlowANTI.txt",
+      "module": "view_lesson_plan_module.js",
+      "count": 1,
+      "version": "af4df13a"
+    },
+    {
+      "host": "AlloFlowANTI.txt",
+      "module": "export_handlers_module.js",
+      "count": 1,
+      "version": "4743b956"
+    },
+    {
+      "host": "desktop/web-app/src/AlloFlowANTI.txt",
+      "module": "utils_pure_module.js",
+      "count": 1,
+      "version": "bfbed0c1"
+    },
+    {
+      "host": "desktop/web-app/src/AlloFlowANTI.txt",
+      "module": "concept_map_handlers_module.js",
+      "count": 1,
+      "version": "81f8f778"
+    },
+    {
+      "host": "desktop/web-app/src/AlloFlowANTI.txt",
+      "module": "generate_dispatcher_module.js",
+      "count": 1,
+      "version": "6a50d6e8"
+    },
+    {
+      "host": "desktop/web-app/src/AlloFlowANTI.txt",
+      "module": "view_lesson_plan_module.js",
+      "count": 1,
+      "version": "af4df13a"
+    },
+    {
+      "host": "desktop/web-app/src/AlloFlowANTI.txt",
+      "module": "export_handlers_module.js",
+      "count": 1,
+      "version": "4743b956"
+    },
+    {
+      "host": "desktop/web-app/src/App.jsx",
+      "module": "utils_pure_module.js",
+      "count": 1,
+      "version": "bfbed0c1"
+    },
+    {
+      "host": "desktop/web-app/src/App.jsx",
+      "module": "concept_map_handlers_module.js",
+      "count": 1,
+      "version": "81f8f778"
+    },
+    {
+      "host": "desktop/web-app/src/App.jsx",
+      "module": "generate_dispatcher_module.js",
+      "count": 1,
+      "version": "6a50d6e8"
+    },
+    {
+      "host": "desktop/web-app/src/App.jsx",
+      "module": "view_lesson_plan_module.js",
+      "count": 1,
+      "version": "af4df13a"
+    },
+    {
+      "host": "desktop/web-app/src/App.jsx",
+      "module": "export_handlers_module.js",
+      "count": 1,
+      "version": "4743b956"
+    }
+  ],
+  "hostSyntaxPassed": true,
+  "catalogValid": true,
+  "catalogMirrorMatches": true,
+  "whitespaceExitCode": 0,
+  "whitespaceOutput": "warning: in the working copy of 'concept_map_handlers_module.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'concept_map_handlers_source.jsx', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'desktop/web-app/public/concept_map_handlers_module.js', CRLF will be replaced by LF the next time Git touches it\n"
+}

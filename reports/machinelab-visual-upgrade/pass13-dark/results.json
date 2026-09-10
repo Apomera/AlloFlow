@@ -1,0 +1,34 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "lever-50",
+    "lever-100",
+    "pulley-50",
+    "pulley-100",
+    "windlass-50",
+    "windlass-100",
+    "ramp-50",
+    "ramp-100",
+    "wedge-50",
+    "wedge-100",
+    "screw-50",
+    "screw-100"
+  ],
+  "checks": [
+    "Keyboard and held camera pose: pulley 390",
+    "Keyboard and held camera pose: wedge 390",
+    "Keyboard and held camera pose: pulley 320",
+    "Keyboard and held camera pose: wedge 320",
+    "Reduced motion holds half stroke",
+    "Old timer cannot interrupt newer run",
+    "Next station starts at rest"
+  ]
+}

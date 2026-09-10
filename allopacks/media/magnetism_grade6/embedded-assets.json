@@ -1,0 +1,308 @@
+[
+  {
+    "id": "mi-term-1",
+    "kind": "term",
+    "file": "mi-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bar has a coral left half and a teal right half.",
+    "altHash": "img-2v3-475523bf"
+  },
+  {
+    "id": "mi-term-2",
+    "kind": "term",
+    "file": "mi-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bar has a coral left half and a teal right half.",
+    "altHash": "img-2v3-475523bf"
+  },
+  {
+    "id": "mi-term-3",
+    "kind": "term",
+    "file": "mi-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two bar magnets have a teal end facing a coral end; arrows above them point inward.",
+    "altHash": "img-3tn-a787f691"
+  },
+  {
+    "id": "mi-term-4",
+    "kind": "term",
+    "file": "mi-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two bar magnets have teal ends facing each other; arrows above them point outward.",
+    "altHash": "img-3vn-2ac9f3d7"
+  },
+  {
+    "id": "mi-term-5",
+    "kind": "term",
+    "file": "mi-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two curved paths run above and below a coral-and-teal bar, with rightward arrows outside and a leftward arrow inside it.",
+    "altHash": "img-j3r-2669c4b8"
+  },
+  {
+    "id": "mi-term-6",
+    "kind": "term",
+    "file": "mi-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A paperclip is separated from a bar magnet by a clear gap; an arrow above the clip points toward the magnet.",
+    "altHash": "img-4h3-68ddc681"
+  },
+  {
+    "id": "mi-term-7",
+    "kind": "term",
+    "file": "mi-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A closed switch and a blue supply block connect to a continuous coil around a gray core; a paperclip touches the underside of the core.",
+    "altHash": "img-e4f-b9f646a3"
+  },
+  {
+    "id": "mi-term-8",
+    "kind": "term",
+    "file": "mi-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A thick wire runs horizontally with three rightward arrows above it.",
+    "altHash": "img-3rr-a693da16"
+  },
+  {
+    "id": "mi-term-9",
+    "kind": "term",
+    "file": "mi-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A circular compass has a coral needle end pointing upward and a teal end downward; an adjacent arrow points upward.",
+    "altHash": "img-9tj-067c915b"
+  },
+  {
+    "id": "mi-term-10",
+    "kind": "term",
+    "file": "mi-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A paperclip is separated from a bar magnet by a clear gap; an arrow above the clip points toward the magnet.",
+    "altHash": "img-4h3-68ddc681"
+  },
+  {
+    "id": "mi-term-11",
+    "kind": "term",
+    "file": "mi-term-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Concentric circles show a blue outer rim, brown mantle, orange outer-core ring and pale central sphere; curved arrows sit only in the orange ring.",
+    "altHash": "img-k3b-36998aa2"
+  },
+  {
+    "id": "mi-anchor-1",
+    "kind": "anchor",
+    "file": "mi-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One two-colored bar appears above two shorter bars; each shorter bar again has both a coral and a teal half.",
+    "altHash": "img-5xr-732251b9"
+  },
+  {
+    "id": "mi-anchor-2",
+    "kind": "anchor",
+    "file": "mi-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two curved paths run above and below a coral-and-teal bar, with rightward arrows outside and a leftward arrow inside it.",
+    "altHash": "img-j3r-2669c4b8"
+  },
+  {
+    "id": "mi-anchor-3",
+    "kind": "anchor",
+    "file": "mi-anchor-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A gray iron nail has a flat round head, straight shaft and pointed end.",
+    "altHash": "img-363-cd0d727e"
+  },
+  {
+    "id": "mi-anchor-4",
+    "kind": "anchor",
+    "file": "mi-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A closed switch and a blue supply block connect to a continuous coil around a gray core; a paperclip touches the underside of the core.",
+    "altHash": "img-e4f-b9f646a3"
+  },
+  {
+    "id": "mi-anchor-5",
+    "kind": "anchor",
+    "file": "mi-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Concentric circles show a blue outer rim, brown mantle, orange outer-core ring and pale central sphere; curved arrows sit only in the orange ring.",
+    "altHash": "img-k3b-36998aa2"
+  },
+  {
+    "id": "mi-sort-1",
+    "kind": "sort",
+    "file": "mi-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A silver-gray steel paperclip forms two nested elongated wire loops.",
+    "altHash": "img-4z7-c62b6d09"
+  },
+  {
+    "id": "mi-sort-2",
+    "kind": "sort",
+    "file": "mi-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A plain silver beverage can has a pull tab on top.",
+    "altHash": "img-55z-0a944fec"
+  },
+  {
+    "id": "mi-sort-3",
+    "kind": "sort",
+    "file": "mi-sort-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A gray iron nail has a flat round head, straight shaft and pointed end.",
+    "altHash": "img-363-cd0d727e"
+  },
+  {
+    "id": "mi-sort-4",
+    "kind": "sort",
+    "file": "mi-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A reddish copper tube has an open hollow circular end.",
+    "altHash": "img-4uf-9f00de8a"
+  },
+  {
+    "id": "mi-sort-5",
+    "kind": "sort",
+    "file": "mi-sort-5.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A plain silver-gray coin is shown at a slight angle, with a smooth edge and face.",
+    "altHash": "img-4f7-2d18f945"
+  },
+  {
+    "id": "mi-sort-6",
+    "kind": "sort",
+    "file": "mi-sort-6.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A plain white refrigerator has two closed doors and simple handles.",
+    "altHash": "img-3fb-93b080a0"
+  },
+  {
+    "id": "mi-sort-7",
+    "kind": "sort",
+    "file": "mi-sort-7.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A plain golden ring is shown at an angle with an open center.",
+    "altHash": "img-5cv-93a08312"
+  },
+  {
+    "id": "mi-sort-8",
+    "kind": "sort",
+    "file": "mi-sort-8.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A small gray rectangular metal sample has a lightly pitted surface.",
+    "altHash": "img-6er-fcba6d96"
+  },
+  {
+    "id": "mi-sort-9",
+    "kind": "sort",
+    "file": "mi-sort-9.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "An empty clear plastic bottle has molded ridges and a teal screw cap.",
+    "altHash": "img-663-8b788fde"
+  },
+  {
+    "id": "mi-sort-10",
+    "kind": "sort",
+    "file": "mi-sort-10.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A screwdriver has a teal handle, straight gray shaft and a flat metal tip.",
+    "altHash": "img-36r-1ad9aa10"
+  },
+  {
+    "id": "mi-lesson-1",
+    "kind": "lesson",
+    "file": "mi-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two bar magnets have a teal end facing a coral end; arrows above them point inward.",
+    "altHash": "img-3tn-a787f691"
+  },
+  {
+    "id": "mi-lesson-2",
+    "kind": "lesson",
+    "file": "mi-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two bar magnets have teal ends facing each other; arrows above them point outward.",
+    "altHash": "img-3vn-2ac9f3d7"
+  },
+  {
+    "id": "mi-lesson-3",
+    "kind": "lesson",
+    "file": "mi-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One two-colored bar appears above two shorter bars; each shorter bar again has both a coral and a teal half.",
+    "altHash": "img-5xr-732251b9"
+  },
+  {
+    "id": "mi-lesson-4",
+    "kind": "lesson",
+    "file": "mi-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two curved paths run above and below a coral-and-teal bar, with rightward arrows outside and a leftward arrow inside it.",
+    "altHash": "img-j3r-2669c4b8"
+  },
+  {
+    "id": "mi-lesson-5",
+    "kind": "lesson",
+    "file": "mi-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A closed switch and a blue supply block connect to a continuous coil around a gray core; a paperclip touches the underside of the core.",
+    "altHash": "img-e4f-b9f646a3"
+  },
+  {
+    "id": "mi-lesson-6",
+    "kind": "lesson",
+    "file": "mi-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The switch is open above a coil and gray core; a paperclip rests well below the core.",
+    "altHash": "img-flv-fc8a5f45"
+  },
+  {
+    "id": "mi-lesson-7",
+    "kind": "lesson",
+    "file": "mi-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A circular compass has a coral needle end pointing upward and a teal end downward; an adjacent arrow points upward.",
+    "altHash": "img-9tj-067c915b"
+  },
+  {
+    "id": "mi-lesson-8",
+    "kind": "lesson",
+    "file": "mi-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Concentric circles show a blue outer rim, brown mantle, orange outer-core ring and pale central sphere; curved arrows sit only in the orange ring.",
+    "altHash": "img-k3b-36998aa2"
+  }
+]

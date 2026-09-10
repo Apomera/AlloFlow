@@ -1,0 +1,10 @@
+Print-run notebook
+Completed impressions: 3
+Most recent proofs (up to 12)
+
+#1 — ALPHA — Hands-on — 2026-09-09T04:29:01.417Z
+#2 — GAMMA — Guided tour — 2026-09-09T04:29:12.771Z
+#3 — GAMMA — Guided tour — 2026-09-09T04:29:28.871Z
+
+My observations
+An observation edited while the tour is running.

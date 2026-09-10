@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "checks": [
+    "zoom bounds and pin projection",
+    "screen-scaled pan",
+    "keyboard positioning",
+    "close-up recenter",
+    "full reset",
+    "unchanged DC solution",
+    "export framing notes",
+    "eight-part layout",
+    "390px overflow",
+    "axe"
+  ],
+  "axeViolations": 0
+}

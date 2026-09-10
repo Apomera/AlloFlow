@@ -1,0 +1,12 @@
+Print-run notebook
+Completed impressions: 1
+Most recent proofs (up to 12)
+
+#1 — PRINT — Hands-on — Prediction: It will read normally
+
+My observations
+My saved explanation.
+
+Screw experiment — ideal model, 10 N input, no friction.
+Setup A: bar 20 cm; pitch 10 mm; ideal force 1257 N; hand travel 125.7 cm; platen travel 10 mm per turn.
+Setup B: bar 40 cm; pitch 10 mm; ideal force 2513 N; hand travel 251.3 cm; platen travel 10 mm per turn.

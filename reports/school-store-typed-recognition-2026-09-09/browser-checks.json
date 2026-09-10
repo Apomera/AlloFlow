@@ -1,0 +1,35 @@
+{
+  "surfaces": [
+    {
+      "surface": "actual-store-typed-recognition",
+      "width": 1280,
+      "result": "passed"
+    },
+    {
+      "surface": "actual-store-typed-recognition-spanish",
+      "width": 1280,
+      "result": "passed"
+    },
+    {
+      "surface": "compiled-allobot-local-guard-runtime",
+      "width": 1280,
+      "result": "passed"
+    },
+    {
+      "surface": "actual-store-typed-recognition",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "surface": "actual-store-typed-recognition-spanish",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "surface": "compiled-allobot-local-guard-runtime",
+      "width": 390,
+      "result": "passed"
+    }
+  ],
+  "errors": []
+}

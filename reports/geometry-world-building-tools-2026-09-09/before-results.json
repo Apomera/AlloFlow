@@ -1,0 +1,175 @@
+{
+  "stage": "before",
+  "sources": {
+    "stem_tool_geometryworld.js": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+    "stem_tool_geometryworld_builder.js": "de92c523db3f677332ba94e94946e63180e738bcd3bb76a4a0da23e9eb980856",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [],
+  "captures": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "keyboard": {
+        "choice": {
+          "material": 6,
+          "shape": 0,
+          "rotation": 0
+        },
+        "live": {
+          "selectedBlock": 6,
+          "selectedShape": 0,
+          "blockRotation": 0,
+          "collabMode": false
+        },
+        "ghost": {
+          "shape": "cube",
+          "rotation": 0,
+          "visible": true
+        },
+        "focus": "geoworld-fs-wrap"
+      },
+      "button": null,
+      "cue": null,
+      "screenshot": "before-match-1440x900.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "keyboard": {
+        "choice": {
+          "material": 6,
+          "shape": 0,
+          "rotation": 0
+        },
+        "live": {
+          "selectedBlock": 6,
+          "selectedShape": 0,
+          "blockRotation": 0,
+          "collabMode": false
+        },
+        "ghost": {
+          "shape": "cube",
+          "rotation": 0,
+          "visible": true
+        },
+        "focus": "geoworld-fs-wrap"
+      },
+      "button": null,
+      "cue": null,
+      "screenshot": "before-match-390x844.png"
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "keyboard": {
+        "choice": {
+          "material": 6,
+          "shape": 0,
+          "rotation": 0
+        },
+        "live": {
+          "selectedBlock": 6,
+          "selectedShape": 0,
+          "blockRotation": 0,
+          "collabMode": false
+        },
+        "ghost": {
+          "shape": "cube",
+          "rotation": 0,
+          "visible": true
+        },
+        "focus": "geoworld-fs-wrap"
+      },
+      "button": null,
+      "cue": null,
+      "screenshot": "before-match-320x700.png"
+    },
+    {
+      "size": {
+        "width": 844,
+        "height": 390
+      },
+      "keyboard": {
+        "choice": {
+          "material": 6,
+          "shape": 0,
+          "rotation": 0
+        },
+        "live": {
+          "selectedBlock": 6,
+          "selectedShape": 0,
+          "blockRotation": 0,
+          "collabMode": false
+        },
+        "ghost": {
+          "shape": "cube",
+          "rotation": 0,
+          "visible": true
+        },
+        "focus": "geoworld-fs-wrap"
+      },
+      "button": null,
+      "cue": null,
+      "screenshot": "before-match-844x390.png"
+    }
+  ],
+  "fixture": [
+    {
+      "x": 0,
+      "z": 0,
+      "shape": "halfA",
+      "shapeIndex": 1,
+      "rotation": 1,
+      "key": "0,1,0"
+    },
+    {
+      "x": 2,
+      "z": 0,
+      "shape": "quarter",
+      "shapeIndex": 3,
+      "rotation": 3,
+      "key": "2,1,0"
+    },
+    {
+      "x": 4,
+      "z": 0,
+      "shape": "halfB",
+      "shapeIndex": 2,
+      "rotation": 2,
+      "key": "4,1,0"
+    }
+  ],
+  "dockScreenshot": "before-building-dock-1440x900.png",
+  "dockText": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nAim at a block you placed, then choose Select build to inspect your creation.\n\nYour creation\n3\nPlaced\n—\nSelected\n—\nBlock bounds\nBuilding with\nMaterial\n🪵 Wood\nShape / rotation\n◣ Quarter wedge - 270°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+  "protectedBreak": {
+    "before": {
+      "world": "[{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}]",
+      "stl": "90a306f59f16043ecdb24176382f84b1465625f768ba564206147523c1dddb09",
+      "history": "[[{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}],[]]",
+      "placed": 3,
+      "selection": "null",
+      "camera": "[[5.2,3.4,5.2],[-0.15423208694159532,0.25446828842374647,0.041147526672992166,0.9538161429714976]]",
+      "geometry": "[{\"key\":\"0,1,0\",\"positions\":[-0.5,0,-0.5,0.5,1,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0.5,1,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0.5,1,0.5,0.5,1,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0.5,1,0.5,0.5,0,-0.5,0.5,1,0.5,0.5,0,0.5,0.5,0,-0.5,0.5,1,-0.5,0.5,1,0.5],\"material\":\"D3DA090B-5EDC-44BC-860D-5D26E09F051A\",\"scale\":[1,1,1],\"rotation\":[0,0.7071067811865475,0,0.7071067811865476]},{\"key\":\"2,1,0\",\"positions\":[-0.5,0,-0.5,0,0.5,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0,0.5,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0,0.5,0.5,0,0.5,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,-0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,0.5,0.5,0,0.5],\"material\":\"42E36E7A-1951-45B7-9A19-4F0070C52891\",\"scale\":[1,1,1],\"rotation\":[0,0.7071067811865476,0,-0.7071067811865475]},{\"key\":\"4,1,0\",\"positions\":[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],\"material\":\"D805DE39-111C-4047-8F2F-AAD59954F1D8\",\"scale\":[1,1,1],\"rotation\":[0,1,0,6.123233995736766e-17]}]"
+    },
+    "after": {
+      "world": "[{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}]",
+      "stl": "90a306f59f16043ecdb24176382f84b1465625f768ba564206147523c1dddb09",
+      "history": "[[{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}],[]]",
+      "placed": 2,
+      "selection": "null",
+      "camera": "[[5.2,3.4,5.2],[-0.15423208694159532,0.25446828842374647,0.041147526672992166,0.9538161429714976]]",
+      "geometry": "[{\"key\":\"0,1,0\",\"positions\":[-0.5,0,-0.5,0.5,1,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0.5,1,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0.5,1,0.5,0.5,1,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0.5,1,0.5,0.5,0,-0.5,0.5,1,0.5,0.5,0,0.5,0.5,0,-0.5,0.5,1,-0.5,0.5,1,0.5],\"material\":\"D3DA090B-5EDC-44BC-860D-5D26E09F051A\",\"scale\":[1,1,1],\"rotation\":[0,0.7071067811865475,0,0.7071067811865476]},{\"key\":\"2,1,0\",\"positions\":[-0.5,0,-0.5,0,0.5,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0,0.5,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0,0.5,0.5,0,0.5,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,-0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,0.5,0.5,0,0.5],\"material\":\"42E36E7A-1951-45B7-9A19-4F0070C52891\",\"scale\":[1,1,1],\"rotation\":[0,0.7071067811865476,0,-0.7071067811865475]},{\"key\":\"4,1,0\",\"positions\":[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],\"material\":\"D805DE39-111C-4047-8F2F-AAD59954F1D8\",\"scale\":[1,1,1],\"rotation\":[0,1,0,6.123233995736766e-17]}]"
+    }
+  },
+  "shaders": [],
+  "pass": true
+}

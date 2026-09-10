@@ -1,0 +1,15 @@
+{
+  "distinctTestsPassed": 53,
+  "unresolvedFailedTests": 0,
+  "testFiles": 8,
+  "setupTimeoutsResolved": true,
+  "isolatedAccessibilityCheck": "passed unchanged",
+  "moduleSha256": "2fe6f0f8aa3bb57e2ace90cbe12dd6affbe9cd7a6632a3717aff9e40dc6b4421",
+  "moduleMirrors": "matched",
+  "mainLoaderVersion": "2fe6f0f8a",
+  "desktopLoaders": "existing local URLs preserved",
+  "browserRowTextParity": true,
+  "rosterReplacementAndConfirmation": "passed",
+  "syntax": "passed",
+  "whitespace": "passed"
+}

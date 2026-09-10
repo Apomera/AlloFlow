@@ -1,0 +1,2333 @@
+{
+  "stage": "before",
+  "scope": "Actual Three.js/React render; controlled target hit payload through the production raycaster. No production edits. Shape controls, denied B placement, and dock actions use actual UI.",
+  "sources": {
+    "stem_tool_geometryworld.js": "bfce4860fc3f6efd19a85ee8c2d4b0fb9c49c4f8103330e01e5b15e02b8013ed",
+    "stem_tool_geometryworld_builder.js": "95fd225c30e43435ecb525d7e45af1c58bc44cb77340fb370482d69533453a56",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "failures": [],
+  "errors": [],
+  "consoleErrors": [],
+  "cases": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "fixture": {
+        "x": 0,
+        "z": 0,
+        "shape": "halfA",
+        "shapeIndex": 1,
+        "rotation": 1,
+        "key": "0,1,0"
+      },
+      "visual": {
+        "target": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            1.5707963267948966,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            0.5,
+            1,
+            0.5
+          ],
+          "color": "fcfcfc",
+          "opacity": 1,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": true
+        },
+        "ghost": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1.006,
+            1.006,
+            1.006
+          ],
+          "rotation": [
+            0,
+            1.5707963267948966,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            0.5,
+            2,
+            0.5
+          ],
+          "color": "9dddb5",
+          "opacity": 0.135,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "hover": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            0.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.13918465920915726,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "outline": {
+          "visible": true,
+          "type": "LineSegments",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            0.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.5967386368366291,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "placement": {
+          "allowed": true,
+          "code": "ready",
+          "reason": "Ready to build",
+          "cell": {
+            "x": 0,
+            "y": 2,
+            "z": 0
+          }
+        },
+        "ghostError": 0.007348469228349768,
+        "hoverError": 1.0100989953238788,
+        "outlineError": 1.0025062319985176,
+        "targetUnique": [
+          "0,1,0",
+          "0,1,1",
+          "0,2,0",
+          "1,1,0",
+          "1,1,1",
+          "1,2,0"
+        ],
+        "hoverUnique": [
+          "-0.01,0.99,-0.01",
+          "-0.01,0.99,1.01",
+          "-0.01,2.01,-0.01",
+          "-0.01,2.01,1.01",
+          "1.01,0.99,-0.01",
+          "1.01,0.99,1.01",
+          "1.01,2.01,-0.01",
+          "1.01,2.01,1.01"
+        ],
+        "outlineUnique": [
+          "-0.0025,0.9975,-0.0025",
+          "-0.0025,0.9975,1.0025",
+          "-0.0025,2.0025,-0.0025",
+          "-0.0025,2.0025,1.0025",
+          "1.0025,0.9975,-0.0025",
+          "1.0025,0.9975,1.0025",
+          "1.0025,2.0025,-0.0025",
+          "1.0025,2.0025,1.0025"
+        ],
+        "expectedOutlineUnique": [
+          "0,1,0",
+          "0,1,1",
+          "0,2,0",
+          "1,1,0",
+          "1,1,1",
+          "1,2,0"
+        ],
+        "expectedOutlineVertices": 18,
+        "ghostStableScale": [
+          1.006,
+          1.006,
+          1.006
+        ]
+      },
+      "controls": {
+        "buttons": [
+          {
+            "name": "Rotate selected shape. Current rotation 90 degrees",
+            "text": "↻90°",
+            "tag": "SPAN",
+            "role": "button",
+            "pressed": "true",
+            "x": 627.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Cube shape, 1 cubic unit",
+            "text": "1",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 674.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit, currently selected",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "true",
+            "x": 721.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 768.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+            "text": "¼",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 815.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          }
+        ],
+        "shape": 1,
+        "rotation": 1,
+        "bridge": {
+          "selectedBlock": 0,
+          "selectedShape": 1,
+          "blockRotation": 1,
+          "collabMode": false
+        },
+        "feedback": [
+          {
+            "text": "⭐ 0/0",
+            "rect": {
+              "name": "Lesson progress: 0 of 0 questions complete",
+              "text": "⭐ 0/0",
+              "tag": "SPAN",
+              "role": "status",
+              "pressed": null,
+              "x": 1052.015625,
+              "y": 14,
+              "width": 59.984375,
+              "height": 26,
+              "visible": true,
+              "hit": true,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "✓Ready to build",
+            "rect": {
+              "name": "✓Ready to build",
+              "text": "✓Ready to build",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": 656.0546875,
+              "y": 478,
+              "width": 127.890625,
+              "height": 34,
+              "visible": true,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "Layer explorer reset. Showing all layers.",
+            "rect": {
+              "name": "Layer explorer reset. Showing all layers.",
+              "text": "Layer explorer reset. Showing all layers.",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": -1,
+              "y": 899,
+              "width": 1,
+              "height": 1,
+              "visible": true,
+              "hit": false,
+              "inViewport": false
+            }
+          }
+        ],
+        "overflow": false
+      },
+      "screenshot": "before-hover-halfA-r1-1440x900.png"
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "fixture": {
+        "x": 2,
+        "z": 0,
+        "shape": "quarter",
+        "shapeIndex": 3,
+        "rotation": 3,
+        "key": "2,1,0"
+      },
+      "visual": {
+        "target": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            4.71238898038469,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            2.5,
+            1,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 1,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": true
+        },
+        "ghost": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1.006,
+            1.006,
+            1.006
+          ],
+          "rotation": [
+            0,
+            4.71238898038469,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            2.5,
+            2,
+            0.5
+          ],
+          "color": "9dddb5",
+          "opacity": 0.135,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "hover": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            2.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.13374703861870912,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "outline": {
+          "visible": true,
+          "type": "LineSegments",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            2.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.5749881544748365,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "placement": {
+          "allowed": true,
+          "code": "ready",
+          "reason": "Ready to build",
+          "cell": {
+            "x": 2,
+            "y": 2,
+            "z": 0
+          }
+        },
+        "ghostError": 0.004242640687119446,
+        "hoverError": 0.7213182240553122,
+        "outlineError": 0.7106467091289916,
+        "targetUnique": [
+          "2,1,0",
+          "2,1,1",
+          "2,1.5,0.5",
+          "3,1,0",
+          "3,1,1",
+          "3,1.5,0.5"
+        ],
+        "hoverUnique": [
+          "1.99,0.99,-0.01",
+          "1.99,0.99,1.01",
+          "1.99,2.01,-0.01",
+          "1.99,2.01,1.01",
+          "3.01,0.99,-0.01",
+          "3.01,0.99,1.01",
+          "3.01,2.01,-0.01",
+          "3.01,2.01,1.01"
+        ],
+        "outlineUnique": [
+          "1.9975,0.9975,-0.0025",
+          "1.9975,0.9975,1.0025",
+          "1.9975,2.0025,-0.0025",
+          "1.9975,2.0025,1.0025",
+          "3.0025,0.9975,-0.0025",
+          "3.0025,0.9975,1.0025",
+          "3.0025,2.0025,-0.0025",
+          "3.0025,2.0025,1.0025"
+        ],
+        "expectedOutlineUnique": [
+          "2,1,0",
+          "2,1,1",
+          "2,1.5,0.5",
+          "3,1,0",
+          "3,1,1",
+          "3,1.5,0.5"
+        ],
+        "expectedOutlineVertices": 18,
+        "ghostStableScale": [
+          1.006,
+          1.006,
+          1.006
+        ]
+      },
+      "controls": {
+        "buttons": [
+          {
+            "name": "Rotate selected shape. Current rotation 270 degrees",
+            "text": "↻270°",
+            "tag": "SPAN",
+            "role": "button",
+            "pressed": "true",
+            "x": 627.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Cube shape, 1 cubic unit",
+            "text": "1",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 674.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 721.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 768.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit, currently selected",
+            "text": "¼",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "true",
+            "x": 815.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          }
+        ],
+        "shape": 3,
+        "rotation": 3,
+        "bridge": {
+          "selectedBlock": 0,
+          "selectedShape": 3,
+          "blockRotation": 3,
+          "collabMode": false
+        },
+        "feedback": [
+          {
+            "text": "⭐ 0/0",
+            "rect": {
+              "name": "Lesson progress: 0 of 0 questions complete",
+              "text": "⭐ 0/0",
+              "tag": "SPAN",
+              "role": "status",
+              "pressed": null,
+              "x": 1052.015625,
+              "y": 14,
+              "width": 59.984375,
+              "height": 26,
+              "visible": true,
+              "hit": true,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "✓Ready to build",
+            "rect": {
+              "name": "✓Ready to build",
+              "text": "✓Ready to build",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": 656.0546875,
+              "y": 478,
+              "width": 127.890625,
+              "height": 34,
+              "visible": true,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "Layer explorer reset. Showing all layers.",
+            "rect": {
+              "name": "Layer explorer reset. Showing all layers.",
+              "text": "Layer explorer reset. Showing all layers.",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": -1,
+              "y": 899,
+              "width": 1,
+              "height": 1,
+              "visible": true,
+              "hit": false,
+              "inViewport": false
+            }
+          }
+        ],
+        "overflow": false
+      },
+      "screenshot": "before-hover-quarter-r3-1440x900.png"
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "fixture": {
+        "x": 4,
+        "z": 0,
+        "shape": "halfB",
+        "shapeIndex": 2,
+        "rotation": 2,
+        "key": "4,1,0"
+      },
+      "visual": {
+        "target": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            3.141592653589793,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            4.5,
+            1.25,
+            0.5
+          ],
+          "color": "f8f8f8",
+          "opacity": 1,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": true
+        },
+        "ghost": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1.006,
+            1.006,
+            1.006
+          ],
+          "rotation": [
+            0,
+            3.141592653589793,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            4.5,
+            2.25,
+            0.5
+          ],
+          "color": "9dddb5",
+          "opacity": 0.135,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "hover": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            4.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.12730293127861825,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "outline": {
+          "visible": true,
+          "type": "LineSegments",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            4.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.549211725114473,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "placement": {
+          "allowed": true,
+          "code": "ready",
+          "reason": "Ready to build",
+          "cell": {
+            "x": 4,
+            "y": 2,
+            "z": 0
+          }
+        },
+        "ghostError": 0.0045000000000001705,
+        "hoverError": 0.510196030846039,
+        "outlineError": 0.5025124352491701,
+        "targetUnique": [
+          "4,1,0",
+          "4,1,1",
+          "4,1.5,0",
+          "4,1.5,1",
+          "5,1,0",
+          "5,1,1",
+          "5,1.5,0",
+          "5,1.5,1"
+        ],
+        "hoverUnique": [
+          "3.99,0.99,-0.01",
+          "3.99,0.99,1.01",
+          "3.99,2.01,-0.01",
+          "3.99,2.01,1.01",
+          "5.01,0.99,-0.01",
+          "5.01,0.99,1.01",
+          "5.01,2.01,-0.01",
+          "5.01,2.01,1.01"
+        ],
+        "outlineUnique": [
+          "3.9975,0.9975,-0.0025",
+          "3.9975,0.9975,1.0025",
+          "3.9975,2.0025,-0.0025",
+          "3.9975,2.0025,1.0025",
+          "5.0025,0.9975,-0.0025",
+          "5.0025,0.9975,1.0025",
+          "5.0025,2.0025,-0.0025",
+          "5.0025,2.0025,1.0025"
+        ],
+        "expectedOutlineUnique": [
+          "4,1,0",
+          "4,1,1",
+          "4,1.5,0",
+          "4,1.5,1",
+          "5,1,0",
+          "5,1,1",
+          "5,1.5,0",
+          "5,1.5,1"
+        ],
+        "expectedOutlineVertices": 24,
+        "ghostStableScale": [
+          1.006,
+          1.006,
+          1.006
+        ]
+      },
+      "controls": {
+        "buttons": [
+          {
+            "name": "Rotate selected shape. Current rotation 180 degrees",
+            "text": "↻180°",
+            "tag": "SPAN",
+            "role": "button",
+            "pressed": "true",
+            "x": 627.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Cube shape, 1 cubic unit",
+            "text": "1",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 674.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 721.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit, currently selected",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "true",
+            "x": 768.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+            "text": "¼",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 815.2421875,
+            "y": 779,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          }
+        ],
+        "shape": 2,
+        "rotation": 2,
+        "bridge": {
+          "selectedBlock": 0,
+          "selectedShape": 2,
+          "blockRotation": 2,
+          "collabMode": false
+        },
+        "feedback": [
+          {
+            "text": "⭐ 0/0",
+            "rect": {
+              "name": "Lesson progress: 0 of 0 questions complete",
+              "text": "⭐ 0/0",
+              "tag": "SPAN",
+              "role": "status",
+              "pressed": null,
+              "x": 1052.015625,
+              "y": 14,
+              "width": 59.984375,
+              "height": 26,
+              "visible": true,
+              "hit": true,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "✓Ready to build",
+            "rect": {
+              "name": "✓Ready to build",
+              "text": "✓Ready to build",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": 656.0546875,
+              "y": 478,
+              "width": 127.890625,
+              "height": 34,
+              "visible": true,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "Layer explorer reset. Showing all layers.",
+            "rect": {
+              "name": "Layer explorer reset. Showing all layers.",
+              "text": "Layer explorer reset. Showing all layers.",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": -1,
+              "y": 899,
+              "width": 1,
+              "height": 1,
+              "visible": true,
+              "hit": false,
+              "inViewport": false
+            }
+          }
+        ],
+        "overflow": false
+      },
+      "screenshot": "before-hover-halfB-r2-1440x900.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "fixture": {
+        "x": 0,
+        "z": 0,
+        "shape": "halfA",
+        "shapeIndex": 1,
+        "rotation": 1,
+        "key": "0,1,0"
+      },
+      "visual": {
+        "target": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            1.5707963267948966,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            0.5,
+            1,
+            0.5
+          ],
+          "color": "fcfcfc",
+          "opacity": 1,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": true
+        },
+        "ghost": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1.006,
+            1.006,
+            1.006
+          ],
+          "rotation": [
+            0,
+            1.5707963267948966,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            0.5,
+            2,
+            0.5
+          ],
+          "color": "9dddb5",
+          "opacity": 0.135,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "hover": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            0.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.043724601290235914,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "outline": {
+          "visible": true,
+          "type": "LineSegments",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            0.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.2148984051609437,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "placement": {
+          "allowed": true,
+          "code": "ready",
+          "reason": "Ready to build",
+          "cell": {
+            "x": 0,
+            "y": 2,
+            "z": 0
+          }
+        },
+        "ghostError": 0.007348469228349768,
+        "hoverError": 1.0100989953238788,
+        "outlineError": 1.0025062319985176,
+        "targetUnique": [
+          "0,1,0",
+          "0,1,1",
+          "0,2,0",
+          "1,1,0",
+          "1,1,1",
+          "1,2,0"
+        ],
+        "hoverUnique": [
+          "-0.01,0.99,-0.01",
+          "-0.01,0.99,1.01",
+          "-0.01,2.01,-0.01",
+          "-0.01,2.01,1.01",
+          "1.01,0.99,-0.01",
+          "1.01,0.99,1.01",
+          "1.01,2.01,-0.01",
+          "1.01,2.01,1.01"
+        ],
+        "outlineUnique": [
+          "-0.0025,0.9975,-0.0025",
+          "-0.0025,0.9975,1.0025",
+          "-0.0025,2.0025,-0.0025",
+          "-0.0025,2.0025,1.0025",
+          "1.0025,0.9975,-0.0025",
+          "1.0025,0.9975,1.0025",
+          "1.0025,2.0025,-0.0025",
+          "1.0025,2.0025,1.0025"
+        ],
+        "expectedOutlineUnique": [
+          "0,1,0",
+          "0,1,1",
+          "0,2,0",
+          "1,1,0",
+          "1,1,1",
+          "1,2,0"
+        ],
+        "expectedOutlineVertices": 18,
+        "ghostStableScale": [
+          1.006,
+          1.006,
+          1.006
+        ]
+      },
+      "controls": {
+        "buttons": [
+          {
+            "name": "Rotate selected shape. Current rotation 90 degrees",
+            "text": "↻90°",
+            "tag": "SPAN",
+            "role": "button",
+            "pressed": "true",
+            "x": 102.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Cube shape, 1 cubic unit",
+            "text": "1",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 149.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit, currently selected",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "true",
+            "x": 196.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 243.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+            "text": "¼",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 290.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          }
+        ],
+        "shape": 1,
+        "rotation": 1,
+        "bridge": {
+          "selectedBlock": 0,
+          "selectedShape": 1,
+          "blockRotation": 1,
+          "collabMode": false
+        },
+        "feedback": [
+          {
+            "text": "⭐ 0/0",
+            "rect": {
+              "name": "Lesson progress: 0 of 0 questions complete",
+              "text": "⭐ 0/0",
+              "tag": "SPAN",
+              "role": "status",
+              "pressed": null,
+              "x": 0,
+              "y": 0,
+              "width": 0,
+              "height": 0,
+              "visible": false,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "Swipe on the right to look",
+            "rect": {
+              "name": "Swipe on the right to look",
+              "text": "Swipe on the right to look",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": 116.1015625,
+              "y": 50,
+              "width": 157.796875,
+              "height": 28.5,
+              "visible": true,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "✓Ready to build",
+            "rect": {
+              "name": "✓Ready to build",
+              "text": "✓Ready to build",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": 12,
+              "y": 128,
+              "width": 115.3125,
+              "height": 34,
+              "visible": true,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "Layer explorer reset. Showing all layers.",
+            "rect": {
+              "name": "Layer explorer reset. Showing all layers.",
+              "text": "Layer explorer reset. Showing all layers.",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": -1,
+              "y": 843,
+              "width": 1,
+              "height": 1,
+              "visible": true,
+              "hit": false,
+              "inViewport": false
+            }
+          }
+        ],
+        "overflow": false
+      },
+      "screenshot": "before-hover-halfA-r1-390x844.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "fixture": {
+        "x": 2,
+        "z": 0,
+        "shape": "quarter",
+        "shapeIndex": 3,
+        "rotation": 3,
+        "key": "2,1,0"
+      },
+      "visual": {
+        "target": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            4.71238898038469,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            2.5,
+            1,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 1,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": true
+        },
+        "ghost": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1.006,
+            1.006,
+            1.006
+          ],
+          "rotation": [
+            0,
+            4.71238898038469,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            2.5,
+            2,
+            0.5
+          ],
+          "color": "9dddb5",
+          "opacity": 0.135,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "hover": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            2.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.0713317619321693,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "outline": {
+          "visible": true,
+          "type": "LineSegments",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            2.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.3253270477286772,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "placement": {
+          "allowed": true,
+          "code": "ready",
+          "reason": "Ready to build",
+          "cell": {
+            "x": 2,
+            "y": 2,
+            "z": 0
+          }
+        },
+        "ghostError": 0.004242640687119446,
+        "hoverError": 0.7213182240553122,
+        "outlineError": 0.7106467091289916,
+        "targetUnique": [
+          "2,1,0",
+          "2,1,1",
+          "2,1.5,0.5",
+          "3,1,0",
+          "3,1,1",
+          "3,1.5,0.5"
+        ],
+        "hoverUnique": [
+          "1.99,0.99,-0.01",
+          "1.99,0.99,1.01",
+          "1.99,2.01,-0.01",
+          "1.99,2.01,1.01",
+          "3.01,0.99,-0.01",
+          "3.01,0.99,1.01",
+          "3.01,2.01,-0.01",
+          "3.01,2.01,1.01"
+        ],
+        "outlineUnique": [
+          "1.9975,0.9975,-0.0025",
+          "1.9975,0.9975,1.0025",
+          "1.9975,2.0025,-0.0025",
+          "1.9975,2.0025,1.0025",
+          "3.0025,0.9975,-0.0025",
+          "3.0025,0.9975,1.0025",
+          "3.0025,2.0025,-0.0025",
+          "3.0025,2.0025,1.0025"
+        ],
+        "expectedOutlineUnique": [
+          "2,1,0",
+          "2,1,1",
+          "2,1.5,0.5",
+          "3,1,0",
+          "3,1,1",
+          "3,1.5,0.5"
+        ],
+        "expectedOutlineVertices": 18,
+        "ghostStableScale": [
+          1.006,
+          1.006,
+          1.006
+        ]
+      },
+      "controls": {
+        "buttons": [
+          {
+            "name": "Rotate selected shape. Current rotation 270 degrees",
+            "text": "↻270°",
+            "tag": "SPAN",
+            "role": "button",
+            "pressed": "true",
+            "x": 102.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Cube shape, 1 cubic unit",
+            "text": "1",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 149.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 196.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 243.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit, currently selected",
+            "text": "¼",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "true",
+            "x": 290.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          }
+        ],
+        "shape": 3,
+        "rotation": 3,
+        "bridge": {
+          "selectedBlock": 0,
+          "selectedShape": 3,
+          "blockRotation": 3,
+          "collabMode": false
+        },
+        "feedback": [
+          {
+            "text": "⭐ 0/0",
+            "rect": {
+              "name": "Lesson progress: 0 of 0 questions complete",
+              "text": "⭐ 0/0",
+              "tag": "SPAN",
+              "role": "status",
+              "pressed": null,
+              "x": 0,
+              "y": 0,
+              "width": 0,
+              "height": 0,
+              "visible": false,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "Swipe on the right to look",
+            "rect": {
+              "name": "Swipe on the right to look",
+              "text": "Swipe on the right to look",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": 116.1015625,
+              "y": 50,
+              "width": 157.796875,
+              "height": 28.5,
+              "visible": true,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "✓Ready to build",
+            "rect": {
+              "name": "✓Ready to build",
+              "text": "✓Ready to build",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": 12,
+              "y": 128,
+              "width": 115.3125,
+              "height": 34,
+              "visible": true,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "Layer explorer reset. Showing all layers.",
+            "rect": {
+              "name": "Layer explorer reset. Showing all layers.",
+              "text": "Layer explorer reset. Showing all layers.",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": -1,
+              "y": 843,
+              "width": 1,
+              "height": 1,
+              "visible": true,
+              "hit": false,
+              "inViewport": false
+            }
+          }
+        ],
+        "overflow": false
+      },
+      "screenshot": "before-hover-quarter-r3-390x844.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "fixture": {
+        "x": 4,
+        "z": 0,
+        "shape": "halfB",
+        "shapeIndex": 2,
+        "rotation": 2,
+        "key": "4,1,0"
+      },
+      "visual": {
+        "target": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            3.141592653589793,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            4.5,
+            1.25,
+            0.5
+          ],
+          "color": "f8f8f8",
+          "opacity": 1,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": true
+        },
+        "ghost": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1.006,
+            1.006,
+            1.006
+          ],
+          "rotation": [
+            0,
+            3.141592653589793,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            4.5,
+            2.25,
+            0.5
+          ],
+          "color": "9dddb5",
+          "opacity": 0.135,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "hover": {
+          "visible": true,
+          "type": "Mesh",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            4.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.12826976924832234,
+          "wireframe": false,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "outline": {
+          "visible": true,
+          "type": "LineSegments",
+          "vertices": 24,
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "position": [
+            4.5,
+            1.5,
+            0.5
+          ],
+          "color": "ffffff",
+          "opacity": 0.5530790769932894,
+          "depthTest": true,
+          "sharesTargetGeometry": false
+        },
+        "placement": {
+          "allowed": true,
+          "code": "ready",
+          "reason": "Ready to build",
+          "cell": {
+            "x": 4,
+            "y": 2,
+            "z": 0
+          }
+        },
+        "ghostError": 0.0045000000000001705,
+        "hoverError": 0.510196030846039,
+        "outlineError": 0.5025124352491701,
+        "targetUnique": [
+          "4,1,0",
+          "4,1,1",
+          "4,1.5,0",
+          "4,1.5,1",
+          "5,1,0",
+          "5,1,1",
+          "5,1.5,0",
+          "5,1.5,1"
+        ],
+        "hoverUnique": [
+          "3.99,0.99,-0.01",
+          "3.99,0.99,1.01",
+          "3.99,2.01,-0.01",
+          "3.99,2.01,1.01",
+          "5.01,0.99,-0.01",
+          "5.01,0.99,1.01",
+          "5.01,2.01,-0.01",
+          "5.01,2.01,1.01"
+        ],
+        "outlineUnique": [
+          "3.9975,0.9975,-0.0025",
+          "3.9975,0.9975,1.0025",
+          "3.9975,2.0025,-0.0025",
+          "3.9975,2.0025,1.0025",
+          "5.0025,0.9975,-0.0025",
+          "5.0025,0.9975,1.0025",
+          "5.0025,2.0025,-0.0025",
+          "5.0025,2.0025,1.0025"
+        ],
+        "expectedOutlineUnique": [
+          "4,1,0",
+          "4,1,1",
+          "4,1.5,0",
+          "4,1.5,1",
+          "5,1,0",
+          "5,1,1",
+          "5,1.5,0",
+          "5,1.5,1"
+        ],
+        "expectedOutlineVertices": 24,
+        "ghostStableScale": [
+          1.006,
+          1.006,
+          1.006
+        ]
+      },
+      "controls": {
+        "buttons": [
+          {
+            "name": "Rotate selected shape. Current rotation 180 degrees",
+            "text": "↻180°",
+            "tag": "SPAN",
+            "role": "button",
+            "pressed": "true",
+            "x": 102.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Cube shape, 1 cubic unit",
+            "text": "1",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 149.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 196.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit, currently selected",
+            "text": "½",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "true",
+            "x": 243.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          },
+          {
+            "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+            "text": "¼",
+            "tag": "DIV",
+            "role": "button",
+            "pressed": "false",
+            "x": 290.2421875,
+            "y": 723,
+            "width": 44,
+            "height": 44,
+            "visible": true,
+            "hit": true,
+            "inViewport": true
+          }
+        ],
+        "shape": 2,
+        "rotation": 2,
+        "bridge": {
+          "selectedBlock": 0,
+          "selectedShape": 2,
+          "blockRotation": 2,
+          "collabMode": false
+        },
+        "feedback": [
+          {
+            "text": "⭐ 0/0",
+            "rect": {
+              "name": "Lesson progress: 0 of 0 questions complete",
+              "text": "⭐ 0/0",
+              "tag": "SPAN",
+              "role": "status",
+              "pressed": null,
+              "x": 0,
+              "y": 0,
+              "width": 0,
+              "height": 0,
+              "visible": false,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "Swipe on the right to look",
+            "rect": {
+              "name": "Swipe on the right to look",
+              "text": "Swipe on the right to look",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": 116.1015625,
+              "y": 50,
+              "width": 157.796875,
+              "height": 28.5,
+              "visible": true,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "✓Ready to build",
+            "rect": {
+              "name": "✓Ready to build",
+              "text": "✓Ready to build",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": 12,
+              "y": 128,
+              "width": 115.3125,
+              "height": 34,
+              "visible": true,
+              "hit": false,
+              "inViewport": true
+            }
+          },
+          {
+            "text": "Layer explorer reset. Showing all layers.",
+            "rect": {
+              "name": "Layer explorer reset. Showing all layers.",
+              "text": "Layer explorer reset. Showing all layers.",
+              "tag": "DIV",
+              "role": "status",
+              "pressed": null,
+              "x": -1,
+              "y": 843,
+              "width": 1,
+              "height": 1,
+              "visible": true,
+              "hit": false,
+              "inViewport": false
+            }
+          }
+        ],
+        "overflow": false
+      },
+      "screenshot": "before-hover-halfB-r2-390x844.png"
+    }
+  ],
+  "empty": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "text": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nAim at a block you placed, then choose Select build to inspect your creation.\n\nYour creation\n0\nPlaced\n—\nSelected\n—\nBlock bounds\nBuilding with\nMaterial\n🪨 Stone\nShape / rotation\n⬜ Cube - 0°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+      "screenshot": "before-empty-1440x900.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "text": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nAim at a block you placed, then choose Select build to inspect your creation.\n\nYour creation\n0\nPlaced\n—\nSelected\n—\nBlock bounds\nBuilding with\nMaterial\n🪨 Stone\nShape / rotation\n⬜ Cube - 0°\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+      "screenshot": "before-empty-390x844.png"
+    }
+  ],
+  "fixture": [
+    {
+      "x": 0,
+      "z": 0,
+      "shape": "halfA",
+      "shapeIndex": 1,
+      "rotation": 1,
+      "key": "0,1,0"
+    },
+    {
+      "x": 2,
+      "z": 0,
+      "shape": "quarter",
+      "shapeIndex": 3,
+      "rotation": 3,
+      "key": "2,1,0"
+    },
+    {
+      "x": 4,
+      "z": 0,
+      "shape": "halfB",
+      "shapeIndex": 2,
+      "rotation": 2,
+      "key": "4,1,0"
+    }
+  ],
+  "initial": {
+    "world": "[{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}]",
+    "stl": "90a306f59f16043ecdb24176382f84b1465625f768ba564206147523c1dddb09",
+    "undo": "[{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}]",
+    "redo": "[]",
+    "placed": 3,
+    "sourceMeshes": "[{\"key\":\"0,1,0\",\"vertices\":[-0.5,0,-0.5,0.5,1,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0.5,1,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0.5,1,0.5,0.5,1,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0.5,1,0.5,0.5,0,-0.5,0.5,1,0.5,0.5,0,0.5,0.5,0,-0.5,0.5,1,-0.5,0.5,1,0.5],\"material\":{\"uuid\":\"03D131D8-CD7D-4491-BF76-8539FC5F5CA6\",\"color\":\"fcfcfc\",\"opacity\":1,\"roughness\":0.9,\"metalness\":0},\"rotation\":[0,1.5707963267948966,0,\"XYZ\"],\"scale\":[1,1,1]},{\"key\":\"2,1,0\",\"vertices\":[-0.5,0,-0.5,0,0.5,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0,0.5,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0,0.5,0.5,0,0.5,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,-0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,0.5,0.5,0,0.5],\"material\":{\"uuid\":\"E18717A9-9BBE-44B7-9489-5BD4B373C572\",\"color\":\"ffffff\",\"opacity\":1,\"roughness\":0.85,\"metalness\":0},\"rotation\":[0,4.71238898038469,0,\"XYZ\"],\"scale\":[1,1,1]},{\"key\":\"4,1,0\",\"vertices\":[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],\"material\":{\"uuid\":\"CDC3EB6A-C73E-44AB-91F1-D9CD494F6205\",\"color\":\"f8f8f8\",\"opacity\":1,\"roughness\":0.9,\"metalness\":0},\"rotation\":[0,3.141592653589793,0,\"XYZ\"],\"scale\":[1,1,1]}]"
+  },
+  "afterPreviews": {
+    "world": "[{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}]",
+    "stl": "90a306f59f16043ecdb24176382f84b1465625f768ba564206147523c1dddb09",
+    "undo": "[{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}]",
+    "redo": "[]",
+    "placed": 3,
+    "sourceMeshes": "[{\"key\":\"0,1,0\",\"vertices\":[-0.5,0,-0.5,0.5,1,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0.5,1,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0.5,1,0.5,0.5,1,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0.5,1,0.5,0.5,0,-0.5,0.5,1,0.5,0.5,0,0.5,0.5,0,-0.5,0.5,1,-0.5,0.5,1,0.5],\"material\":{\"uuid\":\"03D131D8-CD7D-4491-BF76-8539FC5F5CA6\",\"color\":\"fcfcfc\",\"opacity\":1,\"roughness\":0.9,\"metalness\":0},\"rotation\":[0,1.5707963267948966,0,\"XYZ\"],\"scale\":[1,1,1]},{\"key\":\"2,1,0\",\"vertices\":[-0.5,0,-0.5,0,0.5,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0,0.5,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0,0.5,0.5,0,0.5,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,-0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,0.5,0.5,0,0.5],\"material\":{\"uuid\":\"E18717A9-9BBE-44B7-9489-5BD4B373C572\",\"color\":\"ffffff\",\"opacity\":1,\"roughness\":0.85,\"metalness\":0},\"rotation\":[0,4.71238898038469,0,\"XYZ\"],\"scale\":[1,1,1]},{\"key\":\"4,1,0\",\"vertices\":[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],\"material\":{\"uuid\":\"CDC3EB6A-C73E-44AB-91F1-D9CD494F6205\",\"color\":\"f8f8f8\",\"opacity\":1,\"roughness\":0.9,\"metalness\":0},\"rotation\":[0,3.141592653589793,0,\"XYZ\"],\"scale\":[1,1,1]}]"
+  },
+  "blocked": {
+    "before": {
+      "world": "[{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2},{\"x\":0,\"y\":2,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0}]",
+      "stl": "023ca0fd01210a80e806fa75423b72daa5857a9bbcbb21999a25ff85d546a7f7",
+      "undo": "[{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":2,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0}]",
+      "redo": "[]",
+      "placed": 4,
+      "sourceMeshes": "[{\"key\":\"0,1,0\",\"vertices\":[-0.5,0,-0.5,0.5,1,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0.5,1,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0.5,1,0.5,0.5,1,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0.5,1,0.5,0.5,0,-0.5,0.5,1,0.5,0.5,0,0.5,0.5,0,-0.5,0.5,1,-0.5,0.5,1,0.5],\"material\":{\"uuid\":\"03D131D8-CD7D-4491-BF76-8539FC5F5CA6\",\"color\":\"fcfcfc\",\"opacity\":1,\"roughness\":0.9,\"metalness\":0},\"rotation\":[0,1.5707963267948966,0,\"XYZ\"],\"scale\":[1,1,1]},{\"key\":\"2,1,0\",\"vertices\":[-0.5,0,-0.5,0,0.5,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0,0.5,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0,0.5,0.5,0,0.5,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,-0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,0.5,0.5,0,0.5],\"material\":{\"uuid\":\"E18717A9-9BBE-44B7-9489-5BD4B373C572\",\"color\":\"ffffff\",\"opacity\":1,\"roughness\":0.85,\"metalness\":0},\"rotation\":[0,4.71238898038469,0,\"XYZ\"],\"scale\":[1,1,1]},{\"key\":\"4,1,0\",\"vertices\":[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],\"material\":{\"uuid\":\"CDC3EB6A-C73E-44AB-91F1-D9CD494F6205\",\"color\":\"f8f8f8\",\"opacity\":1,\"roughness\":0.9,\"metalness\":0},\"rotation\":[0,3.141592653589793,0,\"XYZ\"],\"scale\":[1,1,1]},{\"key\":\"0,2,0\",\"vertices\":[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],\"material\":{\"uuid\":\"755D018C-33F2-4FFB-8EB9-46C8DF314FBC\",\"color\":\"f8f8f8\",\"opacity\":1,\"roughness\":0.9,\"metalness\":0},\"rotation\":[0,0,0,\"XYZ\"],\"scale\":[1,1,1]}]"
+    },
+    "visual": {
+      "target": {
+        "visible": true,
+        "type": "Mesh",
+        "vertices": 24,
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "rotation": [
+          0,
+          1.5707963267948966,
+          0,
+          "XYZ"
+        ],
+        "position": [
+          0.5,
+          1,
+          0.5
+        ],
+        "color": "fcfcfc",
+        "opacity": 1,
+        "wireframe": false,
+        "depthTest": true,
+        "sharesTargetGeometry": true
+      },
+      "ghost": {
+        "visible": true,
+        "type": "Mesh",
+        "vertices": 24,
+        "scale": [
+          1.006,
+          1.006,
+          1.006
+        ],
+        "rotation": [
+          0,
+          1.5707963267948966,
+          0,
+          "XYZ"
+        ],
+        "position": [
+          0.5,
+          2,
+          0.5
+        ],
+        "color": "f16c58",
+        "opacity": 0.08,
+        "wireframe": false,
+        "depthTest": true,
+        "sharesTargetGeometry": false
+      },
+      "hover": {
+        "visible": true,
+        "type": "Mesh",
+        "vertices": 24,
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          "XYZ"
+        ],
+        "position": [
+          0.5,
+          1.5,
+          0.5
+        ],
+        "color": "ffffff",
+        "opacity": 0.04939104695729971,
+        "wireframe": false,
+        "depthTest": true,
+        "sharesTargetGeometry": false
+      },
+      "outline": {
+        "visible": true,
+        "type": "LineSegments",
+        "vertices": 24,
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          "XYZ"
+        ],
+        "position": [
+          0.5,
+          1.5,
+          0.5
+        ],
+        "color": "ffffff",
+        "opacity": 0.2375641878291989,
+        "depthTest": true,
+        "sharesTargetGeometry": false
+      },
+      "placement": {
+        "allowed": false,
+        "code": "occupied",
+        "reason": "This cell already has a block",
+        "cell": {
+          "x": 0,
+          "y": 2,
+          "z": 0
+        }
+      },
+      "ghostError": 0.007348469228349768,
+      "hoverError": 1.0100989953238788,
+      "outlineError": 1.0025062319985176,
+      "targetUnique": [
+        "0,1,0",
+        "0,1,1",
+        "0,2,0",
+        "1,1,0",
+        "1,1,1",
+        "1,2,0"
+      ],
+      "hoverUnique": [
+        "-0.01,0.99,-0.01",
+        "-0.01,0.99,1.01",
+        "-0.01,2.01,-0.01",
+        "-0.01,2.01,1.01",
+        "1.01,0.99,-0.01",
+        "1.01,0.99,1.01",
+        "1.01,2.01,-0.01",
+        "1.01,2.01,1.01"
+      ],
+      "outlineUnique": [
+        "-0.0025,0.9975,-0.0025",
+        "-0.0025,0.9975,1.0025",
+        "-0.0025,2.0025,-0.0025",
+        "-0.0025,2.0025,1.0025",
+        "1.0025,0.9975,-0.0025",
+        "1.0025,0.9975,1.0025",
+        "1.0025,2.0025,-0.0025",
+        "1.0025,2.0025,1.0025"
+      ],
+      "expectedOutlineUnique": [
+        "0,1,0",
+        "0,1,1",
+        "0,2,0",
+        "1,1,0",
+        "1,1,1",
+        "1,2,0"
+      ],
+      "expectedOutlineVertices": 18,
+      "ghostStableScale": [
+        1.006,
+        1.006,
+        1.006
+      ]
+    },
+    "screenshot": "before-occupied-390x844.png",
+    "after": {
+      "world": "[{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2},{\"x\":0,\"y\":2,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0}]",
+      "stl": "023ca0fd01210a80e806fa75423b72daa5857a9bbcbb21999a25ff85d546a7f7",
+      "undo": "[{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":2,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0}]",
+      "redo": "[]",
+      "placed": 4,
+      "sourceMeshes": "[{\"key\":\"0,1,0\",\"vertices\":[-0.5,0,-0.5,0.5,1,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0.5,1,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0.5,1,0.5,0.5,1,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0.5,1,0.5,0.5,0,-0.5,0.5,1,0.5,0.5,0,0.5,0.5,0,-0.5,0.5,1,-0.5,0.5,1,0.5],\"material\":{\"uuid\":\"03D131D8-CD7D-4491-BF76-8539FC5F5CA6\",\"color\":\"fcfcfc\",\"opacity\":1,\"roughness\":0.9,\"metalness\":0},\"rotation\":[0,1.5707963267948966,0,\"XYZ\"],\"scale\":[1,1,1]},{\"key\":\"2,1,0\",\"vertices\":[-0.5,0,-0.5,0,0.5,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0,0.5,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0,0.5,0.5,0,0.5,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,-0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,0.5,0.5,0,0.5],\"material\":{\"uuid\":\"E18717A9-9BBE-44B7-9489-5BD4B373C572\",\"color\":\"ffffff\",\"opacity\":1,\"roughness\":0.85,\"metalness\":0},\"rotation\":[0,4.71238898038469,0,\"XYZ\"],\"scale\":[1,1,1]},{\"key\":\"4,1,0\",\"vertices\":[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],\"material\":{\"uuid\":\"CDC3EB6A-C73E-44AB-91F1-D9CD494F6205\",\"color\":\"f8f8f8\",\"opacity\":1,\"roughness\":0.9,\"metalness\":0},\"rotation\":[0,3.141592653589793,0,\"XYZ\"],\"scale\":[1,1,1]},{\"key\":\"0,2,0\",\"vertices\":[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],\"material\":{\"uuid\":\"755D018C-33F2-4FFB-8EB9-46C8DF314FBC\",\"color\":\"f8f8f8\",\"opacity\":1,\"roughness\":0.9,\"metalness\":0},\"rotation\":[0,0,0,\"XYZ\"],\"scale\":[1,1,1]}]"
+    }
+  },
+  "controlsFinal": {
+    "buttons": [
+      {
+        "name": "Rotate selected shape. Current rotation 90 degrees",
+        "text": "↻90°",
+        "tag": "SPAN",
+        "role": "button",
+        "pressed": "true",
+        "x": 102.2421875,
+        "y": 723,
+        "width": 44,
+        "height": 44,
+        "visible": true,
+        "hit": true,
+        "inViewport": true
+      },
+      {
+        "name": "Select Cube shape, 1 cubic unit",
+        "text": "1",
+        "tag": "DIV",
+        "role": "button",
+        "pressed": "false",
+        "x": 149.2421875,
+        "y": 723,
+        "width": 44,
+        "height": 44,
+        "visible": true,
+        "hit": true,
+        "inViewport": true
+      },
+      {
+        "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit, currently selected",
+        "text": "½",
+        "tag": "DIV",
+        "role": "button",
+        "pressed": "true",
+        "x": 196.2421875,
+        "y": 723,
+        "width": 44,
+        "height": 44,
+        "visible": true,
+        "hit": true,
+        "inViewport": true
+      },
+      {
+        "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+        "text": "½",
+        "tag": "DIV",
+        "role": "button",
+        "pressed": "false",
+        "x": 243.2421875,
+        "y": 723,
+        "width": 44,
+        "height": 44,
+        "visible": true,
+        "hit": true,
+        "inViewport": true
+      },
+      {
+        "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+        "text": "¼",
+        "tag": "DIV",
+        "role": "button",
+        "pressed": "false",
+        "x": 290.2421875,
+        "y": 723,
+        "width": 44,
+        "height": 44,
+        "visible": true,
+        "hit": true,
+        "inViewport": true
+      }
+    ],
+    "shape": 1,
+    "rotation": 1,
+    "bridge": {
+      "selectedBlock": 0,
+      "selectedShape": 1,
+      "blockRotation": 1,
+      "collabMode": false
+    },
+    "feedback": [
+      {
+        "text": "⭐ 0/0",
+        "rect": {
+          "name": "Lesson progress: 0 of 0 questions complete",
+          "text": "⭐ 0/0",
+          "tag": "SPAN",
+          "role": "status",
+          "pressed": null,
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "visible": false,
+          "hit": false,
+          "inViewport": true
+        }
+      },
+      {
+        "text": "Swipe on the right to look",
+        "rect": {
+          "name": "Swipe on the right to look",
+          "text": "Swipe on the right to look",
+          "tag": "DIV",
+          "role": "status",
+          "pressed": null,
+          "x": 116.1015625,
+          "y": 50,
+          "width": 157.796875,
+          "height": 28.5,
+          "visible": true,
+          "hit": false,
+          "inViewport": true
+        }
+      },
+      {
+        "text": "!This cell already has a block",
+        "rect": {
+          "name": "!This cell already has a block",
+          "text": "!This cell already has a block",
+          "tag": "DIV",
+          "role": "status",
+          "pressed": null,
+          "x": 12,
+          "y": 128,
+          "width": 181.015625,
+          "height": 34,
+          "visible": true,
+          "hit": false,
+          "inViewport": true
+        }
+      },
+      {
+        "text": "This cell already has a block",
+        "rect": {
+          "name": "This cell already has a block",
+          "text": "This cell already has a block",
+          "tag": "DIV",
+          "role": "status",
+          "pressed": null,
+          "x": -1,
+          "y": 843,
+          "width": 1,
+          "height": 1,
+          "visible": true,
+          "hit": false,
+          "inViewport": false
+        }
+      }
+    ],
+    "overflow": false
+  },
+  "shaderErrors": [],
+  "pass": true
+}

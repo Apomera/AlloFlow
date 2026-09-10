@@ -1,0 +1,225 @@
+{
+  "inspectedAt": "2026-09-10T04:07:02.571Z",
+  "policyVersion": "20260909-6",
+  "scope": "Read-only CI and local-gate inventory. Previous passing counts are retained evidence, not a new test run. No live model or deployment.",
+  "browserSuites": [
+    {
+      "file": "tests/e2e/document_dependency_parity.spec.ts",
+      "previousPassingTests": 16,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/rendered-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/rendered_document_fidelity.spec.ts",
+      "previousPassingTests": 28,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/rendered-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/rendered_fidelity_content_regressions.spec.ts",
+      "previousPassingTests": 22,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/rendered-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/rendered_fidelity_evidence.spec.ts",
+      "previousPassingTests": 3,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/rendered-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/rendered_fidelity_occurrence_regressions.spec.ts",
+      "previousPassingTests": 11,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/rendered-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/rendered_fidelity_profiles.spec.ts",
+      "previousPassingTests": 11,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/rendered-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/rendered_fidelity_recovery.spec.ts",
+      "previousPassingTests": 3,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/rendered-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/document_export_artifact_binding.spec.ts",
+      "previousPassingTests": 10,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/export-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/document_export_at_acceptance.spec.ts",
+      "previousPassingTests": 4,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/export-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/document_export_baseline_fidelity.spec.ts",
+      "previousPassingTests": 20,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/export-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/document_export_link_acceptance.spec.ts",
+      "previousPassingTests": 4,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/export-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/document_export_residual_fixes.spec.ts",
+      "previousPassingTests": 28,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/export-final.json",
+      "workflowReferences": []
+    },
+    {
+      "file": "tests/e2e/document_export_review_fixes.spec.ts",
+      "previousPassingTests": 37,
+      "previousReport": "reports/document-remediation-residual-fixes-2026-09-09/export-final.json",
+      "workflowReferences": []
+    }
+  ],
+  "browserTotal": 197,
+  "suitesWithoutDirectWorkflowReferences": 13,
+  "unitSuites": [
+    {
+      "file": "tests/aifix_chunk_gates.test.js",
+      "previousPassingTests": 20,
+      "selectedByPipelineGate": true,
+      "quarantined": false
+    },
+    {
+      "file": "tests/aifix_source_associations.test.js",
+      "previousPassingTests": 39,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/remediation_form_association_index.test.js",
+      "previousPassingTests": 17,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/remediation_gate_regressions.test.js",
+      "previousPassingTests": 43,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/remediation_inline_math_option_groups.test.js",
+      "previousPassingTests": 27,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/remediation_residual_live.test.js",
+      "previousPassingTests": 61,
+      "selectedByPipelineGate": true,
+      "quarantined": false
+    },
+    {
+      "file": "tests/remediation_semantic_fidelity.test.js",
+      "previousPassingTests": 29,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/source_remediation_contract.test.js",
+      "previousPassingTests": 4,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/document_export_inspection_failures.test.js",
+      "previousPassingTests": 2,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/rendered_fidelity_calibration.test.js",
+      "previousPassingTests": 6,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/rendered_fidelity_resilience.test.js",
+      "previousPassingTests": 19,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/rendered_fidelity_review.test.js",
+      "previousPassingTests": 7,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/doc_pipeline_build_parity.test.js",
+      "previousPassingTests": 1,
+      "selectedByPipelineGate": true,
+      "quarantined": false
+    },
+    {
+      "file": "tests/remediation_review_evidence.test.js",
+      "previousPassingTests": 3,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/remediation_review_helpers.test.js",
+      "previousPassingTests": 28,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    },
+    {
+      "file": "tests/remediation_source_contract_integration.test.js",
+      "previousPassingTests": 18,
+      "selectedByPipelineGate": false,
+      "quarantined": false
+    }
+  ],
+  "unitTestsOmittedFromPipelineGate": 242,
+  "omittedUnitSuiteCount": 13,
+  "humanCalibrationEntries": 0,
+  "implementationHashes": {
+    "doc_pipeline_source.jsx": {
+      "prior": "2a246d27928524c54ee16c8419dfd04904f4a05dfbacd07bd94ffb2825419909",
+      "current": "2a246d27928524c54ee16c8419dfd04904f4a05dfbacd07bd94ffb2825419909",
+      "unchanged": true
+    },
+    "doc_pipeline_module.js": {
+      "prior": "afaa45adecfcdde819a6d3cb71a0fea924ac55ddfd30aa1baba4b0c1a0c659ae",
+      "current": "afaa45adecfcdde819a6d3cb71a0fea924ac55ddfd30aa1baba4b0c1a0c659ae",
+      "unchanged": true
+    },
+    "desktop/web-app/public/doc_pipeline_module.js": {
+      "prior": "afaa45adecfcdde819a6d3cb71a0fea924ac55ddfd30aa1baba4b0c1a0c659ae",
+      "current": "afaa45adecfcdde819a6d3cb71a0fea924ac55ddfd30aa1baba4b0c1a0c659ae",
+      "unchanged": true
+    },
+    "dev-tools/document_export_at_acceptance.cjs": {
+      "prior": "5a88822c0245e20599df33981044b1454d656b93f2b4dccb11628ffdac5b46be",
+      "current": "5a88822c0245e20599df33981044b1454d656b93f2b4dccb11628ffdac5b46be",
+      "unchanged": true
+    },
+    "dev-tools/rendered_document_fidelity.cjs": {
+      "prior": "63196d71b7984ddaf548187f7e36827f83c92e8d19cb9687b17902783bd24bc9",
+      "current": "63196d71b7984ddaf548187f7e36827f83c92e8d19cb9687b17902783bd24bc9",
+      "unchanged": true
+    },
+    "dev-tools/document_html_dependencies.cjs": {
+      "prior": "bc3a9b9da6d9ead77006a9d55afb79d8e944b72c80523153d93a4bdb2e3564cd",
+      "current": "bc3a9b9da6d9ead77006a9d55afb79d8e944b72c80523153d93a4bdb2e3564cd",
+      "unchanged": true
+    },
+    "dev-tools/calibrate_rendered_fidelity.cjs": {
+      "prior": "ea5bccfb26a4fd3d648485a3121c82d5a9f6ca3ecc83e5b0310057ac3f7605e5",
+      "current": "ea5bccfb26a4fd3d648485a3121c82d5a9f6ca3ecc83e5b0310057ac3f7605e5",
+      "unchanged": true
+    }
+  }
+}

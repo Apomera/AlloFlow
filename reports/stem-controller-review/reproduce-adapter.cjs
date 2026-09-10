@@ -1,0 +1,20 @@
+const fs=require('node:fs');const vm=require('node:vm');const {JSDOM}=require('jsdom');
+const dir='stem_lab';const rows=fs.readdirSync(dir).filter(f=>/^stem_tool_.*\.js$/.test(f)).sort().map(file=>{
+const s=fs.readFileSync(dir+'/'+file,'utf8');
+return {file, directGamepad:/getGamepads\s*\(/.test(s), xrInput:/inputSources|\.xr\.getController\s*\(/.test(s), keyboardSignals:/keydown|onKeyDown/.test(s), pointerSignals:/pointerdown|onPointerDown|mousedown|onMouseDown|touchstart|onTouchStart/.test(s), customKeyboardSignals:/customControlKeys|customKeyBindings|keyBindings|controlScheme/.test(s)};
+});
+const source=fs.readFileSync('stem_lab/stem_lab_module.js','utf8');
+const start=source.indexOf('      if (!window._stemGamepadActive) {');const end=source.indexOf('        _gpPoll();\n      }',start);
+if(start<0||end<0){console.log('The legacy adapter has been replaced. This historical reproduction no longer applies; run tests/stem_input_controls.test.js and tests/stem_input_performance.test.js.');process.exit(0);}const adapter=source.slice(start,end+'        _gpPoll();\n      }'.length);
+const dom=new JSDOM('<!doctype html><button id="focused">Focused action</button>');const w=dom.window;let frame;let pads=[];
+const ctx={window:w,document:w.document,navigator:{getGamepads:()=>pads},KeyboardEvent:w.KeyboardEvent,MouseEvent:w.MouseEvent,console:{log(){}},requestAnimationFrame:fn=>{frame=fn;},setTimeout:fn=>fn()};
+const events=[];for(const type of ['keydown','keyup'])w.document.addEventListener(type,e=>events.push({type:e.type,key:e.key,code:e.code,target:e.target.id||e.target.nodeName}));
+vm.runInNewContext(adapter,ctx);
+const gp={id:'Simulated standard controller',axes:[0,0,0,0],buttons:Array.from({length:16},()=>({pressed:false,value:0}))};pads=[gp];
+const connection=new w.Event('gamepadconnected');connection.gamepad=gp;w.dispatchEvent(connection);
+gp.buttons[0].pressed=true;frame();gp.buttons[0].pressed=false;frame();const faceCycle=events.splice(0);
+w.document.getElementById('focused').focus();gp.axes[0]=0.8;frame();const focusedAxisPress=events.splice(0);
+pads=[];w.dispatchEvent(new w.Event('gamepaddisconnected'));frame();const disconnect=events.splice(0);
+const results={scope:'Static source inventory plus actual shared-adapter execution in jsdom with a simulated standard gamepad; no physical controller validation.',moduleCount:rows.length,directGamepad:rows.filter(r=>r.directGamepad).map(r=>r.file),xrInput:rows.filter(r=>r.xrInput).map(r=>r.file),customKeyboardSignals:rows.filter(r=>r.customKeyboardSignals).map(r=>r.file),faceCycle,focusedAxisPress,disconnect,checks:{faceButtonKeyupMissing:!faceCycle.some(e=>e.type==='keyup'),spaceKeyIncorrect:faceCycle.some(e=>e.code==='Space'&&e.key!==' '),focusedKeydownDuplicated:focusedAxisPress.filter(e=>e.code==='KeyD'&&e.type==='keydown').length===2,disconnectLeavesAxisHeld:disconnect.length===0},inventory:rows};
+fs.mkdirSync('reports/stem-controller-review',{recursive:true});fs.writeFileSync('reports/stem-controller-review/controller-audit.json',JSON.stringify(results,null,2));
+console.log(JSON.stringify({...results,inventory:undefined},null,2));dom.window.close();

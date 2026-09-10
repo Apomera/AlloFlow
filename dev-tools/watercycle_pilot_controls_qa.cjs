@@ -54,7 +54,7 @@ const read = p => fs.readFileSync(path.join(ROOT,p),'utf8');
       const setup=await page.locator('.wc-pilot-setup-row>details').evaluateAll(nodes=>nodes.map(n=>({x:n.getBoundingClientRect().x,y:n.getBoundingClientRect().y})));
       assert.equal(setup.length,2);assert(Math.abs(setup[0].y-setup[1].y)<2 && setup[1].x>setup[0].x,'Setup choices share a row');
       const modes=await page.locator('.wc-mode-tab').evaluateAll(nodes=>nodes.map(n=>({x:n.getBoundingClientRect().x,right:n.getBoundingClientRect().right,height:n.getBoundingClientRect().height})));
-      assert.equal(modes.length,4);assert(modes.every(n=>n.x>=0 && n.right<=width+1 && n.height>=44),'All four modes visible with usable targets');
+      assert.equal(modes.length,5);assert(modes.every(n=>n.x>=0 && n.right<=width+1 && n.height>=44),'All five modes visible with usable targets');
       assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No page overflow at '+width);
       await page.screenshot({path:path.join(out,'pilot-compact-'+width+(dark?'-dark':'')+'.png')});
       await options.locator('summary').focus();await page.keyboard.press('Enter');
@@ -104,6 +104,6 @@ const read = p => fs.readFileSync(path.join(ROOT,p),'utf8');
     await page.evaluate(()=>mountWater({wcMode:'pilot',pilot:{onboardingComplete:true,paused:true,cameraMode:'water'}}));
     await page.waitForFunction(()=>{const distance=Number(document.getElementById('wcPilotCanvas').dataset.pilotCameraStartDistance);return distance>0 && distance<10;});
     assert.deepEqual(errors,[],'No browser errors');
-    console.log('PASS: compact scene placement, all four mobile modes, keyboard flight options, persisted choices, full-width expanded setup, live assist status, accessible map close, and focus return.');
+    console.log('PASS: compact scene placement, all five mobile modes, keyboard flight options, persisted choices, full-width expanded setup, live assist status, accessible map close, and focus return.');
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

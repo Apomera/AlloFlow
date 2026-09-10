@@ -141,6 +141,7 @@ describe('Aquarium live 3D viewport behavior', () => {
     }
     expect(engine.nudgeCamera.mock.calls.map(([action]) => action)).toEqual(['left', 'right', 'up', 'down', 'in', 'out', 'reset']);
     expect(exactButton(host, 'Front').getAttribute('aria-pressed')).toBe('true');
+    await click(host.querySelector('.aquarium-camera-options summary'));
     await click(exactButton(host, 'Above'));
     expect(engine.setView).toHaveBeenLastCalledWith('top');
     expect(exactButton(host, 'Above').getAttribute('aria-pressed')).toBe('true');
@@ -275,7 +276,7 @@ describe('Aquarium live 3D viewport behavior', () => {
   });
 
   it('updates saved appearance and overlays without remounting the tank or resetting its camera and model', async () => {
-    const defaults = { substrate: 'sand', backdrop: 'depth', quality: 'balanced', lightIntensity: 1, animalScale: 1, showEquipment: true };
+    const defaults = { substrate: 'sand', backdrop: 'depth', quality: 'balanced', lightIntensity: 1, animalScale: 1, waterShimmer: .4, showEquipment: true };
     const model = { tick: 24, hour: 12, day: 1, daylight: true, lightPhase: 'day', chemistry: { dissolvedO2: 7.25, ammonia: .15, nitrite: 0, nitrate: 12, pH: 7, temp: 76, co2: 3, salinity: 0 }, feeding: null };
     const hardware = { aerator: { installed: true, on: true, output: .5, label: 'Air pump', condition: 50 }, light: { installed: false, output: 1 } };
     const lifeSupport = vi.fn(); let current;
@@ -290,15 +291,33 @@ describe('Aquarium live 3D viewport behavior', () => {
     }
     await act(async () => { root.render(React.createElement(AppearanceHarness)); });
     const engine = engines[0];
+    await click(host.querySelector('.aquarium-camera-options summary'));
     await click(exactButton(host, 'Perspective'));
     const cameraCalls = engine.setView.mock.calls.length;
     const settings = host.querySelector('.aquarium-view-settings');
     expect(settings.open).toBe(false);
     expect(settings.querySelector('summary').textContent).toBe('Customize 3D view');
+    await click(settings.querySelector('summary'));
+    expect(settings.open).toBe(true);
     for (const [id, value] of [['aquarium-view-substrate', 'dark'], ['aquarium-view-backdrop', 'black'], ['aquarium-view-quality', 'low'], ['aquarium-view-overlay', 'organisms']]) {
       const control = host.querySelector('#' + id);
       expect(host.querySelector('label[for="' + id + '"]')).toBeTruthy();
       await act(async () => { control.value = value; control.dispatchEvent(new Event('change', { bubbles: true })); });
+    }
+    const shimmer = host.querySelector('#aquarium-view-shimmer');
+    const shimmerLabel = host.querySelector('label[for="aquarium-view-shimmer"]');
+    expect(shimmer.value).toBe('0.4');
+    expect(shimmerLabel.textContent).toBe('Water shimmer · 40%');
+    const setRangeValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    for (const [value, label] of [[0, 'Off'], [.8, '80%']]) {
+      await act(async () => { setRangeValue.call(shimmer, String(value)); shimmer.dispatchEvent(new Event('input', { bubbles: true })); });
+      expect(current.appearance.waterShimmer).toBe(value);
+      expect(engine.options.appearance.waterShimmer).toBe(value);
+      expect(shimmer.getAttribute('aria-valuetext')).toBe(label);
+      expect(shimmerLabel.textContent).toBe('Water shimmer · ' + label);
+      expect(engine.options.model).toBe(model);
+      expect(engine.options.equipment).toBe(hardware);
+      expect(engine.options.fish).toEqual([firstFish]);
     }
     await click(host.querySelector('#aquarium-view-equipment'));
     expect(current).toMatchObject({ appearance: { substrate: 'dark', backdrop: 'black', quality: 'low', showEquipment: false }, overlay: 'organisms' });
@@ -314,6 +333,8 @@ describe('Aquarium live 3D viewport behavior', () => {
     expect(host.querySelector('.aquarium-model-legend').textContent).toContain('not measured turbidity');
     await click(exactButton(host, 'Reset appearance'));
     expect(current.appearance).toEqual(defaults);
+    expect(shimmer.value).toBe('0.4');
+    expect(shimmer.getAttribute('aria-valuetext')).toBe('40%');
     expect(current.overlay).toBe('organisms');
     expect(engine.options.model).toBe(model);
     expect(engine.options.paused).toBe(true);
@@ -426,4 +447,42 @@ describe('Aquarium live 3D viewport behavior', () => {
     expect(onResizePlant).not.toHaveBeenCalled();
   });
 
+  it('keeps focus and zoom primary while a native disclosure reveals camera angles and help', async () => {
+    const options = scene({ fish: [{ ...firstFish, selected: true }], paused: true });
+    const before = JSON.stringify(options);
+    await renderViewport({ sceneOptions: options });
+    const engine = engines[0], details = host.querySelector('details.aquarium-camera-options');
+    const summary = details.querySelector('summary'), canvas = host.querySelector('canvas');
+    expect(details.open).toBe(false);
+    expect(summary).toBe(details.firstElementChild);
+    expect(summary.textContent).toBe('Camera angles & help');
+    expect(details.querySelector('.aquarium-3d-help').textContent).toContain('Home resets');
+    for (const control of [exactButton(host, 'Focus selected'), host.querySelector('[aria-label="Zoom in"]'), host.querySelector('[aria-label="Zoom out"]')]) {
+      expect(details.contains(control)).toBe(false);
+      expect(Number.parseFloat(getComputedStyle(control).minHeight)).toBeGreaterThanOrEqual(44);
+    }
+    expect(Number.parseFloat(getComputedStyle(summary).minHeight)).toBeGreaterThanOrEqual(44);
+    for (const label of ['Front', 'Perspective', 'Above', 'Side']) expect(details.contains(exactButton(host, label))).toBe(true);
+    summary.focus(); expect(document.activeElement).toBe(summary);
+    await click(summary); // Native summary activation; no custom disclosure keyboard handler.
+    expect(details.open).toBe(true);
+    const above = exactButton(host, 'Above'); above.focus(); expect(document.activeElement).toBe(above);
+    await click(above);
+    expect(engine.setView).toHaveBeenLastCalledWith('top');
+    summary.focus(); await click(summary);
+    expect(details.open).toBe(false);
+    expect(document.activeElement).toBe(summary);
+    await click(exactButton(host, 'Focus selected'));
+    expect(details.contains(exactButton(host, 'Whole tank'))).toBe(false);
+    await click(host.querySelector('[aria-label="Zoom in"]'));
+    expect(engine.nudgeCamera).toHaveBeenLastCalledWith('in');
+    const home = new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true });
+    await act(async () => { canvas.dispatchEvent(home); });
+    expect(home.defaultPrevented).toBe(true);
+    expect(engine.nudgeCamera).toHaveBeenLastCalledWith('reset');
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('');
+    expect(details.open).toBe(false);
+    expect(JSON.stringify(options)).toBe(before);
+    expect(sceneFactory).toHaveBeenCalledTimes(1);
+  });
 });

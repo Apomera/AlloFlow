@@ -1,0 +1,15 @@
+# Water Worlds: timing of equal-depth storms
+
+The rainfall controls now distinguish mean storm intensity from instantaneous rain. Three patterns are available: steady, heavier first half, and heavier second half. The two varying patterns use 1.5 times the mean in one half and 0.5 times the mean in the other, giving the same total rainfall for a fixed mean and duration. The peak can reach 150 mm/h when the mean is 100 mm/h.
+
+These are illustrative, prescribed two-stage storms. The distinction between total depth and temporal distribution follows the concept of a precipitation hyetograph described in the [USACE HEC-HMS precipitation reference](https://www.hec.usace.army.mil/confluence/hmsdocs/hmstrm/meteorology/precipitation/precipitation-basic-concepts). The particular two-stage patterns and parameters here are teaching choices, not calibrated design storms or a reproduction of HEC-HMS.
+
+**Test rainfall timing** restores the pinned baseline's starting water and land cover, fixes its mean rain and duration, and applies the selected pattern. Current land edits are replaced by the baseline cover, as described beside the action. This is labeled as a timing comparison rather than a land-cover comparison. The existing baseline replay still restores the complete recorded rainfall pattern while retaining current cover for a land-cover test. The Differences map remains scoped to land-cover comparisons with identical weather.
+
+Rainfall profiles display the first and second halves with numerical intensity and total depth. The scene and selected-cell flow diagnostics follow instantaneous rain, including during timeline inspection. Recorded profiles remain visible beside the completed investigation, and both report formats retain the actual pattern. A guided timing investigation is available at all three learning levels.
+
+The solver integrates rainfall depth across the midpoint and storm-end boundaries. The infiltration, storage, and routing equations remain unchanged. Older saved runs without a pattern are interpreted as steady rain and replay exactly. Run forcing is detached from next-storm settings to preserve evidence even if a caller mutates the settings object.
+
+Validation covers equal total depth, fractional boundaries, conservation at maximum peak intensity, changes in runoff response, exact replay/reconstruction, timing-test isolation, historical saved runs, browser controls, inspected rainfall values, exports, dark accessibility, and phone layout. Evidence is in `water-worlds-implementation/`, including `worlds-rain-timing.png`, `worlds-rain-timing-320.png`, and `timing-investigation.json`.
+
+Final validation: 112 tests across ten targeted suites passed. All 17 browser workflow groups passed with no browser exceptions or axe violations in the tested states. Rainfall timing was checked at the start and midpoint during inspection, with completed evidence exported independently of inspection time. Desktop controls, recorded profiles, comparison results, and guided prompts were visually reviewed; the browser checked the 320px layout.

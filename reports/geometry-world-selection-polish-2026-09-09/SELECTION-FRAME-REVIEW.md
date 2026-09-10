@@ -1,0 +1,19 @@
+# Selection frame refinement
+
+The recent `geometry-world-mobile-refinement-2026-09-09/after-focus-1440x900.png` shows a full amber wire cage crossing the pavilion's roof, doorway, and materials even after Focus removes the temporary measurement overlays. The old builder `Box3Helper` rendered all edges through the creation at 85% opacity. Measurement mode could also have its own faint amber bounding box, colored dimension bars, and temporary layer tint.
+
+The builder now presents the retained creation with eight short corner brackets. One static `LineSegments` object contains 24 segments / 48 vertices. Each leg is `min(axis extent × 0.20, largest extent × 0.06)`, so its total world-space line length is at least 60% shorter than a full box, and 88% shorter for a cube. This keeps the same one-object draw budget; it does not add postprocessing or per-frame animation. The frame uses pale sage `#d4e8ca` for a clean selection check and warm amber `#f1c67d` for review, with 82% opacity, no depth writing, and the colors converted to linear for the current sRGB output. It is decorative and cannot intercept raycasts.
+
+`selectionNeedsReview(check)` is shared with the builder status card. It treats a result as healthy only when it has exactly one component, zero open edges, zero non-manifold edges, and no error. Missing or incomplete check data remains in review state. This fixes the visual inconsistency where a one-component mesh with open surfaces received the old healthy outline.
+
+The frame uses `creationGeometryBounds`, which reads canonical transformed construction geometry and compensates for the temporary placement-pop scale. The previous `expandByObject` bounds could capture a newly placed block at 70% size and then remain there because unchanged semantic selection polling correctly skipped rebuilding the outline. Decorative block children are now excluded from the frame bounds as well.
+
+The renderer-owned `engine._builderSelectionFrame` is registered by the builder refresh and unregistered when its geometry/material are disposed. Showcase hides it synchronously, before the next 250 ms poll or first presentation render. Studio excludes it from its static restoration list. Leaving Showcase restores the currently registered frame immediately, rather than resurrecting a disposed frame. Frame replacement/clear removes any stale restoration entries defensively. Focus retains the frame while clearing core measurement annotations; the existing colored layer glow and dimension overlays are unchanged.
+
+## Verification
+
+`selection-frame-final-tests.json`: **110 passed, 0 failed, 0 failed suites**. It includes 22 new actual-THREE/helper and mounted frame cases, 31 Focus cases, 9 measurement annotation cases, 12 retained-selection cases, 18 polling-cache cases, 3 Studio presentation cases, and 15 visual-state lifecycle cases.
+
+New tests cover healthy/missing/open/disconnected/non-manifold/error classification; exact cube, fractional, wide, and tall bounds; short corner geometry; no picking interference; placement-pop and oversized decorative children; unchanged construction transforms/vertices/STL/history; synchronous Showcase entry/exit before polling; replacement during Meadow and Studio; removal without stale restoration; engine replacement; and unmount disposal without disposing construction geometry. Existing annotation/Focus/Studio suites cover the surrounding layer and presentation behavior. Canonical builder and desktop mirror parse and match byte-for-byte.
+
+Production files changed only in builder selection helpers/refresh plus the bounded Showcase frame ownership hooks, with an identical desktop mirror. Core construction, measurement learning overlays, block materials, collision, quality tiers, and printing geometry were not edited. Root is performing matched browser/visual QA and complementary export tests; this report's automated verification is not a screenshot-quality claim.

@@ -1,0 +1,11 @@
+'use strict';
+const fs = require('node:fs');
+const checker = 'dev-tools/document_export_at_acceptance.cjs';
+let source = fs.readFileSync(checker, 'utf8');
+source = source.replace("['module', 'importmap', 'speculationrules'].includes(type)", "['module', 'importmap', 'speculationrules'].includes(type.toLowerCase())");
+fs.writeFileSync(checker, source);
+const test = 'tests/e2e/document_export_review_fixes.spec.ts';
+source = fs.readFileSync(test, 'utf8');
+source = source.replace(', \'type="MODULE"\', \'language="unrecognized"\'', ', \'language="unrecognized"\'');
+source = source.replace('\'type="module"\', \'type="importmap"\'', '\'type="module"\', \'type="MODULE"\', \'type="importmap"\', \'type="IMPORTMAP"\'');
+fs.writeFileSync(test, source);

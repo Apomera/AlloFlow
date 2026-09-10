@@ -1,0 +1,517 @@
+{
+  "pass": true,
+  "sources": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "sha256": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+      "syntaxValid": true,
+      "mirrorsMatch": true,
+      "browserMatches": true,
+      "changed": false
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "sha256": "de92c523db3f677332ba94e94946e63180e738bcd3bb76a4a0da23e9eb980856",
+      "syntaxValid": true,
+      "mirrorsMatch": true,
+      "browserMatches": true,
+      "changed": true
+    },
+    {
+      "name": "stem_tool_printlab.js",
+      "sha256": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742",
+      "syntaxValid": true,
+      "mirrorsMatch": true,
+      "browserMatches": true,
+      "changed": false
+    }
+  ],
+  "tests": {
+    "total": 84,
+    "passed": 84,
+    "suites": 5
+  },
+  "browser": {
+    "before": true,
+    "after": true,
+    "actualComposer": true,
+    "captures": [
+      {
+        "case": {
+          "q": "saver",
+          "v": "front",
+          "w": 844,
+          "h": 390
+        },
+        "before": "before-saver-front-844x390.png",
+        "after": "after-saver-front-844x390.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      {
+        "case": {
+          "q": "saver",
+          "v": "perspective",
+          "w": 1200,
+          "h": 820
+        },
+        "before": "before-saver-perspective-1200x820.png",
+        "after": "after-saver-perspective-1200x820.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      {
+        "case": {
+          "q": "saver",
+          "v": "perspective",
+          "w": 390,
+          "h": 844
+        },
+        "before": "before-saver-perspective-390x844.png",
+        "after": "after-saver-perspective-390x844.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      {
+        "case": {
+          "q": "balanced",
+          "v": "front",
+          "w": 844,
+          "h": 390
+        },
+        "before": "before-balanced-front-844x390.png",
+        "after": "after-balanced-front-844x390.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 129,
+          "triangles": 998
+        }
+      },
+      {
+        "case": {
+          "q": "balanced",
+          "v": "perspective",
+          "w": 1200,
+          "h": 820
+        },
+        "before": "before-balanced-perspective-1200x820.png",
+        "after": "after-balanced-perspective-1200x820.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 129,
+          "triangles": 998
+        }
+      },
+      {
+        "case": {
+          "q": "balanced",
+          "v": "perspective",
+          "w": 390,
+          "h": 844
+        },
+        "before": "before-balanced-perspective-390x844.png",
+        "after": "after-balanced-perspective-390x844.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 129,
+          "triangles": 998
+        }
+      },
+      {
+        "case": {
+          "q": "detail",
+          "v": "front",
+          "w": 844,
+          "h": 390
+        },
+        "before": "before-detail-front-844x390.png",
+        "after": "after-detail-front-844x390.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 130,
+          "triangles": 999
+        }
+      },
+      {
+        "case": {
+          "q": "detail",
+          "v": "side",
+          "w": 844,
+          "h": 390
+        },
+        "before": "before-detail-side-844x390.png",
+        "after": "after-detail-side-844x390.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 130,
+          "triangles": 999
+        }
+      },
+      {
+        "case": {
+          "q": "detail",
+          "v": "perspective",
+          "w": 1200,
+          "h": 820
+        },
+        "before": "before-detail-perspective-1200x820.png",
+        "after": "after-detail-perspective-1200x820.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 130,
+          "triangles": 999
+        }
+      },
+      {
+        "case": {
+          "q": "detail",
+          "v": "perspective",
+          "w": 390,
+          "h": 844
+        },
+        "before": "before-detail-perspective-390x844.png",
+        "after": "after-detail-perspective-390x844.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 130,
+          "triangles": 999
+        }
+      },
+      {
+        "case": {
+          "q": "detail",
+          "v": "top",
+          "w": 1200,
+          "h": 820
+        },
+        "before": "before-detail-top-1200x820.png",
+        "after": "after-detail-top-1200x820.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 130,
+          "triangles": 999
+        }
+      },
+      {
+        "case": {
+          "q": "detail",
+          "v": "perspective",
+          "w": 844,
+          "h": 390
+        },
+        "before": "before-detail-perspective-844x390.png",
+        "after": "after-detail-perspective-844x390.png",
+        "poseUnchanged": true,
+        "drawUnchanged": true,
+        "resourcesUnchanged": true,
+        "shadowMapUnchanged": true,
+        "render": {
+          "calls": 130,
+          "triangles": 999
+        }
+      }
+    ],
+    "edgeBuilds": {
+      "sources": {
+        "stem_tool_geometryworld.js": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+        "stem_tool_geometryworld_builder.js": "de92c523db3f677332ba94e94946e63180e738bcd3bb76a4a0da23e9eb980856",
+        "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+      },
+      "errors": [],
+      "consoleErrors": [],
+      "failures": [],
+      "captures": [
+        {
+          "name": "rotated-wedge",
+          "size": {
+            "w": 1200,
+            "h": 820,
+            "q": "balanced"
+          },
+          "state": {
+            "count": 1,
+            "resources": 8,
+            "programKey": "gwe-studio-floor-vogel16-v1",
+            "shaders": [],
+            "materialIdentity": true,
+            "overflow": false
+          },
+          "screenshot": "after-rotated-wedge-balanced-1200x820.png"
+        },
+        {
+          "name": "rotated-wedge",
+          "size": {
+            "w": 390,
+            "h": 844,
+            "q": "detail"
+          },
+          "state": {
+            "count": 1,
+            "resources": 8,
+            "programKey": "gwe-studio-floor-vogel16-v1",
+            "shaders": [],
+            "materialIdentity": true,
+            "overflow": false
+          },
+          "screenshot": "after-rotated-wedge-detail-390x844.png"
+        },
+        {
+          "name": "tall-tower",
+          "size": {
+            "w": 1200,
+            "h": 820,
+            "q": "balanced"
+          },
+          "state": {
+            "count": 50,
+            "resources": 8,
+            "programKey": "gwe-studio-floor-vogel16-v1",
+            "shaders": [],
+            "materialIdentity": true,
+            "overflow": false
+          },
+          "screenshot": "after-tall-tower-balanced-1200x820.png"
+        },
+        {
+          "name": "tall-tower",
+          "size": {
+            "w": 390,
+            "h": 844,
+            "q": "detail"
+          },
+          "state": {
+            "count": 50,
+            "resources": 8,
+            "programKey": "gwe-studio-floor-vogel16-v1",
+            "shaders": [],
+            "materialIdentity": true,
+            "overflow": false
+          },
+          "screenshot": "after-tall-tower-detail-390x844.png"
+        },
+        {
+          "name": "wide-span",
+          "size": {
+            "w": 1200,
+            "h": 820,
+            "q": "balanced"
+          },
+          "state": {
+            "count": 81,
+            "resources": 8,
+            "programKey": "gwe-studio-floor-vogel16-v1",
+            "shaders": [],
+            "materialIdentity": true,
+            "overflow": false
+          },
+          "screenshot": "after-wide-span-balanced-1200x820.png"
+        },
+        {
+          "name": "wide-span",
+          "size": {
+            "w": 390,
+            "h": 844,
+            "q": "detail"
+          },
+          "state": {
+            "count": 81,
+            "resources": 8,
+            "programKey": "gwe-studio-floor-vogel16-v1",
+            "shaders": [],
+            "materialIdentity": true,
+            "overflow": false
+          },
+          "screenshot": "after-wide-span-detail-390x844.png"
+        }
+      ],
+      "pass": true
+    }
+  },
+  "pixels": {
+    "pass": true,
+    "shadowEdge": [
+      {
+        "stage": "before",
+        "region": [
+          818,
+          526,
+          896,
+          546
+        ],
+        "maxAdjacentStep": 32,
+        "stepsOver20": 25
+      },
+      {
+        "stage": "after",
+        "region": [
+          818,
+          526,
+          896,
+          546
+        ],
+        "maxAdjacentStep": 12,
+        "stepsOver20": 0
+      }
+    ],
+    "saver": [
+      {
+        "file": "saver-front-844x390.png",
+        "identical": true
+      },
+      {
+        "file": "saver-perspective-1200x820.png",
+        "identical": true
+      },
+      {
+        "file": "saver-perspective-390x844.png",
+        "identical": true
+      },
+      {
+        "file": "saver-export.png",
+        "identical": true
+      }
+    ],
+    "perspectiveExports": [
+      {
+        "stage": "before",
+        "width": 2048,
+        "height": 1295,
+        "validSize": true
+      },
+      {
+        "stage": "after",
+        "width": 2048,
+        "height": 1295,
+        "validSize": true
+      }
+    ]
+  },
+  "exports": {
+    "pass": true,
+    "exports": [
+      {
+        "stage": "before",
+        "quality": "saver",
+        "file": "before-saver-export.png",
+        "width": 2048,
+        "height": 785,
+        "sky": [
+          241,
+          238,
+          232
+        ],
+        "floor": [
+          241,
+          238,
+          231
+        ],
+        "contrast": 1
+      },
+      {
+        "stage": "before",
+        "quality": "detail",
+        "file": "before-detail-export.png",
+        "width": 2048,
+        "height": 785,
+        "sky": [
+          241,
+          238,
+          232
+        ],
+        "floor": [
+          241,
+          238,
+          231
+        ],
+        "contrast": 1
+      },
+      {
+        "stage": "after",
+        "quality": "saver",
+        "file": "after-saver-export.png",
+        "width": 2048,
+        "height": 785,
+        "sky": [
+          241,
+          238,
+          232
+        ],
+        "floor": [
+          241,
+          238,
+          231
+        ],
+        "contrast": 1
+      },
+      {
+        "stage": "after",
+        "quality": "detail",
+        "file": "after-detail-export.png",
+        "width": 2048,
+        "height": 785,
+        "sky": [
+          241,
+          238,
+          232
+        ],
+        "floor": [
+          241,
+          238,
+          231
+        ],
+        "contrast": 1
+      }
+    ]
+  },
+  "scope": {
+    "floorOnly": true,
+    "maxWorldSpaceSoftness": 0.14,
+    "depthComparisonsBefore": 16,
+    "depthComparisonsAfter": 16,
+    "addedShadowMaps": 0,
+    "addedPasses": 0,
+    "addedLights": 0
+  }
+}

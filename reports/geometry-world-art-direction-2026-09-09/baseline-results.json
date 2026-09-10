@@ -1,0 +1,256 @@
+{
+  "scope": "Frozen baseline sources, actual WebGL pavilion and material gallery, balanced and saver",
+  "errors": [],
+  "consoleErrors": [],
+  "captures": [
+    {
+      "file": "before-pavilion-meadow-balanced.png",
+      "profile": {
+        "preference": "balanced",
+        "tier": "balanced",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Balanced",
+        "maxPixelRatio": 1.5,
+        "shadows": true,
+        "postFx": false,
+        "ambientMotion": true
+      },
+      "position": [
+        18.407252478568612,
+        15.60257742765552,
+        23.32499307342508
+      ],
+      "quaternion": [
+        -0.16276767998822747,
+        0.32786043083366007,
+        0.05745448769158173,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "draws": 1512,
+      "triangles": 13190,
+      "programs": 12,
+      "shaderErrors": []
+    },
+    {
+      "file": "before-pavilion-studio-balanced.png",
+      "profile": {
+        "preference": "balanced",
+        "tier": "balanced",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Balanced",
+        "maxPixelRatio": 1.5,
+        "shadows": true,
+        "postFx": false,
+        "ambientMotion": true
+      },
+      "position": [
+        18.407252478568612,
+        15.60257742765552,
+        23.32499307342508
+      ],
+      "quaternion": [
+        -0.16276767998822747,
+        0.32786043083366007,
+        0.05745448769158173,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "studio",
+      "draws": 302,
+      "triangles": 1580,
+      "programs": 17,
+      "shaderErrors": []
+    },
+    {
+      "file": "before-pavilion-meadow-saver.png",
+      "profile": {
+        "preference": "saver",
+        "tier": "saver",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Battery saver",
+        "maxPixelRatio": 1,
+        "shadows": false,
+        "postFx": false,
+        "ambientMotion": false
+      },
+      "position": [
+        18.407252478568612,
+        15.60257742765552,
+        23.32499307342508
+      ],
+      "quaternion": [
+        -0.16276767998822747,
+        0.32786043083366007,
+        0.05745448769158173,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "meadow",
+      "draws": 1512,
+      "triangles": 13190,
+      "programs": 24,
+      "shaderErrors": []
+    },
+    {
+      "file": "before-pavilion-studio-saver.png",
+      "profile": {
+        "preference": "saver",
+        "tier": "saver",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Battery saver",
+        "maxPixelRatio": 1,
+        "shadows": false,
+        "postFx": false,
+        "ambientMotion": false
+      },
+      "position": [
+        18.407252478568612,
+        15.60257742765552,
+        23.32499307342508
+      ],
+      "quaternion": [
+        -0.16276767998822747,
+        0.32786043083366007,
+        0.05745448769158173,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "studio",
+      "draws": 302,
+      "triangles": 1580,
+      "programs": 28,
+      "shaderErrors": []
+    },
+    {
+      "file": "before-materials-meadow-balanced.png",
+      "profile": {
+        "preference": "balanced",
+        "tier": "balanced",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Balanced",
+        "maxPixelRatio": 1.5,
+        "shadows": true,
+        "postFx": false,
+        "ambientMotion": true
+      },
+      "position": [
+        13.710192248672435,
+        9.85907073523532,
+        16.88063838835382
+      ],
+      "quaternion": [
+        -0.16276767998822744,
+        0.32786043083366007,
+        0.05745448769158172,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "draws": 1342,
+      "triangles": 12394,
+      "programs": 18,
+      "shaderErrors": []
+    },
+    {
+      "file": "before-materials-studio-balanced.png",
+      "profile": {
+        "preference": "balanced",
+        "tier": "balanced",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Balanced",
+        "maxPixelRatio": 1.5,
+        "shadows": true,
+        "postFx": false,
+        "ambientMotion": true
+      },
+      "position": [
+        13.710192248672435,
+        9.85907073523532,
+        16.88063838835382
+      ],
+      "quaternion": [
+        -0.16276767998822744,
+        0.32786043083366007,
+        0.05745448769158172,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "studio",
+      "draws": 200,
+      "triangles": 1192,
+      "programs": 25,
+      "shaderErrors": []
+    },
+    {
+      "file": "before-materials-meadow-saver.png",
+      "profile": {
+        "preference": "saver",
+        "tier": "saver",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Battery saver",
+        "maxPixelRatio": 1,
+        "shadows": false,
+        "postFx": false,
+        "ambientMotion": false
+      },
+      "position": [
+        13.710192248672435,
+        9.85907073523532,
+        16.88063838835382
+      ],
+      "quaternion": [
+        -0.16276767998822744,
+        0.32786043083366007,
+        0.05745448769158172,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "meadow",
+      "draws": 1342,
+      "triangles": 12394,
+      "programs": 24,
+      "shaderErrors": []
+    },
+    {
+      "file": "before-materials-studio-saver.png",
+      "profile": {
+        "preference": "saver",
+        "tier": "saver",
+        "reason": "Manual graphics-quality selection.",
+        "label": "Battery saver",
+        "maxPixelRatio": 1,
+        "shadows": false,
+        "postFx": false,
+        "ambientMotion": false
+      },
+      "position": [
+        13.710192248672435,
+        9.85907073523532,
+        16.88063838835382
+      ],
+      "quaternion": [
+        -0.16276767998822744,
+        0.32786043083366007,
+        0.05745448769158172,
+        0.9288235581039676
+      ],
+      "fov": 42,
+      "look": "studio",
+      "draws": 200,
+      "triangles": 1192,
+      "programs": 30,
+      "shaderErrors": []
+    }
+  ],
+  "sources": [
+    {
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_geometryworld.js",
+      "sha256": "c05cbc4e2c474f0d25e671a517281ea02b1799b696a1c97007bda67d741ba481"
+    },
+    {
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_geometryworld_builder.js",
+      "sha256": "83dd9e8661568139e666c6a1e3d0066b2bf739e48b52c826d3e335241dfb319e"
+    }
+  ],
+  "passed": true
+}

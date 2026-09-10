@@ -1,0 +1,167 @@
+[
+  {
+    "tool": "algebraCAS",
+    "theme": "light",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "openBim",
+    "theme": "light",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "organismId",
+    "theme": "light",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "graphCalc",
+    "theme": "light",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "funcGrapher",
+    "theme": "light",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "algebraCAS",
+    "theme": "dark",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "openBim",
+    "theme": "dark",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "organismId",
+    "theme": "dark",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "graphCalc",
+    "theme": "dark",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "funcGrapher",
+    "theme": "dark",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "algebraCAS",
+    "theme": "contrast",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "openBim",
+    "theme": "contrast",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "organismId",
+    "theme": "contrast",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "graphCalc",
+    "theme": "contrast",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  },
+  {
+    "tool": "funcGrapher",
+    "theme": "contrast",
+    "ok": true,
+    "a11y": [],
+    "reflow": {
+      "width": 320,
+      "scroll": 320
+    },
+    "errors": []
+  }
+]

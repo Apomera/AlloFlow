@@ -1,0 +1,1236 @@
+{
+  "scope": "Static source inventory plus actual shared-adapter execution in jsdom with a simulated standard gamepad; no physical controller validation.",
+  "moduleCount": 149,
+  "directGamepad": [
+    "stem_tool_roadready.js"
+  ],
+  "xrInput": [
+    "stem_tool_geosandbox.js"
+  ],
+  "customKeyboardSignals": [
+    "stem_tool_raptorhunt.js"
+  ],
+  "faceCycle": [
+    {
+      "type": "keydown",
+      "key": "space",
+      "code": "Space",
+      "target": "#document"
+    }
+  ],
+  "focusedAxisPress": [
+    {
+      "type": "keydown",
+      "key": "d",
+      "code": "KeyD",
+      "target": "#document"
+    },
+    {
+      "type": "keydown",
+      "key": "d",
+      "code": "KeyD",
+      "target": "focused"
+    }
+  ],
+  "disconnect": [],
+  "checks": {
+    "faceButtonKeyupMissing": true,
+    "spaceKeyIncorrect": true,
+    "focusedKeydownDuplicated": true,
+    "disconnectLeavesAxisHeld": true
+  },
+  "inventory": [
+    {
+      "file": "stem_tool_a11yauditor.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_accesslens.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_algebracas.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_allobotsage.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_alphafold.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_anatomy.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_angles.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_applab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_aquaculture.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_aquarium.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_arccity.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_archstudio.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_areamodel.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_areaperimeter.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_arithmetic.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_artstudio.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_assessmentliteracy.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_astronomy.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_atctower.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_autorepair.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_bakingscience.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_beehive.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_behaviorlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_bikelab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_birdlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_brainatlas.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_bridgelab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_calculus.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_cell.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_cellatlas.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_cellular.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_cephalopodlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_chembalance.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_circuit.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_circuitshelf.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_citylab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_climateExplorer.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_coasterlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_coding.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_companionplanting.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_consciousness.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_coordgrid.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_cyberdefense.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_datalab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_dataplot.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_datastudio.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_decomposer.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_dinolab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_dissection.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_dna.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_echolocation.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_echotrainer.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_economicslab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_ecosystem.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_eligibility.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_epidemic.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_evolab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_fieldjourneys.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_fireecology.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_firstresponse.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_fisherlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_flightsim.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_forge.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_fractions.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_freeforms.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_funcgrapher.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_galaxy.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_gamestudio.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_geo.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_geologyexplorer.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_geometryworld.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_geometryworld_builder.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_geosandbox.js",
+      "directGamepad": false,
+      "xrInput": true,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_gisstudio.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_graphcalc.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_heatlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_inequality.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_kitchenlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_lawnavigator.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_learning_lab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_lifeskills.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_llm_literacy.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_logiclab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_lumen.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_machinelab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_magnetism.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_manipulatives.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_microbiology.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_migration.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_molecule.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_moleculeshelf.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_money.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_moonmission.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_multtable.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_music.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_nuclearlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_numberline.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_nutritionlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_openbim.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_optics.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_oratory.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_organismid.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_papertrail.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_parentinglab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_particlelab3d.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_pets.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_physics.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_platetectonics.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_playlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_printingpress.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_printlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_probability.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_punnett.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_raptorhunt.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": true
+    },
+    {
+      "file": "stem_tool_ratios.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_renewables.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_roadready.js",
+      "directGamepad": true,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_rocks.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_scaleexplorer.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_schoolbehaviortoolkit.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_semiconductor.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_simshelf.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_singing.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_skatelab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_solarsystem.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_sourcebook.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_spacecolony.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_spaceexplorer.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_spacestation.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_statslab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_stewardship.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_swimlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_throwlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_timeline.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": false,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_timeschedule.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_titration.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_trajectorycomputing.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_treelab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_typingpractice.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_unitconvert.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_universe.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_volume.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_watercycle.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_wave.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_weathersystems.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_weldlab.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_wheelandfire.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": true,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_worldbuilder.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    },
+    {
+      "file": "stem_tool_zoomgallery.js",
+      "directGamepad": false,
+      "xrInput": false,
+      "keyboardSignals": true,
+      "pointerSignals": false,
+      "customKeyboardSignals": false
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "model": "Enter the model label displayed in Gemini and the run date",
+  "cases": [
+    {
+      "id": "captions",
+      "response": ""
+    },
+    {
+      "id": "microphone",
+      "response": ""
+    },
+    {
+      "id": "upload",
+      "response": ""
+    },
+    {
+      "id": "printer",
+      "response": ""
+    },
+    {
+      "id": "admin",
+      "response": ""
+    },
+    {
+      "id": "ambiguous",
+      "response": ""
+    },
+    {
+      "id": "already-complete",
+      "response": ""
+    },
+    {
+      "id": "repeat",
+      "response": ""
+    },
+    {
+      "id": "injection",
+      "response": ""
+    },
+    {
+      "id": "learner-content",
+      "response": ""
+    },
+    {
+      "id": "small-window",
+      "response": ""
+    },
+    {
+      "id": "spanish",
+      "response": ""
+    }
+  ]
+}

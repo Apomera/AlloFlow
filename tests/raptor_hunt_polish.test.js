@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 const SOURCE_PATH = 'stem_lab/stem_tool_raptorhunt.js';
 
 function source() {
-  return readFileSync(SOURCE_PATH, 'utf8');
+  return readFileSync(SOURCE_PATH, 'utf8').replace(/\r\n/g, '\n');
 }
 
 function functionBody(text, name) {

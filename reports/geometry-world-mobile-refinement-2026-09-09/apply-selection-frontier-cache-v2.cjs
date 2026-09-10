@@ -1,0 +1,4 @@
+const fs=require('node:fs');
+const patch=fs.readFileSync('reports/geometry-world-mobile-refinement-2026-09-09/apply-selection-frontier-cache.cjs','utf8');
+const corrected=patch.split(/\r?\n/).map(line=>line.startsWith("replaceOnce('    var result = selectionMeasurement(engine);") ? String.raw`const resultAnchor=source.match(/    var result = selectionMeasurement\(engine\);\r?\n    \/\/ Measurement can add connected cells or remove missing retained cells\./);if(!resultAnchor)throw new Error('Result retry anchor missing');replaceOnce(resultAnchor[0], ['    var result = selectionMeasurement(engine);','    // A truncated/null measurement has no proven complete frontier; retry it.','    if (!result) { cache.current = null; return null; }','    // Measurement can add connected cells or remove missing retained cells.'].join(resultAnchor[0].includes('\r\n')?'\r\n':'\n'));` : line).join('\n');
+new Function('require',corrected)(require);

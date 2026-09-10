@@ -52,6 +52,415 @@ window.StemLab = window.StemLab || {
   })();
 
 
+  // Initial-response model: impermeant solute, equal initial pressure, fixed concentrations.
+  function osmosisModel(raw) {
+    raw = raw || {};
+    function bounded(value, fallback, max) {
+      var n = Number(value);
+      return value == null || value === '' || !Number.isFinite(n) ? fallback : Math.max(0, Math.min(max, n));
+    }
+    var inside = bounded(raw.inside, 50, 200), outside = bounded(raw.outside, 50, 200);
+    var perm = bounded(raw.perm, 50, 100), cellType = raw.cellType === 'plant' ? 'plant' : 'animal';
+    var gradient = inside - outside, flow = gradient * perm / 100;
+    var tonicity = gradient === 0 ? 'Isotonic' : gradient > 0 ? 'Hypotonic' : 'Hypertonic';
+    var direction = perm === 0 ? 'blocked' : gradient === 0 ? 'balanced' : flow > 0 ? 'inward' : 'outward';
+    var response = direction === 'blocked' ? (gradient === 0 ? 'Water cannot cross this model membrane. Concentrations are equal, but exchange is blocked.' : 'Water cannot cross this model membrane. Unequal concentrations are not equilibrium.') :
+      direction === 'balanced' ? 'No net water movement; water still crosses in both directions.' :
+      direction === 'inward' ? (cellType === 'plant' ? 'Water entry builds turgor; the cell wall resists expansion.' : 'Water entry tends to swell the cell. Sustained uptake can cause lysis, but bursting is not predicted here.') :
+      (cellType === 'plant' ? 'Water loss reduces turgor. Sufficient loss can pull the membrane from the wall (plasmolysis).' : 'Water loss tends to shrink the cell.');
+    return { inside: inside, outside: outside, perm: perm, cellType: cellType, gradient: gradient, flow: flow, tonicity: tonicity, direction: direction, response: response };
+  }
+
+
+  var CELL_OSMOSIS_NOTEBOOK_MODEL = 'Initial-response model: nonpenetrating solute, equal initial pressure, fixed concentrations. Flow index is relative, not a measured rate or final cell volume.';
+  function osmosisNotebookTextValue(value) { return typeof value === 'string' ? value.slice(0, 4000) : ''; }
+  function osmosisNotebookRow(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var legacy = raw.inside == null && raw.i != null;
+    var settings = legacy ? { inside: raw.i, outside: raw.o, perm: raw.p, cellType: raw.cellType } : raw;
+    if (!['inside','outside','perm'].every(function(k) { return typeof settings[k] === 'number' && Number.isFinite(settings[k]); })) return null;
+    return Object.assign({}, osmosisModel(settings), { prediction: osmosisNotebookTextValue(raw.prediction), observation: osmosisNotebookTextValue(raw.observation), legacy: legacy || raw.legacy === true });
+  }
+  function osmosisNotebookPacket(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    return { schema: 'alloflow-cell-osmosis-notebook', version: 1, model: CELL_OSMOSIS_NOTEBOOK_MODEL,
+      settings: osmosisModel(raw), prediction: osmosisNotebookTextValue(raw.prediction), observation: osmosisNotebookTextValue(raw.observation),
+      explanation: osmosisNotebookTextValue(typeof raw.explanation === 'string' ? raw.explanation : raw.hypothesis),
+      log: (Array.isArray(raw.log) ? raw.log : []).slice(-8).map(osmosisNotebookRow).filter(Boolean) };
+  }
+  function parseOsmosisNotebook(raw) {
+    if (!raw || raw.schema !== 'alloflow-cell-osmosis-notebook' || raw.version !== 1 || !raw.settings || !Array.isArray(raw.log) || raw.log.length > 8) throw new Error('Choose a version 1 Cell Osmosis notebook with up to 8 trials.');
+    function valid(row) { return row && ['inside','outside','perm'].every(function(k) { return typeof row[k] === 'number' && Number.isFinite(row[k]) && row[k] >= 0 && row[k] <= (k === 'perm' ? 100 : 200); }) && ['animal','plant'].indexOf(row.cellType) >= 0; }
+    if (!valid(raw.settings) || !raw.log.every(valid)) throw new Error('The notebook contains invalid concentrations, permeability, or cell types.');
+    // Recompute evidence from validated settings; never trust imported result labels.
+    var packet = osmosisNotebookPacket(Object.assign({}, raw.settings, { prediction: raw.prediction, observation: raw.observation, explanation: raw.explanation, log: raw.log }));
+    return Object.assign({}, packet.settings, { prediction: packet.prediction, observation: packet.observation, explanation: packet.explanation, log: packet.log });
+  }
+  function osmosisNotebookReport(raw) {
+    var packet = osmosisNotebookPacket(raw);
+    function describe(row) { return [row.cellType + ' cell; inside ' + row.inside + ' mOsm/L; outside ' + row.outside + ' mOsm/L; water permeability ' + row.perm + '%.', row.tonicity + ' external solution; ' + row.direction + ' water response; signed initial flow index ' + row.flow + ' (positive = inward).', row.response].join('\n'); }
+    var lines = ['CELL OSMOSIS INVESTIGATION', '', packet.model, '', 'CURRENT SETTINGS', describe(packet.settings), '', 'CURRENT PREDICTION', packet.prediction || 'Not recorded', '', 'CURRENT OBSERVATION', packet.observation || 'Not recorded', '', 'RECORDED TRIALS (' + packet.log.length + '/8)'];
+    packet.log.forEach(function(row,i) { lines.push('', 'Trial ' + (i+1) + (row.legacy ? ' — migrated settings; evidence recalculated with the corrected model' : ''), describe(row), 'Prediction: ' + (row.prediction || 'Not recorded'), 'Observation: ' + (row.observation || 'Not recorded')); });
+    lines.push('', 'EVIDENCE-BASED EXPLANATION', packet.explanation || 'Not recorded', '', 'Science reference: https://openstax.org/books/biology-2e/pages/5-2-passive-transport');
+    return lines.join('\n');
+  }
+  function renderOsmosisNotebookTools(h, raw, patch) {
+    var button = 'min-h-10 rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-800';
+    function download(format) {
+      var url;
+      try {
+        var content = format === 'json' ? JSON.stringify(osmosisNotebookPacket(raw), null, 2) : osmosisNotebookReport(raw);
+        url = URL.createObjectURL(new Blob([content], { type: format === 'json' ? 'application/json' : 'text/plain;charset=utf-8' }));
+        var link = document.createElement('a'); link.href = url; link.download = 'cell-osmosis-notebook.' + format;
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        patch({ notice: 'Notebook download prepared. The JSON notebook can be imported to resume later.' });
+      } catch(error) { if(url) URL.revokeObjectURL(url); patch({ notice: 'Download could not start. Please try again.' }); }
+    }
+    return h('div', { 'data-osmosis-portability': true, className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-3 space-y-2' },
+      h('h4', { className: 'text-sm font-black text-cyan-900' }, 'Keep your investigation'),
+      h('p', { className: 'text-xs text-slate-700' }, 'Download your notebook to resume later, or a readable report to share. Only the latest 8 trials are kept; download before recording more to preserve older evidence.'),
+      h('div', { className: 'flex flex-wrap gap-2' },
+        h('button', { type:'button',className:button,onClick:function(){download('json');} }, 'Download notebook (.json)'),
+        h('button', { type:'button',className:button,onClick:function(){download('txt');} }, 'Download report (.txt)')),
+      h('details', null, h('summary', { className:'cursor-pointer text-sm font-bold text-cyan-900' }, 'Import a notebook'),
+        h('p', { className:'mt-2 text-xs text-slate-700' }, 'Import replaces the current trials and writing. Download your work first to keep it.'),
+        h('label', { htmlFor:'cell-osmosis-import',className:'block mt-2 text-sm font-bold text-slate-800' }, 'Choose Cell Osmosis notebook (.json)'),
+        h('input', { id:'cell-osmosis-import',type:'file',accept:'.json,application/json',className:'block w-full mt-2 text-xs text-slate-800',onChange:function(e){
+          var file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;
+          if(file.size>200000){patch({notice:'Import failed: the notebook is larger than 200 KB.'});return;}
+          var reader=new FileReader();
+          reader.onload=function(){try{var state=parseOsmosisNotebook(JSON.parse(reader.result));patch(Object.assign({},state,{notice:'Notebook imported: '+state.log.length+' trials restored.'}));}catch(error){patch({notice:'Import failed. '+(error instanceof SyntaxError?'This file is not valid JSON.':error.message)});}};
+          reader.onerror=function(){patch({notice:'Import failed: the file could not be read.'});};reader.readAsText(file);
+        } })
+      )
+    );
+  }
+
+  function renderOsmosisLab(h, raw, patch) {
+    var iq = raw && typeof raw === 'object' ? raw : {}, model = osmosisModel(iq), log = Array.isArray(iq.log) ? iq.log.slice(-8).map(function(row) { return row && row.direction ? osmosisNotebookRow(row) : row && typeof row === 'object' ? { i: typeof row.i === 'number' ? row.i : null, o: typeof row.o === 'number' ? row.o : null, p: typeof row.p === 'number' ? row.p : null } : null; }) : [];
+    var button = 'min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800';
+    var label = { inward: 'Net water movement into cell', outward: 'Net water movement out of cell', balanced: 'Balanced exchange', blocked: 'Water movement blocked' };
+    function record() {
+      patch({ log: log.concat([Object.assign({}, model, { prediction: osmosisNotebookTextValue(iq.prediction), observation: osmosisNotebookTextValue(iq.observation) })]).slice(-8), notice: 'Trial recorded. Notebook keeps the latest 8 trials.' });
+    }
+    var previous = log.length ? log[log.length - 1] : null;
+    var changes = previous && previous.direction ? ['inside', 'outside', 'perm', 'cellType'].filter(function(key) { return previous[key] !== model[key]; }) : [];
+    return h('section', { 'data-cell-osmosis-lab': true, style: { minWidth: 0, width: '100%', maxWidth: 'min(100%, calc(100vw - 32px))', boxSizing: 'border-box' }, 'aria-labelledby': 'cell-osmosis-title', className: 'mt-4 rounded-2xl border border-cyan-300 bg-white p-4 space-y-4 text-slate-800' },
+      h('div', null, h('h3', { id: 'cell-osmosis-title', className: 'text-lg font-black text-cyan-800' }, 'Osmosis Lab'),
+        h('p', { className: 'text-sm mt-1' }, 'Predict, change one variable, and compare evidence. How do concentration and permeability affect water movement?')),
+      h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': 'Cell model' }, ['animal', 'plant'].map(function(type) {
+        return h('button', { key: type, type: 'button', className: button + (model.cellType === type ? ' ring-2 ring-cyan-700 bg-cyan-50' : ''), 'aria-pressed': model.cellType === type, onClick: function() { patch({ cellType: type }); } }, type === 'plant' ? 'Plant cell' : 'Animal cell');
+      })),
+      h('div', { className: 'grid gap-4 sm:grid-cols-2' },
+        h('div', { className: 'rounded-xl bg-slate-950 p-4 text-white' },
+          h('svg', { viewBox: '0 0 400 210', role: 'img', 'aria-labelledby': 'cell-osmosis-diagram-title', style: { width: '100%', maxHeight: '250px' } },
+            h('title', { id: 'cell-osmosis-diagram-title' }, label[model.direction] + '. ' + model.cellType + ' cell; schematic initial response.'),
+            model.cellType === 'plant' ? h('rect', { x: 115, y: 30, width: 170, height: 150, rx: 24, fill: 'none', stroke: '#bef264', strokeWidth: 8 }) : null,
+            h('ellipse', { cx: 200, cy: 105, rx: 72, ry: 62, fill: '#164e63', stroke: '#67e8f9', strokeWidth: 4 }),
+            h('text', { x: 200, y: 96, textAnchor: 'middle', fill: '#fff', fontSize: 16 }, model.inside + ' mOsm/L'),
+            h('text', { x: 200, y: 119, textAnchor: 'middle', fill: '#a5f3fc', fontSize: 12 }, 'inside'),
+            h('text', { x: 200, y: 20, textAnchor: 'middle', fill: '#fff', fontSize: 14 }, 'Outside: ' + model.outside + ' mOsm/L'),
+            h('text', { x: 72, y: 113, textAnchor: 'middle', fill: '#fcd34d', fontSize: 32 }, model.direction === 'inward' ? '→' : model.direction === 'outward' ? '←' : model.direction === 'blocked' ? '×' : '↔'),
+            h('text', { x: 328, y: 113, textAnchor: 'middle', fill: '#fcd34d', fontSize: 32 }, model.direction === 'inward' ? '←' : model.direction === 'outward' ? '→' : model.direction === 'blocked' ? '×' : '↔'),
+            h('text', { x: 200, y: 202, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, 'Water permeability: ' + model.perm + '%')),
+          h('p', { className: 'font-bold text-cyan-200' }, label[model.direction]),
+          h('p', { className: 'text-xs mt-2 text-slate-200' }, 'Arrows show net direction, not speed. Cell size is schematic.')),
+        h('div', { className: 'space-y-4' },
+          [{ key: 'inside', label: 'Inside solute (mOsm/L)', max: 200 }, { key: 'outside', label: 'Outside solute (mOsm/L)', max: 200 }, { key: 'perm', label: 'Water permeability (%)', max: 100 }].map(function(control) {
+            return h('div', { key: control.key }, h('label', { htmlFor: 'oh-' + control.key, className: 'block text-sm font-bold' }, control.label + ': ' + model[control.key]),
+              h('input', { id: 'oh-' + control.key, type: 'range', min: 0, max: control.max, step: 1, value: model[control.key], className: 'w-full', onChange: function(e) { var change = {}; change[control.key] = Number(e.target.value); patch(change); } }));
+          }),
+          h('p', { className: 'text-sm font-bold', 'data-osmosis-tonicity': model.tonicity }, model.tonicity + ' external solution'),
+          h('p', { className: 'text-sm' }, model.response),
+          h('p', { className: 'text-xs' }, 'Relative initial flow index: ' + Math.abs(model.flow).toFixed(1) + ' (arbitrary units). Permeability changes flow, not tonicity.'))),
+      h('div', { role: 'group', 'aria-label': 'Experiment presets', className: 'flex flex-wrap gap-2' },
+        [{ label: 'Equal concentrations', inside: 100, outside: 100, perm: 50 }, { label: 'Water enters', inside: 100, outside: 50, perm: 50 }, { label: 'Water leaves', inside: 50, outside: 100, perm: 50 }, { label: 'Blocked membrane', inside: 50, outside: 100, perm: 0 }].map(function(preset) {
+          return h('button', { key: preset.label, type: 'button', className: button, onClick: function() { patch({ inside: preset.inside, outside: preset.outside, perm: preset.perm }); } }, preset.label);
+        })),
+      h('label', { className: 'block text-sm font-bold' }, 'Prediction before your next change', h('textarea', { 'aria-label': 'Osmosis prediction', value: osmosisNotebookTextValue(iq.prediction), rows: 2, maxLength: 2000, className: 'block w-full rounded-lg border border-slate-400 p-2 mt-1 text-sm', placeholder: 'If I change… then water will… because…', onChange: function(e) { patch({ prediction: e.target.value }); } })),
+      h('label', { className: 'block text-sm font-bold' }, 'Observation for this trial', h('textarea', { 'aria-label': 'Osmosis observation', value: osmosisNotebookTextValue(iq.observation), rows: 2, maxLength: 4000, className: 'block w-full rounded-lg border border-slate-400 p-2 mt-1 text-sm', placeholder: 'What changed in the model? Record direction and flow index.', onChange: function(e) { patch({ observation: e.target.value }); } })),
+      previous && previous.direction ? h('p', { 'data-osmosis-comparison': true, className: 'text-sm rounded-lg bg-cyan-50 p-3' }, changes.length === 0 ? 'Same settings as your last trial. Change one variable to investigate a cause.' : changes.length === 1 ? 'One variable changed: ' + changes[0] + '. Compare net direction and flow index with your last trial.' : changes.length + ' variables changed. Change only one to isolate its effect.') : null,
+      h('div', { className: 'flex flex-wrap gap-2' }, h('button', { type: 'button', className: button, onClick: record }, 'Record trial'),
+        h('button', { type: 'button', className: button, onClick: function() { patch({ inside: 50, outside: 50, perm: 50, cellType: 'animal', notice: 'Controls reset. Your notebook and writing are retained.' }); } }, 'Reset controls')),
+      h('p', { role: 'status', className: 'text-xs' }, osmosisNotebookTextValue(iq.notice)),
+      log.length ? h('div', { className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': 'Osmosis trial notebook' }, h('table', { style: { minWidth: '680px' }, className: 'w-full text-xs border-collapse' },
+        h('caption', { className: 'text-left font-bold p-2' }, 'Observation notebook — latest 8 trials'),
+        h('thead', null, h('tr', null, ['Trial', 'Cell', 'Inside', 'Outside', 'Permeability', 'Evidence', 'Prediction', 'Observation'].map(function(title) { return h('th', { key: title, scope: 'col', className: 'p-2 text-left border-b border-slate-300' }, title); }))),
+        h('tbody', null, log.map(function(entry, index) {
+          var valid = entry && entry.direction;
+          return h('tr', { key: index }, [index + 1, valid ? entry.cellType : 'Legacy', valid ? entry.inside : entry && entry.i, valid ? entry.outside : entry && entry.o, (valid ? entry.perm : entry && entry.p) + '%', valid ? entry.tonicity + '; ' + label[entry.direction] + '; index ' + Math.abs(entry.flow).toFixed(1) : 'Older trial: record again with the corrected model.', valid ? entry.prediction : '', valid ? entry.observation : ''].map(function(value, col) { return h('td', { key: col, className: 'p-2 border-b border-slate-200', style: { overflowWrap: 'anywhere', maxWidth: '240px' } }, value); }));
+        })))) : null,
+      h('label', { className: 'block text-sm font-bold' }, 'Evidence-based explanation', h('textarea', { 'aria-label': 'Osmosis explanation', value: osmosisNotebookTextValue(typeof iq.explanation === 'string' ? iq.explanation : iq.hypothesis), rows: 3, maxLength: 4000, className: 'block w-full rounded-lg border border-slate-400 p-2 mt-1 text-sm', placeholder: 'Compare two trials. What stayed the same, what changed, and what does the evidence support?', onChange: function(e) { patch({ explanation: e.target.value }); } })),
+      renderOsmosisNotebookTools(h, iq, patch),
+      h('details', { className: 'text-sm rounded-lg bg-slate-50 p-3' }, h('summary', { className: 'font-bold cursor-pointer' }, 'Investigation prompts and model limits'),
+        h('p', { className: 'mt-2' }, 'Keep concentrations fixed and halve permeability. Does direction change? Try zero permeability with unequal concentrations. Switch cell type without changing the solution.'),
+        h('p', { className: 'mt-2' }, 'This qualitative model assumes nonpenetrating solutes, equal initial pressure, and fixed concentrations. It shows initial net movement, not elapsed time, final volume, membrane rupture, or pressure balance. Real plant-cell turgor can oppose further water entry.'),
+        h('a', { href: 'https://openstax.org/books/biology-2e/pages/5-2-passive-transport', target: '_blank', rel: 'noopener noreferrer', className: 'inline-block mt-2 underline text-cyan-800' }, 'Read the biology: OpenStax Passive Transport')));
+  }
+
+
+  function cellComparisonModel(database, raw) {
+    raw = raw || {};
+    database = Array.isArray(database) ? database : [];
+    function index(value, fallback) {
+      var n = Number(value);
+      return value != null && value !== '' && Number.isInteger(n) && n >= 0 && n < database.length ? n : Math.min(fallback, Math.max(0, database.length - 1));
+    }
+    function text(value) { return typeof value === 'string' ? value.trim() : ''; }
+    var aIndex = index(raw._cmpA, 0), bIndex = index(raw._cmpB, 1);
+    var a = database[aIndex], b = database[bIndex];
+    var fields = [
+      ['kingdom', 'Group'], ['cellType', 'Cell organization'], ['size', 'Typical size'],
+      ['habitat', 'Habitat'], ['feeding', 'Nutrition'], ['reproduction', 'Reproduction'], ['movement', 'Movement']
+    ];
+    var rows = fields.map(function(field) {
+      var av = text(a && a[field[0]]), bv = text(b && b[field[0]]);
+      var status = !av || !bv ? 'unknown' : av.replace(/\s+/g, ' ').toLowerCase() === bv.replace(/\s+/g, ' ').toLowerCase() ? 'shared' : 'different';
+      return { key: field[0], label: field[1], a: av || 'Not recorded', b: bv || 'Not recorded', status: status };
+    });
+    var filter = ['all', 'different', 'shared'].indexOf(raw._cmpFilter) >= 0 ? raw._cmpFilter : 'all';
+    // Unordered indices preserve a pair's draft when the two columns are swapped.
+    var pairKey = [aIndex, bIndex].sort(function(x, y) { return x - y; }).join(':');
+    var drafts = raw._cmpDrafts && typeof raw._cmpDrafts === 'object' && !Array.isArray(raw._cmpDrafts) ? raw._cmpDrafts : {};
+    var draft = Object.prototype.hasOwnProperty.call(drafts, pairKey) ? drafts[pairKey] : {};
+    draft = draft && typeof draft === 'object' ? draft : {};
+    return { aIndex: aIndex, bIndex: bIndex, a: a, b: b, pairKey: pairKey, same: aIndex === bIndex, filter: filter,
+      rows: rows, visible: rows.filter(function(row) { return filter === 'all' || row.status === filter; }),
+      shared: rows.filter(function(row) { return row.status === 'shared'; }).length,
+      different: rows.filter(function(row) { return row.status === 'different'; }).length,
+      unknown: rows.filter(function(row) { return row.status === 'unknown'; }).length,
+      draft: { claim: text(draft.claim).slice(0, 3000), evidence: text(draft.evidence).slice(0, 3000), reasoning: text(draft.reasoning).slice(0, 3000) } };
+  }
+  function cellComparisonReport(database, raw) {
+    var model = cellComparisonModel(database, raw);
+    if (!model.a || !model.b) return 'No organisms available.';
+    var lines = ['CELL COMPARISON', model.a.name + ' / ' + model.b.name, '',
+      'Reference descriptions, not results from an experiment. Different wording does not prove traits are mutually exclusive. Sizes are typical examples, not measurements of this specimen.', ''];
+    model.rows.forEach(function(row) { lines.push(row.label + ' (' + row.status + ')', model.a.name + ': ' + row.a, model.b.name + ': ' + row.b, ''); });
+    lines.push('CLAIM', model.draft.claim || 'Not recorded', '', 'EVIDENCE', model.draft.evidence || 'Not recorded', '', 'REASONING', model.draft.reasoning || 'Not recorded');
+    return lines.join('\n');
+  }
+  function renderCellComparison(h, database, raw, patch) {
+    raw = raw || {};
+    var model = cellComparisonModel(database, raw);
+    if (!model.a || !model.b) return h('p', { role: 'status' }, 'No organisms available for comparison.');
+    var query = typeof raw._cmpQuery === 'string' ? raw._cmpQuery : '';
+    var search = query.trim().toLowerCase();
+    var matches = database.map(function(organism, index) { return { organism: organism, index: index }; }).filter(function(item) {
+      return !search || [item.organism.name, item.organism.kingdom, item.organism.cellType, item.organism.habitat].join(' ').toLowerCase().indexOf(search) >= 0;
+    });
+    var button = 'min-h-10 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-900';
+    function choose(a, b) { patch({ _cmpA: a, _cmpB: b, _cmpNotice: '' }); }
+    function write(field, value) {
+      var drafts = Object.assign({}, raw._cmpDrafts || {});
+      drafts[model.pairKey] = Object.assign({}, model.draft);
+      drafts[model.pairKey][field] = value.slice(0, 3000);
+      patch({ _cmpDrafts: drafts });
+    }
+    function vocabulary(value) {
+      return Object.keys(CELL_VOCAB).filter(function(key) { return value.toLowerCase().indexOf(CELL_VOCAB[key].term.toLowerCase()) >= 0; }).map(function(key) {
+        return h('button', { key: key, type: 'button', className: 'mt-2 block rounded border border-emerald-300 px-2 py-1 text-xs font-bold text-emerald-800', onClick: function() { patch({ _studyConcept: key }); } }, 'Study ' + CELL_VOCAB[key].term);
+      });
+    }
+    function exportReport() {
+      var url, link;
+      try {
+        url = URL.createObjectURL(new Blob([cellComparisonReport(database, raw)], { type: 'text/plain;charset=utf-8' }));
+        link = document.createElement('a'); link.href = url; link.download = 'cell-comparison.txt';
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        patch({ _cmpNotice: 'Comparison report prepared with all seven properties and your explanation.' });
+      } catch (error) {
+        if (link) link.remove();
+        if (url) URL.revokeObjectURL(url);
+        patch({ _cmpNotice: 'Download could not start. Your comparison and writing are still available here.' });
+      }
+    }
+    return h('section', { 'data-cell-comparison-lab': true, 'aria-labelledby': 'cell-comparison-title', className: 'mt-4 rounded-2xl border border-indigo-300 bg-white p-4 text-slate-800 space-y-4', style: { minWidth: 0, width: '100%', maxWidth: 'min(100%, calc(100vw - 32px))', boxSizing: 'border-box' } },
+      h('header', { className: 'rounded-xl bg-indigo-50 p-4' }, h('p', { className: 'text-xs font-black uppercase text-indigo-700' }, 'Compare • notice • explain'),
+        h('h3', { id: 'cell-comparison-title', className: 'mt-1 text-xl font-black text-indigo-950' }, 'Compare two organisms'),
+        h('p', { className: 'mt-2 text-sm' }, 'Look for a shared property and a useful contrast, then support your explanation with evidence.')),
+      h('div', { role: 'group', 'aria-label': 'Suggested organism comparisons', className: 'flex flex-wrap gap-2' },
+        [{ names: ['Amoeba', 'Paramecium'], label: 'Compare movement' }, { names: ['E. coli', 'Amoeba'], label: 'Compare cell organization' }, { names: ['Euglena', 'Plant Cell (Elodea)'], label: 'Compare nutrition' }].map(function(preset) {
+          var a = database.findIndex(function(o) { return o.name === preset.names[0]; }), b = database.findIndex(function(o) { return o.name === preset.names[1]; });
+          return a < 0 || b < 0 ? null : h('button', { key: preset.label, type: 'button', className: button, onClick: function() { choose(a, b); patch({ _cmpQuery: '', _cmpFilter: 'all' }); } }, preset.label);
+        })),
+      h('div', null, h('label', { htmlFor: 'cell-comparison-search', className: 'block text-sm font-bold' }, 'Find organisms'),
+        h('input', { id: 'cell-comparison-search', type: 'search', value: query, maxLength: 120, placeholder: 'Search name, group, cell type, or habitat', className: 'mt-1 w-full rounded-lg border border-slate-400 p-2 text-sm', onChange: function(e) { patch({ _cmpQuery: e.target.value }); } }),
+        h('p', { className: 'mt-1 text-xs', role: 'status' }, matches.length + ' matches. Current selections stay available.')),
+      h('div', { className: 'grid gap-3 sm:grid-cols-2' }, ['a', 'b'].map(function(side) {
+        var selected = side === 'a' ? model.aIndex : model.bIndex;
+        var options = matches.slice();
+        if (!options.some(function(item) { return item.index === selected; })) options.unshift({ organism: database[selected], index: selected });
+        return h('div', { key: side, className: 'min-w-0 rounded-xl border border-indigo-200 bg-indigo-50 p-3' },
+          h('label', { htmlFor: 'cell-comparison-' + side, className: 'text-sm font-bold text-indigo-900' }, 'Organism ' + side.toUpperCase()),
+          h('select', { id: 'cell-comparison-' + side, value: selected, className: 'mt-2 w-full rounded-lg border border-indigo-500 bg-white p-2 text-sm font-bold', onChange: function(e) { choose(side === 'a' ? Number(e.target.value) : model.aIndex, side === 'b' ? Number(e.target.value) : model.bIndex); } },
+            options.map(function(item) { return h('option', { key: item.index, value: item.index }, item.organism.name); })),
+          h('p', { className: 'mt-2 text-xs text-slate-700' }, database[selected].cellType + ' • ' + database[selected].size));
+      })),
+      h('div', { className: 'flex flex-wrap items-center gap-2' },
+        h('button', { type: 'button', className: button, onClick: function() { choose(model.bIndex, model.aIndex); } }, 'Swap organisms'),
+        h('span', { className: 'text-xs font-bold', 'data-cell-comparison-counts': true }, model.shared + ' matching descriptions · ' + model.different + ' differing descriptions' + (model.unknown ? ' · ' + model.unknown + ' incomplete' : ''))),
+      model.same ? h('p', { role: 'status', className: 'rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm' }, 'You selected the same organism twice. Choose a different organism to investigate a contrast.') : null,
+      h('div', { role: 'group', 'aria-label': 'Comparison property filter', className: 'flex flex-wrap gap-2' },
+        [{ id: 'all', label: 'All properties' }, { id: 'different', label: 'Differences' }, { id: 'shared', label: 'Shared descriptions' }].map(function(filter) {
+          var active = model.filter === filter.id;
+          return h('button', { key: filter.id, type: 'button', 'aria-pressed': active, className: button + (active ? ' ring-2 ring-indigo-700' : ''), onClick: function() { patch({ _cmpFilter: filter.id }); } }, filter.label);
+        })),
+      h('p', { className: 'text-xs text-slate-600' }, 'These are reference descriptions. Different wording does not prove that traits are mutually exclusive. Sizes are typical examples, not measurements of the current specimen.'),
+      model.visible.length ? h('div', { className: 'space-y-3', 'data-cell-comparison-rows': true }, model.visible.map(function(row) {
+        return h('section', { key: row.key, 'data-cell-comparison-property': row.key, 'aria-labelledby': 'cell-compare-property-' + row.key, className: 'rounded-xl border p-3 ' + (row.status === 'different' ? 'border-amber-300 bg-amber-50' : 'border-slate-300 bg-slate-50') },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('h4', { id: 'cell-compare-property-' + row.key, className: 'text-sm font-black' }, row.label),
+            h('span', { className: 'text-xs font-bold' }, row.status === 'shared' ? 'Matching description' : row.status === 'different' ? 'Different descriptions' : 'Incomplete information')),
+          h('div', { className: 'mt-2 grid gap-3 sm:grid-cols-2' }, [{ name: model.a.name, value: row.a }, { name: model.b.name, value: row.b }].map(function(cell, i) {
+            return h('div', { key: i, className: 'min-w-0 text-sm leading-relaxed', style: { overflowWrap: 'anywhere' } }, h('p', { className: 'text-xs font-bold text-indigo-800' }, cell.name), h('p', null, cell.value), vocabulary(cell.value));
+          })));
+      })) : h('p', { role: 'status', className: 'rounded-lg bg-slate-50 p-3 text-sm' }, 'No properties match this filter. Choose All properties to see the complete comparison.'),
+      h('section', { className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-4 space-y-3', 'aria-labelledby': 'cell-comparison-explanation' },
+        h('h4', { id: 'cell-comparison-explanation', className: 'font-black text-cyan-950' }, 'Build an evidence-based explanation'),
+        h('p', { className: 'text-xs' }, 'Writing belongs to this pair and stays when you swap columns or compare another pair during this session. Download a report to keep it.'),
+        [{ key: 'claim', label: 'Claim', prompt: 'What important similarity or difference do you notice?' }, { key: 'evidence', label: 'Evidence', prompt: 'Name both organisms and cite a property from the comparison.' }, { key: 'reasoning', label: 'Reasoning', prompt: 'How does the evidence support your claim? What can these descriptions not tell you?' }].map(function(field) {
+          return h('label', { key: field.key, className: 'block text-sm font-bold' }, field.label,
+            h('textarea', { 'aria-label': 'Comparison ' + field.label.toLowerCase(), value: model.draft[field.key], maxLength: 3000, rows: 2, placeholder: field.prompt, className: 'mt-1 block w-full rounded-lg border border-slate-400 bg-white p-2 text-sm font-normal', onChange: function(e) { write(field.key, e.target.value); } }));
+        }),
+        h('button', { type: 'button', className: button, onClick: exportReport }, 'Download comparison report')),
+      h('p', { role: 'status', className: 'text-xs' }, typeof raw._cmpNotice === 'string' ? raw._cmpNotice : ''));
+  }
+
+
+  var CELL_ACTIVITY_META = {
+    observe: ['Observe', 'petri dish microscope microbes motion'],
+    interior: ['Inside the Cell', 'anatomy organelles nucleus mitochondria membrane structures'],
+    microdissection: ['Microdissection', 'section stain sample microscopy protocol'],
+    processes: ['Cell Processes', 'respiration photosynthesis energy ATP protein transport'],
+    osmoHunt: ['Osmosis Lab', 'water permeability concentration membrane experiment balance'],
+    play: ['Play', 'game survival mission control movement'],
+    quiz: ['Quiz', 'test practice recall assessment'],
+    encyclopedia: ['Encyclopedia', 'species organisms facts catalogue'],
+    filter: ['Filter', 'sort classify habitat organism'],
+    compare: ['Compare', 'similarities differences claim evidence reasoning organism'],
+    history: ['History', 'timeline discovery microscope'],
+    biologists: ['Biologists', 'scientist researcher discoveries'],
+    lab: ['Lab Techniques', 'methods microscopy experiment laboratory'],
+    disease: ['Diseases', 'health clinical infection'],
+    ecology: ['Ecology', 'environment food web habitat'],
+    glossary: ['Glossary', 'vocabulary words definitions'],
+    library: ['Library', 'reference books sources tables resources'],
+    finale: ['Finale', 'reflection celebrate finish']
+  };
+  function cellActivitySearch(query, allowed) {
+    var term = typeof query === 'string' ? query.trim().toLowerCase() : '';
+    return (Array.isArray(allowed) ? allowed : Object.keys(CELL_ACTIVITY_META)).filter(function(id) {
+      return Object.prototype.hasOwnProperty.call(CELL_ACTIVITY_META, id) && (!term || CELL_ACTIVITY_META[id].join(' ').toLowerCase().indexOf(term) >= 0);
+    });
+  }
+  var CELL_INQUIRY_ROUTES = [
+    { id: 'balance', title: 'How do cells stay balanced?', subtitle: 'Connect a structure to a process, then test an idea.', color: '#0e6570', soft: '#edfafa', steps: [
+      { mode: 'interior', label: 'Inspect a boundary', prompt: 'Select the cell membrane. What does its structure help the cell control?' },
+      { mode: 'processes', label: 'Follow transport', prompt: 'Open Membrane transport. How does the route for water differ from an ATP-powered pump?', settings: { cellProcess: 'transport' } },
+      { mode: 'osmoHunt', label: 'Test one variable', prompt: 'Record two trials with the same concentrations and different permeability. What changed, and what stayed the same?' }
+    ] },
+    { id: 'organization', title: 'What makes cells alike and different?', subtitle: 'Look inside, compare evidence, and explain a connection.', color: '#514895', soft: '#f3f1fc', steps: [
+      { mode: 'interior', label: 'Compare structures', prompt: 'Turn on Compare cells and select a structure. In which models is it present or absent?' },
+      { mode: 'compare', label: 'Compare organisms', prompt: 'Choose two organisms. Record one matching description and one difference; name both organisms.' },
+      { mode: 'processes', label: 'Connect structure to function', prompt: 'Choose a pathway. Explain how one cell structure helps that process happen.' }
+    ] },
+    { id: 'movement', title: 'How do tiny organisms get around?', subtitle: 'Observe a strategy, compare it, then try a model.', color: '#935421', soft: '#fff7ed', steps: [
+      { mode: 'observe', label: 'Notice a strategy', prompt: 'Select an organism in the petri dish. What movement do you notice, and which structure might help?' },
+      { mode: 'compare', label: 'Find a contrast', prompt: 'Use Compare movement. How do the movement descriptions for Amoeba and Paramecium differ?' },
+      { mode: 'play', label: 'Try and explain', prompt: 'Choose a mission and try its controls. Which result supports your explanation of the organism’s movement?' }
+    ] }
+  ];
+  function cellInquiryState(raw, id) {
+    raw = raw || {};
+    var route = CELL_INQUIRY_ROUTES.find(function(item) { return item.id === id; });
+    if (!route) return null;
+    var records = raw._cellInquiryRecords && typeof raw._cellInquiryRecords === 'object' ? raw._cellInquiryRecords : {};
+    var record = Object.prototype.hasOwnProperty.call(records, id) && records[id] && typeof records[id] === 'object' ? records[id] : {};
+    var observations = route.steps.map(function(_, i) { return Array.isArray(record.observations) && typeof record.observations[i] === 'string' ? record.observations[i].slice(0, 3000) : ''; });
+    var recorded = route.steps.map(function(_, i) { return !!observations[i].trim() && Array.isArray(record.recorded) && record.recorded[i] === true; });
+    var n = Number(record.step), step = Number.isInteger(n) && n >= 0 && n < route.steps.length ? n : 0;
+    return { route: route, step: step, observations: observations, recorded: recorded, count: recorded.filter(Boolean).length, finished: recorded.every(Boolean) };
+  }
+  function cellInquiryReport(raw, id) {
+    var state = cellInquiryState(raw, id);
+    if (!state) return '';
+    var lines = ['CELL INQUIRY', state.route.title, '', 'Student observations from a guided route. Recording an observation does not assess its accuracy or award mastery.', ''];
+    state.route.steps.forEach(function(step, i) { lines.push((i + 1) + '. ' + step.label + ' — ' + CELL_ACTIVITY_META[step.mode][0], step.prompt, state.observations[i] || 'Not recorded', ''); });
+    return lines.join('\n');
+  }
+  function renderCellInquiryCards(h, raw, start) {
+    return h('section', { 'data-cell-inquiry-cards': true, key: 'inquiry-cards', 'aria-labelledby': 'cell-inquiry-choose', style: { width: '100%' } },
+      h('div', { className: 'cell-inquiry-intro' }, h('span', null, 'Start with a question'), h('h4', { id: 'cell-inquiry-choose' }, 'What would you like to find out?'), h('p', null, 'Follow three connected activities, or browse freely below. You can pause a route and return to your notes.')),
+      h('div', { className: 'cell-inquiry-cards' }, CELL_INQUIRY_ROUTES.map(function(route, index) {
+        var state = cellInquiryState(raw, route.id);
+        return h('button', { key: route.id, type: 'button', 'data-cell-start-inquiry': route.id, onClick: function() { start(route.id); }, className: 'cell-inquiry-card', style: { '--inquiry-accent': route.color, '--inquiry-soft': route.soft } },
+          h('span', { className: 'cell-inquiry-card-top', 'aria-hidden': true }, h('span', { className: 'cell-inquiry-glyph' }, index === 0 ? '↔' : index === 1 ? '◉' : '→'), h('span', null, '3 connected activities')),
+          h('strong', null, route.title), h('span', { className: 'cell-inquiry-subtitle' }, route.subtitle),
+          h('span', { className: 'cell-inquiry-stops' }, route.steps.map(function(step) { return CELL_ACTIVITY_META[step.mode][0]; }).join(' → ')),
+          h('span', { className: 'cell-inquiry-card-action' }, state.count ? 'Return to route · ' + state.count + '/3 observations recorded' : 'Start inquiry →'));
+      })));
+  }
+  function renderCellInquiryGuide(h, raw, actions) {
+    var state = cellInquiryState(raw, raw._cellInquiryId);
+    if (!state) return null;
+    var route = state.route, step = route.steps[state.step], inActivity = (raw.mode || 'observe') === step.mode;
+    function save(patch) { actions.save(route.id, Object.assign({ step: state.step, observations: state.observations, recorded: state.recorded }, patch)); }
+    function record() {
+      if (!inActivity || !state.observations[state.step].trim()) return;
+      var flags = state.recorded.slice(); flags[state.step] = true;
+      var next = flags.every(Boolean) ? state.step : flags.findIndex(function(done) { return !done; });
+      save({ recorded: flags, step: next });
+      if (!flags.every(Boolean)) actions.open(route.steps[next]);
+    }
+    function download() {
+      var url, link;
+      try {
+        url = URL.createObjectURL(new Blob([cellInquiryReport(raw, route.id)], { type: 'text/plain;charset=utf-8' }));
+        link = document.createElement('a'); link.href = url; link.download = 'cell-inquiry-' + route.id + '.txt'; document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        actions.notice('Inquiry report prepared.');
+      } catch (error) { if(link) link.remove(); if(url) URL.revokeObjectURL(url); actions.notice('Download could not start. Your observations are still available in this route.'); }
+    }
+    return h('section', { 'data-cell-inquiry-guide': route.id, tabIndex: -1, 'aria-labelledby': 'cell-inquiry-title', className: 'cell-inquiry-guide', style: { '--inquiry-accent': route.color, '--inquiry-soft': route.soft, order: 1 } },
+      h('div', { className: 'cell-inquiry-guide-heading' }, h('div', null, h('span', { className: 'cell-inquiry-eyebrow' }, 'Guided inquiry'), h('h4', { id: 'cell-inquiry-title' }, route.title)), h('button', { type: 'button', onClick: actions.pause }, 'Pause route')),
+      h('p', { className: 'cell-inquiry-progress', role: 'status' }, state.count + '/3 observations recorded' + (state.finished ? ' · Ready to reflect' : ' · Step ' + (state.step + 1) + ': ' + step.label)),
+      h('nav', { 'aria-label': 'Inquiry steps', className: 'cell-inquiry-step-nav' }, route.steps.map(function(item, i) {
+        return h('button', { key: item.label, type: 'button', 'aria-current': state.step === i ? 'step' : undefined, onClick: function() { save({ step: i }); actions.open(item); } }, h('span', { 'aria-hidden': true }, state.recorded[i] ? '✓' : String(i + 1)), item.label);
+      })),
+      state.finished ? h('details', { className: 'cell-inquiry-reflection' }, h('summary', null, 'Review your three observations'), route.steps.map(function(item, i) { return h('div', { key: item.label }, h('strong', null, item.label), h('p', null, state.observations[i])); }), h('p', null, 'Do your observations support one explanation? Which idea would you test next? These are your notes, not a graded result.')) : null,
+      h('p', { id: 'cell-inquiry-prompt', className: 'cell-inquiry-question' }, step.prompt),
+      inActivity ? h('button', { type: 'button', onClick: function() { actions.explore(step.mode); } }, 'Go to activity') : null,
+      h('details', { key: route.id + '-' + state.step, className: 'cell-inquiry-observation' },
+        h('summary', null, state.finished ? 'Edit this step’s observation' : 'Record an observation'),
+        h('label', { htmlFor: 'cell-inquiry-response' }, 'What did you observe?',
+          h('textarea', { id: 'cell-inquiry-response', 'aria-label': 'What did you observe?', 'aria-describedby': 'cell-inquiry-prompt', maxLength: 3000, rows: 2, value: state.observations[state.step], placeholder: 'Name the structure, organism, or settings, and describe the evidence you noticed.', onChange: function(e) {
+            var values = state.observations.slice(), flags = state.recorded.slice(); values[state.step] = e.target.value; flags[state.step] = false; save({ observations: values, recorded: flags });
+          } })),
+        h('div', { className: 'cell-inquiry-guide-actions' }, h('button', { type: 'button', disabled: !inActivity || !state.observations[state.step].trim(), onClick: record }, state.step === route.steps.length - 1 ? 'Record observation' : 'Save observation & continue'), h('span', null, 'Records your evidence; does not mark an answer correct.'))),
+      !inActivity ? h('button', { type: 'button', className: 'cell-inquiry-return', onClick: function() { actions.open(step); } }, 'Return to ' + CELL_ACTIVITY_META[step.mode][0]) : null,
+      h('div', { className: 'cell-inquiry-guide-footer' }, h('span', null, 'Notes stay in this session. Download to keep them.'), h('button', { type: 'button', onClick: download }, 'Download inquiry notes')),
+      h('p', { role: 'status', className: 'cell-inquiry-notice' }, typeof raw._cellInquiryNotice === 'string' ? raw._cellInquiryNotice : ''));
+  }
+  var CELL_INQUIRY_CSS = [
+    '[data-cell-inquiry-cards],.cell-inquiry-guide{min-width:0;max-width:min(100%,calc(100vw - 32px));box-sizing:border-box;color:#203a46}',
+    '[data-cell-inquiry-cards]{background:#f7fbfb;border:1px solid #d5e3e6;border-radius:18px;padding:18px}.cell-inquiry-intro{padding:0 0 20px}.cell-inquiry-intro>span,.cell-inquiry-eyebrow{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#41616d}',
+    '.cell-inquiry-intro h4{font-size:25px;line-height:1.25;letter-spacing:-.6px;margin:6px 0 8px;font-weight:800}.cell-inquiry-intro p{font-size:14px;line-height:1.6;color:#506974;max-width:680px}',
+    '.cell-inquiry-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}',
+    '[data-cell-tool] .cell-inquiry-card{display:flex;flex-direction:column;gap:14px;text-align:left;min-width:0;padding:20px;border:1px solid #cddcde;border-top:4px solid var(--inquiry-accent);border-radius:16px;background:linear-gradient(150deg,var(--inquiry-soft),#fff 75%);color:#203a46;box-shadow:0 5px 16px #1b394408;transition:box-shadow .15s,border-color .15s}',
+    '.cell-inquiry-card:hover{border-color:var(--inquiry-accent);box-shadow:0 8px 22px #1b394418}.cell-inquiry-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#526774}.cell-inquiry-glyph{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:var(--inquiry-accent);color:white;font-size:26px}',
+    '.cell-inquiry-card>strong{font-size:18px;line-height:1.35;letter-spacing:-.2px}.cell-inquiry-subtitle{font-size:13px;line-height:1.6;color:#506974}.cell-inquiry-stops{font-size:12px;line-height:1.6;font-weight:600}.cell-inquiry-card-action{margin-top:auto;padding-top:14px;border-top:1px solid #dce6e9;font-size:12px;font-weight:800;color:var(--inquiry-accent)}',
+    '.cell-inquiry-guide{border:1px solid #cddcde;border-left:4px solid var(--inquiry-accent);border-radius:14px;padding:18px;background:var(--inquiry-soft);margin:0 0 16px;width:100%}.cell-inquiry-guide-heading{display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap}.cell-inquiry-guide h4{font-size:18px;font-weight:800;line-height:1.4;margin:4px 0}.cell-inquiry-guide button{min-height:40px;padding:8px 12px;border:1px solid #b8cdd2;border-radius:8px;background:#fff;color:#234955;font-size:12px;font-weight:700}.cell-inquiry-guide button:disabled{opacity:.55;cursor:not-allowed}',
+    '.cell-inquiry-question{font-size:14px;line-height:1.6;margin:14px 0;max-width:850px}.cell-inquiry-progress{font-size:12px;margin:10px 0;color:#45616d}.cell-inquiry-step-nav{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.cell-inquiry-step-nav button{flex:1;text-align:left;min-width:150px;display:flex;gap:8px;align-items:center}.cell-inquiry-step-nav button[aria-current=step]{background:var(--inquiry-accent);border-color:var(--inquiry-accent);color:#fff}',
+    '.cell-inquiry-observation,.cell-inquiry-reflection{background:#fff;border:1px solid #d1dfe3;border-radius:10px;padding:12px;margin-top:12px}.cell-inquiry-guide summary{font-size:13px;font-weight:750;cursor:pointer;min-height:24px}.cell-inquiry-observation p,.cell-inquiry-reflection p{font-size:13px;line-height:1.6;margin:10px 0;white-space:pre-wrap;overflow-wrap:anywhere}.cell-inquiry-reflection strong{font-size:13px}.cell-inquiry-observation label{display:block;font-size:12px;font-weight:700}.cell-inquiry-observation textarea{display:block;width:100%;box-sizing:border-box;border:1px solid #93acb6;border-radius:8px;background:white;padding:10px;font-size:13px;font-weight:400;line-height:1.5;margin:6px 0 12px;resize:vertical;color:#203a46}',
+    '.cell-inquiry-guide-actions,.cell-inquiry-guide-footer{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.cell-inquiry-guide-actions span,.cell-inquiry-guide-footer span{font-size:11px;color:#506974}.cell-inquiry-guide-footer{justify-content:space-between;margin-top:12px}.cell-inquiry-notice{font-size:12px;margin-top:8px}.cell-inquiry-return{margin-top:12px}',
+    '[data-cell-inquiry-cards] button:focus-visible,.cell-inquiry-guide :is(button,textarea,summary):focus-visible,.cell-inquiry-guide:focus-visible{outline:3px solid #007a87;outline-offset:3px}',
+    '@media(max-width:760px){.cell-inquiry-cards{grid-template-columns:1fr}.cell-inquiry-card{gap:10px!important;padding:16px!important}.cell-inquiry-intro h4{font-size:22px}.cell-inquiry-guide{padding:12px}.cell-inquiry-step-nav{gap:6px}.cell-inquiry-step-nav button{min-width:0;flex-basis:100%}}',
+    '@media(prefers-reduced-motion:reduce){.cell-inquiry-card{transition:none}}'
+  ].join('\n');
+
+
   // ── Vocabulary dictionary ──
   var CELL_VOCAB = {
     nucleus: { term: 'Nucleus', def: 'The control center of eukaryotic cells containing DNA, which carries genetic instructions.' },
@@ -321,6 +730,18 @@ window.StemLab = window.StemLab || {
       ]
     }
   };
+  function cellGuideForType(id, type) {
+    var source = Object.prototype.hasOwnProperty.call(INTERIOR_GUIDES, id) ? INTERIOR_GUIDES[id] : null;
+    if (!source || source.types.indexOf(type) < 0) return null;
+    var steps = source.steps.map(function(step, index) { return Object.assign({}, step, { sourceIndex: index }); }).filter(function(step) { return interiorHas(type, step.key); });
+    return steps.length ? Object.assign({}, source, { steps: steps }) : null;
+  }
+  // Persist original step indices so existing study records keep the same stop.
+  function cellGuideVisibleStep(guide, savedIndex) {
+    if (!guide) return 0;
+    var target = cellProgressInteger(savedIndex), index = guide.steps.findIndex(function(step) { return step.sourceIndex >= target; });
+    return index < 0 ? guide.steps.length - 1 : index;
+  }
   var INTERIOR_SPECIALIZATIONS = {
     animal: [
       { id: 'general', label: 'General animal cell', note: 'A flexible cell with the shared eukaryotic toolkit.' },
@@ -356,14 +777,90 @@ window.StemLab = window.StemLab || {
   // Versioned, per-cell-type progress keeps learning state durable without mixing plant, animal, and bacterial work.
   var CELL_PROGRESS_SCHEMA_VERSION = 1;
   var CELL_PROGRESS_TYPES = ['animal', 'plant', 'bacterium'];
+
+  // Retrieval clues omit the structure name; reference panels return after answering.
+  // Biology reference: OpenStax Biology 2e, sections 4.2–4.5.
+  var CELL_RECALL_CLUES = {
+    centriole: 'A cylinder built from nine microtubule triplets helps organize the centrosome in this animal model.',
+    cellMembrane: 'A selectively permeable phospholipid boundary controls what enters and leaves.',
+    cellWall: 'A supporting layer outside the selective boundary resists expansion when water enters.',
+    nucleus: 'A double envelope with pores encloses most of the DNA in this eukaryotic cell.',
+    nucleolus: 'This region inside the DNA-containing compartment assembles ribosomal subunits without its own membrane.',
+    nucleoid: 'This bacterial chromosome region has no surrounding membrane.',
+    plasmid: 'This accessory DNA molecule replicates separately from the main bacterial chromosome.',
+    mitochondria: 'Folded inner membranes support ATP production from energy stored in nutrients.',
+    chloroplast: 'Thylakoid membranes capture light; carbon fixation supplies building blocks for sugars.',
+    roughER: 'Surface-bound ribosomes feed newly made secreted and membrane proteins into this folding compartment.',
+    smoothER: 'A ribosome-free tubular network makes lipids and stores calcium.',
+    golgi: 'Stacked sacs modify and sort incoming proteins and lipids for their destinations.',
+    ribosomes: 'Two RNA-and-protein subunits translate messenger RNA into an amino-acid chain.',
+    vesicle: 'Small membrane-bound carriers bud and fuse to transport cargo between compartments.',
+    lysosome: 'An acidic compartment uses digestive enzymes to recycle macromolecules and damaged cell parts.',
+    vacuole: 'A large fluid-filled plant compartment supports turgor and stores dissolved materials.',
+    peroxisome: 'Oxidation reactions occur here, and catalase breaks down hydrogen peroxide.',
+    cytoskeleton: 'A network of protein fibers organizes shape, internal transport, and movement.',
+    plasmodesmata: 'Channels through adjacent plant walls connect neighboring cytoplasm.',
+    capsule: 'An outer bacterial coating helps attachment and protection from drying.',
+    pili: 'Short bacterial surface appendages help attachment; some participate in DNA transfer.',
+    flagellum: 'A long bacterial propeller rotates to drive movement.'
+  };
+  function cellRecallOptions(keys, key) {
+    var pool = keys.filter(function(candidate, i) { return candidate !== key && keys.indexOf(candidate) === i; });
+    if (keys.indexOf(key) < 0) return [];
+    var seed = String(key).split('').reduce(function(sum, ch) { return sum + ch.charCodeAt(0); }, 0);
+    // Bounded sampling works even when the pool size shares factors with seven.
+    var picks = [];
+    for (var i = 0; i < pool.length && picks.length < Math.min(3, pool.length); i++) {
+      var candidate = pool[(seed + i * 7) % pool.length];
+      if (picks.indexOf(candidate) < 0) picks.push(candidate);
+    }
+    // Keep existing choices stable for resumed checks; fill only a short cycle.
+    for (var j = 0; j < pool.length && picks.length < Math.min(3, pool.length); j++) {
+      if (picks.indexOf(pool[j]) < 0) picks.push(pool[j]);
+    }
+    return [key].concat(picks).sort(function(a, b) { return CELL_ORGANELLES[a].name.localeCompare(CELL_ORGANELLES[b].name); });
+  }
+
+  function cellProgressInteger(value, max) {
+    var n = Number(value);
+    return Number.isFinite(n) ? Math.max(0, Math.min(max == null ? Number.MAX_SAFE_INTEGER : max, Math.floor(n))) : 0;
+  }
   function cellProgressKeys(value, type) {
     var seen = [];
     if (!Array.isArray(value)) return seen;
     value.forEach(function (key) { if (typeof key === 'string' && interiorHas(type, key) && seen.indexOf(key) < 0) seen.push(key); });
     return seen;
   }
+  // A fixed queue keeps each retrieval round short and prevents repeated questions.
+  function normalizeCellRecallRound(raw, type) {
+    if (!raw || raw.type !== type || !Array.isArray(raw.keys) || !raw.keys.length || raw.keys.length > 5) return null;
+    var keys = cellProgressKeys(raw.keys, type).filter(function(key) { return key !== 'cytoplasm'; });
+    if (keys.length !== raw.keys.length) return null;
+    var answers = [];
+    if (Array.isArray(raw.answers)) {
+      for (var i = 0; i < Math.min(raw.answers.length, keys.length); i++) {
+        var answer = raw.answers[i];
+        if (!answer || answer.key !== keys[i] || typeof answer.correct !== 'boolean') break;
+        answers.push({ key: answer.key, correct: answer.correct });
+      }
+    }
+    return { type: type, keys: keys, answers: answers, finished: raw.finished === true && answers.length === keys.length };
+  }
+  function createCellRecallRound(type, review, mastered) {
+    var all = interiorOrganelles(type).filter(function(key) { return key !== 'cytoplasm'; });
+    var keys = cellProgressKeys(review, type).filter(function(key) { return all.indexOf(key) >= 0; });
+    var known = cellProgressKeys(mastered, type);
+    keys = keys.concat(all.filter(function(key) { return known.indexOf(key) < 0 && keys.indexOf(key) < 0; }));
+    keys = keys.concat(all.filter(function(key) { return keys.indexOf(key) < 0; }));
+    return normalizeCellRecallRound({ type: type, keys: keys.slice(0, 5), answers: [] }, type);
+  }
+  function recordCellRecallAnswer(raw, type, key, correct) {
+    var round = normalizeCellRecallRound(raw, type);
+    if (round && !round.finished && round.keys[round.answers.length] === key && typeof correct === 'boolean') round.answers.push({ key: key, correct: correct });
+    return round;
+  }
   function createCellProgressRecord(type) {
-    return { type: type, seen: [], mastered: [], review: [], quizAttempts: 0, quizCorrect: 0, checkCorrect: 0, guideId: null, guideStep: 0, specialization: 'general', selected: null, adaptiveActive: false, quizKey: null, quizChoice: null, quizRevealed: false };
+    return { type: type, seen: [], mastered: [], review: [], quizAttempts: 0, quizCorrect: 0, checkCorrect: 0, guideId: null, guideStep: 0, specialization: 'general', selected: null, adaptiveActive: false, quizKey: null, quizChoice: null, quizRevealed: false, recallRound: null };
   }
   function sanitizeCellProgressRecord(raw, type) {
     raw = raw && typeof raw === 'object' ? raw : {};
@@ -372,27 +869,29 @@ window.StemLab = window.StemLab || {
     rec.mastered = cellProgressKeys(raw.mastered, type);
     rec.review = cellProgressKeys(raw.review, type);
     rec.mastered = rec.mastered.filter(function (key) { return rec.review.indexOf(key) < 0; });
-    rec.quizAttempts = Math.max(0, Number(raw.quizAttempts) || 0);
-    rec.quizCorrect = Math.max(0, Math.min(rec.quizAttempts, Number(raw.quizCorrect) || 0));
-    rec.checkCorrect = Math.max(0, Number(raw.checkCorrect) || 0);
+    rec.quizAttempts = cellProgressInteger(raw.quizAttempts);
+    rec.quizCorrect = cellProgressInteger(raw.quizCorrect, rec.quizAttempts);
+    rec.checkCorrect = cellProgressInteger(raw.checkCorrect);
     var guideId = typeof raw.guideId === 'string' ? raw.guideId : '';
-    rec.guideId = guideId && INTERIOR_GUIDES[guideId] && INTERIOR_GUIDES[guideId].types.indexOf(type) >= 0 ? guideId : null;
-    rec.guideStep = rec.guideId ? Math.max(0, Math.min(INTERIOR_GUIDES[rec.guideId].steps.length - 1, Number(raw.guideStep) || 0)) : 0;
+    rec.guideId = guideId && Object.prototype.hasOwnProperty.call(INTERIOR_GUIDES, guideId) && INTERIOR_GUIDES[guideId].types.indexOf(type) >= 0 ? guideId : null;
+    var recordGuide = cellGuideForType(rec.guideId, type);
+    rec.guideStep = recordGuide ? recordGuide.steps[cellGuideVisibleStep(recordGuide, raw.guideStep)].sourceIndex : 0;
     var specialization = typeof raw.specialization === 'string' ? raw.specialization : 'general';
     var specOptions = INTERIOR_SPECIALIZATIONS[type] || [];
     rec.specialization = specOptions.some(function (option) { return option.id === specialization; }) ? specialization : 'general';
     rec.selected = typeof raw.selected === 'string' && interiorHas(type, raw.selected) ? raw.selected : null;
     rec.adaptiveActive = raw.adaptiveActive === true;
     rec.quizKey = typeof raw.quizKey === 'string' && interiorHas(type, raw.quizKey) ? raw.quizKey : null;
-    rec.quizChoice = raw.quizChoice == null ? null : Math.max(0, Number(raw.quizChoice) || 0);
+    rec.quizChoice = raw.quizChoice != null && Number.isInteger(Number(raw.quizChoice)) && Number(raw.quizChoice) >= 0 && Number(raw.quizChoice) < 4 ? Number(raw.quizChoice) : null;
     rec.quizRevealed = raw.quizRevealed === true;
+    rec.recallRound = normalizeCellRecallRound(raw.recallRound, type);
     return rec;
   }
   function normalizeCellProgress(raw, legacyCell) {
     raw = raw && typeof raw === 'object' ? raw : {};
     legacyCell = legacyCell && typeof legacyCell === 'object' ? legacyCell : {};
     var source = Number(raw.schemaVersion) === CELL_PROGRESS_SCHEMA_VERSION && raw.byCellType && typeof raw.byCellType === 'object' ? raw.byCellType : {};
-    var legacy = { seen: legacyCell.interiorSeen, mastered: legacyCell.interiorMastered, review: legacyCell.interiorReview, quizAttempts: legacyCell.interiorQuizAttempts, quizCorrect: legacyCell.interiorQuizCorrect, checkCorrect: legacyCell.interiorCheckCorrect, guideId: legacyCell.interiorGuide, guideStep: legacyCell.interiorGuideStep, specialization: legacyCell.interiorSpecialization, selected: legacyCell.interiorSel, adaptiveActive: legacyCell.interiorAdaptiveQuiz, quizKey: legacyCell.interiorQuizKey, quizChoice: legacyCell.interiorQuizChoice, quizRevealed: legacyCell.interiorQuizRevealed };
+    var legacy = { seen: legacyCell.interiorSeen, mastered: legacyCell.interiorMastered, review: legacyCell.interiorReview, quizAttempts: legacyCell.interiorQuizAttempts, quizCorrect: legacyCell.interiorQuizCorrect, checkCorrect: legacyCell.interiorCheckCorrect, guideId: legacyCell.interiorGuide, guideStep: legacyCell.interiorGuideStep, specialization: legacyCell.interiorSpecialization, selected: legacyCell.interiorSel, adaptiveActive: legacyCell.interiorAdaptiveQuiz, quizKey: legacyCell.interiorQuizKey, quizChoice: legacyCell.interiorQuizChoice, quizRevealed: legacyCell.interiorQuizRevealed, recallRound: legacyCell.interiorRecallRound };
     var byCellType = {};
     CELL_PROGRESS_TYPES.forEach(function (type) { byCellType[type] = sanitizeCellProgressRecord(source[type] || (Number(raw.schemaVersion) === CELL_PROGRESS_SCHEMA_VERSION ? {} : legacy), type); });
     var currentType = typeof raw.currentType === 'string' && CELL_PROGRESS_TYPES.indexOf(raw.currentType) >= 0 ? raw.currentType : (CELL_PROGRESS_TYPES.indexOf(legacyCell.interiorCellType) >= 0 ? legacyCell.interiorCellType : 'animal');
@@ -404,17 +903,18 @@ window.StemLab = window.StemLab || {
     if (Array.isArray(source.interiorMastered)) rec.mastered = cellProgressKeys(source.interiorMastered, type);
     if (Array.isArray(source.interiorReview)) rec.review = cellProgressKeys(source.interiorReview, type);
     rec.mastered = rec.mastered.filter(function (key) { return rec.review.indexOf(key) < 0; });
-    if (source.interiorQuizAttempts != null) rec.quizAttempts = Math.max(0, Number(source.interiorQuizAttempts) || 0);
-    if (source.interiorQuizCorrect != null) rec.quizCorrect = Math.max(0, Math.min(rec.quizAttempts, Number(source.interiorQuizCorrect) || 0));
-    if (source.interiorCheckCorrect != null) rec.checkCorrect = Math.max(0, Number(source.interiorCheckCorrect) || 0);
-    if (source.interiorGuide !== undefined) rec.guideId = typeof source.interiorGuide === 'string' && INTERIOR_GUIDES[source.interiorGuide] && INTERIOR_GUIDES[source.interiorGuide].types.indexOf(type) >= 0 ? source.interiorGuide : null;
-    if (source.interiorGuideStep != null) rec.guideStep = rec.guideId ? Math.max(0, Math.min(INTERIOR_GUIDES[rec.guideId].steps.length - 1, Number(source.interiorGuideStep) || 0)) : 0;
+    if (source.interiorQuizAttempts != null) rec.quizAttempts = cellProgressInteger(source.interiorQuizAttempts);
+    if (source.interiorQuizCorrect != null) rec.quizCorrect = cellProgressInteger(source.interiorQuizCorrect, rec.quizAttempts);
+    if (source.interiorCheckCorrect != null) rec.checkCorrect = cellProgressInteger(source.interiorCheckCorrect);
+    if (source.interiorGuide !== undefined) rec.guideId = typeof source.interiorGuide === 'string' && Object.prototype.hasOwnProperty.call(INTERIOR_GUIDES, source.interiorGuide) && INTERIOR_GUIDES[source.interiorGuide].types.indexOf(type) >= 0 ? source.interiorGuide : null;
+    if (source.interiorGuideStep != null) { var extractedGuide = cellGuideForType(rec.guideId, type); rec.guideStep = extractedGuide ? extractedGuide.steps[cellGuideVisibleStep(extractedGuide, source.interiorGuideStep)].sourceIndex : 0; }
     if (source.interiorSpecialization !== undefined) rec.specialization = sanitizeCellProgressRecord({ specialization: source.interiorSpecialization }, type).specialization;
     if (source.interiorSel !== undefined) rec.selected = typeof source.interiorSel === 'string' && interiorHas(type, source.interiorSel) ? source.interiorSel : null;
     if (source.interiorAdaptiveQuiz !== undefined) rec.adaptiveActive = source.interiorAdaptiveQuiz === true;
     if (source.interiorQuizKey !== undefined) rec.quizKey = typeof source.interiorQuizKey === 'string' && interiorHas(type, source.interiorQuizKey) ? source.interiorQuizKey : null;
     if (source.interiorQuizChoice !== undefined) rec.quizChoice = source.interiorQuizChoice == null ? null : Math.max(0, Number(source.interiorQuizChoice) || 0);
     if (source.interiorQuizRevealed !== undefined) rec.quizRevealed = source.interiorQuizRevealed === true;
+    if (source.interiorRecallRound !== undefined) rec.recallRound = normalizeCellRecallRound(source.interiorRecallRound, type);
     return rec;
   }
   function applyCellProgressToCell(cell, record, type) {
@@ -422,6 +922,8 @@ window.StemLab = window.StemLab || {
     next.interiorCellType = type; next.interiorSeen = rec.seen.slice(); next.interiorMastered = rec.mastered.slice(); next.interiorReview = rec.review.slice();
     next.interiorQuizAttempts = rec.quizAttempts; next.interiorQuizCorrect = rec.quizCorrect; next.interiorCheckCorrect = rec.checkCorrect;
     next.interiorGuide = rec.guideId; next.interiorGuideStep = rec.guideStep; next.interiorSpecialization = rec.specialization; next.interiorSel = rec.selected;
+    if (rec.guideId && !rec.selected) { var restoredGuide = cellGuideForType(rec.guideId, type); if (restoredGuide) next.interiorSel = restoredGuide.steps[cellGuideVisibleStep(restoredGuide, rec.guideStep)].key; }
+    next.interiorRecallRound = rec.recallRound;
     next.interiorAdaptiveQuiz = rec.adaptiveActive; next.interiorQuizKey = rec.quizKey; next.interiorQuizChoice = rec.quizChoice; next.interiorQuizRevealed = rec.quizRevealed;
     return next;
   }
@@ -429,7 +931,7 @@ window.StemLab = window.StemLab || {
     var byCellType = {}; CELL_PROGRESS_TYPES.forEach(function (type) { byCellType[type] = createCellProgressRecord(type); });
     return { schemaVersion: CELL_PROGRESS_SCHEMA_VERSION, schemaId: 'cell-studio-progress', currentType: 'animal', updatedAt: null, byCellType: byCellType };
   }
-  function interiorHas(type, key) { var o = CELL_ORGANELLES[key]; return !!(o && o.types.indexOf(type) >= 0); }
+  function interiorHas(type, key) { var o = Object.prototype.hasOwnProperty.call(CELL_ORGANELLES, key) ? CELL_ORGANELLES[key] : null; return !!(o && o.types.indexOf(type) >= 0); }
 
   function interiorOrganelles(type) { return Object.keys(CELL_ORGANELLES).filter(function (k) { return interiorHas(type, k); }); }
   // Deterministic layout (positions in a 0..1 box) per cell type \u2014 drives drawing + click hit-testing.
@@ -451,6 +953,8 @@ window.StemLab = window.StemLab || {
       [[0.2, 0.26], [0.32, 0.74], [0.7, 0.78], [0.18, 0.56], [0.84, 0.58]].forEach(function (p, i) { add('chloroplast', p[0], p[1], 0.06, { phase: i }); });
       [[0.26, 0.4], [0.62, 0.18], [0.8, 0.74]].forEach(function (p, i) { add('mitochondria', p[0], p[1], 0.045, { phase: i }); });
       add('roughER', 0.6, 0.36, 0.1); add('golgi', 0.28, 0.6, 0.07);
+      add('smoothER', 0.43, 0.19, 0.06);
+      [[0.32, 0.36], [0.64, 0.83], [0.69, 0.48]].forEach(function(p, i) { add('vesicle', p[0], p[1], 0.018, { phase: i }); });
       add('peroxisome', 0.86, 0.40, 0.034); add('cytoskeleton', 0.14, 0.82, 0.045); add('plasmodesmata', 0.965, 0.70, 0.03);
       for (var pr = 0; pr < 14; pr++) L.push({ key: 'ribosomes', x: 0.5 + 0.42 * Math.cos(pr), y: 0.5 + 0.42 * Math.sin(pr * 1.7), r: 0.01, dot: true });
       return L;
@@ -466,6 +970,80 @@ window.StemLab = window.StemLab || {
     [[0.4, 0.5], [0.55, 0.58], [0.68, 0.52]].forEach(function (p, i) { add('vesicle', p[0], p[1], 0.018, { phase: i }); });
     for (var r2 = 0; r2 < 18; r2++) L.push({ key: 'ribosomes', x: 0.2 + (r2 * 0.17 % 0.62), y: 0.18 + ((r2 * 0.29) % 0.66), r: 0.011, dot: true });
     return L;
+  }
+  // Sample the actual envelope: elliptical in animals, rounded walls in plants and bacteria.
+  // Using an ellipse for every type left lipid heads floating inside the rectangular wall.
+  // Lay out two ordered annotation columns in canvas coordinates. Inputs stay untouched.
+  function layoutCellAnatomyLabels(items, bounds, center, radius, gap) {
+    if (!items.length) return [];
+    var mid = (bounds.left + bounds.right) / 2;
+    var columnWidth = Math.max(1, (bounds.right - bounds.left - gap) / 2);
+    var sorted = items.map(function(item, index) { return Object.assign({ index: index }, item); });
+    sorted.sort(function(a, b) { return a.sx - b.sx || a.index - b.index; });
+    var split = Math.ceil(sorted.length / 2);
+    var result = [];
+    [sorted.slice(0, split), sorted.slice(split)].forEach(function(column, side) {
+      column.sort(function(a, b) { return a.sy - b.sy || a.index - b.index; });
+      var slot = (bounds.bottom - bounds.top) / Math.max(1, column.length);
+      column.forEach(function(item, index) {
+        var w = Math.min(item.w, columnWidth);
+        var h = Math.min(item.h, Math.max(1, slot - gap));
+        var preferredX = side ? center.x + radius : center.x - radius - w;
+        var minX = side ? mid + gap / 2 : bounds.left;
+        var maxX = side ? bounds.right - w : mid - gap / 2 - w;
+        result.push(Object.assign({}, item, {
+          x: Math.max(minX, Math.min(maxX, preferredX)),
+          y: bounds.top + slot * (index + 0.5) - h / 2,
+          w: w, h: h, side: side ? 'right' : 'left'
+        }));
+      });
+    });
+    return result.sort(function(a, b) { return a.index - b.index; });
+  }
+
+  function interiorBoundaryPoint(geometry, type, fraction, inset) {
+    inset = Number(inset) || 0;
+    var rx = Math.max(1, geometry.RX - inset), ry = Math.max(1, geometry.RY - inset);
+    var f = ((fraction % 1) + 1) % 1;
+    if (type !== 'plant' && type !== 'bacterium') return [geometry.cx + Math.cos(f * Math.PI * 2) * rx, geometry.cy + Math.sin(f * Math.PI * 2) * ry];
+    var r = Math.min(rx, ry, type === 'bacterium' ? ry : Math.max(12, Math.min(30, ry * 0.24)));
+    var horizontal = 2 * (rx - r), vertical = 2 * (ry - r), arc = Math.PI * r / 2;
+    var distance = f * (2 * horizontal + 2 * vertical + 4 * arc);
+    var segments = [horizontal, arc, vertical, arc, horizontal, arc, vertical, arc];
+    var segment = 0;
+    while (segment < 7 && distance > segments[segment]) distance -= segments[segment++];
+    var left = geometry.cx - rx, right = geometry.cx + rx, top = geometry.cy - ry, bottom = geometry.cy + ry;
+    if (segment === 0) return [left + r + distance, top];
+    if (segment === 2) return [right, top + r + distance];
+    if (segment === 4) return [right - r - distance, bottom];
+    if (segment === 6) return [left, bottom - r - distance];
+    var centers = [[right - r, top + r], [right - r, bottom - r], [left + r, bottom - r], [left + r, top + r]];
+    var corner = (segment - 1) / 2, angle = -Math.PI / 2 + corner * Math.PI / 2 + distance / r;
+    return [centers[corner][0] + Math.cos(angle) * r, centers[corner][1] + Math.sin(angle) * r];
+  }
+  function interiorStructureFocus(type, key) {
+    if (!interiorHas(type, key)) return null;
+    var geometry = interiorGeometry(760, 440, type, 1);
+    var entry = interiorLayout(type).find(function(item) { return item.key === key; });
+    if (!entry) entry = key === 'cellWall' || key === 'cellMembrane' ? { x: 0.96, y: 0.5, r: 0.055 } : { x: 0.5, y: 0.82, r: 0.07 };
+    return { x: geometry.cx + (entry.x - 0.5) * 2 * geometry.RX, y: geometry.cy + (entry.y - 0.5) * 2 * geometry.RY, radius: Math.max(10, entry.r * 2 * Math.min(geometry.RX, geometry.RY)) };
+  }
+  function drawCellStructureDetail(context, width, height, type, key, contrast) {
+    var focus = interiorStructureFocus(type, key);
+    if (!focus) return;
+    var scale = Math.min(width / (focus.radius * 3.4), height / (focus.radius * 2.8), 5);
+    context.save(); context.beginPath(); context.rect(0, 0, width, height); context.clip();
+    context.translate(width / 2 - focus.x * scale, height / 2 - focus.y * scale); context.scale(scale, scale);
+    // Same specimen and renderer as the main diagram; a still crop without route overlays.
+    drawCellInterior(context, 760, 440, type, 0, null, true, contrast, 1, 'general', false, false, 50, [], 0, null, true, true);
+    context.restore();
+  }
+  function traceMitochondrion(context, radius) {
+    context.beginPath(); context.moveTo(-radius, 0);
+    context.bezierCurveTo(-radius * 1.08, -radius * 0.62, -radius * 0.42, -radius * 0.76, 0, -radius * 0.49);
+    context.bezierCurveTo(radius * 0.48, -radius * 0.18, radius * 0.7, -radius * 0.65, radius, -radius * 0.18);
+    context.bezierCurveTo(radius * 1.12, radius * 0.38, radius * 0.48, radius * 0.75, 0, radius * 0.5);
+    context.bezierCurveTo(-radius * 0.45, radius * 0.27, -radius * 0.97, radius * 0.62, -radius, 0); context.closePath();
   }
   function interiorGeometry(W, H, type, zoom) {
     var pad = Math.min(W, H) * 0.06;
@@ -649,7 +1227,7 @@ window.StemLab = window.StemLab || {
     cx2d.beginPath(); cx2d.moveTo(geometry.cx - geometry.RX * 1.08, planeY); cx2d.lineTo(geometry.cx + geometry.RX * 1.08, planeY); cx2d.stroke(); cx2d.setLineDash([]); cx2d.restore();
     cx2d.save(); cx2d.fillStyle = 'rgba(2,6,23,0.88)'; cx2d.fillRect(W / 2 - 86, H - 31, 172, 18); cx2d.font = '800 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = contrast ? '#fef08a' : '#bae6fd'; cx2d.fillText('OPTICAL SECTION • DEPTH ' + Math.round(depth) + '%', W / 2 - 75, H - 19); cx2d.restore();
   }
-  function drawCellInterior(cx2d, W, H, type, t, sel, reduced, contrast, zoom, specialization, showLabels, depthMode, depthLevel, guideKeys, guideStep, guideColor, hideCornerChips) {
+  function drawCellInterior(cx2d, W, H, type, t, sel, reduced, contrast, zoom, specialization, showLabels, depthMode, depthLevel, guideKeys, guideStep, guideColor, hideCornerChips, cleanStudy) {
     specialization = specialization || 'general';
     contrast = !!contrast;
     showLabels = !!showLabels;
@@ -668,9 +1246,12 @@ window.StemLab = window.StemLab || {
         : { title: 'ANIMAL CELL', subtitle: 'EUKARYOTE', detail: 'MEMBRANE • CYTOSKELETON', center: '#0b3b46', middle: '#072a33', edge: '#04181d' };
     cx2d.clearRect(0, 0, W, H);
     // Type-specific cytoplasm tint keeps the three comparison diagrams distinct.
-    var g = cx2d.createRadialGradient(cx, cy, 10, cx, cy, Math.max(RX, RY) * 1.2);
+    var g = cx2d.createRadialGradient(cx - RX * 0.3, cy - RY * 0.4, 10, cx, cy, Math.max(RX, RY) * 1.12);
     g.addColorStop(0, typeMeta.center); g.addColorStop(0.7, typeMeta.middle); g.addColorStop(1, typeMeta.edge);
     cx2d.fillStyle = '#02101400'; cx2d.fillRect(0, 0, W, H);
+    // Soft specimen shadow separates the envelope from the microscope field.
+    cx2d.save(); cx2d.shadowColor = 'rgba(0,0,0,0.55)'; cx2d.shadowBlur = 22; cx2d.shadowOffsetY = 7;
+    cx2d.fillStyle = typeMeta.edge; traceInteriorBoundary(cx2d, geometry, type, -2); cx2d.fill(); cx2d.restore();
     // boundary
     cx2d.save(); traceInteriorBoundary(cx2d, geometry, type, 0);
     var wallSelected = sel === 'cellWall';
@@ -681,6 +1262,10 @@ window.StemLab = window.StemLab || {
       cx2d.stroke(); cx2d.shadowBlur = 0;
     }
     cx2d.fillStyle = g; cx2d.fill(); cx2d.clip();
+    cx2d.save();
+    var rim = cx2d.createLinearGradient(cx - RX, cy - RY, cx + RX, cy + RY);
+    rim.addColorStop(0, 'rgba(165,243,252,0.3)'); rim.addColorStop(0.45, 'rgba(103,232,249,0.05)'); rim.addColorStop(1, 'rgba(0,0,0,0.32)');
+    cx2d.strokeStyle = rim; cx2d.lineWidth = S(0.042); traceInteriorBoundary(cx2d, geometry, type, S(0.026)); cx2d.stroke(); cx2d.restore();
     // cytoplasmic streaming particles
     var drift = reduced ? 0 : t;
     for (var i = 0; i < 80; i++) { var a = _ih(i) * 6.2832 + drift * (0.2 + _ih(i + 99) * 0.3), rr = _ih(i + 7) * 0.46; var pp = P(0.5 + Math.cos(a) * rr, 0.5 + Math.sin(a) * rr * (RY / RX)); cx2d.fillStyle = 'rgba(125,211,252,' + (0.04 + _ih(i + 3) * 0.06) + ')'; cx2d.beginPath(); cx2d.arc(pp[0], pp[1], 1 + _ih(i + 5) * 1.6, 0, 6.2832); cx2d.fill(); }
@@ -715,10 +1300,11 @@ window.StemLab = window.StemLab || {
     traceInteriorBoundary(cx2d, geometry, type, memInset); cx2d.stroke();
     traceInteriorBoundary(cx2d, geometry, type, memInset * 2.7); cx2d.stroke();
     for (var ml = 0; ml < 64; ml++) {
-      var ma = ml / 64 * 6.2832;
-      var ux = Math.cos(ma), uy = Math.sin(ma);
-      var hx = cx + ux * (RX - memInset), hy = cy + uy * (RY - memInset);
-      var ix = cx + ux * (RX - memInset * 2.7), iy = cy + uy * (RY - memInset * 2.7);
+      var outerHead = interiorBoundaryPoint(geometry, type, ml / 64, memInset);
+      var innerHead = interiorBoundaryPoint(geometry, type, ml / 64, memInset * 2.7);
+      var hx = outerHead[0], hy = outerHead[1], ix = innerHead[0], iy = innerHead[1];
+      var tailLength = Math.max(0.1, Math.hypot(hx - ix, hy - iy));
+      var ux = (hx - ix) / tailLength, uy = (hy - iy) / tailLength;
       cx2d.strokeStyle = 'rgba(125,211,252,0.38)'; cx2d.lineWidth = 1;
       cx2d.beginPath(); cx2d.moveTo(hx - ux * 1.5, hy - uy * 1.5); cx2d.lineTo(ix + ux * 1.5, iy + uy * 1.5); cx2d.stroke();
       cx2d.fillStyle = ml % 11 === 0 ? '#fbbf24' : '#67e8f9';
@@ -743,21 +1329,28 @@ window.StemLab = window.StemLab || {
       cx2d.save(); cx2d.globalAlpha = depthAlpha; if (on) { cx2d.shadowColor = '#fff'; cx2d.shadowBlur = 16; }
       cx2d.lineWidth = Math.max(1, R * 0.12);
       if (o.key === 'nucleus') {
-        var ng = cx2d.createRadialGradient(p[0], p[1], R * 0.2, p[0], p[1], R); ng.addColorStop(0, '#c4b5fd'); ng.addColorStop(1, '#7c5cd6');
+        var ng = cx2d.createRadialGradient(p[0] - R * 0.3, p[1] - R * 0.38, R * 0.04, p[0], p[1], R); ng.addColorStop(0, '#ede9fe'); ng.addColorStop(0.45, '#c4b5fd'); ng.addColorStop(0.82, '#9271d9'); ng.addColorStop(1, '#52358f');
         cx2d.fillStyle = ng; cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill();
         cx2d.strokeStyle = '#ede9fe'; cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.stroke();
+        cx2d.strokeStyle = 'rgba(221,214,254,0.65)'; cx2d.lineWidth = R * 0.035; cx2d.beginPath(); cx2d.arc(p[0], p[1], R * 0.91, 0, 6.2832); cx2d.stroke();
         for (var np = 0; np < 12; np++) { var na = np / 12 * 6.2832; cx2d.fillStyle = '#4c1d95'; cx2d.beginPath(); cx2d.arc(p[0] + Math.cos(na) * R, p[1] + Math.sin(na) * R, R * 0.07, 0, 6.2832); cx2d.fill(); }   // pores
         cx2d.strokeStyle = 'rgba(76,29,149,0.5)'; cx2d.lineWidth = R * 0.05;   // chromatin
         for (var ch = 0; ch < 5; ch++) { cx2d.beginPath(); for (var s2 = 0; s2 <= 8; s2++) { var aa = ch + s2 * 0.6 + t * 0.1, rr2 = R * (0.2 + 0.5 * _ih(ch * 9 + s2)); var xx = p[0] + Math.cos(aa) * rr2, yy = p[1] + Math.sin(aa) * rr2; if (s2 === 0) cx2d.moveTo(xx, yy); else cx2d.lineTo(xx, yy); } cx2d.stroke(); }
       } else if (o.key === 'nucleolus') {
-        cx2d.fillStyle = col; cx2d.globalAlpha = depthAlpha * 0.85; cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill(); cx2d.globalAlpha = depthAlpha;
+        var nucleolarGlow = cx2d.createRadialGradient(p[0] - R * 0.3, p[1] - R * 0.35, 1, p[0], p[1], R); nucleolarGlow.addColorStop(0, '#d8b4fe'); nucleolarGlow.addColorStop(0.45, col); nucleolarGlow.addColorStop(1, '#4c1d95');
+        cx2d.fillStyle = nucleolarGlow; cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill();
       } else if (o.key === 'mitochondria') {
         var pulse = reduced ? 0.5 : (0.5 + 0.5 * Math.sin(t * 2 + ph));
         cx2d.save(); cx2d.translate(p[0], p[1]); cx2d.rotate(ph * 1.1);
         cx2d.shadowColor = '#fb7185'; cx2d.shadowBlur = 6 + pulse * 10;
-        cx2d.fillStyle = '#9f1239'; cx2d.beginPath(); cx2d.ellipse(0, 0, R, R * 0.55, 0, 0, 6.2832); cx2d.fill();
-        cx2d.shadowBlur = 0; cx2d.strokeStyle = '#fda4af'; cx2d.lineWidth = R * 0.1;   // cristae
-        for (var cr2 = -2; cr2 <= 2; cr2++) { cx2d.beginPath(); cx2d.moveTo(cr2 * R * 0.32, -R * 0.5); cx2d.quadraticCurveTo(cr2 * R * 0.32 + R * 0.18, 0, cr2 * R * 0.32, R * 0.5); cx2d.stroke(); }
+        var mitochondrialBody = cx2d.createLinearGradient(-R, -R * 0.6, R * 0.3, R * 0.7);
+        mitochondrialBody.addColorStop(0, '#fda4af'); mitochondrialBody.addColorStop(0.28, '#e15178'); mitochondrialBody.addColorStop(0.64, '#9f1239'); mitochondrialBody.addColorStop(1, '#4c102f');
+        cx2d.fillStyle = mitochondrialBody; traceMitochondrion(cx2d, R); cx2d.fill();
+        cx2d.shadowBlur = 0; cx2d.strokeStyle = '#fda4af'; cx2d.lineWidth = Math.max(0.9, R * 0.065); cx2d.stroke();
+        cx2d.save(); traceMitochondrion(cx2d, R * 0.87); cx2d.clip();
+        cx2d.strokeStyle = '#fecdd3'; cx2d.lineWidth = R * 0.075;
+        for (var cr2 = -3; cr2 <= 3; cr2++) { cx2d.beginPath(); cx2d.moveTo(cr2 * R * 0.26, -R * 0.65); cx2d.bezierCurveTo(cr2 * R * 0.26 + R * 0.2, -R * 0.12, cr2 * R * 0.26 - R * 0.15, R * 0.14, cr2 * R * 0.26 + R * 0.05, R * 0.63); cx2d.stroke(); }
+        cx2d.restore();
         // ATP packets radiate from the cristae, connecting structure to function.
         cx2d.shadowColor = '#fde047'; cx2d.shadowBlur = reduced ? 3 : 7;
         for (var ap = 0; ap < 5; ap++) {
@@ -772,9 +1365,15 @@ window.StemLab = window.StemLab || {
         cx2d.restore();
       } else if (o.key === 'chloroplast') {
         cx2d.save(); cx2d.translate(p[0], p[1]); cx2d.rotate(0.5 + ph);
-        cx2d.fillStyle = '#166534'; cx2d.beginPath(); cx2d.ellipse(0, 0, R, R * 0.6, 0, 0, 6.2832); cx2d.fill();
-        cx2d.fillStyle = '#4ade80';   // grana stacks
-        for (var gr = -2; gr <= 2; gr++) { cx2d.beginPath(); cx2d.ellipse(gr * R * 0.34, 0, R * 0.12, R * 0.34, 0, 0, 6.2832); cx2d.fill(); }
+        var chloroplastBody = cx2d.createLinearGradient(-R * 0.5, -R * 0.6, R * 0.4, R * 0.6);
+        chloroplastBody.addColorStop(0, '#bbf7d0'); chloroplastBody.addColorStop(0.3, '#3bba71'); chloroplastBody.addColorStop(0.72, '#166534'); chloroplastBody.addColorStop(1, '#063c2d');
+        cx2d.fillStyle = chloroplastBody; cx2d.beginPath(); cx2d.ellipse(0, 0, R, R * 0.6, 0, 0, 6.2832); cx2d.fill();
+        cx2d.strokeStyle = '#86efac'; cx2d.lineWidth = Math.max(0.8, R * 0.045); cx2d.stroke();
+        cx2d.beginPath(); cx2d.ellipse(0, 0, R * 0.9, R * 0.49, 0, 0, 6.2832); cx2d.stroke();
+        cx2d.strokeStyle = '#a7f3d0'; cx2d.lineWidth = R * 0.04; cx2d.beginPath(); cx2d.moveTo(-R * 0.74, 0); cx2d.lineTo(R * 0.74, 0); cx2d.stroke();
+        for (var gr = -2; gr <= 2; gr++) {
+          for (var disc = -1; disc <= 1; disc++) { cx2d.fillStyle = disc === -1 ? '#bbf7d0' : '#4ade80'; cx2d.strokeStyle = '#166534'; cx2d.lineWidth = R * 0.026; cx2d.beginPath(); cx2d.ellipse(gr * R * 0.31, disc * R * 0.16, R * 0.12, R * 0.07, 0, 0, 6.2832); cx2d.fill(); cx2d.stroke(); }
+        }
         // Photons stream toward the grana; oxygen bubbles leave as a visible product.
         cx2d.shadowColor = '#fde047'; cx2d.shadowBlur = reduced ? 3 : 7;
         for (var sp = 0; sp < 4; sp++) {
@@ -850,7 +1449,8 @@ window.StemLab = window.StemLab || {
       } else if (o.key === 'lysosome' || o.key === 'vesicle') {
         var vp = (o.key === 'vesicle' && !reduced) ? (t * 0.3 + ph) % 1 : 0;
         var vx = p[0] + vp * S(0.12), vy = p[1] - vp * S(0.06);
-        cx2d.fillStyle = col; cx2d.globalAlpha = depthAlpha * 0.85; cx2d.beginPath(); cx2d.arc(vx, vy, R, 0, 6.2832); cx2d.fill(); cx2d.globalAlpha = depthAlpha;
+        var vesicleBody = cx2d.createRadialGradient(vx - R * 0.3, vy - R * 0.35, 0, vx, vy, R); vesicleBody.addColorStop(0, '#fff7ed'); vesicleBody.addColorStop(0.38, col); vesicleBody.addColorStop(1, o.key === 'lysosome' ? '#831843' : '#92400e');
+        cx2d.fillStyle = vesicleBody; cx2d.beginPath(); cx2d.arc(vx, vy, R, 0, 6.2832); cx2d.fill(); cx2d.strokeStyle = col; cx2d.lineWidth = Math.max(0.8, R * 0.08); cx2d.stroke();
         if (o.key === 'lysosome') { cx2d.fillStyle = '#831843'; for (var ly = 0; ly < 4; ly++) { cx2d.beginPath(); cx2d.arc(vx + (_ih(ly) - 0.5) * R, vy + (_ih(ly + 2) - 0.5) * R, R * 0.18, 0, 6.2832); cx2d.fill(); } }
       } else if (o.key === 'peroxisome') {
         var pg = cx2d.createRadialGradient(p[0] - R * 0.25, p[1] - R * 0.25, 1, p[0], p[1], R);
@@ -883,6 +1483,11 @@ window.StemLab = window.StemLab || {
       } else if (o.key === 'flagellum') {
         cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.3; cx2d.beginPath();
         for (var fl = 0; fl <= 24; fl++) { var fx = p[0] - fl / 24 * S(0.16), fy = p[1] + Math.sin(fl * 0.6 + (reduced ? 0 : t * 4)) * R * 1.2; if (fl === 0) cx2d.moveTo(fx, fy); else cx2d.lineTo(fx, fy); } cx2d.stroke();
+      }
+      // Four quiet brackets distinguish selection from the organelle's natural color.
+      if (on && cleanStudy) {
+        cx2d.shadowBlur = 0; cx2d.strokeStyle = '#f8fafc'; cx2d.lineWidth = 1.5; cx2d.globalAlpha = 0.9;
+        for (var bracket = 0; bracket < 4; bracket++) { var ba = bracket * Math.PI / 2 + 0.12; cx2d.beginPath(); cx2d.arc(p[0], p[1], R * 1.3 + 3, ba, ba + 0.58); cx2d.stroke(); }
       }
       cx2d.restore();
     });
@@ -966,7 +1571,7 @@ window.StemLab = window.StemLab || {
     }
     cx2d.restore();   // un-clip
     if (depthMode) drawInteriorOpticalSection(cx2d, W, H, type, geometry, depthLevel, contrast);
-    if (processLens) {
+    if (processLens && !cleanStudy) {
       cx2d.save(); var lensW = 248, lensX = W - lensW - 14;
       cx2d.fillStyle = 'rgba(2,6,23,0.90)'; cx2d.fillRect(lensX, 14, lensW, 25);
       cx2d.fillStyle = processLens.color; cx2d.fillRect(lensX, 14, 5, 25);
@@ -1047,6 +1652,8 @@ window.StemLab = window.StemLab || {
     // including the specialization overlay above, whose muscle striations used to be
     // drawn straight through every label — belongs underneath them.
     if (showLabels) drawInteriorStudyLabels(cx2d, W, H, type, geometry, L, contrast);
+    // The study workspace provides readable HTML identity and detail panels.
+    if (cleanStudy) return;
     drawUltrastructureInset(cx2d, W, H, type, sel, reduced, t);
     // Diagram chrome: cell identity, scale caveat, and a leader-line callout.
     cx2d.save();
@@ -1217,7 +1824,7 @@ window.StemLab = window.StemLab || {
   }
 
   try {
-    window.__alloCellPure = { CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, INTERIOR_GUIDES: INTERIOR_GUIDES, INTERIOR_SPECIALIZATIONS: INTERIOR_SPECIALIZATIONS, INTERIOR_CHECKS: INTERIOR_CHECKS, INTERIOR_GROUPS: INTERIOR_GROUPS, CELL_PROGRESS_SCHEMA_VERSION: CELL_PROGRESS_SCHEMA_VERSION, CELL_PROGRESS_TYPES: CELL_PROGRESS_TYPES, createCellProgressRecord: createCellProgressRecord, normalizeCellProgress: normalizeCellProgress, extractCellProgress: extractCellProgress, applyCellProgressToCell: applyCellProgressToCell, createEmptyCellProgress: createEmptyCellProgress, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection, drawCellInterior: drawCellInterior, normalizeCellAnatomyFtuContext: normalizeCellAnatomyFtuContext };
+    window.__alloCellPure = { cellGuideForType: cellGuideForType, cellGuideVisibleStep: cellGuideVisibleStep, createCellRecallRound: createCellRecallRound, normalizeCellRecallRound: normalizeCellRecallRound, recordCellRecallAnswer: recordCellRecallAnswer, layoutCellAnatomyLabels: layoutCellAnatomyLabels, interiorBoundaryPoint: interiorBoundaryPoint, interiorStructureFocus: interiorStructureFocus, drawCellStructureDetail: drawCellStructureDetail, CELL_ACTIVITY_META: CELL_ACTIVITY_META, CELL_INQUIRY_ROUTES: CELL_INQUIRY_ROUTES, cellActivitySearch: cellActivitySearch, cellInquiryState: cellInquiryState, cellInquiryReport: cellInquiryReport, cellComparisonModel: cellComparisonModel, cellComparisonReport: cellComparisonReport, renderCellComparison: renderCellComparison, osmosisNotebookPacket: osmosisNotebookPacket, parseOsmosisNotebook: parseOsmosisNotebook, osmosisNotebookReport: osmosisNotebookReport, CELL_RECALL_CLUES: CELL_RECALL_CLUES, cellRecallOptions: cellRecallOptions, osmosisModel: osmosisModel, renderOsmosisLab: renderOsmosisLab, CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, INTERIOR_GUIDES: INTERIOR_GUIDES, INTERIOR_SPECIALIZATIONS: INTERIOR_SPECIALIZATIONS, INTERIOR_CHECKS: INTERIOR_CHECKS, INTERIOR_GROUPS: INTERIOR_GROUPS, CELL_PROGRESS_SCHEMA_VERSION: CELL_PROGRESS_SCHEMA_VERSION, CELL_PROGRESS_TYPES: CELL_PROGRESS_TYPES, createCellProgressRecord: createCellProgressRecord, normalizeCellProgress: normalizeCellProgress, extractCellProgress: extractCellProgress, applyCellProgressToCell: applyCellProgressToCell, createEmptyCellProgress: createEmptyCellProgress, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection, drawCellInterior: drawCellInterior, normalizeCellAnatomyFtuContext: normalizeCellAnatomyFtuContext };
   } catch (e) {}
 
   window.StemLab.registerTool('cell', {
@@ -1453,7 +2060,8 @@ var d = labToolData.cell || {};
           var baseline = p._cellProgressHydrated ? previousCell : applyCellProgressToCell(previousCell, progress.byCellType[previousType], previousType);
           var nextCell = mutator(Object.assign({}, baseline)) || baseline;
           var nextType = CELL_PROGRESS_TYPES.indexOf(nextCell.interiorCellType) >= 0 ? nextCell.interiorCellType : previousType;
-          progress.byCellType[previousType] = extractCellProgress(nextCell, previousType, progress.byCellType[previousType]);
+          // Preserve the outgoing study state before destination controls are reset.
+          progress.byCellType[previousType] = extractCellProgress(nextType !== previousType ? baseline : nextCell, previousType, progress.byCellType[previousType]);
           if (nextType !== previousType) nextCell = applyCellProgressToCell(nextCell, progress.byCellType[nextType], nextType);
           progress.currentType = nextType; progress.updatedAt = new Date().toISOString();
           return Object.assign({}, p, { cell: nextCell, cellProgress: progress, _cellProgressHydrated: true });
@@ -18364,6 +18972,9 @@ var d = labToolData.cell || {};
             var playerKeys = {};
 
             var selectedOrg = null;
+            var observationLabelsVisible = d.observationLabels !== false;
+            var observationFollowEnabled = !!d.followSpecimen;
+            var observationCameraTime = null;
 
             var playAsOrg = null;
             var lastPlayTargetGuide = null;
@@ -18814,9 +19425,9 @@ var d = labToolData.cell || {};
             // Read the actual overlay geometry so mission cues and the player tag stay
             // inside the visible playfield as responsive panels grow or collapse.
             var missionOverlaySafeBandCache = null;
-            function readCellMissionOverlaySafeBand() {
+            function readCellMissionOverlaySafeBand(forceRead) {
               var readAt = Date.now();
-              if (missionOverlaySafeBandCache && readAt - missionOverlaySafeBandCache.readAt < 120) return missionOverlaySafeBandCache;
+              if (!forceRead && missionOverlaySafeBandCache && readAt - missionOverlaySafeBandCache.readAt < 120) return missionOverlaySafeBandCache;
               var top = Math.min(HH - 90 * dpr, 260 * dpr);
               var bottom = Math.max(320 * dpr, HH - 220 * dpr);
               try {
@@ -18874,7 +19485,7 @@ var d = labToolData.cell || {};
               var playerTagH = (playerTagHasSecondLine ? 42 : 24) * dpr;
               var playerTagX = Math.max(8 * dpr, Math.min(W - playerTagW - 8 * dpr, p.x - playerTagW / 2));
               var playerSafeBand = readCellMissionOverlaySafeBand();
-              var preferredPlayerTagY = p.y - sz * 1.55 - playerTagH - 5 * dpr;
+              var preferredPlayerTagY = playerSafeBand.top + 4 * dpr;
               var minPlayerTagY = playerSafeBand.top + 4 * dpr;
               var maxPlayerTagY = Math.max(minPlayerTagY, playerSafeBand.bottom - playerTagH - 4 * dpr);
               var playerTagY = Math.max(minPlayerTagY, Math.min(maxPlayerTagY, preferredPlayerTagY));
@@ -18935,11 +19546,47 @@ var d = labToolData.cell || {};
               cctx.restore();
             }
 
+            // Finish the current body path before drawing its internal structures.
+            // All detail is clipped; a fixed pattern avoids flicker and new particle state.
+            function finishSpecimenSurface(sz, color, angle, cctx, dpr) {
+              cctx.save();
+              cctx.shadowBlur = 0;
+              cctx.strokeStyle = 'rgba(255,255,255,0.72)';
+              cctx.lineWidth = 3.4 * dpr;
+              cctx.stroke();
+              cctx.strokeStyle = hexToRgba(color, 0.95);
+              cctx.lineWidth = 1.35 * dpr;
+              cctx.stroke();
+              cctx.clip();
+              // Counter-rotate illumination so the light stays above the slide.
+              var lx = Math.cos(-angle - Math.PI * 0.75) * sz;
+              var ly = Math.sin(-angle - Math.PI * 0.75) * sz;
+              var surface = cctx.createLinearGradient(lx, ly, -lx, -ly);
+              surface.addColorStop(0, 'rgba(255,255,255,0.32)');
+              surface.addColorStop(0.42, 'rgba(255,255,255,0.04)');
+              surface.addColorStop(1, 'rgba(25,65,62,0.18)');
+              cctx.fillStyle = surface;
+              cctx.fillRect(-sz * 2.2, -sz * 2.2, sz * 4.4, sz * 4.4);
+              // Sparse optical texture, only when the specimen is large enough to resolve.
+              if (sz / dpr > 12) {
+                cctx.fillStyle = hexToRgba(color, 0.13);
+                for (var grain = 0; grain < 22; grain++) {
+                  var gr = sz * Math.sqrt((grain + 0.5) / 22) * 1.65;
+                  var ga = grain * 2.399963;
+                  cctx.beginPath();
+                  cctx.arc(Math.cos(ga) * gr, Math.sin(ga) * gr, Math.max(0.55 * dpr, sz * 0.014), 0, Math.PI * 2);
+                  cctx.fill();
+                }
+              }
+              cctx.restore();
+            }
+
             function drawOrganism(o) {
+              drawOrganismOnSurface(o, cctx, dpr, world.tick, toScreen(o.x, o.y), o.size * cam.zoom * dpr);
+            }
 
-              var p = toScreen(o.x, o.y);
-
-              var sz = o.size * cam.zoom * dpr;
+            // The live dish and still portraits share exactly the same specimen geometry.
+            function drawOrganismOnSurface(o, cctx, dpr, drawTick, p, sz) {
 
               var def = o.def;
               // Keep the controlled organism unmistakable at every zoom level.
@@ -18948,7 +19595,7 @@ var d = labToolData.cell || {};
                 var playerControlResponse = buildPlayerControlResponse(o);
                 var playerEvidencePulse = activePlayerEvidencePulse(o);
                 cctx.save();
-                var playerPulse = prefersReducedCellMotion ? 1 : 1 + 0.06 * Math.sin(world.tick * 0.09);
+                var playerPulse = prefersReducedCellMotion ? 1 : 1 + 0.06 * Math.sin(drawTick * 0.09);
                 cctx.beginPath();
                 cctx.arc(p.x, p.y, sz * 1.35 * playerPulse, 0, Math.PI * 2);
                 cctx.strokeStyle = playerEvidencePulse || o._successFlash > 0 ? '#fef08a' : '#ffffff';
@@ -18998,7 +19645,7 @@ var d = labToolData.cell || {};
 
                   var a = (ai / amoebaN) * Math.PI * 2;
 
-                  var wobble = sz * (1 + 0.2 * Math.sin(a * 3 + o.phase + world.tick * 0.025) + 0.1 * Math.sin(a * 5 + world.tick * 0.04) + 0.05 * Math.sin(a * 7 + world.tick * 0.015));
+                  var wobble = sz * (1 + 0.2 * Math.sin(a * 3 + o.phase + drawTick * 0.025) + 0.1 * Math.sin(a * 5 + drawTick * 0.04) + 0.05 * Math.sin(a * 7 + drawTick * 0.015));
 
                   amoebaPts.push({ x: Math.cos(a) * wobble, y: Math.sin(a) * wobble });
 
@@ -19036,7 +19683,7 @@ var d = labToolData.cell || {};
 
                 cctx.fillStyle = aGrad; cctx.fill();
 
-                cctx.strokeStyle = def.color; cctx.lineWidth = 1.5 * dpr; cctx.stroke();
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // Food vacuoles
 
@@ -19086,7 +19733,7 @@ var d = labToolData.cell || {};
 
                 cctx.fillStyle = pGrad; cctx.fill();
 
-                cctx.strokeStyle = def.color; cctx.lineWidth = 1.5 * dpr; cctx.stroke();
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // Pellicle ridges
 
@@ -19108,9 +19755,9 @@ var d = labToolData.cell || {};
 
                   var cx2 = Math.cos(ca) * sz * 1.5, cy2 = Math.sin(ca) * sz * 0.78;
 
-                  var wave = Math.sin(world.tick * 0.18 + ci * 0.5) * 4 * dpr;
+                  var wave = Math.sin(drawTick * 0.18 + ci * 0.5) * 4 * dpr;
 
-                  var wave2 = Math.cos(world.tick * 0.12 + ci * 0.3) * 2 * dpr;
+                  var wave2 = Math.cos(drawTick * 0.12 + ci * 0.3) * 2 * dpr;
 
                   cctx.beginPath(); cctx.moveTo(cx2, cy2);
 
@@ -19128,7 +19775,7 @@ var d = labToolData.cell || {};
 
                 // Contractile vacuoles (pulsing)
 
-                var cvPulse = 0.08 + 0.04 * Math.sin(world.tick * 0.06);
+                var cvPulse = 0.08 + 0.04 * Math.sin(drawTick * 0.06);
 
                 cctx.beginPath(); cctx.arc(-sz * 0.8, 0, sz * cvPulse, 0, Math.PI * 2);
 
@@ -19176,7 +19823,7 @@ var d = labToolData.cell || {};
 
                 cctx.fillStyle = eGrad; cctx.fill();
 
-                cctx.strokeStyle = def.color; cctx.lineWidth = 1.5 * dpr; cctx.stroke();
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // Pellicle stripes
 
@@ -19196,7 +19843,7 @@ var d = labToolData.cell || {};
 
                 [[-0.2, -0.15, 0.14], [0.3, 0.1, 0.12], [-0.5, 0.05, 0.1], [0.1, -0.3, 0.09]].forEach(function (cp) {
 
-                  cctx.beginPath(); cctx.ellipse(sz * cp[0], sz * cp[1], sz * cp[2], sz * cp[2] * 0.6, Math.random() * 0.5, 0, Math.PI * 2);
+                  cctx.beginPath(); cctx.ellipse(sz * cp[0], sz * cp[1], sz * cp[2], sz * cp[2] * 0.6, cp[0] * 0.7, 0, Math.PI * 2);
 
                   cctx.fillStyle = 'rgba(34,197,94,0.35)'; cctx.fill();
 
@@ -19216,9 +19863,9 @@ var d = labToolData.cell || {};
 
                 cctx.beginPath(); cctx.moveTo(sz * 1.5, 0);
 
-                var fl = Math.sin(world.tick * 0.2 + o.phase) * 8 * dpr;
+                var fl = Math.sin(drawTick * 0.2 + o.phase) * 8 * dpr;
 
-                var fl2 = Math.sin(world.tick * 0.25 + o.phase + 1) * 5 * dpr;
+                var fl2 = Math.sin(drawTick * 0.25 + o.phase + 1) * 5 * dpr;
 
                 cctx.bezierCurveTo(sz * 1.8, -3 * dpr + fl, sz * 2.2 + fl2, 3 * dpr - fl, sz * 2.8, fl);
 
@@ -19232,7 +19879,7 @@ var d = labToolData.cell || {};
 
                 for (var a = 0; a < Math.PI * 2; a += 0.2) {
 
-                  var wobble = sz * (1 + 0.15 * Math.sin(a * 4 + world.tick * 0.04));
+                  var wobble = sz * (1 + 0.15 * Math.sin(a * 4 + drawTick * 0.04));
 
                   var px = Math.cos(a) * wobble, py = Math.sin(a) * wobble;
 
@@ -19252,7 +19899,7 @@ var d = labToolData.cell || {};
 
                 cctx.fillStyle = wGrad; cctx.fill();
 
-                cctx.strokeStyle = def.color; cctx.lineWidth = 1.5 * dpr; cctx.stroke();
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // Cytoplasmic granules
 
@@ -19302,7 +19949,7 @@ var d = labToolData.cell || {};
 
                 cctx.fillStyle = bGrad; cctx.fill();
 
-                cctx.strokeStyle = def.color; cctx.lineWidth = 1.2 * dpr; cctx.stroke();
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // DNA nucleoid region
 
@@ -19334,9 +19981,9 @@ var d = labToolData.cell || {};
 
                 cctx.beginPath(); cctx.moveTo(-rw, 0);
 
-                var fl2 = Math.sin(world.tick * 0.25 + o.phase) * 5 * dpr;
+                var fl2 = Math.sin(drawTick * 0.25 + o.phase) * 5 * dpr;
 
-                var fl3 = Math.cos(world.tick * 0.2 + o.phase) * 3 * dpr;
+                var fl3 = Math.cos(drawTick * 0.2 + o.phase) * 3 * dpr;
 
                 cctx.bezierCurveTo(-rw - 8 * dpr, fl2, -rw - 14 * dpr, -fl2, -rw - 20 * dpr, fl3);
 
@@ -19369,6 +20016,8 @@ var d = labToolData.cell || {};
                 pcGrad.addColorStop(1, 'rgba(187,247,208,0.2)');
 
                 cctx.fillStyle = pcGrad; cctx.fillRect(-hw, -hh, hw * 2, hh * 2);
+                cctx.beginPath(); cctx.rect(-hw, -hh, hw * 2, hh * 2);
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // ER strands
 
@@ -19470,7 +20119,7 @@ var d = labToolData.cell || {};
 
                 cctx.fillStyle = dGrad; cctx.fill();
 
-                cctx.strokeStyle = def.color; cctx.lineWidth = 2 * dpr; cctx.stroke();
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // Silica frustule ornate pattern (concentric hex)
 
@@ -19554,13 +20203,13 @@ var d = labToolData.cell || {};
 
                 cctx.fillStyle = vGrad; cctx.fill();
 
-                cctx.strokeStyle = def.color; cctx.lineWidth = 2 * dpr; cctx.stroke();
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // Surface cells (more, with flagella)
 
                 for (var vi = 0; vi < 18; vi++) {
 
-                  var va = (vi / 18) * Math.PI * 2 + world.tick * 0.02;
+                  var va = (vi / 18) * Math.PI * 2 + drawTick * 0.02;
 
                   var vcx = Math.cos(va) * sz * 0.85, vcy = Math.sin(va) * sz * 0.85;
 
@@ -19570,7 +20219,7 @@ var d = labToolData.cell || {};
 
                   // Tiny flagella
 
-                  var vfl = Math.sin(world.tick * 0.2 + vi) * 2 * dpr;
+                  var vfl = Math.sin(drawTick * 0.2 + vi) * 2 * dpr;
 
                   cctx.beginPath(); cctx.moveTo(vcx, vcy);
 
@@ -19584,7 +20233,7 @@ var d = labToolData.cell || {};
 
                 for (var vi2 = 0; vi2 < 8; vi2++) {
 
-                  var va2 = (vi2 / 8) * Math.PI * 2 + world.tick * 0.015 + 0.3;
+                  var va2 = (vi2 / 8) * Math.PI * 2 + drawTick * 0.015 + 0.3;
 
                   cctx.beginPath(); cctx.arc(Math.cos(va2) * sz * 0.55, Math.sin(va2) * sz * 0.55, sz * 0.05, 0, Math.PI * 2);
 
@@ -19638,7 +20287,7 @@ var d = labToolData.cell || {};
 
                 cctx.fillStyle = stGrad; cctx.fill();
 
-                cctx.strokeStyle = def.color; cctx.lineWidth = 1.5 * dpr; cctx.stroke();
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // Myonemes (contractile fibers running length of body)
 
@@ -19660,9 +20309,9 @@ var d = labToolData.cell || {};
 
                   var scx = -sz * 0.9 + (sci / 13) * sz * 1.8;
 
-                  var scWave = Math.sin(world.tick * 0.18 + sci * 0.6) * 5 * dpr;
+                  var scWave = Math.sin(drawTick * 0.18 + sci * 0.6) * 5 * dpr;
 
-                  var scWave2 = Math.cos(world.tick * 0.12 + sci * 0.4) * 3 * dpr;
+                  var scWave2 = Math.cos(drawTick * 0.12 + sci * 0.4) * 3 * dpr;
 
                   cctx.beginPath(); cctx.moveTo(scx, -sz * 0.8);
 
@@ -19712,7 +20361,7 @@ var d = labToolData.cell || {};
 
                 cctx.fillStyle = tGrad; cctx.fill();
 
-                cctx.strokeStyle = def.color; cctx.lineWidth = 1.5 * dpr; cctx.stroke();
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // Body segment lines
 
@@ -19748,7 +20397,7 @@ var d = labToolData.cell || {};
 
                 [[-0.8, 0.7], [-0.2, 0.8], [0.3, 0.75], [0.8, 0.6]].forEach(function (leg, li) {
 
-                  var phase2 = Math.sin(world.tick * 0.08 + li * 1.5) * 3 * dpr;
+                  var phase2 = Math.sin(drawTick * 0.08 + li * 1.5) * 3 * dpr;
 
                   // Top leg with claw detail
 
@@ -19814,7 +20463,7 @@ var d = labToolData.cell || {};
 
                   var spx = sp;
 
-                  var spy = Math.sin((sp / (sz * 0.5)) * Math.PI + world.tick * 0.15) * sz * 0.5;
+                  var spy = Math.sin((sp / (sz * 0.5)) * Math.PI + drawTick * 0.15) * sz * 0.5;
 
                   sp === -sz * 2 ? cctx.moveTo(spx, spy) : cctx.lineTo(spx, spy);
 
@@ -19830,7 +20479,7 @@ var d = labToolData.cell || {};
 
                   var spx = sp;
 
-                  var spy = Math.sin((sp / (sz * 0.5)) * Math.PI + world.tick * 0.15) * sz * 0.5;
+                  var spy = Math.sin((sp / (sz * 0.5)) * Math.PI + drawTick * 0.15) * sz * 0.5;
 
                   sp === -sz * 2 ? cctx.moveTo(spx, spy - sz * 0.15) : cctx.lineTo(spx, spy - sz * 0.15);
 
@@ -19840,7 +20489,7 @@ var d = labToolData.cell || {};
 
                   var spx = sp;
 
-                  var spy = Math.sin((sp / (sz * 0.5)) * Math.PI + world.tick * 0.15) * sz * 0.5;
+                  var spy = Math.sin((sp / (sz * 0.5)) * Math.PI + drawTick * 0.15) * sz * 0.5;
 
                   cctx.lineTo(spx, spy + sz * 0.15);
 
@@ -19857,12 +20506,13 @@ var d = labToolData.cell || {};
                 spGrad.addColorStop(1, 'rgba(249,115,22,0.15)');
 
                 cctx.fillStyle = spGrad; cctx.fill();
+                finishSpecimenSurface(sz, def.color, o.angle, cctx, dpr);
 
                 // Flagella tufts at both ends (multiple strands)
 
                 for (var fti = 0; fti < 3; fti++) {
 
-                  var ftip1 = Math.sin(world.tick * 0.3 + fti * 0.8) * 4 * dpr;
+                  var ftip1 = Math.sin(drawTick * 0.3 + fti * 0.8) * 4 * dpr;
 
                   var ftOff = (fti - 1) * 2 * dpr;
 
@@ -19876,7 +20526,7 @@ var d = labToolData.cell || {};
 
                 for (var fti2 = 0; fti2 < 3; fti2++) {
 
-                  var ftip2 = Math.sin(world.tick * 0.3 + Math.PI + fti2 * 0.8) * 4 * dpr;
+                  var ftip2 = Math.sin(drawTick * 0.3 + Math.PI + fti2 * 0.8) * 4 * dpr;
 
                   var ftOff2 = (fti2 - 1) * 2 * dpr;
 
@@ -19921,9 +20571,7 @@ var d = labToolData.cell || {};
 
 
 
-            // ── Smoothed label positions (persist across frames) ──
-
-            var _labelPositions = {};
+            // Annotation positions are computed directly; there is no easing state.
 
 
 
@@ -19936,316 +20584,68 @@ var d = labToolData.cell || {};
             // ── Organelle labels (floating pills with leader lines) ──
 
             function drawOrganelleLabels(o) {
-
               var def = o.def;
-
-              if (!def.anatomy || def.anatomy.length === 0) return;
+              if (!def.anatomy || !def.anatomy.length) return;
               if (shouldPrioritizePlayerControlTag(o)) return;
-
-              var p = toScreen(o.x, o.y);
-
-              var sz = o.size * cam.zoom * dpr;
-
-              // Only show labels when zoomed in enough and organism is on-screen
-
-              if (sz < 4) return;
-
-              if (p.x < -100 || p.x > W + 100 || p.y < -100 || p.y > HH + 100) return;
-
+              if (!playAsOrg && !observationLabelsVisible) return;
+              var p = toScreen(o.x, o.y), sz = o.size * cam.zoom * dpr;
+              if (sz < 4 || p.x < -100 || p.x > W + 100 || p.y < -100 || p.y > HH + 100) return;
+              if (!playAsOrg && (p.x < 0 || p.x > W || p.y < 0 || p.y > HH)) return;
               cctx.save();
-
-              var fontSize = Math.max(7, Math.min(10, sz * 0.28)) * dpr;
-
-              cctx.font = 'bold ' + fontSize + 'px Inter, system-ui, sans-serif';
-
-              cctx.textAlign = 'left';
-
-              cctx.textBaseline = 'middle';
-
-              var tNow = world.tick || 0;
-
-              var lineColor = hexToRgba(def.color, 0.7);
-
-              var glowColor = hexToRgba(def.color, 0.25);
-
-              var dotGlowColor = hexToRgba(def.color, 0.18);
-
+              var fontSize = 11 * dpr;
+              cctx.font = '600 ' + fontSize + 'px Inter, system-ui, sans-serif';
+              cctx.textAlign = 'left'; cctx.textBaseline = 'middle';
               var labelFillColor = 'rgba(248,250,252,0.97)';
-
               var labelTextColor = '#0f172a';
-
-              var labelShadowColor = 'rgba(2,6,23,0.38)';
-
-              var labelBoxes = [];
+              var labelShadowColor = 'rgba(2,6,23,0.18)';
               var visibleAnatomy = def.anatomy;
               var activeLabelTutorial = playAsOrg === o ? cellPlayTutorialFor(def) : null;
-              var labelSafeTop = fontSize;
-              var labelSafeBottom = HH - fontSize;
-              if (playAsOrg === o) {
-                var anatomySafeBand = readCellMissionOverlaySafeBand();
-                labelSafeTop = Math.max(labelSafeTop, anatomySafeBand.top + 4 * dpr);
-                labelSafeBottom = Math.min(labelSafeBottom, anatomySafeBand.bottom - 4 * dpr);
-              }
+              var anatomySafeBand = readCellMissionOverlaySafeBand();
+              var labelSafeTop = anatomySafeBand.top + (playAsOrg === o ? 54 : 4) * dpr;
+              var labelSafeBottom = anatomySafeBand.bottom - (playAsOrg === o ? 34 : 4) * dpr;
               if (activeLabelTutorial && !activeLabelTutorial.stationary && activeLabelTutorial.focusStructures.length) {
-                var focusedAnatomy = def.anatomy.filter(function (a) { return activeLabelTutorial.focusStructures.indexOf(a.name) !== -1; });
+                var focusedAnatomy = def.anatomy.filter(function(a) { return activeLabelTutorial.focusStructures.indexOf(a.name) !== -1; });
                 if (focusedAnatomy.length) visibleAnatomy = focusedAnatomy;
               }
-
-              visibleAnatomy.forEach(function (a, i) {
-
-                if (typeof a.lx === 'undefined') return;
-
-                // Organelle point in world-relative rotated coords
-
-                var ox = a.lx * sz;
-
-                var oy = a.ly * sz;
-
-                // Rotate by organism angle to get screen-space offset
-
-                var cos = Math.cos(o.angle), sin = Math.sin(o.angle);
-
-                var rx = ox * cos - oy * sin;
-
-                var ry = ox * sin + oy * cos;
-
-                // Screen position of organelle
-
-                var sx = p.x + rx;
-
-                var sy = p.y + ry;
-
-                // Target label position - pushed outward from center
-
-                var labelDist = sz * 1.5 + fontSize * 2;
-
-                var spreadAngle = -Math.PI * 0.7 + (i / (visibleAnatomy.length - 0.01)) * Math.PI * 1.4;
-
-                var targetLx = sx + Math.cos(spreadAngle) * labelDist;
-
-                var targetLy = sy + Math.sin(spreadAngle) * labelDist;
-
-                // Clamp targets to screen
-
-                var textW = cctx.measureText(a.name).width + fontSize * 1.5;
-
-                targetLx = Math.max(fontSize, Math.min(W - textW - fontSize, targetLx));
-
-                targetLy = Math.max(labelSafeTop + fontSize, Math.min(labelSafeBottom - fontSize, targetLy));
-
-                // Smooth lerp: labels follow slowly instead of snapping
-
-                var lerpKey = o.def.id + '_' + a.name;
-
-                if (!_labelPositions[lerpKey]) _labelPositions[lerpKey] = { x: targetLx, y: targetLy };
-
-                var labelFollowRate = prefersReducedCellMotion ? 1 : 0.08;
-
-                _labelPositions[lerpKey].x += (targetLx - _labelPositions[lerpKey].x) * labelFollowRate;
-
-                _labelPositions[lerpKey].y += (targetLy - _labelPositions[lerpKey].y) * labelFollowRate;
-
-                var lx = _labelPositions[lerpKey].x;
-
-                var ly = _labelPositions[lerpKey].y;
-
-                var pillW = textW + 4 * dpr;
-
-                var pillH = fontSize * 1.7;
-
-                var pillX = lx - 2 * dpr;
-
-                var pillY = ly - pillH / 2;
-
-                var edgePad = 2 * dpr;
-
-                pillX = Math.max(edgePad, Math.min(W - pillW - edgePad, pillX));
-
-                pillY = Math.max(labelSafeTop, Math.min(labelSafeBottom - pillH, pillY));
-
-                for (var bi = 0; bi < labelBoxes.length; bi++) {
-
-                  var b = labelBoxes[bi];
-
-                  var gapX = 4 * dpr;
-
-                  var gapY = 4 * dpr;
-
-                  var overlaps = !(pillX > b.x + b.w + gapX || pillX + pillW + gapX < b.x || pillY > b.y + b.h + gapY || pillY + pillH + gapY < b.y);
-
-                  if (overlaps) {
-
-                    var nudgeDown = b.y + b.h + gapY;
-
-                    var nudgeUp = b.y - pillH - gapY;
-
-                    pillY = (nudgeDown + pillH <= labelSafeBottom || nudgeUp < labelSafeTop) ? Math.min(labelSafeBottom - pillH, nudgeDown) : Math.max(labelSafeTop, nudgeUp);
-
-                  }
-
-                }
-
-                lx = pillX + 2 * dpr;
-
-                ly = pillY + pillH / 2;
-
-                _labelPositions[lerpKey].x = lx;
-
-                _labelPositions[lerpKey].y = ly;
-
-                labelBoxes.push({ x: pillX, y: pillY, w: pillW, h: pillH });
-
-
-
-                // ── Leader line (visible, animated) ──
-
-                // Glow line (thicker, subtle)
-
-                cctx.beginPath();
-
-                cctx.moveTo(sx, sy);
-
-                cctx.lineTo(lx, ly);
-
-                cctx.strokeStyle = glowColor;
-
-                cctx.lineWidth = 3.0 * dpr;
-
-                cctx.stroke();
-
-                // Main leader line - solid with flowing dash overlay
-
-                cctx.beginPath();
-
-                cctx.moveTo(sx, sy);
-
-                cctx.lineTo(lx, ly);
-
-                cctx.strokeStyle = lineColor;
-
-                cctx.lineWidth = 1.5 * dpr;
-
-                var dashLen = 5 * dpr;
-
-                cctx.setLineDash([dashLen, dashLen * 0.6]);
-
-                cctx.lineDashOffset = prefersReducedCellMotion ? 0 : -(tNow * 0.8); // flowing animation
-
-                cctx.stroke();
-
-                cctx.setLineDash([]);
-
-                cctx.lineDashOffset = 0;
-
-
-
-                // Pulsing glow dot at organelle point
-
-                var pulse = prefersReducedCellMotion ? 0.6 : 0.6 + Math.sin(tNow * 0.06 + i * 1.2) * 0.4;
-
-                var dotR = (2.5 + pulse * 1.5) * dpr;
-
-                cctx.beginPath();
-
-                cctx.arc(sx, sy, dotR * 1.8, 0, Math.PI * 2);
-
-                cctx.fillStyle = dotGlowColor;
-
-                cctx.fill();
-
-                cctx.beginPath();
-
-                cctx.arc(sx, sy, dotR, 0, Math.PI * 2);
-
-                cctx.fillStyle = def.color;
-
-                cctx.fill();
-
-                // Small white center highlight
-
-                cctx.beginPath();
-
-                cctx.arc(sx - dotR * 0.2, sy - dotR * 0.2, dotR * 0.35, 0, Math.PI * 2);
-
-                cctx.fillStyle = 'rgba(255,255,255,0.45)';
-
-                cctx.fill();
-
-
-
-                // Pill background
-
-                var pillW = textW + 4 * dpr;
-
-                var pillH = fontSize * 1.7;
-
-                var pillX = lx - 2 * dpr;
-
-                var pillY = ly - pillH / 2;
-
-                cctx.beginPath();
-
-                var r = pillH / 2;
-
-                cctx.moveTo(pillX + r, pillY);
-
-                cctx.lineTo(pillX + pillW - r, pillY);
-
-                cctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + r, r);
-
-                cctx.lineTo(pillX + pillW, pillY + pillH - r);
-
-                cctx.arcTo(pillX + pillW, pillY + pillH, pillX + pillW - r, pillY + pillH, r);
-
-                cctx.lineTo(pillX + r, pillY + pillH);
-
-                cctx.arcTo(pillX, pillY + pillH, pillX, pillY + pillH - r, r);
-
-                cctx.lineTo(pillX, pillY + r);
-
-                cctx.arcTo(pillX, pillY, pillX + r, pillY, r);
-
-                cctx.closePath();
-
-                cctx.shadowColor = labelShadowColor;
-
-                cctx.shadowBlur = 8 * dpr;
-
-                cctx.shadowOffsetY = 2 * dpr;
-
-                cctx.fillStyle = labelFillColor;
-
-                cctx.fill();
-
-                cctx.shadowBlur = 0;
-
-                cctx.shadowOffsetY = 0;
-
-                cctx.strokeStyle = def.color;
-
-                cctx.lineWidth = 1.2 * dpr;
-
-                cctx.stroke();
-
-                // Label text
-
-                cctx.fillStyle = labelTextColor;
-
-                cctx.fillText(a.name, pillX + fontSize * 0.7, ly);
-
-
-
-                // Store hit region for click-to-explain
-
-                _labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: a, def: def, org: o });
-
+              var cos = Math.cos(o.angle), sin = Math.sin(o.angle);
+              var items = visibleAnatomy.filter(function(a) { return typeof a.lx !== 'undefined'; }).map(function(a) {
+                return { anatomy: a, sx: p.x + (a.lx * cos - a.ly * sin) * sz,
+                  sy: p.y + (a.lx * sin + a.ly * cos) * sz,
+                  w: cctx.measureText(a.name).width + 20 * dpr, h: 26 * dpr };
               });
-
+              var labelBoxes = layoutCellAnatomyLabels(items,
+                { left: 8 * dpr, right: W - 8 * dpr, top: labelSafeTop, bottom: Math.max(labelSafeTop + 30 * dpr, labelSafeBottom) },
+                p, sz * 1.45, 6 * dpr);
+              // Leaders are drawn first so none can paint over another label's text.
+              labelBoxes.forEach(function(box) {
+                var ex = box.side === 'left' ? box.x + box.w : box.x;
+                var ey = box.y + box.h / 2;
+                cctx.beginPath(); cctx.moveTo(box.sx, box.sy);
+                cctx.lineTo(ex + (box.side === 'left' ? 10 : -10) * dpr, ey); cctx.lineTo(ex, ey);
+                cctx.strokeStyle = 'rgba(255,255,255,0.85)'; cctx.lineWidth = 3 * dpr; cctx.stroke();
+                cctx.strokeStyle = hexToRgba(def.color, 0.72); cctx.lineWidth = 1.1 * dpr; cctx.stroke();
+                cctx.beginPath(); cctx.arc(box.sx, box.sy, 2.5 * dpr, 0, Math.PI * 2);
+                cctx.fillStyle = def.color; cctx.fill();
+                cctx.strokeStyle = '#fff'; cctx.lineWidth = dpr; cctx.stroke();
+              });
+              labelBoxes.forEach(function(box) {
+                var pillX = box.x, pillY = box.y, pillW = box.w, pillH = box.h;
+                var r = Math.min(6 * dpr, pillH / 2);
+                cctx.beginPath(); cctx.moveTo(pillX + r, pillY);
+                cctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + pillH, r);
+                cctx.arcTo(pillX + pillW, pillY + pillH, pillX, pillY + pillH, r);
+                cctx.arcTo(pillX, pillY + pillH, pillX, pillY, r);
+                cctx.arcTo(pillX, pillY, pillX + pillW, pillY, r); cctx.closePath();
+                cctx.shadowColor = labelShadowColor; cctx.shadowBlur = 5 * dpr; cctx.shadowOffsetY = 2 * dpr;
+                cctx.fillStyle = labelFillColor; cctx.fill();
+                cctx.shadowBlur = 0; cctx.shadowOffsetY = 0;
+                cctx.strokeStyle = hexToRgba(def.color, 0.65); cctx.lineWidth = dpr; cctx.stroke();
+                cctx.fillStyle = labelTextColor;
+                cctx.fillText(box.anatomy.name, pillX + 10 * dpr, pillY + pillH / 2, pillW - 20 * dpr);
+                _labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o });
+              });
               cctx.restore();
-
             }
-
-
 
             function resolvePlayerMissionTarget() {
               if (!playAsOrg || playerMissionEvidenceComplete(playAsOrg)) return null;
@@ -20307,6 +20707,7 @@ var d = labToolData.cell || {};
                       key: region.anatomy.name,
                       label: region.anatomy.name,
                       screen: { x: region.x + region.w / 2, y: region.y + region.h / 2 },
+                      labelBounds: { x: region.x, y: region.y, w: region.w, h: region.h },
                       gap: null,
                       insideTarget: false
                     };
@@ -20430,6 +20831,14 @@ var d = labToolData.cell || {};
               };
 
               cctx.save();
+              if (target.kind === 'structure' && target.labelBounds) {
+                // Outline the selectable label instead of placing a compass ring over its text.
+                var targetBox = target.labelBounds;
+                cctx.strokeStyle = '#fff'; cctx.lineWidth = 5 * dpr;
+                cctx.strokeRect(targetBox.x - 3 * dpr, targetBox.y - 3 * dpr, targetBox.w + 6 * dpr, targetBox.h + 6 * dpr);
+                cctx.strokeStyle = color; cctx.lineWidth = 2 * dpr;
+                cctx.strokeRect(targetBox.x - 3 * dpr, targetBox.y - 3 * dpr, targetBox.w + 6 * dpr, targetBox.h + 6 * dpr);
+              } else {
               cctx.lineCap = 'round';
               if (!target.insideTarget && distance > 8 * dpr) {
                 var startGap = Math.min(30 * dpr, distance * 0.25);
@@ -20504,14 +20913,17 @@ var d = labToolData.cell || {};
                 cctx.fill();
               }
 
+              }
+
               cctx.font = '800 ' + (11 * dpr) + 'px Inter, system-ui, sans-serif';
               cctx.textAlign = 'center';
               cctx.textBaseline = 'middle';
               var labelWidth = Math.min(W - 8 * dpr, cctx.measureText(guideLabel).width + 16 * dpr);
               var labelHeight = 23 * dpr;
               var labelX = Math.max(4 * dpr, Math.min(W - labelWidth - 4 * dpr, marker.x - labelWidth / 2));
-              var labelY = marker.y - ringRadius - labelHeight - 6 * dpr;
-              if (labelY < safeRect.top - 6 * dpr) labelY = marker.y + ringRadius + 6 * dpr;
+              // Keep the target caption in its own bottom band, clear of anatomy labels.
+              var labelY = safeRect.bottom - labelHeight;
+              labelX = Math.max(4 * dpr, (W - labelWidth) / 2);
               cctx.fillStyle = 'rgba(15,23,42,0.9)';
               cctx.fillRect(labelX, labelY, labelWidth, labelHeight);
               cctx.strokeStyle = 'rgba(255,255,255,0.7)';
@@ -20954,6 +21366,14 @@ var d = labToolData.cell || {};
               cctx.clearRect(0, 0, W, HH);
 
               var renderNow = canvasNow();
+              var followDelta = observationCameraTime === null ? 16 : Math.max(0, Math.min(100, renderNow - observationCameraTime));
+              observationCameraTime = renderNow;
+              if (observationFollowEnabled && selectedOrg && !playAsOrg && !dragging && canvasEl.getAttribute('data-cell-view-mode') === 'observe') {
+                var followBlend = canvasEl._cellSimPaused || prefersReducedCellMotion ? 1 : 1 - Math.exp(-followDelta / 110);
+                cam.x += (selectedOrg.x - cam.x) * followBlend;
+                cam.y += (selectedOrg.y - cam.y) * followBlend;
+                clampCamera();
+              }
 
               var renderMotion = !canvasEl._cellSimPaused;
 
@@ -20967,11 +21387,11 @@ var d = labToolData.cell || {};
 
               var bgGrad = cctx.createRadialGradient(W / 2, HH / 2, 0, W / 2, HH / 2, Math.max(W, HH) * 0.65);
 
-              bgGrad.addColorStop(0, '#d1fae5');
+              bgGrad.addColorStop(0, '#f1faf6');
 
-              bgGrad.addColorStop(0.7, '#a7f3d0');
+              bgGrad.addColorStop(0.7, '#deeee8');
 
-              bgGrad.addColorStop(1, '#6ee7b7');
+              bgGrad.addColorStop(1, '#bfd8ce');
 
               cctx.fillStyle = bgGrad; cctx.fillRect(0, 0, W, HH);
 
@@ -20993,11 +21413,16 @@ var d = labToolData.cell || {};
 
               cctx.fillStyle = dishGrad; cctx.fill();
 
-              cctx.strokeStyle = 'rgba(16,185,129,0.25)'; cctx.lineWidth = 2 * dpr; cctx.stroke();
+              cctx.strokeStyle = 'rgba(37,99,87,0.20)'; cctx.lineWidth = 2 * dpr; cctx.stroke();
+              // Concentric glass rim and a short reflection share the dish's actual center.
+              cctx.beginPath(); cctx.arc(center.x, center.y, Math.max(1, dishR - 6 * dpr), 0, Math.PI * 2);
+              cctx.strokeStyle = 'rgba(255,255,255,0.55)'; cctx.lineWidth = 2 * dpr; cctx.stroke();
+              cctx.beginPath(); cctx.arc(center.x, center.y, Math.max(1, dishR - 10 * dpr), Math.PI * 1.1, Math.PI * 1.6);
+              cctx.strokeStyle = 'rgba(255,255,255,0.7)'; cctx.lineWidth = 3 * dpr; cctx.stroke();
 
               // Inner rim highlight
 
-              cctx.beginPath(); cctx.arc(center.x - dishR * 0.08, center.y - dishR * 0.08, dishR * 0.96, 0, Math.PI * 2);
+              cctx.beginPath(); cctx.arc(center.x, center.y, dishR * 0.96, 0, Math.PI * 2);
 
               cctx.strokeStyle = 'rgba(255,255,255,0.12)'; cctx.lineWidth = 3 * dpr; cctx.stroke();
 
@@ -21007,7 +21432,7 @@ var d = labToolData.cell || {};
 
               // ── Fine grid lines ──
 
-              cctx.strokeStyle = 'rgba(148,163,184,0.1)'; cctx.lineWidth = 0.5 * dpr;
+              cctx.strokeStyle = 'rgba(73,116,108,0.09)'; cctx.lineWidth = 0.5 * dpr;
 
               for (var gx = 0; gx < WORLD_W; gx += 50) {
 
@@ -21412,14 +21837,16 @@ var d = labToolData.cell || {};
               }
               // Organisms
 
+              var focalOrganism = playAsOrg || selectedOrg;
               world.organisms.forEach(function (o) {
+                if (o === focalOrganism) return;
                 cctx.save();
-                if (playAsOrg && o !== playAsOrg) {
-                  cctx.globalAlpha = 0.34;
-                }
+                if (focalOrganism) cctx.globalAlpha = playAsOrg ? 0.20 : 0.38;
                 drawOrganism(o);
                 cctx.restore();
               });
+              // Keep the selected specimen above passing neighbors without changing the world order.
+              if (focalOrganism) drawOrganism(focalOrganism);
 
               // Organelle labels for selected organism
 
@@ -21457,17 +21884,17 @@ var d = labToolData.cell || {};
 
                 cctx.globalAlpha = tt.alpha;
 
-                var ttFontSize = 10.5 * dpr;
+                var ttFontSize = 12 * dpr;
 
                 cctx.font = 'bold ' + (ttFontSize * 1.1) + 'px Inter, system-ui, sans-serif';
 
-                var ttTitle = tt.anatomy.icon + ' ' + tt.anatomy.name;
+                var ttTitle = tt.anatomy.name;
 
                 cctx.font = ttFontSize + 'px Inter, system-ui, sans-serif';
 
                 // Word-wrap the description
 
-                var ttMaxW = 290 * dpr;
+                var ttMaxW = Math.min(340 * dpr, W - 24 * dpr);
 
                 var ttWords = tt.anatomy.fn.split(' ');
 
@@ -21477,7 +21904,7 @@ var d = labToolData.cell || {};
 
                   var test = ttCurLine ? ttCurLine + ' ' + w : w;
 
-                  if (cctx.measureText(test).width > ttMaxW - 16 * dpr) {
+                  if (cctx.measureText(test).width > ttMaxW - 28 * dpr) {
 
                     if (ttCurLine) ttLines.push(ttCurLine);
 
@@ -21489,25 +21916,31 @@ var d = labToolData.cell || {};
 
                 if (ttCurLine) ttLines.push(ttCurLine);
 
-                var ttPadX = 10 * dpr, ttPadY = 8 * dpr;
+                var ttPadX = 14 * dpr, ttPadY = 12 * dpr;
 
                 cctx.font = 'bold ' + (ttFontSize * 1.1) + 'px Inter, system-ui, sans-serif';
 
-                var titleW = cctx.measureText(ttTitle).width;
+                var ttTitleLines = [], ttTitleLine = '';
+                ttTitle.split(' ').forEach(function(word) {
+                  var next = ttTitleLine ? ttTitleLine + ' ' + word : word;
+                  if (ttTitleLine && cctx.measureText(next).width > ttMaxW - 72 * dpr) {
+                    ttTitleLines.push(ttTitleLine); ttTitleLine = word;
+                  } else ttTitleLine = next;
+                });
+                if (ttTitleLine) ttTitleLines.push(ttTitleLine);
+                var ttHeaderH = Math.max(44 * dpr, ttTitleLines.length * ttFontSize * 1.35 + ttPadY * 2);
 
                 cctx.font = ttFontSize + 'px Inter, system-ui, sans-serif';
 
-                var bodyW = 0;
+                var ttW = ttMaxW;
 
-                ttLines.forEach(function (l) { bodyW = Math.max(bodyW, cctx.measureText(l).width); });
-
-                var ttW = Math.max(titleW, bodyW) + ttPadX * 2;
-
-                var ttH = ttPadY * 2 + ttFontSize * 1.5 + ttLines.length * ttFontSize * 1.4 + 4 * dpr;
+                var ttH = ttHeaderH + ttPadY + ttLines.length * ttFontSize * 1.55;
 
                 var ttX = Math.max(4 * dpr, Math.min(W - ttW - 4 * dpr, tt.x));
 
-                var ttSafeTop = 4 * dpr;
+                // Selection can reflow the header during the explanation fade-in.
+                var ttSafeBand = readCellMissionOverlaySafeBand(true);
+                var ttSafeTop = ttSafeBand.top;
                 var ttLegendBottom = 0;
                 var ttCanvasRect = canvasEl.getBoundingClientRect();
                 var ttLegendEl = typeof document !== 'undefined' ? document.querySelector('[data-cell-target-legend]') : null;
@@ -21519,14 +21952,15 @@ var d = labToolData.cell || {};
                     ttSafeTop = Math.max(ttSafeTop, (ttLegendRect.bottom - ttCanvasRect.top + 8) * ttScaleY);
                   }
                 }
-                var ttMaxY = Math.max(4 * dpr, HH - ttH - 4 * dpr);
+                var ttMaxY = Math.max(4 * dpr, ttSafeBand.bottom - ttH);
                 var ttMinY = Math.min(ttSafeTop, ttMaxY);
                 var ttY = Math.max(ttMinY, Math.min(ttMaxY, tt.y - ttH - 8 * dpr));
                 tt.layout = {
                   bounds: { left: ttX, right: ttX + ttW, top: ttY, bottom: ttY + ttH },
                   safeTop: ttMinY,
                   legendBottom: ttLegendBottom,
-                  dpr: dpr
+                  dpr: dpr,
+                  closeBounds: { left: ttX + ttW - 44 * dpr, top: ttY, right: ttX + ttW, bottom: ttY + 44 * dpr }
                 };
 
                 // Shadow
@@ -21540,7 +21974,7 @@ var d = labToolData.cell || {};
 
                 cctx.beginPath();
 
-                var ttR = 6 * dpr;
+                var ttR = 12 * dpr;
 
                 cctx.moveTo(ttX + ttR, ttY); cctx.lineTo(ttX + ttW - ttR, ttY);
 
@@ -21572,9 +22006,18 @@ var d = labToolData.cell || {};
 
                 cctx.font = 'bold ' + (ttFontSize * 1.1) + 'px Inter, system-ui, sans-serif';
 
-                cctx.fillStyle = tt.def.color; cctx.textAlign = 'left'; cctx.textBaseline = 'top';
+                cctx.fillStyle = '#ecfdf5'; cctx.textAlign = 'left'; cctx.textBaseline = 'top';
 
-                cctx.fillText(ttTitle, ttX + ttPadX, ttY + ttPadY);
+                ttTitleLines.forEach(function(line, index) {
+                  cctx.fillText(line, ttX + ttPadX, ttY + ttPadY + index * ttFontSize * 1.35, ttW - 72 * dpr);
+                });
+                // A generous 44px close target matches the rest of the microscope controls.
+                var closeCX = ttX + ttW - 22 * dpr, closeCY = ttY + 22 * dpr;
+                cctx.beginPath(); cctx.moveTo(closeCX - 5 * dpr, closeCY - 5 * dpr); cctx.lineTo(closeCX + 5 * dpr, closeCY + 5 * dpr);
+                cctx.moveTo(closeCX + 5 * dpr, closeCY - 5 * dpr); cctx.lineTo(closeCX - 5 * dpr, closeCY + 5 * dpr);
+                cctx.strokeStyle = '#d1fae5'; cctx.lineWidth = 2 * dpr; cctx.stroke();
+                cctx.beginPath(); cctx.moveTo(ttX + ttPadX, ttY + ttHeaderH - 6 * dpr); cctx.lineTo(ttX + ttW - ttPadX, ttY + ttHeaderH - 6 * dpr);
+                cctx.strokeStyle = 'rgba(167,243,208,0.22)'; cctx.lineWidth = dpr; cctx.stroke();
 
                 // Body
 
@@ -21584,13 +22027,13 @@ var d = labToolData.cell || {};
 
                 ttLines.forEach(function (line, li) {
 
-                  cctx.fillText(line, ttX + ttPadX, ttY + ttPadY + ttFontSize * 1.5 + 2 * dpr + li * ttFontSize * 1.4);
+                  cctx.fillText(line, ttX + ttPadX, ttY + ttHeaderH + li * ttFontSize * 1.55);
 
                 });
 
-                // Auto-dismiss after 5 seconds
+                // Play cues clear quickly; observation explanations remain until dismissed.
 
-                if (ttAgeMs > 5000) world._tooltip = null;
+                if (playAsOrg && ttAgeMs > 5000) world._tooltip = null;
 
                 cctx.restore();
 
@@ -21855,45 +22298,7 @@ var d = labToolData.cell || {};
 
 
 
-              // ── Magnification label (glassmorphic) ──
-
-              var mag = Math.round(40 * cam.zoom);
-
-              cctx.save();
-
-              var mlx = 6 * dpr, mly = HH - 22 * dpr, mlw = 48 * dpr, mlh = 16 * dpr;
-
-              cctx.fillStyle = 'rgba(15,23,42,0.82)';
-
-              cctx.beginPath();
-
-              cctx.moveTo(mlx + 4 * dpr, mly); cctx.lineTo(mlx + mlw - 4 * dpr, mly);
-
-              cctx.arcTo(mlx + mlw, mly, mlx + mlw, mly + 4 * dpr, 4 * dpr);
-
-              cctx.lineTo(mlx + mlw, mly + mlh - 4 * dpr);
-
-              cctx.arcTo(mlx + mlw, mly + mlh, mlx + mlw - 4 * dpr, mly + mlh, 4 * dpr);
-
-              cctx.lineTo(mlx + 4 * dpr, mly + mlh);
-
-              cctx.arcTo(mlx, mly + mlh, mlx, mly + mlh - 4 * dpr, 4 * dpr);
-
-              cctx.lineTo(mlx, mly + 4 * dpr);
-
-              cctx.arcTo(mlx, mly, mlx + 4 * dpr, mly, 4 * dpr);
-
-              cctx.closePath(); cctx.fill();
-
-              cctx.font = 'bold ' + (8 * dpr) + 'px monospace';
-
-              cctx.fillStyle = '#a7f3d0'; cctx.textAlign = 'center';
-
-              cctx.fillText(mag + 'x', mlx + mlw / 2, mly + mlh - 4 * dpr);
-
-              cctx.restore();
-
-
+              // Magnification is displayed by the accessible DOM zoom control.
 
               // ── Player energy bar (enhanced) ──
 
@@ -22001,6 +22406,7 @@ var d = labToolData.cell || {};
             function schedulePausedOverlayFrame() {
               if (!canvasEl._cellSimAlive || !canvasEl._cellSimPaused || pausedOverlayAnimId) return;
               if (!world._tooltip && !world._highlightOrganelle) return;
+              if (!playAsOrg && world._tooltip && world._tooltip.alpha >= 1 && !world._highlightOrganelle) return;
               pausedOverlayAnimId = requestAnimationFrame(function () {
                 pausedOverlayAnimId = null;
                 renderStaticFrame();
@@ -22172,10 +22578,28 @@ var d = labToolData.cell || {};
               if (canvasEl._cellSimPaused) renderStaticFrame();
             }
 
+            function dismissCellExplanation() {
+              if (!world._tooltip) return false;
+              world._tooltip = null;
+              if (canvasEl._cellSimPaused) renderStaticFrame();
+              return true;
+            }
+            function hitCellExplanationBody(mx, my) {
+              var bounds = world._tooltip && world._tooltip.layout && world._tooltip.layout.bounds;
+              return !!bounds && mx >= bounds.left && mx <= bounds.right && my >= bounds.top && my <= bounds.bottom;
+            }
+            function hitCellExplanationClose(mx, my) {
+              var bounds = world._tooltip && world._tooltip.layout && world._tooltip.layout.closeBounds;
+              return !!bounds && mx >= bounds.left && mx <= bounds.right && my >= bounds.top && my <= bounds.bottom;
+            }
+
             function handleCanvasTap(clientX, clientY) {
               var rect = canvasEl.getBoundingClientRect();
               var mx = (clientX - rect.left) * dpr;
               var my = (clientY - rect.top) * dpr;
+
+              if (hitCellExplanationClose(mx, my)) { dismissCellExplanation(); return; }
+              if (hitCellExplanationBody(mx, my)) return;
 
               // Check if click hit an organelle label first (click-to-explain)
               var hitLabel = findOrganelleLabelHit(mx, my);
@@ -22194,6 +22618,7 @@ var d = labToolData.cell || {};
               });
 
               selectedOrg = clicked;
+              if (!selectedOrg) setObservationFollow(false);
               if (canvasEl._onSelect) canvasEl._onSelect(clicked ? clicked.def.id : null);
               if (canvasEl._cellSimPaused) renderStaticFrame();
             }
@@ -22204,6 +22629,8 @@ var d = labToolData.cell || {};
                 var rect = canvasEl.getBoundingClientRect();
                 var mx = (e.clientX - rect.left) * dpr;
                 var my = (e.clientY - rect.top) * dpr;
+                if (hitCellExplanationClose(mx, my)) { dismissCellExplanation(); return; }
+                if (hitCellExplanationBody(mx, my)) return;
                 var playHitLabel = findOrganelleLabelHit(mx, my);
                 if (playHitLabel) showOrganelleLabelTooltip(playHitLabel);
                 if (e.pointerType !== 'mouse') e.preventDefault();
@@ -22221,6 +22648,7 @@ var d = labToolData.cell || {};
             function onPointerMove(e) {
               if (dragging) {
                 if (activePointerId !== null && e.pointerId !== activePointerId) return;
+                if (Math.abs(e.clientX - dragStartX) >= 5 || Math.abs(e.clientY - dragStartY) >= 5) setObservationFollow(false);
                 var dx = (e.clientX - dragStartX) / cam.zoom;
                 var dy = (e.clientY - dragStartY) / cam.zoom;
                 cam.x = camStartX - dx; cam.y = camStartY - dy;
@@ -22297,6 +22725,7 @@ var d = labToolData.cell || {};
             }
 
             function onKey(e) {
+              if (e.type === 'keydown' && e.key === 'Escape' && e.target === canvasEl && dismissCellExplanation()) { e.preventDefault(); return; }
               if (cellKeyTargetIsFormControl(e.target)) return;
               if (!playAsOrg || !isMovementKey(e.key)) return;
               var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
@@ -22490,9 +22919,28 @@ var d = labToolData.cell || {};
 
             };
 
+            function setObservationFollow(enabled) {
+              var next = !!enabled;
+              if (observationFollowEnabled === next) return;
+              observationFollowEnabled = next;
+              updateCellDataFunctional(function(cel) { cel.followSpecimen = next; return cel; });
+            }
+            canvasEl._cellSimSetFollowSpecimen = function(enabled) {
+              setObservationFollow(enabled && !!selectedOrg && !playAsOrg);
+              if (canvasEl._cellSimPaused) renderStaticFrame();
+            };
+            canvasEl._cellSimGetObservationView = function() {
+              return { following: observationFollowEnabled && !!selectedOrg && !playAsOrg && canvasEl.getAttribute('data-cell-view-mode') === 'observe', camera: { x: cam.x, y: cam.y, zoom: cam.zoom }, selected: selectedOrg ? { id: selectedOrg.def.id, x: selectedOrg.x, y: selectedOrg.y } : null };
+            };
+            canvasEl._cellSimSetObservationLabels = function (visible) {
+              observationLabelsVisible = visible !== false;
+              if (!observationLabelsVisible && !playAsOrg) { world._tooltip = null; _labelHitRegions = []; }
+              if (canvasEl._cellSimPaused) renderStaticFrame();
+            };
+
             canvasEl._cellSimSetZoom = function (z) { cam.zoom = z; clampCamera(); if (canvasEl._cellSimPaused) renderStaticFrame(); };
 
-            canvasEl._cellSimResetView = function () { cam.x = WORLD_W / 2; cam.y = WORLD_H / 2; cam.zoom = 1; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); };
+            canvasEl._cellSimResetView = function () { setObservationFollow(false); cam.x = WORLD_W / 2; cam.y = WORLD_H / 2; cam.zoom = 1; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); };
 
             canvasEl._cellSimSetPaused = function (p) {
               canvasEl._cellSimPaused = !!p;
@@ -22547,6 +22995,7 @@ var d = labToolData.cell || {};
               var target = orgId ? world.organisms.find(function (o) { return o.def.id === orgId; }) : null;
 
               selectedOrg = target || null;
+              if (!selectedOrg) setObservationFollow(false);
 
               if (target && focusCamera !== false) { cam.x = target.x; cam.y = target.y; cam.zoom = 3; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); }
 
@@ -22597,6 +23046,8 @@ var d = labToolData.cell || {};
                 if (selectedOrg && selectedOrg.type === orgId) {
 
                   selectedOrg = null;
+                  world._tooltip = null;
+                  setObservationFollow(false);
 
                   if (canvasEl._onSelect) canvasEl._onSelect(null);
 
@@ -22698,6 +23149,34 @@ var d = labToolData.cell || {};
 
             };
 
+            canvasEl._cellSimDrawSpecimenPreview = function (previewCanvas, orgId) {
+              var def = ORGANISMS.find(function(item) { return item.id === orgId; });
+              if (!def || !previewCanvas) return false;
+              var previewContext = previewCanvas.getContext('2d');
+              if (!previewContext) return false;
+              var ratio = 2, pw = 180, ph = 108;
+              previewCanvas.width = pw * ratio; previewCanvas.height = ph * ratio;
+              previewContext.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+              var light = previewContext.createRadialGradient(120, 60, 0, 180, 108, 220);
+              light.addColorStop(0, '#f6fcfa'); light.addColorStop(1, '#deece7');
+              previewContext.fillStyle = light; previewContext.fillRect(0, 0, pw * ratio, ph * ratio);
+              previewContext.strokeStyle = 'rgba(59,108,98,0.07)'; previewContext.lineWidth = 1;
+              for (var grid = 18; grid < pw; grid += 24) {
+                previewContext.beginPath(); previewContext.moveTo(grid * ratio, 0); previewContext.lineTo(grid * ratio, ph * ratio); previewContext.stroke();
+              }
+              var specimen = { def: def, angle: orgId === 'stentor' ? 0 : -0.18, phase: 0, _stScale: 1 };
+              drawOrganismOnSurface(specimen, previewContext, ratio, 0, { x: pw * ratio / 2, y: ph * ratio / 2 }, 27 * ratio);
+              previewCanvas._cellPortraitId = orgId;
+              return true;
+            };
+
+            canvasEl._cellSimGetAnatomyLabels = function () {
+              return _labelHitRegions.map(function(region) {
+                return { name: region.anatomy.name, x: region.x / dpr, y: region.y / dpr,
+                  width: region.w / dpr, height: region.h / dpr };
+              });
+            };
+
             canvasEl._cellSimGetOrganelleTooltip = function () {
               var tt = world._tooltip;
               if (!tt) return null;
@@ -22708,7 +23187,8 @@ var d = labToolData.cell || {};
                   bounds: Object.assign({}, tt.layout.bounds),
                   safeTop: tt.layout.safeTop,
                   legendBottom: tt.layout.legendBottom,
-                  dpr: tt.layout.dpr
+                  dpr: tt.layout.dpr,
+                  closeBounds: Object.assign({}, tt.layout.closeBounds)
                 } : null
               };
             };
@@ -22742,7 +23222,12 @@ var d = labToolData.cell || {};
               canvasEl._cellSimGetTargetGuide = null;
               canvasEl._cellSimGetControlResponse = null;
               canvasEl._cellSimGetOrganelleTooltip = null;
+              canvasEl._cellSimGetAnatomyLabels = null;
+              canvasEl._cellSimSetObservationLabels = null;
+              canvasEl._cellSimDrawSpecimenPreview = null;
               canvasEl._cellSimGetMissionEvidenceState = null;
+              canvasEl._cellSimSetFollowSpecimen = null;
+              canvasEl._cellSimGetObservationView = null;
               canvasEl._cellSimRestockMissionTargets = null;
               canvasEl._cellSimTestSetMissionScenario = null;
               canvasEl._cellSimTestAdvanceMission = null;
@@ -23242,6 +23727,7 @@ var d = labToolData.cell || {};
             if (!orgDef || !anatomy) return;
             var cv = document.querySelector('[data-cell-sim-canvas]');
             if (!cv || !cv._cellSimShowOrganelleTooltip) return;
+            if (!d.playAsOrganism) { upd("observationLabels", true); if (cv._cellSimSetObservationLabels) cv._cellSimSetObservationLabels(true); }
             if (cv._cellSimFocusOrganism) cv._cellSimFocusOrganism(orgDef.id);
             cv._cellSimShowOrganelleTooltip(orgDef.id, anatomy.name);
             var stage = document.querySelector('[data-cell-stage]');
@@ -23291,6 +23777,31 @@ var d = labToolData.cell || {};
             startCellAmbient();
             cellSound('select');
           }
+          function cellControlIcon(kind) {
+            var paths = {
+              reset: 'M4 10a8 8 0 1 1 1 8 M4 4v6h6',
+              pause: 'M8 5v14 M16 5v14',
+              play: 'M8 5l11 7-11 7z',
+              locate: 'M12 2v4 M12 18v4 M2 12h4 M18 12h4 M18 12a6 6 0 1 1-12 0 6 6 0 0 1 12 0'
+            };
+            return React.createElement('svg', { viewBox: '0 0 24 24', width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false' },
+              React.createElement('path', { d: paths[kind] || paths.locate }));
+          }
+          function returnToCellDish() {
+            var cv = document.querySelector('[data-cell-sim-canvas]');
+            var focalId = d.playAsOrganism || d.selectedOrganism;
+            if (cv && focalId && cv._cellSimFocusOrganism) cv._cellSimFocusOrganism(focalId);
+            focusCellPlayRegion('[data-cell-stage]', '[data-cell-sim-canvas]');
+          }
+          function cellSpecimenPortrait(org, large) {
+            return React.createElement('span', { 'data-cell-specimen-portrait': org.id, 'data-cell-portrait-size': large ? 'detail' : 'card', 'aria-hidden': 'true' },
+              React.createElement('canvas', { width: 360, height: 216, ref: function(cv) {
+                if (!cv || cv._cellPortraitId === org.id) return;
+                var live = document.querySelector('[data-cell-sim-canvas]');
+                if (live && live._cellSimDrawSpecimenPreview) live._cellSimDrawSpecimenPreview(cv, org.id);
+              } })
+            );
+          }
           var selectedStructureCount = selDef && selDef.anatomy ? selDef.anatomy.length : 0;
 
           var cellRenderPrefersReducedMotion = false;
@@ -23319,22 +23830,40 @@ var d = labToolData.cell || {};
               }
 
               var activeCellMode = d.mode || 'observe';
+          var visibleModelCount = ORGANISMS.filter(function(model) { return !d._activeSpawns || d._activeSpawns[model.id] !== false; }).length;
           var observedCount = (ext.organismsObserved || []).length;
+          var observedModelCount = ORGANISMS.filter(function(model) { return (ext.organismsObserved || []).indexOf(model.id) !== -1; }).length;
           var discoveredCount = (d.discoveries || []).length;
           var completedChallengeCount = CELL_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length;
           var organellesExplored = (ext.organellesClicked || []).length + (d.interiorSeen || []).length;
           var cellModeCategoryHint = {
-            observe: 'interactive', interior: 'interactive', microdissection: 'interactive', processes: 'interactive', play: 'interactive', quiz: 'interactive',
+            osmoHunt: 'interactive', observe: 'interactive', interior: 'interactive', microdissection: 'interactive', processes: 'interactive', play: 'interactive', quiz: 'interactive',
             encyclopedia: 'browse', filter: 'browse', compare: 'browse',
             history: 'knowledge', biologists: 'knowledge', lab: 'knowledge', disease: 'knowledge', ecology: 'knowledge',
-            glossary: 'reference', finale: 'reference'
+            glossary: 'reference', library: 'reference', finale: 'reference'
           };
           var cellModeLabelMap = {
-            observe: 'Observe', interior: 'Inside the Cell', microdissection: 'Microdissection', processes: 'Cell Processes', play: 'Play', quiz: 'Quiz',
+            osmoHunt: 'Osmosis Lab', observe: 'Observe', interior: 'Inside the Cell', microdissection: 'Microdissection', processes: 'Cell Processes', play: 'Play', quiz: 'Quiz',
             encyclopedia: 'Encyclopedia', filter: 'Filter', compare: 'Compare',
             history: 'History', biologists: 'Biologists', lab: 'Lab Techniques', disease: 'Diseases', ecology: 'Ecology',
-            glossary: 'Glossary', finale: 'Finale'
+            glossary: 'Glossary', library: 'Library', finale: 'Finale'
           };
+          function saveCellInquiry(id, record) {
+            updateCellDataFunctional(function(cel) {
+              cel._cellInquiryRecords = Object.assign({}, cel._cellInquiryRecords || {});
+              cel._cellInquiryRecords[id] = record; return cel;
+            });
+          }
+          function openCellInquiryStep(step) {
+            if (step.settings) updateCellDataFunctional(function(cel) { return Object.assign(cel, step.settings); });
+            jumpCellMode(step.mode);
+          }
+          function startCellInquiry(id) {
+            var state = cellInquiryState(d, id); if (!state) return;
+            upd('_cellInquiryId', id); upd('_cellInquiryNotice', ''); upd('_cellSearch', '');
+            openCellInquiryStep(state.route.steps[state.step]);
+            requestAnimationFrame(function() { var guide = document.querySelector('[data-cell-inquiry-guide]'); if(guide) guide.focus(); });
+          }
           function jumpCellMode(m) {
             upd('mode', m);
             upd('_cellPicked', true);
@@ -23361,11 +23890,243 @@ var d = labToolData.cell || {};
             if (typeof setStemLabTool === 'function') setStemLabTool(toolId);
             if (typeof announceToSR === 'function') announceToSR('Scale Journey: opening ' + label);
           }
-          return React.createElement("div", { ref: cleanupRef, className: "max-w-6xl mx-auto animate-in fade-in duration-200", "data-cell-tool": true },
+          return React.createElement("div", { ref: cleanupRef, className: "max-w-6xl mx-auto animate-in fade-in duration-200", "data-cell-tool": true, "data-cell-mode": d.mode || 'observe', "data-cell-study-focus": d.mode === 'interior' && !!d.interiorStudyFocus ? 'true' : undefined },
 
+            React.createElement('style', { 'data-cell-visual-style': true }, `
+/* A quiet, consistent workspace around the living diagram. */
+[data-cell-tool]{min-width:0;color:#183442}
+[data-cell-header]{padding:14px 4px 18px;gap:10px!important}
+[data-cell-header] h3{font-size:22px!important;letter-spacing:-.6px}
+[data-cell-header] button{min-height:40px}
+[data-cell-stage]{border:1px solid #a6c4bb!important;border-radius:18px!important;box-shadow:0 14px 36px #123e3920!important}
+[data-cell-observation-tools]{grid-column:1 / -1;border-top:1px solid #50706e;margin-top:5px;padding-top:9px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+[data-cell-observation-identity]{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12px}
+[data-cell-observation-identity]>span:first-child{width:8px;height:8px;border-radius:50%;box-shadow:0 0 0 2px #ffffff30}
+[data-cell-observation-identity]>span:last-child{font-size:10px;color:#b8d5d0}
+[data-cell-observation-actions]{display:flex;gap:6px}
+[data-cell-observation-actions] button{display:flex;gap:5px;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;border:1px solid #759891;border-radius:8px;color:#ecfdf5;background:#234b48;font-size:11px;font-weight:700}
+[data-cell-observation-actions] button:hover{background:#35635b}
+[data-cell-observation-actions] button[aria-pressed=true]{background:#d7f5e9;color:#16483e;border-color:#d7f5e9}
+@container(max-width:640px){[data-cell-observation-tools]{gap:7px}[data-cell-observation-actions]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}[data-cell-observation-actions] button{padding:6px 4px;font-size:10px}[data-cell-observation-identity]>span:last-child{display:none}}
+[data-cell-stage-hud]{background:rgba(9,38,43,.94)!important;border-color:#587b7c!important;border-radius:12px!important;box-shadow:0 4px 14px #092e3626!important}
+[data-cell-target-legend]{background:rgba(9,38,43,.96)!important;border-color:#587b7c!important;border-radius:12px!important;box-shadow:0 6px 18px #092e3626!important}
+[data-cell-stage] button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+[data-cell-stage-utility]{display:grid!important;grid-template-columns:minmax(0,1fr) auto 44px;grid-template-rows:18px 32px;column-gap:8px!important;row-gap:0!important;align-items:center;box-sizing:border-box;width:240px;min-height:66px;padding:7px 9px!important;bottom:8px!important;border:1px solid #bfd2cd;background:rgba(248,253,251,.97)!important;color:#315650!important;border-radius:12px!important;box-shadow:0 4px 16px #163c4320}
+[data-cell-control-label]{grid-column:1;grid-row:1;font-size:10px;font-weight:750;letter-spacing:.08em;text-transform:uppercase;color:#42635a}
+[data-cell-control-value]{grid-column:2;grid-row:1;font-size:12px;font-weight:750;font-variant-numeric:tabular-nums;color:#173f3b}
+[data-cell-stage-utility] input{grid-column:1 / 3;grid-row:2;width:100%!important;min-width:0;height:32px;accent-color:#0f766e;cursor:pointer}
+[data-cell-stage-utility] button{grid-column:3;grid-row:1 / 3;display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0!important;border:1px solid #c3d6cf;border-radius:9px!important}
+[data-cell-stage-utility] button:hover{box-shadow:0 0 0 2px #0f766e20}
+[data-cell-stage-utility] button:focus-visible,[data-cell-stage-utility] input:focus-visible{outline:3px solid #0f766e;outline-offset:3px}
+[data-cell-direction-pad],[data-cell-control-lock]{bottom:86px!important}
+@container(max-width:640px){
+[data-cell-stage-utility]{width:calc(50% - 12px);grid-template-columns:minmax(0,1fr) auto 44px;grid-template-rows:14px 44px;column-gap:5px!important;min-height:72px;padding:6px!important;white-space:nowrap}
+[data-cell-stage-utility=zoom]{left:8px!important;right:auto!important}
+[data-cell-stage-utility=speed]{right:8px!important;left:auto!important}
+[data-cell-stage-utility] input{height:44px}
+[data-cell-direction-pad],[data-cell-control-lock]{bottom:90px!important}
+}
+[data-cell-visibility-panel]{padding:18px!important;border:1px solid #d4e3df!important;border-radius:16px!important;box-shadow:0 4px 14px #143b4408!important}
+[data-cell-visibility-heading]{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+[data-cell-visibility-heading]>div:first-child{flex:1;min-width:180px}
+[data-cell-visibility-heading] h4{font-size:16px;font-weight:750;color:#214b40;margin:0}
+[data-cell-visibility-heading] p{font-size:12px;color:#62766e;line-height:1.5;margin-top:4px}
+[data-cell-visibility-count]{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;background:#edf6f1;color:#35634f;border:1px solid #d6e7dd;border-radius:20px;padding:5px 9px}
+[data-cell-visibility-actions]{display:flex;gap:6px}
+[data-cell-visibility-actions] button{min-height:44px;padding:8px 12px;border-radius:8px;font-size:11px}
+[data-cell-visibility-grid]{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))!important;gap:8px}
+[data-cell-visibility-option]{min-width:0;min-height:58px;padding:10px!important;gap:8px;border-radius:10px!important;background:#f7f9f8!important;border:1px solid #d7e2dc!important;text-align:left;transition:background .15s,border-color .15s!important}
+[data-cell-visibility-option][aria-pressed=true]{background:#edf7f1!important;border-color:#a6cbb7!important}
+[data-cell-visibility-option]:hover{border-color:#618f7b!important}
+[data-cell-visibility-identity]{display:flex;align-items:center;gap:8px;min-width:0;color:#35574a}
+[data-cell-visibility-identity] strong{display:block;font-size:12px;line-height:1.4;font-weight:700;overflow-wrap:anywhere}
+[data-cell-visibility-dot]{width:8px;height:8px;border-radius:50%;background:var(--cell-visibility-accent);flex-shrink:0}
+[data-cell-visibility-state]{display:block;font-size:10px;font-weight:500;color:#687b73;margin-top:2px}
+[data-cell-visibility-mark]{display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;flex-shrink:0;background:#e6ece9;color:#64786d;font-size:12px}
+[data-cell-visibility-option][aria-pressed=true] [data-cell-visibility-mark]{background:#397e5c;color:white}
+[data-cell-visibility-panel] button:focus-visible{outline:3px solid #0f766e;outline-offset:3px}
+[data-cell-visibility-empty]{padding:12px;background:#f6f8f7;border:1px dashed #c2d4c9;border-radius:9px;font-size:12px;line-height:1.6;color:#526e60;margin-bottom:12px}
+@media(max-width:640px){[data-cell-visibility-panel]{padding:12px!important}[data-cell-visibility-grid]{grid-template-columns:repeat(2,minmax(0,1fr))!important}[data-cell-visibility-heading]{gap:10px}[data-cell-visibility-heading]>div:first-child{flex-basis:100%}[data-cell-visibility-actions]{margin-left:auto}[data-cell-visibility-actions] button{padding:6px 9px}[data-cell-visibility-option]{padding:8px!important}}
+@media(prefers-reduced-motion:reduce){[data-cell-visibility-option]{transition:none!important;transform:none!important}}
+[data-cell-organism-chooser]{padding:20px!important;gap:16px!important;border:1px solid #d4e3df!important;border-radius:18px!important;background:#f7fbf9!important}
+[data-cell-organism-chooser] h4{font-size:19px!important;letter-spacing:-.3px;color:#173f3b!important}
+[data-cell-organism-chooser] h4+p{font-size:12px!important;line-height:1.6;margin-top:5px}
+[data-cell-organism-grid]{gap:12px!important;align-items:stretch}
+[data-cell-organism-chooser] button{border-radius:12px!important;min-height:44px}
+[data-cell-organism-option]{overflow:hidden;background:#fff!important;border-width:1px!important;padding:12px!important;box-shadow:0 2px 7px #143b4408;transition:box-shadow .15s,border-color .15s!important}
+[data-cell-organism-option][aria-pressed=true]{border:2px solid var(--cell-specimen-accent)!important;box-shadow:0 0 0 3px #0f766e18!important;background:#f0f9f6!important}
+[data-cell-organism-option]:focus-visible{outline:3px solid #0f766e;outline-offset:3px}
+[data-cell-mode=observe] [data-cell-organism-option]{display:flex;flex-direction:column;align-items:stretch;min-width:0}
+[data-cell-mode=observe] [data-cell-organism-card-header]{min-height:20px}
+[data-cell-gallery-classification]{display:block;font-size:11px!important;line-height:1.45!important;font-weight:650;color:#43685c;margin-top:7px}
+[data-cell-gallery-movement]{font-size:11px!important;line-height:1.5!important;color:#697d76;margin-top:5px!important;margin-bottom:12px}
+[data-cell-gallery-footer]{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px 8px;margin-top:auto;border-top:1px solid #dce9e2;padding-top:10px;font-size:10px;line-height:1.4;color:#617a70}
+[data-cell-gallery-status]{font-weight:750;color:#356a57}
+[data-cell-observation-state=selected] [data-cell-gallery-status]{padding:3px 7px;border-radius:5px;background:#d3ece0;color:#21503e}
+[data-cell-observation-summary]{border:1px solid #d4e4dc;background:#edf6f1!important;color:#35634f!important;font-variant-numeric:tabular-nums}
+@container(max-width:420px){[data-cell-mode=observe] [data-cell-card-name]{font-size:13px}[data-cell-mode=observe] [data-cell-gallery-footer]{font-size:9px;gap:5px;padding-top:8px}[data-cell-mode=observe] [data-cell-organism-card-detail]{display:block!important}}
+@container(max-width:420px){
+[data-cell-mode=play] [data-cell-organism-option] [data-cell-specimen-portrait]{float:right;width:66px;margin:0 0 6px 8px}
+[data-cell-mode=play] [data-cell-organism-option] [data-cell-specimen-portrait] canvas{height:40px}
+[data-cell-mode=play] [data-cell-organism-option] [data-cell-organism-card-detail]{clear:both}
+[data-cell-mode=play] [data-cell-organism-option][data-cell-organism-priority=standard] [data-cell-specimen-portrait]{width:36px;margin:0 0 2px 4px}
+[data-cell-mode=play] [data-cell-organism-option][data-cell-organism-priority=standard] [data-cell-specimen-portrait] canvas{height:26px}
+[data-cell-mode=play] [data-cell-organism-option][data-cell-organism-priority=standard] [data-cell-card-name]{font-size:12px}
+}
+
+[data-cell-organism-card-header]{align-items:center!important;flex-wrap:wrap;row-gap:6px}
+[data-cell-card-name]{font-size:14px;line-height:1.3;color:#1c4541;font-weight:750}
+[data-cell-organism-card-detail]{padding-top:3px}
+[data-cell-organism-card-detail]>span{font-size:11px!important;line-height:1.5!important}
+[data-cell-specimen-portrait]{display:block;overflow:hidden;background:#e6f1ec;border:1px solid #d4e3dd;border-radius:8px;margin-bottom:12px}
+[data-cell-specimen-portrait] canvas{display:block;width:100%;height:104px;object-fit:contain}
+[data-cell-portrait-size=detail]{margin:0}
+[data-cell-portrait-size=detail] canvas{height:auto;aspect-ratio:5/3}
+[data-cell-selected-organism-card]{border:1px solid #d4e3df!important;border-top:4px solid var(--cell-specimen-accent)!important;border-radius:18px!important;padding:22px!important;box-shadow:0 8px 28px #143b4410}
+[data-cell-selected-organism-header]{display:grid!important;grid-template-columns:160px minmax(0,1fr);gap:18px!important;align-items:start!important}
+[data-cell-selected-organism-header] h4{font-size:25px!important;letter-spacing:-.5px;color:#173f3b!important;line-height:1.25;margin:7px 0!important}
+[data-cell-selected-organism-header] p{font-size:13px!important;line-height:1.7!important;max-width:760px}
+[data-cell-specimen-description]{grid-column:1 / -1}
+[data-cell-selected-organism-actions]{grid-column:1 / -1;justify-content:flex-start!important}
+[data-cell-selected-organism-actions] button{min-height:44px;font-size:12px!important;padding:10px 14px!important}
+[data-cell-organism-field-notes]{margin-top:20px!important;padding:16px;background:#f7faf9;border:1px solid #e0eae6;border-radius:12px;gap:8px!important}
+[data-cell-organism-field-notes] h5{font-size:13px;font-weight:750;color:#214c43;margin-bottom:4px}
+[data-cell-organism-field-notes]>div{font-size:12px!important;line-height:1.65}
+[data-cell-anatomy-explorer]{margin-top:20px!important;padding-top:18px!important}
+[data-cell-specimen-overview]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px;padding:14px 16px;background:#edf6f3;border:1px solid #d6e7df;border-radius:12px}
+[data-cell-specimen-overview]>div{min-width:0}[data-cell-specimen-overview] span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;font-weight:750;color:#526d65;margin-bottom:5px}
+[data-cell-specimen-overview] strong{display:block;font-size:12px;line-height:1.5;color:#204e43;overflow-wrap:anywhere}
+[data-cell-anatomy-heading]{display:flex;align-items:center;justify-content:space-between;gap:12px}
+[data-cell-anatomy-heading] h5{font-size:16px;font-weight:750;letter-spacing:-.25px;color:#183f38}
+[data-cell-anatomy-heading]>span{flex-shrink:0;font-size:10px;font-weight:700;color:#526d65;border:1px solid #d8e7e0;border-radius:20px;padding:4px 8px;background:#f4f9f6}
+[data-cell-anatomy-intro]{font-size:12px;line-height:1.6;color:#61736e;margin:6px 0 14px}
+[data-cell-anatomy-item]{padding:14px!important;gap:10px!important;min-height:60px;border-radius:12px!important;font-size:12px!important;line-height:1.6;border:1px solid #dce7e2!important;background:#fff!important;align-items:stretch!important;box-shadow:0 2px 5px #173f3b04;transition:background .15s,border-color .15s,box-shadow .15s!important}
+[data-cell-anatomy-item]:hover{background:#f5faf7!important;border-color:#7da99a!important;box-shadow:0 3px 10px #173f3b0d}
+[data-cell-anatomy-item][data-cell-mission-focus=true]{border-color:#d8c9f1!important;background:#faf8ff!important}
+[data-cell-anatomy-icon]{display:flex;align-items:center;justify-content:center;flex:0 0 30px;width:30px;height:30px;border:1px solid #dce7e2;border-radius:9px;background:#f0f6f3;font-size:15px}
+[data-cell-anatomy-content]{display:flex;flex-direction:column;min-width:0;flex:1}
+[data-cell-anatomy-title]{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin:3px 0 7px}
+[data-cell-anatomy-title]>strong{font-size:13px;line-height:1.4;color:#20463f;overflow-wrap:anywhere}
+[data-cell-anatomy-mission]{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:#6d399b}
+[data-cell-anatomy-description]{display:block;line-height:1.7;color:#536963;margin-bottom:12px}
+[data-cell-anatomy-action]{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #e4ede8;padding-top:9px;margin-top:auto;color:#296e58;font-size:11px;font-weight:750}
+[data-cell-anatomy-action] svg{width:15px;height:15px;flex-shrink:0}
+@media(max-width:380px){[data-cell-anatomy-item]{padding:12px!important;gap:8px!important}[data-cell-anatomy-icon]{flex-basis:26px;width:26px;height:26px;font-size:13px}[data-cell-specimen-overview]{gap:8px;padding:12px}}
+@media(prefers-reduced-motion:reduce){[data-cell-anatomy-item]{transition:none!important;transform:none!important}}
+[data-cell-anatomy-explorer]>div:last-child{gap:8px!important}
+@media(min-width:1000px){[data-cell-anatomy-explorer]>div:last-child{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){[data-cell-organism-chooser]{padding:12px!important}[data-cell-organism-grid]{gap:8px!important}[data-cell-specimen-portrait] canvas{height:76px}[data-cell-portrait-size=detail] canvas{height:auto}[data-cell-selected-organism-card]{padding:14px!important}[data-cell-selected-organism-header]{grid-template-columns:100px minmax(0,1fr);gap:12px!important}[data-cell-selected-organism-header] h4{font-size:21px!important}[data-cell-selected-organism-header] p{grid-column:1 / -1;font-size:12px!important}[data-cell-selected-organism-actions]{grid-column:1 / -1}}
+@media(prefers-reduced-motion:reduce){[data-cell-organism-option]{transition:none!important;transform:none!important}}
+
+
+[data-cell-navigation] button{min-height:40px;font-size:12px}
+[data-cell-tool][data-cell-mode="interior"]{display:flex;flex-direction:column}
+[data-cell-tool][data-cell-mode="interior"] > *{order:3}
+[data-cell-tool][data-cell-mode="interior"] > [data-cell-header]{order:0}
+[data-cell-tool][data-cell-mode="interior"] > [data-cell-interior-workspace]{order:1}
+[data-cell-interior-workspace]{display:flex;flex-direction:column;padding:20px!important;border:1px solid #d8e5e5!important;border-radius:20px!important;background:#f7fbfb!important;box-shadow:0 12px 40px #143b4410!important;gap:14px}
+[data-cell-interior-workspace] > *{order:5;margin:0!important;min-width:0}
+[data-cell-interior-workspace] > [data-cell-study-nav]{order:0}
+[data-cell-interior-workspace] > [data-cell-specimen-switch]{order:1}
+[data-cell-interior-workspace] > [data-cell-study-layout]{order:3}
+[data-cell-interior-workspace] > [data-cell-round-summary],
+[data-cell-interior-workspace] > [data-cell-adaptive-quiz][role="region"],
+[data-cell-interior-workspace] > [data-cell-guided-pathway]{order:2}
+[data-cell-study-nav]{background:#fff!important;border:1px solid #d8e5e5!important;padding:16px!important;border-radius:14px!important}
+[data-cell-study-nav] > div:first-child{justify-content:flex-start!important}[data-cell-study-nav] > div:first-child > div:first-child{margin-right:auto}[data-cell-specimen-switch] button{min-height:44px;border-color:#b3cbcf!important;border-radius:9px!important}[data-cell-specimen-switch] button[aria-pressed=true]{background:#0f5962!important;border-color:#0f5962!important}[data-cell-study-nav] h4{font-size:20px!important;letter-spacing:-.4px;color:#153c43!important}
+[data-cell-study-nav] p{font-size:13px!important;line-height:1.55;color:#41606b!important}
+[data-cell-study-nav] button{min-height:44px;border-radius:9px!important;font-size:12px!important}
+[data-cell-study-nav] button[aria-pressed="true"]{background:#0f5962!important;color:white!important}
+[data-cell-study-layout]{display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,.52fr);gap:20px;align-items:start}
+[data-cell-pathway-picker]{margin-top:14px;border-top:1px solid #e0e9e7;padding-top:12px}
+[data-cell-pathway-picker] summary{cursor:pointer;font-size:13px;font-weight:800;color:#31584e;min-height:32px}
+[data-cell-pathway-picker]>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:10px}
+[data-cell-pathway-picker] button{text-align:left;border:1px solid #cfddd8;padding:12px;background:#f7faf8;color:#254a3f}
+[data-cell-pathway-picker] button strong,[data-cell-pathway-picker] button span{display:block}[data-cell-pathway-picker] button span{font-size:11px;font-weight:400;margin-top:4px}
+[data-cell-guided-pathway]{padding:20px;border:1px solid #dccdad;border-radius:16px;background:linear-gradient(125deg,#fffcf3,#fff);color:#493d25}
+[data-cell-pathway-heading]{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+[data-cell-pathway-heading] p{font-size:10px;font-weight:800;letter-spacing:1.2px;margin:0 0 5px;color:#77603b}
+[data-cell-pathway-heading] h4{font-size:22px;font-weight:800;line-height:1.3;margin:0}
+[data-cell-guided-pathway] button{min-height:44px;font-size:12px;font-weight:700;border:1px solid #c8bda5;border-radius:9px;padding:9px 12px;background:#fff;color:#514122}
+[data-cell-guided-pathway] button:disabled{opacity:.45;cursor:default}
+[data-cell-pathway-steps]{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));list-style:none;padding:0;margin:18px 0;gap:8px}
+[data-cell-pathway-steps] button{display:flex;align-items:center;gap:9px;width:100%;height:100%;text-align:left}
+[data-cell-pathway-steps] button>span{display:grid;place-items:center;flex-shrink:0;width:25px;height:25px;border-radius:50%;background:#eee6d3;color:#594321}
+[data-cell-pathway-steps] button[aria-current=step]{background:#69502b;border-color:#69502b;color:#fff}
+[data-cell-pathway-steps] button[aria-current=step]>span{background:#fff6df;color:#514122}
+[data-cell-pathway-explanation]{padding:16px;background:#fff;border:1px solid #e3dbca;border-left:4px solid #ad884e;border-radius:9px}
+[data-cell-pathway-position]{font-size:11px!important;font-weight:800;color:#806a46}
+[data-cell-pathway-explanation] h5{font-size:18px;font-weight:800;margin:5px 0 8px}
+[data-cell-pathway-explanation] p{font-size:14px;line-height:1.65;margin:0}
+[data-cell-pathway-footer]{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:14px}
+[data-cell-pathway-footer]>span{font-size:12px;line-height:1.5;flex:1;text-align:right}
+[data-cell-pathway-footer] button:last-child:not(:first-child){background:#69502b;color:white;border-color:#69502b}
+@media(max-width:480px){[data-cell-guided-pathway]{padding:14px}[data-cell-pathway-steps]{grid-template-columns:repeat(2,minmax(0,1fr))}[data-cell-pathway-steps] button{padding:9px;gap:6px;font-size:11px}[data-cell-pathway-heading] h4{font-size:20px}}
+[data-cell-round-progress]{display:flex;gap:6px;margin:16px 0}
+[data-cell-round-progress] span{height:6px;flex:1;border-radius:4px;background:#ddd6e7}
+[data-cell-round-progress] span[data-answered="true"]{background:#8752a1}
+[data-cell-round-summary]{padding:22px;border:1px solid #b9d9d4;border-radius:16px;background:linear-gradient(135deg,#f0faf7,#fff);color:#21473f}
+[data-cell-round-heading]{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+[data-cell-round-eyebrow]{font-size:11px;font-weight:800;letter-spacing:1px;color:#427269;margin:0 0 6px}
+[data-cell-round-heading] h4{font-size:22px;line-height:1.25;font-weight:800;margin:0}
+[data-cell-round-score]{display:flex;flex-direction:column}[data-cell-round-score] strong{font-size:32px;line-height:1.2;font-weight:800}[data-cell-round-score] span{font-size:12px}
+[data-cell-round-summary]>p{font-size:14px;line-height:1.6;margin:14px 0}
+[data-cell-round-answers]{list-style:none;padding:0;margin:0;border-top:1px solid #d5e5df}
+[data-cell-round-answers] li{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #d5e5df;font-size:14px}
+[data-cell-round-answers] strong{font-size:12px;color:#286547}[data-cell-round-answers] strong[data-correct="false"]{color:#895017}
+[data-cell-round-actions]{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+[data-cell-round-actions] button{padding:10px 14px;min-height:44px;border:1px solid #236555;border-radius:9px;font-size:13px;font-weight:700;background:white;color:#235548}
+[data-cell-round-actions] button:first-child{background:#235e51;color:white}
+[data-cell-visual-column]{min-width:0}[data-cell-picker-panel]{grid-column:1;min-width:0}[data-cell-study-layout]>[data-cell-selected-structure],[data-cell-study-layout]>[data-cell-inspector-empty]{grid-column:2;grid-row:1 / span 2}
+[data-cell-visual-column] > *{max-width:100%}
+[data-cell-canvas-frame]{border:1px solid #24515a!important;border-radius:16px!important;box-shadow:0 8px 24px #062e3526!important;overflow:hidden}
+[data-cell-diagram-heading]{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:14px 16px;background:#092e36;color:#ecfeff;border-bottom:1px solid #35616a}
+[data-cell-diagram-heading] strong{font-size:15px;letter-spacing:.2px}
+[data-cell-diagram-heading] span{font-size:11px;color:#b9dedf}
+[data-cell-diagram-caption]{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:12px 16px;background:#092e36;color:#d1eeee;font-size:12px;line-height:1.5;border-top:1px solid #35616a}
+[data-cell-diagram-toolbar]{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:12px 0}
+[data-cell-diagram-toolbar] button{min-height:44px;border:1px solid #b3cbcf;border-radius:9px;background:#fff;padding:8px 12px;color:#24515a;font-size:12px;font-weight:700}
+[data-cell-diagram-toolbar] button[aria-pressed="true"]{background:#0f5962;color:#fff}
+[data-cell-structure-picker]{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px!important;margin-top:14px!important}
+[data-cell-structure-picker] button{display:flex;align-items:flex-start;gap:3px;min-height:52px;text-align:left;border-color:#c5d8da!important;border-radius:9px!important;background:#fff!important;color:#254c55!important;font-size:12px!important;padding:9px!important;line-height:1.3}
+[data-cell-structure-picker] button[aria-pressed="true"]{background:#0f5962!important;border-color:#0f5962!important;color:white!important;box-shadow:0 2px 6px #0f596225}
+[data-cell-selected-structure],[data-cell-inspector-empty]{margin:0!important;padding:20px!important;border:1px solid #d2e0e3!important;border-top:4px solid var(--cell-accent,#67c7cd)!important;border-radius:14px!important;background:white!important;box-shadow:0 4px 18px #163c4308!important;min-width:0}
+[data-cell-selected-structure] > div:first-child{margin-bottom:14px!important}
+[data-cell-selected-structure] > div:first-child > span:last-child{font-size:22px!important;line-height:1.25;color:#163c43!important;letter-spacing:-.3px}
+[data-cell-selected-structure] p,[data-cell-selected-structure] > .leading-relaxed{font-size:14px!important;line-height:1.7!important}
+[data-cell-selected-structure] [data-cell-mastery-controls]{padding:10px!important;gap:8px!important;margin:14px 0!important;align-items:center}
+[data-cell-mastery-controls] button{min-height:40px;font-size:12px!important}
+[data-cell-inspector-details]{padding:14px 0;border-top:1px solid #dce8e9;margin-top:14px}
+[data-cell-inspector-details] summary{cursor:pointer;font-size:13px;font-weight:750;color:#24515a;min-height:32px}
+[data-cell-inspector-details] > div{display:block!important}
+[data-cell-inspector-details] > div > div{margin-top:10px;border:0!important;padding:0!important}
+[data-cell-picker-search]{display:flex;gap:8px;flex-wrap:wrap}
+[data-cell-picker-search] input{min-width:0;flex:1 1 200px;min-height:44px;border:1px solid #9fbfc4;border-radius:9px;padding:9px 12px;background:#fff;color:#183f48;font-size:14px}
+[data-cell-picker-search] button{min-height:44px;border:1px solid #9fbfc4;border-radius:9px;padding:9px 12px;background:#fff;color:#24515a;font-size:12px;font-weight:700}
+[data-cell-picker-search] button[aria-pressed=true]{background:#0f5962;color:#fff}
+[data-cell-choice-status]{display:block;font-size:10px;font-weight:500;line-height:1.5;margin-top:3px;color:#526e75}
+[data-cell-structure-picker] button[aria-pressed=true] [data-cell-choice-status]{color:#def5f5}
+[data-cell-zoom-control]{margin:0 0 12px!important;background:#fff!important;border-color:#c5d8da!important}
+[data-cell-zoom-control] input{min-width:100px!important;max-width:100%;min-height:36px}
+[data-cell-picker-search] input:focus-visible,[data-cell-zoom-control] input:focus-visible{outline:3px solid #007f8a;outline-offset:3px}
+[data-cell-study-nav]:focus-visible,[data-cell-interior-workspace] button:focus-visible,[data-cell-interior-workspace] summary:focus-visible{outline:3px solid #007f8a;outline-offset:3px}
+@media(min-width:1000px){[data-cell-selected-structure],[data-cell-inspector-empty]{position:sticky;top:16px}}
+@media(max-width:900px){[data-cell-study-layout]>[data-cell-selected-structure],[data-cell-study-layout]>[data-cell-inspector-empty]{grid-column:1;grid-row:auto}[data-cell-study-layout]{grid-template-columns:minmax(0,1fr)}[data-cell-selected-structure]{position:static}[data-cell-interior-workspace]{padding:14px!important}[data-cell-structure-picker]{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:480px){[data-cell-interior-workspace]{padding:10px!important;border-radius:14px!important;gap:12px}[data-cell-header] h3{font-size:20px!important}[data-cell-study-nav]{padding:12px!important}[data-cell-study-nav] h4{font-size:18px!important}[data-cell-structure-picker]{grid-template-columns:repeat(2,minmax(0,1fr))}[data-cell-selected-structure]{padding:16px!important}[data-cell-diagram-heading],[data-cell-diagram-caption]{padding:10px 12px}}
+`),
+            // Focus is optional; the header remains available to return to every mode.
+            React.createElement('style', null,
+              '[data-cell-study-focus="true"] > :not([data-cell-header]):not([data-cell-interior-workspace]):not([data-cell-inquiry-guide]):not(style){display:none!important}' +
+              '[data-cell-study-focus="true"] [data-cell-navigation]{display:none!important}' +
+              '[data-cell-study-focus="true"] [data-cell-interior-workspace] > :not([data-cell-study-surface]){display:none!important}' +
+              '[data-cell-recall-pending="true"] > :not([data-cell-study-nav]):not([data-cell-adaptive-quiz]){display:none!important}' +
+              '[data-cell-study-nav] button{min-height:40px}' +
+              '[data-cell-interior-workspace] button:focus-visible{outline:3px solid #0369a1;outline-offset:3px}'
+            ),
+            React.createElement("style", { "data-cell-inquiry-style": true }, CELL_INQUIRY_CSS),
             // Header
 
-            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
+            React.createElement("div", { "data-cell-header": true, className: "flex flex-wrap items-center gap-3 mb-3" },
 
               React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.cell.a11y_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
@@ -23375,13 +24136,13 @@ var d = labToolData.cell || {};
 
               React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[0.6875rem] font-bold rounded-full" }, "⭐ " + (d.researchPoints || 0) + " RP"),
 
-              React.createElement("span", { className: "text-xs text-slate-600 ml-1" + onHostInk }, d.mode === 'play' ? cellPlayLabel(d.playAsOrganism) : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : d.mode === 'microdissection' ? 'Microdissection' : d.mode === 'processes' ? "\u2699\uFE0F Cell Processes" : d.mode === 'interior' ? 'Inside the Cell' : "\uD83D\uDC41 Observe"),
+              React.createElement("span", { "data-cell-current-activity": true, className: "text-xs text-slate-600 ml-1" + onHostInk }, d.mode === 'play' ? cellPlayLabel(d.playAsOrganism) : (cellModeLabelMap[activeCellMode] || "Observe")),
 
 
               (function() {
                 var CELL_CATEGORIES = [
                   { id: 'interactive', label: 'Interactive Sim', icon: '🔬', desc: 'Watch, go inside a cell, trace processes, play, or quiz', color: 'green',
-                    modes: ['observe', 'interior', 'microdissection', 'processes', 'play', 'quiz'] },
+                    modes: ['observe', 'interior', 'microdissection', 'processes', 'osmoHunt', 'play', 'quiz'] },
                   { id: 'browse', label: 'Browse Organisms', icon: '🦠', desc: 'Encyclopedia + filter + compare', color: 'cyan',
                     modes: ['encyclopedia', 'filter', 'compare'] },
                   { id: 'knowledge', label: 'Knowledge & History', icon: '📚', desc: 'History, biologists, labs, diseases, ecology', color: 'amber',
@@ -23390,7 +24151,7 @@ var d = labToolData.cell || {};
                     modes: ['glossary', 'library', 'finale'] }
                 ];
                 var CELL_MODE_LABELS = {
-                  observe: '👁 Observe', interior: '🔬 Inside the Cell', play: '🎮 Play', quiz: '🧠 Quiz',
+                  osmoHunt: '💧 Osmosis Lab', observe: '👁 Observe', interior: '🔬 Inside the Cell', play: '🎮 Play', quiz: '🧠 Quiz',
                   microdissection: 'Microdissection',
                   processes: '\u2699\uFE0F Cell Processes',
                   encyclopedia: '📚 Encyclopedia', filter: '🔍 Filter', compare: '⚖ Compare',
@@ -23410,11 +24171,11 @@ var d = labToolData.cell || {};
                 var activeCategoryId = d._cellCategory || CELL_MODE_TO_CATEGORY[d.mode] || null;
                 var atHub = !d._cellCategory && !d._cellSearch && !d._cellPicked;
                 var activeCat = CELL_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
-                var searchTerm = (d._cellSearch || '').toLowerCase();
-                var allModes = ['observe','interior','microdissection','processes','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','library','finale'];
+                var searchTerm = typeof d._cellSearch === 'string' ? d._cellSearch.trim().toLowerCase() : '';
+                var allModes = ['observe','interior','microdissection','processes','osmoHunt','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','library','finale'];
                 // Grade gate: hide the Diseases mode (STIs, death tolls) from K-2 and 3-5.
                 if (!cellBandAllowsClinical) { CELL_CATEGORIES.forEach(function(c) { c.modes = c.modes.filter(function(m) { return m !== 'disease'; }); }); allModes = allModes.filter(function(m) { return m !== 'disease'; }); }
-                var searchResults = searchTerm ? allModes.filter(function(m) { return (CELL_MODE_LABELS[m] || m).toLowerCase().indexOf(searchTerm) !== -1; }) : null;
+                var searchResults = searchTerm ? cellActivitySearch(searchTerm, allModes) : null;
 
                 function setMode(m) {
                   jumpCellMode(m);
@@ -23432,7 +24193,7 @@ var d = labToolData.cell || {};
                   activeCat && !atHub && React.createElement('span', { className: 'px-2 py-1 rounded-lg text-xs font-bold bg-slate-50 text-green-700 border border-green-200' }, activeCat.icon + ' ' + activeCat.label),
                   React.createElement('input', {
                     type: 'text',
-                    placeholder: 'Search modes...',
+                    placeholder: 'Search activities or ideas...',
                     // Named by hand: what precedes this field is the breadcrumb
                     // trail ("Hub" / category), not a caption for it.
                     'aria-label': __alloT('stem.cell.a11y_search_modes', 'Search modes'),
@@ -23457,6 +24218,8 @@ var d = labToolData.cell || {};
                         })
                   ));
                 }
+
+                if (atHub) els.push(renderCellInquiryCards(React.createElement, d, startCellInquiry));
 
                 // Hub: category cards
                 if (atHub) {
@@ -23495,13 +24258,711 @@ var d = labToolData.cell || {};
                   ));
                 }
 
-                return React.createElement('div', { className: 'flex flex-wrap items-start gap-2 ml-auto', style: { flexBasis: '100%' } }, els);
+                return d.mode === 'interior' ? React.createElement('details', { 'data-cell-navigation': true, className: 'w-full rounded-xl border border-slate-200 bg-white p-3', style: { flexBasis: '100%' } }, React.createElement('summary', { className: 'cursor-pointer text-sm font-bold text-slate-700' }, 'Change activity'), React.createElement('div', { className: 'mt-3 flex flex-wrap gap-2' }, els)) : React.createElement('div', { 'data-cell-navigation': true, className: 'flex flex-wrap items-start gap-2 ml-auto', style: { flexBasis: '100%' } }, els);
               })()
 
             ),
 
+            renderCellInquiryGuide(React.createElement, d, {
+              save: saveCellInquiry, open: openCellInquiryStep,
+              explore: function(mode) {
+                var selectors = { interior: '[data-cell-interior-workspace]', processes: '[data-cell-processes-workspace]', osmoHunt: '[data-cell-osmosis-lab]', compare: '[data-cell-comparison-lab]', observe: '[data-cell-stage]', play: '[data-cell-stage]' };
+                var target = document.querySelector(selectors[mode] || '[data-cell-tool]');
+                if(target) { if(!target.hasAttribute('tabindex')) target.setAttribute('tabindex','-1'); target.focus(); target.scrollIntoView({ block: 'start', behavior: 'auto' }); }
+              },
+              pause: function() { upd('_cellInquiryId', null); upd('_cellInquiryNotice', ''); },
+              notice: function(message) { upd('_cellInquiryNotice', message); }
+            }),
+
+            d.mode === 'interior' && (function() {
+              var h = React.createElement;
+              var ctype = CELL_PROGRESS_TYPES.indexOf(d.interiorCellType) >= 0 ? d.interiorCellType : 'animal';
+              var sel = d.interiorSel || null;
+              var seen = cellProgressKeys(d.interiorSeen, ctype);
+              var masteredKeys = Array.isArray(d.interiorMastered) ? d.interiorMastered : [];
+              var reviewKeys = Array.isArray(d.interiorReview) ? d.interiorReview : [];
+              var reducedMo = false; try { reducedMo = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+              var interiorPaused = !!d.interiorPaused || reducedMo;
+              var CTYPES = [
+                { id: 'animal', label: '🐾 Animal', note: 'A typical animal cell: a flexible membrane surrounding the nucleus, mitochondria, ER, Golgi, lysosomes, peroxisomes, and a dynamic cytoskeleton. It has no cell wall or chloroplasts.' },
+                { id: 'plant', label: '🌿 Plant', note: 'A plant cell adds a cellulose wall, chloroplasts, a large central vacuole, and plasmodesmata to the shared eukaryotic machinery. It still uses mitochondria, ER, Golgi, peroxisomes, ribosomes, and a cytoskeleton.' },
+                { id: 'bacterium', label: '🦠 Bacterium', note: 'A prokaryote with no nucleus or membrane-bound organelles. This detailed example shows a nucleoid, plasmid, ribosomes, membrane, wall, flagellum, and the capsule and pili found in some bacteria.' }
+              ];
+              var note = (CTYPES.find(function (c) { return c.id === ctype; }) || CTYPES[0]).note;
+              var orgKeys = interiorOrganelles(ctype).filter(function (k) { return k !== 'cytoplasm'; });
+              var selOrg = sel && CELL_ORGANELLES[sel] ? CELL_ORGANELLES[sel] : null;
+              var directoryOpen = !!d.interiorDirectoryOpen;
+              var directoryGroup = d.interiorDirectoryGroup || 'all';
+              var directoryGroups = INTERIOR_GROUPS.filter(function (group) { return group.keys.some(function (key) { return orgKeys.indexOf(key) >= 0; }); });
+              if (directoryGroup !== 'all' && !directoryGroups.some(function (group) { return group.id === directoryGroup; })) directoryGroup = 'all';
+              var directoryKeys = directoryGroup === 'all' ? orgKeys : ((directoryGroups.find(function (group) { return group.id === directoryGroup; }) || {}).keys || []).filter(function (key) { return orgKeys.indexOf(key) >= 0; });
+              var directoryInput = String(d.interiorDirectoryQuery || '');
+              var directoryQuery = directoryInput.trim().toLowerCase();
+              var directoryUnexploredOnly = !!d.interiorDirectoryUnexploredOnly;
+              var directoryReviewOnly = !!d.interiorDirectoryReviewOnly;
+              var directoryVisibleKeys = directoryKeys.filter(function (key) { var item = CELL_ORGANELLES[key], hay = [item.name, item.fn, item.structure, item.connections].join(' ').toLowerCase(); return (!directoryQuery || hay.indexOf(directoryQuery) >= 0) && (!directoryUnexploredOnly || seen.indexOf(key) < 0) && (!directoryReviewOnly || reviewKeys.indexOf(key) >= 0); });
+              var directoryExploredCount = orgKeys.filter(function (key) { return seen.indexOf(key) >= 0; }).length;
+              var directoryMasteredCount = orgKeys.filter(function (key) { return masteredKeys.indexOf(key) >= 0; }).length;
+              var directoryReviewCount = orgKeys.filter(function (key) { return reviewKeys.indexOf(key) >= 0; }).length;
+              var directoryProgressPct = orgKeys.length ? Math.round(directoryMasteredCount / orgKeys.length * 100) : 0;
+              var progressTransfer = String(d.interiorProgressTransfer || '');
+              var progressNotice = String(d.interiorProgressNotice || '');
+              var durableProgress = normalizeCellProgress(labToolData.cellProgress, d);
+              var portfolioOverview = CELL_PROGRESS_TYPES.map(function (type) {
+                var record = durableProgress.byCellType[type] || createCellProgressRecord(type), keys = interiorOrganelles(type).filter(function (key) { return key !== 'cytoplasm'; });
+                return { type: type, label: ((CTYPES.find(function (item) { return item.id === type; }) || {}).label || type), total: keys.length, explored: keys.filter(function (key) { return record.seen.indexOf(key) >= 0; }).length, mastered: keys.filter(function (key) { return record.mastered.indexOf(key) >= 0; }).length, review: keys.filter(function (key) { return record.review.indexOf(key) >= 0; }).length };
+              });
+              var compareMode = !!d.interiorCompare;
+              var contrastMode = !!d.interiorHighContrast;
+              var showLabels = !!d.interiorShowLabels;
+              var depthMode = !!d.interiorDepthMode;
+              var depthLevel = Number(d.interiorDepthLevel); if (!isFinite(depthLevel)) depthLevel = 50; depthLevel = Math.max(0, Math.min(100, depthLevel));
+              var zoomLevel = Math.max(0.85, Math.min(1.25, Number(d.interiorZoom) || 1));
+              var specializationId = d.interiorSpecialization || 'general';
+              var specializationOptions = INTERIOR_SPECIALIZATIONS[ctype] || INTERIOR_SPECIALIZATIONS.animal;
+              if (!specializationOptions.some(function (item) { return item.id === specializationId; })) specializationId = 'general';
+                            var currentCheck = INTERIOR_CHECKS.find(function (item) { return item.type === ctype && item.specialization === specializationId; }) || INTERIOR_CHECKS.find(function (item) { return item.type === ctype && item.specialization === 'general'; });
+              var checkChoice = d.interiorCheckChoice == null ? null : Number(d.interiorCheckChoice);
+              var checkRevealed = !!d.interiorCheckRevealed;
+              var recallRound = normalizeCellRecallRound(d.interiorRecallRound, ctype);
+              var roundCorrect = recallRound ? recallRound.answers.filter(function(answer) { return answer.correct; }).length : 0;
+              var roundMissed = recallRound ? recallRound.answers.filter(function(answer) { return !answer.correct; }).map(function(answer) { return answer.key; }) : [];
+              var adaptiveQuizActive = !!d.interiorAdaptiveQuiz;
+              var adaptiveQuizKey = d.interiorQuizKey && interiorHas(ctype, d.interiorQuizKey) ? d.interiorQuizKey : null;
+              var adaptiveQuizChoice = d.interiorQuizChoice == null ? null : Number(d.interiorQuizChoice);
+              var adaptiveQuizRevealed = !!d.interiorQuizRevealed;
+              var adaptiveQuizAttempts = Number(d.interiorQuizAttempts) || 0;
+              var adaptiveQuizCorrect = Number(d.interiorQuizCorrect) || 0;
+              var adaptiveAccuracy = adaptiveQuizAttempts ? Math.round(adaptiveQuizCorrect / adaptiveQuizAttempts * 100) : null;
+              var recallPending = adaptiveQuizActive && !!adaptiveQuizKey && !adaptiveQuizRevealed;
+              var adaptiveQuizItem = adaptiveQuizKey && CELL_ORGANELLES[adaptiveQuizKey] ? CELL_ORGANELLES[adaptiveQuizKey] : null;
+              function adaptiveOptionKeys(key) { return cellRecallOptions(orgKeys, key); }
+              var adaptiveOptions = adaptiveOptionKeys(adaptiveQuizKey);
+              var adaptiveAnswer = adaptiveOptions.indexOf(adaptiveQuizKey);
+              var guideId = d.interiorGuide || null;
+              var guide = cellGuideForType(guideId, ctype);
+              var guideStep = cellGuideVisibleStep(guide, d.interiorGuideStep);
+              var guideItem = guide ? guide.steps[guideStep] : null;
+              var availableGuides = Object.keys(INTERIOR_GUIDES).filter(function (id) { return INTERIOR_GUIDES[id].types.indexOf(ctype) >= 0; });
+              function markSeen(cel, key) {
+                if (CELL_ORGANELLES[key]) {
+                  var nextSeen = (cel.interiorSeen || []).slice();
+                  if (nextSeen.indexOf(key) < 0) nextSeen.push(key);
+                  cel.interiorSeen = nextSeen;
+                }
+                return cel;
+              }
+              var pickerInput = String(d.interiorPickerQuery || '');
+              var pickerQuery = pickerInput.trim().toLowerCase();
+              var pickerReviewOnly = !!d.interiorPickerReviewOnly;
+              var pickerKeys = orgKeys.filter(function(key) {
+                var item = CELL_ORGANELLES[key];
+                return (!pickerQuery || (item.name + ' ' + item.fn).toLowerCase().indexOf(pickerQuery) >= 0) && (!pickerReviewOnly || reviewKeys.indexOf(key) >= 0);
+              });
+              function browseCellStructures() {
+                requestAnimationFrame(function() {
+                  var input = document.getElementById('cell-structure-search');
+                  if (input) { input.focus({ preventScroll: true }); input.scrollIntoView({ block: 'center' }); }
+                });
+              }
+              function pick(key) {
+                updateCellDataFunctional(function(cel) {
+                  cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSel = key;
+                  return markSeen(cel, key);
+                });
+              }
+              function setMasteryOnCell(cel, key, status) {
+                if (!key || !CELL_ORGANELLES[key] || ['mastered', 'review'].indexOf(status) < 0) return cel;
+                var mastered = Array.isArray(cel.interiorMastered) ? cel.interiorMastered.slice() : [];
+                var review = Array.isArray(cel.interiorReview) ? cel.interiorReview.slice() : [];
+                var list = status === 'mastered' ? mastered : review;
+                var other = status === 'mastered' ? review : mastered;
+                if (list.indexOf(key) < 0) list.push(key);
+                var otherIndex = other.indexOf(key); if (otherIndex >= 0) other.splice(otherIndex, 1);
+                cel.interiorMastered = mastered; cel.interiorReview = review;
+                return cel;
+              }
+              function markMastery(key, status) {
+                if (!key || !CELL_ORGANELLES[key] || ['mastered', 'review'].indexOf(status) < 0) return;
+                updateCellDataFunctional(function(cel) { return markSeen(setMasteryOnCell(cel, key, status), key); });
+              }
+              function focusAdaptiveCheck() {
+                requestAnimationFrame(function() {
+                  var panel = document.querySelector('[data-cell-adaptive-quiz][role="region"]');
+                  if (panel) { panel.focus({ preventScroll: true }); panel.scrollIntoView({ block: 'nearest' }); }
+                });
+              }
+              function finishRecallRound() {
+                updateCellDataFunctional(function(cel) {
+                  var round = normalizeCellRecallRound(cel.interiorRecallRound, ctype);
+                  if (!round || round.answers.length !== round.keys.length) return cel;
+                  round.finished = true; cel.interiorRecallRound = round;
+                  cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false;
+                  return cel;
+                });
+                requestAnimationFrame(function() {
+                  var panel = document.querySelector('[data-cell-round-summary]');
+                  if (panel) { panel.focus({ preventScroll: true }); panel.scrollIntoView({ block: 'nearest' }); }
+                });
+              }
+              function startAdaptiveQuiz() {
+                if (recallRound && !recallRound.finished && recallRound.answers.length === recallRound.keys.length) { finishRecallRound(); return; }
+                updateCellDataFunctional(function(cel) {
+                  var round = normalizeCellRecallRound(cel.interiorRecallRound, ctype);
+                  if (!round || round.finished) round = createCellRecallRound(ctype, cel.interiorReview, cel.interiorMastered);
+                  if (!round) return cel;
+                  var key = round.keys[round.answers.length];
+                  cel.interiorRecallRound = round;
+                  cel.interiorAdaptiveQuiz = true; cel.interiorQuizKey = key; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; cel.interiorGuide = null; cel.interiorSel = key;
+                  return markSeen(cel, key);
+                });
+                focusAdaptiveCheck();
+              }
+              function studyMissedStructures() {
+                if (!roundMissed.length) return;
+                updateCellDataFunctional(function(cel) {
+                  cel.interiorSel = roundMissed[0]; cel.interiorGuide = null;
+                  cel.interiorPickerQuery = ''; cel.interiorPickerReviewOnly = true;
+                  return markSeen(cel, roundMissed[0]);
+                });
+                requestAnimationFrame(function() {
+                  var panel = document.querySelector('[data-cell-selected-structure]');
+                  if (panel) { panel.focus({ preventScroll: true }); panel.scrollIntoView({ block: 'nearest' }); }
+                });
+              }
+              function openReviewQueue() {
+                updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = true; cel.interiorDirectoryReviewOnly = directoryReviewCount > 0; cel.interiorDirectoryUnexploredOnly = false; cel.interiorDirectoryGroup = 'all'; cel.interiorDirectoryQuery = ''; cel.interiorStudyFocus = false; return cel; });
+              }
+              function stopAdaptiveQuiz() {
+                updateCellDataFunctional(function(cel) { cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; });
+                requestAnimationFrame(function() {
+                  var panel = document.querySelector('[data-cell-study-nav]');
+                  if (panel) { panel.focus({ preventScroll: true }); panel.scrollIntoView({ block: 'nearest' }); }
+                });
+              }
+              function nextAdaptiveQuiz() {
+                if (!adaptiveQuizRevealed) return;
+                if (recallRound && recallRound.answers.length === recallRound.keys.length) { finishRecallRound(); return; }
+                startAdaptiveQuiz();
+              }
+              function answerAdaptiveQuiz(index) {
+                if (!adaptiveQuizActive || !adaptiveQuizItem || adaptiveQuizRevealed || index < 0 || index >= adaptiveOptions.length) return;
+                var correct = index === adaptiveAnswer;
+                updateCellDataFunctional(function(cel) {
+                  if (cel.interiorQuizRevealed || cel.interiorQuizKey !== adaptiveQuizKey) return cel;
+                  // Migrate an in-flight check from older progress without discarding its answer.
+                  var round = normalizeCellRecallRound(cel.interiorRecallRound, ctype);
+                  if (!round || round.finished) round = createCellRecallRound(ctype, [adaptiveQuizKey].concat(cel.interiorReview || []), cel.interiorMastered);
+                  if (!round || round.keys[round.answers.length] !== adaptiveQuizKey) return cel;
+                  cel.interiorRecallRound = recordCellRecallAnswer(round, ctype, adaptiveQuizKey, correct);
+                  cel.interiorQuizChoice = index; cel.interiorQuizRevealed = true;
+                  cel.interiorQuizAttempts = (Number(cel.interiorQuizAttempts) || 0) + 1;
+                  cel.interiorQuizCorrect = (Number(cel.interiorQuizCorrect) || 0) + (correct ? 1 : 0);
+                  return markSeen(setMasteryOnCell(cel, adaptiveQuizKey, correct ? 'mastered' : 'review'), adaptiveQuizKey);
+                });
+              }
+              function focusGuide() {
+                requestAnimationFrame(function() { var panel = document.querySelector('[data-cell-guided-pathway]'); if (panel) { panel.focus({ preventScroll: true }); panel.scrollIntoView({ block: 'nearest' }); } });
+              }
+              function startGuide(id) {
+                var chosen = cellGuideForType(id, ctype); if (!chosen) return;
+                updateCellDataFunctional(function(cel) {
+                  var index = cel.interiorGuide === id ? cellGuideVisibleStep(chosen, cel.interiorGuideStep) : 0;
+                  cel.interiorGuide = id; cel.interiorGuideStep = chosen.steps[index].sourceIndex; cel.interiorSel = chosen.steps[index].key;
+                  cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false;
+                  return markSeen(cel, cel.interiorSel);
+                });
+                focusGuide();
+              }
+              function selectGuideStep(index) {
+                if (!guide) return;
+                var next = Math.max(0, Math.min(guide.steps.length - 1, index));
+                updateCellDataFunctional(function(cel) { cel.interiorGuideStep = guide.steps[next].sourceIndex; cel.interiorSel = guide.steps[next].key; return markSeen(cel, cel.interiorSel); });
+              }
+              function moveGuide(delta) { selectGuideStep(guideStep + delta); if (guide && guideStep + delta >= guide.steps.length - 1) focusGuide(); }
+              function stopGuide() {
+                updateCellDataFunctional(function(cel) { cel.interiorGuide = null; cel.interiorGuideStep = 0; return cel; });
+                requestAnimationFrame(function() { var panel = document.querySelector('[data-cell-selected-structure]'); if (panel) { panel.focus({ preventScroll: true }); panel.scrollIntoView({ block: 'nearest' }); } });
+              }
+              function answerCheck(index) {
+                if (!currentCheck || checkRevealed || index < 0 || index >= currentCheck.options.length) return;
+                updateCellDataFunctional(function(cel) {
+                  cel.interiorCheckChoice = index;
+                  cel.interiorCheckRevealed = true;
+                  cel.interiorCheckCorrect = (cel.interiorCheckCorrect || 0) + (index === currentCheck.answer ? 1 : 0);
+                  cel.interiorSel = currentCheck.key;
+                  return markSeen(cel, currentCheck.key);
+                });
+              }
+              function resetCheck() {
+                updateCellDataFunctional(function(cel) { cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; return cel; });
+              }
+              function resetInteriorView() {
+                updateCellDataFunctional(function(cel) {
+                  cel.interiorPickerQuery = ''; cel.interiorPickerReviewOnly = false; cel.interiorAnnotations = false;
+                  cel.interiorZoom = 1; cel.interiorHighContrast = false; cel.interiorShowLabels = false; cel.interiorDepthMode = false; cel.interiorDepthLevel = 50; cel.interiorCompare = false;
+                  cel.interiorDirectoryOpen = false; cel.interiorDirectoryGroup = 'all'; cel.interiorDirectoryQuery = ''; cel.interiorDirectoryUnexploredOnly = false; cel.interiorDirectoryReviewOnly = false;
+                  cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false;
+                  return cel;
+                });
+              }
+              function exportCellProgress() {
+                var payload = { app: 'microdissection-cell-studio', schemaVersion: CELL_PROGRESS_SCHEMA_VERSION, exportedAt: new Date().toISOString(), progress: normalizeCellProgress(labToolData.cellProgress, d) };
+                var text = JSON.stringify(payload, null, 2);
+                upd('interiorProgressTransfer', text);
+                upd('interiorProgressNotice', 'Progress JSON prepared. Copy it to move this study record to another session or device.');
+                try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function () {}); } catch (e) {}
+              }
+              function importCellProgress() {
+                var text = String(d.interiorProgressTransfer || '').trim(), parsed;
+                if (!text) { upd('interiorProgressNotice', 'Paste a progress JSON record first.'); return; }
+                try { parsed = JSON.parse(text); } catch (e) { upd('interiorProgressNotice', 'Import failed: this is not valid JSON.'); return; }
+                var candidate = parsed && typeof parsed === 'object' ? (parsed.progress || parsed) : null;
+                if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) { upd('interiorProgressNotice', 'Import failed: expected a progress object.'); return; }
+                if (candidate.schemaVersion != null && Number(candidate.schemaVersion) > CELL_PROGRESS_SCHEMA_VERSION) { upd('interiorProgressNotice', 'Import failed: this progress record was created by a newer version.'); return; }
+                if (Number(candidate.schemaVersion) !== CELL_PROGRESS_SCHEMA_VERSION || !candidate.byCellType || typeof candidate.byCellType !== 'object' || Array.isArray(candidate.byCellType) || (candidate.schemaId != null && candidate.schemaId !== 'cell-studio-progress')) {
+                  upd('interiorProgressNotice', 'Import failed: expected a cell-studio progress record. Your progress was kept.'); return;
+                }
+                setLabToolData(function(prev) {
+                  var p = prev || {}, current = Object.assign({}, p.cell || {}), imported = normalizeCellProgress(candidate, {}), type = imported.currentType;
+                  var restored = applyCellProgressToCell(current, imported.byCellType[type], type);
+                  restored.interiorProgressTransfer = ''; restored.interiorProgressNotice = 'Progress imported and restored for ' + type + ' cell.';
+                  imported.updatedAt = new Date().toISOString();
+                  return Object.assign({}, p, { cell: restored, cellProgress: imported, _cellProgressHydrated: true });
+                });
+              }
+              async function resetAllCellProgress() {
+                // The old guard read:
+                //   typeof window.confirm !== 'function' || window.confirm(...)
+                // which FAILED OPEN. Wherever confirm was unavailable the `||`
+                // short-circuited to true and every cell type's progress was
+                // wiped with no confirmation at all — the opposite of what the
+                // guard looks like it does. This fails closed instead, and uses
+                // the accessible dialog because window.confirm is not reliably
+                // operable with a screen reader.
+                //
+                // addToast is not in scope here, so the tool's own
+                // interiorProgressNotice carries the explanation.
+                var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                var notice = function(msg) {
+                  setLabToolData(function(prev) {
+                    var p = prev || {};
+                    return Object.assign({}, p, {
+                      cell: Object.assign({}, p.cell || {}, { interiorProgressNotice: msg })
+                    });
+                  });
+                };
+                var unavailable = 'Reset is unavailable right now, so your progress was kept.';
+                if (typeof confirmApi !== 'function') { notice(unavailable); return; }
+                var confirmed = false;
+                try {
+                  confirmed = await confirmApi(
+                    'Reset all cell-studio learning progress for animal, plant, and bacterial cells?',
+                    { title: 'Reset cell-studio progress', confirmText: 'Reset progress',
+                      cancelText: 'Keep my progress', tone: 'warning' }
+                  );
+                } catch (e) { notice(unavailable); return; }
+                if (!confirmed) return;
+                setLabToolData(function(prev) {
+                  var p = prev || {}, current = Object.assign({}, p.cell || {}), type = CELL_PROGRESS_TYPES.indexOf(current.interiorCellType) >= 0 ? current.interiorCellType : 'animal', reset = createEmptyCellProgress();
+                  reset.currentType = type; reset.updatedAt = new Date().toISOString();
+                  var restored = applyCellProgressToCell(current, reset.byCellType[type], type);
+                  restored.interiorProgressNotice = 'All cell-studio learning progress was reset.'; restored.interiorProgressTransfer = '';
+                  return Object.assign({}, p, { cell: restored, cellProgress: reset, _cellProgressHydrated: true });
+                });
+              }
+              function switchInteriorType(nextType) {
+                if (CELL_PROGRESS_TYPES.indexOf(nextType) < 0) return;
+                updateCellDataFunctional(function(cel) { cel.mode = 'interior'; cel.interiorCellType = nextType; cel.interiorSel = null; cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general'; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; });
+              }
+              function moveToMicrodissection() {
+                var carryTarget = sel && interiorHas(ctype, sel) ? sel : (orgKeys[0] || null);
+                var nuclearTargets = ['nucleus', 'nucleolus', 'nucleoid', 'plasmid'];
+                var membraneTargets = ['cellMembrane', 'cellWall', 'capsule', 'pili', 'plasmodesmata'];
+                var carryStain = nuclearTargets.indexOf(carryTarget) >= 0 ? 'nuclear' : membraneTargets.indexOf(carryTarget) >= 0 ? 'membrane' : 'fluorescence';
+                var carryDepth = depthMode ? depthLevel : 50;
+                updateCellDataFunctional(function(cel) {
+                  cel.mode = 'microdissection'; cel.microCellType = ctype; cel.microTarget = carryTarget; cel.microStage = 0; cel.microTool = 'objective'; cel.microStain = carryStain; cel.microSectionDepth = carryDepth;
+                  cel.microFromInterior = true; cel.microSourceType = ctype; cel.microSourceTarget = carryTarget; cel.microSourceDepth = carryDepth;
+                  cel.microFeedback = 'Interior setup carried into microdissection: ' + (CELL_ORGANELLES[carryTarget] ? CELL_ORGANELLES[carryTarget].name : 'cell region') + ' at depth ' + Math.round(carryDepth) + '%.';
+                  return cel;
+                });
+              }              return h('div', { className: 'mt-4 rounded-xl border border-emerald-200 bg-white p-4 shadow-sm', "data-cell-interior-workspace": true, "data-cell-recall-pending": recallPending ? 'true' : undefined },
+                h('p', { className: 'text-[0.8125rem] text-slate-700 mb-2 leading-relaxed' }, '🔬 ', h('strong', null, 'You are inside a single cell.'), ' This is the textbook cross-section — but alive: organelles drift in the cytoplasm, mitochondria pulse, vesicles shuttle cargo. Switch the cell type to see what changes, and tap any organelle.'),
+                h('div', { 'data-cell-study-nav': true, 'data-cell-study-surface': true, tabIndex: -1, className: 'mb-3 rounded-xl border border-cyan-300 bg-cyan-50 p-3', role: 'region', 'aria-label': 'Focused cell study' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('div', null, h('h4', { className: 'text-base font-black text-cyan-950' }, 'Structure study'), h('p', { className: 'text-xs text-cyan-900' }, ctype + ' cell · ' + directoryExploredCount + '/' + orgKeys.length + ' explored · ' + directoryReviewCount + ' to review')),
+                    h('button', { type: 'button', disabled: reducedMo, 'aria-pressed': interiorPaused, onClick: function() { upd('interiorPaused', !d.interiorPaused); }, className: 'rounded-lg border border-cyan-700 bg-white px-3 py-2 text-xs font-bold text-cyan-900' }, interiorPaused ? 'Resume cell animation' : 'Pause cell animation'),
+                    h('button', { type: 'button', 'aria-pressed': !!d.interiorStudyFocus, onClick: function() { upd('interiorStudyFocus', !d.interiorStudyFocus); }, className: 'rounded-lg border border-cyan-700 bg-white px-3 py-2 text-xs font-bold text-cyan-900' }, d.interiorStudyFocus ? 'Show full workspace' : 'Focus on cell')
+                  ),
+                  !adaptiveQuizActive && h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                    h('button', { type: 'button', onClick: function() { var index = orgKeys.indexOf(sel); pick(orgKeys[(index <= 0 ? orgKeys.length : index) - 1]); }, className: 'rounded-lg border border-cyan-300 bg-white px-3 py-2 text-xs font-bold text-cyan-950' }, 'Previous structure'),
+                    h('button', { type: 'button', onClick: function() { pick(orgKeys[(orgKeys.indexOf(sel) + 1) % orgKeys.length]); }, className: 'rounded-lg border border-cyan-300 bg-white px-3 py-2 text-xs font-bold text-cyan-950' }, 'Next structure'),
+                    h('button', { type: 'button', disabled: directoryExploredCount >= orgKeys.length, onClick: function() { var key = orgKeys.find(function(k) { return seen.indexOf(k) < 0; }); if (key) pick(key); }, className: 'rounded-lg border border-cyan-300 bg-white px-3 py-2 text-xs font-bold text-cyan-950 disabled:opacity-50' }, 'Next unexplored'),
+                    h('button', { type: 'button', onClick: startAdaptiveQuiz, className: 'rounded-lg bg-fuchsia-800 px-3 py-2 text-xs font-bold text-white' }, recallRound && !recallRound.finished ? 'Resume recall' : 'Practice recall'),
+                    h('button', { type: 'button', onClick: openReviewQueue, className: 'rounded-lg border border-amber-400 bg-white px-3 py-2 text-xs font-bold text-amber-950' }, 'Open review queue')
+                  ),
+                  !adaptiveQuizActive && h('details', { 'data-cell-pathway-picker': true },
+                    h('summary', null, 'Guided pathways'),
+                    h('p', null, 'Follow a short tour through connected structures. Each stop selects its place in the diagram.'),
+                    h('div', null, availableGuides.map(function(id) { var option = cellGuideForType(id, ctype); return h('button', { type: 'button', key: id, 'aria-pressed': id === guideId, onClick: function() { startGuide(id); } }, h('strong', null, option.label), h('span', null, option.steps.length + ' stops' + (id === guideId ? ' · Current pathway' : ''))); }))
+                  ),
+                  h('p', { className: 'mt-2 text-xs text-cyan-900', role: 'status' }, recallPending ? 'Recall first. The diagram and reference notes return after you answer.' : adaptiveQuizAttempts ? 'Recall accuracy: ' + adaptiveAccuracy + '% (' + adaptiveQuizCorrect + '/' + adaptiveQuizAttempts + ').' : 'Explore a structure, explain its role, then practice recall.')
+                ),
+                // cell-type toggle
+                h('div', { 'data-cell-specimen-switch': true, 'data-cell-study-surface': true, className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_type', 'Cell type') },
+                  CTYPES.map(function (c) {
+                    var on = c.id === ctype;
+                    return h('button', { key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = null; cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general'; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
+                  })),
+                h('div', { 'data-cell-study-layout': true, 'data-cell-study-surface': true },
+                h('div', { 'data-cell-visual-column': true },
+                // the living cell
+                h('div', { 'data-cell-study-surface': true, 'data-cell-canvas-frame': true, className: 'rounded-xl overflow-hidden border border-emerald-900 shadow-xl', style: { background: 'radial-gradient(circle at 24% 18%,rgba(16,185,129,0.18),rgba(4,24,29,0) 34%),#04181d' } },
+                  h('div', { 'data-cell-diagram-heading': true }, h('strong', null, ctype === 'bacterium' ? 'Bacterial cell' : ctype === 'plant' ? 'Plant cell' : 'Animal cell'), h('span', null, ctype === 'bacterium' ? 'PROKARYOTE' : 'EUKARYOTE')),
+                  h('canvas', { key: 'cell-interior-canvas', "data-cell-interior-canvas": true, width: 760, height: 440, role: 'img',
+                    'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (showLabels ? 'All study labels are visible. ' : '') + (depthMode ? ('Optical section at ' + Math.round(depthLevel) + '% depth. ') : '') + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
+                    tabIndex: 0, 'aria-keyshortcuts': 'ArrowRight ArrowLeft Enter Space',
+                    onKeyDown: function (e) {
+                      var navKeys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
+                      if (navKeys.indexOf(e.key) < 0 && e.key !== 'Enter' && e.key !== ' ') return;
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(sel || orgKeys[0]); return; }
+                      var current = orgKeys.indexOf(sel); if (current < 0) current = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? 0 : -1;
+                      var delta = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
+                      pick(orgKeys[(current + delta + orgKeys.length) % orgKeys.length]); e.preventDefault();
+                    },
+                    style: { width: '100%', height: 'auto', display: 'block', cursor: 'pointer' },
+                    onClick: function (e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); pick(interiorHitTest(ctype, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, 760, 440, zoomLevel)); },
+                    ref: function (cv) {
+                      if (!cv) { try { if (window.__alloCellInteriorCleanup) window.__alloCellInteriorCleanup(); } catch (e) {} return; }
+                      if (cv._cellInteriorCleanup) cv._cellInteriorCleanup();
+                      try { if (window.__alloCellInteriorCleanup && window.__alloCellInteriorCleanup !== cv._cellInteriorCleanup) window.__alloCellInteriorCleanup(); } catch (e) {}
+                      var cx2d = cv.getContext && cv.getContext('2d'); if (!cx2d) return;
+                      var drawScale = Math.max(1, Math.min(2, Number(window.devicePixelRatio) || 1));
+                      cv.width = Math.round(760 * drawScale); cv.height = Math.round(440 * drawScale);
+                      cx2d.setTransform(drawScale, 0, 0, drawScale, 0, 0);
+                      var alive = true;
+                      var frameId = null;
+                      // Starts true so the scene draws if IntersectionObserver is missing or
+                      // its first callback has not arrived yet.
+                      var interiorOnScreen = true;
+                      var interiorViewObserver = null;
+                      var tt = { v: Number(cv._cellInteriorPhase) || 0 };
+                      var lastInteriorFrame = null;
+                      function cancelInteriorFrame() { if (frameId) cancelAnimationFrame(frameId); frameId = null; lastInteriorFrame = null; }
+                      function drawInteriorFrame() {
+                        if (!alive || !cv.isConnected) return;
+                        try { drawCellInterior(cx2d, 760, 440, ctype, tt.v, sel, reducedMo, contrastMode, zoomLevel, specializationId, showLabels, depthMode, depthLevel, guide ? guide.steps.map(function (step) { return step.key; }) : [], guideStep, guide ? '#fbbf24' : null, undefined, !d.interiorAnnotations); } catch (e) {}
+                      }
+                      function scheduleInteriorFrame() {
+                        if (!alive || interiorPaused || d.interiorPaused || frameId) return;
+                        if (typeof document !== 'undefined' && document.hidden) return;
+                        // Scrolled out of view counts the same as a hidden tab: the frame is
+                        // not seen. This canvas mounts below the fold, so without it the loop
+                        // ran unseen from first paint until the student scrolled to it.
+                        if (!interiorOnScreen) return;
+                        frameId = requestAnimationFrame(frame);
+                      }
+                      function frame(timestamp) {
+                        frameId = null;
+                        if (!alive || !cv.isConnected) return;
+                        if (lastInteriorFrame != null) tt.v += Math.max(0, Math.min(0.05, (timestamp - lastInteriorFrame) / 1000));
+                        lastInteriorFrame = timestamp;
+                        cv._cellInteriorPhase = tt.v;
+                        drawInteriorFrame();
+                        scheduleInteriorFrame();
+                      }
+                      function onInteriorVisibilityChange() {
+                        if (typeof document !== 'undefined' && document.hidden) cancelInteriorFrame();
+                        else { drawInteriorFrame(); scheduleInteriorFrame(); }
+                      }
+                      cv._cellInteriorCleanup = function () {
+                        alive = false;
+                        cancelInteriorFrame();
+                        if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onInteriorVisibilityChange);
+                      if (interiorViewObserver) { interiorViewObserver.disconnect(); interiorViewObserver = null; }
+                        if (window.__alloCellInteriorCleanup === cv._cellInteriorCleanup) window.__alloCellInteriorCleanup = null;
+                      };
+                      try { window.__alloCellInteriorCleanup = cv._cellInteriorCleanup; } catch (e) {}
+                      if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onInteriorVisibilityChange);
+
+                      if (typeof IntersectionObserver === 'function') {
+                        interiorViewObserver = new IntersectionObserver(function (entries) {
+                          var entry = entries[entries.length - 1];
+                          if (!entry) return;
+                          interiorOnScreen = entry.isIntersecting;
+                          if (interiorOnScreen) { drawInteriorFrame(); scheduleInteriorFrame(); } else cancelInteriorFrame();
+                        }, { rootMargin: '200px' });
+                        interiorViewObserver.observe(cv);
+                      }
+                      drawInteriorFrame();
+                      scheduleInteriorFrame();
+                    } }),
+                  h('div', { 'data-cell-diagram-caption': true }, h('span', null, selOrg ? 'Inspecting: ' + selOrg.name : 'Select a structure to begin'), h('span', null, 'Schematic · not to scale'))),
+                h('div', { 'data-cell-diagram-toolbar': true, role: 'group', 'aria-label': 'Diagram display controls' },
+                  h('button', { 'aria-pressed': contrastMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorHighContrast = !contrastMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (contrastMode ? 'bg-slate-900 text-yellow-200 border-slate-950' : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100') }, contrastMode ? 'Standard contrast' : 'High contrast'),
+                  h('button', { 'data-cell-label-toggle': true, 'aria-pressed': showLabels ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorShowLabels = !showLabels; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (showLabels ? 'bg-cyan-700 text-white border-cyan-800' : 'bg-cyan-50 text-cyan-900 border-cyan-300 hover:bg-cyan-100') }, showLabels ? 'Hide study labels' : 'Show study labels'),
+
+                  h('span', { className: 'text-xs text-slate-600' }, 'Tap a structure or use the arrow keys.'),
+                  h('button', { type: 'button', 'aria-pressed': !!d.interiorAnnotations, onClick: function() { upd('interiorAnnotations', !d.interiorAnnotations); } }, d.interiorAnnotations ? 'Hide diagram annotations' : 'Show diagram annotations')
+                ),
+                h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2', 'data-cell-zoom-control': true },
+                  h('label', { htmlFor: 'cell-detail-zoom', className: 'text-xs font-black text-sky-900' }, 'Detail zoom ' + Math.round(zoomLevel * 100) + '%'),
+                  h('input', { id: 'cell-detail-zoom', type: 'range', min: 0.85, max: 1.25, step: 0.05, value: zoomLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorZoom = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-sky-600', 'aria-label': __alloT('stem.cell.a11y_cell_diagram_detail_zoom', 'Cell diagram detail zoom') }),
+                  h('span', { className: 'text-[0.625rem] text-sky-800' }, '85%–125% • centered on the cell'),
+                  h('button', { type: 'button', 'data-cell-reset-diagram': true, onClick: function() { updateCellDataFunctional(function(cel) { cel.interiorZoom = 1; cel.interiorHighContrast = false; cel.interiorShowLabels = false; cel.interiorAnnotations = false; return cel; }); }, className: 'min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700' }, 'Reset diagram')
+                ),
+                h('details', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2', 'data-cell-structure-transcript': true },
+                  h('summary', { className: 'cursor-pointer text-xs font-black text-slate-800' }, 'Text transcript of cell diagram'),
+                  h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-600' }, 'A ' + ctype + ' cell diagram with ' + orgKeys.length + ' selectable structures. ' + (depthMode ? 'Optical section depth: ' + Math.round(depthLevel) + '%. ' : 'Optical section is off. ') + (selOrg ? 'Selected structure: ' + selOrg.name + '.' : 'No structure selected.')),
+                  h('ul', { className: 'mt-2 grid gap-2 md:grid-cols-2', 'aria-label': __alloT('stem.cell.a11y_text_descriptions_of_cell_structures', 'Text descriptions of cell structures') }, orgKeys.map(function (key) {
+                    var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
+                    return h('li', { key: 'transcript-' + key, className: 'rounded-md border bg-white p-2 text-[0.6875rem] leading-relaxed', style: { borderColor: item.color } },
+                      h('div', { className: 'flex items-center justify-between gap-2' }, h('strong', { className: 'text-slate-900' }, item.name), h('span', { className: 'text-[0.625rem] font-bold ' + (explored ? 'text-emerald-700' : 'text-slate-600') }, explored ? 'Explored' : 'Not explored')),
+                      h('p', { className: 'mt-1 text-slate-700' }, item.fn),
+                      h('p', { className: 'mt-1 text-slate-600' }, 'Mechanism: ' + item.structure),
+                      h('p', { className: 'mt-1 text-slate-500' }, 'Connections: ' + item.connections)
+                    );
+                  }))
+                ),                h('div', { className: 'text-[10.5px] text-slate-500 mt-1 leading-snug' }, __alloT('stem.cell.interior_caveat', 'Schematic, not to scale: organelle sizes and numbers are simplified (a real cell has hundreds of mitochondria), and this is one 2-D slice of a 3-D cell. Cells also specialize — this is a “typical” one.')),
+                ),
+                // selected organelle info
+                selOrg ? h('div', { 'data-cell-study-surface': true, 'data-cell-selected-structure': sel, tabIndex: -1, className: 'mt-3 p-3 rounded-xl border-2 shadow-sm', style: { borderColor: selOrg.color, background: '#fff', '--cell-accent': selOrg.color }, role: 'status', 'aria-live': 'polite' },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { className: 'inline-block w-3 h-3 rounded-full', 'aria-hidden': 'true', style: { background: selOrg.color } }),
+                    h('span', { className: 'text-base font-black text-slate-800' }, selOrg.name)),
+                  h('figure', { 'data-cell-structure-detail': sel, style: { margin: '0 0 16px', background: '#061c23', border: '1px solid #31505a', borderRadius: '12px', overflow: 'hidden' } },
+                    h('canvas', { width: 320, height: 170, role: 'img', 'aria-label': 'Enlarged schematic of ' + selOrg.name + ' in the ' + ctype + ' cell. This still view uses the same illustration as the main diagram.', style: { display: 'block', width: '100%', height: 'auto' }, ref: function(cv) {
+                      if (!cv) return;
+                      var context = cv.getContext && cv.getContext('2d'); if (!context) return;
+                      var ratio = Math.max(1, Math.min(2, Number(window.devicePixelRatio) || 1));
+                      if (cv.width !== 320 * ratio) cv.width = 320 * ratio;
+                      if (cv.height !== 170 * ratio) cv.height = 170 * ratio;
+                      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+                      drawCellStructureDetail(context, 320, 170, ctype, sel, contrastMode);
+                    } }),
+                    h('figcaption', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', padding: '8px 12px', borderTop: '1px solid #31505a', color: '#b9dedf', fontSize: '11px', lineHeight: '1.5' } }, h('span', null, 'Structure detail'), h('span', null, 'Still schematic'))
+                  ),
+                  h('button', { type: 'button', 'data-cell-browse-structures': true, onClick: browseCellStructures, className: 'mb-3 min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-teal-800' }, 'Browse structures'),
+                  CELL_ULTRASTRUCTURE[sel] ? h('div', { className: 'mb-2 flex flex-wrap gap-1', 'aria-label': __alloT('stem.cell.a11y_ultrastructure_features_to_notice', 'Ultrastructure features to notice') },
+                    CELL_ULTRASTRUCTURE[sel].split(' | ').map(function(feature) { return h('span', { key: feature, className: 'rounded-full border px-2 py-0.5 text-[0.625rem] font-black tracking-wide', style: { borderColor: selOrg.color, color: '#334155', background: '#f8fafc' } }, feature); })) : null,
+                  h('div', { className: 'rounded-lg bg-slate-50 p-2.5 text-[0.8125rem] text-slate-700 leading-relaxed' },
+                    h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Core function'),
+                    selOrg.fn),
+                  h('div', { className: 'mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-2', 'data-cell-mastery-controls': true },
+                    h('span', { className: 'mr-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Study status'),
+                    h('button', { 'aria-pressed': masteredKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'mastered'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (masteredKeys.indexOf(sel) >= 0 ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100') }, masteredKeys.indexOf(sel) >= 0 ? 'Mastered' : 'Mark mastered'),
+                    h('button', { 'aria-pressed': reviewKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'review'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (reviewKeys.indexOf(sel) >= 0 ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, reviewKeys.indexOf(sel) >= 0 ? 'In review queue' : 'Needs review'),
+                  ),
+                  h('details', { 'data-cell-inspector-details': true }, h('summary', null, 'Structure & connections'),
+h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
+                    h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
+                      h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Structure and mechanism'),
+                      h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.structure)),
+                    h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
+                      h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Connections in the cell'),
+                      h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.connections)))),
+                  h('div', { className: 'flex flex-wrap gap-1 items-center mb-1' },
+                    h('span', { className: 'text-[10.5px] font-bold text-slate-600 uppercase tracking-wide' }, __alloT('stem.cell.found_in', 'Found in') + ':'),
+                    ['animal', 'plant', 'bacterium'].map(function (tp) {
+                      var has = selOrg.types.indexOf(tp) >= 0;
+                      return h('span', { key: tp, className: 'text-[10.5px] font-bold px-1.5 py-0.5 rounded-full ' + (has ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600 line-through') }, tp);
+                    })),
+                  selOrg.bust ? h('div', { className: 'mt-1.5 p-2 rounded-lg text-[0.75rem] leading-snug', style: { background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: '#92400e' } }, '⚠ ', h('strong', null, 'Myth-bust: '), selOrg.bust) : null
+                ) : h('div', { 'data-cell-inspector-empty': true }, h('div', { className: 'text-xs font-bold uppercase tracking-wide text-teal-700' }, 'Structure inspector'), h('h4', { className: 'mt-3 text-xl font-bold text-slate-800' }, 'Every structure has a role.'), h('p', { className: 'mt-3 text-sm leading-relaxed text-slate-600' }, 'Choose a structure in the diagram or the list. Explore its function, see how it connects, and mark what you want to revisit.'), h('button', { type: 'button', onClick: function() { pick(orgKeys[0]); }, className: 'mt-4 min-h-10 rounded-lg bg-teal-800 px-4 py-2 text-sm font-bold text-white' }, 'Start with the membrane')),
+                h('div', { 'data-cell-picker-panel': true, role: 'region', 'aria-label': 'Explore cell structures' }, h('h5', { className: 'text-sm font-bold text-slate-700' }, 'Explore structures'),
+                  h('label', { htmlFor: 'cell-structure-search', className: 'block mt-3 mb-1 text-xs font-bold text-slate-600' }, 'Find a structure or function'),
+                  h('div', { 'data-cell-picker-search': true },
+                    h('input', { id: 'cell-structure-search', type: 'search', value: pickerInput, placeholder: 'Try nucleus, energy, or transport', onChange: function(e) { upd('interiorPickerQuery', e.target.value); }, 'aria-controls': 'cell-structure-choices' }),
+                    h('button', { type: 'button', 'aria-pressed': pickerReviewOnly, onClick: function() { upd('interiorPickerReviewOnly', !pickerReviewOnly); } }, 'Needs review (' + directoryReviewCount + ')')
+                  ),
+                  h('p', { role: 'status', className: 'mt-2 text-xs text-slate-600' }, pickerKeys.length + ' of ' + orgKeys.length + ' structures shown'),
+                  (pickerInput || pickerReviewOnly) && h('button', { type: 'button', 'data-cell-clear-picker': true, className: 'mt-2 min-h-10 text-xs font-bold underline text-teal-800', onClick: function() { updateCellDataFunctional(function(cel) { cel.interiorPickerQuery = ''; cel.interiorPickerReviewOnly = false; return cel; }); browseCellStructures(); } }, 'Clear structure filters'),
+                  pickerKeys.length === 0 && h('p', { className: 'mt-3 rounded-lg border border-dashed border-slate-300 p-3 text-sm text-slate-600' }, pickerReviewOnly && directoryReviewCount === 0 ? 'Your review queue is empty. Mark a structure as Needs review in the inspector to revisit it here.' : 'No structures match. Try another term or clear the filters.'),
+// organelle legend (keyboard-accessible selection)
+                h('div', { 'data-cell-study-surface': true, 'data-cell-structure-picker': true, id: 'cell-structure-choices', className: 'flex flex-wrap gap-1.5 mt-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_organelles_tap_to_inspect', 'Organelles — tap to inspect') },
+                  pickerKeys.map(function (k) {
+                    var o = CELL_ORGANELLES[k], on = sel === k;
+                    return h('button', { key: k, 'data-cell-structure-choice': k, 'aria-pressed': on ? 'true' : 'false', onClick: function () { pick(k); if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) requestAnimationFrame(function() { var inspector = document.querySelector('[data-cell-selected-structure]'); if (inspector) { inspector.focus({ preventScroll: true }); inspector.scrollIntoView({ block: 'nearest' }); } }); }, className: 'px-2 py-1 rounded-md text-[11.5px] font-bold border transition-colors active:scale-[0.97] ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: cellDarkenAccent(o.color), borderColor: cellDarkenAccent(o.color) } : { borderColor: o.color } },
+                      h('span', { 'aria-hidden': 'true', style: { color: on ? '#fff' : o.color } }, '● '), h('span', null, o.name, h('small', { 'data-cell-choice-status': true }, reviewKeys.indexOf(k) >= 0 ? 'Needs review' : masteredKeys.indexOf(k) >= 0 ? 'Mastered' : seen.indexOf(k) >= 0 ? 'Explored' : 'New')));
+                  })),
+                h('div', { className: 'text-[0.6875rem] text-slate-500 mt-1' }, '🔎 ' + __alloT('stem.cell.explored', 'Explored') + ' ' + seen.filter(function (k) { return orgKeys.indexOf(k) >= 0 || ['cellWall', 'cellMembrane'].indexOf(k) >= 0; }).length + ' / ' + orgKeys.length + ' ' + __alloT('stem.cell.organelles', 'organelles in this cell'))),
+                ),
+                h('div', { className: 'text-[0.75rem] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),                h('div', { className: 'mb-2 rounded-xl border border-sky-200 bg-sky-50 p-3', 'data-cell-learning-progress': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_study_progress', 'Study progress') },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-sky-900' }, 'Study progress • ' + (((CTYPES.find(function (c) { return c.id === ctype; }) || {}).label) || ctype)), h('p', { className: 'mt-0.5 text-[0.6875rem] text-sky-800' }, directoryMasteredCount + ' mastered • ' + directoryReviewCount + ' in review • ' + Math.max(0, orgKeys.length - directoryMasteredCount) + ' remaining')) ,
+                    h('button', { onClick: openReviewQueue, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, directoryReviewCount ? 'Open review queue' : 'Explore directory')
+                  ),
+                  h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-white', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': directoryProgressPct, 'aria-label': __alloT('stem.cell.a11y_mastery_progress', 'Mastery progress') }, h('div', { className: 'h-full rounded-full bg-sky-600 transition-all', style: { width: directoryProgressPct + '%' } })),
+                  h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-[10.5px] font-bold text-sky-800' },
+                    h('span', null, 'Mastery ' + directoryProgressPct + '%'),
+                    h('span', null, 'Explored ' + directoryExploredCount + '/' + orgKeys.length),
+                    h('span', null, adaptiveQuizAttempts ? 'Adaptive accuracy ' + adaptiveAccuracy + '%' : 'Adaptive check ready')
+                  )
+                ),
+                h('details', { className: 'mb-2 rounded-xl border border-slate-300 bg-slate-50 p-3', 'data-cell-progress-portability': true },
+                  h('summary', { className: 'cursor-pointer text-xs font-black text-slate-800' }, 'Portable progress record'),
+                  h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-600' }, 'Export this versioned record to continue on another device, or paste one from a previous session. Importing restores each cell type separately.'),
+                  h('textarea', { value: progressTransfer, onChange: function (e) { upd('interiorProgressTransfer', e.target.value); }, placeholder: 'Progress JSON appears here…', rows: 4, className: 'mt-2 w-full rounded-md border border-slate-500 bg-white px-2.5 py-2 font-mono text-[0.625rem] leading-snug text-slate-800', 'aria-label': __alloT('stem.cell.a11y_portable_cell_progress_json', 'Portable cell progress JSON') }),
+                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                    h('button', { onClick: exportCellProgress, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, 'Export progress'),
+                    h('button', { onClick: importCellProgress, className: 'rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-emerald-900 hover:bg-emerald-100' }, 'Import progress'),
+                    h('button', { onClick: resetAllCellProgress, className: 'rounded-md border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-rose-900 hover:bg-rose-100' }, 'Reset all progress')
+                  ),
+                  progressNotice && h('p', { className: 'mt-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[0.6875rem] text-slate-700', role: 'status', 'aria-live': 'polite' }, progressNotice),
+                  h('div', { className: 'mt-3', 'data-cell-progress-overview': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_progress_across_cell_types', 'Progress across cell types') },
+                    h('p', { className: 'text-[10.5px] font-black uppercase tracking-wide text-slate-600' }, 'Portfolio overview'),
+                    h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3' }, portfolioOverview.map(function (item) {
+                      var mastery = item.total ? Math.round(item.mastered / item.total * 100) : 0;
+                      return h('button', { key: 'portfolio-' + item.type, onClick: function () { switchInteriorType(item.type); }, 'aria-pressed': ctype === item.type ? 'true' : 'false', className: 'rounded-lg border bg-white p-2 text-left transition-colors hover:border-sky-500 ' + (ctype === item.type ? 'ring-2 ring-sky-400' : '') },
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, item.label), h('span', { className: 'text-[0.625rem] font-black text-sky-800' }, mastery + '%')) ,
+                        h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100' }, h('div', { className: 'h-full rounded-full bg-sky-500', style: { width: mastery + '%' } })),
+                        h('div', { className: 'mt-1 text-[0.625rem] font-bold text-slate-500' }, item.explored + '/' + item.total + ' explored • ' + item.review + ' review')
+                      );
+                    }))
+                  )
+                ),
+                h('div', { className: 'flex flex-wrap gap-2 mb-2 items-center', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_comparison_and_guided_pathways', 'Cell comparison and guided pathways') },
+                  h('button', { 'aria-pressed': compareMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCompare = !compareMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (compareMode ? 'bg-indigo-700 text-white border-indigo-800' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100') }, compareMode ? 'Hide comparison' : 'Compare cells'),
+                  h('button', { 'data-cell-reset-view': true, onClick: resetInteriorView, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-slate-500 bg-white text-slate-700 hover:bg-slate-100 transition-colors active:scale-[0.97]' }, 'Reset view'),
+                  h('button', { 'data-cell-depth-toggle': true, 'aria-pressed': depthMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDepthMode = !depthMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (depthMode ? 'border-amber-800 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, depthMode ? 'Hide optical section' : 'Optical section'),
+                  h('button', { 'data-cell-microdissection-link': true, onClick: moveToMicrodissection, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100 transition-colors active:scale-[0.97]' }, sel ? 'Prepare selected section →' : 'Prepare focal section →'),
+                  h('button', { 'data-cell-adaptive-quiz': true, 'aria-pressed': adaptiveQuizActive ? 'true' : 'false', onClick: adaptiveQuizActive ? stopAdaptiveQuiz : startAdaptiveQuiz, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (adaptiveQuizActive ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900 hover:bg-fuchsia-100') }, adaptiveQuizActive ? 'Exit adaptive check' : 'Adaptive check'),
+
+                ),
+                depthMode && h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2', 'data-cell-depth-control': true },
+                  h('label', { htmlFor: 'cell-optical-depth', className: 'text-xs font-black text-amber-900' }, 'Optical section ' + Math.round(depthLevel) + '%'),
+                  h('input', { id: 'cell-optical-depth', type: 'range', min: 0, max: 100, step: 5, value: depthLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDepthLevel = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-amber-600', 'aria-label': __alloT('stem.cell.a11y_optical_section_depth', 'Optical section depth') }),
+                  h('span', { className: 'text-[0.625rem] text-amber-800' }, 'Focal slice • structures outside this plane fade')
+                ),
+                h('div', { className: 'mb-2 rounded-lg border border-lime-200 bg-lime-50 px-3 py-2', 'data-cell-specialization-control': true },
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
+                    h('span', { className: 'text-xs font-black text-lime-900' }, 'Specialization lens'),
+                    specializationOptions.map(function (option) {
+                      var active = option.id === specializationId;
+                      return h('button', { key: option.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorSpecialization = option.id; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold transition-colors ' + (active ? 'border-lime-800 bg-lime-700 text-white' : 'border-lime-300 bg-white text-lime-900 hover:bg-lime-100') }, option.label);
+                    })
+                  ),
+                  h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-lime-900' }, (specializationOptions.find(function (item) { return item.id === specializationId; }) || specializationOptions[0]).note)
+                ),
+                h('div', { className: 'mb-2', 'data-cell-structure-directory': true },
+                  h('button', { 'aria-expanded': directoryOpen ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = !directoryOpen; return cel; }); }, className: 'w-full rounded-lg border px-3 py-2 text-left text-xs font-black transition-colors ' + (directoryOpen ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100') }, directoryOpen ? 'Hide structure directory' : 'Open structure directory', h('span', { className: 'float-right font-normal opacity-80' }, directoryOpen ? 'collapse' : 'study by role')),
+                  directoryOpen && h('div', { className: 'mt-2 rounded-lg border border-violet-200 bg-violet-50 p-3', role: 'region', 'aria-label': __alloT('stem.cell.a11y_structure_directory', 'Structure directory') },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-violet-900' }, 'Explored ' + directoryExploredCount + ' / ' + orgKeys.length), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-violet-800' }, directoryVisibleKeys.length + ' shown'), h('span', { className: 'text-[0.625rem] font-bold text-violet-800' }, 'Mastered ' + directoryMasteredCount + ' • Review ' + directoryReviewCount)),
+                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+                      h('input', { type: 'search', value: directoryInput, placeholder: 'Search organelles, functions, or mechanisms', onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = e.target.value; return cel; }); }, className: 'min-w-[220px] flex-1 rounded-md border border-violet-500 bg-white px-2.5 py-1.5 text-[0.6875rem] text-slate-800', 'aria-label': __alloT('stem.cell.a11y_search_structure_directory', 'Search structure directory') }),
+                      h('button', { 'aria-pressed': directoryUnexploredOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryUnexploredOnly = !directoryUnexploredOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryUnexploredOnly ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryUnexploredOnly ? 'Show all structures' : 'Unexplored only'),
+                      h('button', { 'data-cell-review-filter': true, 'aria-pressed': directoryReviewOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryReviewOnly = !directoryReviewOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryReviewOnly ? 'border-amber-700 bg-amber-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryReviewOnly ? 'Show all statuses' : 'Review queue')
+                    ),
+                    h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                      h('span', { className: 'mr-1 text-[0.6875rem] font-black uppercase tracking-wide text-violet-900' }, 'Group:'),
+                      h('button', { 'aria-pressed': directoryGroup === 'all' ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = 'all'; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (directoryGroup === 'all' ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, 'All structures'),
+                      directoryGroups.map(function (group) {
+                        var active = directoryGroup === group.id;
+                        return h('button', { key: 'directory-group-' + group.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = group.id; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (active ? 'text-slate-900' : 'bg-white text-violet-900 hover:bg-violet-100'), style: active ? { background: group.color, borderColor: group.color } : { borderColor: group.color } }, group.label);
+                      })
+                    ),
+                    h('p', { className: 'mt-2 text-[0.6875rem] leading-snug text-violet-900' }, directoryGroup === 'all' ? 'Choose a structure to spotlight it in the diagram. Explored items carry a checkmark.' : (directoryGroups.find(function (group) { return group.id === directoryGroup; }) || {}).note),
+                    directoryVisibleKeys.length === 0 && h('p', { className: 'mt-2 rounded-md border border-dashed border-violet-300 bg-white px-2.5 py-2 text-[0.6875rem] text-violet-900' }, 'No structures match this search and filter.', h('button', { type: 'button', className: 'block mt-2 min-h-10 underline font-bold', onClick: function() { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = ''; cel.interiorDirectoryGroup = 'all'; cel.interiorDirectoryUnexploredOnly = false; cel.interiorDirectoryReviewOnly = false; return cel; }); } }, 'Clear search and filters')),
+                    h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' }, directoryVisibleKeys.map(function (key) {
+                      var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
+                      return h('button', { key: 'directory-' + key, onClick: function () { pick(key); }, 'aria-label': item.name + ': ' + item.fn, className: 'rounded-lg border bg-white p-2.5 text-left transition-colors hover:border-violet-600 ' + (sel === key ? 'ring-2 ring-violet-500' : ''), style: { borderColor: item.color } },
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black text-slate-900' }, item.name), explored ? h('span', { className: 'rounded-full bg-emerald-100 px-1.5 py-0.5 text-[0.625rem] font-black text-emerald-800' }, 'Explored') : h('span', { className: 'text-[0.625rem] font-bold text-slate-400' }, 'New')),
+                        h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-700' }, item.fn),
+                        h('p', { className: 'mt-1 text-[10.5px] leading-snug text-slate-500' }, 'Mechanism: ' + item.structure)
+                      );
+                    }))
+                  )
+                ),
+                currentCheck && h('div', { className: 'mb-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2', 'data-cell-concept-check': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_organelle_concept_check', 'Organelle concept check') },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('div', null,
+                      h('span', { className: 'text-xs font-black uppercase tracking-wide text-orange-900' }, 'Check your reasoning before reveal'),
+                      h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-snug text-orange-800' }, 'This is a concept check, not an experiment prediction.'),
+                      h('p', { className: 'mt-1 text-[0.75rem] leading-snug text-orange-950' }, currentCheck.prompt)
+                    ),
+                    checkRevealed ? h('button', { onClick: resetCheck, className: 'rounded-md border border-orange-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-orange-900 hover:bg-orange-100' }, 'Try again') : null
+                  ),
+                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_concept_check_answers', 'Concept check answers') },
+                    currentCheck.options.map(function (option, index) {
+                      var chosen = checkChoice === index;
+                      var correct = checkRevealed && index === currentCheck.answer;
+                      var wrong = checkRevealed && chosen && !correct;
+                      return h('button', { key: option, 'aria-pressed': chosen ? 'true' : 'false', disabled: checkRevealed, onClick: function () { answerCheck(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-orange-800 bg-orange-700 text-white' : 'border-orange-300 bg-white text-orange-950 hover:bg-orange-100') }, option);
+                    })
+                  ),
+                  checkRevealed && h('div', { className: 'mt-2 rounded-md border border-orange-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-orange-950', 'data-cell-concept-feedback': checkChoice === currentCheck.answer ? 'correct' : 'retry', role: 'status', 'aria-live': 'polite' }, (checkChoice === currentCheck.answer ? 'Reasoning check: correct. ' : 'Reasoning check: not yet. ') + currentCheck.explanation)
+                ),
+                adaptiveQuizActive && adaptiveQuizItem && h('div', { className: 'mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3', 'data-cell-adaptive-quiz': true, 'data-cell-study-surface': true, tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.cell.a11y_adaptive_organelle_check', 'Adaptive organelle check') },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-900' }, 'Adaptive review check'), h('p', { className: 'text-[0.625rem] font-bold text-fuchsia-800' }, recallRound ? 'Question ' + Math.min(recallRound.keys.length, recallRound.answers.length + (adaptiveQuizRevealed ? 0 : 1)) + ' of ' + recallRound.keys.length + ' · Review structures first' : 'Review structures first')),
+                    h('button', { onClick: stopAdaptiveQuiz, className: 'rounded-md border border-fuchsia-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-fuchsia-900 hover:bg-fuchsia-100' }, 'End check')
+                  ),
+                  recallRound && h('div', { 'data-cell-round-progress': true, role: 'progressbar', 'aria-label': 'Round questions answered', 'aria-valuemin': 0, 'aria-valuemax': recallRound.keys.length, 'aria-valuenow': recallRound.answers.length }, recallRound.keys.map(function(key, index) { return h('span', { key: key, 'data-answered': index < recallRound.answers.length ? 'true' : 'false', 'aria-hidden': true }); })),
+                  h('p', { className: 'mt-2 text-[0.75rem] font-black text-fuchsia-950' }, 'Which structure best matches this clue?'),
+                  h('p', { className: 'mt-1 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-fuchsia-950' }, CELL_RECALL_CLUES[adaptiveQuizKey] || adaptiveQuizItem.structure),
+                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_adaptive_check_answers', 'Adaptive check answers') }, adaptiveOptions.map(function (key, index) {
+                    var chosen = adaptiveQuizChoice === index;
+                    var correct = adaptiveQuizRevealed && index === adaptiveAnswer;
+                    var wrong = adaptiveQuizRevealed && chosen && !correct;
+                    return h('button', { key: 'adaptive-answer-' + key, 'aria-pressed': chosen ? 'true' : 'false', disabled: adaptiveQuizRevealed, onClick: function () { answerAdaptiveQuiz(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-white text-fuchsia-950 hover:bg-fuchsia-100') }, CELL_ORGANELLES[key].name);
+                  })),
+                  adaptiveQuizRevealed && h('div', { className: 'mt-2 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-fuchsia-950', role: 'status', 'aria-live': 'polite' }, (adaptiveQuizChoice === adaptiveAnswer ? 'Correct. ' : 'Not quite. ') + adaptiveQuizItem.name + '. ' + adaptiveQuizItem.structure + ' Connections: ' + adaptiveQuizItem.connections),
+                  adaptiveQuizRevealed && h('button', { onClick: nextAdaptiveQuiz, className: 'mt-2 rounded-md border border-fuchsia-800 bg-fuchsia-700 px-2.5 py-1.5 text-[0.6875rem] font-bold text-white hover:bg-fuchsia-800' }, recallRound && recallRound.answers.length === recallRound.keys.length ? 'See round results' : 'Next review item')
+                ),
+                !adaptiveQuizActive && recallRound && recallRound.finished && h('section', { 'data-cell-round-summary': true, 'data-cell-study-surface': true, tabIndex: -1, 'aria-label': 'Recall round results' },
+                  h('div', { 'data-cell-round-heading': true },
+                    h('div', null, h('p', { 'data-cell-round-eyebrow': true }, 'RECALL ROUND COMPLETE'), h('h4', null, roundMissed.length ? 'Your next step is ready' : 'Every structure recalled')),
+                    h('div', { 'data-cell-round-score': true }, h('strong', null, roundCorrect + '/' + recallRound.keys.length), h('span', null, 'correct this round'))
+                  ),
+                  h('p', null, roundMissed.length ? 'Revisit the structures below, then try another round. Your review list has been updated.' : 'Keep exploring or start another round to strengthen your recall.'),
+                  h('ul', { 'data-cell-round-answers': true }, recallRound.answers.map(function(answer) { return h('li', { key: answer.key }, h('span', null, CELL_ORGANELLES[answer.key].name), h('strong', { 'data-correct': String(answer.correct) }, answer.correct ? 'Recalled' : 'Needs review')); })),
+                  h('div', { 'data-cell-round-actions': true },
+                    roundMissed.length > 0 && h('button', { type: 'button', onClick: studyMissedStructures }, 'Study missed structures'),
+                    h('button', { type: 'button', onClick: startAdaptiveQuiz }, 'Start another round')
+                  )
+                ),
+                compareMode && h('div', { className: 'mb-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3', 'data-cell-comparison': true },
+                  h('div', { className: 'flex items-center justify-between mb-2' },
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-indigo-800' }, 'Compare cell architectures'), h('p', { className: 'text-[0.6875rem] text-indigo-700' }, 'Compare the structures represented in three generic cell models. Diagrams are schematic and are not drawn to the same physical scale.')),
+                    h('span', { className: 'rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-indigo-700' }, '3 cell types')
+                  ),
+                  h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' }, CTYPES.map(function (c) {
+                    var compareSel = sel && interiorHas(c.id, sel) ? sel : null;
+                    return h('button', { key: 'compare-' + c.id, onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = compareSel; cel.interiorGuide = null; return cel; }); }, className: 'rounded-xl border border-indigo-200 bg-white p-1.5 text-left hover:border-indigo-500 transition-colors', 'aria-label': 'Open ' + c.label + ' in the main cell view' },
+                      h('canvas', { key: 'compare-canvas-' + c.id + '-' + (compareSel || 'none'), width: 300, height: 190, role: 'img', 'aria-label': c.label + ' comparison diagram', style: { width: '100%', height: 'auto', display: 'block', borderRadius: '0.6rem' }, ref: function (cv) { if (!cv) return; var ctx = cv.getContext && cv.getContext('2d'); if (ctx) drawCellInterior(ctx, cv.width, cv.height, c.id, 0, compareSel, true); } }),
+                      h('div', { className: 'px-1 pt-1 text-xs font-black text-indigo-900' }, c.label),
+                      sel && CELL_ORGANELLES[sel] ? h('div', { 'data-cell-structure-presence': c.id, className: 'px-1 py-1 text-xs font-bold ' + (compareSel ? 'text-emerald-800' : 'text-slate-700') }, CELL_ORGANELLES[sel].name + ': ' + (compareSel ? 'present in this model' : 'absent from this model')) : null
+                    );
+                  }))
+                ),
+                guide && h('section', { 'data-cell-guided-pathway': guideId, 'data-cell-study-surface': true, tabIndex: -1, 'aria-label': guide.label + ' guided pathway' },
+                  h('div', { 'data-cell-pathway-heading': true },
+                    h('div', null, h('p', null, 'GUIDED PATHWAY'), h('h4', null, guide.label)),
+                    h('button', { type: 'button', onClick: stopGuide }, 'Back to exploring')
+                  ),
+                  h('ol', { 'data-cell-pathway-steps': true, 'aria-label': 'Pathway stops' }, guide.steps.map(function(step, index) {
+                    return h('li', { key: step.key }, h('button', { type: 'button', 'aria-current': index === guideStep ? 'step' : undefined, 'aria-label': 'Step ' + (index + 1) + ': ' + CELL_ORGANELLES[step.key].name, onClick: function() { selectGuideStep(index); } }, h('span', { 'aria-hidden': true }, String(index + 1)), h('strong', null, CELL_ORGANELLES[step.key].name)));
+                  })),
+                  h('div', { 'data-cell-pathway-explanation': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+                    h('p', { 'data-cell-pathway-position': true }, 'Step ' + (guideStep + 1) + ' of ' + guide.steps.length),
+                    h('h5', null, guideItem.title.replace(/^\d+\.\s*/, '')),
+                    h('p', null, guideItem.body)
+                  ),
+                  h('div', { 'data-cell-pathway-footer': true },
+                    h('button', { type: 'button', onClick: function() { moveGuide(-1); }, disabled: guideStep === 0 }, 'Previous stop'),
+                    guideStep < guide.steps.length - 1 ? h('button', { type: 'button', onClick: function() { moveGuide(1); } }, 'Next: ' + CELL_ORGANELLES[guide.steps[guideStep + 1].key].name) : h('span', null, 'Last stop · Revisit any step above, or return to exploring.')
+                  )
+                ),
+                h('div', { 'data-cell-study-surface': true, 'data-cell-motion-controls': true, className: 'mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2' },
+                  h('p', { className: 'text-xs font-bold text-slate-700', role: 'status' }, reducedMo ? 'Still view follows your reduced-motion preference.' : interiorPaused ? 'Motion paused. You can still inspect every structure.' : 'Live cell view. Pause to inspect a still frame.')
+                ),
+                null
+              );
+            })(),
+
             // ── Challenges Progress checklist card ──
-            React.createElement("div", {
+            ['observe', 'play', 'quiz'].indexOf(activeCellMode) >= 0 && React.createElement("div", {
               "data-cell-mission": true,
               className: "overflow-hidden rounded-xl border border-emerald-200 bg-white shadow-sm mb-3"
             },
@@ -23562,7 +25023,8 @@ var d = labToolData.cell || {};
               )
             ),
 
-            React.createElement('div', { className: 'bg-white rounded-xl border border-green-200 p-3 mb-3 shadow-sm' },
+            React.createElement(['observe', 'play', 'quiz'].indexOf(activeCellMode) >= 0 ? 'div' : 'details', { 'data-cell-quest-summary': true, className: 'bg-white rounded-xl border border-green-200 p-3 mb-3 shadow-sm' },
+              ['observe', 'play', 'quiz'].indexOf(activeCellMode) < 0 ? React.createElement('summary', { className: 'cursor-pointer text-sm font-bold text-green-800' }, 'Optional quests and progress') : null,
               React.createElement('div', { className: 'flex justify-between items-center mb-2' },
                 React.createElement('h4', { className: 'text-xs font-bold text-green-800 uppercase tracking-wider flex items-center gap-1.5' },
                   React.createElement('span', null, '🏆'), React.createElement('span', null, 'Quest Progress')
@@ -23706,7 +25168,7 @@ var d = labToolData.cell || {};
                     React.createElement("span", { "data-cell-center-player-label": true }, "Center")
                   )
                 ),
-                React.createElement("div", { "data-cell-hud-summary": true, className: "flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[0.6875rem] leading-snug text-slate-200", style: { gridColumn: '1 / -1' } },
+                (activePlayDef || !selDef || d.quizMode) && React.createElement("div", { "data-cell-hud-summary": true, className: "flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[0.6875rem] leading-snug text-slate-200", style: { gridColumn: '1 / -1' } },
                   activePlayDef && activePlayTutorial ? React.createElement(React.Fragment, null,
                     React.createElement("strong", { "data-cell-hud-organism": true, className: "font-black text-white" }, activePlayDef.label),
                     React.createElement("span", { className: "font-black uppercase tracking-wide text-emerald-200" }, "Mission"),
@@ -23715,12 +25177,33 @@ var d = labToolData.cell || {};
                     React.createElement("span", { className: "font-black uppercase tracking-wide text-cyan-200" }, "Control models"),
                     React.createElement("strong", { "data-cell-hud-mechanism": true, className: "font-black text-cyan-50" }, activePlayTutorial.movement)
                   ) : React.createElement("span", null, selDef ? selDef.label + " selected" : "Click an organism to inspect behavior and anatomy")
+                ),
+                !activePlayDef && !d.quizMode && selDef && React.createElement("div", { "data-cell-observation-tools": true },
+                  React.createElement("div", { "data-cell-observation-identity": true },
+                    React.createElement("span", { "aria-hidden": true, style: { background: selDef.color } }),
+                    React.createElement("strong", null, selDef.label),
+                    React.createElement("span", null, "Selected specimen")
+                  ),
+                  React.createElement("div", { "data-cell-observation-actions": true, role: "group", "aria-label": "Inspect selected specimen" },
+                    React.createElement("button", { type: "button", "data-cell-observation-labels": true, "aria-pressed": d.observationLabels !== false, onClick: function() {
+                      var visible = d.observationLabels === false;
+                      upd('observationLabels', visible);
+                      var cv = document.querySelector('[data-cell-sim-canvas]');
+                      if (cv && cv._cellSimSetObservationLabels) cv._cellSimSetObservationLabels(visible);
+                    } }, d.observationLabels === false ? "Show labels" : "Hide labels"),
+                    React.createElement("button", { type: "button", "data-cell-observation-center": true, onClick: returnToCellDish }, cellControlIcon('locate'), "Center"),
+                    d.mode === 'observe' && React.createElement("button", { type: "button", "data-cell-observation-follow": true, "aria-pressed": !!d.followSpecimen, "aria-label": "Follow selected specimen", title: "Keep the selected specimen in view. Drag the dish to stop following.", onClick: function() {
+                      var cv = document.querySelector('[data-cell-sim-canvas]');
+                      if (cv && cv._cellSimSetFollowSpecimen) cv._cellSimSetFollowSpecimen(!d.followSpecimen);
+                    } }, d.followSpecimen ? "Following" : "Follow"),
+                    React.createElement("button", { type: "button", "data-cell-observation-notes": true, onClick: function() { focusCellOrganismDetail(selDef.id); } }, "Specimen notes")
+                  )
                 )
               ),
 
               React.createElement("canvas", {
 
-                "data-cell-sim-canvas": "", "data-cell-sim-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : activePlayPredictionPending ? "predict" : activePlayDef ? "active" : "observe", role: "img", "aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ? (activePlayPredictionPending ? "Prediction checkpoint. Choose what you expect before controlling " + activePlayDef.label + ". " : "Interactive cell biology simulation. Playing as " + activePlayDef.label + ". ") + "Mission: " + activePlayTutorial.objective + " Target key: " + activeTargetVisual.keyline + ". " + activePlayTargetStatusText + " Control models " + activePlayTutorial.movement + "." : "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy.", "aria-describedby": "cell-sim-status",
+                "data-cell-sim-canvas": "", "data-cell-view-mode": d.mode || 'observe', "data-cell-sim-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : activePlayPredictionPending ? "predict" : activePlayDef ? "active" : "observe", role: "img", "aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ? (activePlayPredictionPending ? "Prediction checkpoint. Choose what you expect before controlling " + activePlayDef.label + ". " : "Interactive cell biology simulation. Playing as " + activePlayDef.label + ". ") + "Mission: " + activePlayTutorial.objective + " Target key: " + activeTargetVisual.keyline + ". " + activePlayTargetStatusText + " Control models " + activePlayTutorial.movement + "." : "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy. Press Escape to dismiss an anatomy explanation.", "aria-describedby": "cell-sim-status",
 
                 tabIndex: 0,
                 "aria-keyshortcuts": activePlayDef && activePlayTutorial && !activePlayTutorial.stationary && !activePlayPredictionPending && !activeMissionEvidenceComplete ? "ArrowUp ArrowDown ArrowLeft ArrowRight W A S D" : undefined,
@@ -23886,7 +25369,7 @@ var d = labToolData.cell || {};
 
               React.createElement("div", { "data-cell-stage-utility": "zoom", className: "absolute bottom-12 sm:bottom-3 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[0.6875rem] font-bold text-slate-600" },
 
-                "\uD83D\uDD2C",
+                React.createElement("span", { "data-cell-control-label": true }, "Zoom"),
 
                 React.createElement("input", {
 
@@ -23898,14 +25381,14 @@ var d = labToolData.cell || {};
 
                 }),
 
-                Math.round(40 * (d.zoom || 1)) + "x",
+                React.createElement("output", { "data-cell-control-value": "zoom", "aria-label": "Current magnification" }, Math.round(40 * (d.zoom || 1)) + "×"),
 
                 React.createElement("button", {
                   type: "button",
-                  "aria-label": __alloT('stem.cell.a11y_reset_microscope_view', 'Reset microscope view'),
+                  "aria-label": __alloT('stem.cell.a11y_reset_microscope_view', 'Reset microscope view'), title: "Reset microscope view",
                   onClick: function () { var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimResetView) cv._cellSimResetView(); else upd("zoom", 1); cellSound('select'); },
                   className: "rounded bg-slate-100 px-1.5 py-0.5 text-[0.6875rem] font-black text-slate-700 hover:bg-white active:scale-[0.97]"
-                }, "\u21BA")
+                }, cellControlIcon("reset"))
 
               ),
 
@@ -23913,7 +25396,7 @@ var d = labToolData.cell || {};
 
               React.createElement("div", { "data-cell-stage-utility": "speed", className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[0.6875rem] font-bold text-slate-600" },
 
-                "\u23E9",
+                React.createElement("span", { "data-cell-control-label": true }, "Speed"),
 
                 React.createElement("input", {
 
@@ -23925,9 +25408,9 @@ var d = labToolData.cell || {};
 
                 }),
 
-                (d.simSpeed || 1) + "x",
+                React.createElement("output", { "data-cell-control-value": "speed", "aria-label": "Current simulation speed" }, (d.simSpeed || 1) + "×"),
 
-                React.createElement("button", { "aria-label": effectiveCellPaused ? "Play simulation" : "Pause simulation", "aria-pressed": !effectiveCellPaused, onClick: function () { var p = !effectiveCellPaused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (effectiveCellPaused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, effectiveCellPaused ? "\u25B6" : "\u23F8")
+                React.createElement("button", { type: "button", title: effectiveCellPaused ? "Play simulation" : "Pause simulation", "aria-label": effectiveCellPaused ? "Play simulation" : "Pause simulation", "aria-pressed": !effectiveCellPaused, onClick: function () { var p = !effectiveCellPaused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (effectiveCellPaused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, cellControlIcon(effectiveCellPaused ? "play" : "pause"))
 
               ),
 
@@ -24270,17 +25753,15 @@ var d = labToolData.cell || {};
 
             // 🔬 Petri Dish Filters: Select Visible Cell Types
 
-            d.mode !== 'play' && d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && React.createElement("div", { className: "bg-white rounded-xl border border-green-200 p-3 mt-3 shadow-sm" },
+            d.mode !== 'play' && d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && React.createElement("section", { "data-cell-visibility-panel": true, "aria-labelledby": "cell-visibility-title", className: "bg-white rounded-xl border border-green-200 p-3 mt-3 shadow-sm" },
 
-              React.createElement("div", { className: "flex justify-between items-center mb-2" },
-
-                React.createElement("h4", { className: "text-xs font-bold text-green-800 uppercase tracking-wider flex items-center gap-1.5" },
-
-                  React.createElement("span", null, "🔬"), React.createElement("span", null, "Petri Dish Filters: Select Visible Cell Types")
-
+              React.createElement("div", { "data-cell-visibility-heading": true },
+                React.createElement("div", null,
+                  React.createElement("h4", { id: "cell-visibility-title" }, "Visible cell types"),
+                  React.createElement("p", null, "Choose which models appear in the dish.")
                 ),
-
-                React.createElement("div", { className: "flex gap-2" },
+                React.createElement("span", { "data-cell-visibility-count": true, role: "status" }, visibleModelCount + " of " + ORGANISMS.length + " visible"),
+                React.createElement("div", { "data-cell-visibility-actions": true },
 
                   React.createElement("button", {
 
@@ -24350,7 +25831,8 @@ var d = labToolData.cell || {};
 
               ),
 
-              React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-2", role: "group", "aria-label": __alloT('stem.cell.a11y_cell_type_visibility_filters', 'Cell type visibility filters') },
+              visibleModelCount === 0 && React.createElement("p", { "data-cell-visibility-empty": true }, "The dish is empty. Show a cell type below or choose Show All to start exploring."),
+              React.createElement("div", { "data-cell-visibility-grid": true, className: "grid grid-cols-3 sm:grid-cols-6 gap-2", role: "group", "aria-label": __alloT('stem.cell.a11y_cell_type_visibility_filters', 'Cell type visibility filters') },
 
                 ORGANISMS.map(function(org) {
 
@@ -24359,6 +25841,7 @@ var d = labToolData.cell || {};
                   return React.createElement("button", {
 
                     key: org.id,
+                    type: "button", "data-cell-visibility-option": org.id,
 
                     "aria-pressed": isActive,
 
@@ -24397,19 +25880,19 @@ var d = labToolData.cell || {};
 
                         : "bg-slate-50 border-slate-400 text-slate-600"),
 
-                    style: isActive ? { borderColor: org.color } : {}
+                    style: { "--cell-visibility-accent": cellDarkenAccent(org.color) }
 
                   },
 
-                    React.createElement("span", { className: "text-xs flex items-center gap-1.5" },
+                    React.createElement("span", { "data-cell-visibility-identity": true },
 
-                      React.createElement("span", null, org.icon),
+                      React.createElement("span", { "data-cell-visibility-dot": true, "aria-hidden": true }),
 
-                      React.createElement("span", { className: "text-[0.625rem] leading-none" }, org.label)
+                      React.createElement("span", null, React.createElement("strong", null, org.label), React.createElement("span", { "data-cell-visibility-state": true }, isActive ? "Visible" : "Hidden"))
 
                     ),
 
-                    React.createElement("span", { className: "text-[0.625rem]" }, isActive ? "🟢" : "⚫")
+                    React.createElement("span", { "data-cell-visibility-mark": true, "aria-hidden": true }, isActive ? "\u2713" : "\u2212")
 
                   );
 
@@ -24429,17 +25912,17 @@ var d = labToolData.cell || {};
                 " [data-cell-organism-grid] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }" +
                 " [data-cell-organism-grid] [data-cell-organism-option] { min-height: 68px !important; padding: 8px !important; }" +
                 " [data-cell-organism-option][data-cell-organism-priority=\"current\"], [data-cell-organism-option][data-cell-organism-priority=\"selected\"], [data-cell-organism-option][data-cell-organism-priority=\"recommended\"] { grid-column: 1 / -1 !important; min-height: 112px !important; }" +
-                " [data-cell-organism-option][data-cell-organism-priority=\"standard\"] [data-cell-organism-card-detail] { display: none !important; }" +
+                " [data-cell-mode=play] [data-cell-organism-option][data-cell-organism-priority=\"standard\"] [data-cell-organism-card-detail] { display: none !important; }" +
                 " } @container (max-width: 340px) {" +
                 " [data-cell-organism-option][data-cell-organism-priority=\"standard\"] [data-cell-organism-card-header] { display: block !important; }" +
                 " [data-cell-organism-option][data-cell-organism-priority=\"standard\"] [data-cell-card-status] { display: inline-flex !important; margin-top: 6px !important; } }"),
               React.createElement("div", { className: "col-span-full mb-1 flex flex-wrap items-end justify-between gap-2 border-b border-slate-100 pb-2" },
                 React.createElement("div", null,
                   React.createElement("h4", { id: "cell-organism-chooser-title", className: "text-sm font-black text-slate-900" }, d.mode === 'play' ? "Choose your organism" : "Choose an organism to inspect"),
-                  React.createElement("p", { className: "text-[0.6875rem] text-slate-500" }, d.mode === 'play' ? "Compare what you do, how the cell responds, and each mission goal\u2014or follow your recommended next step." : "Each card previews its movement strategy and activity."),
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-500" }, d.mode === 'play' ? "Compare what you do, how the cell responds, and each mission goal\u2014or follow your recommended next step." : "Recognize each model, then explore its movement and anatomy. Illustrations are not to scale."),
                   d.mode === 'play' && React.createElement("p", { "data-cell-chooser-mobile-hint": true, className: "mt-1 hidden text-[0.625rem] font-bold leading-snug text-violet-700" }, "Current, selected, and recommended cards stay expanded. Tap any compact card to reveal its learning map.")
                 ),
-                React.createElement("span", { "data-cell-mastery-summary": d.mode === 'play' ? true : undefined, className: "rounded-full px-2.5 py-1 text-[0.625rem] font-black " + (d.mode === 'play' ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600") }, d.mode === 'play' ? completedCellMissionCount + " / " + ORGANISMS.length + " missions complete" : ORGANISMS.length + " models")
+                React.createElement("span", { "data-cell-observation-summary": d.mode === 'observe' ? true : undefined, "data-cell-mastery-summary": d.mode === 'play' ? true : undefined, className: "rounded-full px-2.5 py-1 text-[0.625rem] font-black " + (d.mode === 'play' ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600") }, d.mode === 'play' ? completedCellMissionCount + " / " + ORGANISMS.length + " missions complete" : observedModelCount + " / " + ORGANISMS.length + " observed")
               ),
               d.mode === 'play' && React.createElement("aside", {
                 "data-cell-next-step": true,
@@ -24479,16 +25962,17 @@ var d = labToolData.cell || {};
               ORGANISMS.map(function (org) {
                 var chooserTutorial = cellPlayTutorialFor(org);
                 var chooserControlLoop = chooserTutorial && chooserTutorial.controlLoop ? chooserTutorial.controlLoop : {};
-                var chooserMissionComplete = !!completedCellMissions[org.id];
+                var chooserMissionComplete = d.mode === 'play' && !!completedCellMissions[org.id];
                 var chooserCurrentAttempt = !!(activePlayDef && activePlayMission && activePlayDef.id === org.id && !activeMissionComplete);
-                var chooserRecommended = !!(recommendedCellMissionDef && recommendedCellMissionDef.id === org.id);
+                var chooserRecommended = !!(d.mode === 'play' && recommendedCellMissionDef && recommendedCellMissionDef.id === org.id);
+                var chooserObserved = (ext.organismsObserved || []).indexOf(org.id) !== -1;
                 var chooserStatusText = chooserCurrentAttempt ? (activeMissionEvidenceComplete ? "Explain" : activePlayProgress + "/3") : chooserMissionComplete ? "Mastered" : "New";
                 var chooserStatusDetail = chooserCurrentAttempt ? (activeMissionEvidenceComplete ? "3 of 3 evidence; explanation needed" : activePlayProgress + " of 3 evidence") : chooserMissionComplete ? "mission mastered" : "new mission";
                 var chooserPriority = d.mode !== 'play' ? 'standard' : (chooserCurrentAttempt || d.playAsOrganism === org.id) ? 'current' : d.selectedOrganism === org.id ? 'selected' : chooserRecommended ? 'recommended' : 'standard';
                 var chooserDescriptionId = "cell-organism-summary-" + org.id;
-                var chooserAccessibleSummary = chooserTutorial ? "Status: " + chooserStatusDetail + ". Control mapping: " + chooserControlLoop.input + ", then " + chooserControlLoop.action + ", producing " + chooserControlLoop.outcome + ". Mission: " + chooserTutorial.objective : org.activity;
+                var chooserAccessibleSummary = d.mode === 'observe' ? (chooserTutorial ? chooserTutorial.classification + ". " + chooserTutorial.movement + ". " : "") + (org.anatomy || []).length + " structures. " + (chooserObserved ? "Previously observed." : "Not yet observed.") : chooserTutorial ? "Status: " + chooserStatusDetail + ". Control mapping: " + chooserControlLoop.input + ", then " + chooserControlLoop.action + ", producing " + chooserControlLoop.outcome + ". Mission: " + chooserTutorial.objective : org.activity;
 
-                return React.createElement("button", { key: org.id, type: "button", "data-cell-organism-option": org.id, "data-cell-organism-priority": chooserPriority, "data-cell-recommended-card": d.mode === 'play' && chooserRecommended ? org.id : undefined, "aria-label": d.mode === 'play' ? "Preview " + org.label + " mission" : "Inspect " + org.label, "aria-describedby": d.mode === 'play' ? chooserDescriptionId : undefined,
+                return React.createElement("button", { key: org.id, type: "button", "data-cell-observation-state": d.mode === 'observe' ? (d.selectedOrganism === org.id ? "selected" : chooserObserved ? "observed" : "unseen") : undefined, "data-cell-organism-option": org.id, "data-cell-organism-priority": chooserPriority, "data-cell-recommended-card": d.mode === 'play' && chooserRecommended ? org.id : undefined, "aria-label": d.mode === 'play' ? "Preview " + org.label + " mission" : "Inspect " + org.label, "aria-describedby": chooserDescriptionId,
 
                   onClick: function () {
 
@@ -24543,11 +26027,12 @@ var d = labToolData.cell || {};
                   "aria-current": d.playAsOrganism === org.id ? "true" : undefined,
                   className: "min-h-[118px] rounded-xl border-2 p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] " + (d.selectedOrganism === org.id ? "bg-white shadow-md" : chooserRecommended ? "border-amber-300 bg-amber-50/70 text-slate-700" : chooserMissionComplete ? "border-emerald-300 bg-emerald-50/70 text-slate-700" : "border-slate-200 bg-slate-50 text-slate-700"),
 
-                  style: d.selectedOrganism === org.id ? { borderColor: org.color, color: org.color, background: org.color + '0D' } : {}
+                  style: { "--cell-specimen-accent": cellDarkenAccent(org.color), borderColor: d.selectedOrganism === org.id ? cellDarkenAccent(org.color) : undefined }
 
                 },
+                  cellSpecimenPortrait(org, false),
                   React.createElement("span", { "data-cell-organism-card-header": true, className: "flex items-start justify-between gap-2 text-xs font-black" },
-                    React.createElement("span", { "data-cell-card-identity": true, className: "flex min-w-0 items-center gap-2" }, React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, org.icon), React.createElement("span", null, org.label)),
+                    React.createElement("span", { "data-cell-card-identity": true, className: "flex min-w-0 items-center gap-2" }, React.createElement("span", { "data-cell-card-name": true }, org.label)),
                     d.mode === 'play' && React.createElement("span", { "data-cell-card-status": chooserStatusText, className: "flex-shrink-0 rounded-full px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide " + (chooserCurrentAttempt ? "bg-violet-100 text-violet-800" : chooserMissionComplete ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700") }, chooserStatusText)
                   ),
                   d.mode === 'play' && (d.playAsOrganism === org.id || chooserMissionComplete || (chooserRecommended && !chooserCurrentAttempt)) && React.createElement("span", { className: "mt-2 flex flex-wrap gap-1" },
@@ -24555,7 +26040,7 @@ var d = labToolData.cell || {};
                     chooserRecommended && !chooserCurrentAttempt && React.createElement("span", { className: "inline-flex rounded-full bg-amber-400 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-amber-950" }, "\u2605 Recommended"),
                     chooserMissionComplete && React.createElement("span", { "data-cell-mission-mastered": org.id, className: "inline-flex rounded-full bg-emerald-700 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-white" }, "\u2713 Mission complete")
                   ),
-                  d.mode === 'play' && React.createElement("span", { id: chooserDescriptionId, className: "sr-only" }, chooserAccessibleSummary),
+                  React.createElement("span", { id: chooserDescriptionId, className: "sr-only" }, chooserAccessibleSummary),
                   React.createElement("span", { "data-cell-organism-card-detail": true, "aria-hidden": d.mode === 'play' ? "true" : undefined, className: "block" },
                     d.mode === 'play' && chooserTutorial ? React.createElement("span", { "data-cell-card-control-map": true, "aria-label": org.label + " control mapping: " + chooserControlLoop.input + ", then " + chooserControlLoop.action + ".", className: "mt-2 block" },
                       React.createElement("span", { className: "block text-[0.5625rem] font-black uppercase tracking-wide text-slate-500" }, "Your input ", React.createElement("span", { className: "text-cyan-700", "aria-hidden": "true" }, "\u2192"), " Cell response"),
@@ -24564,8 +26049,12 @@ var d = labToolData.cell || {};
                         React.createElement("span", { className: "text-slate-400", "aria-hidden": "true" }, "\u2192"),
                         React.createElement("strong", { "data-cell-card-control-response": true, className: "text-cyan-800" }, chooserControlLoop.action)
                       )
-                    ) : React.createElement("span", { className: "mt-2 block text-[0.625rem] font-bold uppercase tracking-wide text-slate-500" }, chooserTutorial ? chooserTutorial.movement : org.activity),
-                    React.createElement("span", { className: "mt-1 block text-[0.625rem] leading-snug text-slate-600" }, d.mode === 'play' && chooserTutorial ? "Mission \u00B7 " + chooserTutorial.objective : org.activity)
+                    ) : React.createElement("span", { "data-cell-gallery-classification": true }, chooserTutorial ? chooserTutorial.classification : org.activity),
+                    React.createElement("span", { "data-cell-gallery-movement": d.mode === 'observe' ? true : undefined, className: "mt-1 block text-[0.625rem] leading-snug text-slate-600" }, d.mode === 'play' && chooserTutorial ? "Mission \u00B7 " + chooserTutorial.objective : chooserTutorial ? chooserTutorial.movement : org.activity)
+                  ),
+                  d.mode === 'observe' && React.createElement("span", { "data-cell-gallery-footer": true, "aria-hidden": true },
+                    React.createElement("span", { "data-cell-gallery-status": true }, d.selectedOrganism === org.id ? "Selected" : chooserObserved ? "\u2713 Observed" : "Explore"),
+                    React.createElement("span", null, (org.anatomy || []).length + " structures")
                   ));
 
               })
@@ -24582,10 +26071,11 @@ var d = labToolData.cell || {};
               "data-cell-selected-organism": selDef.id,
               "data-cell-selected-organism-state": d.playAsOrganism === selDef.id ? "current" : "preview",
               className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in",
-              style: { borderColor: selDef.color }
+              style: { borderColor: selDef.color, "--cell-specimen-accent": cellDarkenAccent(selDef.color) }
             },
 
-              React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between" },
+              React.createElement("div", { "data-cell-selected-organism-header": true, className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between" },
+                cellSpecimenPortrait(selDef, true),
 
                 React.createElement("div", { className: "min-w-0 flex-1" },
 
@@ -24594,14 +26084,13 @@ var d = labToolData.cell || {};
                     className: "mb-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-slate-600"
                   },
                     React.createElement("span", { "aria-hidden": true }, d.playAsOrganism === selDef.id ? "\u25CF" : "\u25C7"),
-                    d.playAsOrganism === selDef.id ? "Current organism" : "Mission preview"
+                    d.playAsOrganism === selDef.id ? "Current organism" : d.mode === "play" ? "Mission preview" : "Specimen notes"
                   ),
 
-                  React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selDef.color } }, selDef.icon + " " + selDef.label),
-
-                  React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selDef.desc)
+                  React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selDef.color } }, selDef.label)
 
                 ),
+                React.createElement("p", { "data-cell-specimen-description": true, className: "text-xs text-slate-600 leading-relaxed mb-2" }, selDef.desc),
 
                 React.createElement("div", { "data-cell-selected-organism-actions": true, className: "flex flex-wrap items-center justify-start gap-2 sm:justify-end" },
                   React.createElement("button", {
@@ -24611,13 +26100,18 @@ var d = labToolData.cell || {};
                     onClick: function () { focusCellOrganismChoices(selDef.id); },
                     className: "inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-500 bg-white px-2.5 py-1.5 text-[0.625rem] font-black text-slate-700 hover:bg-slate-50"
                   }, React.createElement("span", { "aria-hidden": true }, "\u2190"), "All organisms"),
+                  React.createElement("button", {
+                    type: "button", "data-cell-return-to-dish": true,
+                    "aria-label": "Return to live dish", onClick: returnToCellDish,
+                    className: "inline-flex items-center gap-2 rounded-lg border border-teal-700 bg-teal-50 text-teal-900 font-bold"
+                  }, cellControlIcon('locate'), "Live dish"),
                   d.mode === 'play' && React.createElement("button", {
                     type: "button",
                     "data-cell-selected-organism-action": true,
                     "aria-label": d.playAsOrganism === selDef.id ? "Review " + selDef.label + " tutorial" : "Play as " + selDef.label,
                     onClick: function () { launchCellPlayMission(selDef.id, d.playAsOrganism !== selDef.id); },
                     className: "min-h-9 px-3 py-1.5 text-xs font-bold text-white rounded-lg shadow-md hover:shadow-lg transition-all",
-                    style: { background: selDef.color }
+                    style: { background: cellDarkenAccent(selDef.color) }
                   }, d.playAsOrganism === selDef.id ? "Review tutorial" : "\uD83C\uDFAE Play as " + selDef.label)
                 )
 
@@ -24635,7 +26129,11 @@ var d = labToolData.cell || {};
 
               ),
 
-              selectedPlayTutorial && React.createElement("div", {
+              d.mode === 'observe' && selectedPlayTutorial && React.createElement("div", { "data-cell-specimen-overview": true, "aria-label": selDef.label + " at a glance" },
+                React.createElement("div", null, React.createElement("span", null, "Cell type"), React.createElement("strong", null, selectedPlayTutorial.classification)),
+                React.createElement("div", null, React.createElement("span", null, "Movement"), React.createElement("strong", null, selectedPlayTutorial.movement))
+              ),
+              d.mode === 'play' && selectedPlayTutorial && React.createElement("div", {
                 "data-cell-learning-link": true,
                 role: "region",
                 "aria-label": selDef.label + " gameplay learning map",
@@ -24680,7 +26178,8 @@ var d = labToolData.cell || {};
               ),
               // Facts - always visible
 
-              React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-0.5" },
+              React.createElement("div", { "data-cell-organism-field-notes": true, className: "mt-2 grid grid-cols-1 gap-0.5" },
+                React.createElement("h5", null, "Field notes"),
 
                 selDef.facts.map(function (fact, i) {
 
@@ -24702,16 +26201,17 @@ var d = labToolData.cell || {};
 
               selDef.anatomy && React.createElement("div", { "data-cell-anatomy-explorer": true, className: "mt-2 border-t border-slate-100 pt-2" },
 
-                React.createElement("div", { className: "mb-1 flex flex-wrap items-center justify-between gap-1.5" },
-                  React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-700 uppercase" }, "\uD83E\uDDEC Explore structures"),
-                  React.createElement("span", { className: "text-[0.5625rem] font-bold text-emerald-700" }, "\u2197 Select a row \u2192 live dish")
+                React.createElement("div", { "data-cell-anatomy-heading": true },
+                  React.createElement("h5", null, "Explore structures"),
+                  React.createElement("span", null, selDef.anatomy.length + " structures")
                 ),
-                selectedPlayTutorial && React.createElement("p", { className: "mb-1.5 text-[0.625rem] leading-relaxed text-slate-500" }, "Mission-focus rows are highlighted so structure and function stay connected to the gameplay."),
+                React.createElement("p", { "data-cell-anatomy-intro": true }, "Select a structure to locate it in the live dish."),
+                d.mode === "play" && selectedPlayTutorial && React.createElement("p", { className: "mb-1.5 text-[0.625rem] leading-relaxed text-slate-500" }, "Mission-focus rows are highlighted so structure and function stay connected to the gameplay."),
 
                 React.createElement("div", { className: "grid grid-cols-1 gap-1" },
 
                   selDef.anatomy.map(function (a, i) {
-                    var missionFocus = !!(selectedPlayTutorial && selectedPlayTutorial.focusStructures.indexOf(a.name) !== -1);
+                    var missionFocus = !!(d.mode === "play" && selectedPlayTutorial && selectedPlayTutorial.focusStructures.indexOf(a.name) !== -1);
 
                     return React.createElement("button", {
 
@@ -24755,17 +26255,14 @@ var d = labToolData.cell || {};
 
                     },
 
-                      React.createElement("span", { className: "flex-shrink-0 text-xs", style: { color: selDef.color } }, a.icon || "●"),
-
-                      React.createElement("span", null,
-
-                        React.createElement("span", { className: "font-bold text-slate-800" }, a.name + ": "),
-                        missionFocus && React.createElement("span", { className: "mr-1 inline-flex rounded-full bg-violet-100 px-1.5 py-0.5 text-[0.5625rem] font-black uppercase text-violet-800" }, "Mission focus"),
-
-                        React.createElement("span", { className: "text-slate-600 leading-relaxed" }, a.fn),
-
-                        React.createElement("span", { className: "ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[0.5625rem] font-black text-emerald-700 transition-colors hover:text-emerald-800" }, "\u2197 Show in live dish")
-
+                      React.createElement("span", { "data-cell-anatomy-icon": true, "aria-hidden": true }, a.icon || "\u25CF"),
+                      React.createElement("span", { "data-cell-anatomy-content": true },
+                        React.createElement("span", { "data-cell-anatomy-title": true },
+                          React.createElement("strong", null, a.name),
+                          missionFocus && React.createElement("span", { "data-cell-anatomy-mission": true }, "Mission focus")
+                        ),
+                        React.createElement("span", { "data-cell-anatomy-description": true }, a.fn),
+                        React.createElement("span", { "data-cell-anatomy-action": true, "aria-hidden": true }, "Show in live dish", cellControlIcon('locate'))
                       )
 
                     );
@@ -25073,540 +26570,7 @@ var d = labToolData.cell || {};
             // ═══════════════════════════════════════════════════════════
             // INSIDE THE CELL — living cross-section
             // ═══════════════════════════════════════════════════════════
-            d.mode === 'interior' && (function() {
-              var h = React.createElement;
-              var ctype = d.interiorCellType || 'animal';
-              var sel = d.interiorSel || null;
-              var seen = d.interiorSeen || [];
-              var masteredKeys = Array.isArray(d.interiorMastered) ? d.interiorMastered : [];
-              var reviewKeys = Array.isArray(d.interiorReview) ? d.interiorReview : [];
-              var reducedMo = false; try { reducedMo = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
-              var CTYPES = [
-                { id: 'animal', label: '🐾 Animal', note: 'A typical animal cell: a flexible membrane surrounding the nucleus, mitochondria, ER, Golgi, lysosomes, peroxisomes, and a dynamic cytoskeleton. It has no cell wall or chloroplasts.' },
-                { id: 'plant', label: '🌿 Plant', note: 'A plant cell adds a cellulose wall, chloroplasts, a large central vacuole, and plasmodesmata to the shared eukaryotic machinery. It still uses mitochondria, ER, Golgi, peroxisomes, ribosomes, and a cytoskeleton.' },
-                { id: 'bacterium', label: '🦠 Bacterium', note: 'A prokaryote with no nucleus or membrane-bound organelles. This detailed example shows a nucleoid, plasmid, ribosomes, membrane, wall, flagellum, and the capsule and pili found in some bacteria.' }
-              ];
-              var note = (CTYPES.find(function (c) { return c.id === ctype; }) || CTYPES[0]).note;
-              var orgKeys = interiorOrganelles(ctype).filter(function (k) { return k !== 'cytoplasm'; });
-              var selOrg = sel && CELL_ORGANELLES[sel] ? CELL_ORGANELLES[sel] : null;
-              var directoryOpen = !!d.interiorDirectoryOpen;
-              var directoryGroup = d.interiorDirectoryGroup || 'all';
-              var directoryGroups = INTERIOR_GROUPS.filter(function (group) { return group.keys.some(function (key) { return orgKeys.indexOf(key) >= 0; }); });
-              if (directoryGroup !== 'all' && !directoryGroups.some(function (group) { return group.id === directoryGroup; })) directoryGroup = 'all';
-              var directoryKeys = directoryGroup === 'all' ? orgKeys : ((directoryGroups.find(function (group) { return group.id === directoryGroup; }) || {}).keys || []).filter(function (key) { return orgKeys.indexOf(key) >= 0; });
-              var directoryQuery = String(d.interiorDirectoryQuery || '').trim().toLowerCase();
-              var directoryUnexploredOnly = !!d.interiorDirectoryUnexploredOnly;
-              var directoryReviewOnly = !!d.interiorDirectoryReviewOnly;
-              var directoryVisibleKeys = directoryKeys.filter(function (key) { var item = CELL_ORGANELLES[key], hay = [item.name, item.fn, item.structure, item.connections].join(' ').toLowerCase(); return (!directoryQuery || hay.indexOf(directoryQuery) >= 0) && (!directoryUnexploredOnly || seen.indexOf(key) < 0) && (!directoryReviewOnly || reviewKeys.indexOf(key) >= 0); });
-              var directoryExploredCount = orgKeys.filter(function (key) { return seen.indexOf(key) >= 0; }).length;
-              var directoryMasteredCount = orgKeys.filter(function (key) { return masteredKeys.indexOf(key) >= 0; }).length;
-              var directoryReviewCount = orgKeys.filter(function (key) { return reviewKeys.indexOf(key) >= 0; }).length;
-              var directoryProgressPct = orgKeys.length ? Math.round(directoryMasteredCount / orgKeys.length * 100) : 0;
-              var adaptiveAccuracy = adaptiveQuizAttempts ? Math.round(adaptiveQuizCorrect / adaptiveQuizAttempts * 100) : null;
-              var progressTransfer = String(d.interiorProgressTransfer || '');
-              var progressNotice = String(d.interiorProgressNotice || '');
-              var durableProgress = normalizeCellProgress(labToolData.cellProgress, d);
-              var portfolioOverview = CELL_PROGRESS_TYPES.map(function (type) {
-                var record = durableProgress.byCellType[type] || createCellProgressRecord(type), keys = interiorOrganelles(type).filter(function (key) { return key !== 'cytoplasm'; });
-                return { type: type, label: ((CTYPES.find(function (item) { return item.id === type; }) || {}).label || type), total: keys.length, explored: keys.filter(function (key) { return record.seen.indexOf(key) >= 0; }).length, mastered: keys.filter(function (key) { return record.mastered.indexOf(key) >= 0; }).length, review: keys.filter(function (key) { return record.review.indexOf(key) >= 0; }).length };
-              });
-              var compareMode = !!d.interiorCompare;
-              var contrastMode = !!d.interiorHighContrast;
-              var showLabels = !!d.interiorShowLabels;
-              var depthMode = !!d.interiorDepthMode;
-              var depthLevel = Number(d.interiorDepthLevel); if (!isFinite(depthLevel)) depthLevel = 50; depthLevel = Math.max(0, Math.min(100, depthLevel));
-              var zoomLevel = Math.max(0.85, Math.min(1.25, Number(d.interiorZoom) || 1));
-              var specializationId = d.interiorSpecialization || 'general';
-              var specializationOptions = INTERIOR_SPECIALIZATIONS[ctype] || INTERIOR_SPECIALIZATIONS.animal;
-              if (!specializationOptions.some(function (item) { return item.id === specializationId; })) specializationId = 'general';
-                            var currentCheck = INTERIOR_CHECKS.find(function (item) { return item.type === ctype && item.specialization === specializationId; }) || INTERIOR_CHECKS.find(function (item) { return item.type === ctype && item.specialization === 'general'; });
-              var checkChoice = d.interiorCheckChoice == null ? null : Number(d.interiorCheckChoice);
-              var checkRevealed = !!d.interiorCheckRevealed;
-              var adaptiveQuizActive = !!d.interiorAdaptiveQuiz;
-              var adaptiveQuizKey = d.interiorQuizKey && interiorHas(ctype, d.interiorQuizKey) ? d.interiorQuizKey : null;
-              var adaptiveQuizChoice = d.interiorQuizChoice == null ? null : Number(d.interiorQuizChoice);
-              var adaptiveQuizRevealed = !!d.interiorQuizRevealed;
-              var adaptiveQuizAttempts = Number(d.interiorQuizAttempts) || 0;
-              var adaptiveQuizCorrect = Number(d.interiorQuizCorrect) || 0;
-              var adaptiveQuizItem = adaptiveQuizKey && CELL_ORGANELLES[adaptiveQuizKey] ? CELL_ORGANELLES[adaptiveQuizKey] : null;
-              function adaptiveOptionKeys(key) {
-                if (!key) return [];
-                var rest = orgKeys.filter(function (candidate) { return candidate !== key; });
-                var seed = String(key).split('').reduce(function (sum, ch) { return sum + ch.charCodeAt(0); }, 0);
-                var picks = [], cursor = rest.length ? seed % rest.length : 0;
-                while (picks.length < Math.min(3, rest.length)) {
-                  var candidate = rest[cursor % rest.length];
-                  if (picks.indexOf(candidate) < 0) picks.push(candidate);
-                  cursor += 7;
-                }
-                return [key].concat(picks).sort(function (a, b) { return CELL_ORGANELLES[a].name.localeCompare(CELL_ORGANELLES[b].name); });
-              }
-              var adaptiveOptions = adaptiveOptionKeys(adaptiveQuizKey);
-              var adaptiveAnswer = adaptiveOptions.indexOf(adaptiveQuizKey);
-              var guideId = d.interiorGuide || null;
-              var guide = guideId && INTERIOR_GUIDES[guideId] && INTERIOR_GUIDES[guideId].types.indexOf(ctype) >= 0 ? INTERIOR_GUIDES[guideId] : null;
-              var guideStep = guide ? Math.max(0, Math.min(guide.steps.length - 1, Number(d.interiorGuideStep) || 0)) : 0;
-              var guideItem = guide ? guide.steps[guideStep] : null;
-              var availableGuides = Object.keys(INTERIOR_GUIDES).filter(function (id) { return INTERIOR_GUIDES[id].types.indexOf(ctype) >= 0; });
-              function markSeen(cel, key) {
-                if (CELL_ORGANELLES[key]) {
-                  var nextSeen = (cel.interiorSeen || []).slice();
-                  if (nextSeen.indexOf(key) < 0) nextSeen.push(key);
-                  cel.interiorSeen = nextSeen;
-                }
-                return cel;
-              }
-              function pick(key) {
-                updateCellDataFunctional(function(cel) {
-                  cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSel = key;
-                  return markSeen(cel, key);
-                });
-              }
-              function setMasteryOnCell(cel, key, status) {
-                if (!key || !CELL_ORGANELLES[key] || ['mastered', 'review'].indexOf(status) < 0) return cel;
-                var mastered = Array.isArray(cel.interiorMastered) ? cel.interiorMastered.slice() : [];
-                var review = Array.isArray(cel.interiorReview) ? cel.interiorReview.slice() : [];
-                var list = status === 'mastered' ? mastered : review;
-                var other = status === 'mastered' ? review : mastered;
-                if (list.indexOf(key) < 0) list.push(key);
-                var otherIndex = other.indexOf(key); if (otherIndex >= 0) other.splice(otherIndex, 1);
-                cel.interiorMastered = mastered; cel.interiorReview = review;
-                return cel;
-              }
-              function markMastery(key, status) {
-                if (!key || !CELL_ORGANELLES[key] || ['mastered', 'review'].indexOf(status) < 0) return;
-                updateCellDataFunctional(function(cel) { return markSeen(setMasteryOnCell(cel, key, status), key); });
-              }
-              function adaptiveCandidates(excludeKey) {
-                var ordered = reviewKeys.filter(function (key) { return orgKeys.indexOf(key) >= 0 && key !== excludeKey; });
-                ordered = ordered.concat(orgKeys.filter(function (key) { return masteredKeys.indexOf(key) < 0 && ordered.indexOf(key) < 0 && key !== excludeKey; }));
-                ordered = ordered.concat(orgKeys.filter(function (key) { return ordered.indexOf(key) < 0 && key !== excludeKey; }));
-                return ordered;
-              }
-              function startAdaptiveQuiz() {
-                var pool = adaptiveCandidates(null), key = pool[0] || orgKeys[0] || null;
-                if (!key) return;
-                updateCellDataFunctional(function(cel) { cel.interiorAdaptiveQuiz = true; cel.interiorQuizKey = key; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; cel.interiorGuide = null; cel.interiorSel = key; return markSeen(cel, key); });
-              }
-              function openReviewQueue() {
-                updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = true; cel.interiorDirectoryReviewOnly = true; cel.interiorDirectoryQuery = ''; return cel; });
-              }
-              function stopAdaptiveQuiz() {
-                updateCellDataFunctional(function(cel) { cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; });
-              }
-              function nextAdaptiveQuiz() {
-                var pool = adaptiveCandidates(adaptiveQuizKey), key = pool[0] || adaptiveQuizKey || orgKeys[0] || null;
-                if (!key) return;
-                updateCellDataFunctional(function(cel) { cel.interiorAdaptiveQuiz = true; cel.interiorQuizKey = key; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; cel.interiorSel = key; return markSeen(cel, key); });
-              }
-              function answerAdaptiveQuiz(index) {
-                if (!adaptiveQuizActive || !adaptiveQuizItem || adaptiveQuizRevealed || index < 0 || index >= adaptiveOptions.length) return;
-                var correct = index === adaptiveAnswer;
-                updateCellDataFunctional(function(cel) {
-                  cel.interiorQuizChoice = index; cel.interiorQuizRevealed = true;
-                  cel.interiorQuizAttempts = (Number(cel.interiorQuizAttempts) || 0) + 1;
-                  cel.interiorQuizCorrect = (Number(cel.interiorQuizCorrect) || 0) + (correct ? 1 : 0);
-                  return markSeen(setMasteryOnCell(cel, adaptiveQuizKey, correct ? 'mastered' : 'review'), adaptiveQuizKey);
-                });
-              }              function startGuide(id) {
-                var chosen = INTERIOR_GUIDES[id]; if (!chosen || chosen.types.indexOf(ctype) < 0) return;
-                updateCellDataFunctional(function(cel) { cel.interiorGuide = id; cel.interiorGuideStep = 0; cel.interiorSel = chosen.steps[0].key; return markSeen(cel, chosen.steps[0].key); });
-              }
-              function moveGuide(delta) {
-                if (!guide) return;
-                var next = Math.max(0, Math.min(guide.steps.length - 1, guideStep + delta));
-                updateCellDataFunctional(function(cel) { cel.interiorGuideStep = next; cel.interiorSel = guide.steps[next].key; return markSeen(cel, guide.steps[next].key); });
-              }
-              function answerCheck(index) {
-                if (!currentCheck || checkRevealed || index < 0 || index >= currentCheck.options.length) return;
-                updateCellDataFunctional(function(cel) {
-                  cel.interiorCheckChoice = index;
-                  cel.interiorCheckRevealed = true;
-                  cel.interiorCheckCorrect = (cel.interiorCheckCorrect || 0) + (index === currentCheck.answer ? 1 : 0);
-                  cel.interiorSel = currentCheck.key;
-                  return markSeen(cel, currentCheck.key);
-                });
-              }
-              function resetCheck() {
-                updateCellDataFunctional(function(cel) { cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; return cel; });
-              }
-              function resetInteriorView() {
-                updateCellDataFunctional(function(cel) {
-                  cel.interiorZoom = 1; cel.interiorHighContrast = false; cel.interiorShowLabels = false; cel.interiorDepthMode = false; cel.interiorDepthLevel = 50; cel.interiorCompare = false;
-                  cel.interiorDirectoryOpen = false; cel.interiorDirectoryGroup = 'all'; cel.interiorDirectoryQuery = ''; cel.interiorDirectoryUnexploredOnly = false; cel.interiorDirectoryReviewOnly = false;
-                  cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false;
-                  return cel;
-                });
-              }
-              function exportCellProgress() {
-                var payload = { app: 'microdissection-cell-studio', schemaVersion: CELL_PROGRESS_SCHEMA_VERSION, exportedAt: new Date().toISOString(), progress: normalizeCellProgress(labToolData.cellProgress, d) };
-                var text = JSON.stringify(payload, null, 2);
-                upd('interiorProgressTransfer', text);
-                upd('interiorProgressNotice', 'Progress JSON prepared. Copy it to move this study record to another session or device.');
-                try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function () {}); } catch (e) {}
-              }
-              function importCellProgress() {
-                var text = String(d.interiorProgressTransfer || '').trim(), parsed;
-                if (!text) { upd('interiorProgressNotice', 'Paste a progress JSON record first.'); return; }
-                try { parsed = JSON.parse(text); } catch (e) { upd('interiorProgressNotice', 'Import failed: this is not valid JSON.'); return; }
-                var candidate = parsed && typeof parsed === 'object' ? (parsed.progress || parsed) : null;
-                if (!candidate || typeof candidate !== 'object') { upd('interiorProgressNotice', 'Import failed: expected a progress object.'); return; }
-                if (candidate.schemaVersion != null && Number(candidate.schemaVersion) > CELL_PROGRESS_SCHEMA_VERSION) { upd('interiorProgressNotice', 'Import failed: this progress record was created by a newer version.'); return; }
-                setLabToolData(function(prev) {
-                  var p = prev || {}, current = Object.assign({}, p.cell || {}), imported = normalizeCellProgress(candidate, current), type = imported.currentType;
-                  var restored = applyCellProgressToCell(current, imported.byCellType[type], type);
-                  restored.interiorProgressTransfer = ''; restored.interiorProgressNotice = 'Progress imported and restored for ' + type + ' cell.';
-                  imported.updatedAt = new Date().toISOString();
-                  return Object.assign({}, p, { cell: restored, cellProgress: imported, _cellProgressHydrated: true });
-                });
-              }
-              async function resetAllCellProgress() {
-                // The old guard read:
-                //   typeof window.confirm !== 'function' || window.confirm(...)
-                // which FAILED OPEN. Wherever confirm was unavailable the `||`
-                // short-circuited to true and every cell type's progress was
-                // wiped with no confirmation at all — the opposite of what the
-                // guard looks like it does. This fails closed instead, and uses
-                // the accessible dialog because window.confirm is not reliably
-                // operable with a screen reader.
-                //
-                // addToast is not in scope here, so the tool's own
-                // interiorProgressNotice carries the explanation.
-                var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
-                var notice = function(msg) {
-                  setLabToolData(function(prev) {
-                    var p = prev || {};
-                    return Object.assign({}, p, {
-                      cell: Object.assign({}, p.cell || {}, { interiorProgressNotice: msg })
-                    });
-                  });
-                };
-                var unavailable = 'Reset is unavailable right now, so your progress was kept.';
-                if (typeof confirmApi !== 'function') { notice(unavailable); return; }
-                var confirmed = false;
-                try {
-                  confirmed = await confirmApi(
-                    'Reset all cell-studio learning progress for animal, plant, and bacterial cells?',
-                    { title: 'Reset cell-studio progress', confirmText: 'Reset progress',
-                      cancelText: 'Keep my progress', tone: 'warning' }
-                  );
-                } catch (e) { notice(unavailable); return; }
-                if (!confirmed) return;
-                setLabToolData(function(prev) {
-                  var p = prev || {}, current = Object.assign({}, p.cell || {}), type = CELL_PROGRESS_TYPES.indexOf(current.interiorCellType) >= 0 ? current.interiorCellType : 'animal', reset = createEmptyCellProgress();
-                  reset.currentType = type; reset.updatedAt = new Date().toISOString();
-                  var restored = applyCellProgressToCell(current, reset.byCellType[type], type);
-                  restored.interiorProgressNotice = 'All cell-studio learning progress was reset.'; restored.interiorProgressTransfer = '';
-                  return Object.assign({}, p, { cell: restored, cellProgress: reset, _cellProgressHydrated: true });
-                });
-              }
-              function switchInteriorType(nextType) {
-                if (CELL_PROGRESS_TYPES.indexOf(nextType) < 0) return;
-                updateCellDataFunctional(function(cel) { cel.mode = 'interior'; cel.interiorCellType = nextType; cel.interiorSel = null; cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general'; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; });
-              }
-              function moveToMicrodissection() {
-                var carryTarget = sel && interiorHas(ctype, sel) ? sel : (orgKeys[0] || null);
-                var nuclearTargets = ['nucleus', 'nucleolus', 'nucleoid', 'plasmid'];
-                var membraneTargets = ['cellMembrane', 'cellWall', 'capsule', 'pili', 'plasmodesmata'];
-                var carryStain = nuclearTargets.indexOf(carryTarget) >= 0 ? 'nuclear' : membraneTargets.indexOf(carryTarget) >= 0 ? 'membrane' : 'fluorescence';
-                var carryDepth = depthMode ? depthLevel : 50;
-                updateCellDataFunctional(function(cel) {
-                  cel.mode = 'microdissection'; cel.microCellType = ctype; cel.microTarget = carryTarget; cel.microStage = 0; cel.microTool = 'objective'; cel.microStain = carryStain; cel.microSectionDepth = carryDepth;
-                  cel.microFromInterior = true; cel.microSourceType = ctype; cel.microSourceTarget = carryTarget; cel.microSourceDepth = carryDepth;
-                  cel.microFeedback = 'Interior setup carried into microdissection: ' + (CELL_ORGANELLES[carryTarget] ? CELL_ORGANELLES[carryTarget].name : 'cell region') + ' at depth ' + Math.round(carryDepth) + '%.';
-                  return cel;
-                });
-              }              return h('div', { className: 'mt-4 rounded-xl border border-emerald-200 bg-white p-4 shadow-sm', "data-cell-interior-workspace": true },
-                h('p', { className: 'text-[0.8125rem] text-slate-700 mb-2 leading-relaxed' }, '🔬 ', h('strong', null, 'You are inside a single cell.'), ' This is the textbook cross-section — but alive: organelles drift in the cytoplasm, mitochondria pulse, vesicles shuttle cargo. Switch the cell type to see what changes, and tap any organelle.'),
-                // cell-type toggle
-                h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_type', 'Cell type') },
-                  CTYPES.map(function (c) {
-                    var on = c.id === ctype;
-                    return h('button', { key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = null; cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general'; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
-                  })),
-                h('div', { className: 'text-[0.75rem] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),                h('div', { className: 'mb-2 rounded-xl border border-sky-200 bg-sky-50 p-3', 'data-cell-learning-progress': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_study_progress', 'Study progress') },
-                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-sky-900' }, 'Study progress • ' + (((CTYPES.find(function (c) { return c.id === ctype; }) || {}).label) || ctype)), h('p', { className: 'mt-0.5 text-[0.6875rem] text-sky-800' }, directoryMasteredCount + ' mastered • ' + directoryReviewCount + ' in review • ' + Math.max(0, orgKeys.length - directoryMasteredCount) + ' remaining')) ,
-                    h('button', { onClick: openReviewQueue, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, directoryReviewCount ? 'Open review queue' : 'Explore directory')
-                  ),
-                  h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-white', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': directoryProgressPct, 'aria-label': __alloT('stem.cell.a11y_mastery_progress', 'Mastery progress') }, h('div', { className: 'h-full rounded-full bg-sky-600 transition-all', style: { width: directoryProgressPct + '%' } })),
-                  h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-[10.5px] font-bold text-sky-800' },
-                    h('span', null, 'Mastery ' + directoryProgressPct + '%'),
-                    h('span', null, 'Explored ' + directoryExploredCount + '/' + orgKeys.length),
-                    h('span', null, adaptiveQuizAttempts ? 'Adaptive accuracy ' + adaptiveAccuracy + '%' : 'Adaptive check ready')
-                  )
-                ),
-                h('details', { className: 'mb-2 rounded-xl border border-slate-300 bg-slate-50 p-3', 'data-cell-progress-portability': true },
-                  h('summary', { className: 'cursor-pointer text-xs font-black text-slate-800' }, 'Portable progress record'),
-                  h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-600' }, 'Export this versioned record to continue on another device, or paste one from a previous session. Importing restores each cell type separately.'),
-                  h('textarea', { value: progressTransfer, onChange: function (e) { upd('interiorProgressTransfer', e.target.value); }, placeholder: 'Progress JSON appears here…', rows: 4, className: 'mt-2 w-full rounded-md border border-slate-500 bg-white px-2.5 py-2 font-mono text-[0.625rem] leading-snug text-slate-800', 'aria-label': __alloT('stem.cell.a11y_portable_cell_progress_json', 'Portable cell progress JSON') }),
-                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
-                    h('button', { onClick: exportCellProgress, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, 'Export progress'),
-                    h('button', { onClick: importCellProgress, className: 'rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-emerald-900 hover:bg-emerald-100' }, 'Import progress'),
-                    h('button', { onClick: resetAllCellProgress, className: 'rounded-md border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-rose-900 hover:bg-rose-100' }, 'Reset all progress')
-                  ),
-                  progressNotice && h('p', { className: 'mt-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[0.6875rem] text-slate-700', role: 'status', 'aria-live': 'polite' }, progressNotice),
-                  h('div', { className: 'mt-3', 'data-cell-progress-overview': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_progress_across_cell_types', 'Progress across cell types') },
-                    h('p', { className: 'text-[10.5px] font-black uppercase tracking-wide text-slate-600' }, 'Portfolio overview'),
-                    h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3' }, portfolioOverview.map(function (item) {
-                      var mastery = item.total ? Math.round(item.mastered / item.total * 100) : 0;
-                      return h('button', { key: 'portfolio-' + item.type, onClick: function () { switchInteriorType(item.type); }, 'aria-pressed': ctype === item.type ? 'true' : 'false', className: 'rounded-lg border bg-white p-2 text-left transition-colors hover:border-sky-500 ' + (ctype === item.type ? 'ring-2 ring-sky-400' : '') },
-                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, item.label), h('span', { className: 'text-[0.625rem] font-black text-sky-800' }, mastery + '%')) ,
-                        h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100' }, h('div', { className: 'h-full rounded-full bg-sky-500', style: { width: mastery + '%' } })),
-                        h('div', { className: 'mt-1 text-[0.625rem] font-bold text-slate-500' }, item.explored + '/' + item.total + ' explored • ' + item.review + ' review')
-                      );
-                    }))
-                  )
-                ),
-                h('div', { className: 'flex flex-wrap gap-2 mb-2 items-center', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_comparison_and_guided_pathways', 'Cell comparison and guided pathways') },
-                  h('button', { 'aria-pressed': compareMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCompare = !compareMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (compareMode ? 'bg-indigo-700 text-white border-indigo-800' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100') }, compareMode ? 'Hide comparison' : 'Compare cells'),
-                  h('button', { 'aria-pressed': contrastMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorHighContrast = !contrastMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (contrastMode ? 'bg-slate-900 text-yellow-200 border-slate-950' : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100') }, contrastMode ? 'Standard contrast' : 'High contrast'),
-                  h('button', { 'data-cell-label-toggle': true, 'aria-pressed': showLabels ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorShowLabels = !showLabels; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (showLabels ? 'bg-cyan-700 text-white border-cyan-800' : 'bg-cyan-50 text-cyan-900 border-cyan-300 hover:bg-cyan-100') }, showLabels ? 'Hide study labels' : 'Show study labels'),
-                  h('button', { 'data-cell-reset-view': true, onClick: resetInteriorView, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-slate-500 bg-white text-slate-700 hover:bg-slate-100 transition-colors active:scale-[0.97]' }, 'Reset view'),
-                  h('button', { 'data-cell-depth-toggle': true, 'aria-pressed': depthMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDepthMode = !depthMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (depthMode ? 'border-amber-800 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, depthMode ? 'Hide optical section' : 'Optical section'),
-                  h('button', { 'data-cell-microdissection-link': true, onClick: moveToMicrodissection, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100 transition-colors active:scale-[0.97]' }, sel ? 'Prepare selected section →' : 'Prepare focal section →'),
-                  h('button', { 'data-cell-adaptive-quiz': true, 'aria-pressed': adaptiveQuizActive ? 'true' : 'false', onClick: adaptiveQuizActive ? stopAdaptiveQuiz : startAdaptiveQuiz, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (adaptiveQuizActive ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900 hover:bg-fuchsia-100') }, adaptiveQuizActive ? 'Exit adaptive check' : 'Adaptive check'),
-                  h('span', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-slate-600' }, 'Guided pathways:'),
-                  availableGuides.map(function (id) {
-                    var g = INTERIOR_GUIDES[id], active = id === guideId;
-                    return h('button', { key: id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { startGuide(id); }, className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors active:scale-[0.97] ' + (active ? 'bg-amber-700 text-white border-amber-800' : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100') }, g.label);
-                  })
-                ),
-                h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2', 'data-cell-zoom-control': true },
-                  h('label', { htmlFor: 'cell-detail-zoom', className: 'text-xs font-black text-sky-900' }, 'Detail zoom ' + Math.round(zoomLevel * 100) + '%'),
-                  h('input', { id: 'cell-detail-zoom', type: 'range', min: 0.85, max: 1.25, step: 0.05, value: zoomLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorZoom = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-sky-600', 'aria-label': __alloT('stem.cell.a11y_cell_diagram_detail_zoom', 'Cell diagram detail zoom') }),
-                  h('span', { className: 'text-[0.625rem] text-sky-800' }, '85%–125% • centered on the cell')
-                ),
-                depthMode && h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2', 'data-cell-depth-control': true },
-                  h('label', { htmlFor: 'cell-optical-depth', className: 'text-xs font-black text-amber-900' }, 'Optical section ' + Math.round(depthLevel) + '%'),
-                  h('input', { id: 'cell-optical-depth', type: 'range', min: 0, max: 100, step: 5, value: depthLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDepthLevel = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-amber-600', 'aria-label': __alloT('stem.cell.a11y_optical_section_depth', 'Optical section depth') }),
-                  h('span', { className: 'text-[0.625rem] text-amber-800' }, 'Focal slice • structures outside this plane fade')
-                ),
-                h('div', { className: 'mb-2 rounded-lg border border-lime-200 bg-lime-50 px-3 py-2', 'data-cell-specialization-control': true },
-                  h('div', { className: 'flex flex-wrap items-center gap-2' },
-                    h('span', { className: 'text-xs font-black text-lime-900' }, 'Specialization lens'),
-                    specializationOptions.map(function (option) {
-                      var active = option.id === specializationId;
-                      return h('button', { key: option.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorSpecialization = option.id; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold transition-colors ' + (active ? 'border-lime-800 bg-lime-700 text-white' : 'border-lime-300 bg-white text-lime-900 hover:bg-lime-100') }, option.label);
-                    })
-                  ),
-                  h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-lime-900' }, (specializationOptions.find(function (item) { return item.id === specializationId; }) || specializationOptions[0]).note)
-                ),
-                h('div', { className: 'mb-2', 'data-cell-structure-directory': true },
-                  h('button', { 'aria-expanded': directoryOpen ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = !directoryOpen; return cel; }); }, className: 'w-full rounded-lg border px-3 py-2 text-left text-xs font-black transition-colors ' + (directoryOpen ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100') }, directoryOpen ? 'Hide structure directory' : 'Open structure directory', h('span', { className: 'float-right font-normal opacity-80' }, directoryOpen ? 'collapse' : 'study by role')),
-                  directoryOpen && h('div', { className: 'mt-2 rounded-lg border border-violet-200 bg-violet-50 p-3', role: 'region', 'aria-label': __alloT('stem.cell.a11y_structure_directory', 'Structure directory') },
-                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-violet-900' }, 'Explored ' + directoryExploredCount + ' / ' + orgKeys.length), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-violet-800' }, directoryVisibleKeys.length + ' shown'), h('span', { className: 'text-[0.625rem] font-bold text-violet-800' }, 'Mastered ' + directoryMasteredCount + ' • Review ' + directoryReviewCount)),
-                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
-                      h('input', { type: 'search', value: directoryQuery, placeholder: 'Search organelles, functions, or mechanisms', onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = e.target.value; return cel; }); }, className: 'min-w-[220px] flex-1 rounded-md border border-violet-500 bg-white px-2.5 py-1.5 text-[0.6875rem] text-slate-800', 'aria-label': __alloT('stem.cell.a11y_search_structure_directory', 'Search structure directory') }),
-                      h('button', { 'aria-pressed': directoryUnexploredOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryUnexploredOnly = !directoryUnexploredOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryUnexploredOnly ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryUnexploredOnly ? 'Show all structures' : 'Unexplored only'),
-                      h('button', { 'data-cell-review-filter': true, 'aria-pressed': directoryReviewOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryReviewOnly = !directoryReviewOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryReviewOnly ? 'border-amber-700 bg-amber-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryReviewOnly ? 'Show all statuses' : 'Review queue')
-                    ),
-                    h('div', { className: 'flex flex-wrap items-center gap-1.5' },
-                      h('span', { className: 'mr-1 text-[0.6875rem] font-black uppercase tracking-wide text-violet-900' }, 'Group:'),
-                      h('button', { 'aria-pressed': directoryGroup === 'all' ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = 'all'; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (directoryGroup === 'all' ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, 'All structures'),
-                      directoryGroups.map(function (group) {
-                        var active = directoryGroup === group.id;
-                        return h('button', { key: 'directory-group-' + group.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = group.id; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (active ? 'text-white' : 'bg-white text-violet-900 hover:bg-violet-100'), style: active ? { background: group.color, borderColor: group.color } : { borderColor: group.color } }, group.label);
-                      })
-                    ),
-                    h('p', { className: 'mt-2 text-[0.6875rem] leading-snug text-violet-900' }, directoryGroup === 'all' ? 'Choose a structure to spotlight it in the diagram. Explored items carry a checkmark.' : (directoryGroups.find(function (group) { return group.id === directoryGroup; }) || {}).note),
-                    directoryVisibleKeys.length === 0 && h('p', { className: 'mt-2 rounded-md border border-dashed border-violet-300 bg-white px-2.5 py-2 text-[0.6875rem] text-violet-900' }, 'No structures match this search and filter.'),
-                    h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' }, directoryVisibleKeys.map(function (key) {
-                      var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
-                      return h('button', { key: 'directory-' + key, onClick: function () { pick(key); }, 'aria-label': item.name + ': ' + item.fn, className: 'rounded-lg border bg-white p-2.5 text-left transition-colors hover:border-violet-600 ' + (sel === key ? 'ring-2 ring-violet-500' : ''), style: { borderColor: item.color } },
-                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black text-slate-900' }, item.name), explored ? h('span', { className: 'rounded-full bg-emerald-100 px-1.5 py-0.5 text-[0.625rem] font-black text-emerald-800' }, 'Explored') : h('span', { className: 'text-[0.625rem] font-bold text-slate-400' }, 'New')),
-                        h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-700' }, item.fn),
-                        h('p', { className: 'mt-1 text-[10.5px] leading-snug text-slate-500' }, 'Mechanism: ' + item.structure)
-                      );
-                    }))
-                  )
-                ),
-                currentCheck && h('div', { className: 'mb-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2', 'data-cell-concept-check': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_organelle_concept_check', 'Organelle concept check') },
-                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                    h('div', null,
-                      h('span', { className: 'text-xs font-black uppercase tracking-wide text-orange-900' }, 'Check your reasoning before reveal'),
-                      h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-snug text-orange-800' }, 'This is a concept check, not an experiment prediction.'),
-                      h('p', { className: 'mt-1 text-[0.75rem] leading-snug text-orange-950' }, currentCheck.prompt)
-                    ),
-                    checkRevealed ? h('button', { onClick: resetCheck, className: 'rounded-md border border-orange-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-orange-900 hover:bg-orange-100' }, 'Try again') : null
-                  ),
-                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_concept_check_answers', 'Concept check answers') },
-                    currentCheck.options.map(function (option, index) {
-                      var chosen = checkChoice === index;
-                      var correct = checkRevealed && index === currentCheck.answer;
-                      var wrong = checkRevealed && chosen && !correct;
-                      return h('button', { key: option, 'aria-pressed': chosen ? 'true' : 'false', disabled: checkRevealed, onClick: function () { answerCheck(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-orange-800 bg-orange-700 text-white' : 'border-orange-300 bg-white text-orange-950 hover:bg-orange-100') }, option);
-                    })
-                  ),
-                  checkRevealed && h('div', { className: 'mt-2 rounded-md border border-orange-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-orange-950', 'data-cell-concept-feedback': checkChoice === currentCheck.answer ? 'correct' : 'retry', role: 'status', 'aria-live': 'polite' }, (checkChoice === currentCheck.answer ? 'Reasoning check: correct. ' : 'Reasoning check: not yet. ') + currentCheck.explanation)
-                ),
-                adaptiveQuizActive && adaptiveQuizItem && h('div', { className: 'mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3', 'data-cell-adaptive-quiz': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_adaptive_organelle_check', 'Adaptive organelle check') },
-                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-900' }, 'Adaptive review check'), h('p', { className: 'text-[0.625rem] font-bold text-fuchsia-800' }, 'Review-first retrieval • ' + adaptiveQuizCorrect + ' correct / ' + adaptiveQuizAttempts + ' attempts')),
-                    h('button', { onClick: stopAdaptiveQuiz, className: 'rounded-md border border-fuchsia-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-fuchsia-900 hover:bg-fuchsia-100' }, 'End check')
-                  ),
-                  h('p', { className: 'mt-2 text-[0.75rem] font-black text-fuchsia-950' }, 'Which structure best matches this clue?'),
-                  h('p', { className: 'mt-1 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-fuchsia-950' }, adaptiveQuizItem.fn),
-                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_adaptive_check_answers', 'Adaptive check answers') }, adaptiveOptions.map(function (key, index) {
-                    var chosen = adaptiveQuizChoice === index;
-                    var correct = adaptiveQuizRevealed && index === adaptiveAnswer;
-                    var wrong = adaptiveQuizRevealed && chosen && !correct;
-                    return h('button', { key: 'adaptive-answer-' + key, 'aria-pressed': chosen ? 'true' : 'false', disabled: adaptiveQuizRevealed, onClick: function () { answerAdaptiveQuiz(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-white text-fuchsia-950 hover:bg-fuchsia-100') }, CELL_ORGANELLES[key].name);
-                  })),
-                  adaptiveQuizRevealed && h('div', { className: 'mt-2 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-fuchsia-950', role: 'status', 'aria-live': 'polite' }, (adaptiveQuizChoice === adaptiveAnswer ? 'Correct. ' : 'Not quite. ') + adaptiveQuizItem.structure + ' Connections: ' + adaptiveQuizItem.connections),
-                  adaptiveQuizRevealed && h('button', { onClick: nextAdaptiveQuiz, className: 'mt-2 rounded-md border border-fuchsia-800 bg-fuchsia-700 px-2.5 py-1.5 text-[0.6875rem] font-bold text-white hover:bg-fuchsia-800' }, 'Next review item')
-                ),
-                compareMode && h('div', { className: 'mb-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3', 'data-cell-comparison': true },
-                  h('div', { className: 'flex items-center justify-between mb-2' },
-                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-indigo-800' }, 'Compare cell architectures'), h('p', { className: 'text-[0.6875rem] text-indigo-700' }, 'The same schematic scale and color language make shared and unique structures easier to spot.')),
-                    h('span', { className: 'rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-indigo-700' }, '3 cell types')
-                  ),
-                  h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' }, CTYPES.map(function (c) {
-                    var compareSel = sel && interiorHas(c.id, sel) ? sel : null;
-                    return h('button', { key: 'compare-' + c.id, onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = compareSel; cel.interiorGuide = null; return cel; }); }, className: 'rounded-xl border border-indigo-200 bg-white p-1.5 text-left hover:border-indigo-500 transition-colors', 'aria-label': 'Open ' + c.label + ' in the main cell view' },
-                      h('canvas', { key: 'compare-canvas-' + c.id + '-' + (compareSel || 'none'), width: 300, height: 190, role: 'img', 'aria-label': c.label + ' comparison diagram', style: { width: '100%', height: 'auto', display: 'block', borderRadius: '0.6rem' }, ref: function (cv) { if (!cv) return; var ctx = cv.getContext && cv.getContext('2d'); if (ctx) drawCellInterior(ctx, cv.width, cv.height, c.id, 0, compareSel, true); } }),
-                      h('div', { className: 'px-1 pt-1 text-xs font-black text-indigo-900' }, c.label, compareSel ? ' • ' + (CELL_ORGANELLES[compareSel] ? CELL_ORGANELLES[compareSel].name : '') : '')
-                    );
-                  }))
-                ),
-                guide && h('div', { className: 'mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3', 'data-cell-guided-pathway': guideId, role: 'region', 'aria-label': guide.label + ' guided pathway' },
-                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-amber-900' }, guide.label), h('p', { className: 'text-[0.6875rem] text-amber-800' }, 'Step ' + (guideStep + 1) + ' of ' + guide.steps.length + ' • ' + guideItem.title)),
-                    h('div', { className: 'flex gap-1.5' },
-                      h('button', { onClick: function () { moveGuide(-1); }, disabled: guideStep === 0, className: 'px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-300 bg-white text-amber-900 disabled:opacity-40' }, 'Previous'),
-                      h('button', { onClick: function () { moveGuide(1); }, disabled: guideStep >= guide.steps.length - 1, className: 'px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-800 bg-amber-700 text-white disabled:opacity-40' }, 'Next')
-                    )
-                  ),
-                  h('p', { className: 'mt-2 text-[12.5px] leading-relaxed text-amber-950' }, guideItem.body)
-                ),
-                // the living cell
-                h('div', { className: 'rounded-xl overflow-hidden border border-emerald-900 shadow-xl', style: { background: 'radial-gradient(circle at 24% 18%,rgba(16,185,129,0.18),rgba(4,24,29,0) 34%),#04181d' } },
-                  h('canvas', { key: 'cell-interior-canvas', "data-cell-interior-canvas": true, width: 760, height: 440, role: 'img',
-                    'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (showLabels ? 'All study labels are visible. ' : '') + (depthMode ? ('Optical section at ' + Math.round(depthLevel) + '% depth. ') : '') + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
-                    tabIndex: 0, 'aria-keyshortcuts': 'ArrowRight ArrowLeft Enter Space',
-                    onKeyDown: function (e) {
-                      var navKeys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
-                      if (navKeys.indexOf(e.key) < 0 && e.key !== 'Enter' && e.key !== ' ') return;
-                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(sel || orgKeys[0]); return; }
-                      var current = orgKeys.indexOf(sel); if (current < 0) current = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? 0 : -1;
-                      var delta = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
-                      pick(orgKeys[(current + delta + orgKeys.length) % orgKeys.length]); e.preventDefault();
-                    },
-                    style: { width: '100%', height: 'auto', display: 'block', cursor: 'pointer' },
-                    onClick: function (e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); pick(interiorHitTest(ctype, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, cv.width, cv.height, zoomLevel)); },
-                    ref: function (cv) {
-                      if (!cv) { try { if (window.__alloCellInteriorCleanup) window.__alloCellInteriorCleanup(); } catch (e) {} return; }
-                      if (cv._cellInteriorCleanup) cv._cellInteriorCleanup();
-                      try { if (window.__alloCellInteriorCleanup && window.__alloCellInteriorCleanup !== cv._cellInteriorCleanup) window.__alloCellInteriorCleanup(); } catch (e) {}
-                      var cx2d = cv.getContext && cv.getContext('2d'); if (!cx2d) return;
-                      var alive = true;
-                      var frameId = null;
-                      // Starts true so the scene draws if IntersectionObserver is missing or
-                      // its first callback has not arrived yet.
-                      var interiorOnScreen = true;
-                      var interiorViewObserver = null;
-                      var tt = { v: Number(cv._cellInteriorPhase) || 0 };
-                      function cancelInteriorFrame() { if (frameId) cancelAnimationFrame(frameId); frameId = null; }
-                      function drawInteriorFrame() {
-                        if (!alive || !cv.isConnected) return;
-                        try { drawCellInterior(cx2d, cv.width, cv.height, ctype, tt.v, sel, reducedMo, contrastMode, zoomLevel, specializationId, showLabels, depthMode, depthLevel, guide ? guide.steps.map(function (step) { return step.key; }) : [], guideStep, guide ? '#fbbf24' : null); } catch (e) {}
-                      }
-                      function scheduleInteriorFrame() {
-                        if (!alive || reducedMo || frameId) return;
-                        if (typeof document !== 'undefined' && document.hidden) return;
-                        // Scrolled out of view counts the same as a hidden tab: the frame is
-                        // not seen. This canvas mounts below the fold, so without it the loop
-                        // ran unseen from first paint until the student scrolled to it.
-                        if (!interiorOnScreen) return;
-                        frameId = requestAnimationFrame(frame);
-                      }
-                      function frame() {
-                        frameId = null;
-                        if (!alive || !cv.isConnected) return;
-                        tt.v += 0.016;
-                        cv._cellInteriorPhase = tt.v;
-                        drawInteriorFrame();
-                        scheduleInteriorFrame();
-                      }
-                      function onInteriorVisibilityChange() {
-                        if (typeof document !== 'undefined' && document.hidden) cancelInteriorFrame();
-                        else { drawInteriorFrame(); scheduleInteriorFrame(); }
-                      }
-                      cv._cellInteriorCleanup = function () {
-                        alive = false;
-                        cancelInteriorFrame();
-                        if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onInteriorVisibilityChange);
-                      if (interiorViewObserver) { interiorViewObserver.disconnect(); interiorViewObserver = null; }
-                        if (window.__alloCellInteriorCleanup === cv._cellInteriorCleanup) window.__alloCellInteriorCleanup = null;
-                      };
-                      try { window.__alloCellInteriorCleanup = cv._cellInteriorCleanup; } catch (e) {}
-                      if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onInteriorVisibilityChange);
-
-                      if (typeof IntersectionObserver === 'function') {
-                        interiorViewObserver = new IntersectionObserver(function (entries) {
-                          var entry = entries[entries.length - 1];
-                          if (!entry) return;
-                          interiorOnScreen = entry.isIntersecting;
-                          if (interiorOnScreen) { drawInteriorFrame(); scheduleInteriorFrame(); } else cancelInteriorFrame();
-                        }, { rootMargin: '200px' });
-                        interiorViewObserver.observe(cv);
-                      }
-                      drawInteriorFrame();
-                      scheduleInteriorFrame();
-                    } })),
-                h('details', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2', 'data-cell-structure-transcript': true },
-                  h('summary', { className: 'cursor-pointer text-xs font-black text-slate-800' }, 'Text transcript of cell diagram'),
-                  h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-600' }, 'A ' + ctype + ' cell diagram with ' + orgKeys.length + ' selectable structures. ' + (depthMode ? 'Optical section depth: ' + Math.round(depthLevel) + '%. ' : 'Optical section is off. ') + (selOrg ? 'Selected structure: ' + selOrg.name + '.' : 'No structure selected.')),
-                  h('ul', { className: 'mt-2 grid gap-2 md:grid-cols-2', 'aria-label': __alloT('stem.cell.a11y_text_descriptions_of_cell_structures', 'Text descriptions of cell structures') }, orgKeys.map(function (key) {
-                    var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
-                    return h('li', { key: 'transcript-' + key, className: 'rounded-md border bg-white p-2 text-[0.6875rem] leading-relaxed', style: { borderColor: item.color } },
-                      h('div', { className: 'flex items-center justify-between gap-2' }, h('strong', { className: 'text-slate-900' }, item.name), h('span', { className: 'text-[0.625rem] font-bold ' + (explored ? 'text-emerald-700' : 'text-slate-600') }, explored ? 'Explored' : 'Not explored')),
-                      h('p', { className: 'mt-1 text-slate-700' }, item.fn),
-                      h('p', { className: 'mt-1 text-slate-600' }, 'Mechanism: ' + item.structure),
-                      h('p', { className: 'mt-1 text-slate-500' }, 'Connections: ' + item.connections)
-                    );
-                  }))
-                ),                h('div', { className: 'text-[10.5px] text-slate-500 mt-1 leading-snug' }, __alloT('stem.cell.interior_caveat', 'Schematic, not to scale: organelle sizes and numbers are simplified (a real cell has hundreds of mitochondria), and this is one 2-D slice of a 3-D cell. Cells also specialize — this is a “typical” one.')),
-                // organelle legend (keyboard-accessible selection)
-                h('div', { className: 'flex flex-wrap gap-1.5 mt-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_organelles_tap_to_inspect', 'Organelles — tap to inspect') },
-                  orgKeys.map(function (k) {
-                    var o = CELL_ORGANELLES[k], on = sel === k;
-                    return h('button', { key: k, 'aria-pressed': on ? 'true' : 'false', onClick: function () { pick(k); }, className: 'px-2 py-1 rounded-md text-[11.5px] font-bold border transition-colors active:scale-[0.97] ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: o.color, borderColor: o.color } : { borderColor: o.color } },
-                      h('span', { 'aria-hidden': 'true', style: { color: on ? '#fff' : o.color } }, '● '), o.name);
-                  })),
-                h('div', { className: 'text-[0.6875rem] text-slate-500 mt-1' }, '🔎 ' + __alloT('stem.cell.explored', 'Explored') + ' ' + seen.filter(function (k) { return orgKeys.indexOf(k) >= 0 || ['cellWall', 'cellMembrane'].indexOf(k) >= 0; }).length + ' / ' + orgKeys.length + ' ' + __alloT('stem.cell.organelles', 'organelles in this cell')),
-                // selected organelle info
-                selOrg ? h('div', { className: 'mt-3 p-3 rounded-xl border-2 shadow-sm', style: { borderColor: selOrg.color, background: '#fff' }, role: 'status', 'aria-live': 'polite' },
-                  h('div', { className: 'flex items-center gap-2 mb-1' },
-                    h('span', { className: 'inline-block w-3 h-3 rounded-full', 'aria-hidden': 'true', style: { background: selOrg.color } }),
-                    h('span', { className: 'text-base font-black text-slate-800' }, selOrg.name)),
-                  CELL_ULTRASTRUCTURE[sel] ? h('div', { className: 'mb-2 flex flex-wrap gap-1', 'aria-label': __alloT('stem.cell.a11y_ultrastructure_features_to_notice', 'Ultrastructure features to notice') },
-                    CELL_ULTRASTRUCTURE[sel].split(' | ').map(function(feature) { return h('span', { key: feature, className: 'rounded-full border px-2 py-0.5 text-[0.625rem] font-black tracking-wide', style: { borderColor: selOrg.color, color: '#334155', background: '#f8fafc' } }, feature); })) : null,
-                  h('div', { className: 'rounded-lg bg-slate-50 p-2.5 text-[0.8125rem] text-slate-700 leading-relaxed' },
-                    h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Core function'),
-                    selOrg.fn),
-                  h('div', { className: 'mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-2', 'data-cell-mastery-controls': true },
-                    h('span', { className: 'mr-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Study status'),
-                    h('button', { 'aria-pressed': masteredKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'mastered'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (masteredKeys.indexOf(sel) >= 0 ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100') }, masteredKeys.indexOf(sel) >= 0 ? 'Mastered' : 'Mark mastered'),
-                    h('button', { 'aria-pressed': reviewKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'review'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (reviewKeys.indexOf(sel) >= 0 ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, reviewKeys.indexOf(sel) >= 0 ? 'In review queue' : 'Needs review'),
-                  ),
-                  h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
-                    h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
-                      h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Structure and mechanism'),
-                      h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.structure)),
-                    h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
-                      h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Connections in the cell'),
-                      h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.connections))),
-                  h('div', { className: 'flex flex-wrap gap-1 items-center mb-1' },
-                    h('span', { className: 'text-[10.5px] font-bold text-slate-600 uppercase tracking-wide' }, __alloT('stem.cell.found_in', 'Found in') + ':'),
-                    ['animal', 'plant', 'bacterium'].map(function (tp) {
-                      var has = selOrg.types.indexOf(tp) >= 0;
-                      return h('span', { key: tp, className: 'text-[10.5px] font-bold px-1.5 py-0.5 rounded-full ' + (has ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600 line-through') }, tp);
-                    })),
-                  selOrg.bust ? h('div', { className: 'mt-1.5 p-2 rounded-lg text-[0.75rem] leading-snug', style: { background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: '#92400e' } }, '⚠ ', h('strong', null, 'Myth-bust: '), selOrg.bust) : null
-                ) : h('div', { className: 'mt-3 p-3 rounded-xl border border-dashed border-slate-300 text-[12.5px] text-slate-500 text-center' }, __alloT('stem.cell.tap_organelle', 'Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.'))
-              );
-            })()
+            null
 
             ,
 
@@ -26630,111 +27594,9 @@ var d = labToolData.cell || {};
             // ═══════════════════════════════════════════════════════════
             // COMPARE MODE
             // ═══════════════════════════════════════════════════════════
-            d.mode === 'compare' && (function() {
-              function getKingdomTheme(k) {
-                var lower = (k || '').toLowerCase();
-                if (lower.indexOf('protist') !== -1) return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' };
-                if (lower.indexOf('bacteria') !== -1 || lower.indexOf('bacterium') !== -1) return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' };
-                if (lower.indexOf('animal') !== -1) return { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700' };
-                if (lower.indexOf('plant') !== -1) return { bg: 'bg-lime-50', border: 'border-lime-200', text: 'text-lime-700' };
-                if (lower.indexOf('algae') !== -1) return { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700' };
-                return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700' };
-              }
-
-              function findConcepts(text) {
-                var concepts = [];
-                var t = (text || '').toLowerCase();
-                Object.keys(CELL_VOCAB).forEach(function(key) {
-                  var v = CELL_VOCAB[key];
-                  var termLower = v.term.toLowerCase();
-                  if (t.indexOf(termLower) !== -1 || key.toLowerCase() === t) {
-                    if (concepts.indexOf(key) === -1) {
-                      concepts.push(key);
-                    }
-                  }
-                });
-                return concepts;
-              }
-
-              var aIdx = d._cmpA == null ? 0 : d._cmpA;
-              var bIdx = d._cmpB == null ? 1 : d._cmpB;
-              var oA = ORGANISM_DB[aIdx];
-              var oB = ORGANISM_DB[bIdx];
-
-              var tA = oA ? getKingdomTheme(oA.kingdom) : null;
-              var tB = oB ? getKingdomTheme(oB.kingdom) : null;
-
-              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-purple-300 p-4 shadow-md' },
-                React.createElement('h3', { className: 'text-base font-bold text-purple-700 mb-1 flex items-center gap-1.5' }, '⚖ Compare Two Organisms'),
-                React.createElement('p', { className: 'text-xs text-slate-500 italic mb-3' }, 'Compare structures, habitats, and properties. Fields with differences are automatically highlighted in amber.'),
-                React.createElement('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
-                  React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[0.625rem] font-black text-purple-700 uppercase' }, 'Organism A'),
-                    React.createElement('select', { 'aria-label': __alloT('stem.cell.a11y_organism_a', 'Organism A'), value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
-                      ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
-                    )
-                  ),
-                  React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[0.625rem] font-black text-purple-700 uppercase' }, 'Organism B'),
-                    React.createElement('select', { 'aria-label': __alloT('stem.cell.a11y_organism_b', 'Organism B'), value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
-                      ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
-                    )
-                  )
-                ),
-                oA && oB && React.createElement('div', { className: 'space-y-2' },
-                  React.createElement('div', { className: 'grid grid-cols-2 gap-2 text-center' },
-                    React.createElement('div', { className: 'p-2 rounded-lg border-2 font-bold text-sm shadow-sm ' + tA.bg + ' ' + tA.border + ' ' + tA.text }, oA.name),
-                    React.createElement('div', { className: 'p-2 rounded-lg border-2 font-bold text-sm shadow-sm ' + tB.bg + ' ' + tB.border + ' ' + tB.text }, oB.name)
-                  ),
-                  ['kingdom', 'cellType', 'size', 'habitat', 'feeding', 'reproduction', 'movement'].map(function(k) {
-                    var valA = oA[k];
-                    var valB = oB[k];
-                    var isDifferent = valA !== valB;
-
-                    return React.createElement('div', { key: k, className: 'p-2.5 rounded-xl border transition-all ' + (isDifferent ? 'bg-amber-50/50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200') },
-                      React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                        React.createElement('span', { className: 'text-[0.625rem] font-black uppercase text-slate-500 tracking-wider' }, k.replace(/([A-Z])/g, ' $1')),
-                        isDifferent && React.createElement('span', { className: 'text-[0.625rem] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded' }, 'Difference')
-                      ),
-                      React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-xs' },
-                        React.createElement('div', { className: 'text-slate-700 leading-normal' },
-                          valA,
-                          (function() {
-                            var matched = findConcepts(valA);
-                            if (matched.length === 0) return null;
-                            return React.createElement('div', { className: 'flex flex-wrap gap-1 mt-1' },
-                              matched.map(function(key) {
-                                return React.createElement('button', {
-                                  key: key,
-                                  onClick: function() { upd('_studyConcept', key); },
-                                  className: 'transition-colors px-1.5 py-0.5 text-[0.625rem] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
-                                }, '📖 Study ' + CELL_VOCAB[key].term);
-                              })
-                            );
-                          })()
-                        ),
-                        React.createElement('div', { className: 'text-slate-700 leading-normal' },
-                          valB,
-                          (function() {
-                            var matched = findConcepts(valB);
-                            if (matched.length === 0) return null;
-                            return React.createElement('div', { className: 'flex flex-wrap gap-1 mt-1' },
-                              matched.map(function(key) {
-                                return React.createElement('button', {
-                                  key: key,
-                                  onClick: function() { upd('_studyConcept', key); },
-                                  className: 'transition-colors px-1.5 py-0.5 text-[0.625rem] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
-                                }, '📖 Study ' + CELL_VOCAB[key].term);
-                              })
-                            );
-                          })()
-                        )
-                      )
-                    );
-                  })
-                )
-              );
-            })(),
+            d.mode === 'compare' && renderCellComparison(React.createElement, ORGANISM_DB, d, function(patch) {
+              updateCellDataFunctional(function(cel) { return Object.assign(cel, patch); });
+            }),
 
             // ═══════════════════════════════════════════════════════════
             // HISTORY MODE
@@ -26995,80 +27857,11 @@ var d = labToolData.cell || {};
               React.createElement('p', { className: 'text-sm text-amber-700 italic' }, 'You explored a microscopic universe of life.')
             ),
 
-            // === H7b'' inquiry widget: osmosis discovery ===
-            d.mode === 'osmoHunt' && (function() {
-              var h = React.createElement;
-              var iq = d._osmoHunt || { inside: 50, outside: 50, perm: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-              function setIQ(patch) { upd('_osmoHunt', Object.assign({}, iq, patch)); }
-              var concDiff = iq.outside - iq.inside;
-              var permFactor = iq.perm / 100;
-              var flow = concDiff * permFactor;
-              var state;
-              if (Math.abs(flow) < 5) state = 'isotonic';
-              else if (flow > 0) state = 'plasmolysis';
-              else state = 'lysis';
-              var stateMeta = {
-                isotonic:    { label: '🟢 Isotonic — equilibrium', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Equal solute concentration outside and in. No net water flow. Cell stable.' },
-                plasmolysis: { label: '🟠 Plasmolysis — water exits cell', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Hypertonic external solution. Water leaves cell, membrane pulls from wall.' },
-                lysis:       { label: '💥 Lysis — water floods cell',     color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Hypotonic external solution. Water enters cell. Animal cell would burst; plant cell turgid.' }
-              }[state];
-              function logObs() {
-                setIQ({ log: (iq.log || []).concat([{ i: iq.inside, o: iq.outside, p: iq.perm, st: state }]).slice(-8) });
-              }
-              return h('div', { className: 'mt-4 bg-white rounded-xl border-2 border-cyan-300 p-4 space-y-3' },
-                h('h3', { className: 'text-sm font-black text-cyan-700' }, '💧 Osmosis discovery'),
-                h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' },
-                  'Adjust solute concentration inside the cell, outside, and membrane permeability. Widget shows one of three discrete states. No score, no reveal — sweep and notice.'),
-                h('div', { className: 'p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
-                  h('div', { className: 'text-base font-black', style: { color: stateMeta.color } }, stateMeta.label),
-                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, stateMeta.desc)
-                ),
-                h('div', { className: 'grid grid-cols-3 gap-3' },
-                  [
-                    { key: 'inside',  label: 'Inside conc (mOsm)',  val: iq.inside },
-                    { key: 'outside', label: 'Outside conc (mOsm)', val: iq.outside },
-                    { key: 'perm',    label: 'Membrane perm (%)',   val: iq.perm }
-                  ].map(function(s) {
-                    return h('div', { key: s.key },
-                      h('label', { htmlFor: 'oh-' + s.key, className: 'block text-[0.6875rem] font-bold text-slate-700' },
-                        s.label + ': ', h('span', { className: 'font-mono text-cyan-700' }, s.val)),
-                      h('input', { id: 'oh-' + s.key, type: 'range', min: 0, max: 200, step: 1, value: s.val,
-                        onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
-                        className: 'w-full', 'aria-label': s.label }));
-                  })
-                ),
-                h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ inside: 50, outside: 50, perm: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, '↺ Reset'),
-                  (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
-                ),
-                (iq.log || []).length > 0 && h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700' },
-                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['inside', 'outside', 'perm', 'state'].map(function(c, i) { return h('th', { scope: 'col', key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
-                  h('tbody', null, iq.log.map(function(o, idx) {
-                    return h('tr', { key: 'lr' + idx },
-                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.i),
-                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.o),
-                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
-                      h('td', { className: 'px-1 border border-slate-200' }, o.st));
-                  }))
-                ),
-                h('textarea', { 'aria-label': __alloT('stem.cell.a11y_osmosis_hypothesis', 'Osmosis hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Does permeability matter when concentrations are equal?',
-                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
-                  h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Set inside = outside. Change permeability. Anything happen?'),
-                    h('li', null, 'Find two settings producing isotonic. What do they share?'),
-                    h('li', null, 'Why do plant cells survive lysis but animal cells burst? Investigate.'))),
-                h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
-                  h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
-                    h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                    'I understand — explain in own words'),
-                  iq.understood && h('textarea', { 'aria-label': __alloT('stem.cell.a11y_osmosis_explanation', 'Osmosis explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how concentration gradient and membrane permeability jointly drive osmosis.',
-                    className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-                h('div', { className: 'text-[0.625rem] italic text-slate-500' }, 'Design note: discrete 3-state osmosis marker; no membrane-integrity score; no reveal — by design.')
-              );
-            })(),
+            d.mode === 'osmoHunt' && renderOsmosisLab(React.createElement, d._osmoHunt, function(patch) {
+              updateCellDataFunctional(function(current) {
+                return Object.assign({}, current, { _osmoHunt: Object.assign({}, current._osmoHunt || {}, patch) });
+              });
+            }),
 
             // ── Vocabulary Concept Flashcard Overlay (Modal) ──
             (function() {

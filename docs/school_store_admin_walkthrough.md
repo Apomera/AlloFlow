@@ -1,6 +1,6 @@
 # School Store + Print Lab: administrator walkthrough
 
-From the repository root, run `npm run demo:school-store`, then open [the local demo](http://127.0.0.1:8767). Keep the terminal running; Ctrl+C stops it. Reset fictional records before rehearsing again.
+For the simple five-minute presentation, use the [unified demo guide](school_store_unified_demo.md). The longer historical Print Lab route below is optional. From the repository root, run `npm run demo:school-store -- --legacy`, then open [the local demo](http://127.0.0.1:8767). Keep the terminal running; Ctrl+C stops it. Reset fictional records before rehearsing again.
 
 This demo runs the actual School Rewards Apps Script business logic with in-memory substitutes for Google identity, Sheets, Drive, locks, and mail. It contains fictional school records. Nothing is emailed or sent to a printer. Its role selector illustrates the screens; real account permissions require a separate school deployment check.
 

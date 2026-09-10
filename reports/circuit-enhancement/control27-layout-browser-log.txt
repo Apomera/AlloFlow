@@ -1,0 +1,183 @@
+{
+  "catalog": [
+    {
+      "id": "bridge",
+      "label": "Balanced bridge",
+      "fallback": 0,
+      "loadMs": 249
+    },
+    {
+      "id": "shared",
+      "label": "Shared series resistor",
+      "fallback": 0,
+      "loadMs": 323
+    },
+    {
+      "id": "sources",
+      "label": "Two voltage sources",
+      "fallback": 0,
+      "loadMs": 133
+    },
+    {
+      "id": "current",
+      "label": "Current-driven load",
+      "fallback": 0,
+      "loadMs": 162
+    },
+    {
+      "id": "rc-charge",
+      "label": "RC charging",
+      "fallback": 0,
+      "loadMs": 551
+    },
+    {
+      "id": "rl-start",
+      "label": "RL startup",
+      "fallback": 0,
+      "loadMs": 299
+    },
+    {
+      "id": "rlc-ring",
+      "label": "RLC ringing",
+      "fallback": 0,
+      "loadMs": 483
+    },
+    {
+      "id": "bridge-settle",
+      "label": "Bridge settling",
+      "fallback": 0,
+      "loadMs": 413
+    },
+    {
+      "id": "sine-filter",
+      "label": "Sine-wave filter",
+      "fallback": 0,
+      "loadMs": 696
+    },
+    {
+      "id": "pulse-smooth",
+      "label": "Pulse smoothing",
+      "fallback": 0,
+      "loadMs": 396
+    },
+    {
+      "id": "triangle-current",
+      "label": "Triangle-current drive",
+      "fallback": 0,
+      "loadMs": 813
+    },
+    {
+      "id": "switch-hold",
+      "label": "Charge, disconnect, hold",
+      "fallback": 0,
+      "loadMs": 2308
+    },
+    {
+      "id": "switch-discharge",
+      "label": "Charge then discharge",
+      "fallback": 0,
+      "loadMs": 1619
+    },
+    {
+      "id": "switch-flyback",
+      "label": "Inductor flyback",
+      "fallback": 0,
+      "loadMs": 402
+    },
+    {
+      "id": "diode-half-wave",
+      "label": "Half-wave rectifier",
+      "fallback": 0,
+      "loadMs": 283
+    },
+    {
+      "id": "diode-bridge",
+      "label": "Full-wave bridge rectifier",
+      "fallback": 0,
+      "loadMs": 257
+    },
+    {
+      "id": "diode-filter",
+      "label": "Rectifier with smoothing",
+      "fallback": 0,
+      "loadMs": 465
+    },
+    {
+      "id": "diode-flyback",
+      "label": "Diode flyback path",
+      "fallback": 0,
+      "loadMs": 225
+    },
+    {
+      "id": "controlled-amplifier",
+      "label": "Voltage-controlled amplifier",
+      "fallback": 0,
+      "loadMs": 219
+    },
+    {
+      "id": "controlled-current",
+      "label": "Voltage-to-current control",
+      "fallback": 0,
+      "loadMs": 164
+    },
+    {
+      "id": "controlled-sense",
+      "label": "Current sensing and gain",
+      "fallback": 0,
+      "loadMs": 218
+    },
+    {
+      "id": "controlled-feedback",
+      "label": "Finite-gain feedback",
+      "fallback": 0,
+      "loadMs": 272
+    }
+  ],
+  "dense": [
+    {
+      "width": 1280,
+      "side": "Left perspective",
+      "tilt": 35
+    },
+    {
+      "width": 1280,
+      "side": "Left perspective",
+      "tilt": 70
+    },
+    {
+      "width": 1280,
+      "side": "Right perspective",
+      "tilt": 35
+    },
+    {
+      "width": 1280,
+      "side": "Right perspective",
+      "tilt": 70
+    },
+    {
+      "width": 320,
+      "side": "Left perspective",
+      "tilt": 35
+    },
+    {
+      "width": 320,
+      "side": "Left perspective",
+      "tilt": 70
+    },
+    {
+      "width": 320,
+      "side": "Right perspective",
+      "tilt": 35
+    },
+    {
+      "width": 320,
+      "side": "Right perspective",
+      "tilt": 70
+    }
+  ],
+  "scenarios": [
+    "VCCS sensing links and units; adding a CCVS, editing its sensed source, measured transresistance output and reconstructible downloaded CSV",
+    "All example label clearances and routed branches; 16-part all-node desktop/phone layouts at both perspective and tilt extremes; disabled tilt in flat mode"
+  ],
+  "errors": []
+}

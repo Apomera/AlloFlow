@@ -1,0 +1,226 @@
+{
+  "scope": "Native high-resolution Showcase PNG in real WebGL, both raw and composer pipelines",
+  "errors": [],
+  "consoleErrors": [],
+  "checks": {
+    "exports": [
+      {
+        "viewport": [
+          1180,
+          860
+        ],
+        "look": "Studio",
+        "postFx": false,
+        "width": 2048,
+        "height": 1388,
+        "bytes": 493247,
+        "originalDrawing": [
+          1447,
+          981
+        ],
+        "restored": true,
+        "observed": {
+          "canvas": [
+            2048,
+            1388
+          ],
+          "logical": [
+            2048,
+            1388
+          ],
+          "ratio": 1,
+          "composer": null,
+          "busy": true,
+          "camera": "{\"position\":[17.81106929731173,15.259175915251555,22.585725928666545],\"quaternion\":[-0.16276767998822747,0.32786043083366007,0.05745448769158173,0.9288235581039676],\"fov\":42,\"aspect\":1.4751592356687897}"
+        },
+        "pixels": {
+          "colors": 88,
+          "opaqueSamples": 11061
+        }
+      },
+      {
+        "viewport": [
+          390,
+          844
+        ],
+        "look": "Studio",
+        "postFx": true,
+        "width": 991,
+        "height": 2048,
+        "bytes": 421616,
+        "originalDrawing": [
+          470,
+          971
+        ],
+        "restored": true,
+        "observed": {
+          "canvas": [
+            991,
+            2048
+          ],
+          "logical": [
+            991,
+            2048
+          ],
+          "ratio": 1,
+          "composer": [
+            991,
+            2048,
+            1
+          ],
+          "busy": true,
+          "camera": "{\"position\":[28.63152328087494,21.491757409783965,36.00308886828493],\"quaternion\":[-0.16276767998822747,0.32786043083366007,0.05745448769158173,0.9288235581039676],\"fov\":42,\"aspect\":0.4839124839124839}"
+        },
+        "pixels": {
+          "colors": 93,
+          "opaqueSamples": 7898
+        }
+      }
+    ],
+    "fixture": {
+      "hash": "4320e16c857d3aa501d4035ce761621748cd45e75d65d9417947f9263cb2fb1a",
+      "selected": 150,
+      "triangles": 634
+    },
+    "captionContrast": [
+      {
+        "look": "meadow",
+        "background": "rgb(23, 59, 53)",
+        "colors": [
+          {
+            "selector": "span",
+            "color": "rgb(224, 237, 219)",
+            "display": "inline",
+            "ratio": 10.100249309258977
+          },
+          {
+            "selector": "strong",
+            "color": "rgb(255, 255, 255)",
+            "display": "block",
+            "ratio": 12.256147692777617
+          },
+          {
+            "selector": "p",
+            "color": "rgb(224, 237, 219)",
+            "display": "block",
+            "ratio": 10.100249309258977
+          }
+        ],
+        "viewport": [
+          1180,
+          860
+        ]
+      },
+      {
+        "look": "studio",
+        "background": "rgb(241,238,232)",
+        "colors": [
+          {
+            "selector": "span",
+            "color": "rgb(104, 107, 88)",
+            "display": "inline",
+            "ratio": 4.731822344677579
+          },
+          {
+            "selector": "strong",
+            "color": "rgb(36, 60, 50)",
+            "display": "block",
+            "ratio": 10.2608659985473
+          },
+          {
+            "selector": "p",
+            "color": "rgb(85, 98, 79)",
+            "display": "block",
+            "ratio": 5.586536416212556
+          }
+        ],
+        "viewport": [
+          1180,
+          860
+        ]
+      },
+      {
+        "look": "meadow",
+        "background": "rgb(23, 59, 53)",
+        "colors": [
+          {
+            "selector": "span",
+            "color": "rgb(224, 237, 219)",
+            "display": "inline",
+            "ratio": 10.100249309258977
+          },
+          {
+            "selector": "strong",
+            "color": "rgb(255, 255, 255)",
+            "display": "block",
+            "ratio": 12.256147692777617
+          },
+          {
+            "selector": "p",
+            "color": "rgb(224, 237, 219)",
+            "display": "none",
+            "ratio": 10.100249309258977
+          }
+        ],
+        "viewport": [
+          390,
+          844
+        ]
+      },
+      {
+        "look": "studio",
+        "background": "rgb(241,238,232)",
+        "colors": [
+          {
+            "selector": "span",
+            "color": "rgb(104, 107, 88)",
+            "display": "inline",
+            "ratio": 4.731822344677579
+          },
+          {
+            "selector": "strong",
+            "color": "rgb(36, 60, 50)",
+            "display": "block",
+            "ratio": 10.2608659985473
+          },
+          {
+            "selector": "p",
+            "color": "rgb(85, 98, 79)",
+            "display": "none",
+            "ratio": 5.586536416212556
+          }
+        ],
+        "viewport": [
+          390,
+          844
+        ]
+      }
+    ],
+    "actualRenderFailureRestored": true,
+    "failureToast": [
+      {
+        "message": "The image could not be saved. Your view is unchanged; try again.",
+        "kind": "error"
+      }
+    ],
+    "stage": {
+      "resources": 8,
+      "footprints": 32,
+      "textures": [
+        {
+          "name": "gwe-studio-contact-shadow",
+          "complete": true,
+          "minFilter": 1006
+        },
+        {
+          "name": "gwe-studio-light-pool",
+          "complete": true,
+          "minFilter": 1006
+        }
+      ],
+      "shaders": []
+    },
+    "exitRestored": true
+  },
+  "pass": true
+}

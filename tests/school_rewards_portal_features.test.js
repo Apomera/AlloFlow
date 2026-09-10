@@ -20,10 +20,10 @@ describe('group award', () => {
   it('offers a group mode whose submit path calls the batch endpoint with a stable retry key', () => {
     expect(PORTAL).toContain('id="award-group-mode"');
     expect(PORTAL).toContain('id="award-group-count"');
-    expect(SCRIPT).toContain("rpc('awardSchoolRewardsPointsBatch',groupPayload)");
-    expect(SCRIPT).toContain("stableRetryKey('award_group',groupPayload)");
-    // The single-student path is untouched.
-    expect(SCRIPT).toContain("rpc('awardSchoolRewardsPoints',payload)");
+    expect(SCRIPT).toContain("rpc(group?'awardSchoolRewardsPointsBatch':'awardSchoolRewardsPoints',Object.assign({},p,{idempotencyKey:draft.key}))");
+    expect(SCRIPT).toContain("checkedAwardRetryKey(group?'award_group':'award',payload)");
+    // Both paths use the existing endpoints through a frozen, reviewed request.
+    expect(SCRIPT).toContain("await sendFrozenAward(state.awardRetryDraft)");
     // Group mode relaxes the single-student select so the browser does not block submit.
     expect(SCRIPT).toContain("$('award-student').required=!on");
     // Group size is bounded on both sides of the wire.
@@ -35,8 +35,8 @@ describe('group award', () => {
   it('asks for confirmation before recording a group and reports partial failures without hiding successes', () => {
     // The message is one translatable sentence with numbered slots, filled by
     // fmt(), and shown through confirmT so it is translated before the dialog.
-    expect(SCRIPT).toContain("confirmT(fmt('Record {1} points for {2} students with the same explanation?',Number($('award-amount').value),ids.length))");
-    expect(SCRIPT).toContain('Retry the same group without changing the selection or explanation.');
+    expect(SCRIPT).toContain("reviewAwardSelection(ids,amount,categoryId,reason)");
+    expect(SCRIPT).toContain('Use Retry pending award for the exact original group.');
   });
 });
 

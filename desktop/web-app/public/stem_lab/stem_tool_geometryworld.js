@@ -116,12 +116,23 @@
       ".theme-contrast .gw-root,[data-stem-theme=\"contrast\"] .gw-root{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-deeper:#000;--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;--allo-stem-button-bg:#000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00}.theme-contrast .gw-root :is(.gw-toolbar,.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-settings-dialog,.gw-settings-header,.gw-measure-card,.gw-coordinate-hud),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-toolbar,.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-settings-dialog,.gw-settings-header,.gw-measure-card,.gw-coordinate-hud){background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-root :is(.gw-hotbar-item,.gw-shape-item,.gw-shape-rotate,.gw-compact-action,.gw-action-bar button),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-hotbar-item,.gw-shape-item,.gw-shape-rotate,.gw-compact-action,.gw-action-bar button){border-color:#00ff00!important;background:#000!important;color:#00ff00!important}.theme-contrast .gw-root :is(.gw-hotbar-item[data-active=\"true\"],.gw-shape-item[aria-pressed=\"true\"]),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-hotbar-item[data-active=\"true\"],.gw-shape-item[aria-pressed=\"true\"]){background:#ffff00!important;border-color:#fff!important;box-shadow:none!important}.theme-contrast .gw-root .gw-hotbar-item[data-active=\"true\"]>span,[data-stem-theme=\"contrast\"] .gw-root .gw-hotbar-item[data-active=\"true\"]>span{color:#000!important}.theme-contrast .gw-root .gw-shape-item[aria-pressed=\"true\"]>span,[data-stem-theme=\"contrast\"] .gw-root .gw-shape-item[aria-pressed=\"true\"]>span{color:#000!important}.theme-contrast .gw-root :is(.gw-material-name,.gw-material-key,.gw-shape-heading,.gw-shape-fraction),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-material-name,.gw-material-key,.gw-shape-heading,.gw-shape-fraction){color:#ffff00!important}",
       ".gw-root .gw-touch-actions{gap:6px!important;right:12px!important}.gw-root .gw-touch-actions button{box-sizing:border-box;width:64px!important;height:48px!important;min-width:64px!important;min-height:48px!important;padding:3px!important;border:1px solid #afc7b677!important;border-radius:13px!important;background:#153d34f2!important;color:#f5f0e5!important;box-shadow:0 4px 14px #06251e3d,inset 0 1px 0 #edf3dc12;touch-action:manipulation!important}.gw-root .gw-touch-actions button[data-gw-touch-action=\"place\"]{background:#d4e8ca!important;border-color:#edf5e4!important;color:#173b35!important}.gw-root .gw-touch-actions button[data-gw-touch-action=\"break\"]{color:#ffd3bd!important;border-color:#edc5ae66!important}.gw-root .gw-touch-actions button:disabled{opacity:.44;box-shadow:none;cursor:default}.gw-touch-action-content{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;pointer-events:none}.gw-touch-action-content svg{width:20px;height:20px;display:block}.gw-touch-action-name{font-size:11px;font-weight:650;line-height:13px;letter-spacing:.01em}",
       ".gw-root .gw-touch-joystick{background:#112d2b66!important;border:1px solid #e1ecd67d!important;box-shadow:inset 0 0 0 5px #e1ecd60a,0 4px 16px #092b252e}.gw-root .gw-touch-joystick-thumb{background:#d4e8cad9!important;border:1px solid #eff5e7;box-shadow:0 3px 10px #092b2566}.gw-root .gw-touch-look-zone{border:none!important;background:transparent!important;opacity:.45!important;width:42px!important;height:42px!important;right:86px!important;top:46%!important}.gw-root .gw-touch-look-zone>.gw-touch-look-label{display:none}.gw-root .gw-touch-look-reticle{border-color:#e1ecd680!important;background:#153d3422!important}.gw-root .gw-touch-mode-hint{background:#153d34ef!important;border-color:#afc7b644!important;color:#e7efdf!important;box-shadow:none;font-weight:600}",
+      ".gw-root .gw-action-feedback[data-feedback-kind=\"shape\"]{bottom:194px!important}@media(max-width:800px) and (min-height:620px) and (orientation:portrait){.gw-root .gw-action-feedback[data-feedback-kind=\"shape\"]{top:calc(50% - 112px);bottom:auto!important;left:12px!important;transform:none!important;max-width:calc(100% - 108px)!important}}",
       ".gw-placement-hint{position:absolute;top:calc(50% + 28px);left:50%;transform:translateX(-50%);z-index:25;box-sizing:border-box;display:flex;align-items:center;gap:7px;width:max-content;max-width:min(300px,calc(100% - 36px));padding:7px 11px;border:1px solid #c4dfc770;border-radius:10px;background:#113b30f2;color:#e8f2e0;font-size:12px;font-weight:600;line-height:1.4;pointer-events:none;box-shadow:0 5px 18px #092b2533}.gw-placement-hint[data-allowed=\"false\"]{background:#502f29f2;border-color:#ecc3a3aa;color:#ffe3cc}.gw-placement-hint-mark{display:grid;flex:0 0 auto;place-items:center;width:18px;height:18px;border:1px solid currentColor;border-radius:50%;font-size:12px;font-weight:800}.gw-root .gw-action-feedback{background:#112d2bf2!important;border-color:#c4dfc766!important;color:#f5f0e5!important}",
       "@media(max-width:800px){.gw-placement-hint{top:128px;bottom:auto;left:12px;transform:none;max-width:calc(100% - 174px);padding:7px 8px;font-size:11px;align-items:flex-start}.gw-root:has(.gwe-builder-dock[data-collapsed=\"false\"]) .gw-placement-hint{display:none}}@media(max-height:520px) and (orientation:landscape){.gw-root .gw-touch-actions{width:calc(100% - 170px);max-width:calc(100% - 170px);flex-direction:row!important;flex-wrap:wrap;justify-content:flex-end;bottom:132px!important}.gw-root .gw-touch-actions button{width:58px!important;min-width:58px!important}.gw-placement-hint{top:64px;max-width:190px}}",
       /* Short touch landscapes */
       "@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-panel{top:82px!important;left:12px!important;right:auto!important;background:#112d2bf2!important;border-color:#aec9b647!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-panel input{accent-color:#b1d3a6}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-panel>.gw-touch-look-label{color:#e1eddc!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-mode-hint{display:none}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-zone{display:none}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-coordinate-hud{display:none!important}#geoworld-fs-workspace[data-touch-active=\"true\"][data-geometry-mode] .gw-action-bar.gw-action-bar{left:12px!important;right:auto!important;bottom:132px!important;width:max-content!important;max-width:calc(100% - 420px)!important;transform:none!important;flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto;gap:3px!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-action-bar button{min-height:44px;flex-shrink:0}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-joystick{bottom:16px!important;left:12px!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-hotbar{left:auto!important;right:12px!important;max-width:calc(100% - 150px)!important;transform:none!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-placement-hint{left:50%;transform:translateX(-50%);top:64px;max-width:190px}}",
       ".theme-contrast .gw-root .gw-touch-actions button,[data-stem-theme=\"contrast\"] .gw-root .gw-touch-actions button{background:#000!important;border-color:#00ff00!important;color:#00ff00!important;box-shadow:none}.theme-contrast .gw-root .gw-touch-actions button[data-gw-touch-action=\"place\"],[data-stem-theme=\"contrast\"] .gw-root .gw-touch-actions button[data-gw-touch-action=\"place\"]{background:#ffff00!important;color:#000!important;border-color:#fff!important}.theme-contrast .gw-root .gw-touch-joystick,[data-stem-theme=\"contrast\"] .gw-root .gw-touch-joystick{background:#000!important;border-color:#fff!important}.theme-contrast .gw-root .gw-placement-hint,[data-stem-theme=\"contrast\"] .gw-root .gw-placement-hint{background:#000!important;border-color:#ffff00!important;color:#ffff00!important}.theme-contrast .gw-root .gw-placement-hint[data-allowed=\"false\"],[data-stem-theme=\"contrast\"] .gw-root .gw-placement-hint[data-allowed=\"false\"]{border-style:dashed}",
-      ".gw-workspace-icon{display:block;width:18px;height:18px;flex:0 0 auto}.gw-utility-content{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.gw-utility-label{font-weight:600}.gw-utility-count{min-width:16px;padding:1px 4px;border-radius:5px;background:#d4e8ca16;color:#bacfb9;font-size:10px;font-variant-numeric:tabular-nums}.gw-root .gw-action-bar button{min-height:44px;padding:6px 9px!important}.gw-root .gw-action-bar button[aria-pressed=\"true\"]{background:#d4e8ca!important;color:#173b35!important;border-color:#f1f7e8!important}.gw-root .gw-action-bar button[aria-label=\"Clear my placed blocks\"]{color:#e8c5ae!important}.gw-root .gw-achievement-toast{box-sizing:border-box;max-width:min(360px,calc(100% - 32px));padding:12px 15px!important;gap:12px!important;border:1px solid #a4bb9e!important;border-radius:17px!important;background:#f4f0e4fa!important;box-shadow:0 12px 32px #102f2940!important;pointer-events:none}.gw-achievement-medal{display:grid;width:40px;height:48px;flex:0 0 auto;place-items:center;color:#4d7050}.gw-achievement-medal .gw-workspace-icon{width:34px;height:34px}.gw-achievement-copy{min-width:0}.gw-achievement-kicker{color:#60715b;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.gw-achievement-name{margin-top:3px;color:#173b35;font-size:15px;font-weight:750;line-height:1.25}.gw-achievement-description{margin-top:3px;color:#516454;font-size:11px;line-height:1.45}@media(max-width:800px){.gw-root[data-touch-active=\"true\"] .gw-action-bar [data-gw-utility=\"undo\"] .gw-utility-label,.gw-root[data-touch-active=\"true\"] .gw-action-bar [data-gw-utility=\"redo\"] .gw-utility-label{display:none}.gw-root[data-touch-active=\"true\"] .gw-action-bar button{padding:6px!important}.gw-root .gw-achievement-toast{top:188px!important;left:12px!important;transform:none!important;max-width:calc(100% - 100px);padding:10px 12px!important}}@media(max-height:520px) and (orientation:landscape){.gw-root .gw-achievement-toast{display:none}}.theme-contrast .gw-root .gw-achievement-toast,[data-stem-theme=\"contrast\"] .gw-root .gw-achievement-toast{background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-achievement-toast *,[data-stem-theme=\"contrast\"] .gw-achievement-toast *{color:#ffff00!important}.theme-contrast .gw-root .gw-action-bar button[aria-pressed=\"true\"],[data-stem-theme=\"contrast\"] .gw-root .gw-action-bar button[aria-pressed=\"true\"]{background:#ffff00!important;color:#000!important}",
+      ".gw-workspace-icon{display:block;width:18px;height:18px;flex:0 0 auto}.gw-utility-content{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.gw-utility-label{font-weight:600}.gw-utility-count{min-width:16px;padding:1px 4px;border-radius:5px;background:#d4e8ca16;color:#bacfb9;font-size:10px;font-variant-numeric:tabular-nums}.gw-root .gw-action-bar button{min-height:44px;padding:6px 9px!important}.gw-root .gw-action-bar button[aria-pressed=\"true\"]{background:#d4e8ca!important;color:#173b35!important;border-color:#f1f7e8!important}.gw-root .gw-action-bar button[aria-label=\"Clear my placed blocks\"]{color:#e8c5ae!important}.gw-root .gw-achievement-toast{box-sizing:border-box;min-width:0;max-width:min(360px,calc(100% - 32px));padding:12px 15px!important;gap:12px!important;border:1px solid #a4bb9e!important;border-radius:17px!important;background:#f4f0e4fa!important;box-shadow:0 12px 32px #102f2940!important;pointer-events:none}.gw-achievement-medal{display:grid;width:40px;height:48px;flex:0 0 auto;place-items:center;color:#4d7050}.gw-achievement-medal .gw-workspace-icon{width:34px;height:34px}.gw-achievement-copy{min-width:0}.gw-achievement-kicker{color:#60715b;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.gw-achievement-name{margin-top:3px;color:#173b35;font-size:15px;font-weight:750;line-height:1.25}.gw-achievement-description{margin-top:3px;color:#516454;font-size:11px;line-height:1.45}@media(max-width:800px){.gw-root[data-touch-active=\"true\"] .gw-action-bar [data-gw-utility=\"undo\"] .gw-utility-label,.gw-root[data-touch-active=\"true\"] .gw-action-bar [data-gw-utility=\"redo\"] .gw-utility-label{display:none}.gw-root[data-touch-active=\"true\"] .gw-action-bar button{padding:6px!important}.gw-root .gw-achievement-toast{top:188px!important;left:12px!important;transform:none!important;max-width:calc(100% - 100px);padding:10px 12px!important}}@media(max-height:520px) and (orientation:landscape){.gw-root .gw-achievement-toast{display:none!important}}.theme-contrast .gw-root .gw-achievement-toast,[data-stem-theme=\"contrast\"] .gw-root .gw-achievement-toast{background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-achievement-toast *,[data-stem-theme=\"contrast\"] .gw-achievement-toast *{color:#ffff00!important}.theme-contrast .gw-root .gw-action-bar button[aria-pressed=\"true\"],[data-stem-theme=\"contrast\"] .gw-root .gw-action-bar button[aria-pressed=\"true\"]{background:#ffff00!important;color:#000!important}",
+      ".gw-root .gw-measure-card{box-sizing:border-box;color:#edf2e3!important;scrollbar-color:#839c86 #173b35}.gw-root .gw-measure-heading{min-height:44px;box-sizing:border-box;padding:6px 8px 6px 12px;gap:6px!important}.gw-root .gw-measure-heading>[role=\"status\"]{color:#edf2e3!important;font-size:12px;line-height:1.3}.gw-root .gw-measure-close{width:44px;height:44px;min-width:44px;min-height:44px;flex:0 0 auto;box-sizing:border-box;background:#224a3e;color:#edf2e3;border-color:#afc7b64d}.gw-measure-dimensions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 5px}.gw-measure-dimension{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:7px 8px;border:1px solid #aec9b633;border-radius:7px;background:#e4edda09;color:#bacfb9;font-size:10px;min-width:0}.gw-measure-dimension strong{color:#f5f0e5;font-size:13px;font-variant-numeric:tabular-nums}.gw-measure-volume{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:5px 1px 7px;color:#c8dcc1;font-size:11px}.gw-measure-volume-value{white-space:nowrap;color:#c8dcc1;font-size:10px}.gw-measure-volume-value strong{font-size:17px;color:#f5f0e5;font-variant-numeric:tabular-nums}.gw-measure-details{flex-shrink:0;min-width:0;border-top:1px solid #aec9b62e}.gw-measure-details-toggle{display:flex;align-items:center;justify-content:space-between;min-height:44px;box-sizing:border-box;padding:8px 2px;color:#e4edd8;font-size:12px;font-weight:650;cursor:pointer;list-style:none}.gw-measure-details-toggle::-webkit-details-marker{display:none}.gw-measure-details-toggle::after{content:\"+\";font-size:20px;line-height:1;color:#b9d4ad}.gw-measure-details[open]>.gw-measure-details-toggle::after{content:\"−\"}.gw-measure-details-toggle:focus-visible{outline:2px solid #f5f0e5;outline-offset:-2px;border-radius:5px}.gw-measure-details-content{display:flex;flex-direction:column;gap:5px;padding:3px 0 4px}.gw-measure-card[data-measurement-compact=\"false\"]>.gw-measure-details>summary{display:none}.gw-measure-card[data-measurement-compact=\"false\"]>.gw-measure-details{padding-top:6px}.gw-measure-card[data-measurement-compact=\"true\"] .gw-measure-details-content button{min-height:44px}.gw-measure-card[data-measurement-compact=\"true\"] .gw-measure-details-content input[type=\"range\"]{min-height:32px}",
+      "#geoworld-fs-workspace.gw-root .gw-measure-card[data-measurement-compact=\"true\"][data-details-open=\"false\"]{max-height:min(240px,calc(100% - 140px))!important}#geoworld-fs-workspace.gw-root .gw-measure-card[data-measurement-compact=\"true\"][data-details-open=\"true\"]{max-height:calc(100% - 136px)!important}",
+      ".theme-contrast .gw-root :is(.gw-measure-heading,.gw-measure-dimension,.gw-measure-close,.gw-measure-details),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-measure-heading,.gw-measure-dimension,.gw-measure-close,.gw-measure-details){background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-root :is(.gw-measure-dimension,.gw-measure-volume,.gw-measure-details-toggle,.gw-measure-volume-value,.gw-measure-close,.gw-measure-heading>[role=\"status\"]),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-measure-dimension,.gw-measure-volume,.gw-measure-details-toggle,.gw-measure-volume-value,.gw-measure-close,.gw-measure-heading>[role=\"status\"]){color:#ffff00!important}.theme-contrast .gw-root .gw-measure-card strong,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card strong{color:#ffff00!important}.theme-contrast .gw-root .gw-measure-details-toggle::after,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-details-toggle::after{color:#00ff00}.theme-contrast .gw-root .gw-measure-details-toggle:focus-visible,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-details-toggle:focus-visible{outline-color:#00ff00}",
+      ".gw-root .gw-measure-card .gw-measure-check-revision{border:1px solid #d6b97266!important;background:#554528!important;color:#f6e8c5!important}.theme-contrast .gw-root .gw-measure-card .gw-measure-check-revision,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card .gw-measure-check-revision{background:#000!important;color:#00ff00!important;border-color:#00ff00!important}.theme-contrast .gw-root .gw-measure-card [data-geometry-representation-progress][data-complete] .gw-measure-view-progress-caption,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card [data-geometry-representation-progress][data-complete] .gw-measure-view-progress-caption{color:#ffff00!important}.theme-contrast .gw-root .gw-measure-card [data-geometry-representation-progress][data-complete] .gw-measure-view-progress-fill,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card [data-geometry-representation-progress][data-complete] .gw-measure-view-progress-fill{background:#00ff00!important}",
+      ".gw-root .gw-measure-details-content{gap:7px;line-height:1.5}.gw-root .gw-measure-card .gw-measure-equation{font-size:12px!important;line-height:1.5;overflow-wrap:anywhere}.gw-root .gw-measure-card :is(.gw-measure-equation-note,[data-geometry-surface-area],.gw-measure-block-count,[data-geometry-material-breakdown]){font-size:11px!important;line-height:1.5}.gw-root .gw-measure-card :is(.gw-measure-block-count,[data-geometry-material-breakdown]){color:#bacfb9!important}.gw-root .gw-measure-card :is(.gw-layer-explorer,[data-geometry-volume-representation]){box-sizing:border-box;max-width:100%!important;padding:9px!important;border:1px solid #aec9b642!important;border-radius:10px!important;background:#1b3b32!important}.gw-root .gw-measure-card .gw-layer-explorer :is(label,output,span){color:#dce8d3!important;font-size:11px!important;line-height:1.45}.gw-root .gw-measure-card .gw-layer-explorer>div:last-of-type{color:#adc6b1!important;font-size:10px!important}.gw-root .gw-measure-card .gw-layer-explorer input[type=\"range\"]{min-height:44px;accent-color:#b6d2a6!important}.gw-root .gw-measure-card .gw-layer-explorer button{min-height:44px;border-color:#aac5b25e!important;background:#173b35!important;color:#e4edd9!important;font-size:11px!important;font-weight:650!important;border-radius:8px!important}",
+      ".gw-root .gw-measure-card .gw-measure-view-picker{display:grid!important;grid-template-columns:minmax(0,1fr);gap:5px!important}.gw-root .gw-measure-card .gw-measure-view-picker>label,.gw-root .gw-measure-card [data-geometry-representation-connection]>label{font-size:11px!important;color:#d4e3ca!important;font-weight:650!important;line-height:1.45}.gw-root .gw-measure-card .gw-measure-view-progress-caption{gap:8px;flex-wrap:wrap;color:#c6d8bc!important;font-size:11px!important;font-weight:600!important;line-height:1.5}.gw-root .gw-measure-card .gw-measure-view-progress-fill{background:#9db890!important}.gw-root .gw-measure-card [data-geometry-representation-progress][data-complete=\"true\"] .gw-measure-view-progress-caption{color:#cce8b8!important}.gw-root .gw-measure-card [data-geometry-representation-progress][data-complete=\"true\"] .gw-measure-view-progress-fill{background:#b8d8a2!important}.gw-root .gw-measure-card :is(.gw-measure-prompt,#gw-representation-connect-prompt){font-size:11px!important;line-height:1.55;color:#c1d4bf!important}.gw-root .gw-measure-card #gw-representation-sentence-starter{background:#e1edd80b!important;border-left:2px solid #a9c29b66;padding:7px 8px!important;color:#d8e4ce!important;font-size:11px!important;line-height:1.5!important}.gw-root .gw-measure-card .gw-measure-self-check{gap:3px!important;color:#d4e3ca!important;font-size:11px!important;line-height:1.45}.gw-root .gw-measure-card .gw-measure-self-check>label{box-sizing:border-box;min-height:44px;gap:8px!important;align-items:center!important}.gw-root .gw-measure-card .gw-measure-self-check input{flex:0 0 auto;width:18px;height:18px;accent-color:#b6d2a6}",
+      ".gw-root .gw-measure-card :is([data-geometry-volume-representation],[data-geometry-prediction-result]) :is(select,textarea,input:not([type=\"checkbox\"])){box-sizing:border-box;min-width:0!important;max-width:100%;min-height:44px;padding:8px!important;border:1px solid #b2c9b566!important;border-radius:8px!important;background:#102f28!important;color:#f1f2e5!important;font-family:inherit;font-size:12px!important;line-height:1.45!important;color-scheme:dark}.gw-root .gw-measure-card [data-geometry-volume-representation] select{width:100%;flex:initial!important}.gw-root .gw-measure-card [data-geometry-volume-representation] textarea{width:100%;min-height:74px!important}.gw-root .gw-measure-card :is([data-geometry-volume-representation],[data-geometry-prediction-result]) :is(input,textarea)::placeholder{color:#a6bdaa;opacity:1}.gw-root .gw-measure-card [data-geometry-volume-representation] button,.gw-root .gw-measure-card [data-geometry-prediction-result] button{min-height:44px;padding:7px 10px!important;font-size:11px!important;line-height:1.4;border-radius:8px!important}.gw-root .gw-measure-card [data-geometry-prediction-result] label{color:#f0dfb8!important;font-size:11px!important}.gw-root .gw-measure-card :is([data-geometry-representation-recommendation],[data-geometry-revision-result]){font-size:11px!important;line-height:1.5!important}.gw-root .gw-measure-card .gw-measure-save-connection[data-state=\"draft\"]{background:#294239!important;color:#d5dfcf!important;border:1px solid #a9c2a73b!important}.gw-root .gw-measure-card .gw-measure-save-connection[data-state=\"ready\"]{background:#d4e8ca!important;color:#173b35!important;border:1px solid #d4e8ca!important}.gw-root .gw-measure-card .gw-measure-save-connection[data-state=\"saved\"]{background:#28513a!important;color:#d7efc6!important;border:1px solid #91b57b66!important}.gw-root .gw-measure-card .gw-measure-build-card{min-height:44px;padding:9px 12px!important;border:1px solid #b4cda575!important;border-radius:9px!important;background:#264b39!important;color:#edf2e2!important;font-size:12px!important;font-weight:650!important;box-shadow:inset 0 1px #e5efdc0a}.gw-root .gw-measure-card .gw-measure-build-card:hover{background:#345c44!important;border-color:#d2e4c5!important}.gw-root .gw-measure-card :is(button,select,textarea,input):focus-visible{outline:2px solid #f5f0e5!important;outline-offset:2px!important;box-shadow:0 0 0 4px #173b35!important}",
+      ".theme-contrast .gw-root .gw-measure-card :is(.gw-layer-explorer,[data-geometry-volume-representation],#gw-representation-sentence-starter),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(.gw-layer-explorer,[data-geometry-volume-representation],#gw-representation-sentence-starter){background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-root .gw-measure-card :is(.gw-layer-explorer label,.gw-layer-explorer output,.gw-layer-explorer span,.gw-measure-view-picker>label,[data-geometry-representation-connection]>label,.gw-measure-view-progress-caption,.gw-measure-prompt,#gw-representation-connect-prompt,#gw-representation-sentence-starter,.gw-measure-self-check,.gw-measure-block-count,[data-geometry-material-breakdown]),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(.gw-layer-explorer label,.gw-layer-explorer output,.gw-layer-explorer span,.gw-measure-view-picker>label,[data-geometry-representation-connection]>label,.gw-measure-view-progress-caption,.gw-measure-prompt,#gw-representation-connect-prompt,#gw-representation-sentence-starter,.gw-measure-self-check,.gw-measure-block-count,[data-geometry-material-breakdown]){color:#ffff00!important}.theme-contrast .gw-root .gw-measure-card :is(.gw-layer-explorer button,.gw-measure-save-connection,.gw-measure-build-card),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(.gw-layer-explorer button,.gw-measure-save-connection,.gw-measure-build-card){background:#000!important;color:#00ff00!important;border:1px solid #00ff00!important}.theme-contrast .gw-root .gw-measure-card :is([data-geometry-volume-representation],[data-geometry-prediction-result]) :is(select,textarea,input:not([type=\"checkbox\"])),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is([data-geometry-volume-representation],[data-geometry-prediction-result]) :is(select,textarea,input:not([type=\"checkbox\"])){background:#000!important;color:#ffff00!important;border-color:#00ff00!important}.theme-contrast .gw-root .gw-measure-card .gw-measure-view-progress-fill,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card .gw-measure-view-progress-fill{background:#00ff00!important}.theme-contrast .gw-root .gw-measure-card :is(button,select,textarea,input):focus-visible,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(button,select,textarea,input):focus-visible{outline-color:#00ff00!important}.theme-contrast .gw-root .gw-measure-card :is(input[type=\"range\"],input[type=\"checkbox\"]),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(input[type=\"range\"],input[type=\"checkbox\"]){accent-color:#ffff00!important}",
+      "@media(max-width:420px){#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar{box-sizing:border-box;gap:2px!important;padding:3px!important}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar button{box-sizing:border-box;flex:1 1 0!important;min-width:44px!important;min-height:44px!important;padding:4px 3px!important;font-size:11px!important}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar .gw-utility-content{display:grid;grid-template-columns:auto;justify-content:center;justify-items:center;gap:1px}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar .gw-utility-content:has(.gw-utility-count){grid-template-columns:auto auto;column-gap:2px}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar .gw-workspace-icon{grid-column:1;grid-row:1;width:14px;height:14px}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar .gw-utility-label{display:block!important;grid-column:1/-1;grid-row:2;font-size:11px;line-height:12px}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar .gw-utility-count{grid-column:2;grid-row:1;min-width:0;padding:0 2px;font-size:9px;line-height:12px}}",
+      "@media(max-width:800px){#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud{top:68px!important;bottom:auto!important;box-sizing:border-box;width:max-content;max-width:min(200px,calc(100% - 108px));max-height:calc(100% - 268px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#839c86 #173b35}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"][data-toolbar-collapsed=\"true\"]>.gw-coordinate-hud,#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"][data-fullscreen=\"true\"]>.gw-coordinate-hud{top:56px!important}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud>summary{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:44px;min-height:44px!important;margin-bottom:0!important;list-style:none}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud>summary::-webkit-details-marker{display:none}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud>summary::after{content:\"+\";font:18px/1 ui-sans-serif,system-ui,sans-serif;color:#c7d7cd}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud[open]>summary::after{content:\"−\"}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud>button{box-sizing:border-box;min-width:44px;min-height:44px;font-size:10px!important}}@media(max-width:800px) and (min-height:620px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud{max-height:calc(50% - 188px)}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"] .gw-placement-hint{top:calc(50% + 28px);left:50%;transform:translateX(-50%);max-width:min(300px,calc(100% - 36px))}}@media(max-width:800px) and (max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"] .gw-placement-hint{left:auto;right:12px;transform:none;max-width:190px}}",
       '@media(prefers-reduced-motion:reduce){.gw-root button{transition:none!important;}.gw-achievement-toast{animation:none!important;}.gw-root *{scroll-behavior:auto!important;}}'
     ].join('');
     document.head.appendChild(uiStyle);
@@ -247,7 +258,8 @@
       detail: { label: 'Detailed', maxPixelRatio: 2, shadows: true, postFx: true, ambientMotion: true }
     };
     var reason = requested === 'auto' ? (lowPower ? 'Auto selected Battery saver for this device or motion preference.' : 'Auto selected Detailed for this device.') : 'Manual graphics-quality selection.';
-    return Object.assign({ preference: requested, tier: tier, reason: reason }, profiles[tier]);
+    if (reducedMotion) reason += ' Reduced motion keeps optional scene animation still.';
+    return Object.assign({ preference: requested, tier: tier, reason: reason }, profiles[tier], { ambientMotion: profiles[tier].ambientMotion && !reducedMotion });
   }
   window.StemLab.GeometryWorldRenderProfile = resolveGeometryRenderProfile;
 
@@ -476,7 +488,7 @@
   // parent button supplies the accessible name and keyboard shortcut.
   function renderBlockSwatch(el, type) {
     var colors = {
-      stone:['#b4bec5','#909da6','#6e7e89'], grass:['#87a875','#836448','#654b37'],
+      stone:['#c0c9c3','#9fa6a4','#7d8c86'], grass:['#87a875','#836448','#654b37'],
       wood:['#d2aa76','#b58650','#906839'], diamond:['#8ae2e5','#24baca','#1291ab'],
       gold:['#ffe2a0','#efb647','#b5842c'], sand:['#f0dfb7','#dbc69d','#baa77f'],
       glass:['#e4f4f7','#b5d5df','#8baec2'], water:['#80cef0','#409cdb','#2b71b5'],
@@ -487,7 +499,7 @@
     var details=[];
     if(type==='wood') details.push(path('grain','M5 13L14 18M5 18L14 23M18 18L27 13M18 23L27 18','#65452b',0.4));
     if(type==='brick') details.push(path('mortar','M3 15L16 22L29 15M3 20L16 27L29 20M9 12L9 18M22 12L22 18M7 17L7 22M24 17L24 22','#f3d5bc',0.55,0.8));
-    if(type==='stone') details.push(path('vein','M5 17L8 15L12 18M19 24L22 20L26 21','#dce6e8',0.4));
+    if(type==='stone') [[7,16],[11,22],[20,20],[25,16],[14,7]].forEach(function(v,i){details.push(el('circle',{key:'mineral'+i,cx:v[0],cy:v[1],r:0.6,fill:i%2?'#657b71':'#e5ede5',opacity:0.5}));});
     if(type==='grass') details.push(path('turf','M4 10L16 16.5L28 10','#acc793',0.9,2));
     if(type==='sand') [[7,17],[11,23],[22,17],[25,21],[14,8]].forEach(function(v,i){details.push(el('circle',{key:'grain'+i,cx:v[0],cy:v[1],r:0.65,fill:'#927d59',opacity:0.4}));});
     if(type==='diamond') details.push(path('facets','M3 9L16 5L29 9M16 5L16 16L10 26M16 16L23 26','#e0ffff',0.55));
@@ -541,6 +553,7 @@
       undo:'M8 4L3 9l5 5M3 9h10a7 7 0 0 1 0 14',
       redo:'M16 4l5 5-5 5M21 9H11a7 7 0 0 0 0 14',
       fly:'M12 3v18M6 9l6-6 6 6M4 14l8 7 8-7',
+      match:'M16 3l5 5M14 5l5 5M4 16L14 6l4 4L8 20H4v-4ZM4 20l-1 1',
       home:'M3 11l9-8 9 8M5 9v12h5v-7h4v7h5V9',
       clear:'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',
       award:'M8 15l-2 7 6-3 6 3-2-7M19 9a7 7 0 1 1-14 0 7 7 0 0 1 14 0ZM12 5l1.2 2.4 2.6.4-1.9 1.9.4 2.6-2.3-1.2-2.3 1.2.4-2.6-1.9-1.9 2.6-.4Z'
@@ -2785,6 +2798,10 @@
         }
       }, []);
       var upd = function (key, val) {
+        // Older ruler/measurement timers must not dismiss a newer shape cue.
+        // Its own expiry and cleanup release ownership before clearing it.
+        if (key === 'actionFeedback' && val === '' && shapeActionRef && shapeActionRef.current.timer &&
+          shapeActionRef.current.feedback === shapeActionRef.current.shapeFeedback) return;
         if (typeof key === 'object') { ctx.updateMulti('geometryWorld', key); }
         else { ctx.update('geometryWorld', key, val); }
       };
@@ -3077,13 +3094,71 @@
       var selectedShape = d.selectedShape || 0; // index into BLOCK_SHAPES
       var blockRotation = d.blockRotation || 0; // 0-3 = 0°, 90°, 180°, 270° around Y axis
       var measureHistory = d.measureHistory || []; // past measurements
+      var measurementDetailsState = React.useState(false);
+      var measurementDetailsOpen = measurementDetailsState[0];
+      var setMeasurementDetailsOpen = measurementDetailsState[1];
+      // Explicit measurements append a timestamp. Connected-build polling may
+      // replace the result or change its bounds, but must keep this disclosure open.
+      var latestMeasurementStamp = measureHistory.length ? measureHistory[measureHistory.length - 1].t : null;
+      var hasMeasurement = !!measureResult;
+      React.useEffect(function() {
+        setMeasurementDetailsOpen(false);
+      }, [activeLesson, hasMeasurement, latestMeasurementStamp]);
       var completedMeasurements = completeMeasurementRecords(measureHistory);
       var predictionScaffold = determinePredictionScaffold(measureHistory);
       var latestCompleteMeasurement = completedMeasurements.length ? completedMeasurements[completedMeasurements.length - 1] : null;
       var reflectionEvidencePrompt = buildEvidenceReflectionPrompt(latestCompleteMeasurement, predictionResult, predictionRevisionResult);
       var measurementComparison = completedMeasurements.length >= 2 ? compareMeasurementRecords(completedMeasurements[completedMeasurements.length - 2], completedMeasurements[completedMeasurements.length - 1]) : null;
       var activeRetrievalCheckpoint = buildRetrievalCheckpoint(measureHistory);
-      var actionFeedback = d.actionFeedback || ''; // brief key action text
+      var actionFeedback = d.actionFeedback || ''; // brief action text
+      var shapeActionRef = React.useRef({ timer: null, feedback: '' });
+      shapeActionRef.current.feedback = actionFeedback;
+      React.useEffect(function() {
+        return function() {
+          var ownedCue = shapeActionRef.current;
+          if (ownedCue.timer) {
+            clearTimeout(ownedCue.timer); ownedCue.timer = null;
+            if (ownedCue.feedback === ownedCue.shapeFeedback) upd('actionFeedback', '');
+          }
+        };
+      }, []);
+
+      // Every input uses the live placement state, including rapid commands that
+      // arrive before React renders. Choosing a shape starts at zero degrees.
+      function setBuildShape(action, index) {
+        var liveEngine = window[engineKey];
+        var state = (liveEngine && liveEngine._placeState) || { selectedShape: selectedShape, blockRotation: blockRotation };
+        var currentShape = state.selectedShape || 0;
+        var nextShape = action === 'cycle' ? (currentShape + 1) % BLOCK_SHAPES.length : action === 'rotate' ? currentShape : index;
+        if (!BLOCK_SHAPES[nextShape] || (action === 'rotate' && BLOCK_SHAPES[nextShape].id === 'cube')) return;
+        var nextRotation = action === 'rotate' ? ((state.blockRotation || 0) + 1) % 4 : 0;
+        var feedback = BLOCK_SHAPES[nextShape].name + (BLOCK_SHAPES[nextShape].id === 'cube' ? '' : ' \u00b7 ' + (nextRotation * 90) + '\u00b0');
+        if (liveEngine) liveEngine._placeState = Object.assign({}, state, { selectedShape: nextShape, blockRotation: nextRotation });
+        if (shapeActionRef.current.timer) clearTimeout(shapeActionRef.current.timer);
+        shapeActionRef.current.shapeFeedback = feedback;
+        upd({ selectedShape: nextShape, blockRotation: nextRotation, actionFeedback: feedback });
+        shapeActionRef.current.timer = setTimeout(function() {
+          shapeActionRef.current.timer = null;
+          if (shapeActionRef.current.feedback === feedback) upd('actionFeedback', '');
+        }, 1800);
+      }
+      // Match shares the shape cue's single timer and teardown ownership.
+      function publishMatchedBlock(liveEngine, recipe, feedback) {
+        var patch={actionFeedback:feedback};
+        if(recipe){
+          liveEngine._placeState=Object.assign({},liveEngine._placeState || {},recipe);
+          Object.assign(patch,recipe);
+        }
+        var cue=shapeActionRef.current;
+        if(cue.timer)clearTimeout(cue.timer);
+        cue.shapeFeedback=feedback;cue.feedback=feedback;
+        upd(patch);
+        if(typeof announceToSR==='function')announceToSR(feedback);
+        cue.timer=setTimeout(function(){
+          cue.timer=null;
+          if(cue.feedback===feedback)upd('actionFeedback','');
+        },1800);
+      }
       var homeLang = d.homeLang || 'en';
       var npcTranslations = d.npcTranslations || {};
       var consecutiveWrong = d.consecutiveWrong || 0;
@@ -3471,12 +3546,20 @@
             if (!key || !engine._procTexCache) return;
             var next = profile.tier === 'saver' ? null : engine._procTexCache[key + 'SurfaceNormal'];
             if (material.normalMap !== next) { material.normalMap = next; material.needsUpdate = true; }
+            var roughness = profile.tier === 'saver' ? null : engine._procTexCache[key + 'SurfaceRoughness'];
+            if (material.roughnessMap !== roughness) { material.roughnessMap = roughness; material.needsUpdate = true; }
           }
           if (previousTier !== profile.tier) Object.keys(engine._matCache || {}).forEach(function(key){updateSurfaceDetail(engine._matCache[key]);});
-          if (previousTier !== profile.tier) Object.keys(engine.blocks || {}).forEach(function(key){updateSurfaceDetail(engine.blocks[key].material);});
+          if (previousTier !== profile.tier) Object.keys(engine.blocks || {}).forEach(function(key){
+            var mesh=engine.blocks[key];updateSurfaceDetail(mesh.material);
+            if(mesh.userData && mesh.userData._measurementLayer==='ground') (mesh.children || []).forEach(function(child){
+              if(child.isLineSegments && child.material && child.material.userData.gwSharedBlockEdge) child.visible=profile.tier!=='saver';
+            });
+          });
           if (engine.composer && container.clientWidth && container.clientHeight) {
             try { if(engine.composer.setPixelRatio)engine.composer.setPixelRatio(engine.renderer.getPixelRatio()); engine.composer.setSize(container.clientWidth, container.clientHeight); } catch (e) {}
           }
+          if (previousTier !== profile.tier && engine.refreshLandscape && engine._currentLesson) engine.refreshLandscape(engine._currentLesson.ground);
           return profile;
         };
         engine.applyRenderQuality(d.renderQuality || 'auto');
@@ -3603,34 +3686,29 @@
           engine.scene.add(horizon);
           engine._horizon = horizon;
         })();
-        // A quiet, faceted valley around the lesson. These four decorative meshes
-        // never join engine.blocks, collision geometry, picking or printable work.
+        // Layered alpine meadow: decorative only, merged and budgeted by quality.
         (function initLandscape() {
           var landscapeKey = '';
-          function number(v, fallback) { var n = Number(v); return isFinite(n) ? n : fallback; }
-          function disposeLandscape() {
-            if (!engine._landscape) return;
-            var group = engine._landscape;
-            if (group.parent) group.parent.remove(group);
-            group.children.forEach(function(mesh) { mesh.geometry.dispose(); mesh.material.dispose(); });
-            engine._landscape = null; landscapeKey = '';
+          function finite(value, fallback) { var n = Number(value); return isFinite(n) ? n : fallback; }
+          function smooth(value) { var v = Math.max(0, Math.min(1, value)); return v * v * (3 - 2 * v); }
+          function color(hex) { return geometryWorldSrgbColor(THREE, hex); }
+          function buffer() { return { positions: [], colors: [] }; }
+          function triangle(out, a, b, c, tint) {
+            var points = [a, b, c];
+            for (var i = 0; i < 3; i++) {
+              var p = points[i];
+              out.positions.push(p[0], p[1], p[2]);
+              out.colors.push(p.length > 3 ? p[3] : tint.r, p.length > 3 ? p[4] : tint.g, p.length > 3 ? p[5] : tint.b);
+            }
           }
-          function makeBuffer() { return { positions: [], colors: [] }; }
-          function triangle(buffer, a, b, c, color) {
-            [a, b, c].forEach(function(v) {
-              buffer.positions.push(v[0], v[1], v[2]);
-              buffer.colors.push(v.length > 3 ? v[3] : color.r, v.length > 3 ? v[4] : color.g, v.length > 3 ? v[5] : color.b);
-            });
-          }
-          function meshFrom(buffer, name, terrain) {
+          function meshFrom(out, name, terrain, doubleSide) {
             var geometry = new THREE.BufferGeometry();
-            geometry.setAttribute('position', new THREE.Float32BufferAttribute(buffer.positions, 3));
-            geometry.setAttribute('color', new THREE.Float32BufferAttribute(buffer.colors, 3));
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(out.positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(out.colors, 3));
             geometry.computeVertexNormals();
             if (terrain) {
-              // Join the lighting across contours. Keep only a trace of facet
-              // definition; the terrain's silhouette carries its low-poly style.
-              var sums = {}, p = geometry.attributes.position.array, n = geometry.attributes.normal.array;
+              // Preserve a trace of the facets without making a patchwork of the slopes.
+              var p = geometry.attributes.position.array, n = geometry.attributes.normal.array, sums = {};
               function keyAt(k) { return Math.round(p[k] * 10000) + ',' + Math.round(p[k + 1] * 10000) + ',' + Math.round(p[k + 2] * 10000); }
               for (var k = 0; k < p.length; k += 3) {
                 var key = keyAt(k), sum = sums[key] || (sums[key] = [0, 0, 0]);
@@ -3638,49 +3716,74 @@
               }
               for (var j = 0; j < p.length; j += 3) {
                 var avg = sums[keyAt(j)], length = Math.hypot(avg[0], avg[1], avg[2]) || 1;
-                var nx = avg[0] / length * 0.96 + n[j] * 0.04;
-                var ny = avg[1] / length * 0.96 + n[j + 1] * 0.04;
-                var nz = avg[2] / length * 0.96 + n[j + 2] * 0.04;
+                var nx = avg[0] / length * 0.97 + n[j] * 0.03;
+                var ny = avg[1] / length * 0.97 + n[j + 1] * 0.03;
+                var nz = avg[2] / length * 0.97 + n[j + 2] * 0.03;
                 var norm = Math.hypot(nx, ny, nz) || 1;
                 n[j] = nx / norm; n[j + 1] = ny / norm; n[j + 2] = nz / norm;
               }
             }
             geometry.computeBoundingSphere();
-            var material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, flatShading: !terrain });
+            var material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, flatShading: !terrain, side: doubleSide ? THREE.DoubleSide : THREE.FrontSide });
             var mesh = new THREE.Mesh(geometry, material);
             mesh.name = name; mesh.userData.gwLandscape = true;
-            mesh.raycast = function() {};
             mesh.castShadow = false; mesh.receiveShadow = false;
+            mesh.raycast = function() {};
             return mesh;
           }
-          function smooth(v) { v = Math.min(1, Math.max(0, v)); return v * v * (3 - 2 * v); }
-          function noise(x, z) {
-            return 0.5 + (Math.sin(x * 0.047 + z * 0.031 + 0.4) + Math.sin(x * 0.026 - z * 0.059 + 1.1) * 0.53
-              + Math.sin(x * 0.101 + z * 0.077 + 2.8) * 0.24) / 3.54;
+          function disposeLandscape() {
+            var group = engine._landscape;
+            if (group) {
+              var studio = engine._showcase && engine._showcase.studio;
+              if (studio) studio.hidden = studio.hidden.filter(function(entry) { return entry[0] !== group; });
+              if (group.parent) group.parent.remove(group);
+              group.children.forEach(function(mesh) { mesh.geometry.dispose(); mesh.material.dispose(); });
+            }
+            engine._landscape = null; landscapeKey = '';
           }
-          function cone(buffer, x, y, z, radius, height, color, twist) {
-            for (var k = 0; k < 7; k++) {
-              var a = twist + k * Math.PI * 2 / 7, b = twist + (k + 1) * Math.PI * 2 / 7;
-              var va = [x + Math.cos(a) * radius, y, z + Math.sin(a) * radius];
-              var vb = [x + Math.cos(b) * radius, y, z + Math.sin(b) * radius];
-              triangle(buffer, va, [x, y + height, z], vb, color);
-              triangle(buffer, [x, y, z], va, vb, color);
+          function noise(x, z) {
+            return 0.5 + (Math.sin(x * 0.043 + z * 0.029 + 0.4) + Math.sin(x * 0.024 - z * 0.057 + 1.1) * 0.53 + Math.sin(x * 0.107 + z * 0.081 + 2.8) * 0.24) / 3.54;
+          }
+          function peak(t, center, width) {
+            var d = Math.atan2(Math.sin(t - center), Math.cos(t - center));
+            return Math.exp(-Math.pow(Math.abs(d) / width, 1.5));
+          }
+          function crown(out, x, y, z, radius, height, tint, twist, seed) {
+            for (var k = 0; k < 6; k++) {
+              var a = twist + k * Math.PI / 3, b = twist + (k + 1) * Math.PI / 3;
+              var ra = radius * (1 + Math.sin(k * 2.7 + seed) * 0.07), rb = radius * (1 + Math.sin((k + 1) % 6 * 2.7 + seed) * 0.07);
+              var va = [x + Math.cos(a) * ra, y + Math.sin(k * 1.7 + seed) * height * 0.025, z + Math.sin(a) * ra];
+              var vb = [x + Math.cos(b) * rb, y + Math.sin((k + 1) % 6 * 1.7 + seed) * height * 0.025, z + Math.sin(b) * rb];
+              triangle(out, va, [x + Math.sin(seed) * height * 0.035, y + height, z], vb, tint);
+              triangle(out, [x, y, z], va, vb, tint);
+            }
+          }
+          function trunk(out, x, y, z, radius, height, tint, twist) {
+            for (var k = 0; k < 5; k++) {
+              var a = twist + k * Math.PI * 2 / 5, b = twist + (k + 1) * Math.PI * 2 / 5;
+              var p = [x + Math.cos(a) * radius, y, z + Math.sin(a) * radius], q = [x + Math.cos(b) * radius, y, z + Math.sin(b) * radius];
+              var r = [x + Math.cos(a) * radius * 0.55, y + height, z + Math.sin(a) * radius * 0.55], s = [x + Math.cos(b) * radius * 0.55, y + height, z + Math.sin(b) * radius * 0.55];
+              triangle(out, p, r, q, tint); triangle(out, q, r, s, tint);
             }
           }
           engine.disposeLandscape = disposeLandscape;
           engine.refreshLandscape = function(ground) {
             if (engine._destroyed || !engine.scene) return;
             ground = ground || {};
-            var x0 = number(ground.xMin, -8), x1 = number(ground.xMax, 24), z0 = number(ground.zMin, -8), z1 = number(ground.zMax, 24);
-            if (x0 > x1) { var swapX = x0; x0 = x1; x1 = swapX; }
-            if (z0 > z1) { var swapZ = z0; z0 = z1; z1 = swapZ; }
-            var baseY = number(ground.y, 0) - 0.12, nextKey = [x0, x1, z0, z1, baseY].join(':');
+            var x0 = finite(ground.xMin, -8), x1 = finite(ground.xMax, 24), z0 = finite(ground.zMin, -8), z1 = finite(ground.zMax, 24);
+            if (x0 > x1) { var sx = x0; x0 = x1; x1 = sx; }
+            if (z0 > z1) { var sz = z0; z0 = z1; z1 = sz; }
+            var baseY = finite(ground.y, 0) - 0.12, saver = engine._renderProfile && engine._renderProfile.tier === 'saver';
+            var nextKey = [x0, x1, z0, z1, baseY, saver ? 'saver' : 'detail'].join(':');
             if (landscapeKey === nextKey && engine._landscape) return;
+            var previousVisibility = engine._landscape ? engine._landscape.visible : true;
+            var studio = engine._showcase && engine._showcase.studio;
+            if (studio) studio.hidden.forEach(function(entry) { if (entry[0] === engine._landscape) previousVisibility = entry[1]; });
             disposeLandscape(); landscapeKey = nextKey;
             var centerX = (x0 + x1) / 2, centerZ = (z0 + z1) / 2;
-            var halfX = (x1 - x0) / 2 + 0.5, halfZ = (z1 - z0) / 2 + 0.5, outline = [], segments = 12;
-            // The rounded rectangular perimeter leaves all lesson footprints
-            // clear, even when a generated lesson is long, narrow, or offset.
+            var halfX = (x1 - x0) / 2 + 0.5, halfZ = (z1 - z0) / 2 + 0.5, outline = [], segments = saver ? 8 : 12;
+            // Offset the full lesson rectangle, not a fixed-radius circle. The first
+            // contour is at 32 units: even its corner chords stay over 31 units clear.
             for (var side = 0; side < 4; side++) {
               for (var s = 0; s < segments; s++) {
                 var f = s / segments;
@@ -3691,62 +3794,109 @@
               }
               for (var arc = 0; arc < segments; arc++) {
                 var angle = side * Math.PI / 2 + arc / segments * Math.PI / 2;
-                outline.push({ x: side === 0 || side === 3 ? halfX : -halfX, z: side < 2 ? halfZ : -halfZ,
-                  nx: Math.cos(angle), nz: Math.sin(angle) });
+                outline.push({ x: side === 0 || side === 3 ? halfX : -halfX, z: side < 2 ? halfZ : -halfZ, nx: Math.cos(angle), nz: Math.sin(angle) });
               }
             }
-            var nearBands = [30, 36, 43, 51, 60, 70, 81, 92, 104, 117], farBands = [67, 76, 87, 99, 112, 126, 142, 159];
-            var nearLow = engine._horizon && engine._horizon.material && engine._horizon.material.color ? engine._horizon.material.color.clone() : geometryWorldSrgbColor(THREE, 0x496d46);
-            var nearHigh = geometryWorldSrgbColor(THREE, 0x6a8058);
-            var farLow = geometryWorldSrgbColor(THREE, 0x778b85), farHigh = geometryWorldSrgbColor(THREE, 0x899991);
-            var moss = geometryWorldSrgbColor(THREE, 0x727f52);
-            function point(i, ring, far) {
-              var d = outline[i], bands = far ? farBands : nearBands, t = i / outline.length * Math.PI * 2;
-              // Contours drift independently, so ridges do not read as concentric
-              // shelves. The two boundary contours remain fixed and exactly low.
+            var low = engine._horizon && engine._horizon.material && engine._horizon.material.color ? engine._horizon.material.color.clone() : color(0x496d46);
+            var moss = color(0x738255), ridgeGreen = color(0x607c6d), ridgeStone = color(0x89988d), farBlue = color(0x869da3), farCrest = color(0xacb8b9);
+            var layers = [
+              { name: 'gw-rolling-hills', bands: [32, 37, 44, 52, 61, 71, 82, 94, 107], kind: 0 },
+              { name: 'gw-mountain-ridges', bands: [61, 70, 80, 91, 103, 117, 132], kind: 1 },
+              { name: 'gw-distant-ridges', bands: [82, 91, 101, 113, 126, 142, 158], kind: 2 }
+            ];
+            function point(i, ring, layer) {
+              var d = outline[i], bands = layer.bands, kind = layer.kind, t = i / outline.length * Math.PI * 2;
               var interior = ring > 0 && ring < bands.length - 1;
-              var distance = bands[ring] + (interior ? Math.sin(t * 5 + ring * 1.93) * 1.6 + Math.sin(t * 9 - ring * 0.71) * 0.8 : 0);
-              var lx = d.x + d.nx * distance, lz = d.z + d.nz * distance;
-              var n = noise(lx + (far ? 28 : 0), lz - (far ? 15 : 0));
-              var crest = (far ? 107 : 57) + Math.sin(t * 3 + (far ? 1.9 : 0.3)) * (far ? 13 : 9) + Math.sin(t * 7 + 1.2) * 4;
-              var primary = Math.exp(-Math.pow((distance - crest) / (far ? 24 : 20), 2));
-              var shoulder = Math.exp(-Math.pow((distance - crest - (far ? 23 : 25)) / 17, 2));
-              var edgeFade = smooth((distance - bands[0]) / 12) * smooth((bands[bands.length - 1] - distance) / 16);
-              var y = (primary * (far ? 10 + n * 18 : 4 + n * 8) + shoulder * (far ? 3.5 : 2.8)) * edgeFade;
-              var heightTint = far ? Math.min(1, y / 30) : smooth((y - 0.15) / 8);
-              var tint = (far ? farLow : nearLow).clone().lerp(far ? farHigh : nearHigh, heightTint);
-              if (!far) tint.lerp(moss, smooth(noise(lx - 45, lz + 19) - 0.35) * 0.22 * heightTint);
+              var distance = bands[ring] + (interior ? Math.sin(t * 5 + ring * 1.93 + kind) * 1.5 + Math.sin(t * 9 - ring * 0.71) * 0.7 : 0);
+              var lx = d.x + d.nx * distance, lz = d.z + d.nz * distance, n = noise(lx + kind * 29, lz - kind * 17);
+              var crest, elevation, width;
+              if (!kind) {
+                crest = 57 + Math.sin(t * 3 + 0.3) * 8 + Math.sin(t * 7 + 1.2) * 3;
+                elevation = 2.1 + peak(t, 0.55, 0.5) * 7 + peak(t, 2.65, 0.55) * 8 + peak(t, 4.75, 0.65) * 6 + n * 1.4;
+                width = 18;
+              } else if (kind === 1) {
+                crest = 91 + Math.sin(t * 3 + 2.1) * 9 + Math.sin(t * 7) * 3;
+                elevation = 7 + peak(t, 0.16, 0.35) * 23 + peak(t, 1.85, 0.39) * 28 + peak(t, 3.55, 0.3) * 22 + peak(t, 5.1, 0.38) * 31 + n * 3;
+                width = 19;
+              } else {
+                crest = 113 + Math.sin(t * 3 + 0.7) * 7 + Math.sin(t * 5 + 2) * 4;
+                elevation = 20 + peak(t, 0.9, 0.32) * 29 + peak(t, 2.35, 0.27) * 25 + peak(t, 4.15, 0.33) * 32 + peak(t, 5.65, 0.28) * 23;
+                width = 24;
+              }
+              var fade = smooth((distance - bands[0]) / 11) * smooth((bands[bands.length - 1] - distance) / 14);
+              var profile = Math.exp(-Math.pow(Math.abs(distance - crest) / width, kind ? 1.55 : 2));
+              var y = elevation * profile * fade;
+              var tint;
+              if (!kind) tint = low.clone().lerp(moss, smooth((y - 0.12) / 10) * (0.74 + n * 0.12));
+              else if (kind === 1) tint = low.clone().lerp(ridgeGreen, smooth(y / 5)).lerp(ridgeStone, smooth((y - 14) / 20) * (0.72 + n * 0.12));
+              else tint = low.clone().lerp(farBlue, smooth(y / 6)).lerp(farCrest, smooth((y - 26) / 25) * 0.56);
               return [centerX + lx, baseY + y, centerZ + lz, tint.r, tint.g, tint.b];
             }
             var group = new THREE.Group(); group.name = 'gw-landscape'; group.userData.gwLandscape = true;
-            var nearGrid = null;
-            [true, false].forEach(function(far) {
-              var terrain = makeBuffer(), bands = far ? farBands : nearBands;
-              var grid = bands.map(function(_, ring) { return outline.map(function(_, i) { return point(i, ring, far); }); });
-              if (!far) nearGrid = grid;
-              for (var r = 0; r < bands.length - 1; r++) {
+            var nearGrid;
+            layers.forEach(function(layer) {
+              var terrain = buffer(), grid = layer.bands.map(function(_, ring) { return outline.map(function(_, i) { return point(i, ring, layer); }); });
+              if (!layer.kind) nearGrid = grid;
+              for (var r = 0; r < grid.length - 1; r++) {
                 for (var i = 0; i < outline.length; i++) {
                   var next = (i + 1) % outline.length, a = grid[r][i], b = grid[r][next], c = grid[r + 1][i], d = grid[r + 1][next];
                   if ((r + i) % 2) { triangle(terrain, a, b, d); triangle(terrain, a, d, c); }
                   else { triangle(terrain, a, b, c); triangle(terrain, b, d, c); }
                 }
               }
-              group.add(meshFrom(terrain, far ? 'gw-distant-ridges' : 'gw-rolling-hills', true));
+              group.add(meshFrom(terrain, layer.name, true, false));
             });
-            var trunks = makeBuffer(), foliage = makeBuffer(), trunkColor = geometryWorldSrgbColor(THREE, 0x685642);
-            var leaves = [0x426751, 0x50715a, 0x59765e].map(function(hex) { return geometryWorldSrgbColor(THREE, hex); });
-            // Unequal groups, varied depths and layered crowns suggest a small
-            // grove instead of a repeating line of identical triangle trees.
-            [6, 7, 9, 10, 29, 31, 33, 54, 56, 57, 79, 81, 83, 85].forEach(function(i, tree) {
-              var p = nearGrid[tree % 3 === 0 ? 3 : 4][i], height = 2.7 + ((i * 17) % 13) * 0.14;
-              var radius = height * (0.25 + (tree % 3) * 0.015), twist = i * 0.73, leaf = leaves[tree % 3];
-              cone(trunks, p[0], p[1], p[2], 0.13, height * 0.83, trunkColor, twist);
-              cone(foliage, p[0], p[1] + height * 0.16, p[2], radius, height * 0.55, leaf, twist);
-              cone(foliage, p[0], p[1] + height * 0.40, p[2], radius * 0.75, height * 0.48, leaf, twist + 0.18);
-              cone(foliage, p[0], p[1] + height * 0.64, p[2], radius * 0.47, height * 0.39, leaves[(tree + 1) % 3], twist - 0.12);
+            var trunks = buffer(), foliage = buffer(), accents = buffer();
+            var bark = color(0x685744), leaves = [color(0x365d4b), color(0x456b52), color(0x52765c)], tips = color(0x6c8768);
+            var groves = [{ u: 0.04, count: 4 }, { u: 0.22, count: 5 }, { u: 0.37, count: 3 }, { u: 0.58, count: 5 }, { u: 0.73, count: 4 }, { u: 0.90, count: 5 }], treeCount = 0;
+            groves.forEach(function(grove, cluster) {
+              var count = saver ? 2 : grove.count;
+              for (var t = 0; t < count; t++) {
+                var seed = cluster * 13 + t * 7, u = grove.u + (t - (count - 1) / 2) * 0.012;
+                var index = Math.floor((u + 1) % 1 * outline.length), ring = 2 + (t + cluster) % 3, p = nearGrid[ring][index];
+                var h = 4.4 + (Math.sin(seed * 1.13 + 0.6) * 0.5 + 0.5) * 3.7, radius = h * (0.24 + (t % 3) * 0.02), twist = seed * 0.73;
+                var leaf = leaves[(cluster + t) % 3];
+                trunk(trunks, p[0], p[1] - 0.25, p[2], h * 0.035, h * 0.77, bark, twist);
+                crown(foliage, p[0], p[1] + h * 0.14, p[2], radius, h * 0.55, leaf, twist, seed);
+                crown(foliage, p[0], p[1] + h * 0.40, p[2], radius * 0.74, h * 0.47, leaf.clone().lerp(tips, 0.09), twist + 0.24, seed + 2);
+                crown(foliage, p[0], p[1] + h * 0.65, p[2], radius * 0.45, h * 0.39, leaf.clone().lerp(tips, 0.2), twist - 0.13, seed + 4);
+                treeCount++;
+              }
             });
-            group.add(meshFrom(trunks, 'gw-distant-tree-trunks', false));
-            group.add(meshFrom(foliage, 'gw-distant-tree-canopies', false));
+            var rockLow = color(0x677060), rockTop = color(0x929586), rockCount = saver ? 6 : 12;
+            for (var rock = 0; rock < rockCount; rock++) {
+              var ri = Math.floor(((0.115 + rock * 0.173) % 1) * outline.length), rp = nearGrid[2 + rock % 2][ri];
+              var size = 0.85 + (rock * 7 % 9) * 0.15, twist = rock * 0.71, bottom = [], shoulder = [];
+              for (var corner = 0; corner < 6; corner++) {
+                var a = twist + corner * Math.PI / 3, rad = size * (1 + Math.sin(corner * 2.1 + rock) * 0.18);
+                bottom.push([rp[0] + Math.cos(a) * rad, rp[1] - size * 0.35, rp[2] + Math.sin(a) * rad * 0.72]);
+                shoulder.push([rp[0] + Math.cos(a) * rad * 0.78, rp[1] + size * (0.36 + Math.sin(corner + rock) * 0.1), rp[2] + Math.sin(a) * rad * 0.62]);
+              }
+              var top = [rp[0] + size * 0.15, rp[1] + size * 0.72, rp[2] - size * 0.1];
+              for (var edge = 0; edge < 6; edge++) {
+                var next = (edge + 1) % 6;
+                triangle(accents, bottom[edge], shoulder[edge], bottom[next], rockLow);
+                triangle(accents, bottom[next], shoulder[edge], shoulder[next], rockLow);
+                triangle(accents, shoulder[edge], top, shoulder[next], rockTop);
+              }
+            }
+            var grassCount = saver ? 12 : 36, grassLow = color(0x576e46), grassTip = color(0x8b9560);
+            for (var tuft = 0; tuft < grassCount; tuft++) {
+              var gi = Math.floor(((0.067 + tuft * 0.137) % 1) * outline.length), gp = nearGrid[1 + tuft % 3][gi];
+              for (var blade = 0; blade < 3; blade++) {
+                var a = tuft * 1.7 + blade * Math.PI / 3, h = 0.7 + (tuft * 3 + blade * 5) % 7 * 0.12, w = 0.11 + blade * 0.025;
+                var dx = Math.cos(a), dz = Math.sin(a);
+                var p = [gp[0] - dx * w, gp[1] - 0.1, gp[2] - dz * w], q = [gp[0] + dx * w, gp[1] - 0.1, gp[2] + dz * w];
+                var bend = [gp[0] + dx * h * 0.13, gp[1] + h * 0.54, gp[2] + dz * h * 0.13], tip = [gp[0] + dx * h * 0.38, gp[1] + h, gp[2] + dz * h * 0.38];
+                triangle(accents, p, bend, q, grassLow); triangle(accents, q, bend, tip, grassTip);
+              }
+            }
+            group.add(meshFrom(trunks, 'gw-distant-tree-trunks', false, false));
+            group.add(meshFrom(foliage, 'gw-distant-tree-canopies', false, false));
+            group.add(meshFrom(accents, 'gw-natural-accents', false, true));
+            group.userData.gwLandscapeDetail = { tier: saver ? 'saver' : 'detail', trees: treeCount, rocks: rockCount, grassTufts: grassCount };
+            group.visible = previousVisibility;
+            if (studio) { studio.hidden.push([group, previousVisibility]); group.visible = false; }
             engine._landscape = group; engine.scene.add(group);
           };
         })();
@@ -4059,31 +4209,38 @@
           return function() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
         }
         function makeStoneTexture() {
-          var random = surfaceRandom(341);
           if (_procTexCache.stone) return _procTexCache.stone;
-          var c = document.createElement('canvas'); c.width = 128; c.height = 128;
-          var ctx = c.getContext('2d'); ctx.scale(2, 2);
-          ctx.fillStyle = '#909da6'; ctx.fillRect(0, 0, 64, 64);
-          // Mottled patches, then a few fracture lines: reads as rock, not plastic.
-          for (var i = 0; i < 26; i++) {
-            var px = random() * 64, py = random() * 64, pr = 4 + random() * 9;
-            var pg = ctx.createRadialGradient(px, py, 0, px, py, pr);
-            var dark = random() > 0.5;
-            pg.addColorStop(0, dark ? 'rgba(55,67,80,0.18)' : 'rgba(221,226,231,0.16)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = pg; ctx.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+          var random = surfaceRandom(341), size = 256;
+          var c = document.createElement('canvas'); c.width = c.height = size;
+          var ctx = c.getContext('2d'), image = ctx.createImageData(size, size), pixels = image.data;
+          // A honed mineral surface: restrained broad variation with finer grains.
+          // Periodic fields tile on every face without painted border seams, and
+          // keep their character when mipmaps simplify the texture at a distance.
+          var fields = [4, 16, 64].map(function(count) {
+            var values = new Float32Array(count * count);
+            for (var i = 0; i < values.length; i++) values[i] = random() * 2 - 1;
+            return { count:count, values:values };
+          });
+          function mineral(field, x, y) {
+            var count = field.count, u = x * count / size, v = y * count / size;
+            var ix = Math.floor(u), iy = Math.floor(v), tx = u - ix, ty = v - iy;
+            tx = tx * tx * (3 - 2 * tx); ty = ty * ty * (3 - 2 * ty);
+            var a = field.values[iy * count + ix], b = field.values[iy * count + (ix + 1) % count];
+            var d = field.values[((iy + 1) % count) * count + ix], e = field.values[((iy + 1) % count) * count + (ix + 1) % count];
+            return (a + (b - a) * tx) * (1 - ty) + (d + (e - d) * tx) * ty;
           }
-          ctx.strokeStyle = 'rgba(50,54,60,0.28)'; ctx.lineWidth = 1;
-          for (var j = 0; j < 5; j++) {
-            var sx = random() * 64, sy = random() * 64;
-            ctx.beginPath(); ctx.moveTo(sx, sy);
-            ctx.lineTo(sx + (random() - 0.5) * 22, sy + (random() - 0.5) * 22);
-            ctx.lineTo(sx + (random() - 0.5) * 30, sy + (random() - 0.5) * 30);
-            ctx.stroke();
+          for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+            var broad = mineral(fields[0], x, y), grain = mineral(fields[1], x, y), fine = mineral(fields[2], x, y);
+            var fleck = random(), variation = broad * 3 + grain * 4 + fine * 2 + (random() - 0.5) * 3;
+            // Sparse pale quartz and darker mineral pinpoints, never large stains.
+            variation += fleck > 0.987 ? 11 : fleck < 0.013 ? -9 : 0;
+            var offset = (y * size + x) * 4;
+            pixels[offset] = Math.round(159 + variation + broad);
+            pixels[offset + 1] = Math.round(166 + variation);
+            pixels[offset + 2] = Math.round(164 + variation - broad);
+            pixels[offset + 3] = 255;
           }
-          for (var n = 0; n < 140; n++) {
-            ctx.fillStyle = random() > 0.5 ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.06)';
-            ctx.fillRect(random() * 64, random() * 64, 1 + random(), 1 + random());
-          }
+          ctx.putImageData(image, 0, 0);
           var tex = new THREE.CanvasTexture(c);
           tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
           finishBlockTexture(tex);
@@ -4203,65 +4360,78 @@
           _procTexCache.torchGlow = tex;
           return tex;
         }
+
         function makeBrickTexture() {
-          var random = surfaceRandom(1237);
           if (_procTexCache.brick) return _procTexCache.brick;
-          var c = document.createElement('canvas'); c.width = 128; c.height = 128;
-          var ctx = c.getContext('2d'); ctx.scale(2, 2);
-          ctx.fillStyle = '#b86950'; ctx.fillRect(0, 0, 64, 64);
-          ctx.strokeStyle = 'rgba(76,63,54,0.72)'; ctx.lineWidth = 2;
-          // Horizontal mortar lines
-          for (var r = 0; r < 4; r++) {
-            var ry = r * 16;
-            ctx.strokeRect(0, ry, 64, 16);
-            // Vertical mortar — offset every other row
-            var offset = (r % 2 === 0) ? 0 : 16;
-            for (var bx = offset; bx < 64; bx += 32) {
-              ctx.beginPath(); ctx.moveTo(bx, ry); ctx.lineTo(bx, ry + 16); ctx.stroke();
+          var random = surfaceRandom(1237);
+          var c = document.createElement('canvas'); c.width = c.height = 256;
+          var ctx = c.getContext('2d'); ctx.scale(4, 4);
+          // Fine warm mortar separates individually fired clay faces. The slim
+          // raised lip belongs to the painted material, never the printable mesh.
+          ctx.fillStyle = '#867d6b'; ctx.fillRect(0, 0, 64, 64);
+          for (var row = 0; row < 4; row++) {
+            for (var brick = -1; brick < 3; brick++) {
+              var x = brick * 32 + (row % 2 ? 16 : 0), y = row * 16;
+              var warmth = random(), light = 46 + random() * 8;
+              ctx.fillStyle = 'hsl(' + (14 + warmth * 5) + ', ' + (39 + warmth * 8) + '%, ' + light + '%)';
+              ctx.fillRect(x + 0.65, y + 0.65, 30.7, 14.7);
+              var wash = ctx.createLinearGradient(x, y, x + 12, y + 16);
+              wash.addColorStop(0, 'rgba(255,224,181,0.13)');
+              wash.addColorStop(0.42, 'rgba(255,224,181,0)');
+              wash.addColorStop(1, 'rgba(68,38,27,0.13)');
+              ctx.fillStyle = wash; ctx.fillRect(x + 0.65, y + 0.65, 30.7, 14.7);
+              ctx.fillStyle = 'rgba(249,211,171,0.28)'; ctx.fillRect(x + 1, y + 1, 30, 0.5);
+              ctx.fillStyle = 'rgba(64,43,31,0.19)'; ctx.fillRect(x + 1, y + 14.75, 30, 0.55);
+              for (var pore = 0; pore < 38; pore++) {
+                ctx.fillStyle = random() > 0.55 ? 'rgba(66,36,24,0.12)' : 'rgba(255,226,184,0.12)';
+                ctx.fillRect(x + 1.2 + random() * 29, y + 1.5 + random() * 12.8, 0.25 + random() * 0.65, 0.2 + random() * 0.45);
+              }
             }
           }
-          // Noise for roughness
-          for (var n = 0; n < 80; n++) {
-            ctx.fillStyle = random() > 0.5 ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.04)';
-            ctx.fillRect(random() * 64, random() * 64, 2, 2);
-          }
-          var tex = new THREE.CanvasTexture(c);
-          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-          finishBlockTexture(tex);
-          _procTexCache.brick = tex;
-          return tex;
+          var tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex); _procTexCache.brick = tex; return tex;
         }
 
+
         function makeWoodTexture() {
-          var random = surfaceRandom(1879);
           if (_procTexCache.wood) return _procTexCache.wood;
-          var c = document.createElement('canvas'); c.width = 128; c.height = 128;
-          var ctx = c.getContext('2d'); ctx.scale(2, 2);
-          // Base wood color
-          ctx.fillStyle = '#b58650'; ctx.fillRect(0, 0, 64, 64);
-          // Wood grain lines (horizontal, slightly curved)
-          ctx.strokeStyle = 'rgba(90,50,30,0.20)'; ctx.lineWidth = 0.65;
-          for (var g = 0; g < 12; g++) {
-            var gy = g * 5.5 + random() * 2;
-            ctx.beginPath(); ctx.moveTo(0, gy);
-            ctx.bezierCurveTo(16, gy + random() * 3 - 1.5, 48, gy + random() * 3 - 1.5, 64, gy + random() * 2 - 1);
+          var random = surfaceRandom(1879);
+          var c = document.createElement('canvas'); c.width = c.height = 256;
+          var ctx = c.getContext('2d'); ctx.scale(4, 4);
+          ctx.fillStyle = '#b88d59'; ctx.fillRect(0, 0, 64, 64);
+          // Broad growth bands remain visible at a distance; finer fibres resolve
+          // as the camera approaches. Periodic paths join at the texture edge.
+          for (var band = -2; band < 18; band++) {
+            var base = band * 4.6, bend = 0.6 + random() * 1.5, phase = random() * Math.PI * 2;
+            ctx.strokeStyle = band % 3 === 0 ? 'rgba(90,52,27,0.13)' : 'rgba(236,194,132,0.12)';
+            ctx.lineWidth = 1.1 + random() * 1.4; ctx.beginPath();
+            for (var x = 0; x <= 64; x += 2) {
+              var y = base + Math.sin(x / 64 * Math.PI * 2 + phase) * bend;
+              if (!x) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
             ctx.stroke();
           }
-          // A small, quiet knot avoids a repeating dark stamp on large builds.
-          if (random() > 0.5) {
-            ctx.fillStyle = 'rgba(70,40,20,0.18)';
-            ctx.beginPath(); ctx.ellipse(20 + random() * 24, 20 + random() * 24, 1.6, 3, random(), 0, Math.PI * 2); ctx.fill();
+          for (var grain = -3; grain < 70; grain++) {
+            var gy = grain * 1.02, phase2 = random() * Math.PI * 2;
+            ctx.strokeStyle = grain % 4 === 0 ? 'rgba(255,215,155,0.20)' : 'rgba(94,54,28,0.16)';
+            ctx.lineWidth = 0.13 + random() * 0.25; ctx.beginPath();
+            for (var xx = 0; xx <= 64; xx += 2) {
+              var yy = gy + Math.sin(xx / 64 * Math.PI * 2 + phase2) * 0.8 + Math.sin(xx / 64 * Math.PI * 4) * 0.25;
+              if (!xx) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+            }
+            ctx.stroke();
           }
-          // Subtle noise
-          for (var n = 0; n < 60; n++) {
-            ctx.fillStyle = random() > 0.5 ? 'rgba(0,0,0,0.04)' : 'rgba(255,200,150,0.04)';
-            ctx.fillRect(random() * 64, random() * 64, 2, 2);
+          // A quiet spindle knot with growth rings reads as timber, not a stamp.
+          for (var ring = 4; ring > 0; ring--) {
+            ctx.strokeStyle = 'rgba(100,60,31,' + (0.045 + (4 - ring) * 0.014) + ')'; ctx.lineWidth = 0.3;
+            ctx.beginPath(); ctx.ellipse(42, 27, ring * 1.8, ring * 0.48, 0, 0, Math.PI * 2); ctx.stroke();
           }
-          var tex = new THREE.CanvasTexture(c);
-          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-          finishBlockTexture(tex);
-          _procTexCache.wood = tex;
-          return tex;
+          for (var n = 0; n < 220; n++) {
+            ctx.fillStyle = random() > 0.5 ? 'rgba(60,38,22,0.055)' : 'rgba(255,220,160,0.06)';
+            ctx.fillRect(random() * 64, random() * 64, 0.3 + random() * 1.4, 0.15 + random() * 0.3);
+          }
+          var tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex); _procTexCache.wood = tex; return tex;
         }
 
         function makeSandTexture() {
@@ -4324,6 +4494,25 @@
           return result;
         }
 
+        // Roughness is linear data, shared by every block of that material.
+        // Slight grain variation catches the sun without adding any geometry.
+        function makeSurfaceRoughnessTexture(kind, texture) {
+          var key = kind + 'SurfaceRoughness';
+          if (_procTexCache[key]) return _procTexCache[key];
+          var size = 128, canvas = document.createElement('canvas'); canvas.width = canvas.height = size;
+          var context = canvas.getContext('2d'); context.drawImage(texture.image, 0, 0, size, size);
+          var image = context.getImageData(0, 0, size, size), pixels = image.data;
+          var base = kind === 'wood' ? 0.79 : kind === 'stone' ? 0.87 : 0.91;
+          for (var i = 0; i < pixels.length; i += 4) {
+            var luminance = (pixels[i] * 0.2126 + pixels[i + 1] * 0.7152 + pixels[i + 2] * 0.0722) / 255;
+            var value = Math.round(255 * Math.min(1, base + (1 - luminance) * (1 - base)));
+            pixels[i] = pixels[i + 1] = pixels[i + 2] = value; pixels[i + 3] = 255;
+          }
+          context.putImageData(image, 0, 0);
+          var result = new THREE.CanvasTexture(canvas); result.wrapS = result.wrapT = THREE.RepeatWrapping;
+          _procTexCache[key] = result; return result;
+        }
+
         // Block material cache — avoids creating duplicate materials per type
         engine._matCache = {};
         function getBlockMaterial(type) {
@@ -4361,9 +4550,11 @@
           }
           if (['stone','wood','brick','sand'].indexOf(type) >= 0 && mat.map) {
             var surfaceNormal = makeSurfaceNormalTexture(type, mat.map);
+            var surfaceRoughness = makeSurfaceRoughnessTexture(type, mat.map);
             mat.userData.gwSurfaceKey = type;
             mat.normalScale = new THREE.Vector2(0.55, 0.55);
             mat.normalMap = engine._renderProfile && engine._renderProfile.tier === 'saver' ? null : surfaceNormal;
+            mat.roughnessMap = engine._renderProfile && engine._renderProfile.tier === 'saver' ? null : surfaceRoughness;
           }
           if (type === 'glass' || type === 'diamond' || type === 'gold' || type === 'water' || type === 'ice') {
             mat.userData.gwReflective = true;
@@ -4425,6 +4616,7 @@
           _edgeMatCache[shapeId].userData.gwSharedBlockEdge = true;
           var edges = new THREE.EdgesGeometry(mesh.geometry, 30);
           var line = new THREE.LineSegments(edges, _edgeMatCache[shapeId]);
+          line.visible = !isGround || !engine._renderProfile || engine._renderProfile.tier !== 'saver';
           mesh.add(line);
         }
 
@@ -4448,6 +4640,7 @@
 
         // ── Return to Spawn: teleport player back to lesson spawn point ──
         engine.returnToSpawn = function() {
+          if(engine.disposeCreationFocus)engine.disposeCreationFocus();
           var sp = (engine._currentLesson && engine._currentLesson.spawnPoint) || [0, 2, 0];
           engine.camera.position.set(sp[0], sp[1] + 1.7, sp[2]);
           engine.velocity.set(0, 0, 0);
@@ -4478,51 +4671,58 @@
           if (engine._undoStack.length > MAX_UNDO) engine._undoStack.shift();
           engine._redoStack = []; // clear redo on new action
         }
+        function publishHistoryChange() {
+          engine._historyRevision = (engine._historyRevision || 0) + 1;
+          upd('historyRevision', engine._historyRevision);
+        }
         engine.undo = function() {
-          if (engine._undoStack.length === 0) return;
-          var a = engine._undoStack.pop();
+          if (engine._undoStack.length === 0) return false;
+          var a = engine._undoStack[engine._undoStack.length - 1];
           if (a.action === 'place') {
-            // Undo a placement = remove the block (no particles)
+            // Undo a placement = remove the block (no particles).
             var key = a.x + ',' + a.y + ',' + a.z;
             var mesh = engine.blocks[key];
-            if (mesh) {
-              engine.scene.remove(mesh);
-              if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
-              mesh.geometry.dispose(); mesh.material.dispose();
-              delete engine.blocks[key];
-              engine._blocksDirty = true;
-            }
+            if (!mesh) return false;
+            engine.scene.remove(mesh);
+            engine._disposeBlockMesh(mesh);
+            delete engine.blocks[key];
+            engine._blocksDirty = true;
+            engine.refreshAONeighbourhood(a.x, a.y, a.z);
           } else if (a.action === 'remove') {
-            // Undo a removal = re-place the block
             var restored;
             engine._replayingHistory = true;
             try { restored = engine.placeBlock(a.x, a.y, a.z, a.type, a.shape, a.rotation); }
             finally { engine._replayingHistory = false; }
-            if (!restored) { engine._undoStack.push(a); return false; }
-          }
+            if (!restored) return false;
+          } else return false;
+          engine._undoStack.pop();
           engine._redoStack.push(a);
+          publishHistoryChange();
+          return true;
         };
         engine.redo = function() {
-          if (engine._redoStack.length === 0) return;
-          var a = engine._redoStack.pop();
+          if (engine._redoStack.length === 0) return false;
+          var a = engine._redoStack[engine._redoStack.length - 1];
           if (a.action === 'place') {
             var replayed;
             engine._replayingHistory = true;
             try { replayed = engine.placeBlock(a.x, a.y, a.z, a.type, a.shape, a.rotation); }
             finally { engine._replayingHistory = false; }
-            if (!replayed) { engine._redoStack.push(a); return false; }
+            if (!replayed) return false;
           } else if (a.action === 'remove') {
             var key = a.x + ',' + a.y + ',' + a.z;
             var mesh = engine.blocks[key];
-            if (mesh) {
-              engine.scene.remove(mesh);
-              if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
-              mesh.geometry.dispose(); mesh.material.dispose();
-              delete engine.blocks[key];
-              engine._blocksDirty = true;
-            }
-          }
+            if (!mesh) return false;
+            engine.scene.remove(mesh);
+            engine._disposeBlockMesh(mesh);
+            delete engine.blocks[key];
+            engine._blocksDirty = true;
+            engine.refreshAONeighbourhood(a.x, a.y, a.z);
+          } else return false;
+          engine._redoStack.pop();
           engine._undoStack.push(a);
+          publishHistoryChange();
+          return true;
         };
 
         // ── Ambient occlusion ──
@@ -4593,6 +4793,7 @@
           // the palette colour.
           if (engine._measurementLayer === 'ground' && mat.color && ((x + z) & 1)) mat.color.multiplyScalar(0.92);
           if (type === 'grass' && mat.color) mat.color.multiplyScalar(geometryWorldGroundTint(x, z));
+          if (/^(stone|wood|brick|sand)$/.test(type) && mat.color) mat.color.multiplyScalar(geometryWorldGroundTint(x + type.length * 31, z - y * 17));
           var mesh = new THREE.Mesh(geo, mat);
           // Position: cubes center at +0.5, half-slabs sit on the ground
           if (shapeId === 'halfB') {
@@ -4727,7 +4928,9 @@
         };
 
         engine.clearWorld = function() {
+          if(engine.disposeCreationFocus)engine.disposeCreationFocus();
           if(engine.clearDimensionAnnotations)engine.clearDimensionAnnotations();
+          if(engine.clearSelectionAnnotations)engine.clearSelectionAnnotations();
           if (engine.publishPlacementPreview) engine.publishPlacementPreview(null);
           if (engine.clearLayerGhosts) engine.clearLayerGhosts();
           if (engine.disposeLandscape) engine.disposeLandscape();
@@ -5146,50 +5349,62 @@
 
         // ── Structure selection glow — briefly highlight all measured blocks ──
         engine._selectionGlows = [];
+        engine._selectionGlowTimers = [];
+        engine._selectionGlowRevision = 0;
+        engine._selectionGlowFadeInterval = null;
         function clearSelectionGlow() {
-          engine._selectionGlows.forEach(function(g) { engine.scene.remove(g); g.geometry.dispose(); g.material.dispose(); });
+          engine._selectionGlowRevision++;
+          (engine._selectionGlowTimers || []).forEach(clearTimeout);
+          engine._selectionGlowTimers = [];
+          if (engine._selectionGlowFadeInterval) clearInterval(engine._selectionGlowFadeInterval);
+          engine._selectionGlowFadeInterval = null;
+          var owned = {};
+          engine._selectionGlows.forEach(function(g) {
+            owned[g.id] = true;
+            engine.scene.remove(g); g.geometry.dispose(); g.material.dispose();
+          });
+          var showcase = engine._showcase;
+          if (showcase) {
+            showcase.hidden = showcase.hidden.filter(function(entry) { return !owned[entry[0].id]; });
+            if (showcase.studio) showcase.studio.hidden = showcase.studio.hidden.filter(function(entry) { return !owned[entry[0].id]; });
+          }
           engine._selectionGlows = [];
         }
+        engine.clearSelectionAnnotations = clearSelectionGlow;
         function showSelectionGlow(blocks) {
           clearSelectionGlow();
-          var THREE = window.THREE; if (!THREE) return;
-
-          // Group blocks by Y layer for sequential reveal (bottom to top)
+          var THREE = window.THREE;
+          if (!THREE || engine._destroyed || !engine.scene) return;
+          var revision = engine._selectionGlowRevision;
           var layers = {};
-          blocks.forEach(function(b) {
-            var ly = b.y;
-            if (!layers[ly]) layers[ly] = [];
-            layers[ly].push(b);
-          });
+          blocks.forEach(function(b) { if (!layers[b.y]) layers[b.y] = []; layers[b.y].push(b); });
           var sortedYs = Object.keys(layers).map(Number).sort(function(a, b) { return a - b; });
-
-          // Animate: reveal one layer every 400ms
           var colors = [0xef4444, 0xf59e0b, 0x22c55e, 0x3b82f6, 0x7c3aed, 0xec4899];
           sortedYs.forEach(function(ly, layerIdx) {
-            setTimeout(function() {
-              if (!engine || !engine.scene || !window.THREE) return;
-              var layerColor = colors[layerIdx % colors.length];
-              var glowMat = new THREE.MeshBasicMaterial({ color: layerColor, transparent: true, opacity: 0.06, side: THREE.FrontSide, depthWrite: false });
+            engine._selectionGlowTimers.push(setTimeout(function() {
+              if (engine._destroyed || revision !== engine._selectionGlowRevision || !engine.scene || !window.THREE) return;
+              var glowMat = new THREE.MeshBasicMaterial({ color: colors[layerIdx % colors.length], transparent: true, opacity: 0.06, side: THREE.FrontSide, depthWrite: false });
               layers[ly].forEach(function(b) {
                 var gMesh = new THREE.Mesh(new THREE.BoxGeometry(1.02, 1.02, 1.02), glowMat.clone());
-                gMesh.position.set(b.x + 0.5, b.y + 0.5, b.z + 0.5);
-                gMesh.renderOrder = 997;
-                engine.scene.add(gMesh);
-                engine._selectionGlows.push(gMesh);
+                gMesh.position.set(b.x + 0.5, b.y + 0.5, b.z + 0.5); gMesh.renderOrder = 997;
+                engine.scene.add(gMesh); engine._selectionGlows.push(gMesh);
+                hideDimensionDuringShowcase(gMesh);
               });
-            }, layerIdx * 400);
+              glowMat.dispose();
+            }, layerIdx * 400));
           });
-
-          // Fade out after dimension lines clear (25 seconds)
-          setTimeout(function() {
-            var fadeInterval = setInterval(function() {
+          engine._selectionGlowTimers.push(setTimeout(function() {
+            if (engine._destroyed || revision !== engine._selectionGlowRevision) return;
+            var fadeHandle = setInterval(function() {
+              if (engine._destroyed || revision !== engine._selectionGlowRevision) { clearInterval(fadeHandle); return; }
               var allGone = true;
               engine._selectionGlows.forEach(function(g) {
                 if (g.material.opacity > 0.01) { g.material.opacity -= 0.015; allGone = false; }
               });
-              if (allGone) { clearSelectionGlow(); clearInterval(fadeInterval); }
+              if (allGone) clearSelectionGlow();
             }, 50);
-          }, 25000);
+            engine._selectionGlowFadeInterval = fadeHandle;
+          }, 25000));
         }
 
         // Input handlers
@@ -5364,6 +5579,8 @@
             case 'KeyA': engine.moveState.left = true; break;
             case 'KeyD': engine.moveState.right = true; break;
             case 'Space':
+              // Space belongs to focused controls; their native click fires on keyup.
+              if (ev.target && ev.target.closest && ev.target.closest('button,select,[role="button"],a[href]')) break;
               ev.preventDefault();
               // Ignore OS key-repeat: without this the double-tap-to-fly check fires
               // ~33ms after the initial press, silently toggling fly mode while the
@@ -5457,20 +5674,17 @@
               ev.preventDefault();
               engine.interactAtCrosshair('place');
               break;
+            case 'KeyI':
+              if(ev.repeat || ev.ctrlKey || ev.metaKey || ev.altKey || ev.shiftKey)break;
+              var matchTarget=ev.target;
+              if(matchTarget && (matchTarget.tagName==='SELECT' || matchTarget.isContentEditable || matchTarget.closest && matchTarget.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"])')))break;
+              if(!engine.isInputActive || !engine.isInputActive() || !canMatchAimedBlock())break;
+              ev.preventDefault();engine.matchAimedBlock();break;
             case 'KeyQ': // Cycle through shapes
-              // Read latest shape from engine bridge (closure value is stale after first render)
-              var curShape = (engine._placeState && typeof engine._placeState.selectedShape === 'number') ? engine._placeState.selectedShape : 0;
-              var nextShape = (curShape + 1) % BLOCK_SHAPES.length;
-              upd({ selectedShape: nextShape, blockRotation: 0 });
-              upd('actionFeedback', 'Shape: ' + BLOCK_SHAPES[nextShape].name);
-              setTimeout(function() { upd('actionFeedback', ''); }, 1200);
+              setBuildShape('cycle');
               break;
             case 'KeyR': // Rotate block 90° (for half/quarter shapes)
-              var curRot = (engine._placeState && typeof engine._placeState.blockRotation === 'number') ? engine._placeState.blockRotation : 0;
-              var newRot = (curRot + 1) % 4;
-              upd('blockRotation', newRot);
-              upd('actionFeedback', 'Rotate: ' + (newRot * 90) + '\u00b0');
-              setTimeout(function() { upd('actionFeedback', ''); }, 1200);
+              setBuildShape('rotate');
               break;
             case 'KeyT': // Point-to-point ruler: set point A, then point B
               var rHit = engine.blockUnderCrosshair();
@@ -5729,6 +5943,37 @@
           return hits.length > 0 ? hits[0] : null;
         };
 
+        function canMatchAimedBlock() {
+          if(engine._destroyed || engine._runtimeFailed || engine._showcase || engine._worldActive===false)return false;
+          var modal=engine._modalState || {};
+          return !['showGameSettings','showNpcDialog','showMyLessons','showLessonEditor','showLessonIntro','showReflection','showHelp','showCreatorPanel','showGrowthNudge','showTeacherView','showPeerWorlds'].some(function(key){return !!modal[key];});
+        }
+        // Copy canonical choices only. Matching never creates a block or changes
+        // the retained selection, camera, construction geometry or history.
+        engine.matchAimedBlock = function() {
+          var THREE=window.THREE;
+          if(!canMatchAimedBlock() || !THREE || !engine.raycaster || !engine.camera)return false;
+          engine.raycaster.setFromCamera(new THREE.Vector2(0,0),engine.camera);
+          var targets=engine.getBlocksArr().concat((engine.npcs || []).map(function(npc){return npc.body;}).filter(Boolean));
+          var hits=engine.raycaster.intersectObjects(targets),mesh=hits.length?hits[0].object:null;
+          var data=mesh && mesh.userData,gp=data && data.gridPos;
+          if(!data || data.isNPC || !gp){
+            publishMatchedBlock(engine,null,'Aim at a block to match its material, shape and rotation.');return false;
+          }
+          if(![gp.x,gp.y,gp.z].every(function(value){return typeof value==='number' && isFinite(value) && Math.floor(value)===value;}) || engine.blocks[gp.x+','+gp.y+','+gp.z]!==mesh || mesh.visible===false){
+            publishMatchedBlock(engine,null,'That block is no longer available. Aim at another block.');return false;
+          }
+          var materialIndex=BLOCK_TYPES.findIndex(function(type){return type.id===data.blockType;});
+          var shapeIndex=BLOCK_SHAPES.findIndex(function(shape){return shape.id===data.shape;});
+          var rotation=data.rotation;
+          if(materialIndex<0 || shapeIndex<0 || typeof rotation!=='number' || !isFinite(rotation) || Math.floor(rotation)!==rotation || rotation<0 || rotation>3){
+            publishMatchedBlock(engine,null,'This block cannot be matched. Choose a supported material and shape.');return false;
+          }
+          var recipe={selectedBlock:materialIndex,selectedShape:shapeIndex,blockRotation:rotation};
+          publishMatchedBlock(engine,recipe,'Matched '+BLOCK_TYPES[materialIndex].name+' \u00b7 '+BLOCK_SHAPES[shapeIndex].name+' \u00b7 '+(rotation*90)+'\u00b0');
+          return true;
+        };
+
         // One measurement path for every input mode.
         //
         // The mobile measure button was a second copy that had drifted badly: it
@@ -5822,8 +6067,11 @@
             }
             if (action === 'break' && hit.object.userData.gridPos) {
               var p = hit.object.userData.gridPos;
+              if(engine.blocks[p.x+','+p.y+','+p.z]!==hit.object)return null;
               var breakType = hit.object.userData.blockType || 'stone';
               engine.removeBlock(p.x, p.y, p.z);
+              // A protected or otherwise rejected removal is not a successful break.
+              if(engine.blocks[p.x+','+p.y+','+p.z])return null;
               sfxBreak(breakType); if (window._alloHaptic) window._alloHaptic('break');
               // Camera shake on break (subtle)
               engine._shakeUntil = engine.clock.getElapsedTime() + 0.15;
@@ -5898,6 +6146,10 @@
 
         canvas.addEventListener('mousedown', _cvH.mousedown = function(ev) {
           if (!engine.isLocked) return;
+          if(ev.button===1){
+            if(document.pointerLockElement!==canvas)return;
+            ev.preventDefault();engine.matchAimedBlock();return;
+          }
           engine.interactAtCrosshair(ev.button === 0 ? 'break' : ev.button === 2 ? 'place' : null);
         });
 
@@ -6018,6 +6270,7 @@
         }
         engine.startGuidedTour = function() {
           if (!engine.camera || !engine._currentLesson || engine._guidedTour) return false;
+          if(engine.disposeCreationFocus)engine.disposeCreationFocus();
           try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
           engine.isLocked = false;
           engine.releaseInput();
@@ -6060,6 +6313,7 @@
           var allowed = { free: true, front: true, side: true, top: true };
           var selected = String(preset || 'free');
           if (!allowed[selected] || !engine.camera || !engine._currentLesson) return false;
+          if(engine.disposeCreationFocus)engine.disposeCreationFocus();
           if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
           try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
           engine.isLocked = false;
@@ -6354,44 +6608,47 @@
             }
           }
 
-          // ── Break highlight — colored wireframe on the targeted block ──
-          if (hits.length > 0 && hits[0].object.userData.gridPos) {
-            var hp = hits[0].object.userData.gridPos;
-            if (!engine._highlightMesh) {
-              var hlGeo = new THREE.BoxGeometry(1.005, 1.005, 1.005);
-              var hlEdges = new THREE.EdgesGeometry(hlGeo);
-              var hlMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, linewidth: 2 });
-              engine._highlightMesh = new THREE.LineSegments(hlEdges, hlMat);
-              engine._highlightMesh.renderOrder = 998;
-              engine.scene.add(engine._highlightMesh);
-            }
-            engine._highlightMesh.position.set(hp.x + 0.5, hp.y + 0.5, hp.z + 0.5);
-            engine._highlightMesh.visible = true;
-            // Color: red for protected lesson blocks, white for breakable
-            var isProtected = hits[0].object.userData._lessonBlock;
-            engine._highlightMesh.material.color.setHex(isProtected ? 0xff4444 : 0xffffff);
-            // Pulse the highlight opacity
-            var pulseT = engine.clock.getElapsedTime();
-            engine._highlightMesh.material.opacity = isProtected ? 0.3 : (0.4 + Math.sin(pulseT * 6) * 0.2);
-            // ── Hover-glow fill (signature FX) ── a translucent companion to the
-            // wireframe, in the same visual language as the measurement
-            // _selectionGlows. Separate overlay mesh — block materials are
-            // cached/shared and must never be mutated. Pulse matches the
-            // wireframe's ~0.95 Hz (photosensitivity-safe); steady opacity under
-            // prefers-reduced-motion. try/caught so it can never break picking.
-            try {
+          // ── Hover feedback follows the rendered shape, including fractional pieces. ──
+          if (hits.length > 0 && hits[0].object.userData.gridPos && hits[0].object.geometry) {
+            var hoverTarget=hits[0].object, sourceGeometry=hoverTarget.geometry;
+            var hoverPosition=sourceGeometry.getAttribute('position'), hoverIndex=sourceGeometry.getIndex();
+            var hoverState=engine._hoverGeometryState;
+            // Copy buffers only when their geometry or renderable topology changes.
+            // Materials and geometry on the construction mesh remain untouched.
+            if (!engine._highlightMesh || !engine._hoverGlowMesh || !hoverState ||
+              hoverState.geometry!==sourceGeometry || hoverState.position!==hoverPosition || hoverState.positionVersion!==hoverPosition.version ||
+              hoverState.index!==hoverIndex || hoverState.indexVersion!==(hoverIndex && hoverIndex.version)) {
+              var hoverFill=sourceGeometry.clone(), hoverEdges=new THREE.EdgesGeometry(sourceGeometry);
+              if (!engine._highlightMesh) {
+                var hlMat=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.6,depthWrite:false});
+                engine._highlightMesh=new THREE.LineSegments(hoverEdges,hlMat);
+                engine._highlightMesh.renderOrder=998;engine._highlightMesh.matrixAutoUpdate=false;
+                engine._highlightMesh.userData.gwDecorative=true;engine._highlightMesh.raycast=function(){};
+                engine.scene.add(engine._highlightMesh);
+              } else {engine._highlightMesh.geometry.dispose();engine._highlightMesh.geometry=hoverEdges;}
               if (!engine._hoverGlowMesh) {
-                var hgGeo = new THREE.BoxGeometry(1.02, 1.02, 1.02);
-                var hgMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false });
-                engine._hoverGlowMesh = new THREE.Mesh(hgGeo, hgMat);
-                engine._hoverGlowMesh.renderOrder = 997;
+                // Pull the fill slightly forward in depth without expanding its geometry.
+                var hgMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.12,side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+                engine._hoverGlowMesh=new THREE.Mesh(hoverFill,hgMat);
+                engine._hoverGlowMesh.renderOrder=997;engine._hoverGlowMesh.matrixAutoUpdate=false;
+                engine._hoverGlowMesh.userData.gwDecorative=true;engine._hoverGlowMesh.raycast=function(){};
                 engine.scene.add(engine._hoverGlowMesh);
-              }
-              engine._hoverGlowMesh.position.set(hp.x + 0.5, hp.y + 0.5, hp.z + 0.5);
-              engine._hoverGlowMesh.visible = true;
-              engine._hoverGlowMesh.material.color.setHex(isProtected ? 0xff4444 : 0xffffff);
-              engine._hoverGlowMesh.material.opacity = (engine._rmHover ? 0.1 : (isProtected ? 0.08 : (0.09 + Math.sin(pulseT * 6) * 0.05))) * (engine._dimLines && engine._dimLines.length > 0 ? 0.35 : 1);
-            } catch (e) {}
+              } else {engine._hoverGlowMesh.geometry.dispose();engine._hoverGlowMesh.geometry=hoverFill;}
+              engine._hoverGeometryState={geometry:sourceGeometry,position:hoverPosition,positionVersion:hoverPosition.version,index:hoverIndex,indexVersion:hoverIndex && hoverIndex.version};
+            }
+            hoverTarget.updateWorldMatrix(true,false);
+            // Overlays are scene children; compensate for the scene transform so
+            // nested parents, rotations, nonuniform scale and placement pop agree.
+            engine._highlightMesh.matrix.copy(engine.scene.matrixWorld).invert().multiply(hoverTarget.matrixWorld);
+            engine._hoverGlowMesh.matrix.copy(engine._highlightMesh.matrix);
+            engine._highlightMesh.matrixWorldNeedsUpdate=true;engine._hoverGlowMesh.matrixWorldNeedsUpdate=true;
+            engine._highlightMesh.visible=true;engine._hoverGlowMesh.visible=true;
+            var isProtected=hoverTarget.userData._lessonBlock;
+            var pulseT=engine.clock.getElapsedTime(),stillHover=engine._rmHover || engine._ambientMotionEnabled===false;
+            engine._highlightMesh.material.color.setHex(isProtected?0xff4444:0xffffff);
+            engine._highlightMesh.material.opacity=isProtected?0.3:stillHover?0.4:0.4+Math.sin(pulseT*6)*0.2;
+            engine._hoverGlowMesh.material.color.setHex(isProtected?0xff4444:0xffffff);
+            engine._hoverGlowMesh.material.opacity=(isProtected?0.08:stillHover?0.1:0.09+Math.sin(pulseT*6)*0.05)*(engine._dimLines && engine._dimLines.length>0?0.35:1);
           } else {
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
             if (engine._hoverGlowMesh) engine._hoverGlowMesh.visible = false;
@@ -6420,8 +6677,10 @@
               var gMat = new THREE.MeshBasicMaterial({ color: 0x9dddb5, transparent: true, opacity: 0.15, side: THREE.DoubleSide, depthWrite: false });
               engine._ghostMesh = new THREE.Mesh(gGeo, gMat);
               engine._ghostMesh.renderOrder = 999;
+              engine._ghostMesh.userData.gwDecorative=true;engine._ghostMesh.raycast=function(){};
               var gEdges = new THREE.LineSegments(new THREE.EdgesGeometry(gGeo), new THREE.LineBasicMaterial({ color: 0xd6f4df, transparent: true, opacity: 0.75, depthWrite: false }));
               gEdges.renderOrder = 1000;
+              gEdges.userData.gwDecorative=true;gEdges.raycast=function(){};
               engine._ghostMesh.add(gEdges);
               engine._ghostEdges = gEdges;
               if (curRot > 0 && curShapeId !== 'cube') engine._ghostMesh.rotation.y = curRot * Math.PI / 2;
@@ -6445,8 +6704,7 @@
               engine._ghostEdges.material.color.setHex(preview.allowed ? 0xd6f4df : 0xffbc9e);
               engine._ghostEdges.material.depthTest = preview.allowed;
             }
-            // Gentle breathing pulse — subtle opacity + scale oscillation so the preview
-            // reads as "alive" without distracting from the block it's snapping to.
+            // Animate opacity only: the preview keeps the exact eventual dimensions.
             var ghostT = engine.clock.getElapsedTime();
             var ghostPulse = !preview.allowed || engine._rmHover || engine._ambientMotionEnabled === false ? 0.35 : 0.5 + Math.sin(ghostT * 2.5) * 0.5; // 0..1
             // A measurement on screen owns the student's attention: the preview
@@ -6454,8 +6712,7 @@
             var measuring = engine._dimLines && engine._dimLines.length > 0;
             engine._ghostMesh.material.opacity = !preview.allowed ? 0.08 : measuring ? 0.03 : 0.10 + ghostPulse * 0.10;
             if (engine._ghostEdges) engine._ghostEdges.material.opacity = !preview.allowed ? 0.95 : measuring ? 0.22 : 0.65 + ghostPulse * 0.2;
-            var ghostScale = !preview.allowed || engine._rmHover || engine._ambientMotionEnabled === false ? 1.006 : 1 + ghostPulse * 0.02;
-            engine._ghostMesh.scale.set(ghostScale, ghostScale, ghostScale);
+            engine._ghostMesh.scale.set(1,1,1);
           } else {
             if (engine._ghostMesh) engine._ghostMesh.visible = false;
             engine.publishPlacementPreview(null);
@@ -6535,7 +6792,7 @@
           }
 
           // ── Smooth environment transitions ──
-          if (!engine._showcase) updateEnvTransition(engine, dt);
+          if (!engine._showcase && !(engine._creationFocus && !engine._creationFocus.manual)) updateEnvTransition(engine, dt);
 
           // ── Update break particles ──
           for (var pi = engine._particles.length - 1; pi >= 0; pi--) {
@@ -6566,6 +6823,9 @@
             if (dDist > 25) { clearDimLines(); clearSelectionGlow(); engine._measureCenter = null; }
           }
 
+          // Focus framing owns only the camera; passive keyboard focus keeps
+          // picking available without enabling gravity or FOV drift.
+          if(engine.updateCreationFocus)engine.updateCreationFocus(dt);
           // ── Camera entry animation (swoop down to spawn) ──
           // ── Guided explore tour: a predictable, low-motion orbit around the
           // first meaningful structure gives learners a spatial overview before
@@ -6631,7 +6891,7 @@
             if (ea.progress >= 1) engine._entryAnim = null;
           }
 
-          if (engine.isInputActive()) {
+          if (engine.isInputActive() && !(engine._creationFocus && !engine._creationFocus.manual)) {
             var THREE = window.THREE;
             // ── Smooth movement with acceleration, deceleration, and proper XZ + Y collision ──
             var dir = new THREE.Vector3();
@@ -6826,21 +7086,24 @@
           // Animate NPCs — bob, rotate, face player when close
           var t = engine.clock.getElapsedTime();
           engine.npcs.forEach(function(npc, i) {
+            var THREE = window.THREE, ambientMotion = engine._ambientMotionEnabled !== false;
+            if (!THREE) return;
             var baseY = npc.data.position[1] + 0.75;
-            var bobY = Math.sin(t * 2 + i) * 0.1;
+            var bobY = ambientMotion ? Math.sin(t * 2 + i) * 0.1 : 0;
             // Celebration bounce (set npc._celebrateUntil on correct answer)
-            if (npc._celebrateUntil && t < npc._celebrateUntil) {
+            if (ambientMotion && npc._celebrateUntil && t < npc._celebrateUntil) {
               bobY += Math.abs(Math.sin((t - (npc._celebrateUntil - 0.8)) * 12)) * 0.4;
             }
             // Shake on wrong answer (set npc._shakeUntil)
-            if (npc._shakeUntil && t < npc._shakeUntil) {
+            if (ambientMotion && npc._shakeUntil && t < npc._shakeUntil) {
               npc.body.position.x = npc.data.position[0] + 0.5 + Math.sin(t * 30) * 0.05;
-            } else if (engine.camera && engine.camera.position.distanceTo(npc.body.position) > 8) {
+            } else if (ambientMotion && engine.camera && engine.camera.position.distanceTo(npc.body.position) > 8) {
               // Subtle idle patrol when player is far — gentle sinusoidal wander
               npc.body.position.x = npc.data.position[0] + 0.5 + Math.sin(t * 0.4 + i * 2.1) * 0.3;
               npc.body.position.z = npc.data.position[2] + 0.5 + Math.cos(t * 0.3 + i * 1.7) * 0.3;
             } else {
               npc.body.position.x = npc.data.position[0] + 0.5;
+              npc.body.position.z = npc.data.position[2] + 0.5;
             }
             npc.body.position.y = baseY + bobY;
             // Sync head + floating sprites to body's CURRENT X/Z so the head doesn't drift
@@ -6850,7 +7113,7 @@
             npc.head.position.y = npc.data.position[1] + 1.7 + bobY;
             // Blink, and let the arms swing with the walk. Both stop dead under
             // reduced motion / battery saver, where the bob is already still.
-            if (engine._ambientMotionEnabled !== false) {
+            if (ambientMotion) {
               if (npc._eyeParts) {
                 var open = geometryWorldBlinkScale(t, npc._blinkSeed || (i + 1));
                 for (var ei = 0; ei < npc._eyeParts.length; ei++) npc._eyeParts[ei].scale.y = open;
@@ -6868,6 +7131,10 @@
                 }
               }
             }
+            if (!ambientMotion) {
+              (npc._eyeParts || []).forEach(function(eye) { eye.scale.y = 1; });
+              (npc._arms || []).forEach(function(arm) { arm.rotation.x = 0; arm.rotation.z = (arm.userData.armSide || 1) * 0.22; });
+            }
             if (npc.label)  { npc.label.position.x  = npc.body.position.x; npc.label.position.z  = npc.body.position.z; npc.label.position.y  = npc.data.position[1] + 2.1 + bobY; }
             if (npc.prompt) { npc.prompt.position.x = npc.body.position.x; npc.prompt.position.z = npc.body.position.z; }
             if (npc.qMark)  { npc.qMark.position.x  = npc.body.position.x; npc.qMark.position.z  = npc.body.position.z; }
@@ -6878,18 +7145,18 @@
               var dist = Math.sqrt(dx * dx + dz * dz);
               if (dist < 6) {
                 var targetRot = Math.atan2(dx, dz);
-                npc.body.rotation.y += (targetRot - npc.body.rotation.y) * Math.min(1, dt * 3);
+                npc.body.rotation.y += (targetRot - npc.body.rotation.y) * (ambientMotion ? Math.min(1, dt * 3) : 1);
                 // Head tilt: look slightly toward player's eye level
                 var lookDy = engine.camera.position.y - npc.head.position.y;
                 var headTilt = Math.max(-0.3, Math.min(0.3, lookDy * 0.15));
-                npc.head.rotation.x += (headTilt - npc.head.rotation.x) * Math.min(1, dt * 4);
-                npc.head.rotation.y += (targetRot - npc.head.rotation.y) * Math.min(1, dt * 3);
+                npc.head.rotation.x += (headTilt - npc.head.rotation.x) * (ambientMotion ? Math.min(1, dt * 4) : 1);
+                npc.head.rotation.y += (targetRot - npc.head.rotation.y) * (ambientMotion ? Math.min(1, dt * 3) : 1);
               } else {
-                npc.body.rotation.y += dt * 0.5;
-                npc.head.rotation.x *= 0.95;
+                if (ambientMotion) npc.body.rotation.y += dt * 0.5;
+                npc.head.rotation.x = ambientMotion ? npc.head.rotation.x * 0.95 : 0;
                 npc.head.rotation.y = npc.body.rotation.y;
               }
-            } else {
+            } else if (ambientMotion) {
               npc.body.rotation.y += dt * 0.5;
             }
             // ── Floating question mark: bob + spin, hide when answered ──
@@ -6899,7 +7166,8 @@
               var isNpcAnswered = (engine._answeredRef || answeredNpcs)[i];
               if (isNpcAnswered) {
                 // Hide question mark when answered (fade out)
-                if (npc.qMark.material.opacity > 0.01) {
+                if (!ambientMotion) { npc.qMark.material.opacity = 0; npc.qMark.visible = false; }
+                else if (npc.qMark.material.opacity > 0.01) {
                   npc.qMark.material.opacity -= dt * 2;
                 } else if (npc.qMark.visible) {
                   npc.qMark.visible = false;
@@ -6907,9 +7175,9 @@
               } else {
                 npc.qMark.material.opacity = 1;
                 npc.qMark.visible = true;
-                npc.qMark.position.y = npc.data.position[1] + 2.7 + Math.sin(t * 3 + i * 1.5) * 0.15;
+                npc.qMark.position.y = npc.data.position[1] + 2.7 + (ambientMotion ? Math.sin(t * 3 + i * 1.5) * 0.15 : 0);
                 // Subtle scale pulse
-                var qScale = 0.55 + Math.sin(t * 4 + i) * 0.08;
+                var qScale = 0.55 + (ambientMotion ? Math.sin(t * 4 + i) * 0.08 : 0);
                 npc.qMark.scale.set(qScale, qScale, 1);
               }
             }
@@ -6917,7 +7185,7 @@
             // ── Eye blink animation ──
             if (npc.eyeL && npc.eyeR) {
               var blinkCycle = (t * 0.7 + i * 2.3) % 4; // blink every ~4 seconds
-              var eyeScale = blinkCycle < 0.1 ? 0.2 : 1.0; // squash during blink
+              var eyeScale = ambientMotion && blinkCycle < 0.1 ? 0.2 : 1.0; // squash during blink
               npc.eyeL.scale.set(1, eyeScale, 1);
               npc.eyeR.scale.set(1, eyeScale, 1);
             }
@@ -6931,9 +7199,9 @@
                 npc.body.material.emissiveIntensity = 0.15;
               }
               // Pulsing green glow intensity
-              npc.body.material.emissiveIntensity = 0.1 + Math.sin(t * 2 + i) * 0.05;
+              npc.body.material.emissiveIntensity = ambientMotion ? 0.1 + Math.sin(t * 2 + i) * 0.05 : 0.15;
               // Green checkmark particle (occasional)
-              if (Math.random() < 0.003) {
+              if (ambientMotion && Math.random() < 0.003) {
                 var cpGeo = new THREE.BoxGeometry(0.05, 0.05, 0.05);
                 var cpMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.8 });
                 var cpMesh = new THREE.Mesh(cpGeo, cpMat);
@@ -6946,7 +7214,6 @@
 
             // Proximity glow ring on ground beneath NPC
             if (!npc._ring) {
-              var THREE = window.THREE;
               if (THREE) {
                 var ringGeo = new THREE.RingGeometry(0.4, 0.55, 24);
                 ringGeo.rotateX(-Math.PI / 2);
@@ -6961,8 +7228,8 @@
               var dz2 = engine.camera.position.z - npc.body.position.z;
               var dist2 = Math.sqrt(dx2 * dx2 + dz2 * dz2);
               var targetOp = dist2 < 4 ? 0.5 : 0;
-              npc._ring.material.opacity += (targetOp - npc._ring.material.opacity) * Math.min(1, dt * 5);
-              npc._ring.scale.setScalar(1.0 + Math.sin(t * 3 + i) * 0.08);
+              npc._ring.material.opacity += (targetOp - npc._ring.material.opacity) * (ambientMotion ? Math.min(1, dt * 5) : 1);
+              npc._ring.scale.setScalar(1.0 + (ambientMotion ? Math.sin(t * 3 + i) * 0.08 : 0));
               // Speech bubble preview — show first ~30 chars of dialogue when medium-close
               if (!npc._speechBubble && npc.data.dialogue) {
                 var sbCanvas = document.createElement('canvas'); sbCanvas.width = 512; sbCanvas.height = 128;
@@ -6985,14 +7252,14 @@
               if (npc._speechBubble) {
                 // Show when medium distance (3-6 blocks), hide when too close (dialog takes over) or too far
                 var sbTarget = (dist2 > 3 && dist2 < 6) ? 0.7 : 0;
-                npc._speechBubble.material.opacity += (sbTarget - npc._speechBubble.material.opacity) * Math.min(1, dt * 5);
-                npc._speechBubble.position.y = npc.data.position[1] + 3.0 + Math.sin(t * 1.5 + i * 0.8) * 0.04;
+                npc._speechBubble.material.opacity += (sbTarget - npc._speechBubble.material.opacity) * (ambientMotion ? Math.min(1, dt * 5) : 1);
+                npc._speechBubble.position.y = npc.data.position[1] + 3.0 + (ambientMotion ? Math.sin(t * 1.5 + i * 0.8) * 0.04 : 0);
               }
               // "Press E" prompt — fade in when close, bob above head
               if (npc.prompt) {
                 var promptTarget = dist2 < 3.5 ? 0.9 : 0;
-                npc.prompt.material.opacity += (promptTarget - npc.prompt.material.opacity) * Math.min(1, dt * 6);
-                npc.prompt.position.y = npc.data.position[1] + 2.5 + Math.sin(t * 2.5 + i * 0.7) * 0.06;
+                npc.prompt.material.opacity += (promptTarget - npc.prompt.material.opacity) * (ambientMotion ? Math.min(1, dt * 6) : 1);
+                npc.prompt.position.y = npc.data.position[1] + 2.5 + (ambientMotion ? Math.sin(t * 2.5 + i * 0.7) * 0.06 : 0);
               }
             }
           });
@@ -7195,7 +7462,7 @@
           }
 
           // ── Auto day/night cycle (60-second rotation through presets) ──
-          if (!engine._showcase && d.autoCycle) {
+          if (!engine._showcase && !(engine._creationFocus && !engine._creationFocus.manual) && d.autoCycle) {
             if (!engine._cycleTimer) engine._cycleTimer = 0;
             engine._cycleTimer += dt;
             if (engine._cycleTimer > 60) {
@@ -7210,7 +7477,7 @@
 
           // ── Ambient dust motes (floating particles near player) ──
           if (!engine._dustMotes) engine._dustMotes = [];
-          if (engine._ambientMotionEnabled !== false && engine._dustMotes.length < 12 && Math.random() < 0.03) {
+          if (!engine._showcase && engine._ambientMotionEnabled !== false && engine._dustMotes.length < 12 && Math.random() < 0.03) {
             var camPos = engine.camera.position;
             var dGeo = new THREE.SphereGeometry(0.02, 4, 4);
             var dMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 });
@@ -7226,7 +7493,7 @@
           for (var di = engine._dustMotes.length - 1; di >= 0; di--) {
             var dm = engine._dustMotes[di];
             dm._age += dt;
-            if (dm._age >= dm._life) {
+            if (engine._ambientMotionEnabled === false || dm._age >= dm._life) {
               engine.scene.remove(dm); dm.geometry.dispose(); dm.material.dispose();
               engine._dustMotes.splice(di, 1);
               continue;
@@ -7341,6 +7608,7 @@
           engine._lastViewport = { w: cw, h: ch };
           engine.camera.aspect = cw / ch;
           if(engine.fitShowcase)engine.fitShowcase();
+          if(engine.fitCreationFocus)engine.fitCreationFocus(false);
           engine.camera.updateProjectionMatrix();
           engine.renderer.setSize(cw, ch, false);
           if (engine.composer) { try { engine.composer.setSize(cw, ch); } catch (e) {} }
@@ -7831,6 +8099,7 @@
           if (engine._highlightMesh) { engine.scene.remove(engine._highlightMesh); engine._highlightMesh.geometry.dispose(); engine._highlightMesh.material.dispose(); }
           if (engine.clearLayerGhosts) { engine.clearLayerGhosts(); if (engine._layerGhostMat) { engine._layerGhostMat.dispose(); engine._layerGhostMat = null; } }
           if (engine._hoverGlowMesh) { engine.scene.remove(engine._hoverGlowMesh); engine._hoverGlowMesh.geometry.dispose(); engine._hoverGlowMesh.material.dispose(); }
+          engine._hoverGeometryState=null;
           // Dispose dimension lines + selection glows
           if (engine.clearDimensionAnnotations) engine.clearDimensionAnnotations();
           if (engine._selectionGlows) engine._selectionGlows.forEach(function(g) { engine.scene.remove(g); g.geometry.dispose(); g.material.dispose(); });
@@ -8342,6 +8611,7 @@
       // Expose current React state to the engine so the compass rAF loop reads live data
       if (engine) {
         engine._answeredRef = answeredNpcs;
+        engine._worldActive = worldActive;
         // Modal flags bridge: the keydown handler was attached once during initEngine
         // and its closure captured these as first-render primitives. Mirror them onto
         // the engine on every React render so Esc/Shift+Esc always see current state.
@@ -8440,7 +8710,7 @@
         delete window[engineKey + '_failure'];
         setWebglError(false);
       }
-      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-hud-preset': hudPreset, 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-hud-preset': hudPreset, 'data-measurement-expanded': isMobile && !!measureResult && measurementDetailsOpen ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
         el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen>.gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen>.gw-toolbar{display:none!important}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0;margin:0!important;border:0!important;border-radius:0!important}'),
         // Top bar — glass style
         el('header', { className: 'gw-toolbar', 'aria-label': __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls'), style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
@@ -8615,23 +8885,36 @@
               el('span', null, predictionScaffold.cue)
             )
           ),
-          measureResult && el('div', { role: 'region', className: 'gw-measure-card', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_inspector', 'Measurement inspector'), style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
+          measureResult && el('div', { role: 'region', className: 'gw-measure-card', 'data-measurement-compact': isMobile ? 'true' : 'false', 'data-details-open': !isMobile || measurementDetailsOpen ? 'true' : 'false', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_inspector', 'Measurement inspector'), style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
             el('div', { className: 'gw-measure-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' } },
               el('div', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 800, color: '#cffafe' } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
-              el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': __alloT('stem.geometryworld.a11y_close_measurement_inspector', 'Close measurement inspector'), title: 'Close measurement inspector', onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); upd('measureResult', null); } }, '\u00D7')
+              el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': __alloT('stem.geometryworld.a11y_close_measurement_inspector', 'Close measurement inspector'), title: 'Close measurement inspector', onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); setMeasurementDetailsOpen(false); upd('measureResult', null); } }, '\u00D7')
             ),
             measureResult.isComplete === false && el('div', { role: 'alert', 'data-geometry-measurement-incomplete': 'true',
               style: { margin: '2px 0', padding: '4px 6px', borderRadius: '4px', background: '#7f1d1d', color: '#fecaca', fontWeight: 700 } },
               'Measurement limit reached. At least ' + measureResult.count + ' connected blocks were found; volume, dimensions, and surface area below are partial and not exact.'),
-            measureResult.isComplete !== false && el('div', null, 'L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H),
-            el('div', { style: { fontFamily: 'monospace', color: measureResult.isSolidPrism ? '#4ade80' : '#fbbf24' } },
+            measureResult.isComplete !== false && el('div', { className: 'gw-measure-dimensions', 'aria-label': 'Principal dimensions in units' },
+              [['Length', measureResult.L], ['Width', measureResult.W], ['Height', measureResult.H]].map(function(dimension) {
+                return el('div', { className: 'gw-measure-dimension', key: dimension[0] }, el('span', null, dimension[0]), el('strong', null, dimension[1]));
+              })
+            ),
+            el('div', { className: 'gw-measure-volume', 'data-geometry-occupied-volume': 'true' },
+              el('span', null, measureResult.isComplete === false ? 'Occupied volume, at least' : 'Occupied volume'),
+              el('span', { className: 'gw-measure-volume-value' }, el('strong', null, measureResult.formattedOccupiedVolume), el('span', null, ' cubic units'))
+            ),
+            el('details', { className: 'gw-measure-details', open: !isMobile || measurementDetailsOpen,
+              onToggle: function(ev) { if (isMobile && ev.currentTarget.open !== measurementDetailsOpen) setMeasurementDetailsOpen(ev.currentTarget.open); }
+            },
+              el('summary', { className: 'gw-measure-details-toggle gw-focusable' }, __alloT('stem.geometryworld.explore_measurement_details', 'Explore measurement details')),
+              el('div', { className: 'gw-measure-details-content' },
+            el('div', { className: 'gw-measure-equation', style: { fontFamily: 'monospace', color: measureResult.isSolidPrism ? '#4ade80' : '#fbbf24' } },
               measureResult.isComplete === false
-                ? 'Counted at least ' + measureResult.count + ' cubic units'
+                ? 'Counted at least ' + measureResult.count + ' connected blocks'
                 : measureResult.isSolidPrism
                 ? 'V = ' + measureResult.L + ' \u00d7 ' + measureResult.W + ' \u00d7 ' + measureResult.H + ' = ' + measureResult.formattedOccupiedVolume
                 : 'Occupied volume = ' + measureResult.formattedOccupiedVolume + ' cubic units'
             ),
-            measureResult.isComplete !== false && !measureResult.isSolidPrism && el('div', { style: { fontSize: '10px', color: '#fde68a' } },
+            measureResult.isComplete !== false && !measureResult.isSolidPrism && el('div', { className: 'gw-measure-equation-note', style: { fontSize: '10px', color: '#fde68a' } },
               'Bounding box ' + measureResult.boundingVolume + ' \u2212 empty ' + formatVolume(measureResult.missingVolume) + ' = ' + measureResult.formattedOccupiedVolume + ' (' + measureResult.fillPercent + '% filled)'
             ),
             el('div', { 'data-geometry-surface-area': measureResult.surfaceAreaExact ? 'exact' : 'partial', style: { fontSize: '10px', color: measureResult.surfaceAreaExact ? '#86efac' : '#cbd5e1' } },
@@ -8683,7 +8966,7 @@
                   style: { width: '160px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
                 }),
                 el('button', {
-                  type: 'button', className: 'gw-focusable',
+                  type: 'button', className: 'gw-focusable gw-measure-check-revision',
                   onClick: function() {
                     var revision = comparePredictionRevision(predictionResult, predictionRevision);
                     if (!revision) { if (addToast) addToast('Enter a positive revised volume.', 'info'); return; }
@@ -8700,7 +8983,7 @@
             ),
 
             volumeRepresentations.length > 1 && activeVolumeRepresentation && el('div', { 'data-geometry-volume-representation': activeVolumeRepresentation.key, style: { marginTop: '3px', padding: '5px 6px', borderRadius: '5px', background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(167,139,250,0.3)', maxWidth: '320px' } },
-              el('div', { style: { display: 'flex', gap: '5px', alignItems: 'center', marginBottom: '3px' } },
+              el('div', { className: 'gw-measure-view-picker', style: { display: 'flex', gap: '5px', alignItems: 'center', marginBottom: '3px' } },
                 el('label', { htmlFor: 'gw-volume-representation', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 800, whiteSpace: 'nowrap' } }, 'Equivalent view'),
                 el('select', {
                   id: 'gw-volume-representation', value: activeVolumeRepresentation.key, className: 'gw-focusable',
@@ -8722,9 +9005,10 @@
                   style: { flex: 1, minWidth: '110px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '2px', color: '#fff', fontSize: '9px' }
                 }, volumeRepresentations.map(function(view) { return el('option', { key: view.key, value: view.key }, view.label); }))
               ),
-              el('div', { style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px', fontWeight: 700 } }, activeVolumeRepresentation.expression),
+              el('div', { className: 'gw-measure-equation', style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px', fontWeight: 700 } }, activeVolumeRepresentation.expression),
               el('div', {
                 role: 'progressbar',
+                'data-complete': representationExploration.complete ? 'true' : 'false',
                 'data-geometry-representation-progress': representationExploration.visitedCount + '/' + representationExploration.target,
                 'aria-label': __alloT('stem.geometryworld.a11y_equivalent_volume_views_explored', 'Equivalent volume views explored'),
                 'aria-valuemin': 0,
@@ -8732,10 +9016,10 @@
                 'aria-valuenow': representationExploration.progressValue,
                 style: { marginBottom: '4px' }
               },
-                el('div', { style: { display: 'flex', justifyContent: 'space-between', color: representationExploration.complete ? '#86efac' : '#ddd6fe', fontSize: '9px', fontWeight: 700 } }, el('span', null, 'Views compared: ' + representationExploration.visitedCount + '/' + representationExploration.target), el('span', null, representationExploration.complete ? '\u2713 Ready to explain' : 'Compare 2 views')),
-                el('div', { style: { height: '3px', marginTop: '2px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(148,163,184,0.25)' } }, el('div', { style: { width: representationExploration.percent + '%', height: '100%', borderRadius: '999px', background: representationExploration.complete ? '#22c55e' : '#a78bfa', transition: 'width 0.2s ease' } }))
+                el('div', { className: 'gw-measure-view-progress-caption', style: { display: 'flex', justifyContent: 'space-between', color: representationExploration.complete ? '#86efac' : '#ddd6fe', fontSize: '9px', fontWeight: 700 } }, el('span', null, 'Views compared: ' + representationExploration.visitedCount + '/' + representationExploration.target), el('span', null, representationExploration.complete ? '\u2713 Ready to explain' : 'Compare 2 views')),
+                el('div', { style: { height: '3px', marginTop: '2px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(148,163,184,0.25)' } }, el('div', { className: 'gw-measure-view-progress-fill', style: { width: representationExploration.percent + '%', height: '100%', borderRadius: '999px', background: representationExploration.complete ? '#22c55e' : '#a78bfa', transition: 'width 0.2s ease' } }))
               ),
-              el('div', { style: { color: '#cbd5e1', fontSize: '8px', marginBottom: '3px' } }, representationExploration.prompt),
+              el('div', { className: 'gw-measure-prompt', style: { color: '#cbd5e1', fontSize: '8px', marginBottom: '3px' } }, representationExploration.prompt),
               el('div', { id: 'gw-representation-connect-prompt', style: { color: '#bfdbfe', fontSize: '9px', marginTop: '2px' } }, 'Connect: ' + activeVolumeRepresentation.question),
               recommendedVolumeRepresentation && el('div', {
                 role: 'note',
@@ -8787,7 +9071,7 @@
                 representationSentenceStarter && el('div', { id: 'gw-representation-sentence-starter', 'data-geometry-representation-sentence-starter': predictionScaffold.level, style: { padding: '3px 4px', borderRadius: '4px', background: 'rgba(59,130,246,0.1)', color: '#bfdbfe', fontSize: '8px', lineHeight: 1.35 } },
                   el('strong', null, 'Sentence starter: '), '\u201c' + representationSentenceStarter + '\u201d'
                 ),
-                el('div', { role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_explanation_self_check', 'Explanation self-check'), style: { display: 'grid', gap: '2px', color: '#ddd6fe', fontSize: '8px' } },
+                el('div', { role: 'group', className: 'gw-measure-self-check', 'aria-label': __alloT('stem.geometryworld.a11y_explanation_self_check', 'Explanation self-check'), style: { display: 'grid', gap: '2px', color: '#ddd6fe', fontSize: '8px' } },
                   el('label', { style: { display: 'flex', gap: '4px', alignItems: 'flex-start', cursor: 'pointer' } },
                     el('input', { type: 'checkbox', className: 'gw-focusable', checked: volumeRepresentationInvariantChecked, disabled: volumeRepresentationConnectionSaved, onChange: function(ev) { upd({ volumeRepresentationInvariantChecked: ev.target.checked, volumeRepresentationConnectionSaved: false }); } }),
                     el('span', null, 'I named what stays the same.')
@@ -8798,7 +9082,8 @@
                   )
                 ),
                 el('button', {
-                  type: 'button', className: 'gw-focusable',
+                  type: 'button', className: 'gw-focusable gw-measure-save-connection',
+                  'data-state': volumeRepresentationConnectionSaved ? 'saved' : representationConnectionReadiness.ready ? 'ready' : 'draft',
                   'aria-describedby': 'gw-representation-connect-prompt',
                   disabled: volumeRepresentationConnectionSaved,
                   onClick: function() {
@@ -8824,7 +9109,7 @@
                 }, 'Discard draft'),
               )
             ),
-            el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+            el('div', { className: 'gw-measure-block-count', style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
               measureResult.count + ' blocks' + (measureResult.hasFractions
                 ? ' (' + Object.keys(measureResult.shapeCounts).map(function(s) {
                     var sd = BLOCK_SHAPES.find(function(bs) { return bs.id === s; });
@@ -8836,6 +9121,7 @@
               'Materials: ' + Object.keys(measureResult.materialCounts).map(function(type) { return measureResult.materialCounts[type] + ' ' + type; }).join(', ')
             ),
             measureResult.isComplete !== false && el('button', {
+              className: 'gw-measure-build-card gw-focusable',
               onClick: function() {
                 var card = generateManipulativeCard(measureResult, currentLesson.title);
                 var win = window.open('', '_blank');
@@ -8847,6 +9133,8 @@
               title: __alloT('stem.geometryworld.print_a_card_to_build_this_structure_w', 'Print a card to build this structure with physical cubes'),
               style: { background: '#7c3aed', border: 'none', borderRadius: '4px', padding: '2px 8px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 700, marginTop: '2px' }
             }, '\uD83E\uDDF1 Build This!')
+              )
+            )
           ),
           // Secondary setup and utility controls stay out of the flex layout.
           showGameSettings && el('div', {
@@ -9200,7 +9488,7 @@
               if (!eng || !eng.renderer || !eng.scene || !eng.camera) return;
               try {
                 // Force fresh render since WebGLRenderer wasn't created with preserveDrawingBuffer
-                if (eng.composer) { try { eng.composer.render(); } catch (e) { eng.renderer.render(eng.scene, eng.camera); } } else { eng.renderer.render(eng.scene, eng.camera); }
+                if (eng.composer && eng._postFxEnabled !== false) { try { eng.composer.render(); } catch (e) { eng.renderer.render(eng.scene, eng.camera); } } else { eng.renderer.render(eng.scene, eng.camera); }
                 var dataUrl = eng.renderer.domElement.toDataURL('image/png');
                 // Filename includes the lesson title so students can recognize their work later
                 var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -9679,6 +9967,7 @@
             el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'L-Click'), 'Break block',
             el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'R-Click'), 'Place block',
             el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'X / B'), 'Break / build (no mouse)',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'I / Middle'), 'Match aimed block',
             el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'E'), 'Talk to NPC',
             el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'M'), 'Measure structure',
             el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'Space'), 'Jump',
@@ -10093,24 +10382,20 @@
         el('div', { className: 'gw-shape-tray', style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
           el('span', { className:'gw-shape-heading' }, 'Shape'),
           // Rotation badge (only when non-cube shape selected)
-          selectedShape > 0 && el('span', {
+          selectedShape > 0 && el('button', {
             style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#94a3b8', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
-            className: 'gw-focusable gw-shape-rotate', role: 'button', tabIndex: 0,
+            type: 'button', className: 'gw-focusable gw-shape-rotate', 'aria-keyshortcuts': 'R',
             'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_rotate_selected_shape_current_rotation_degrees', 'Rotate selected shape. Current rotation {value1} degrees'), { value1: (blockRotation * 90) }),
-            onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('blockRotation', (blockRotation + 1) % 4); } },
-            'aria-pressed': blockRotation > 0 ? 'true' : 'false',
-            onClick: function() { upd('blockRotation', (blockRotation + 1) % 4); },
+            onClick: function() { setBuildShape('rotate'); },
             title: 'Click or press R to rotate (' + (blockRotation * 90) + '\u00b0)'
           }, el('span',{className:'gw-shape-rotate-icon','aria-hidden':'true'},'\u21BB'), el('span',null,(blockRotation*90)+'\u00b0')),
           BLOCK_SHAPES.map(function(bs, i) {
-            return el('div', {
+            return el('button', {
               key: bs.id,
-              className: 'gw-focusable gw-shape-item',
-              role: 'button', tabIndex: 0,
+              type: 'button', className: 'gw-focusable gw-shape-item',
               'aria-label': 'Select ' + bs.name + ' shape, ' + bs.desc + (i === selectedShape ? ', currently selected' : ''),
               'aria-pressed': i === selectedShape ? 'true' : 'false',
-              onClick: function() { upd('selectedShape', i); },
-              onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedShape', i); } },
+              onClick: function() { setBuildShape('select', i); },
               title: bs.name + ' (' + bs.desc + ')',
               style: { width: isMobile ? '26px' : '32px', height: isMobile ? '26px' : '32px', borderRadius: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer',
                 border: i === selectedShape ? '2px solid #fbbf24' : '2px solid transparent',
@@ -10215,6 +10500,13 @@
           // to hold three small buttons, reading as an empty band across the world.
           style: { position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', width: 'max-content', maxWidth: 'calc(100% - 24px)', zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', justifyContent: 'center' }
         },
+          el('button', {
+            type:'button',className:'gw-focusable','aria-label':'Match aimed block','aria-keyshortcuts':'I','data-gw-utility':'match',
+            disabled:openModals.length>0 || !worldActive || !!d.showcaseActive || !!engine._destroyed,
+            onClick:function(){var liveEngine=window[engineKey];if(liveEngine && liveEngine.matchAimedBlock)liveEngine.matchAimedBlock();},
+            title:'Match material, shape and rotation (I or middle-click)',
+            style:{background:'rgba(30,41,59,0.6)',border:'1px solid rgba(100,116,139,0.2)',borderRadius:'6px',padding:'2px 8px',fontSize:'9px',color:'#d4e8ca',fontWeight:600,cursor:'pointer',backdropFilter:'blur(4px)'}
+          },renderWorkspaceAction(el,'match','Match')),
           // Fly mode toggle (always visible)
           el('button', {
             type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_toggle_fly_mode', 'Toggle fly mode'), 'aria-pressed':engine.flyMode ? 'true':'false', 'data-gw-utility':'fly',
@@ -10379,6 +10671,7 @@
         },el('span',{className:'gw-placement-hint-mark','aria-hidden':'true'},d.placementHint.allowed ? '\u2713':'!'),el('span',null,d.placementHint.reason)),
         // ── Action feedback toast (center-bottom, fades in/out) ──
         actionFeedback && el('div', { className: 'gw-action-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+          'data-feedback-kind': actionFeedback === shapeActionRef.current.shapeFeedback ? 'shape' : 'action',
           style: { position: 'absolute', bottom: '135px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
             background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '10px',
             padding: '7px 14px', fontSize: '12px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, whiteSpace: 'normal',

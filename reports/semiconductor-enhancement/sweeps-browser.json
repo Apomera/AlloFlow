@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "checks": [
+    "run without live mutation",
+    "eleven samples",
+    "prediction capture",
+    "notebook evidence",
+    "held-setting restore",
+    "immutable run",
+    "logarithmic axis",
+    "invalid input",
+    "PN model gaps",
+    "signed P-channel current",
+    "keyboard link to 3D",
+    "mobile overflow",
+    "qualitative-mode guard",
+    "per-lesson persistence",
+    "five WCAG variants"
+  ],
+  "errors": []
+}

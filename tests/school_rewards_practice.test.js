@@ -52,6 +52,7 @@ describe('fictional repository', () => {
     const category = before.categories[0];
     const out = P.call('awardSchoolRewardsPoints', { studentId: target.id, amount: 3, categoryId: category.id, reason: 'Helped reset the lab', idempotencyKey: 'practice_award_0001' });
     expect(out.ok).toBe(true);
+    expect(out.entry).toMatchObject({ actorEmail: before.actor.email, actorRole: before.actor.role, idempotencyKey: 'practice_award_0001' });
     expect(out.balance).toBe(target.balance + 3);
     const again = P.call('awardSchoolRewardsPoints', { studentId: target.id, amount: 3, categoryId: category.id, reason: 'Helped reset the lab', idempotencyKey: 'practice_award_0001' });
     expect(again.entry.id).toBe(out.entry.id);

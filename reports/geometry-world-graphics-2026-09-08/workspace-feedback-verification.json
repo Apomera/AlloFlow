@@ -1,0 +1,101 @@
+{
+  "scope": "Geometry World final workspace-feedback verification; accumulated functional run plus bounded final-source fixes",
+  "pass": true,
+  "browsersClosed": true,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "width": 390,
+      "height": 844
+    },
+    {
+      "width": 320,
+      "height": 700
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "landscape": true
+    }
+  ],
+  "stages": [
+    {
+      "file": "workspace-feedback-results.json",
+      "recordedPass": false,
+      "functionalChecksPassed": true,
+      "preservedFailures": [
+        "320x700: achievement has clear space beside touch controls",
+        "844x390: achievement is quiet in short landscape"
+      ],
+      "resolvedBy": "workspace-feedback-toast-refresh-results.json"
+    },
+    {
+      "file": "workspace-feedback-toast-refresh-results.json",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "file": "workspace-feedback-closed-inspector-edit-results.json",
+      "pass": true,
+      "failures": []
+    }
+  ],
+  "selectedSTL": {
+    "bytes": 12984,
+    "sha256": "d89ff2407b55695caea0a5a5b1f0a8972d2cc3849c8d2b0ab8f030d04ab51715",
+    "parts": 48,
+    "restored": true
+  },
+  "textureCounts": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "textures": 11
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "textures": 11
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "textures": 11
+    },
+    {
+      "size": {
+        "width": 844,
+        "height": 390,
+        "landscape": true
+      },
+      "textures": 11
+    }
+  ],
+  "closedInspectorEdit": {
+    "selectedAfterEdit": 49,
+    "studentBlocksAfterEdit": 51,
+    "inspectorClosed": true,
+    "inspectorVisible": false,
+    "selectedAfterUndo": 48,
+    "studentBlocksAfterUndo": 50
+  },
+  "errors": [],
+  "shaderErrors": [],
+  "report": "WORKSPACE-FEEDBACK-VERIFICATION.md",
+  "screenshots": {
+    "wide": "workspace-feedback-1440x900-achievement-dimensions.png",
+    "phone": "workspace-feedback-390x844-achievement-dimensions.png",
+    "narrow": "workspace-feedback-320x700-achievement-dimensions.png",
+    "landscape": "workspace-feedback-844x390-dimensions.png"
+  },
+  "limitation": "Chromium SwiftShader DPR1 saver profile; touch and phone-UA emulation, not physical-device or hardware-GPU performance certification"
+}

@@ -225,10 +225,10 @@ describe('Water Cycle Precipitation Lab', () => {
       expect(source).toContain('var cloudInteriorDepthSpritesPrecip3d = [];');
       expect(source).toContain('var cloudBaseDeckSpritesPrecip3d = [];');
       expect(source).toContain('var cloudSilverLiningSpritesPrecip3d = [];');
-      expect(source).toContain('var cloudAnvilVeilSpritesPrecip3d = [];');
+      expect(source.includes('var cloudVolumeAtlasPrecip3d = makeCloudVolumeAtlasPrecip3d();')).toBe(true);
       expect(source).toContain('canvasEl.dataset.precipitationCloudVolumeTechnique');
-      expect(source).toContain("? 'procedural-density-shelf' : 'hidden';");
-      expect(source).toContain("'parallax-density-depth-with-shell-mesh-hidden'");
+      expect(source).toContain("? 'volumetric-lifecycle-anvil' : 'hidden';");
+      expect(source).toContain("'transparent-volumetric-cutaway'");
       expect(source).toContain('function makePrecip3dRainShaftTexture(seedPrecip3d)');
       expect(source).toContain('var rainShaftTexturesPrecip3d = [');
       expect(source).toContain('var rainShaftGroupPrecip3d = new THREE.Group();');
@@ -250,7 +250,7 @@ describe('Water Cycle Precipitation Lab', () => {
       expect(source).toContain('surfaceWetnessTexturePrecip3d].concat(');
       expect(source).toContain('Translucent fall curtains represent many overlapping drops in depth');
       expect(source).toContain('A low phase-colored impact haze shows many particles arriving together');
-      expect(source).toContain('brief splash crowns and expanding rings reveal individual impacts');
+      expect(source.includes('synchronized splash crowns and expanding rings mark sampled liquid impacts')).toBe(true);
       expect(source).toContain('Wet surfaces gain a reflective film');
       expect(source).toContain('function drawCloudFormationMicrophysics(ctx2, w, h, cloudCenter, cloudY, cloudBase)');
       expect(source).toContain("canvasEl.dataset.cloudFormationRendering = 'rising-vapor-tracers-saturation-line-and-newborn-droplets';");
@@ -324,7 +324,7 @@ describe('Water Cycle Precipitation Lab', () => {
     expect(html).toContain('Drops collide + merge');
     expect(html).toContain('teaching tracers for invisible water vapor');
     expect(html).toContain('releases latent heat');
-    expect(html).toContain('Soft near-and-far density layers reveal cloud depth');
+    expect(html).toContain('transparent cutaway reveals droplets and ice inside the shaded cloud volume');
     expect(html).toContain('level underside marks the modeled saturation base');
     expect(html).toContain('Particles are enlarged for teaching and are not to scale');
   });

@@ -1,0 +1,11 @@
+{
+  "sourcePublicSha256": "5bb466acd9a368bd3c4ed40256e5f5d5c704b255ad8c162492ea553a397345a9",
+  "testFiles": 16,
+  "testsPassed": 300,
+  "newOpAmpTests": 28,
+  "bundledExamplesChecked": 26,
+  "routingFallbacks": 0,
+  "browserPageErrors": 0,
+  "scopedAxeViolations": 0,
+  "validationHost": "isolated local React host"
+}

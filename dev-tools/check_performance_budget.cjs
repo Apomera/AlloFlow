@@ -66,7 +66,14 @@ check(count(source, 'jsonrepair.min.js') === 1, 'jsonrepair has one on-demand lo
 check(count(source, 'jszip.min.js') === 1, 'JSZip has one on-demand loader and no eager duplicate');
 check(count(source, 'pptxgen.bundle.js') === 1, 'PptxGenJS has one on-demand loader and no eager duplicate');
 check(source.includes("classList.contains('alloflow-workspace-concealed')"), 'background module pump waits for the workspace');
-check(source.includes('Math.max(0, 1 - pendingCount)'), 'background module concurrency stays capped at one');
+// The adaptive pump counts only its own work and preserves a one-file budget
+// under input pressure / Data Saver. Runtime behavior is covered by
+// tests/deferred_module_pump.test.js; retain the legacy single-file check too.
+const boundedAdaptivePump = source.includes('var PUMP_PARALLEL = 3;')
+  && source.includes('var budget = (blocked || slowBackground) ? 1 : PUMP_PARALLEL;')
+  && source.includes('Math.max(0, budget - inFlight)');
+check(boundedAdaptivePump || source.includes('Math.max(0, 1 - pendingCount)'),
+  'background module concurrency is bounded (up to 3 normal, 1 constrained)');
 check(source.includes('pauseUntil = performance.now() + 3000'), 'background work yields for three seconds after input');
 check(sw.includes('ALLOFLOW_ACTIVATE_UPDATE') && source.includes('ALLOFLOW_ACTIVATE_UPDATE'), 'service-worker update requires explicit in-app activation');
 

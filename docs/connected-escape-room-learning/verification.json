@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "moduleRevision": "fc949e68c0",
+  "regressionTests": 200,
+  "testFiles": 8,
+  "newTests": 25,
+  "runnerNote": "Seven files passed with 179 tests. One forks-worker startup timed out before executing the remaining file; its isolated retry passed all 21 tests.",
+  "solo": {
+    "keyboardTabSteps": 373,
+    "liveWrites": 0,
+    "audits": 12,
+    "errors": []
+  },
+  "live": {
+    "independentBrowsers": 4,
+    "permissionCheckedWrites": 26,
+    "audits": 6,
+    "errors": []
+  },
+  "manualScreenReaderValidation": "Outstanding",
+  "deployment": "Local implementation only"
+}

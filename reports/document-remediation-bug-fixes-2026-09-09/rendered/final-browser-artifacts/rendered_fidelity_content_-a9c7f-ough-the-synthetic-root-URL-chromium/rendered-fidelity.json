@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "847967b92825fea93bb4a21510321208968adcad6422efd5fd8e58d08a6a6aaf",
+    "bytes": 51
+  },
+  "candidate": {
+    "sha256": "0767d060824a407cb07bd2ec5854b5ac51e7c629d1d1fcdb1943ee57a6d0901d",
+    "bytes": 52
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 510.5709999999999,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "p",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "href",
+          "status": "failed",
+          "source": {
+            "relative": "./chapter.pdf",
+            "resolved": "https://rendered-fidelity.invalid/chapter.pdf"
+          },
+          "candidate": {
+            "relative": "../chapter.pdf",
+            "resolved": "https://rendered-fidelity.invalid/chapter.pdf"
+          }
+        },
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Read the chapter",
+          "candidate": "Read the chapter"
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

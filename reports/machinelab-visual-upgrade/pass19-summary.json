@@ -1,0 +1,49 @@
+{
+  "enhancement": "Equal-tension cues identify the pulley supporting strands",
+  "tests": {
+    "passed": 348,
+    "files": 5,
+    "added": 13
+  },
+  "browser": {
+    "light": {
+      "scenarios": 13,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: pulley 390",
+        "Keyboard and held camera pose: pulley 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "dark": {
+      "scenarios": 13,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: pulley 390",
+        "Keyboard and held camera pose: pulley 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "contrast": {
+      "scenarios": 13,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: pulley 390",
+        "Keyboard and held camera pose: pulley 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "sourceSha256": "49313064d7922717c19689fc39dbc4c2f6a923f550bfe31ca2cb260fcfce2297",
+  "published": false
+}

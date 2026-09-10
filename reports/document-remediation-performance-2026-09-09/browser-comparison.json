@@ -1,0 +1,336 @@
+{
+  "browser": "148.0.7778.96",
+  "measuredAt": "2026-09-09T04:25:49.439Z",
+  "sourceSha256": "d1c3088e7ac9e8a61f1e9992ba615a21d94510dddeccaa99a7f6ebc6c34f67bd",
+  "methodology": "Local headless Chromium with network blocked; same-page paired gates, alternating order, one warmup and five measured timing trials per size.",
+  "fidelity": [
+    {
+      "name": "ARIA hiding",
+      "expectedReason": "source-visibility-changed",
+      "before": {
+        "accepted": false,
+        "reason": "source-visibility-changed",
+        "sourceLocation": "document"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "source-visibility-changed",
+        "sourceLocation": "document"
+      },
+      "passed": true
+    },
+    {
+      "name": "inline hiding",
+      "expectedReason": "source-visibility-changed",
+      "before": {
+        "accepted": false,
+        "reason": "source-visibility-changed",
+        "sourceLocation": "document"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "source-visibility-changed",
+        "sourceLocation": "document"
+      },
+      "passed": true
+    },
+    {
+      "name": "hidden ancestor",
+      "expectedReason": "source-visibility-changed",
+      "before": {
+        "accepted": false,
+        "reason": "source-visibility-changed",
+        "sourceLocation": "document"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "source-visibility-changed",
+        "sourceLocation": "document"
+      },
+      "passed": true
+    },
+    {
+      "name": "CSS hiding",
+      "expectedReason": "source-visibility-changed",
+      "before": {
+        "accepted": false,
+        "reason": "source-visibility-changed",
+        "sourceLocation": "document"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "source-visibility-changed",
+        "sourceLocation": "document"
+      },
+      "passed": true
+    },
+    {
+      "name": "table role",
+      "expectedReason": "table-semantics-changed",
+      "before": {
+        "accepted": false,
+        "reason": "table-semantics-changed",
+        "sourceLocation": "table:1"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "table-semantics-changed",
+        "sourceLocation": "table:1"
+      },
+      "passed": true
+    },
+    {
+      "name": "header downgrade",
+      "expectedReason": "table-semantics-changed",
+      "before": {
+        "accepted": false,
+        "reason": "table-semantics-changed",
+        "sourceLocation": "table:1/cell:1"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "table-semantics-changed",
+        "sourceLocation": "table:1/cell:1"
+      },
+      "passed": true
+    },
+    {
+      "name": "wrong header association",
+      "expectedReason": "table-semantics-changed",
+      "before": {
+        "accepted": false,
+        "reason": "table-semantics-changed",
+        "sourceLocation": "table:1/cell:4"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "table-semantics-changed",
+        "sourceLocation": "table:1/cell:4"
+      },
+      "passed": true
+    },
+    {
+      "name": "form value",
+      "expectedReason": "form-state-changed",
+      "before": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "passed": true
+    },
+    {
+      "name": "checkbox state",
+      "expectedReason": "form-state-changed",
+      "before": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "passed": true
+    },
+    {
+      "name": "form destination",
+      "expectedReason": "form-state-changed",
+      "before": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "passed": true
+    },
+    {
+      "name": "form label",
+      "expectedReason": "form-state-changed",
+      "before": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "passed": true
+    },
+    {
+      "name": "ARIA form label",
+      "expectedReason": "form-state-changed",
+      "before": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "passed": true
+    },
+    {
+      "name": "select state",
+      "expectedReason": "form-state-changed",
+      "before": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "passed": true
+    },
+    {
+      "name": "math operator",
+      "expectedReason": "math-content-changed",
+      "before": {
+        "accepted": false,
+        "reason": "math-content-changed",
+        "sourceLocation": "math:1"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "math-content-changed",
+        "sourceLocation": "math:1"
+      },
+      "passed": true
+    },
+    {
+      "name": "math structure",
+      "expectedReason": "math-content-changed",
+      "before": {
+        "accepted": false,
+        "reason": "math-content-changed",
+        "sourceLocation": "math:1"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "math-content-changed",
+        "sourceLocation": "math:1"
+      },
+      "passed": true
+    },
+    {
+      "name": "CJK wording",
+      "expectedReason": "source-reading-order-changed",
+      "before": {
+        "accepted": false,
+        "reason": "source-reading-order-changed"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "source-reading-order-changed"
+      },
+      "passed": true
+    },
+    {
+      "name": "Arabic wording",
+      "expectedReason": "source-reading-order-changed",
+      "before": {
+        "accepted": false,
+        "reason": "source-reading-order-changed"
+      },
+      "after": {
+        "accepted": false,
+        "reason": "source-reading-order-changed"
+      },
+      "passed": true
+    }
+  ],
+  "timings": [
+    {
+      "blocks": 10,
+      "inputBytes": 3166,
+      "samplesMs": {
+        "baseline": [
+          11.699999988079071,
+          9.599999964237213,
+          8.5,
+          9.599999964237213,
+          9.100000023841858
+        ],
+        "current": [
+          14,
+          10.600000023841858,
+          9.699999988079071,
+          8.900000035762787,
+          8.699999988079071
+        ]
+      },
+      "medianMs": {
+        "baseline": 9.599999964237213,
+        "current": 9.699999988079071
+      },
+      "ratio": 0.9896907191788913
+    },
+    {
+      "blocks": 100,
+      "inputBytes": 31336,
+      "samplesMs": {
+        "baseline": [
+          58.39999997615814,
+          64.20000004768372,
+          54.19999998807907,
+          52.30000001192093,
+          61.09999996423721
+        ],
+        "current": [
+          51.30000001192093,
+          51,
+          48.69999998807907,
+          50,
+          66.40000003576279
+        ]
+      },
+      "medianMs": {
+        "baseline": 58.39999997615814,
+        "current": 51
+      },
+      "ratio": 1.1450980387481988
+    },
+    {
+      "blocks": 400,
+      "inputBytes": 125236,
+      "samplesMs": {
+        "baseline": [
+          273.39999997615814,
+          257.39999997615814,
+          268.80000001192093,
+          241,
+          256.10000002384186
+        ],
+        "current": [
+          194.39999997615814,
+          209.60000002384186,
+          193.19999998807907,
+          198.19999998807907,
+          197.80000001192093
+        ]
+      },
+      "medianMs": {
+        "baseline": 257.39999997615814,
+        "current": 197.80000001192093
+      },
+      "ratio": 1.3013144588505827
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_connected_network.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a balanced bridge with zero current in the cross-link
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves the loaded unbalanced bridge without treating its arms independently
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > accounts for a series feeder shared by parallel loads
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > supports an independent 3 V source between two non-ground nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > supports an independent -3 V source between two non-ground nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a signed current source of 0.005 A with a resistive return
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a signed current source of -0.005 A with a resistive return
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a signed current source of 1e-12 A with a resistive return
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > keeps known differential voltages and currents in a floating source loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > knows zero resistor drop without assigning a ground to isolated nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > retains node voltages but does not invent how parallel ideal sources share current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > uses an ideal closed wire without artificial resistance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > uses an ideal closed switch without artificial resistance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > marks only redundant wire currents unknown and still knows their zero power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > leaves the voltage of an open switch to a floating island unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects conflicting sources without leaking stale readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects shorted source without leaking stale readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects same-node nonzero source without leaking stale readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects a current source without a return even at 0.005 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects a current source without a return even at -0.005 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects a current source without a return even at 1e-12 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > handles balanced ideal current sources without inventing their terminal voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > conserves current and power across cross-linked networks and wide resistance ratios
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·······················stdout | tests/circuit_connected_network.test.js > general connected DC networks > normalizes finite settings, bounded part counts, node names, and unique IDs without mutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > exports terminal connectivity, polarity, and blank unknown values in CSV
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  18:17:56
+   Duration  6.35s (transform 298ms, setup 242ms, import 227ms, tests 1.72s, environment 3.50s)
+

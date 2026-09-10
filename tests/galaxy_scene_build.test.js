@@ -257,6 +257,43 @@ describe('galaxy 3-D scene builder', () => {
     assertClean();
   }, SCENE_TIMEOUT);
 
+  it('changes viewing angle without losing zoom and lets manual input take over', async () => {
+    const getState = await mountGalaxy({ ...LIGHT, galaxyQuality: 'balanced', galaxyAutoRotate: false });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    const layers = canvas._layers;
+    let now = Date.now();
+    const clock = vi.spyOn(Date, 'now').mockImplementation(() => now);
+    try {
+      await React.act(async () => { canvas._galaxyZoom('in'); });
+      const radius = canvas._galaxyOrbit.r;
+      const theta = canvas._galaxyOrbit.theta;
+      for (const [angle, phi] of [['face', 0.1], ['angled', Math.PI * 0.35], ['edge', Math.PI * 0.5]]) {
+        await React.act(async () => { host.querySelector('[data-galaxy-view-angle="' + angle + '"]').click(); now += 800; restoreLoops.step(); });
+        expect(canvas._galaxyOrbit.phi).toBeCloseTo(phi, 8);
+        expect(canvas._galaxyOrbit.r).toBe(radius);
+        expect(canvas._galaxyOrbit.theta).toBe(theta);
+        expect(canvas._layers).toBe(layers);
+      }
+      await React.act(async () => { canvas._galaxySetTour(true); canvas._galaxySetViewAngle('edge'); now += 800; restoreLoops.step(); });
+      expect(getState().galaxy.galaxyTourActive).toBe(false);
+      for (const input of ['wheel', 'zoom', 'arrow']) {
+        await React.act(async () => {
+          canvas._galaxySetViewAngle('face');
+          if (input === 'wheel') canvas.dispatchEvent(new window.WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true }));
+          else if (input === 'zoom') canvas._galaxyZoom('in');
+          else canvas.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true }));
+        });
+        const orbit = { ...canvas._galaxyOrbit };
+        await React.act(async () => { now += 1000; restoreLoops.step(); });
+        expect(canvas._galaxyOrbit, input).toEqual(orbit);
+      }
+      const orbit = { ...canvas._galaxyOrbit };
+      canvas._galaxySetViewAngle('__proto__');
+      expect(canvas._galaxyOrbit).toEqual(orbit);
+      assertClean();
+    } finally { clock.mockRestore(); }
+  }, SCENE_TIMEOUT);
+
   it('exposes working scene handles after building', async () => {
     await mountGalaxy({ ...LIGHT, galaxyQuality: 'high' });
     const canvas = host.querySelector('[data-galaxy-canvas]');

@@ -65,8 +65,11 @@ function doGet(e) {
   }
   if (api === 'status') return HtmlService.createHtmlOutput(statusPageHtml_()).setTitle('School Rewards deployment check');
   try {
-    currentActor_();
-    return HtmlService.createTemplateFromFile('Index').evaluate().setTitle('AlloFlow School Rewards');
+    var actor = currentActor_(), template = HtmlService.createTemplateFromFile('Index');
+    // A navigation hint only: never forward a draft, identity, reason, or arbitrary
+    // query value to the page. All recognition actions remain authenticated RPCs.
+    template.initialView = e && e.parameter && e.parameter.view === 'recognition' && ['admin', 'staff'].indexOf(actor.role) >= 0 ? 'recognition' : '';
+    return template.evaluate().setTitle('AlloFlow School Rewards');
   } catch (err) {
     return HtmlService.createHtmlOutput('<!doctype html><meta charset="utf-8"><title>Access unavailable</title><main style="font:16px system-ui;max-width:680px;margin:64px auto;padding:24px"><h1>Access unavailable</h1><p>School Rewards could not verify an authorized managed Google Education account.</p><p>Ask the school administrator to check the domain-only deployment and your membership.</p></main>');
   }
@@ -121,6 +124,7 @@ function setupSchoolRewardsRepository(config) {
     if (domain !== props.getProperty('SR_ALLOWED_DOMAIN')) throw srError_('bad_config', 'Changing the domain requires a new reviewed deployment.');
     book = book_();
   }
+  if (existing) assertNoPendingClassLinkOperation_(book);
   var priorSchemaVersion = existing ? number_(configMap_(book).schemaVersion) : SR_VERSION;
   if (existing && !priorSchemaVersion) throw srError_('schema', 'The existing repository has no valid schema version. Run the reviewed migration path before reconfiguration.');
   if (existing && priorSchemaVersion >= 6 && !mailDeliverySecret_(false)) throw srError_('mail_integrity', 'The mail delivery signing secret is unavailable. Restore the original Script Property before changing this repository.');
@@ -248,6 +252,7 @@ function getSchoolRewardsBootstrap() {
     windows: windows_(book).filter(function(item) { return item.status !== 'ARCHIVED'; }),
     recentLedger: recentLedgerItems, recentOrders: recentOrderRows.map(function(order) { return orderDto_(book, order); }), recentReceipts: actor.role === 'staff' ? [] : receiptDtosForOrders_(book, recentOrderRows),
     emailSchedule: emailSchedule_(), mailQuota: mailQuota_() };
+  if (actor.role === 'admin' || actor.role === 'staff') result.classLinksSupported = true;
   if (actor.role === 'admin') {
     result.members = members_(book);
     result.recentMailRuns = mailRuns_(book).slice(-25).reverse().map(function(run) { return mailRunDto_(book, run); });
@@ -925,6 +930,8 @@ function exportSchoolRewardsStudentRecord(request) {
       var found = sheetRowsFor_(book, entry[0], entry[1], studentId);
       if (found.length) sections[entry[0]] = found;
     });
+    var classLinks = classLinkStudentRecords_(book, studentId);
+    if (classLinks.length) sections.AlloFlowClassLinks = classLinks;
     appendAudit_({ event: 'STUDENT_RECORD_EXPORTED', type: 'student', id: studentId, summary: 'Full student record exported for a records request' }, actor);
     return {
       ok: true,
@@ -1137,7 +1144,7 @@ var SR_SHEET_CELL_LIMIT = 10000000;
 var SR_MIN_PRUNE_DAYS = 180;
 
 function schoolRewardsSheetSizes_(book) {
-  var names = Object.keys(SR_SHEETS).concat(['Preferences', 'YearSummaries']);
+  var names = Object.keys(SR_SHEETS).concat(['Preferences', 'YearSummaries', 'AlloFlowClassHeads', 'AlloFlowClassVersions']);
   var seen = {}, sizes = [], cells = 0;
   names.forEach(function(name) {
     if (seen[name]) return;
@@ -1145,7 +1152,7 @@ function schoolRewardsSheetSizes_(book) {
     var sheet = book.getSheetByName(name);
     if (!sheet) return;
     var headers = SR_SHEETS[name];
-    var width = headers ? headers.length : (name === 'YearSummaries' ? SR_YEAR_SUMMARY_HEADERS.length : 3);
+    var width = headers ? headers.length : name === 'AlloFlowClassVersions' ? classLinkHeaders_().length : name === 'AlloFlowClassHeads' ? 2 : (name === 'YearSummaries' ? SR_YEAR_SUMMARY_HEADERS.length : 3);
     var rows = Math.max(0, sheet.getLastRow() - 1);
     sizes.push({ sheet: name, rows: rows, cells: rows * width });
     cells += rows * width;
@@ -1161,6 +1168,8 @@ function prunableIdempotencyRows_(book, cutoff) {
     if (!at || at >= cutoff) continue;
     var raw = String(cell_(rows[i][2])), journal = null;
     try { journal = JSON.parse(raw); } catch (_) { journal = null; }
+    // Class-link commit provenance remains with immutable historical snapshots.
+    if (journal && journal.journalVersion === 1 && journal.kind === 'class_links') continue;
     // Keep anything still in flight: recovery needs it.
     if (journal && (journal.journalVersion || journal.printRemixVersion) && journal.state !== 'COMPLETED') continue;
     out.push(i);
@@ -1488,6 +1497,11 @@ function recoverSchoolRewardsOperation(request) {
   return locked_(function() {
     var book = book_(), state = loadCoreOperationByKey_(book, key), recoveryId = hash_(key).slice(0, 20);
     if (state.result) {
+      if (state.journal.kind === 'class_links') {
+        validatePendingCoreJournal_(book, key, state.operation, state.journal);
+        var linkReceipt = classLinkReceipt_(classLinkVersion_(book, state.journal.intent.newRevision), key);
+        if (stableJson_(state.result) !== stableJson_(linkReceipt)) classLinkFail_('integrity', 'The saved class-link receipt does not match its signed key and original administrator.');
+      }
       if (auditEventExists_('ADMIN_RECOVERY_STARTED', recoveryId)) appendAuditOnce_({ event: 'CORE_OPERATION_ADMIN_RECOVERED', type: 'idempotency', id: recoveryId, summary: 'Administrator recovery completion verified for ' + state.journal.kind + ' operation' }, recoveryActor);
       return { ok: true, recovered: false, kind: state.journal.kind, keyHash: recoveryId, result: state.result };
     }
@@ -2086,12 +2100,13 @@ function configMap_(book) { var map = {}; rows_(sheet_(book, 'Config'), 2).forEa
 
 function members_(book) { return rows_(sheet_(book, 'Members'), 4).map(function(row) { return { email: normalizeEmail_(row[0]), displayName: String(row[1] || ''), role: String(row[2] || ''), active: bool_(row[3]) }; }); }
 function normalizeMember_(value, domain) { value = object_(value); var email = normalizeEmail_(value.email), role = text_(value.role, 20, '').toLowerCase(); if (!email || emailDomain_(email) !== domain) throw srError_('bad_member', 'Use a school email address that ends in the school domain.'); if (SR_ROLES.indexOf(role) < 0) throw srError_('bad_member', 'Choose a role: administrator, staff, or cashier.'); return { email: email, displayName: text_(value.displayName, 120, email.split('@')[0]), role: role, active: value.active !== false }; }
-function upsertMemberRow_(book, member) { upsert_(sheet_(book, 'Members'), 4, member.email, safeRow_([member.email, member.displayName, member.role, member.active])); }
+function upsertMemberRow_(book, member) { assertNoPendingClassLinkOperation_(book); upsert_(sheet_(book, 'Members'), 4, member.email, safeRow_([member.email, member.displayName, member.role, member.active])); }
 function assertAdminInvariant_(member) { var count = 0; members_(book_()).forEach(function(item) { if (item.email !== member.email && item.role === 'admin' && item.active) count++; }); if (member.role === 'admin' && member.active) count++; if (!count) throw srError_('admin_required', 'The school needs at least one active administrator, so this account cannot be removed or demoted.'); }
 
 function students_(book) { return rows_(sheet_(book, 'Students'), 9).map(function(row) { return { id: String(row[0] || ''), firstName: String(row[1] || ''), lastInitial: String(row[2] || ''), grade: String(row[3] || ''), homeroom: String(row[4] || ''), email: normalizeEmail_(row[5]), active: bool_(row[6]), createdAt: cell_(row[7]), updatedAt: cell_(row[8]) }; }); }
 function normalizeStudent_(value, domain, existingId) { value = object_(value); var email = normalizeEmail_(value.email), firstName = text_(value.firstName, 80, ''); if (!email || emailDomain_(email) !== domain) throw srError_('bad_student', 'Use the student\'s school Google email, which must end in the school domain.'); if (!firstName) throw srError_('bad_student', 'Student first name is required.'); return { id: existingId || text_(value.id, 80, ''), firstName: firstName, lastInitial: text_(value.lastInitial, 4, '').slice(0, 1).toUpperCase(), grade: text_(value.grade, 20, ''), homeroom: text_(value.homeroom, 80, ''), email: email, active: value.active !== false }; }
 function upsertStudentRow_(book, student) {
+  assertNoPendingClassLinkOperation_(book);
   var existing = students_(book), studentId = student.id || uuid_(), createdAt = now_();
   existing.forEach(function(item) { if (item.email === student.email && item.id !== studentId) throw srError_('duplicate_student', 'That email is already on the roster.'); if (item.id === studentId) createdAt = item.createdAt || createdAt; });
   assertMailRecipientMutationAllowed_(book, studentId, '');
@@ -3521,6 +3536,12 @@ function journalExactAt_(value) { var normalized = iso_(value); if (!value || no
 function historicalCategoryById_(book, categoryId) { var list = categories_(book); for (var i = 0; i < list.length; i++) if (list[i].id === categoryId) return list[i]; return null; }
 function validatePendingCoreJournal_(book, key, operation, journal) {
   assertCoreJournalSignature_(key, operation, journal);
+  if (journal.kind === 'class_links') {
+    var linkIntent = journal.intent;
+    if (!linkIntent || linkIntent.actorRole !== 'admin' || !linkIntent.actorEmail || normalizeEmail_(linkIntent.actorEmail) !== linkIntent.actorEmail || emailDomain_(linkIntent.actorEmail) !== allowedDomain_()) classLinkFail_('integrity', 'The class-link journal has an invalid original administrator.');
+    journalExactAt_(linkIntent.at); validateClassLinkJournal_(book, key, operation, journal);
+    return { email: linkIntent.actorEmail, role: linkIntent.actorRole };
+  }
   var kind = String(journal.kind || ''), intent = object_(journal.intent), actorEmail = normalizeEmail_(intent.actorEmail), actorRole = String(intent.actorRole || ''), allowedRoles = { award: ['admin', 'staff'], reverse: ['admin', 'staff'], checkout: ['admin', 'cashier'], refund: ['admin'], catalog: ['admin'] };
   if (!allowedRoles[kind] || allowedRoles[kind].indexOf(actorRole) < 0 || !actorEmail || actorEmail !== intent.actorEmail || emailDomain_(actorEmail) !== allowedDomain_()) throw srError_('journal_intent_invalid', 'The pending operation has an invalid original business actor.');
   var actor = { email: actorEmail, role: actorRole }, canonical, payload;
@@ -3743,13 +3764,14 @@ function loadCoreOperationByKey_(book, key) {
   if (records.length > 1) throw srError_('idempotency_corrupt', 'That request key appears more than once. Review the integrity report.');
   if (!records.length) throw srError_('not_found', 'No saved operation journal was found for that request key.');
   var saved = parseIdemPayload_(records[0][2]);
-  if (!saved || saved.journalVersion !== 1 || !saved.intent || ['award', 'reverse', 'checkout', 'refund', 'catalog'].indexOf(saved.kind) < 0 || ['INTENT', 'MUTATIONS_APPLIED', 'COMPLETED'].indexOf(saved.state) < 0) throw srError_('idempotency_corrupt', 'That request key is not a recoverable core operation journal.');
+  if (!saved || saved.journalVersion !== 1 || !saved.intent || ['award', 'reverse', 'checkout', 'refund', 'catalog', 'class_links'].indexOf(saved.kind) < 0 || ['INTENT', 'MUTATIONS_APPLIED', 'COMPLETED'].indexOf(saved.state) < 0) throw srError_('idempotency_corrupt', 'That request key is not a recoverable core operation journal.');
   return { operation: String(records[0][1]), journal: saved, result: saved.state === 'COMPLETED' ? saved.result : null };
 }
 function resumeCoreOperation_(book, key, operation, journal) {
   if (!journal || !journal.intent) throw srError_('idempotency_corrupt', 'The saved operation journal has no recovery intent.');
   if (journal.state === 'COMPLETED') return journal.result;
   var businessActor = validatePendingCoreJournal_(book, key, operation, journal);
+  if (journal.kind === 'class_links') return resumeClassLinkCoreOperation_(book, key, operation, journal, businessActor);
   if (journal.kind === 'award') return resumeAwardCoreOperation_(book, key, operation, journal, businessActor);
   if (journal.kind === 'reverse') return resumeReverseCoreOperation_(book, key, operation, journal, businessActor);
   if (journal.kind === 'checkout') return resumeCheckoutCoreOperation_(book, key, operation, journal, businessActor);
@@ -3920,6 +3942,7 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
   }
   function validateCompletedJournal(saved, key) {
     var intent = saved.intent || {}, result = saved.result || {}, actualLedger = intent.ledgerId ? ledgerById[intent.ledgerId] : null, expectedLedger = null;
+    if (saved.kind === 'class_links') { checkCompletedClassLink_(book, saved, key, issue); return; }
     if (saved.kind === 'catalog') {
       if (!result.item || stableJson_(result.item) !== stableJson_(intent.item)) issue('ERROR', 'JOURNAL_RESULT_INTENT_MISMATCH', 'idempotency', key, 'Completed catalog journal result does not match its signed item snapshot.');
       (intent.inventoryMovements || []).forEach(function(expectedMovement) {
@@ -4299,3 +4322,304 @@ function html_(value) { return String(value == null ? '' : value).replace(/&/g, 
 function srError_(code, message) { var error = new Error(message); error.code = code; return error; }
 function publicError_(err) { return { ok: false, code: err && err.code ? String(err.code) : 'server_error', error: err && err.message ? String(err.message) : 'School Rewards request failed.' }; }
 function jsonOutput_(value) { return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON); }
+// Optional reviewed AlloFlow class links. Schema 6 stays valid when these tables are absent.
+// Snapshots contain pseudonymous identity associations; historical associations are retained.
+var SR_CLASS_LINK_MAX_BYTES = 256 * 1024;
+var SR_CLASS_LINK_CHUNKS = 16;
+var SR_CLASS_LINK_CHUNK_SIZE = 16384;
+function classLinkFail_(code, message) { throw srError_('class_links_' + code, message); }
+function classLinkLocked_(actor, callback) {
+  return locked_(function() {
+    var current = currentActor_();
+    if (current.email !== actor.email || current.role !== actor.role) classLinkFail_('actor_changed', 'Staff authorization changed while waiting to access class links. Review this request again.');
+    return callback();
+  });
+}
+function checkCompletedClassLink_(book, saved, key, issue) {
+  try {
+    var version = classLinkVersion_(book, saved.intent.newRevision);
+    if (stableJson_(saved.result) !== stableJson_(classLinkReceipt_(version, key))) issue('ERROR', 'JOURNAL_RESULT_INTENT_MISMATCH', 'idempotency', key, 'Completed class-link receipt does not match its signed snapshot.');
+    classLinkHeads_(book);
+  } catch (_) { issue('ERROR', 'CLASS_LINK_SNAPSHOT_INVALID', 'idempotency', key, 'A signed class-link snapshot or committed head failed verification.'); }
+}
+function assertNoPendingClassLinkOperation_(book) {
+  if (pendingCoreJournals_(book).some(function(j) { return j.kind === 'class_links'; })) classLinkFail_('recovery_required', 'Recover the pending class-link review before changing roster identities, staff membership, or school configuration.');
+}
+function classLinkShape_(value, keys, required) {
+  if (!value || Object.prototype.toString.call(value) !== '[object Object]' || Object.keys(value).some(function(k) { return keys.indexOf(k) < 0; }) || required.some(function(k) { return !Object.prototype.hasOwnProperty.call(value, k); })) classLinkFail_('invalid', 'The class-link request has invalid or unexpected fields.');
+}
+function classLinkId_(value) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{1,160}$/.test(value) || /^(?:__proto__|prototype|constructor)$/i.test(value)) classLinkFail_('invalid', 'The class-link request contains an invalid identity.');
+  return value;
+}
+function classLinkCodename_(name) {
+  if (typeof name !== 'string' || !name.trim() || name.length > 80 || name.trim() !== name || /[\u0000-\u001f\u007f-\u009f]/.test(name) || /^(?:__proto__|prototype|constructor)$/i.test(name)) classLinkFail_('invalid', 'Each learner needs a valid codename of at most 80 characters.');
+  var compact = name.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]/gu, '');
+  if (!/[\p{L}\p{N}]/u.test(compact)) classLinkFail_('invalid', 'A learner codename must contain a letter or number.');
+  return compact;
+}
+function classLinkSize_(text) {
+  if (typeof text !== 'string' || text.length > SR_CLASS_LINK_MAX_BYTES || Utilities.newBlob(text).getBytes().length > SR_CLASS_LINK_MAX_BYTES) classLinkFail_('too_large', 'The class-link snapshot exceeds the 256 KiB limit.');
+  return text;
+}
+function classLinkHeaders_() { var headers = ['VersionId', 'MetadataJson', 'ChunkCount']; for (var i = 0; i < SR_CLASS_LINK_CHUNKS; i++) headers.push('Chunk' + (i + 1)); return headers; }
+function classLinkSheet_(book, name, create) {
+  var headers = name === 'AlloFlowClassHeads' ? ['ClassId', 'HeadJson'] : classLinkHeaders_(), sheet = book.getSheetByName(name);
+  if (!sheet && create) sheet = book.insertSheet(name);
+  if (!sheet) classLinkFail_('not_configured', 'Reviewed class-link storage has not been initialized.');
+  if (!sheet.getLastRow() && create) { if (sheet.getMaxColumns() < headers.length) sheet.insertColumnsAfter(sheet.getMaxColumns(), headers.length - sheet.getMaxColumns()); sheet.getRange(1, 1, 1, headers.length).setValues([headers]); sheet.setFrozenRows(1); }
+  if (stableJson_(sheet.getRange(1, 1, 1, headers.length).getValues()[0]) !== stableJson_(headers)) classLinkFail_('integrity', 'Class-link storage headers do not match the reviewed format.');
+  return sheet;
+}
+function classLinkConfig_(book, requireEnabled) {
+  var config = configMap_(book), enabled = config.classLinksEnabled === 'true', repositoryId = config.classLinksRepositoryId || '';
+  if (requireEnabled && !enabled) classLinkFail_('disabled', 'Class identity linking is disabled until district mapping and historical-retention review is confirmed.');
+  if (enabled && (!repositoryId || config.classLinksReviewVersion !== '1')) classLinkFail_('integrity', 'Class-link configuration is incomplete.');
+  return { enabled: enabled, repositoryId: repositoryId, academicYear: config.academicYear || '', yearKey: hash_(stableJson_([config.academicYear || '', config.academicYearStartedAt || ''])) };
+}
+function adminConfigureSchoolRewardsClassLinks(request) {
+  var actor = requireRole_(['admin']); classLinkShape_(request, ['enabled', 'reviewed'], ['enabled']);
+  if (typeof request.enabled !== 'boolean' || (request.enabled && request.reviewed !== true)) classLinkFail_('review_required', 'Confirm district review of identity mapping and retained historical pseudonymous associations before enabling links.');
+  return classLinkLocked_(actor, function() {
+    var book = book_(), before = classLinkConfig_(book, false); assertNoPendingCoreOperation_(book, '');
+    if (request.enabled) { classLinkSheet_(book, 'AlloFlowClassHeads', true); classLinkSheet_(book, 'AlloFlowClassVersions', true); coreJournalSecret_(true); }
+    var repositoryId = before.repositoryId || (request.enabled ? 'repo_' + uuid_() : '');
+    if (before.enabled !== request.enabled || repositoryId !== before.repositoryId) {
+      putConfig_(book, { classLinksEnabled: request.enabled ? 'true' : 'false', classLinksRepositoryId: repositoryId, classLinksReviewVersion: request.enabled ? '1' : (configMap_(book).classLinksReviewVersion || ''), classLinksSettingsRevision: uuid_() });
+
+    }
+    var settingsRevision = configMap_(book).classLinksSettingsRevision; if (settingsRevision) appendAuditOnce_({ event: 'CLASS_LINK_SETTINGS_REVIEWED', type: 'repository', id: settingsRevision, summary: request.enabled ? 'Class identity linking enabled after district mapping and historical-retention review' : 'Class identity linking disabled' }, actor);
+    var after = classLinkConfig_(book, false); return { ok: true, enabled: after.enabled, repositoryId: after.repositoryId, yearKey: after.yearKey };
+  });
+}
+function classLinkParse_(text) { try { return JSON.parse(String(text)); } catch (_) { classLinkFail_('integrity', 'Class-link storage contains malformed data. No identities were resolved.'); } }
+function classLinkVersion_(book, versionId, versionRows) {
+  var rows = versionRows || rows_(classLinkSheet_(book, 'AlloFlowClassVersions', false), 3 + SR_CLASS_LINK_CHUNKS), matches = rows.filter(function(r) { return String(r[0]) === versionId; });
+  if (rows.length > 10000 || matches.length !== 1) classLinkFail_('integrity', 'The class-link snapshot is missing, duplicated, or exceeds storage limits.');
+  var row = matches[0], metadata = classLinkParse_(row[1]), count = Number(row[2]), serialized = '';
+  if (!Number.isInteger(count) || count < 1 || count > SR_CLASS_LINK_CHUNKS) classLinkFail_('integrity', 'The class-link snapshot chunk count is invalid.');
+  for (var i = 0; i < SR_CLASS_LINK_CHUNKS; i++) {
+    if (i < count) { var chunk = classLinkParse_(row[3 + i]); if (typeof chunk !== 'string' || chunk.length > SR_CLASS_LINK_CHUNK_SIZE) classLinkFail_('integrity', 'A class-link snapshot chunk is invalid.'); serialized += chunk; }
+    else if (String(row[3 + i] || '') !== '') classLinkFail_('integrity', 'Unexpected class-link snapshot chunks were found.');
+  }
+  classLinkSize_(serialized);
+  classLinkShape_(metadata, ['versionId', 'classId', 'repositoryId', 'yearKey', 'parentRevision', 'contentHash', 'requestHash', 'actorEmail', 'actorRole', 'at', 'signature'], ['versionId', 'classId', 'repositoryId', 'yearKey', 'parentRevision', 'contentHash', 'requestHash', 'actorEmail', 'actorRole', 'at', 'signature']);
+  var signed = {}; Object.keys(metadata).forEach(function(k) { if (k !== 'signature') signed[k] = metadata[k]; });
+  var secret = coreJournalSecret_(false);
+  if (!secret || metadata.versionId !== versionId || metadata.contentHash !== hash_(serialized) || !secureTextEqual_(metadata.signature, coreJournalSignature_(versionId, 'class_links_snapshot', 'class_links_snapshot', signed, secret))) classLinkFail_('integrity', 'The signed class-link snapshot failed verification.');
+  var snapshot = classLinkParse_(serialized);
+  if (!snapshot || snapshot.classId !== metadata.classId || snapshot.repositoryId !== metadata.repositoryId || snapshot.yearKey !== metadata.yearKey || !Array.isArray(snapshot.learners) || snapshot.learners.length > 500 || !Array.isArray(snapshot.staffEmails) || snapshot.staffEmails.length > 50) classLinkFail_('integrity', 'The class-link snapshot identity does not match its signed metadata.');
+  return { metadata: metadata, snapshot: snapshot };
+}
+function classLinkVerifyHead_(book, head, versionRows, journalRows) {
+  var relevant = [];
+  journalRows.forEach(function(row) {
+    var journal; try { journal = JSON.parse(String(row[2])); } catch (_) { return; }
+    if (!journal || journal.journalVersion !== 1 || journal.kind !== 'class_links' || !journal.intent || journal.intent.classId !== head.classId) return;
+    if (['INTENT', 'MUTATIONS_APPLIED', 'COMPLETED'].indexOf(journal.state) < 0) classLinkFail_('integrity', 'A class-link provenance journal has an invalid state.');
+    assertCoreJournalSignature_(String(row[0]), String(row[1]), journal);
+    validateClassLinkJournal_(book, String(row[0]), String(row[1]), journal, versionRows);
+    relevant.push(journal);
+  });
+  if (relevant.filter(function(j) { return j.intent.newRevision === head.revision; }).length !== 1) classLinkFail_('integrity', 'The committed class-link head has no unique signed commit journal.');
+  var ancestors = Object.create(null), metadata = head.metadata, count = 0;
+  while (metadata) {
+    if (ancestors[metadata.versionId] || ++count > 10000 || metadata.classId !== head.classId || metadata.repositoryId !== head.metadata.repositoryId) classLinkFail_('integrity', 'The committed class-link version chain is invalid.');
+    ancestors[metadata.versionId] = true;
+    metadata = metadata.parentRevision ? classLinkVersion_(book, metadata.parentRevision, versionRows).metadata : null;
+  }
+  if (relevant.some(function(j) { return j.state === 'COMPLETED' && !ancestors[j.intent.newRevision]; })) classLinkFail_('integrity', 'The class-link head was rolled back or diverged from a completed review.');
+}
+function classLinkHeads_(book) {
+  if (!book.getSheetByName('AlloFlowClassHeads')) return [];
+  var seen = Object.create(null), heads = rows_(classLinkSheet_(book, 'AlloFlowClassHeads', false), 2), versionRows = rows_(classLinkSheet_(book, 'AlloFlowClassVersions', false), 3 + SR_CLASS_LINK_CHUNKS), journalRows = rows_(sheet_(book, 'Idempotency'), 4);
+  if (heads.length > 250) classLinkFail_('too_large', 'This repository exceeds the 250 linked-class limit.');
+  return heads.map(function(row) {
+    var classId = classLinkId_(String(row[0])), head = classLinkParse_(row[1]);
+    classLinkShape_(head, ['versionId'], ['versionId']);
+    if (seen[classId]) classLinkFail_('integrity', 'A class has duplicate committed link heads.'); seen[classId] = true;
+    var version = classLinkVersion_(book, head.versionId, versionRows);
+    if (version.snapshot.classId !== classId) classLinkFail_('integrity', 'A committed link head names a different class.');
+    var committed = { classId: classId, revision: head.versionId, metadata: version.metadata, snapshot: version.snapshot };
+    classLinkVerifyHead_(book, committed, versionRows, journalRows);
+    return committed;
+  });
+}
+function classLinkRevision_(heads) { return hash_(stableJson_(heads.map(function(h) { return [h.classId, h.revision]; }).sort(function(a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; }))); }
+function classLinkStudentFingerprint_(student) { return hash_(stableJson_([student.id, student.email, student.createdAt])); }
+function classLinkStudentMap_(book) {
+  var map = Object.create(null);
+  students_(book).forEach(function(s) { if (map[s.id]) classLinkFail_('integrity', 'The canonical student roster contains duplicate identities.'); map[s.id] = s; });
+  return map;
+}
+function classLinkEligible_(book, learner, studentMap) {
+  var student = learner.studentId && (studentMap ? studentMap[learner.studentId] : studentById_(book, learner.studentId));
+  return learner.active === true && student && student.active === true && learner.studentFingerprint === classLinkStudentFingerprint_(student) ? student : null;
+}
+function getSchoolRewardsAlloFlowLinkContext() {
+  var actor = requireRole_(['admin']);
+  return classLinkLocked_(actor, function() {
+    var book = book_(), config = classLinkConfig_(book, false), heads = config.enabled ? classLinkHeads_(book) : [];
+    return { ok: true, enabled: config.enabled, repositoryId: config.repositoryId, yearKey: config.yearKey, academicYear: config.academicYear, rosterRevision: sisRosterRevision_(book), linksRevision: classLinkRevision_(heads),
+      students: config.enabled ? students_(book).filter(function(s) { return s.active; }) : [],
+      staff: config.enabled ? members_(book).filter(function(m) { return m.active && ['admin', 'staff'].indexOf(m.role) >= 0; }).map(function(m) { return { email: m.email, displayName: m.displayName, role: m.role }; }) : [],
+      classes: heads.map(function(h) { return { classId: h.classId, revision: h.revision, yearKey: h.snapshot.yearKey, count: h.snapshot.learners.filter(function(l) { return l.active && l.studentId; }).length, grantCount: h.snapshot.staffEmails.length, suspendedLearnerIds: h.snapshot.learners.filter(function(l) { return l.suspended; }).map(function(l) { return l.learnerId; }) }; }) };
+  });
+}
+function classLinkProposal_(request, apply) {
+  var keys = ['roster', 'bindings', 'staffEmails', 'expectedRepositoryId', 'expectedYearKey', 'suspendedLearnerIds'];
+  if (apply) keys = keys.concat(['expectedContentHash', 'expectedRosterRevision', 'expectedLinksRevision', 'confirmed', 'idempotencyKey']);
+  classLinkShape_(request, keys, keys.filter(function(k) { return k !== 'suspendedLearnerIds'; })); classLinkSize_(JSON.stringify(request));
+  var roster = request.roster; classLinkShape_(roster, ['format', 'version', 'classId', 'learners'], ['format', 'version', 'classId', 'learners']);
+  if (roster.format !== 'alloflow-store-roster' || roster.version !== 1 || !Array.isArray(roster.learners) || !roster.learners.length || roster.learners.length > 500 || !Array.isArray(request.bindings) || request.bindings.length > 500 || !Array.isArray(request.staffEmails) || request.staffEmails.length > 50) classLinkFail_('invalid', 'Use a reviewed AlloFlow Store roster with 1 to 500 learners and at most 50 staff grants.');
+  var ids = Object.create(null), names = Object.create(null), bound = Object.create(null), recipients = Object.create(null), grants = Object.create(null);
+  var learners = roster.learners.map(function(l) {
+    classLinkShape_(l, ['learnerId', 'codename'], ['learnerId', 'codename']); var id = classLinkId_(l.learnerId), name = l.codename;
+    var normalized = classLinkCodename_(name);
+    if (ids[id] || names[normalized]) classLinkFail_('duplicate', 'Learner identities and normalized codenames must be unique.'); ids[id] = true; names[normalized] = true;
+    return { learnerId: id, codename: name };
+  }).sort(function(a, b) { return a.learnerId < b.learnerId ? -1 : 1; });
+  var bindings = request.bindings.map(function(b) {
+    classLinkShape_(b, ['learnerId', 'studentId'], ['learnerId', 'studentId']);
+    var learnerId = classLinkId_(b.learnerId), studentId = id_(b.studentId, 'student');
+    if (studentId !== b.studentId || !ids[learnerId] || bound[learnerId] || recipients[studentId]) classLinkFail_('duplicate', 'Every manual binding must name one listed learner and a unique canonical student.'); bound[learnerId] = true; recipients[studentId] = true;
+    return { learnerId: learnerId, studentId: studentId };
+  }).sort(function(a, b) { return a.learnerId < b.learnerId ? -1 : 1; });
+  var suspendedLearnerIds = null;
+  if (Object.prototype.hasOwnProperty.call(request, 'suspendedLearnerIds')) {
+    if (!Array.isArray(request.suspendedLearnerIds) || request.suspendedLearnerIds.length > 500) classLinkFail_('invalid', 'Provide at most 500 explicitly suspended learner identities.');
+    var suspendedSeen = Object.create(null);
+    suspendedLearnerIds = request.suspendedLearnerIds.map(function(id) { classLinkId_(id); if (!ids[id] || suspendedSeen[id]) classLinkFail_('invalid', 'Suspended identities must be unique learners in the reviewed manifest.'); suspendedSeen[id] = true; return id; }).sort();
+  }
+  var staffEmails = request.staffEmails.map(function(email) { var normalized = normalizeEmail_(email); if (typeof email !== 'string' || email !== normalized || !normalized || emailDomain_(normalized) !== allowedDomain_() || grants[normalized]) classLinkFail_('invalid', 'Staff grants must be unique canonical managed email addresses.'); grants[normalized] = true; return normalized; }).sort();
+  var proposal = { roster: { format: roster.format, version: 1, classId: classLinkId_(roster.classId), learners: learners }, bindings: bindings, staffEmails: staffEmails, expectedRepositoryId: classLinkId_(request.expectedRepositoryId), expectedYearKey: classLinkId_(request.expectedYearKey), suspendedLearnerIds: suspendedLearnerIds };
+  if (apply) {
+    if (request.confirmed !== true) classLinkFail_('review_required', 'Explicitly confirm the exact reviewed class links and staff grants.');
+    ['expectedContentHash', 'expectedRosterRevision', 'expectedLinksRevision'].forEach(function(k) { if (typeof request[k] !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(request[k])) classLinkFail_('preview_required', 'Apply requires the exact hashes from a fresh class-link preview.'); });
+  }
+  return proposal;
+}
+function classLinkPreview_(book, proposal) {
+  var config = classLinkConfig_(book, true), heads = classLinkHeads_(book), classId = proposal.roster.classId, previous = heads.filter(function(h) { return h.classId === classId; })[0], conflicts = [];
+  if (proposal.expectedRepositoryId !== config.repositoryId || proposal.expectedYearKey !== config.yearKey) classLinkFail_('scope_changed', 'The school repository or academic year changed. Review the links again.');
+  if (!previous && heads.length >= 250) classLinkFail_('too_large', 'This repository already has 250 linked classes.');
+  var old = Object.create(null), chosen = Object.create(null), incoming = Object.create(null), recipient = Object.create(null), historical = Object.create(null), suspended = Object.create(null), studentMap = classLinkStudentMap_(book);
+  (previous ? previous.snapshot.learners : []).forEach(function(l) { old[l.learnerId] = l; if (proposal.suspendedLearnerIds === null && l.suspended === true) suspended[l.learnerId] = true; });
+  (proposal.suspendedLearnerIds || []).forEach(function(id) { suspended[id] = true; });
+  heads.forEach(function(h) { h.snapshot.learners.forEach(function(l) { if (l.studentId) { if (historical[l.learnerId] && historical[l.learnerId] !== l.studentId) classLinkFail_('integrity', 'Existing learner bindings conflict across classes.'); historical[l.learnerId] = l.studentId; } }); });
+  proposal.bindings.forEach(function(b) { chosen[b.learnerId] = b.studentId; });
+  var staff = members_(book);
+  proposal.staffEmails.forEach(function(email) { if (!staff.some(function(m) { return m.email === email && m.active && ['admin', 'staff'].indexOf(m.role) >= 0; })) conflicts.push({ code: 'STAFF_UNAVAILABLE', message: 'A proposed staff grant is not an active authorized school member.' }); });
+  var learners = proposal.roster.learners.map(function(l) {
+    var prior = old[l.learnerId], studentId = chosen[l.learnerId] || (prior && prior.studentId) || '', student = studentId ? studentMap[studentId] : null;
+    incoming[l.learnerId] = true;
+    if (prior && prior.codename !== l.codename) conflicts.push({ code: 'CODENAME_CHANGED', message: 'An existing learner codename cannot be reassigned in this linking pathway.', learnerId: l.learnerId });
+    if (studentId && ((prior && prior.studentId && prior.studentId !== studentId) || (historical[l.learnerId] && historical[l.learnerId] !== studentId))) conflicts.push({ code: 'IDENTITY_REASSIGNMENT', message: 'An existing learner cannot be linked to a different canonical student.', learnerId: l.learnerId });
+    if (studentId && (!student || !student.active)) conflicts.push({ code: 'STUDENT_UNAVAILABLE', message: 'The manually selected canonical student is not active.', learnerId: l.learnerId });
+    if (studentId && recipient[studentId]) conflicts.push({ code: 'DUPLICATE_STUDENT', message: 'A canonical student cannot occupy two learner identities in one class.', learnerId: l.learnerId });
+    if (studentId) recipient[studentId] = true;
+    return { learnerId: l.learnerId, codename: l.codename, studentId: studentId, studentFingerprint: student ? classLinkStudentFingerprint_(student) : '', active: !suspended[l.learnerId], suspended: !!suspended[l.learnerId] };
+  });
+  var retained = 0;
+  Object.keys(old).sort().forEach(function(id) { if (!incoming[id]) { var l = old[id]; learners.push({ learnerId: l.learnerId, codename: l.codename, studentId: l.studentId, studentFingerprint: l.studentFingerprint, active: false, suspended: l.suspended === true }); retained++; if (l.studentId && recipient[l.studentId]) conflicts.push({ code: 'RETAINED_IDENTITY_CONFLICT', message: 'A retained historical learner already owns this canonical student within the class.', learnerId: id }); } });
+  if (learners.length > 500) classLinkFail_('too_large', 'The class exceeds 500 current and retained learners. Existing identities cannot be silently discarded.');
+  var codenameOwners = Object.create(null);
+  learners.forEach(function(l) { var n = classLinkCodename_(l.codename); if (codenameOwners[n]) conflicts.push({ code: 'RETAINED_CODENAME_CONFLICT', message: 'An existing or retained codename cannot identify a different learner.', learnerId: l.learnerId }); codenameOwners[n] = l.learnerId; });
+  learners.sort(function(a, b) { return a.learnerId < b.learnerId ? -1 : 1; });
+  var snapshot = { format: 'alloflow-store-links', version: 1, repositoryId: config.repositoryId, yearKey: config.yearKey, classId: classId, staffEmails: proposal.staffEmails, learners: learners };
+  classLinkSize_(stableJson_(snapshot));
+  var preview = learners.map(function(l) { var s = l.studentId ? studentMap[l.studentId] : null; return { learnerId: l.learnerId, codename: l.codename, studentId: l.studentId, studentLabel: s ? [s.firstName + (s.lastInitial ? ' ' + s.lastInitial + '.' : ''), s.grade, s.homeroom, s.id].filter(Boolean).join(' | ') : '', status: !incoming[l.learnerId] ? 'RETAINED' : l.suspended ? 'SUSPENDED' : old[l.learnerId] && old[l.learnerId].suspended ? 'REACTIVATED' : l.studentId ? 'LINKED' : 'UNLINKED' }; });
+  return { snapshot: snapshot, oldRevision: previous ? previous.revision : '', out: { ok: true, contentHash: hash_(stableJson_(proposal)), rosterRevision: sisRosterRevision_(book), linksRevision: classLinkRevision_(heads), repositoryId: config.repositoryId, yearKey: config.yearKey, classId: classId, counts: { requested: proposal.roster.learners.length, linked: learners.filter(function(l) { return l.active && l.studentId; }).length, retained: retained, suspended: learners.filter(function(l) { return incoming[l.learnerId] && l.suspended; }).length, reactivated: learners.filter(function(l) { return incoming[l.learnerId] && !l.suspended && old[l.learnerId] && old[l.learnerId].suspended; }).length }, preview: preview, conflicts: conflicts, canApply: !conflicts.length } };
+}
+function previewSchoolRewardsAlloFlowLinks(request) {
+  var actor = requireRole_(['admin']); var proposal = classLinkProposal_(request, false);
+  return classLinkLocked_(actor, function() { var book = book_(); assertNoPendingCoreOperation_(book, ''); return classLinkPreview_(book, proposal).out; });
+}
+function stageClassLinkVersion_(book, key, actor, prepared, requestHash) {
+  var versionId = operationEntityId_('class_links', key), sheet = classLinkSheet_(book, 'AlloFlowClassVersions', false), rows = rows_(sheet, 3 + SR_CLASS_LINK_CHUNKS), existing = rows.filter(function(row) { return String(row[0]) === versionId; }), serialized = classLinkSize_(stableJson_(prepared.snapshot));
+  if (existing.length) { var prior = classLinkVersion_(book, versionId); if (prior.metadata.requestHash !== requestHash || prior.metadata.actorEmail !== actor.email || prior.metadata.contentHash !== hash_(serialized)) classLinkFail_('request_conflict', 'The saved class-link request key belongs to different reviewed content.'); return prior; }
+  if (rows.length >= 10000) classLinkFail_('too_large', 'Class-link version storage reached its reviewed limit.');
+  var metadata = { versionId: versionId, classId: prepared.snapshot.classId, repositoryId: prepared.snapshot.repositoryId, yearKey: prepared.snapshot.yearKey, parentRevision: prepared.oldRevision, contentHash: hash_(serialized), requestHash: requestHash, actorEmail: actor.email, actorRole: actor.role, at: now_() };
+  metadata.signature = coreJournalSignature_(versionId, 'class_links_snapshot', 'class_links_snapshot', metadata, coreJournalSecret_(true));
+  var chunks = []; for (var index = 0; index < serialized.length; index += SR_CLASS_LINK_CHUNK_SIZE) chunks.push(JSON.stringify(serialized.slice(index, index + SR_CLASS_LINK_CHUNK_SIZE)));
+  if (chunks.length > SR_CLASS_LINK_CHUNKS) classLinkFail_('too_large', 'The class-link snapshot requires too many storage chunks.');
+  var row = [versionId, JSON.stringify(metadata), chunks.length]; for (var i = 0; i < SR_CLASS_LINK_CHUNKS; i++) row.push(chunks[i] || '');
+  sheet.appendRow(row); SpreadsheetApp.flush(); coreFault_('class_links:after_snapshot');
+  return classLinkVersion_(book, versionId);
+}
+function classLinkReceipt_(version, key) { var s = version.snapshot; return { ok: true, classId: s.classId, revision: version.metadata.versionId, count: s.learners.filter(function(l) { return l.active && l.studentId; }).length, grantCount: s.staffEmails.length, repositoryId: s.repositoryId, yearKey: s.yearKey, idempotencyKey: key, actorEmail: version.metadata.actorEmail, actorRole: version.metadata.actorRole }; }
+function applySchoolRewardsAlloFlowLinks(request) {
+  var actor = requireRole_(['admin']), proposal = classLinkProposal_(request, true), key = idemKey_(request.idempotencyKey);
+  var requestHash = hash_(stableJson_({ proposal: proposal, expectedContentHash: request.expectedContentHash, expectedRosterRevision: request.expectedRosterRevision, expectedLinksRevision: request.expectedLinksRevision })), operation = printIdemOperation_('class_links', actor, { requestHash: requestHash });
+  return classLinkLocked_(actor, function() {
+    var book = book_(), state = loadCoreOperation_(book, key, operation, 'class_links');
+    if (state) { if (!state.journal) classLinkFail_('integrity', 'The saved class-link request is not a signed recoverable journal.'); validatePendingCoreJournal_(book, key, operation, state.journal); if (state.result) { var priorVersion = classLinkVersion_(book, state.journal.intent.newRevision); if (stableJson_(state.result) !== stableJson_(classLinkReceipt_(priorVersion, key))) classLinkFail_('integrity', 'The saved class-link receipt does not match its signed snapshot.'); return state.result; } return resumeCoreOperation_(book, key, operation, state.journal); }
+    assertNoPendingCoreOperation_(book, '');
+    var prepared = classLinkPreview_(book, proposal), out = prepared.out;
+    if (!out.canApply) classLinkFail_('conflict', 'The class-link preview contains identity or authorization conflicts. Nothing was changed.');
+    if (out.contentHash !== request.expectedContentHash || out.rosterRevision !== request.expectedRosterRevision || out.linksRevision !== request.expectedLinksRevision) classLinkFail_('preview_changed', 'The reviewed content, school roster, or class links changed. Preview again before applying.');
+    var version = stageClassLinkVersion_(book, key, actor, prepared, requestHash), m = version.metadata;
+    state = startCoreOperation_(book, key, operation, 'class_links', { classId: m.classId, newRevision: m.versionId, oldRevision: m.parentRevision, contentHash: m.contentHash, requestHash: requestHash, repositoryId: m.repositoryId, yearKey: m.yearKey, actorEmail: m.actorEmail, actorRole: m.actorRole, at: m.at });
+    coreFault_('class_links:after_intent');
+    return resumeCoreOperation_(book, key, operation, state.journal);
+  });
+}
+function validateClassLinkJournal_(book, key, operation, journal, versionRows) {
+  var i = journal.intent; classLinkShape_(i, ['classId', 'newRevision', 'oldRevision', 'contentHash', 'requestHash', 'repositoryId', 'yearKey', 'actorEmail', 'actorRole', 'at'], ['classId', 'newRevision', 'oldRevision', 'contentHash', 'requestHash', 'repositoryId', 'yearKey', 'actorEmail', 'actorRole', 'at']);
+  var version = classLinkVersion_(book, i.newRevision, versionRows), m = version.metadata;
+  if (i.newRevision !== operationEntityId_('class_links', key) || i.classId !== m.classId || i.oldRevision !== m.parentRevision || i.contentHash !== m.contentHash || i.requestHash !== m.requestHash || i.repositoryId !== m.repositoryId || i.yearKey !== m.yearKey || i.actorEmail !== m.actorEmail || i.actorRole !== m.actorRole || i.at !== m.at || printIdemOperation_('class_links', { email: i.actorEmail }, { requestHash: i.requestHash }) !== operation) classLinkFail_('integrity', 'The class-link journal does not match its signed snapshot.');
+  return version;
+}
+function resumeClassLinkCoreOperation_(book, key, operation, journal, actor) {
+  var version = validateClassLinkJournal_(book, key, operation, journal), i = journal.intent, config = classLinkConfig_(book, true), heads = classLinkHeads_(book), current = heads.filter(function(h) { return h.classId === i.classId; })[0], revision = current ? current.revision : '';
+  if (config.repositoryId !== i.repositoryId || config.yearKey !== i.yearKey) classLinkFail_('scope_changed', 'The pending class links belong to a different school or academic year. Administrator review is required.');
+  if (revision !== i.oldRevision && revision !== i.newRevision) classLinkFail_('integrity', 'The committed class-link head changed outside this pending operation.');
+  if (revision !== i.newRevision) {
+    var sheet = classLinkSheet_(book, 'AlloFlowClassHeads', false), rows = rows_(sheet, 2), index = -1;
+    rows.forEach(function(row, n) { if (String(row[0]) === i.classId) index = n; });
+    var head = JSON.stringify({ versionId: i.newRevision });
+    if (index < 0) sheet.appendRow([i.classId, head]); else sheet.getRange(index + 2, 2, 1, 1).setValues([[head]]);
+    SpreadsheetApp.flush(); coreFault_('class_links:after_head');
+  }
+  var verifiedHead = classLinkHeads_(book).filter(function(h) { return h.classId === i.classId; })[0];
+  if (!verifiedHead || verifiedHead.revision !== i.newRevision) classLinkFail_('integrity', 'The committed class-link head could not be verified after writing.');
+  var result = classLinkReceipt_(version, key);
+  appendAuditOnce_({ event: 'CLASS_LINKS_REVIEWED', type: 'class_links', id: i.newRevision, summary: 'Reviewed class identities and staff grants committed; historical pseudonymous associations retained' }, actor);
+  coreFault_('class_links:after_audit');
+  completeCoreOperation_(book, key, operation, journal, result); coreFault_('class_links:after_complete');
+  return result;
+}
+function listSchoolRewardsAlloFlowLinkedClasses() {
+  var actor = requireRole_(['admin', 'staff']);
+  return classLinkLocked_(actor, function() {
+    var book = book_(), config = classLinkConfig_(book, false);
+    if (!config.enabled) return { ok: true, enabled: false, repositoryId: config.repositoryId, yearKey: config.yearKey, classes: [] };
+    assertNoPendingCoreOperation_(book, '');
+    var studentMap = classLinkStudentMap_(book);
+    var classes = classLinkHeads_(book).filter(function(h) { return h.snapshot.repositoryId === config.repositoryId && h.snapshot.yearKey === config.yearKey && (actor.role === 'admin' || h.snapshot.staffEmails.indexOf(actor.email) >= 0); }).map(function(h) { return { classId: h.classId, revision: h.revision, learners: h.snapshot.learners.filter(function(l) { return !!classLinkEligible_(book, l, studentMap); }).map(function(l) { return { learnerId: l.learnerId, codename: l.codename }; }) }; });
+    return { ok: true, enabled: true, repositoryId: config.repositoryId, yearKey: config.yearKey, classes: classes };
+  });
+}
+function resolveSchoolRewardsAlloFlowLearner(request) {
+  var actor = requireRole_(['admin', 'staff']); classLinkShape_(request, ['repositoryId', 'yearKey', 'classId', 'learnerId', 'expectedClassRevision'], ['repositoryId', 'yearKey', 'classId', 'learnerId', 'expectedClassRevision']);
+  Object.keys(request).forEach(function(k) { classLinkId_(request[k]); });
+  return classLinkLocked_(actor, function() {
+    var book = book_(), config = classLinkConfig_(book, true); assertNoPendingCoreOperation_(book, '');
+    if (request.repositoryId !== config.repositoryId || request.yearKey !== config.yearKey) classLinkFail_('scope_changed', 'The school or academic year changed. Reload linked classes.');
+    var head = classLinkHeads_(book).filter(function(h) { return h.classId === request.classId; })[0];
+    if (!head || head.snapshot.repositoryId !== config.repositoryId || head.snapshot.yearKey !== config.yearKey || head.revision !== request.expectedClassRevision || (actor.role !== 'admin' && head.snapshot.staffEmails.indexOf(actor.email) < 0)) classLinkFail_('unavailable', 'This reviewed class link is unavailable to the current staff account.');
+    var learner = head.snapshot.learners.filter(function(l) { return l.learnerId === request.learnerId; })[0], student = learner && classLinkEligible_(book, learner);
+    if (!student) classLinkFail_('unavailable', 'This learner has no current active verified school identity link.');
+    var dto = actor.role === 'admin' ? student : { id: student.id, firstName: student.firstName, lastInitial: student.lastInitial, grade: student.grade, homeroom: student.homeroom, active: student.active };
+    return { ok: true, classId: head.classId, learnerId: learner.learnerId, revision: head.revision, student: dto };
+  });
+}
+function classLinkStudentRecords_(book, studentId) {
+  if (!book.getSheetByName('AlloFlowClassVersions')) return [];
+  var versionRows = rows_(classLinkSheet_(book, 'AlloFlowClassVersions', false), 3 + SR_CLASS_LINK_CHUNKS);
+  return versionRows.reduce(function(records, row) {
+    var version = classLinkVersion_(book, String(row[0]), versionRows);
+    version.snapshot.learners.forEach(function(l) { if (l.studentId === studentId) records.push({ classId: version.snapshot.classId, learnerId: l.learnerId, codename: l.codename, studentId: studentId, active: l.active, suspended: l.suspended === true, yearKey: version.snapshot.yearKey, revision: version.metadata.versionId, staffEmails: version.snapshot.staffEmails.slice(), actorEmail: version.metadata.actorEmail, actorRole: version.metadata.actorRole, at: version.metadata.at }); });
+    return records;
+  }, []);
+}

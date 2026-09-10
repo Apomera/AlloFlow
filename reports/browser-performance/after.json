@@ -1,0 +1,17 @@
+{
+  "mode": "after",
+  "scope": "Real host accessibility/controller code in production React; 600-control fixture, no connected gamepad; not whole-app Core Web Vitals.",
+  "mountedMs": 4400,
+  "closedMs": 2200,
+  "mounted": {
+    "frames": 0,
+    "scans": 6,
+    "scanMs": 1.0000000596046448
+  },
+  "closed": {
+    "frames": 0,
+    "scans": 0,
+    "scanMs": 0
+  },
+  "errors": []
+}

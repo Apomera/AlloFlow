@@ -1,0 +1,71 @@
+{
+  "passed": true,
+  "transport": "Production Class Mailbox adapter and Code.gs sandbox",
+  "browsers": 4,
+  "ai": "Fixture provider; invalid then repaired JSON",
+  "writes": 33,
+  "completedDocumentChars": 8896,
+  "scans": [
+    {
+      "label": "teacher setup",
+      "violations": []
+    },
+    {
+      "label": "expanded board editor",
+      "violations": []
+    },
+    {
+      "label": "resolved class learning",
+      "violations": []
+    },
+    {
+      "label": "late join settings mobile",
+      "violations": []
+    },
+    {
+      "label": "order 320",
+      "violations": []
+    },
+    {
+      "label": "order 390",
+      "violations": []
+    },
+    {
+      "label": "order 768",
+      "violations": []
+    },
+    {
+      "label": "order 1280",
+      "violations": []
+    },
+    {
+      "label": "order dark",
+      "violations": []
+    },
+    {
+      "label": "200 percent text",
+      "violations": []
+    },
+    {
+      "label": "text spacing",
+      "violations": []
+    },
+    {
+      "label": "forced colors",
+      "violations": []
+    },
+    {
+      "label": "teacher activity",
+      "violations": []
+    },
+    {
+      "label": "completion",
+      "violations": []
+    },
+    {
+      "label": "completed class learning",
+      "violations": []
+    }
+  ],
+  "consoleErrors": []
+}

@@ -1,0 +1,59 @@
+{
+  "passed": true,
+  "checks": [
+    "default unit conversion",
+    "double bar",
+    "double pitch",
+    "keyboard slider changes",
+    "reset experiment preserves run",
+    "calculation and assumptions",
+    "responsive layouts",
+    "WCAG A/AA",
+    "fixed baseline",
+    "single and two-variable feedback",
+    "proportional force bars",
+    "append-only evidence",
+    "duplicate prevention",
+    "full notebook preservation",
+    "export and reload recovery",
+    "focus handoff",
+    "comparison reset"
+  ],
+  "sizes": [
+    {
+      "viewport": 1280,
+      "document": 1280
+    },
+    {
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "viewport": 320,
+      "document": 320
+    }
+  ],
+  "accessibility": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 768,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ],
+  "errors": []
+}

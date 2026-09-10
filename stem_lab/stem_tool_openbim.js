@@ -311,6 +311,33 @@
     return { readyForConceptExport: !issues.length, issues: issues, checks: checks, questions: uniqueStrings(questions, '', 10) };
   }
 
+
+  function normalizeDesignStudy(value) {
+    var raw = value || {}, defaults = { width: 8, depth: 6, workWidth: 6, workDepth: 4 }, out = {};
+    Object.keys(defaults).forEach(function(key) { var n = Number(raw[key]); out[key] = isFinite(n) && n >= 1 && n <= 100 ? Math.round(n * 100) / 100 : defaults[key]; });
+    return out;
+  }
+  function evaluateDesignStudy(value) {
+    var d = normalizeDesignStudy(value);
+    var area = Math.round(d.width*d.depth*10000)/10000, workArea = Math.round(d.workWidth*d.workDepth*10000)/10000;
+    var fits = d.workWidth <= d.width && d.workDepth <= d.depth;
+    return { dimensions: d, area: area, workArea: workArea, fits: fits, meetsBrief: fits && area <= 60 && workArea >= 24 };
+  }
+  function comparePlans(before, after) {
+    if (!before || !after) return [];
+    var changes = [], a = normalizeDesignStudy(before.designStudy), b = normalizeDesignStudy(after.designStudy);
+    Object.keys(a).forEach(function(key) { if (a[key] !== b[key]) changes.push(key + ': ' + a[key] + ' m → ' + b[key] + ' m'); });
+    function totals(plan) { var out = {}; (plan.elements || []).forEach(function(e) { var key = e.ifcClass + ' / ' + e.storey; out[key] = (out[key] || 0) + Number(e.count || 0); }); return out; }
+    var oldTotals = totals(before), newTotals = totals(after);
+    Array.from(new Set(Object.keys(oldTotals).concat(Object.keys(newTotals)))).forEach(function(key) {
+      if ((oldTotals[key] || 0) !== (newTotals[key] || 0)) changes.push(key + ': ' + (oldTotals[key] || 0) + ' → ' + (newTotals[key] || 0));
+    });
+    if (JSON.stringify(before.storeys) !== JSON.stringify(after.storeys)) changes.push('Storey names, elevations, or planned spaces changed. Inspect the spatial plan.');
+    if (JSON.stringify(before.architectureStudio) !== JSON.stringify(after.architectureStudio)) changes.push('Linked Architecture Studio proxy geometry changed.');
+    if (before.brief !== after.brief) changes.push('The design brief changed.');
+    return changes;
+  }
+
   function normalizeImportedRecipe(raw) {
     var parsed = raw;
     var warnings = [];
@@ -340,6 +367,8 @@
     normalized.siteName = plain(parsed.siteName, 100) || 'Learning Site';
     normalized.proposalSource = 'Imported recipe normalized locally through the AlloFlow IFC allowlist';
     normalized.architectureStudio = architecture;
+    normalized.designStudy = normalizeDesignStudy(parsed.designStudy);
+    normalized.designReasoning = plain(parsed.designReasoning,1500);
     warnings.push('Imported approval was cleared; review and approve this proposal again.');
     return { plan: normalized, warnings: uniqueStrings(warnings, '', 10), errors: [] };
   }
@@ -349,6 +378,7 @@
     recipe.schema = RECIPE_SCHEMA;
     recipe.version = RECIPE_VERSION;
     recipe.status = 'approved-concept';
+    recipe.designStudy = normalizeDesignStudy(plan.designStudy);
     recipe.approvedAt = new Date().toISOString();
     recipe.reviewQuestions = analyzePlan(recipe).questions;
     recipe.interoperability = {
@@ -497,6 +527,7 @@
   }
 
   window.OpenBIMBridge = {
+    normalizeDesignStudy: normalizeDesignStudy, evaluateDesignStudy: evaluateDesignStudy, comparePlans: comparePlans,
     schema: RECIPE_SCHEMA,
     version: RECIPE_VERSION,
     allowedClasses: Object.keys(ALLOWED_CLASSES),
@@ -675,6 +706,7 @@
             toast('That file is not a supported AlloFlow OpenBIM recipe.', 'error');
           } else {
             var message = 'Recipe imported locally and normalized. ' + result.warnings.join(' ');
+            update({ designDraft: null, designNotice: '' });
             saveProposal(result.plan, message);
             toast('OpenBIM recipe imported for fresh review.', 'success');
           }
@@ -861,6 +893,52 @@
         )
       );
 
+
+      function renderDesignWorkbench() {
+        var plan = proposal || approved;
+        if (!plan || (stage !== 'review' && stage !== 'export')) return null;
+        var model = evaluateDesignStudy(plan.designStudy), dims = model.dimensions;
+        var draft = state.designDraft || dims;
+        var fields = [['width','Floor width'],['depth','Floor depth'],['workWidth','Work area width'],['workDepth','Work area depth']];
+        var changes = state.comparisonBaseline ? comparePlans(state.comparisonBaseline, plan) : [];
+        var scale = Math.min(300 / Math.max(dims.width,dims.workWidth), 170 / Math.max(dims.depth,dims.workDepth));
+        function applyDimensions() {
+          var valid = fields.every(function(f) { var n=Number(draft[f[0]]);return String(draft[f[0]]).trim()!=='' && isFinite(n) && n>=1 && n<=100; });
+          if (!valid) { update({ designNotice: 'Enter dimensions from 1 to 100 metres in all four fields.' }); return; }
+          var next = JSON.parse(JSON.stringify(plan)); next.designStudy = normalizeDesignStudy(draft);
+          update({ proposal:next,approvedRecipe:null,stage:'review',designDraft:null,designNotice:'Study dimensions updated. Review the changed concept before exporting.' });
+          announce('Design study updated.');
+        }
+        return el('section',{ 'data-openbim-workbench':true, style:{margin:'16px 0',padding:16,border:'1px solid '+colors.border,borderRadius:12,background:colors.panel} },
+          el('h3',null,'Design workbench'),
+          el('p',null,'Design challenge: fit a rectangular work area of at least 24 m² inside a floor of at most 60 m². These are classroom design targets.'),
+          el('p',{style:{color:colors.soft,fontSize:12}},'This dimensioned study is separate from the building inventory. The rectangle shows an example floor footprint, not positioned IFC walls or a finished floor plan. Study dimensions travel in the JSON recipe; they do not create IFC geometry.'),
+          el('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10}},fields.map(function(f){
+            return el('label',{key:f[0],style:{display:'block'}},f[1]+' (m)',
+              el('input',{type:'number',min:1,max:100,step:.01,value:draft[f[0]],'aria-label':f[1]+' in metres',onChange:function(e){var next=Object.assign({},draft);next[f[0]]=e.target.value;update({designDraft:next,designNotice:''});},style:{display:'block',width:'100%',padding:9,color:colors.ink,background:colors.surface,border:'1px solid '+colors.border}}));
+          })),
+          button('Apply study dimensions',applyDimensions),
+          state.designNotice && el('p',{role:'status'},state.designNotice),
+          el('svg',{viewBox:'0 0 390 245',role:'img','aria-label':'Dimensioned floor study. Floor '+dims.width+' by '+dims.depth+' metres; work area '+dims.workWidth+' by '+dims.workDepth+' metres. '+(model.fits?'Work area fits.':'Work area extends beyond the floor.'),style:{display:'block',width:'100%',maxWidth:600,color:colors.ink}},
+            el('rect',{x:40,y:35,width:dims.width*scale,height:dims.depth*scale,fill:colors.surface,stroke:colors.ink,strokeWidth:2}),
+            el('rect',{x:40,y:35,width:dims.workWidth*scale,height:dims.workDepth*scale,fill:colors.chipBg,stroke:colors.teal,strokeWidth:3,strokeDasharray:'8 4'}),
+            el('text',{x:40,y:23,fill:colors.ink,fontSize:13},'Floor width: '+dims.width+' m'),
+            el('text',{x:40,y:230,fill:colors.ink,fontSize:13},'Floor depth: '+dims.depth+' m; dashed outline = work area')),
+          el('p',{role:'status','data-design-result':model.meetsBrief?'meets':'revise'},'Floor: '+model.area+' m². Work area: '+model.workArea+' m². '+(!model.fits?'The work area extends beyond the floor.':model.meetsBrief?'Both classroom targets are met. Explain your tradeoff.':'Revise dimensions to meet both classroom targets.')),
+          el('details',null,el('summary',null,'Inspect storeys and planned spaces'),
+            plan.storeys.map(function(st){return el('p',{key:st.id},st.name+' at '+st.elevationMetres+' m: '+st.spaces.join(', '));})),
+          el('label',{style:{display:'block',marginTop:12}},'Design reasoning',
+            el('textarea',{value:plan.designReasoning||'',maxLength:1500,rows:3,onChange:function(e){var next=Object.assign({},plan,{designReasoning:e.target.value});update({proposal:next,approvedRecipe:null,stage:'review'});},style:{display:'block',width:'100%',padding:10,color:colors.ink,background:colors.surface,border:'1px solid '+colors.border}})),
+          el('div',{style:{display:'flex',gap:8,flexWrap:'wrap',marginTop:10}},
+            button(state.comparisonBaseline?'Replace comparison baseline':'Save comparison baseline',function(){update({comparisonBaseline:JSON.parse(JSON.stringify(plan)),designNotice:'Comparison baseline saved in this project.'});}),
+            button('Import revised recipe',function(){update({stage:'brief',statusMessage:'Use Resume an exported recipe below. Your comparison baseline is retained.'});})),
+          state.comparisonBaseline && el('div',{'data-openbim-comparison':true},
+            el('h4',null,'Changes since saved baseline'),
+            changes.length?el('ul',null,changes.map(function(change,i){return el('li',{key:i},change);})):el('p',null,'No dimension, inventory, spatial-plan, proxy-geometry, or brief changes.'),
+            el('p',{style:{fontSize:12,color:colors.soft}},'Compare AlloFlow JSON recipes here. Native IFC files still open in Bonsai.'))
+        );
+      }
+
       return el('div', { className: 'openbim-root', style: { height: '100%', overflowY: 'auto', overflowX: 'hidden', background: colors.surface, color: colors.ink } },
         el('style', null, '.openbim-root *{box-sizing:border-box}.openbim-root .ob-shell{max-width:1180px;margin:0 auto;padding:20px}.openbim-root .ob-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(310px,.92fr);gap:14px;align-items:start}.openbim-root button:focus-visible,.openbim-root input:focus-visible,.openbim-root textarea:focus-visible,.openbim-root select:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}@media(max-width:820px){.openbim-root .ob-grid{grid-template-columns:1fr}.openbim-root .ob-shell{padding:14px}}@media(prefers-reduced-motion:reduce){.openbim-root *{scroll-behavior:auto!important;transition:none!important}}'),
         el('main', { className: 'ob-shell' },
@@ -869,6 +947,7 @@
           state.statusMessage && el('div', { role: 'status', 'aria-live': 'polite', style: { marginBottom: 12, borderLeft: '4px solid ' + colors.teal, background: colors.chipBg, color: colors.chipInk, borderRadius: 7, padding: '9px 11px', fontSize: 12, fontWeight: 750 } }, state.statusMessage),
           briefStage,
           reviewStage,
+          renderDesignWorkbench(),
           exportStage,
           learnStage,
           el('p', { style: { margin: '16px 2px 3px', color: colors.soft, fontSize: 10, lineHeight: 1.45 } }, 'Educational planning tool. OpenBIM Companion does not replace an architect, engineer, accessibility specialist, building official, or community design process.')

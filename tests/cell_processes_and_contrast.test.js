@@ -12,8 +12,19 @@ describe('Cell simulator tooltip contrast and process diagrams', () => {
 
   it('uses an explicit opaque canvas tooltip surface and readable body text', () => {
     const source = readFileSync('stem_lab/stem_tool_cell.js', 'utf8');
-    expect(source).toContain("var ttFontSize = 10.5 * dpr;");
-    expect(source).toContain("var ttMaxW = 290 * dpr;");
+    const fontExpression = source.match(/var ttFontSize = ([^;]+);/)?.[1];
+    const widthExpression = source.match(/var ttMaxW = ([^;]+);/)?.[1];
+    expect(fontExpression).toBeTruthy();
+    expect(widthExpression).toBeTruthy();
+    for (const dpr of [1, 2]) {
+      const fontSize = new Function('dpr', 'return ' + fontExpression)(dpr);
+      expect(fontSize / dpr).toBeGreaterThanOrEqual(10.5);
+      for (const cssWidth of [280, 320, 760]) {
+        const width = new Function('dpr', 'W', 'return ' + widthExpression)(dpr, cssWidth * dpr);
+        expect(width / dpr).toBeGreaterThanOrEqual(200);
+        expect(width / dpr).toBeLessThanOrEqual(cssWidth - 24);
+      }
+    }
     expect(source).toContain("cctx.fillStyle = 'rgba(15,23,42,0.98)';");
     expect(source).toContain("cctx.fillStyle = '#f8fafc';");
     expect(source).not.toContain("cctx.fillStyle = 'var(--allo-stem-deeper");
@@ -36,10 +47,10 @@ describe('Cell simulator tooltip contrast and process diagrams', () => {
       expect(html).toContain('Key inputs');
       expect(html).toContain('Key outputs');
       expect(html).toContain('How the pathway unfolds');
-      expect(html).toContain('Trace energy, membrane transport, photosynthesis, and protein shipping.');
+      expect(html).not.toContain('data-cell-mission="true"');
       const source = readFileSync(filePath, 'utf8');
-      expect(source).toContain("modes: ['observe', 'interior', 'microdissection', 'processes', 'play', 'quiz']");
-      expect(source).toContain("var allModes = ['observe','interior','microdissection','processes','play','quiz'");
+      expect(source).toContain("modes: ['observe', 'interior', 'microdissection', 'processes', 'osmoHunt', 'play', 'quiz']");
+      expect(source).toContain("var allModes = ['observe','interior','microdissection','processes','osmoHunt','play','quiz'");
     });
   });
 

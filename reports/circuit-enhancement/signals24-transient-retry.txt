@@ -1,0 +1,79 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_transient.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > uses an open capacitor and a short inductor at DC equilibrium
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > matches RC charging or release for source 5 and initial 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_transient.test.js > general network stored energy > matches RC charging or release for source 0 and initial 5
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_transient.test.js > general network stored energy > matches RC charging or release for source -5 and initial 2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_transient.test.js > general network stored energy > matches RL startup and preserves initial current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > solves a capacitor cross-link with its loaded bridge, not independent arms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_transient.test.js > general network stored energy > matches an underdamped RLC step and captures overshoot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_transient.test.js > general network stored energy > preserves a floating loop’s internal time response without an invented ground
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > supports parallel capacitors with consistent starting voltages
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > rejects incompatible starting energy without exporting a partial curve
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_transient.test.js > general network stored energy > rejects incompatible starting energy without exporting a partial curve
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_transient.test.js > general network stored energy > rejects incompatible starting energy without exporting a partial curve
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > accepts a capacitor already at the ideal source voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > exports actual adaptive timestamps, initial energy settings, polarity, and integration metadata
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_transient.test.js > general network stored energy > normalizes reactive settings without mutating the input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > integrates a current-driven capacitor even when no DC equilibrium exists
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > integrates a voltage-driven inductor even when no DC equilibrium exists
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > conserves signed power in a source-free LC exchange with bounded numerical damping
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > bounds expensive oscillations and exposes no partial trajectory
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > uses constant traces for resistive circuits and handles an empty workspace
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > renders scoped initial-condition controls and names the new scope
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > renders recoverable failed initial conditions without a plot or export
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  20:20:44
+   Duration  13.87s (transform 1.05s, setup 552ms, import 1.42s, tests 6.90s, environment 4.44s)
+

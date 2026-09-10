@@ -4179,6 +4179,7 @@ function GeneratorActionsView(props) {
           setAdventureInputMode, setAdventureLanguageMode, setAdventureState, setEnableFactionResources, setIsAdventureCloudEnabled,
           setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setStudentProjectSettings, setUseLowQualityVisuals,
           socialStoryFocus, studentProjectSettings, t, universalImageStyle, useLowQualityVisuals,
+          openUniversalSettings: props.openUniversalSettings,
           adventureAutoRead: props.adventureAutoRead, setAdventureAutoRead: props.setAdventureAutoRead, stopPlayback: props.stopPlayback,
           theme: props.theme, adventureTypingPaceEnabled: props.adventureTypingPaceEnabled, adventureFluencyEnabled: props.adventureFluencyEnabled,
           setAdventureTypingPaceEnabled: props.setAdventureTypingPaceEnabled, setAdventureFluencyEnabled: props.setAdventureFluencyEnabled

@@ -1,0 +1,13 @@
+{
+  "date": "2026-09-09",
+  "status": "passed",
+  "testFiles": 18,
+  "tests": 626,
+  "followUp": {
+    "suite": "allopack_dpv_illustrated.test.js",
+    "tests": 4,
+    "status": "passed",
+    "reason": "Tightened description limit to 250 characters"
+  },
+  "scope": "AlloPack and catalog regression suites, including exact mathematical diagram checks"
+}

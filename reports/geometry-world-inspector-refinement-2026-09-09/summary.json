@@ -1,0 +1,981 @@
+{
+  "pass": true,
+  "sources": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "sha256": "a2127e6b153534bbcde4220acf14891d843f541d51c4e8c1369d258758ad5574",
+      "parse": true,
+      "mirrorMatches": true,
+      "browserMatches": true,
+      "changed": true
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "sha256": "aef23025eabb67ad00852a9b7fc44d130e3fdade398456e2cc6219f5d0932371",
+      "parse": true,
+      "mirrorMatches": true,
+      "browserMatches": true,
+      "changed": true
+    },
+    {
+      "name": "stem_tool_printlab.js",
+      "sha256": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742",
+      "parse": true,
+      "mirrorMatches": true,
+      "browserMatches": true,
+      "changed": false
+    }
+  ],
+  "tests": {
+    "passed": 152,
+    "suites": 6,
+    "evidence": [
+      {
+        "file": "scale-controls-tests.json",
+        "tests": 39,
+        "suites": 1,
+        "processExitCode": 0
+      },
+      {
+        "file": "inspector-regressions.json",
+        "tests": 113,
+        "suites": 5,
+        "processExitCode": 0
+      }
+    ]
+  },
+  "browser": {
+    "pass": true,
+    "errors": [],
+    "consoleErrors": [],
+    "failures": [],
+    "layouts": [
+      {
+        "size": {
+          "width": 1440,
+          "height": 1000
+        },
+        "screenshot": "after-scale-1440x1000.png",
+        "controls": [
+          {
+            "label": "Use 5 millimeters per block",
+            "width": 82.65625,
+            "height": 44,
+            "left": 1125,
+            "top": 744.359375,
+            "right": 1207.65625,
+            "bottom": 788.359375,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Use 10 millimeters per block",
+            "width": 82.671875,
+            "height": 44,
+            "left": 1213.65625,
+            "top": 744.359375,
+            "right": 1296.328125,
+            "bottom": 788.359375,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Use 20 millimeters per block",
+            "width": 82.65625,
+            "height": 44,
+            "left": 1302.328125,
+            "top": 744.359375,
+            "right": 1384.984375,
+            "bottom": 788.359375,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "",
+            "width": 171.09375,
+            "height": 44,
+            "left": 1125,
+            "top": 822.859375,
+            "right": 1296.09375,
+            "bottom": 866.859375,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Apply scale",
+            "width": 81.90625,
+            "height": 44,
+            "left": 1303.09375,
+            "top": 822.859375,
+            "right": 1385,
+            "bottom": 866.859375,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        ],
+        "applyContrast": {
+          "color": "rgb(20, 59, 44)",
+          "background": "rgb(231, 240, 213)",
+          "ratio": 10.535341730086996
+        }
+      },
+      {
+        "size": {
+          "width": 390,
+          "height": 844
+        },
+        "screenshot": "after-scale-390x844.png",
+        "controls": [
+          {
+            "label": "Use 5 millimeters per block",
+            "width": 94,
+            "height": 44,
+            "left": 48,
+            "top": 631.890625,
+            "right": 142,
+            "bottom": 675.890625,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Use 10 millimeters per block",
+            "width": 94,
+            "height": 44,
+            "left": 148,
+            "top": 631.890625,
+            "right": 242,
+            "bottom": 675.890625,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Use 20 millimeters per block",
+            "width": 94,
+            "height": 44,
+            "left": 248,
+            "top": 631.890625,
+            "right": 342,
+            "bottom": 675.890625,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "",
+            "width": 205.09375,
+            "height": 44,
+            "left": 48,
+            "top": 710.390625,
+            "right": 253.09375,
+            "bottom": 754.390625,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Apply scale",
+            "width": 81.90625,
+            "height": 44,
+            "left": 260.09375,
+            "top": 710.390625,
+            "right": 342,
+            "bottom": 754.390625,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        ],
+        "applyContrast": {
+          "color": "rgb(20, 59, 44)",
+          "background": "rgb(231, 240, 213)",
+          "ratio": 10.535341730086996
+        }
+      },
+      {
+        "size": {
+          "width": 320,
+          "height": 700
+        },
+        "screenshot": "after-scale-320x700.png",
+        "controls": [
+          {
+            "label": "Use 5 millimeters per block",
+            "width": 70.65625,
+            "height": 44,
+            "left": 48,
+            "top": 517.546875,
+            "right": 118.65625,
+            "bottom": 561.546875,
+            "visible": true,
+            "inViewport": true,
+            "hit": false
+          },
+          {
+            "label": "Use 10 millimeters per block",
+            "width": 70.671875,
+            "height": 44,
+            "left": 124.65625,
+            "top": 517.546875,
+            "right": 195.328125,
+            "bottom": 561.546875,
+            "visible": true,
+            "inViewport": true,
+            "hit": false
+          },
+          {
+            "label": "Use 20 millimeters per block",
+            "width": 70.65625,
+            "height": 44,
+            "left": 201.328125,
+            "top": 517.546875,
+            "right": 271.984375,
+            "bottom": 561.546875,
+            "visible": true,
+            "inViewport": true,
+            "hit": false
+          },
+          {
+            "label": "",
+            "width": 135.09375,
+            "height": 44,
+            "left": 48,
+            "top": 596.046875,
+            "right": 183.09375,
+            "bottom": 640.046875,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Apply scale",
+            "width": 81.90625,
+            "height": 44,
+            "left": 190.09375,
+            "top": 596.046875,
+            "right": 272,
+            "bottom": 640.046875,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        ],
+        "applyContrast": {
+          "color": "rgb(20, 59, 44)",
+          "background": "rgb(231, 240, 213)",
+          "ratio": 10.535341730086996
+        }
+      },
+      {
+        "size": {
+          "width": 844,
+          "height": 390
+        },
+        "screenshot": "after-scale-844x390.png",
+        "controls": [
+          {
+            "label": "Use 5 millimeters per block",
+            "width": 82.65625,
+            "height": 44,
+            "left": 529,
+            "top": 235.359375,
+            "right": 611.65625,
+            "bottom": 279.359375,
+            "visible": true,
+            "inViewport": true,
+            "hit": false
+          },
+          {
+            "label": "Use 10 millimeters per block",
+            "width": 82.671875,
+            "height": 44,
+            "left": 617.65625,
+            "top": 235.359375,
+            "right": 700.328125,
+            "bottom": 279.359375,
+            "visible": true,
+            "inViewport": true,
+            "hit": false
+          },
+          {
+            "label": "Use 20 millimeters per block",
+            "width": 82.65625,
+            "height": 44,
+            "left": 706.328125,
+            "top": 235.359375,
+            "right": 788.984375,
+            "bottom": 279.359375,
+            "visible": true,
+            "inViewport": true,
+            "hit": false
+          },
+          {
+            "label": "",
+            "width": 171.09375,
+            "height": 44,
+            "left": 529,
+            "top": 313.859375,
+            "right": 700.09375,
+            "bottom": 357.859375,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Apply scale",
+            "width": 81.90625,
+            "height": 44,
+            "left": 707.09375,
+            "top": 313.859375,
+            "right": 789,
+            "bottom": 357.859375,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        ],
+        "applyContrast": {
+          "color": "rgb(20, 59, 44)",
+          "background": "rgb(231, 240, 213)",
+          "ratio": 10.535341730086996
+        }
+      }
+    ],
+    "coordinateStates": [
+      {
+        "size": {
+          "width": 320,
+          "height": 700
+        },
+        "collapsed": false,
+        "open": false,
+        "controls": [
+          {
+            "label": "Position",
+            "width": 79.609375,
+            "height": 44,
+            "left": 19,
+            "top": 74,
+            "right": 98.609375,
+            "bottom": 118,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Toggle coordinate screen-reader announcements (key C)",
+            "width": 70.21875,
+            "height": 44,
+            "left": 19,
+            "top": 191.5,
+            "right": 89.21875,
+            "bottom": 235.5,
+            "visible": true,
+            "inViewport": true,
+            "hit": false
+          }
+        ],
+        "sr": null,
+        "screenshot": "after-position-320-bar-closed.png"
+      },
+      {
+        "size": {
+          "width": 320,
+          "height": 700
+        },
+        "collapsed": false,
+        "open": true,
+        "controls": [
+          {
+            "label": "Position",
+            "width": 93.890625,
+            "height": 44,
+            "left": 19,
+            "top": 74,
+            "right": 112.890625,
+            "bottom": 118,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Toggle coordinate screen-reader announcements (key C)",
+            "width": 70.21875,
+            "height": 44,
+            "left": 19,
+            "top": 176.5,
+            "right": 89.21875,
+            "bottom": 220.5,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        ],
+        "sr": {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 176.5,
+          "right": 89.21875,
+          "bottom": 220.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        "screenshot": "after-position-320-bar-open.png"
+      },
+      {
+        "size": {
+          "width": 320,
+          "height": 700
+        },
+        "collapsed": true,
+        "open": false,
+        "controls": [
+          {
+            "label": "Position",
+            "width": 79.609375,
+            "height": 44,
+            "left": 19,
+            "top": 62,
+            "right": 98.609375,
+            "bottom": 106,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Toggle coordinate screen-reader announcements (key C)",
+            "width": 70.21875,
+            "height": 44,
+            "left": 19,
+            "top": 179.5,
+            "right": 89.21875,
+            "bottom": 223.5,
+            "visible": true,
+            "inViewport": true,
+            "hit": false
+          }
+        ],
+        "sr": null,
+        "screenshot": "after-position-320-collapsed-closed.png"
+      },
+      {
+        "size": {
+          "width": 320,
+          "height": 700
+        },
+        "collapsed": true,
+        "open": true,
+        "controls": [
+          {
+            "label": "Position",
+            "width": 93.890625,
+            "height": 44,
+            "left": 19,
+            "top": 62,
+            "right": 112.890625,
+            "bottom": 106,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Toggle coordinate screen-reader announcements (key C)",
+            "width": 70.21875,
+            "height": 44,
+            "left": 19,
+            "top": 164.5,
+            "right": 89.21875,
+            "bottom": 208.5,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        ],
+        "sr": {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 164.5,
+          "right": 89.21875,
+          "bottom": 208.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        "screenshot": "after-position-320-collapsed-open.png"
+      },
+      {
+        "size": {
+          "width": 390,
+          "height": 844
+        },
+        "collapsed": false,
+        "open": false,
+        "controls": [
+          {
+            "label": "Position",
+            "width": 79.609375,
+            "height": 44,
+            "left": 19,
+            "top": 74,
+            "right": 98.609375,
+            "bottom": 118,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Toggle coordinate screen-reader announcements (key C)",
+            "width": 70.21875,
+            "height": 44,
+            "left": 19,
+            "top": 191.5,
+            "right": 89.21875,
+            "bottom": 235.5,
+            "visible": true,
+            "inViewport": true,
+            "hit": false
+          }
+        ],
+        "sr": null,
+        "screenshot": "after-position-390-bar-closed.png"
+      },
+      {
+        "size": {
+          "width": 390,
+          "height": 844
+        },
+        "collapsed": false,
+        "open": true,
+        "controls": [
+          {
+            "label": "Position",
+            "width": 93.890625,
+            "height": 44,
+            "left": 19,
+            "top": 74,
+            "right": 112.890625,
+            "bottom": 118,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Toggle coordinate screen-reader announcements (key C)",
+            "width": 70.21875,
+            "height": 44,
+            "left": 19,
+            "top": 176.5,
+            "right": 89.21875,
+            "bottom": 220.5,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        ],
+        "sr": {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 176.5,
+          "right": 89.21875,
+          "bottom": 220.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        "screenshot": "after-position-390-bar-open.png"
+      },
+      {
+        "size": {
+          "width": 390,
+          "height": 844
+        },
+        "collapsed": true,
+        "open": false,
+        "controls": [
+          {
+            "label": "Position",
+            "width": 79.609375,
+            "height": 44,
+            "left": 19,
+            "top": 62,
+            "right": 98.609375,
+            "bottom": 106,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Toggle coordinate screen-reader announcements (key C)",
+            "width": 70.21875,
+            "height": 44,
+            "left": 19,
+            "top": 179.5,
+            "right": 89.21875,
+            "bottom": 223.5,
+            "visible": true,
+            "inViewport": true,
+            "hit": false
+          }
+        ],
+        "sr": null,
+        "screenshot": "after-position-390-collapsed-closed.png"
+      },
+      {
+        "size": {
+          "width": 390,
+          "height": 844
+        },
+        "collapsed": true,
+        "open": true,
+        "controls": [
+          {
+            "label": "Position",
+            "width": 93.890625,
+            "height": 44,
+            "left": 19,
+            "top": 62,
+            "right": 112.890625,
+            "bottom": 106,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          },
+          {
+            "label": "Toggle coordinate screen-reader announcements (key C)",
+            "width": 70.21875,
+            "height": 44,
+            "left": 19,
+            "top": 164.5,
+            "right": 89.21875,
+            "bottom": 208.5,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        ],
+        "sr": {
+          "label": "Toggle coordinate screen-reader announcements (key C)",
+          "width": 70.21875,
+          "height": 44,
+          "left": 19,
+          "top": 164.5,
+          "right": 89.21875,
+          "bottom": 208.5,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        "screenshot": "after-position-390-collapsed-open.png"
+      }
+    ],
+    "fullscreen": {
+      "summary": {
+        "label": "Position",
+        "width": 93.890625,
+        "height": 44,
+        "left": 19,
+        "top": 62,
+        "right": 112.890625,
+        "bottom": 106,
+        "visible": true,
+        "inViewport": true,
+        "hit": true
+      },
+      "screenshot": "after-position-fullscreen.png",
+      "sr": {
+        "label": "Toggle coordinate screen-reader announcements (key C)",
+        "width": 70.21875,
+        "height": 44,
+        "left": 19,
+        "top": 164.5,
+        "right": 89.21875,
+        "bottom": 208.5,
+        "visible": true,
+        "inViewport": true,
+        "hit": true
+      }
+    },
+    "fixture": {
+      "selected": 60,
+      "total": 62
+    },
+    "scales": [
+      {
+        "unit": 10,
+        "dimensions": [
+          60,
+          40,
+          50
+        ],
+        "over": [],
+        "fit": "true"
+      },
+      {
+        "unit": 20,
+        "dimensions": [
+          120,
+          80,
+          100
+        ],
+        "over": [
+          "width"
+        ],
+        "fit": "false"
+      },
+      {
+        "unit": 5,
+        "dimensions": [
+          30,
+          20,
+          25
+        ],
+        "over": [],
+        "fit": "true"
+      }
+    ],
+    "custom": {
+      "unit": 12.5,
+      "context": {
+        "unitMm": 12.5,
+        "aiUse": "NONE",
+        "aiDisclosure": "Student-made pavilion",
+        "customNote": "retained"
+      },
+      "dimensions": [
+        75,
+        50,
+        62.5
+      ],
+      "over": [],
+      "fit": "true",
+      "draft": "12.5",
+      "pressed": [
+        "false",
+        "false",
+        "false"
+      ],
+      "error": "",
+      "volume": "Prints solid at 48 cubic units = 93,750 mm³ at 12.5 mm per block (36 cubes, 24 half slabs)."
+    },
+    "stl": {
+      "bytes": 17684,
+      "triangles": 352,
+      "min": [
+        0,
+        -50,
+        0
+      ],
+      "max": [
+        75,
+        0,
+        56.25
+      ],
+      "dimensions": [
+        75,
+        50,
+        56.25
+      ]
+    },
+    "returned": {
+      "unit": 12.5,
+      "context": {
+        "unitMm": 12.5,
+        "aiUse": "NONE",
+        "aiDisclosure": "Student-made pavilion"
+      },
+      "dimensions": [
+        75,
+        50,
+        62.5
+      ],
+      "over": [],
+      "fit": "true",
+      "draft": "12.5",
+      "pressed": [
+        "false",
+        "false",
+        "false"
+      ],
+      "error": "",
+      "volume": "Prints solid at 48 cubic units = 93,750 mm³ at 12.5 mm per block (36 cubes, 24 half slabs)."
+    }
+  },
+  "baseline": {
+    "clippedSummaryStates": [
+      {
+        "size": {
+          "width": 320,
+          "height": 700
+        },
+        "collapsed": false,
+        "open": false,
+        "summary": {
+          "label": "Position",
+          "width": 56.78125,
+          "height": 32,
+          "left": 19,
+          "top": 14,
+          "right": 75.78125,
+          "bottom": 46,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        }
+      },
+      {
+        "size": {
+          "width": 320,
+          "height": 700
+        },
+        "collapsed": false,
+        "open": true,
+        "summary": {
+          "label": "Position",
+          "width": 93.890625,
+          "height": 32,
+          "left": 19,
+          "top": 14,
+          "right": 112.890625,
+          "bottom": 46,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        }
+      },
+      {
+        "size": {
+          "width": 320,
+          "height": 700
+        },
+        "collapsed": true,
+        "open": false,
+        "summary": {
+          "label": "Position",
+          "width": 56.78125,
+          "height": 32,
+          "left": 19,
+          "top": 14,
+          "right": 75.78125,
+          "bottom": 46,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      },
+      {
+        "size": {
+          "width": 320,
+          "height": 700
+        },
+        "collapsed": true,
+        "open": true,
+        "summary": {
+          "label": "Position",
+          "width": 93.890625,
+          "height": 32,
+          "left": 19,
+          "top": 14,
+          "right": 112.890625,
+          "bottom": 46,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      },
+      {
+        "size": {
+          "width": 390,
+          "height": 844
+        },
+        "collapsed": false,
+        "open": false,
+        "summary": {
+          "label": "Position",
+          "width": 56.78125,
+          "height": 32,
+          "left": 19,
+          "top": 14,
+          "right": 75.78125,
+          "bottom": 46,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        }
+      },
+      {
+        "size": {
+          "width": 390,
+          "height": 844
+        },
+        "collapsed": false,
+        "open": true,
+        "summary": {
+          "label": "Position",
+          "width": 93.890625,
+          "height": 32,
+          "left": 19,
+          "top": 14,
+          "right": 112.890625,
+          "bottom": 46,
+          "visible": true,
+          "inViewport": true,
+          "hit": false
+        }
+      },
+      {
+        "size": {
+          "width": 390,
+          "height": 844
+        },
+        "collapsed": true,
+        "open": false,
+        "summary": {
+          "label": "Position",
+          "width": 56.78125,
+          "height": 32,
+          "left": 19,
+          "top": 14,
+          "right": 75.78125,
+          "bottom": 46,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      },
+      {
+        "size": {
+          "width": 390,
+          "height": 844
+        },
+        "collapsed": true,
+        "open": true,
+        "summary": {
+          "label": "Position",
+          "width": 93.890625,
+          "height": 32,
+          "left": 19,
+          "top": 14,
+          "right": 112.890625,
+          "bottom": 46,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      }
+    ]
+  },
+  "scope": "Local React/THREE production scripts rendered with software WebGL; actual mouse/keyboard form actions, native fullscreen, native STL download and Print Lab Revise round trip. No physical printer or deployment."
+}

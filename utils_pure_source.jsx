@@ -102,13 +102,14 @@ const validateDraftQuality = (text) => {
   }
   return { isValid: true, error: null };
 };
-const getAssetManifest = (historyItems) => {
+const getAssetManifest = (historyItems, options = {}) => {
     const assets = historyItems.filter(h =>
-        !['lesson-plan', 'udl-advice', 'alignment-report', 'gemini-bridge'].includes(h.type)
+        h && !['lesson-plan', 'udl-advice', 'alignment-report', 'gemini-bridge'].includes(h.type)
     );
     if (assets.length === 0) return "No specific assets generated yet. Suggest general activities.";
     let manifest = "--- AVAILABLE ASSET INVENTORY (THE KIT) ---\n";
     assets.forEach(item => {
+        const traceStart = manifest.length;
         const title = item.title || "Untitled Resource";
         let usage = "";
         switch(item.type) {
@@ -128,6 +129,7 @@ const getAssetManifest = (historyItems) => {
             default: usage = "(Supplementary Resource)";
         }
         manifest += `- [${item.type.toUpperCase()}] "${title}" (ID: ${item.id}): ${usage}\n`;
+        if (typeof options.trace === 'function') options.trace({ id:item.id, title, type:item.type, text:manifest.slice(traceStart) });
     });
     manifest += "-------------------------------------------\n";
     return manifest;
@@ -1115,6 +1117,187 @@ function _renderDiagramSvg(tool, state, titleText) {
   return null;
 }
 
+
+// Persist only source identities and fingerprints; never a second copy of lesson text.
+const capturePlanningInputs = (options = {}) => {
+  const { context = '', segments = [], suppliedContext = context, mode = 'teacher', route = 'sidebar',
+    local = false, inventoryText = '', inventory = [], inventorySupplied = false, inventoryTraced = true } = options;
+  const api = window.AlloModules && window.AlloModules.ResourceContentFingerprint;
+  const fingerprint = value => api && typeof api.fingerprint === 'function' ? api.fingerprint(value) : null;
+  // Match localExcerpt's current projection exactly, including its existing escape semantics.
+  const normalize = text => local ? String(text || '').replace(/\\s+\\n/g, '\\n').trim() : String(text || '');
+  const projected = normalize(context);
+  const consumed = local ? projected.slice(0, 6500).trim() : projected;
+  let cursor = 0;
+  const summaries = [];
+  for (const segment of segments) {
+    const text = normalize(segment.text).trim();
+    if (!text) continue;
+    const start = projected.indexOf(text, cursor);
+    if (start < 0) continue;
+    cursor = start + text.length;
+    const part = consumed.slice(start, Math.min(cursor, consumed.length));
+    if (!part) continue;
+    summaries.push({
+      id: segment.id == null ? null : String(segment.id),
+      title: String(segment.title || segment.kind || 'Planning input'),
+      type: String(segment.type || 'source-input'), kind: String(segment.kind || 'context'),
+      characters: part.length, partial: part.length < text.length, fingerprint: fingerprint(part)
+    });
+  }
+  return {
+    version: 1, mode, route, projection: local ? 'local-excerpt-v1' : 'context-v1',
+    capturedAt: new Date().toISOString(), contextCharacters: String(suppliedContext).length,
+    contextFingerprint: fingerprint(String(suppliedContext)), summaries,
+    traceComplete: segments.length > 0 || !String(context).trim(),
+    inventoryStatus: !inventorySupplied ? 'not-supplied' : inventoryTraced ? 'recorded' : 'untraced',
+    inventoryFingerprint: inventorySupplied ? fingerprint(String(inventoryText)) : null,
+    inventory: inventorySupplied && inventoryTraced ? inventory.map(item => ({
+      id: item.id == null ? null : String(item.id), title: String(item.title || 'Untitled Resource'),
+      type: String(item.type || 'resource'), fingerprint: fingerprint(String(item.text || ''))
+    })) : []
+  };
+};
+
+// Logical source positions let saved diagrams retain their layout across static edits.
+const outlineNodeBlueprints = (data = {}) => {
+  const nodes = [], links = [];
+  const branches = Array.isArray(data.branches) ? data.branches : [];
+  const kind = data.structureType || '';
+  const flow = kind === 'Flow Chart' || kind === 'Process Flow / Sequence';
+  const venn = kind === 'Venn Diagram', ce = kind === 'Cause and Effect', ps = kind === 'Problem Solution';
+  const add = (id, ref, text, translation, type, x, y, parent) => {
+    nodes.push({ id, outlineSource: ref, text, translation: translation || null, type, x, y });
+    if (parent) links.push({ id: id === 'node-main' ? 'e-start-main' : 'e-' + parent + '-' + id, fromId: parent, toId: id, ...(type === 'flow-note' ? {style:'dashed'} : {}) });
+  };
+  if (flow) {
+    add('node-start', 'start', 'Start', null, 'flow-start', 400, 50);
+    add('node-main', 'main', data.main, data.main_en, 'flow-process', 400, 150, 'node-start');
+  } else if (!venn) add('root', 'main', data.main, data.main_en, ce ? 'ce-main' : ps ? 'ps-problem' : kind === 'Structured Outline' ? 'outline-main' : 'main', 350, 50);
+  const outcomeIndex = ps ? branches.findIndex(b => /outcome|result|evaluation/i.test(String(b && b.title || ''))) : -1;
+  let solutionIndex = 0;
+  branches.forEach((branch, b) => {
+    if (!branch || typeof branch !== 'object') return;
+    const items = Array.isArray(branch.items) ? branch.items : [];
+    let branchId = 'b-' + b, prefix = 'i-' + b + '-', type = 'item', parent = branchId;
+    if (flow) { branchId = 'node-b-' + b; prefix = 'node-i-' + b + '-'; type = 'flow-note'; parent = branchId; }
+    if (venn) { prefix = 'venn-' + b + '-'; type = 'venn-token'; parent = null; }
+    if (ce) {
+      const title = String(branch.title || '').toLowerCase();
+      const isCause = /cause/.test(title), isEffect = /effect|consequence/.test(title), isChain = /chain|sequence/.test(title);
+      const role = isCause || (!isEffect && !isChain && b === 0) ? 'cause' : isEffect || (!isCause && !isChain) ? 'effect' : 'chain';
+      prefix = role + '-' + b + '-'; type = role + '-node'; parent = role === 'cause' ? 'root' : null;
+    }
+    if (ps) {
+      branchId = b === outcomeIndex ? 'outcome' : 'sol-' + solutionIndex++;
+      prefix = b === outcomeIndex ? 'outcome-item-' : 'sol-item-' + (solutionIndex - 1) + '-';
+      parent = branchId; type = b === outcomeIndex ? 'ps-outcome-item' : 'ps-solution-item';
+    }
+    const x = 80 + (b % 4) * 180, y = 200 + Math.floor(b / 4) * 180;
+    if (!venn && !ce) add(branchId, 'b:' + b, branch.title, branch.title_en,
+      flow ? (String(branch.title).includes('?') || branch.connectsTo?.length > 1 ? 'flow-decision' : 'flow-process')
+        : ps ? b === outcomeIndex ? 'ps-outcome' : 'ps-solution' : kind === 'Structured Outline' ? 'outline-branch' : 'branch',
+      flow ? 400 : x, flow ? 270 + b * 120 : y, flow || (ps && b === outcomeIndex) ? null : 'root');
+    items.forEach((text, i) => add(prefix + i, 'i:' + b + ':' + i, text, branch.items_en?.[i], type,
+      venn ? 80 + i * 100 : flow ? 650 : x, venn ? 540 : y + 120 + i * 70, parent));
+  });
+  if (ps && outcomeIndex < 0) add('outcome', 'outcome', 'Outcome', null, 'ps-outcome', 350, 550);
+  if (flow) {
+    add('node-end', 'end', 'End', null, 'flow-end', 400, 320 + branches.length * 120);
+    const branching = branches.some(b => Array.isArray(b?.connectsTo) && b.connectsTo.length);
+    if (branching) {
+      if (branches.length) links.push({id:'e-main-b0',fromId:'node-main',toId:'node-b-0'});
+      branches.forEach((b,i) => {
+        const targets = Array.isArray(b?.connectsTo) ? b.connectsTo : [];
+        targets.forEach(target => {
+          if (!Number.isInteger(Number(target)) || Number(target) < 0 || Number(target) >= branches.length) return;
+          links.push({id:'e-node-b-'+i+'-node-b-'+target,fromId:'node-b-'+i,toId:'node-b-'+target,label:b.connections?.find(c=>Number(c.target)===Number(target))?.label || ''});
+        });
+        if (!targets.length) links.push({id:'e-b'+i+'-end',fromId:'node-b-'+i,toId:'node-end'});
+      });
+    } else {
+      let previousId = 'node-main';
+      branches.forEach((b,i) => {
+        const id = 'node-b-'+i;
+        links.push({id:'e-'+previousId+'-'+id,fromId:previousId,toId:id});
+        previousId = id;
+      });
+      links.push({id:'e-'+previousId+'-end',fromId:previousId,toId:'node-end'});
+    }
+  }
+  if (ps) nodes.filter(n=>n.type==='ps-solution').forEach(node=>links.push({id:'e-'+node.id+'-outcome',fromId:node.id,toId:'outcome'}));
+  if (ce) {
+    const causes=nodes.filter(n=>n.type==='cause-node'),effects=nodes.filter(n=>n.type==='effect-node');
+    causes.forEach(cause=>effects.forEach(effect=>links.push({id:'e-'+cause.id+'-'+effect.id,fromId:cause.id,toId:effect.id,style:'dashed'})));
+    nodes.filter(n=>n.type==='chain-node').forEach(node=>{
+      const parts=node.outlineSource.split(':'), index=Number(parts[2]);
+      if(index>0) {
+        const previous=nodes.find(n=>n.outlineSource==='i:'+parts[1]+':'+(index-1));
+        if(previous) links.push({id:'e-chain-'+parts[1]+'-'+(index-1)+'-'+index,fromId:previous.id,toId:node.id});
+      }
+    });
+  }
+  return { nodes, links };
+};
+
+const synchronizeSavedOutline = (previous = {}, next = {}, change = {}) => {
+  if (!Array.isArray(previous.nodes)) return next;
+  const oldGraph = outlineNodeBlueprints(previous), newGraph = outlineNodeBlueprints(next);
+  const oldById = new Map(oldGraph.nodes.map(n=>[n.id,n]));
+  const oldByRef = new Map(oldGraph.nodes.map(n=>[n.outlineSource,n]));
+  const newByRef = new Map(newGraph.nodes.map(n=>[n.outlineSource,n]));
+  const remapRef = ref => {
+    if (change.type !== 'remove-branch' || !/^([bi]):\d+/.test(ref)) return ref;
+    const parts = ref.split(':'), index = Number(parts[1]);
+    if (index === change.index) return null;
+    if (index > change.index) parts[1] = String(index - 1);
+    return parts.join(':');
+  };
+  const mappedOldRefs = new Set(oldGraph.nodes.map(n=>remapRef(n.outlineSource)).filter(Boolean));
+  const idMap = new Map(), nodes = [];
+  for (const node of previous.nodes) {
+    if (!node || typeof node !== 'object') continue;
+    const old = oldByRef.get(node.outlineSource) || oldById.get(node.id);
+    if (!old) { nodes.push(node); idMap.set(node.id,node.id); continue; }
+    const ref = remapRef(old.outlineSource), target = newByRef.get(ref);
+    if (!target) { idMap.set(node.id,null); continue; }
+    const updated = { ...node, id:target.id, outlineSource:ref };
+    if (old.text !== target.text) updated.text = target.text;
+    if (old.translation !== target.translation) updated.translation = target.translation;
+    if (node.type === old.type) updated.type = target.type;
+    nodes.push(updated); idMap.set(node.id,target.id);
+  }
+  const added = new Set();
+  for (const node of newGraph.nodes) {
+    if (!mappedOldRefs.has(node.outlineSource) && !nodes.some(n=>n.id===node.id)) { nodes.push(node); added.add(node.id); }
+  }
+  const ids = new Set(nodes.map(n=>n.id));
+  const flowChanged = /^(Flow Chart|Process Flow \/ Sequence)$/.test(next.structureType || '') && (change.field === 'connections' || change.type === 'add-branch' || change.type === 'remove-branch');
+  const canonicalOldEdges = new Set(oldGraph.links.map(edge=>edge.id));
+  const remapEdges = edges => {
+    const templates = new Map();
+    const result = (Array.isArray(edges) ? edges : []).flatMap(edge => {
+      if (!edge || typeof edge !== 'object') return [];
+      const fromId = idMap.has(edge.fromId) ? idMap.get(edge.fromId) : edge.fromId;
+      const toId = idMap.has(edge.toId) ? idMap.get(edge.toId) : edge.toId;
+      if (!ids.has(fromId) || !ids.has(toId)) return [];
+      if (flowChanged && canonicalOldEdges.has(edge.id)) { templates.set(fromId + "|" + toId, edge); return []; }
+      return [{ ...edge, fromId, toId }];
+    });
+    for (const edge of newGraph.links) {
+      if (!ids.has(edge.fromId) || !ids.has(edge.toId)) continue;
+      if (!added.has(edge.fromId) && !added.has(edge.toId) && !flowChanged) continue;
+      if (!result.some(e=>e.fromId===edge.fromId && e.toId===edge.toId)) {
+        const template = templates.get(edge.fromId + "|" + edge.toId);
+        result.push({ ...edge, ...template, id:edge.id, fromId:edge.fromId, toId:edge.toId, ...(change.field === 'connections' ? {label:edge.label || ''} : {}) });
+      }
+    }
+    return result;
+  };
+  return { ...next, nodes, edges: previous.challenge ? [] : remapEdges(previous.edges),
+    ...(previous.challenge ? {challenge:{...previous.challenge,targetEdges:remapEdges(previous.challenge.targetEdges)}} : {}) };
+};
+
 // ─── Registration ───────────────────────────────────────────────────────────
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.UtilsPure = {
@@ -1123,6 +1306,9 @@ window.AlloModules.UtilsPure = {
   calculateTextEntropy,
   validateDraftQuality,
   getAssetManifest,
+  capturePlanningInputs,
+  outlineNodeBlueprints,
+  synchronizeSavedOutline,
   chunkObject,
   flattenObject,
   unflattenObject,

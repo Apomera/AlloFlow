@@ -1,0 +1,290 @@
+[
+  {
+    "id": "vo-term-1",
+    "kind": "term",
+    "file": "vo-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+    "altHash": "img-tjz-3830c224"
+  },
+  {
+    "id": "vo-term-2",
+    "kind": "term",
+    "file": "vo-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+    "altHash": "img-8bj-483a363e"
+  },
+  {
+    "id": "vo-term-3",
+    "kind": "term",
+    "file": "vo-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+    "altHash": "img-8bj-483a363e"
+  },
+  {
+    "id": "vo-term-4",
+    "kind": "term",
+    "file": "vo-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+    "altHash": "img-tjz-3830c224"
+  },
+  {
+    "id": "vo-term-5",
+    "kind": "term",
+    "file": "vo-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A four-by-three-by-five cube block has its two visible bottom edges emphasized in coral.",
+    "altHash": "img-sz7-929bb769"
+  },
+  {
+    "id": "vo-term-6",
+    "kind": "term",
+    "file": "vo-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A single layer of cubes has a top grid four units long and three units wide.",
+    "altHash": "img-gmv-e12e1c60"
+  },
+  {
+    "id": "vo-term-7",
+    "kind": "term",
+    "file": "vo-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Twelve flat teal squares form three rows of four.",
+    "altHash": "img-3cf-d270f6fb"
+  },
+  {
+    "id": "vo-term-8",
+    "kind": "term",
+    "file": "vo-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bracket beside a cube block spans vertically from its top level to its base level.",
+    "altHash": "img-rov-534c3131"
+  },
+  {
+    "id": "vo-term-9",
+    "kind": "term",
+    "file": "vo-term-9.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A clear rectangular tank contains blue water below its top edge, with no objects inside.",
+    "altHash": "img-erv-a6ec1755"
+  },
+  {
+    "id": "vo-term-10",
+    "kind": "term",
+    "file": "vo-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An L-shaped cube solid joins a teal four-by-two-by-two block to an ochre two-by-three-by-two block without overlapping.",
+    "altHash": "img-mv3-d9d3a744"
+  },
+  {
+    "id": "vo-anchor-1",
+    "kind": "anchor",
+    "file": "vo-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A two-by-two-by-two cube block has a grid across its three visible outer faces.",
+    "altHash": "img-hkv-c22bdf9d"
+  },
+  {
+    "id": "vo-anchor-2",
+    "kind": "anchor",
+    "file": "vo-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five separate four-by-three cube layers are arranged in two pairs and one lower layer, with all top grids visible.",
+    "altHash": "img-161n-2c93a9e9"
+  },
+  {
+    "id": "vo-anchor-3",
+    "kind": "anchor",
+    "file": "vo-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+    "altHash": "img-tjz-3830c224"
+  },
+  {
+    "id": "vo-anchor-4",
+    "kind": "anchor",
+    "file": "vo-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An L-shaped cube solid joins a teal four-by-two-by-two block to an ochre two-by-three-by-two block without overlapping.",
+    "altHash": "img-mv3-d9d3a744"
+  },
+  {
+    "id": "vo-anchor-5",
+    "kind": "anchor",
+    "file": "vo-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+    "altHash": "img-8bj-483a363e"
+  },
+  {
+    "id": "vo-sort-1",
+    "kind": "sort",
+    "file": "vo-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A wooden sandbox holds pale sand below its rim, with a small scoop beside it.",
+    "altHash": "img-phb-1a6c422d"
+  },
+  {
+    "id": "vo-sort-2",
+    "kind": "sort",
+    "file": "vo-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A raised wooden bed contains dark soil and a few small seedlings.",
+    "altHash": "img-cz7-89a0b4ff"
+  },
+  {
+    "id": "vo-sort-3",
+    "kind": "sort",
+    "file": "vo-sort-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A clear rectangular tank contains blue water below its top edge, with no objects inside.",
+    "altHash": "img-apf-115aea76"
+  },
+  {
+    "id": "vo-sort-4",
+    "kind": "sort",
+    "file": "vo-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Teal carpet covers most of an empty room's floor, with one edge rolled back.",
+    "altHash": "img-lfz-a8a20995"
+  },
+  {
+    "id": "vo-sort-5",
+    "kind": "sort",
+    "file": "vo-sort-5.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "An ochre painted wall has an unpainted patch, with a roller and paint tray below.",
+    "altHash": "img-btr-2d46fb90"
+  },
+  {
+    "id": "vo-sort-6",
+    "kind": "sort",
+    "file": "vo-sort-6.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A wooden rectangular window frame surrounds one pale-blue glass pane.",
+    "altHash": "img-7iv-940dabcd"
+  },
+  {
+    "id": "vo-sort-7",
+    "kind": "sort",
+    "file": "vo-sort-7.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A low wooden fence surrounds all four sides of a rectangular grassy yard.",
+    "altHash": "img-jh3-a0c3a59e"
+  },
+  {
+    "id": "vo-sort-8",
+    "kind": "sort",
+    "file": "vo-sort-8.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A coral ribbon forms a single horizontal band around the side walls of a plain rectangular box.",
+    "altHash": "img-71r-dddf8ec9"
+  },
+  {
+    "id": "vo-sort-9",
+    "kind": "sort",
+    "file": "vo-sort-9.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Ochre trim forms a border around all four sides of a rectangular mirror.",
+    "altHash": "img-5qn-1c973b6e"
+  },
+  {
+    "id": "vo-lesson-1",
+    "kind": "lesson",
+    "file": "vo-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+    "altHash": "img-8bj-483a363e"
+  },
+  {
+    "id": "vo-lesson-2",
+    "kind": "lesson",
+    "file": "vo-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A single layer of cubes has a top grid four units long and three units wide.",
+    "altHash": "img-gmv-e12e1c60"
+  },
+  {
+    "id": "vo-lesson-3",
+    "kind": "lesson",
+    "file": "vo-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+    "altHash": "img-tjz-3830c224"
+  },
+  {
+    "id": "vo-lesson-4",
+    "kind": "lesson",
+    "file": "vo-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five separate four-by-three cube layers are arranged in two pairs and one lower layer, with all top grids visible.",
+    "altHash": "img-161n-2c93a9e9"
+  },
+  {
+    "id": "vo-lesson-5",
+    "kind": "lesson",
+    "file": "vo-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An L-shaped cube solid joins a teal four-by-two-by-two block to an ochre two-by-three-by-two block without overlapping.",
+    "altHash": "img-mv3-d9d3a744"
+  },
+  {
+    "id": "vo-lesson-6",
+    "kind": "lesson",
+    "file": "vo-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two gridded rectangular solids have different proportions: six by three by two above, nine by two by two below.",
+    "altHash": "img-vcb-2c52640b"
+  },
+  {
+    "id": "vo-lesson-7",
+    "kind": "lesson",
+    "file": "vo-lesson-7.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A clear rectangular tank contains blue water below its top edge, with no objects inside.",
+    "altHash": "img-1pzr-4c7acc2a"
+  },
+  {
+    "id": "vo-lesson-8",
+    "kind": "lesson",
+    "file": "vo-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Six equal ochre squares form a cross-shaped cube net: four in a row, with one above and one below the second square.",
+    "altHash": "img-3wn-4bf2cda7"
+  }
+]

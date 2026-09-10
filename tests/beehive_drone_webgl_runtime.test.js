@@ -243,7 +243,7 @@ describe('Drone Flight visible WebGL runtime', () => {
     expect(source).toContain("addEventListener('webglcontextlost'");
     expect(source).toContain('verifyThreeFrameHealth(t)');
     expect(source).toContain('var usingThreeScene = !!(threeWorld && threeWorld.ready)');
-    expect(source).toContain("c.fillText('FLIGHT PATH'");
+    expect(source).toContain("drawCuePlaque('MOTION'");
     expect(source).toContain("trainingActive: difficulty === 'easy'");
     expect(source).toContain('syncAdaptiveDroneQuality(dt)');
     expect(source).toContain("_droneCameraStabilized.current === false ? actualRoll : actualRoll * 0.35");

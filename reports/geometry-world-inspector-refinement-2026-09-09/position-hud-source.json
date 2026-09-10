@@ -1,0 +1,10 @@
+{
+  "before": "d404aa8eb50229a15cd1b847413896376c694196f4cf59be7c7ff1958dab263a",
+  "after": "a2127e6b153534bbcde4220acf14891d843f541d51c4e8c1369d258758ad5574",
+  "syntax": true,
+  "parity": true,
+  "breakpoint": 800,
+  "minTarget": 44,
+  "scope": "Sandbox, touch inactive only; desktop wider than 800px unchanged",
+  "lineEnding": "LF"
+}

@@ -101,10 +101,44 @@
 .diss-comparison-card { min-width: 0; padding: .9rem; border: 1px solid #bccddd; border-radius: .75rem; background: #fff; }
 .diss-comparison-card[data-current="true"] { border: 2px solid #087f78; background: #f0fdfa; }
 .diss-comparison-card h4 { margin: .3rem 0; font-size: .95rem; font-weight: 800; }
+.diss-pump-diagram { margin: .75rem 0; padding: .65rem; border: 1px solid #c7d5e0; border-radius: .6rem; background: #f8fafc; color: #223b50; }
+.diss-pump-diagram svg { display: block; width: 100%; height: auto; max-height: 180px; overflow: visible; }
+.diss-pump-diagram text { font: 700 16px system-ui, sans-serif; fill: #20394d; }
+.diss-pump-diagram figcaption { margin-top: .45rem; font-size: .77rem; line-height: 1.5; color: #40566b; }
+.diss-comparison-visual-key { padding: .65rem .75rem; border-left: 3px solid #087f78; background: #edf7f5; color: #234c51; font-size: .8rem; line-height: 1.55; margin-bottom: .8rem; }
+.diss-comparison-sources { margin-top: .7rem; font-size: .8rem; color: #304d68; }
+.diss-comparison-sources summary { cursor: pointer; display: list-item; padding: .65rem 0; }
+.diss-comparison-sources a { display: block; padding: .5rem 0; color: #164e87; text-decoration: underline; }
 .diss-comparison-prompt { margin-top: .85rem; padding: .8rem; border-radius: .65rem; background: #e8eef8; color: #243e60; font-size: .85rem; line-height: 1.55; }
 .diss-study-links { display: grid; gap: .4rem; margin-top: .6rem; }
 .diss-study-links button { width: 100%; text-align: left; padding: .65rem .75rem; border: 1px solid #bacbda; border-radius: .6rem; background: #fff; color: #183b56; font-size: .82rem; line-height: 1.5; }
 .diss-study-links button:hover { background: #eaf5fc; border-color: #1766d2; }
+.diss-observation-review { border: 1px solid #a9c9c5; border-radius: .8rem; background: #f5fbfa; color: #183f43; overflow: hidden; }
+.diss-observation-review > summary { padding: .8rem; font-weight: 850; cursor: pointer; }
+.diss-observation-review__body { padding: 0 .8rem .8rem; font-size: .8rem; line-height: 1.55; }
+.diss-observation-review__body > p { margin: .5rem 0; }
+.diss-observation-search { margin: .8rem 0; }
+.diss-observation-search label { display: block; font-weight: 800; margin-bottom: .35rem; }
+.diss-observation-search input { width: 100%; min-height: 2.75rem; padding: .65rem; border: 1px solid #719b99; border-radius: .5rem; background: #fff; color: #183f43; }
+.diss-observation-search p { margin: .35rem 0; }
+.diss-observation-search button { margin-top: .25rem; }
+.diss-observation-note-match { color: #145d64; font-weight: 750; }
+.diss-observation-review__filters { display: flex; flex-wrap: wrap; gap: .4rem; margin: .7rem 0; }
+.diss-observation-review button { border: 1px solid #719b99; background: #fff; color: #164e52; border-radius: .5rem; padding: .55rem .7rem; font-weight: 750; }
+.diss-observation-review button[aria-pressed="true"] { background: #145d64; border-color: #145d64; color: #fff; }
+.diss-observation-export { margin: .8rem 0; border: 1px solid #a9c9c5; border-radius: .6rem; background: #fff; padding: .65rem; }
+.diss-observation-export > summary { display: list-item; cursor: pointer; padding: .5rem 0; font-weight: 800; }
+.diss-observation-export label { display: block; font-weight: 750; margin: .5rem 0; }
+.diss-observation-export textarea { display: block; width: 100%; min-height: 14rem; resize: vertical; padding: .65rem; border: 1px solid #719b99; border-radius: .45rem; color: #183f43; background: #f8fbfc; font: inherit; line-height: 1.55; }
+.diss-observation-export__actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .65rem; }
+.diss-observation-export__actions button { flex: 1 1 8rem; }
+.diss-observation-review__list { display: grid; gap: .6rem; padding: 0; margin: .5rem 0 0; list-style: none; }
+.diss-observation-review__item { min-width: 0; padding: .7rem; border: 1px solid #b7d0cd; background: #fff; border-radius: .6rem; overflow-wrap: anywhere; }
+.diss-observation-review__item h4 { margin: 0 0 .3rem; font-size: .9rem; font-weight: 800; }
+.diss-observation-review__item p { margin: .3rem 0; }
+.diss-observation-review__item > button { width: 100%; margin-top: .5rem; }
+.diss-observation-review__item summary { display: list-item; padding: .65rem 0; cursor: pointer; text-decoration: underline; }
+.diss-observation-review__note { white-space: pre-wrap; border-left: 3px solid #77a9a2; padding-left: .6rem; color: #293e56; }
 .diss-note-handoff { margin-top: .8rem; padding: .75rem; background: #f1f5f9; border: 1px solid #cbd7e7; border-radius: .7rem; color: #243e60; font-size: .8rem; line-height: 1.5; }
 .diss-note-handoff button { width: 100%; margin-top: .5rem; padding: .6rem; background: #145d64; color: #fff; border: 1px solid #145d64; border-radius: .55rem; font-weight: 800; }
 .diss-directory-progress { display: block; margin-top: .2rem; font-size: .72rem; color: #475569; font-weight: 500; }
@@ -870,6 +904,17 @@
 .diss-selection-summary { margin: .65rem 0; padding: .7rem; border-left: 4px solid #f59e0b; border-radius: .65rem; background: #fff7ed; }
 .diss-selection-summary__label { display: block; color: #9a4d08; font-size: .62rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
 .diss-selection-summary p { margin: .2rem 0 0; color: #4a3b2b; font-size: .78rem; line-height: 1.48; }
+[data-dissection-root]:not([data-high-contrast="true"]) .diss-selection-reference { border-color: #cbd5df; background: #fff; }
+[data-dissection-root]:not([data-high-contrast="true"]) .diss-selection-reference .diss-selection-summary { padding: .2rem 0 .8rem; background: transparent; border: 0; border-bottom: 1px solid #d6e0e8; border-radius: 0; }
+[data-dissection-root]:not([data-high-contrast="true"]) .diss-selection-summary__label { color: #37546d; letter-spacing: .04em; }
+[data-dissection-root]:not([data-high-contrast="true"]) .diss-selection-summary p { color: #20384d; }
+[data-dissection-root]:not([data-high-contrast="true"]) .diss-selection-reference .diss-reference-context { padding: .2rem 0 .8rem; background: transparent; border: 0; border-bottom: 1px solid #d6e0e8; border-radius: 0; }
+[data-dissection-root]:not([data-high-contrast="true"]) .diss-clinical-reference { background: #f5f7f9; border-color: #d6e0e8; }
+[data-dissection-root]:not([data-high-contrast="true"]) .diss-clinical-reference :is(span,p) { color: #46586b; }
+[data-dissection-root]:not([data-high-contrast="true"]) [data-dissection-evidence] { border-color: #85ada9; background: #f2faf8; }
+[data-dissection-root]:not([data-high-contrast="true"]) .diss-evidence-coach { border: 0; border-top: 1px solid #c3d6d2; border-radius: 0; padding: .8rem 0 0; background: transparent; }
+[data-dissection-root]:not([data-high-contrast="true"]) .diss-evidence-coach[data-ready="true"] { background: transparent; }
+[data-dissection-root]:not([data-high-contrast="true"]) .diss-note-handoff { border: 0; border-top: 1px solid #d6e0e8; border-radius: 0; background: transparent; padding: .8rem 0 0; }
 .diss-evidence-note { width: 100%; min-height: 5rem; margin-top: .4rem; padding: .65rem; border: 1px solid #aebed2; border-radius: .65rem; background: #fff; color: #24364d; resize: vertical; }
 .diss-evidence-coach { margin-top: .65rem; padding: .65rem; border: 1px solid #93c5fd; border-radius: .7rem; background: rgba(255,255,255,.72); }
 .diss-evidence-coach__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; color: #173f6d; font-size: .75rem; }
@@ -1816,6 +1861,7 @@
     var disposed = false, lost = false, visible = true, frame = 0, pointer = null;
     var renderer, scene, camera, resizeObserver, intersectionObserver;
     var geometries = [], materials = [], meshes = [], shells = [];
+    var fitPoints = [], fitTarget = new THREE.Vector3(0.415, 0, 0);
     var settings = { yaw: -0.65, elevation: 0.45, distance: 6.8, open: true, selected: 'lens' };
     var api = { disposed: false, renderCount: 0 };
     function geometry(value) { geometries.push(value); return value; }
@@ -1855,17 +1901,36 @@
         catch (e) { lost = true; onFault('unavailable'); }
       });
     }
+    // Cached world-space vertices include the whole shell so opening it does not move the camera.
+    function frameCamera() {
+      var direction = new THREE.Vector3(Math.sin(settings.yaw) * Math.cos(settings.elevation), Math.sin(settings.elevation), Math.cos(settings.yaw) * Math.cos(settings.elevation));
+      var right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).normalize();
+      var up = new THREE.Vector3().crossVectors(direction, right).normalize();
+      var tanY = Math.tan(camera.fov * Math.PI / 360), tanX = tanY * camera.aspect;
+      var distance = 1;
+      fitPoints.forEach(function (point) {
+        var relative = point.clone().sub(fitTarget), depth = relative.dot(direction);
+        distance = Math.max(distance, depth + Math.abs(relative.dot(right)) / (tanX * 0.86), depth + Math.abs(relative.dot(up)) / (tanY * 0.86));
+      });
+      camera.position.copy(fitTarget).addScaledVector(direction, distance * settings.distance / 6.8);
+      camera.lookAt(fitTarget); camera.updateMatrixWorld(true);
+      canvas.dataset.eyeZoom = String(Math.round(6.8 / settings.distance * 100));
+    }
+    // Geometry projection is also used by the acceptance checks to catch clipping across aspect ratios.
+    api.projectedBounds = function () {
+      var bounds = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+      fitPoints.forEach(function (point) { var p = point.clone().project(camera); bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x); bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y); });
+      return bounds;
+    };
     function resize() {
       if (disposed || !renderer) return;
       var width = Math.max(1, canvas.clientWidth), height = Math.max(1, canvas.clientHeight);
-      renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); schedule();
+      renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); frameCamera(); schedule();
     }
     function update(next) {
       if (disposed) return;
       settings = Object.assign({}, settings, next);
-      camera.position.set(Math.sin(settings.yaw) * Math.cos(settings.elevation) * settings.distance,
-        Math.sin(settings.elevation) * settings.distance, Math.cos(settings.yaw) * Math.cos(settings.elevation) * settings.distance);
-      camera.lookAt(0.25, 0, 0);
+      frameCamera();
       shells.forEach(function (entry) { entry.mesh.geometry = settings.open ? entry.open : entry.whole; });
       meshes.forEach(function (entry) {
         var selected = entry.userData.partId === settings.selected;
@@ -1947,6 +2012,12 @@
       lens.scale.set(0.28, 0.68, 0.68); lens.position.x = -0.77;
       var nerve = mesh('optic_nerve', geometry(new THREE.CylinderGeometry(0.16, 0.2, 0.92, 24)), '#93d2aa');
       nerve.rotation.z = -Math.PI / 2; nerve.position.set(1.93, -0.13, 0);
+      meshes.forEach(function (part) {
+        part.updateMatrixWorld(true);
+        var shell = shells.find(function (entry) { return entry.mesh === part; });
+        var positions = (shell ? shell.whole : part.geometry).getAttribute('position');
+        for (var i = 0; i < positions.count; i++) fitPoints.push(new THREE.Vector3().fromBufferAttribute(positions, i).applyMatrix4(part.matrixWorld));
+      });
       canvas._dissEyeStudy = api;
       [['pointerdown',down],['pointermove',move],['pointerup',up],['pointercancel',cancel],['lostpointercapture',cancel],
         ['webglcontextlost',contextLost],['webglcontextrestored',contextRestored]].forEach(function (entry) { canvas.addEventListener(entry[0], entry[1]); });
@@ -2036,14 +2107,15 @@
           status !== 'loading' && h('button', { type: 'button', onClick: function () { setRetry(function (value) { return value + 1; }); } }, 'Retry 3D')
         )
       ),
-      h('p', { id: 'diss-eye-study-controls' }, 'Drag to rotate; select a visible surface or use the structure buttons. Keyboard: arrows rotate, +/− zoom, Home resets the camera.'),
+      h('p', { id: 'diss-eye-study-controls' }, 'Drag to rotate; select a visible surface or use the structure buttons. Keyboard: arrows rotate, +/− zoom, Home resets the camera. Fit specimen restores the full specimen at your current angle.'),
       h('div', { className: 'diss-eye-study__actions', role: 'group', 'aria-label': '3D eye display controls' },
         h('button', { type: 'button', disabled: !ready, 'aria-pressed': state.open, onClick: function () { patch({ open: !state.open }); } }, state.open ? 'Opened shell on' : 'Open the shell'),
         h('button', { type: 'button', disabled: !ready || state.distance <= 4.4, onClick: function () { patch({ distance: Math.max(4.4, state.distance - 0.4) }); } }, 'Zoom in'),
         h('button', { type: 'button', disabled: !ready || state.distance >= 9, onClick: function () { patch({ distance: Math.min(9, state.distance + 0.4) }); } }, 'Zoom out'),
+        h('button', { type: 'button', disabled: !ready, onClick: function () { patch({ distance: 6.8 }); } }, 'Fit specimen'),
         h('button', { type: 'button', disabled: !ready, onClick: home }, 'Reset camera')
       ),
-      h('p', { className: 'diss-eye-study__camera', 'data-eye-camera': true, 'data-eye-view': state.preset }, (state.preset === 'custom' ? 'Free rotation' : (presets.find(function (preset) { return preset.id === state.preset; }) || presets[0]).label) + ' · zoom ' + Math.round(6.8 / state.distance * 100) + '%'),
+      h('p', { className: 'diss-eye-study__camera', 'data-eye-camera': true, 'data-eye-view': state.preset }, (state.preset === 'custom' ? 'Free rotation' : (presets.find(function (preset) { return preset.id === state.preset; }) || presets[0]).label) + ' · zoom ' + Math.round(6.8 / state.distance * 100) + '% of fitted view'),
       h('div', { className: 'diss-eye-study__parts', role: 'group', 'aria-label': 'Eye structure references' }, DISSECTION_EYE_STUDY_PARTS.map(function (part, index) {
         return h('button', { key: part.id, type: 'button', 'data-eye-part': part.id, 'aria-pressed': selected.id === part.id, onClick: function () { select(part.id); } },
           h('span', { className: 'diss-eye-study__swatch', style: { background: part.color }, 'aria-hidden': 'true' }, index + 1), part.name);
@@ -3150,6 +3222,59 @@ var d = labToolData.dissection || {};
               "url": "https://openstax.org/books/anatomy-and-physiology/pages/19-1-heart-anatomy"
             }
           };
+          function renderPumpComparisonDiagram(entry) {
+            var h = React.createElement, shapes = [], caption = '', description = '';
+            var identity = { frog: 'heart', pig: 'heart_p', perch: 'heart_f', crayfish: 'heart_c', earthworm: 'aortic_arches' };
+            if (identity[entry.specimenId] !== entry.organ.id) return null;
+            function box(key, x, y, width, height, label, type) {
+              shapes.push(h('g', { key: key, 'data-pump-unit': type },
+                h('rect', { x: x, y: y, width: width, height: height, rx: type === 'atrium' ? 17 : 8,
+                  fill: type === 'atrium' ? '#dceff2' : '#f5e5ce', stroke: '#416277', strokeWidth: 2 }),
+                h('text', { x: x + width / 2, y: y + height / 2 + 4, textAnchor: 'middle' }, label)));
+            }
+            function line(key, path) { shapes.push(h('path', { key: key, d: path, fill: 'none', stroke: '#416277', strokeWidth: 2.5 })); }
+            if (entry.specimenId === 'frog') {
+              box('a1', 22, 16, 112, 38, 'Atrium', 'atrium'); box('a2', 166, 16, 112, 38, 'Atrium', 'atrium');
+              line('connections', 'M78 54 V78 M222 54 V78'); box('v1', 42, 78, 216, 52, 'Ventricle', 'ventricle');
+              caption = '2 atria · 1 ventricle. Internal flow-directing structures are omitted.';
+              description = 'Frog chamber layout: two atria connect to one ventricle. Internal flow-directing structures are omitted.';
+            } else if (entry.specimenId === 'pig') {
+              box('a1', 22, 16, 112, 38, 'Atrium', 'atrium'); box('a2', 166, 16, 112, 38, 'Atrium', 'atrium');
+              line('connections', 'M78 54 V78 M222 54 V78');
+              box('v1', 22, 78, 112, 52, 'Ventricle', 'ventricle'); box('v2', 166, 78, 112, 52, 'Ventricle', 'ventricle');
+              caption = '2 atria · 2 ventricles. Fetal shunts and placental circulation are not drawn.';
+              description = 'Fetal pig chamber count: two atria and two ventricles. Fetal shunts and placental circulation are not drawn.';
+            } else if (entry.specimenId === 'perch') {
+              box('a1', 14, 48, 112, 56, 'Atrium', 'atrium'); line('connection', 'M126 76 H174');
+              box('v1', 174, 48, 112, 56, 'Ventricle', 'ventricle');
+              caption = '2 main pumping chambers. Associated inflow and outflow regions are omitted.';
+              description = 'Perch main pumping chambers: one atrium and one ventricle. Associated inflow and outflow regions are omitted.';
+            } else if (entry.specimenId === 'crayfish') {
+              box('heart', 88, 5, 124, 35, 'Heart', 'heart');
+              line('out1', 'M150 40 V60 M145 54 L150 60 L155 54');
+              box('arteries', 88, 64, 124, 32, 'Arteries', 'arteries');
+              line('out2', 'M150 96 V116 M145 110 L150 116 L155 110');
+              shapes.push(h('rect', { key: 'spaces', x: 48, y: 120, width: 204, height: 27, rx: 6, fill: '#edf7f5', stroke: '#416277', strokeWidth: 2, strokeDasharray: '5 4', 'data-pump-unit': 'sinuses' }));
+              shapes.push(h('text', { key: 'spaces-label', x: 150, y: 138, textAnchor: 'middle' }, 'Tissue spaces (sinuses)'));
+              caption = 'Open circulation: arteries lead into tissue spaces. Gills and the return route are omitted.';
+              description = 'Crayfish outward flow: heart to arteries to tissue spaces, or sinuses. Gills and the return route are omitted.';
+            } else {
+              for (var i = 0; i < 5; i++) {
+                var x = 30 + i * 60;
+                shapes.push(h('g', { key: 'pair' + i, 'data-pump-pair': i + 1 },
+                  h('text', { x: x, y: 21, textAnchor: 'middle' }, String(i + 1)),
+                  h('path', { d: 'M' + x + ' 37 C' + (x - 24) + ' 50 ' + (x - 24) + ' 91 ' + x + ' 105', fill: 'none', stroke: '#216b76', strokeWidth: 6, strokeLinecap: 'round' }),
+                  h('path', { d: 'M' + x + ' 37 C' + (x + 24) + ' 50 ' + (x + 24) + ' 91 ' + x + ' 105', fill: 'none', stroke: '#216b76', strokeWidth: 6, strokeLinecap: 'round' })));
+              }
+              shapes.push(h('text', { key: 'pair-label', x: 150, y: 137, textAnchor: 'middle' }, '5 pairs of contractile vessels'));
+              caption = 'Pair count only. Body positions and vessel connections are not shown.';
+              description = 'Earthworm: five pairs of contractile aortic arches, represented as five paired vessel symbols. Body positions and connections are not shown.';
+            }
+            return h('figure', { className: 'diss-pump-diagram', 'data-pump-diagram': entry.specimenId },
+              h('svg', { viewBox: '0 0 300 156', role: 'img', 'aria-label': description, focusable: 'false' }, shapes),
+              h('figcaption', null, caption));
+          }
+
           function dissectionComparisonGroup(specimenId, organId) {
             return DISSECTION_COMPARISON_GROUPS.find(function (group) { return group.members[specimenId] === organId; }) || null;
           }
@@ -15974,6 +16099,33 @@ var d = labToolData.dissection || {};
           spec.layers.forEach(function (layer, layerIdx) {
             if (layerIdx === 0 || revealedLayers[spec.layers[layerIdx - 1].id]) unlockedLayerIdx = Math.max(unlockedLayerIdx, layerIdx);
           });
+          var observationReviewEntries = [];
+          spec.layers.forEach(function (layer, layerIndex) {
+            (spec.organs[layer.id] || []).forEach(function (org) {
+              var key = specimen + '|' + org.id;
+              if (!(d.exploredOrgans || {})[key]) return;
+              var note = String((d.organNotes || {})[key] || '');
+              var confidence = Number((d.organConfidence || {})[key]);
+              if (confidence !== 1 && confidence !== 2 && confidence !== 3) confidence = 0;
+              observationReviewEntries.push({ organ: org, layer: layer, available: layerIndex <= unlockedLayerIdx,
+                note: note, confidence: confidence, needsRecord: !note.trim() || !confidence });
+            });
+          });
+          var observationReviewFilter = ['all', 'unfinished', 'uncertain'].indexOf(d._observationReviewFilter) >= 0 ? d._observationReviewFilter : 'all';
+          var observationSearchValue = typeof d._observationReviewSearch === 'string' ? d._observationReviewSearch : '';
+          var observationSearchTokens = normalizeDissectionSearch(observationSearchValue).split(/\s+/).filter(Boolean);
+          var matchingObservationEntries = observationReviewEntries.filter(function (entry) {
+            var text = normalizeDissectionSearch(entry.organ.name + ' ' + entry.layer.name + ' ' + entry.note);
+            return observationSearchTokens.every(function (token) { return text.indexOf(token) >= 0; });
+          });
+          var observationReviewChoices = [
+            { id: 'all', label: 'All inspected', count: matchingObservationEntries.length },
+            { id: 'unfinished', label: 'Needs notes', count: matchingObservationEntries.filter(function (entry) { return entry.needsRecord; }).length },
+            { id: 'uncertain', label: 'Low confidence', count: matchingObservationEntries.filter(function (entry) { return entry.confidence === 1; }).length }
+          ];
+          var filteredObservationReview = matchingObservationEntries.filter(function (entry) {
+            return observationReviewFilter === 'all' || (observationReviewFilter === 'unfinished' ? entry.needsRecord : entry.confidence === 1);
+          });
           var remainingUnexplored = organs.find(function (org) { return !exploredOrgans[specimen + '|' + org.id]; }) || null;
           var nextUnexplored = visibleOrgansInView.find(function (org) { return !exploredOrgans[specimen + '|' + org.id]; }) || null;
           var visibilityTarget = currentGuidedOrgan && !currentGuidedVisible ? currentGuidedOrgan : remainingUnexplored;
@@ -16617,7 +16769,7 @@ var d = labToolData.dissection || {};
             updMany({ guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, evidenceRemovePendingId: null, evidenceClearPending: false });
             var viewed = Object.assign({}, d.specimensViewed || {});
             viewed[sk] = true;
-            updMany({ specimen: sk, _eyeStudyReturnPart: null, eyeStudyMode: false, flashcardMode: false, _flashcardPractice: null, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', directoryFilter: 'all', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
+            updMany({ specimen: sk, _observationReviewFilter: null, _observationReviewSearch: '', _eyeStudyReturnPart: null, eyeStudyMode: false, flashcardMode: false, _flashcardPractice: null, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', directoryFilter: 'all', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
             if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
           }
@@ -16682,7 +16834,7 @@ var d = labToolData.dissection || {};
             }
             allowDissectionSave(resetSaveKey, null, spec.name, dissectionSaveOwner);
             closeTimedPractical();
-            updMany({ _eyeStudyReturnPart: null, eyeStudyMode: false, _flashcardPractice: null, flashcardMode: false, activeLayer: (spec.layers[0] || {}).id || 'skin', organSearch: '', directoryFilter: 'all', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
+            updMany({ _observationReviewFilter: null, _observationReviewSearch: '', _eyeStudyReturnPart: null, eyeStudyMode: false, _flashcardPractice: null, flashcardMode: false, activeLayer: (spec.layers[0] || {}).id || 'skin', organSearch: '', directoryFilter: 'all', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
             updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalEndsAt: 0, practicalTargetIds: [], quizExplanation: null, guidedMode: false, guidedTargetIds: [], evidenceRemovePendingId: null, evidenceClearPending: false, labelMode: d.practicalMode ? (d._prePracticalLabelMode || 'show') : (d.labelMode || 'show') });
             if (addToast) addToast('\u21BA Progress reset for ' + spec.name, 'info');
             if (typeof announceToSR === 'function') announceToSR('Progress reset for ' + spec.name + '. Accessibility preferences were preserved.');
@@ -17141,6 +17293,65 @@ var d = labToolData.dissection || {};
             }
           }
 
+          function observationSummaryText() {
+            var filterLabel = observationReviewChoices.find(function (choice) { return choice.id === observationReviewFilter; }).label;
+            var lines = ['Observation review — ' + spec.name, 'Scope: ' + filterLabel + ' · ' + filteredObservationReview.length + ' of ' + observationReviewEntries.length + ' inspected structures',
+              'Student notes from the virtual dissection. Confidence is self-reported; this summary does not verify identification accuracy or mastery.',
+              'Only inspected structures in this specimen are included. Missing notes and confidence remain explicitly unrecorded.', ''];
+            if (observationSearchTokens.length) lines.splice(2, 0, 'Search: ' + JSON.stringify(observationSearchValue.trim()) + ' (structure names, layers, and student notes)');
+            filteredObservationReview.forEach(function (entry, index) {
+              lines.push((index + 1) + '. ' + entry.organ.name, 'Layer: ' + entry.layer.name,
+                'Confidence: ' + (entry.confidence ? dissectionConfidenceLabel(entry.confidence) + ' (' + entry.confidence + ' of 3)' : 'Not recorded'),
+                'Documentation: ' + (!entry.note.trim() ? 'Evidence note missing' : !entry.confidence ? 'Confidence missing' : 'Note and confidence recorded'),
+                'Layer access: ' + (entry.available ? 'Available for review' : 'Currently locked; saved note only'),
+                'Student evidence note:', entry.note.trim() ? entry.note : '[No evidence note recorded]', '');
+            });
+            lines.push('Review prompts (not recorded evidence):',
+              '- Which observable feature or relationship supports each identification?',
+              '- What would you check next where evidence is missing or confidence is low?');
+            return lines.join('\n');
+          }
+          function selectObservationSummary() {
+            var field = dissectionNodeById('diss-observation-summary');
+            if (!field || d.quizMode || d.practicalMode) return;
+            field.focus(); field.select();
+            setProcedureFeedback('Summary selected. Use your device copy command to copy the text.');
+          }
+          function downloadObservationSummary() {
+            if (d.quizMode || d.practicalMode || !filteredObservationReview.length) return;
+            var url = null, link = null;
+            try {
+              var blob = new Blob([observationSummaryText()], { type: 'text/plain;charset=utf-8' });
+              url = URL.createObjectURL(blob);
+              link = document.createElement('a');
+              link.href = url;
+              link.download = evidenceFileToken(specimen, 'specimen') + '_observations_' + observationReviewFilter + (observationSearchTokens.length ? '_search' : '') + '.txt';
+              document.body.appendChild(link);
+              link.click();
+              setProcedureFeedback('Observation summary download requested: ' + link.download + '.');
+            } catch (error) {
+              setProcedureFeedback('The download could not start. Use Copy summary or Select summary in the preview.', 'caution');
+            } finally {
+              if (link && link.parentNode) link.parentNode.removeChild(link);
+              if (url) { var completedUrl = url; setTimeout(function () { URL.revokeObjectURL(completedUrl); }, 1000); }
+            }
+          }
+          function openObservationReview() {
+            if (d.quizMode || d.practicalMode) return;
+            var review = dissectionNodeById('diss-observation-review');
+            if (review) review.open = true;
+            focusDissectionTarget('diss-observation-review-title');
+          }
+          function reviewObservation(organId) {
+            if (d.quizMode || d.practicalMode) return;
+            var entry = observationReviewEntries.find(function (candidate) { return candidate.organ.id === organId; });
+            if (!entry || !entry.available) return;
+            cancelActiveCanvasGesture('Gesture canceled before reviewing an existing observation; no action was recorded.');
+            if (entry.layer.id !== activeLayer) selectLayer(entry.layer.id);
+            updMany({ selectedOrgan: organId, hoveredOrgan: null, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null,
+              guidedObservationFeedback: null, organSearch: '', directoryFilter: 'all' });
+            focusDissectionTarget('diss-note-' + organId, 'Reviewing your existing note for ' + entry.organ.name + '. No new observation credit was added.');
+          }
           function eyeStudyTargets() {
             var targets = {};
             if (specimen !== 'sheepEye') return targets;
@@ -18700,21 +18911,30 @@ var d = labToolData.dissection || {};
               // Comparison panel
 
 
-              d.compareMode && sel && (function () {
+              d.compareMode && !d.quizMode && !d.practicalMode && sel && (function () {
                 var group = dissectionComparisonGroup(specimen, sel.id);
                 var entries = dissectionComparisonEntries(group);
                 return React.createElement("section", { id: "diss-comparison-panel", tabIndex: -1, className: "diss-comparison", "data-comparison-group": group ? group.id : "unmapped", "aria-labelledby": "diss-comparison-title" },
                   React.createElement("span", { className: "diss-reference-label" }, __alloT('stem.dissection.comparison_reference', 'Comparative anatomy · reference study')),
                   React.createElement("h3", { id: "diss-comparison-title" }, group ? group.label : sel.name),
                   React.createElement("p", null, group ? group.basis : __alloT('stem.dissection.comparison_unmapped', 'No cross-specimen comparison is mapped for this structure. Similar names alone do not establish a valid anatomical comparison.')),
+                  group && group.id === 'pumps' && React.createElement('div', { className: 'diss-comparison-visual-key', 'data-comparison-visual-key': true }, 'Visual guide: chamber layouts, vessel pairs, or the labeled outward-flow route. Shapes are schematic, not body positions or scale. Colors distinguish structures, not oxygen levels.'),
                   React.createElement("div", { className: "diss-comparison-grid" }, entries.map(function (entry) {
                     return React.createElement("article", { key: entry.specimenId, className: "diss-comparison-card", "data-comparison-specimen": entry.specimenId, "data-current": entry.specimenId === specimen },
                       React.createElement("span", { className: "diss-reference-label" }, entry.specimen.name + (entry.specimenId === specimen ? ' · Current specimen' : ' · Reference')),
                       React.createElement("h4", null, entry.organ.name),
                       React.createElement("span", { className: "diss-directory-progress" }, entry.layer.name),
+                      group && group.id === 'pumps' && renderPumpComparisonDiagram(entry),
                       React.createElement("p", null, entry.organ.fn)
                     );
                   })),
+                  group && group.id === 'pumps' && React.createElement('details', { className: 'diss-comparison-sources' },
+                    React.createElement('summary', null, 'Diagram sources and scope'),
+                    React.createElement('a', { href: 'https://openstax.org/books/biology/pages/40-1-overview-of-the-circulatory-system', target: '_blank', rel: 'noopener noreferrer' }, 'OpenStax: vertebrate chambers and circulation'),
+                    React.createElement('a', { href: 'https://www.merckvetmanual.com/circulatory-system/congenital-and-inherited-anomalies-of-the-cardiovascular-system/cardiac-shunts-in-animals', target: '_blank', rel: 'noopener noreferrer' }, 'Merck Veterinary Manual: fetal shunts'),
+                    React.createElement('a', { href: 'https://lanwebs.lander.edu/faculty/rsfox/invertebrates/lumbricus.html', target: '_blank', rel: 'noopener noreferrer' }, 'Lander University: Lumbricus aortic arches'),
+                    React.createElement('a', { href: 'https://programs.clarendoncollege.edu/programs/NatSci/Biology/Zoology/zoo%20online%20outlines/Crayfish_Lab.pdf', target: '_blank', rel: 'noopener noreferrer' }, 'Clarendon College: crayfish circulation (PDF)')
+                  ),
                   React.createElement("div", { className: "diss-comparison-prompt" },
                     React.createElement("strong", null, __alloT('stem.dissection.comparison_reasoning', 'Explain with evidence') + ': '),
                     group ? group.prompt : DISSECTION_REFERENCE_CONTEXT[spec.bodyShape].prompt,
@@ -18735,6 +18955,55 @@ var d = labToolData.dissection || {};
 
               React.createElement("aside", { id: "diss-structure-directory", tabIndex: -1, className: "diss-sidebar space-y-3", "data-dissection-sidebar": true, "aria-label": __alloT('stem.dissection.a11y_structure_directory_and_lab_notes', 'Structure directory and lab notes') },
                 React.createElement("a", { href: "#diss-canvas", className: "diss-skip-return", onClick: function (event) { event.preventDefault(); focusDissectionTarget('diss-canvas', 'Interactive specimen focused.', event.currentTarget.closest('[data-dissection-root]')); } }, 'Return to interactive specimen'),
+
+                !d.quizMode && !d.practicalMode && !d.flashcardMode && !d.compareMode && !d.eyeStudyMode && React.createElement('details', { id: 'diss-observation-review', className: 'diss-observation-review', 'data-observation-review': true },
+                  React.createElement('summary', { id: 'diss-observation-review-title' }, 'Review observations · ' + observationReviewEntries.length + ' inspected'),
+                  React.createElement('div', { className: 'diss-observation-review__body' },
+                    React.createElement('p', null, 'Your inspected structures across all layers of ' + spec.name + '. Review what you observed, then decide what evidence would strengthen your identification.'),
+                    React.createElement('p', null, 'Needs notes includes missing notes or confidence. Low confidence means 1 of 3. These are review cues, not accuracy scores.'),
+                    React.createElement('div', { className: 'diss-observation-search' },
+                      React.createElement('label', { htmlFor: 'diss-observation-search' }, 'Search your observations'),
+                      React.createElement('input', { id: 'diss-observation-search', type: 'search', value: observationSearchValue, placeholder: 'Structure, layer, or words in your note',
+                        'aria-controls': 'diss-observation-review-list', 'aria-describedby': 'diss-observation-search-help diss-observation-review-count',
+                        onChange: function (event) { upd('_observationReviewSearch', event.target.value); },
+                        onKeyDown: function (event) { if (event.key === 'Escape' && observationSearchValue) { event.preventDefault(); event.stopPropagation(); upd('_observationReviewSearch', ''); } }
+                      }),
+                      React.createElement('p', { id: 'diss-observation-search-help' }, 'Search names, layers, and your saved notes. All words must match; punctuation and accents are ignored. Filter counts reflect this search.'),
+                      observationSearchValue && React.createElement('button', { type: 'button', onClick: function () { upd('_observationReviewSearch', ''); focusDissectionTarget('diss-observation-search'); } }, 'Clear observation search')
+                    ),
+                    React.createElement('div', { className: 'diss-observation-review__filters', role: 'group', 'aria-label': 'Filter observation review' },
+                      observationReviewChoices.map(function (choice) { return React.createElement('button', { key: choice.id, type: 'button', 'data-observation-filter': choice.id,
+                        'aria-pressed': observationReviewFilter === choice.id, 'aria-controls': 'diss-observation-review-list', onClick: function () { upd('_observationReviewFilter', choice.id); }
+                      }, choice.label + ' (' + choice.count + ')'); })
+                    ),
+                    React.createElement('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', id: 'diss-observation-review-count', 'data-observation-review-count': true }, filteredObservationReview.length + ' of ' + observationReviewEntries.length + ' inspected structures shown.'),
+                    !filteredObservationReview.length && React.createElement('p', { 'data-observation-review-empty': true }, observationReviewEntries.length ? (observationSearchTokens.length ? 'No observations match this search and filter. Clear the search or choose another filter.' : 'No observations match this filter. Choose All inspected to review your other notes.') : 'Inspect a visible structure in the 2D specimen to begin your review list.'),
+                    filteredObservationReview.length > 0 && React.createElement('details', { className: 'diss-observation-export', 'data-observation-export': true },
+                      React.createElement('summary', null, 'Preview and export shown observations'),
+                      React.createElement('p', { id: 'diss-observation-export-help' }, 'Includes only the structures shown by the current search and filter. Preview the exact text below; changing the search, filter, or a note updates the summary.'),
+                      React.createElement('label', { htmlFor: 'diss-observation-summary' }, 'Observation summary preview'),
+                      React.createElement('textarea', { id: 'diss-observation-summary', readOnly: true, rows: 9, value: observationSummaryText(), 'aria-describedby': 'diss-observation-export-help' }),
+                      React.createElement('div', { className: 'diss-observation-export__actions' },
+                        React.createElement('button', { type: 'button', onClick: function () { copyDissectionText(observationSummaryText(), 'Observation summary copied to the clipboard.', 'Clipboard unavailable. Use Select summary in the preview, then your device copy command.'); } }, 'Copy summary'),
+                        React.createElement('button', { type: 'button', onClick: downloadObservationSummary }, 'Download text'),
+                        React.createElement('button', { type: 'button', onClick: selectObservationSummary }, 'Select summary')
+                      ),
+                      React.createElement('p', null, 'This preview is read-only. Use Review note on a structure to revise the original evidence.')
+                    ),
+                    React.createElement('ul', { id: 'diss-observation-review-list', className: 'diss-observation-review__list' },
+                      filteredObservationReview.map(function (entry) { return React.createElement('li', { key: entry.layer.id + '|' + entry.organ.id, className: 'diss-observation-review__item', 'data-observation-entry': entry.organ.id },
+                        React.createElement('h4', null, entry.organ.name),
+                        React.createElement('p', null, entry.layer.name + ' layer · ' + (entry.confidence ? 'Confidence ' + entry.confidence + ' of 3' : 'Confidence not recorded')),
+                        React.createElement('p', null, !entry.note.trim() ? 'Add an evidence note' : !entry.confidence ? 'Add a confidence rating' : 'Note and confidence recorded'),
+                        observationSearchTokens.some(function (token) { return normalizeDissectionSearch(entry.note).indexOf(token) >= 0; }) && React.createElement('p', { className: 'diss-observation-note-match', 'data-observation-note-match': true }, 'Search words appear in your saved note.'),
+                        entry.note.trim() && React.createElement('details', null, React.createElement('summary', null, 'Read saved note'), React.createElement('p', { className: 'diss-observation-review__note' }, entry.note)),
+                        entry.confidence === 1 && React.createElement('p', null, 'What feature or relationship would help you check this identification?'),
+                        entry.available ? React.createElement('button', { type: 'button', onClick: function () { reviewObservation(entry.organ.id); } }, 'Review note: ' + entry.organ.name)
+                          : React.createElement('p', { 'data-observation-locked': true }, 'Layer locked. Complete its preparation before returning to this structure.' + (entry.note.trim() ? ' Your saved note remains available above.' : ''))
+                      ); })
+                    )
+                  )
+                ),
 
                 // Selected organ detail
 
@@ -18815,7 +19084,7 @@ var d = labToolData.dissection || {};
                     React.createElement("a", { href: DISSECTION_REFERENCE_CONTEXT[spec.bodyShape].url, target: "_blank", rel: "noopener noreferrer" }, DISSECTION_REFERENCE_CONTEXT[spec.bodyShape].source + ' (opens in new tab)')
                   ),
 
-                  sel.clinical && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
+                  sel.clinical && React.createElement("div", { className: "diss-clinical-reference bg-amber-50 rounded-lg p-2 border border-amber-200" },
 
                     React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, '\uD83C\uDFE5 ' + __alloT('stem.dissection.human_clinical_connection', 'Human/clinical connection')),
 
@@ -18962,6 +19231,7 @@ var d = labToolData.dissection || {};
                   !d.quizMode && React.createElement("div", { className: "diss-note-handoff", "data-note-handoff": true },
                     React.createElement("strong", null, __alloT('stem.dissection.record_status_title', 'Your record') + ': '),
                     structureRecordStatus(sel),
+                    !d.practicalMode && !d.flashcardMode && !d.compareMode && !d.eyeStudyMode && observationReviewEntries.length > 0 && React.createElement('button', { type: 'button', onClick: openObservationReview }, 'Review all observations'),
                     specimen === 'sheepEye' && !d.practicalMode && d._eyeStudyReturnPart === sel.id && React.createElement('button', { type: 'button', onClick: function () { updMany({ eyeStudyMode: true, flashcardMode: false, compareMode: false, guidedMode: false, selectedOrgan: null }); focusDissectionTarget('diss-eye-study-title'); } }, 'Return to 3D study: ' + sel.name),
                     (function () {
                       var nextRecord = organs.find(function (org) { return org.id !== sel.id && !!(d.exploredOrgans || {})[specimen + '|' + org.id] && structureRecordStatus(org) !== 'Note and confidence recorded'; });

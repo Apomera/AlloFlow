@@ -1,0 +1,6 @@
+const fs=require('node:fs'),path=require('node:path');
+function edit(name,from,to){const file=path.join(__dirname,name);let text=fs.readFileSync(file,'utf8');if(!text.includes(from))throw Error('Missing anchor '+name);text=text.replace(from,to);const fd=fs.openSync(file,'r+');fs.writeFileSync(fd,text);fs.ftruncateSync(fd,Buffer.byteLength(text));fs.closeSync(fd);}
+edit('verify-building-tools-browser.cjs',
+"await page.evaluate(()=>{const e=__geoWorldEngine;e.isLocked=true;e.renderer.domElement.dispatchEvent(new MouseEvent('mousedown',{button:1,bubbles:true,cancelable:true}));e.isLocked=false;});await frames();result.middle=await state();",
+"await page.evaluate(()=>__geoWorldEngine.renderer.domElement.requestPointerLock());await page.waitForFunction(()=>__geoWorldEngine.isLocked&&document.pointerLockElement===__geoWorldEngine.renderer.domElement);await page.mouse.down({button:'middle'});await page.mouse.up({button:'middle'});await frames();result.middle=await state();result.middle.nativePointerLock=await page.evaluate(()=>document.pointerLockElement===__geoWorldEngine.renderer.domElement);await page.evaluate(()=>document.exitPointerLock());await page.waitForFunction(()=>!document.pointerLockElement);"
+);

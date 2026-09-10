@@ -254,3 +254,26 @@ test('phone spatial guide supplies mirrored text, responsive controls, and acces
   await guide.screenshot({ path: out + '/spatial-guide-mobile.png' });
 });
 
+
+test('pump diagrams remain readable and accessible at narrow phone width', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await harness.mount(page, { dissection: state }, undefined, { expectCanvas: false });
+  await page.addStyleTag({ content: '#wrap { width: 100% !important; max-width: 1180px; }' });
+  const panel = page.locator('#diss-comparison-panel');
+  await expect(panel.locator('[data-pump-diagram]')).toHaveCount(5);
+  await expect(panel.locator('[data-pump-diagram="earthworm"] [data-pump-pair]')).toHaveCount(5);
+  for (const svg of await panel.locator('[data-pump-diagram] svg').all()) {
+    const labelsFit = await svg.evaluate((el: SVGSVGElement) => [...el.querySelectorAll('text')].every(label => {
+      const b = label.getBBox(); return b.x >= 0 && b.y >= 0 && b.x + b.width <= 300 && b.y + b.height <= 156;
+    }));
+    expect(labelsFit).toBe(true);
+  }
+  await panel.locator('.diss-comparison-sources summary').click();
+  await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+  const audit = await page.evaluate(async () => (window as any).axe.run({ include: [['#diss-comparison-panel']] }, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } }));
+  expect(audit.violations.map((v: any) => ({ id: v.id, targets: v.nodes.map((n: any) => n.target) }))).toEqual([]);
+  expect(await panel.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+  await panel.locator('[data-comparison-specimen="pig"]').screenshot({ path: out + '/pump-diagram-pig-320.png' });
+  await panel.locator('[data-comparison-specimen="earthworm"]').screenshot({ path: out + '/pump-diagram-earthworm-320.png' });
+  expect(await page.evaluate(() => Object.keys((window as any).__ctx.toolData.dissection.exploredOrgans))).toEqual(['frog|heart','frog|lungs']);
+});

@@ -1,0 +1,134 @@
+[
+  {
+    "resourceId": "vl-reading",
+    "path": "data",
+    "from": "## Filling Space\n\nHere is a formula you have probably met: volume equals length times width times height. It works. But why should multiplying three numbers tell you anything about a box?\n\nStart somewhere simpler. **Volume** is how much space a solid shape takes up. We measure it by counting how many **unit** cubes fit inside, with no gaps and no overlaps. A unit cube is one centimetre on every edge, or one inch, or one metre. Whichever you pick, the answer comes out in **cubic** units, because you are counting cubes.\n\nNow build a box out of cubes and watch what happens.\n\nLay one row along the bottom, four cubes long. Add rows beside it until the floor is covered. If the floor is 4 cubes by 3 cubes, that layer holds 12 cubes. You just found the **area** of the base, and it is the number of cubes in one **layer**.\n\nNow stack. Put an identical layer on top. Then another. If the box is 5 cubes tall, you have 5 layers of 12, which is 60.\n\nThat is the whole formula. Length times width gives you one layer. Multiplying by the height counts the layers. So l × w × h is not three random numbers multiplied. It is *cubes in a layer, times how many layers*.\n\nOnce you see it that way, a shortcut appears. Volume equals **base** area times height, whatever shape the base is, as long as the shape does not change as you go up.\n\nWhat about an L-shaped solid, or a house-shaped one? Cut it into rectangular **prisms**, find each volume, and add them. Mathematicians call this **decomposing**, and it is the same move you already use with awkward shapes when finding area.\n\nOne last warning worth having. Volume is not the same as **capacity**, quite. Volume is the space a shape takes up. Capacity is how much a container holds. A thick-walled box has less capacity than its outside volume suggests, because the walls take up room too.",
+    "to": "## Filling Space\n\nHere is a formula you have probably met: volume equals length times width times height. It works. But why should multiplying three numbers tell you anything about a box?\n\nStart somewhere simpler. **Volume** is how much space a solid shape takes up. For solids built from cubes, we measure it by counting how many **unit** cubes fit inside, with no gaps and no overlaps. Other shapes may require parts of cubes or other methods. A unit cube is one centimetre on every edge, or one inch, or one metre. Whichever you pick, the answer comes out in **cubic** units, because you are counting cubes.\n\nNow build a box out of cubes and watch what happens.\n\nLay one row along the bottom, four cubes long. Add rows beside it until the floor is covered. If the floor is 4 cubes by 3 cubes, that layer holds 12 cubes. The **area** of the base is 12 square units. A **layer** one unit high above that base contains 12 unit cubes and has volume 12 cubic units.\n\nNow stack. Put an identical layer on top. Then another. If the box is 5 cubes tall, you have 5 layers of 12, which is 60.\n\nThat is the whole formula. Length times width gives you one layer. Multiplying by the height counts the layers. So l × w × h is not three random numbers multiplied. It is *cubes in a layer, times how many layers*.\n\nOnce you see it that way, a shortcut appears. Volume equals **base** area times height, for a prism or cylinder. Height means the perpendicular distance between the parallel bases.\n\nWhat about an L-shaped solid made by joining rectangular **prisms**? Split it into non-overlapping rectangular prisms, find each volume, and add them. Not every solid can be split into rectangular prisms; a sloping roof, for example, may need a different method. Mathematicians call this **decomposing**, and it is the same move you already use with awkward shapes when finding area.\n\nOne last warning worth having. Volume is not the same as **capacity**, quite. Volume is the space a shape takes up. Capacity is how much a container holds. A thick-walled box has less capacity than its outside volume suggests, because the walls take up room too."
+  },
+  {
+    "resourceId": "vl-glossary",
+    "path": "data.3.def",
+    "from": "A solid whose cross-section stays the same all the way along.",
+    "to": "A solid with two matching, parallel polygon bases joined by parallelogram faces."
+  },
+  {
+    "resourceId": "vl-glossary",
+    "path": "data.7.def",
+    "from": "How far a solid rises from its base to its top.",
+    "to": "The perpendicular distance between the parallel bases of a prism."
+  },
+  {
+    "resourceId": "vl-anchor",
+    "path": "data.sections.0.bullets.0",
+    "from": "Fill the solid with unit cubes, no gaps",
+    "to": "For a cube-built solid, fill it with unit cubes, with no gaps or overlaps"
+  },
+  {
+    "resourceId": "vl-anchor",
+    "path": "data.sections.0.bullets.2",
+    "from": "Slow, always true, and the reason the rest works",
+    "to": "Count hidden cubes too; visible square faces are not extra cubes"
+  },
+  {
+    "resourceId": "vl-anchor",
+    "path": "data.sections.1.bullets.0",
+    "from": "Cubes in one layer = area of the base",
+    "to": "A base of 12 square units supports 12 unit cubes in a layer one unit high"
+  },
+  {
+    "resourceId": "vl-anchor",
+    "path": "data.sections.1.iconPrompt",
+    "from": "three identical flat sheets of cubes stacked with gaps between",
+    "to": "Five identical cube layers laid out separately so every top grid is visible"
+  },
+  {
+    "resourceId": "vl-anchor",
+    "path": "data.sections.3.bullets.0",
+    "from": "Cut it into rectangular prisms",
+    "to": "For a solid built from rectangular prisms, split it into non-overlapping blocks"
+  },
+  {
+    "resourceId": "vl-sort",
+    "path": "data.items.4.content",
+    "from": "How much paint covers one wall",
+    "to": "The area of one wall to be painted"
+  },
+  {
+    "resourceId": "vl-sort",
+    "path": "data.items.5.content",
+    "from": "How much glass covers the window pane",
+    "to": "The area of glass needed for one window pane"
+  },
+  {
+    "resourceId": "vl-sort",
+    "path": "data.items.7.content",
+    "from": "How much ribbon goes around the box",
+    "to": "The length of one ribbon loop around the four sides of a box, without a bow"
+  },
+  {
+    "resourceId": "vl-faq",
+    "path": "data.1.answer",
+    "from": "Then base times height is too big, because the layers shrink as you go up. A pyramid holds exactly one third of the box around it. That is a fact worth remembering and a proof worth waiting for.",
+    "to": "For a pyramid, base area times perpendicular height is too large because parallel cross-sections shrink toward the apex. A pyramid has one third the volume of a prism with the same base area and perpendicular height. It is not one third of just any surrounding box."
+  },
+  {
+    "resourceId": "vl-faq",
+    "path": "data.3.answer",
+    "from": "It counts directions. A line needs one measurement, a flat shape needs two, a solid needs three. The small 3 is a record of that, not decoration.",
+    "to": "For a rectangular prism, multiplying three lengths multiplies their units too: cm × cm × cm = cubic cm, written cm³. A unit cube has one of those length units on each edge."
+  },
+  {
+    "resourceId": "vl-faq",
+    "path": "data.5.answer",
+    "from": "Convert first, always. Multiplying centimetres by metres gives a number that means nothing. Pick one unit, change everything into it, then multiply.",
+    "to": "Convert all lengths to the same unit before using the formula, so the result is easy to express in cubic units. Mixed units still have meaning, but need conversion: 1 cm × 1 m = 100 square cm."
+  },
+  {
+    "resourceId": "vl-math",
+    "path": "data.problems.1.steps.0.explanation",
+    "from": "The base area already tells you one layer holds 15 cubes. You do not need the length and width separately.",
+    "to": "The base area is 15 square inches. A slice one inch thick has volume 15 cubic inches, even when the base cannot be tiled by whole one-inch cubes."
+  },
+  {
+    "resourceId": "vl-challenge",
+    "path": "data.brief.context",
+    "from": "A school club ships 48 small cubes of soap to a fundraiser. Each soap is one cubic unit. The club wants one box that fits them exactly, with no empty space, and wants to spend as little on cardboard as possible.",
+    "to": "A school club ships 48 unit cubes of soap. Compare ideal closed rectangular boxes with internal volume 48 cubic units. Use total surface area as the cardboard model, ignoring wall thickness, tabs, seams and cutting waste."
+  },
+  {
+    "resourceId": "vl-challenge",
+    "path": "data.brief.constraints.0",
+    "from": "Whole-number edge lengths only",
+    "to": "Positive whole-number edge lengths only; rotations of the same three lengths count as one box"
+  },
+  {
+    "resourceId": "vl-challenge",
+    "path": "data.brief.constraints.1",
+    "from": "Exactly 48 cubic units, no empty space",
+    "to": "Exactly 48 cubic units inside; compare all six faces of each closed box, ignoring thickness, tabs, seams and waste"
+  },
+  {
+    "resourceId": "vl-memory",
+    "path": "data.cards.0.essentialFacts.1",
+    "from": "That is the same as the area of the base.",
+    "to": "For a layer one unit high, the cube count has the same numerical value as the base area in square units; the units differ."
+  },
+  {
+    "resourceId": "vl-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "Picture a stack of sliced bread. One slice is the base. The number of slices is the height. Nobody multiplies bread by mystery. You count one slice, then count slices.",
+    "to": "Picture a rectangular stack of identical slices, each one unit thick. Find the volume of one slice, then multiply by the number of slices. If thickness changes, slice count alone no longer gives height in those units."
+  },
+  {
+    "resourceId": "vl-memory",
+    "path": "data.cards.0.mapping",
+    "from": "A loaf is already made of identical layers, so the picture supplies the two ideas the formula needs and nothing else.",
+    "to": "The stack is an ideal model with matching layers and no gaps. A real loaf may have differently shaped ends or uneven slices. Layer thickness must be included when finding height."
+  },
+  {
+    "resourceId": "vl-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "One ____ is the base. The number of ____ is the height.",
+    "to": "One layer has volume ____. There are ____ matching layers, so total volume is ____."
+  }
+]

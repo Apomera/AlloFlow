@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "checks": [
+    "bridge rewiring",
+    "signed probes and keyboard board targets",
+    "selection and probes outside history",
+    "undo and redo",
+    "invalid numeric draft",
+    "switch opening and removal recovery",
+    "multiple source polarity and absorbed power",
+    "current source and CSV",
+    "workspace persistence",
+    "conflicting and redundant source diagnostics",
+    "floating differential readings",
+    "empty and 16-component capacity",
+    "390/320 px layouts"
+  ],
+  "axeViolations": 0,
+  "boardOverlaps": 0
+}

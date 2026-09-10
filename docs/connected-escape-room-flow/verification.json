@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "moduleRevision": "2a8d292216",
+  "regressionTests": 244,
+  "testFiles": 10,
+  "newTests": 21,
+  "flow": {
+    "auditVariants": 5,
+    "providerRequests": 6,
+    "liveWrites": 0
+  },
+  "solo": {
+    "keyboardTabSteps": 377,
+    "liveWrites": 0,
+    "auditVariants": 12
+  },
+  "live": {
+    "independentBrowsers": 4,
+    "permissionCheckedWrites": 33,
+    "auditVariants": 10
+  },
+  "manualScreenReaderValidation": "Outstanding",
+  "paidAIProviders": "Not exercised; deterministic fixtures used",
+  "deployment": "Local implementation only",
+  "finalRefinementChecks": {
+    "tests": 32,
+    "testFiles": 2,
+    "flowBrowserPassed": true
+  }
+}

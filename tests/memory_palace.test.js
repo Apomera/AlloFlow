@@ -125,7 +125,7 @@ describe('MemoryPalace.buildPalace (pure palace model)', () => {
     expect(source).toContain('function _setRoomBadgeState()');
     expect(source).toContain('memory_palace.room_current');
     expect(source).toContain('roomBadgeDot.style.backgroundColor');
-    expect(source).toContain('hud.appendChild(roomBadge)');
+    expect(source).toContain('dockSummary.appendChild(roomBadge)');
     expect(source).toContain('var progressWrap = document.createElement');
     expect(source).toContain('progressFill.style.width =');
     expect(source).toContain('focusCard = null, focusCardKicker');
@@ -192,7 +192,7 @@ describe('MemoryPalace.buildPalace (pure palace model)', () => {
     expect(source).toContain('_syncFreeRoomContext();');
     expect(source).toContain('function _updateFreeCue(roomIdx, ref)');
     expect(source).toContain("freeNavLive.setAttribute('aria-live', 'polite')");
-    expect(source).toContain('freeNavText.textContent = roomLabel +');
+    expect(source).toContain('freeNavRoom.textContent = roomLabel');
     expect(source).toContain('var freeNavCue = null, freeNavLive = null, freeNavText = null, freeReturnBtn = null');
     expect(source).toContain('headingGlyph =');
     expect(source).toContain('freeReturnBtn.onclick = function () { goTo(curIdx); renderer.domElement.focus(); }');
@@ -668,12 +668,12 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(source).toContain('tex.anisotropy = Math.max(1, Number(anisotropy) || 1)');
     expect(source).toContain('depthTest: !occlusionSafe');
     expect(source).toContain('sp.renderOrder = occlusionSafe ? 24 : 12');
-    expect(source).toContain("makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false, _textureAnisotropy, theme.walls ? 'plaque' : undefined)");
+    expect(source).toContain("makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false, _textureAnisotropy, theme.walls || theme.ground ? 'plaque' : 'plate')");
     expect(source).toContain('function _setFrameCaptionOcclusionState(force)');
     expect(source).toContain('ref.locus.roomIdx === _captionOverlayRoomIdx');
     expect(source).toContain('label.material.depthTest = !overlay');
     expect(source).toContain('_setFrameCaptionOcclusionState(false);');
-    expect(source).toContain("makeLabelSprite(THREE, text, ref.baseColor, 24, overlay, _textureAnisotropy, theme.walls ? 'plaque' : undefined)");
+    expect(source).toContain("makeLabelSprite(THREE, text, ref.baseColor, 24, overlay, _textureAnisotropy, theme.walls || theme.ground ? 'plaque' : 'plate')");
   });
   it('provides a clickable status map and a responsive frame callout', () => {
     const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');

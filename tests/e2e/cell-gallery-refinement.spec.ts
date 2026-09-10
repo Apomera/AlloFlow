@@ -1,0 +1,36 @@
+import {test,expect} from '@playwright/test';
+import {GlHarness} from './helpers/stem_gl_harness';
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_cell.js',toolId:'cell',width:1200,height:1000,appStyles:true});
+test.beforeAll(()=>harness.start());test.afterAll(()=>harness.stop());test.afterEach(async({page})=>harness.destroy(page));
+for(const width of [1200,320])test('observation gallery at '+width,async({page})=>{
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width,height:960});
+ await harness.mount(page,{cell:{mode:'observe',paused:true,selectedOrganism:'amoeba',_cellExt:{organismsObserved:['amoeba','amoeba','unknown']}}},undefined,{expectCanvas:false});
+ await page.addStyleTag({content:'body{background:#f8fafc}#wrap{width:100%;max-width:1200px;display:block}'});
+ const gallery=page.locator('[data-cell-organism-chooser]'),cards=gallery.locator('[data-cell-organism-option]');
+ await gallery.scrollIntoViewIfNeeded();await expect(cards).toHaveCount(11);
+ await expect(gallery.locator('[data-cell-observation-summary]')).toHaveText('1 / 11 observed');
+ await expect(gallery.locator('[data-cell-organism-card-detail]:visible')).toHaveCount(11);
+ await expect(gallery.locator('[data-cell-gallery-classification]:visible')).toHaveCount(11);
+ await expect(gallery.locator('[data-cell-gallery-footer]:visible')).toHaveCount(11);
+ await expect(gallery.locator('[data-cell-card-status]')).toHaveCount(0);
+ const para=gallery.locator('[data-cell-organism-option=paramecium]');
+ await expect(para).toHaveAttribute('data-cell-observation-state','unseen');
+ await expect(para).toHaveAccessibleDescription(/Not yet observed/);
+ await para.focus();await page.keyboard.press('Enter');
+ const detail=page.locator('[data-cell-selected-organism-card]');
+ await expect(detail).toHaveAttribute('data-cell-selected-organism','paramecium');
+ await detail.locator('[data-cell-back-to-organisms]').click();await expect(para).toBeFocused();
+ await expect(gallery.locator('[data-cell-observation-summary]')).toHaveText('2 / 11 observed');
+ await expect(para).toHaveAccessibleDescription(/Previously observed/);
+ const plant=gallery.locator('[data-cell-organism-option=plantcell]');await plant.click();
+ await detail.locator('[data-cell-back-to-organisms]').click();await expect(plant).toBeFocused();
+ await expect(gallery.locator('[data-cell-observation-summary]')).toHaveText('3 / 11 observed');
+ await expect(plant).toHaveAttribute('data-cell-observation-state','selected');
+ await expect(para).toHaveAttribute('data-cell-observation-state','observed');
+ const boxes=await cards.evaluateAll(items=>items.map(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,height:r.height};}));
+ for(const b of boxes){expect(b.left).toBeGreaterThanOrEqual(0);expect(b.right).toBeLessThanOrEqual(width);expect(b.height).toBeGreaterThanOrEqual(44);}
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await gallery.screenshot({scale:'css',path:'reports/cell-gallery-refinement/gallery-'+width+'.png'});
+ expect(errors).toEqual([]);
+});

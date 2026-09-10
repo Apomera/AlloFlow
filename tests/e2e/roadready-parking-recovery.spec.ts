@@ -1,0 +1,31 @@
+import { test, expect } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_roadready.js', toolId: 'roadReady', width: 1100, height: 780, appStyles: true, preScripts: ['stem_lab/stem_lab_module.js'], probes: "window.__testHooks={};document.documentElement.classList.add('theme-dark');" });
+test.beforeAll(async () => { await harness.start(); });
+test.afterAll(async () => { await harness.stop(); });
+test.afterEach(async ({ page }) => { await harness.destroy(page); });
+test('contact stops the car once and the instructor resumes after reversing clear', async ({ page }) => {
+  await page.setViewportSize({ width: 1140, height: 950 });
+  await harness.mount(page, { roadReady: { view: 'parking', reducedMotion: true, badges: { park_master: true } } }, undefined, { expectCanvas: false });
+  const coach = page.getByRole('region', { name: 'Parking instructor' });
+  const score = page.locator('.rr-parking-scene-heading');
+  await page.evaluate(() => Object.assign((window as any).__testHooks.parking.carRef.current, { x: 285, y: 150, heading: -Math.PI / 2, speed: 0, steering: 0 }));
+  await page.keyboard.down('w');
+  await expect(coach).toContainText('The car has stopped');
+  // A sustained input must remain one contact rather than repeated penalties.
+  await page.waitForTimeout(800);
+  await expect(score).toContainText('Score 75/100 · Contacts 1');
+  const stopped = await page.evaluate(() => ({ ...(window as any).__testHooks.parking.carRef.current }));
+  expect(stopped.speed).toBe(0); expect(stopped.y).toBeGreaterThanOrEqual(145);
+  await page.keyboard.up('w');
+  await page.screenshot({ path: 'reports/roadready-review/parking-contact-recovery.png', fullPage: true, scale: 'css' });
+  await page.keyboard.down('s');
+  await expect.poll(() => page.evaluate(() => (window as any).__testHooks.parking.carRef.current.contactState === null)).toBe(true);
+  await page.keyboard.up('s');
+  await expect(coach).not.toContainText('The car has stopped');
+  await expect(score).toContainText('Score 75/100 · Contacts 1');
+  await page.getByRole('button', { name: 'Reset practice', exact: true }).click();
+  await expect(score).toContainText('Score 100/100 · Contacts 0');
+  expect(await page.evaluate(() => !!(window as any).__testHooks.parking.carRef.current.contactState)).toBe(false);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});

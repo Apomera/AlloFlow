@@ -1,0 +1,51 @@
+{
+  "kind": "document-remediation-read-only-bug-review",
+  "reviewDate": "2026-09-09",
+  "policyVersion": "20260909-4",
+  "issueCount": 13,
+  "priorityCounts": { "P1": 2, "P2": 10, "P3": 1 },
+  "applicationCodeChanged": false,
+  "implementationHashesVerifiedAfterReview": true,
+  "implementationSha256": {
+    "doc_pipeline_source.jsx": "ffd04f44ecaf611379e999396417be56a336d1fa7a05e220f6d17cc33910d343",
+    "dev-tools/document_export_at_acceptance.cjs": "d950d70600f7af18432520377b555f602ab91604df0f4f7b3c539b12b544643c",
+    "dev-tools/rendered_document_fidelity.cjs": "8f6933b7fb1a97930a6b77b9cf9917e5519d1b9226e5d60680fe77e8b7c17333"
+  },
+  "probeCount": 18,
+  "probes": {
+    "liveCandidateGate": {
+      "evidence": "live-source-probes.json",
+      "probeCount": 7,
+      "confirmedIssueClasses": 4,
+      "harmfulCandidatesAccepted": 5,
+      "controlsBehavingAsExpected": 2,
+      "scope": "Actual strict candidate gate and aiFixChunked with model transport mocked; browser observations verify fixture semantics. No conclusion about downstream PDF or delivery outcomes."
+    },
+    "baselineExport": {
+      "evidence": "export-review-probes.json",
+      "probeCount": 6,
+      "confirmedIssueClasses": 4,
+      "falseAcceptances": 3,
+      "falseRejectionOrUnavailableCases": 2,
+      "controlsBehavingAsExpected": 1,
+      "scope": "Local Chromium HTML probes. The related PDF Unicode comparison observation is code review only."
+    },
+    "optionalRenderedComparison": {
+      "evidence": "rendered-probe-results.json",
+      "probeCount": 5,
+      "confirmedIssueClasses": 5,
+      "falsePasses": 4,
+      "falseUnavailableCases": 1,
+      "scope": "Local Chromium source/candidate comparisons. These findings do not establish equivalent failures in the live candidate gate."
+    }
+  },
+  "mcpCodeReview": {
+    "scope": "Rejection evidence, checkpoint fingerprints, and completed-result reuse",
+    "newConfirmedIssues": 0,
+    "exhaustiveGuarantee": false
+  },
+  "liveModelCalls": false,
+  "deploymentPerformed": false,
+  "humanValidationPerformed": false,
+  "findings": "README.md"
+}

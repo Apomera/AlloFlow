@@ -1,0 +1,2059 @@
+{
+  "stage": "before",
+  "sources": {
+    "stem_tool_geometryworld.js": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+    "stem_tool_geometryworld_builder.js": "2e9da8a622d64279f455939d70b28b0975ed5e2dc0c33422ae6a8326fb12355b",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [],
+  "captures": [
+    {
+      "case": {
+        "width": 1200,
+        "height": 820,
+        "view": "perspective"
+      },
+      "layout": {
+        "viewport": {
+          "width": 1200,
+          "height": 820
+        },
+        "projected": {
+          "left": 402.494240891092,
+          "right": 810.4678619170711,
+          "top": 290.0762918276722,
+          "bottom": 630.6916984455676,
+          "width": 407.9736210259791,
+          "height": 340.61540661789536
+        },
+        "vertices": [
+          {
+            "x": 540.6377331106412,
+            "y": 470.4228321693455,
+            "z": 0.9926674395217167
+          },
+          {
+            "x": 416.8278006771522,
+            "y": 523.8620725661115,
+            "z": 0.9915101939581897
+          },
+          {
+            "x": 536.5975141556447,
+            "y": 290.0762918276722,
+            "z": 0.9921002881699869
+          },
+          {
+            "x": 402.494240891092,
+            "y": 320.6919511423615,
+            "z": 0.9907675601244184
+          },
+          {
+            "x": 794.2683276364503,
+            "y": 550.4097719475008,
+            "z": 0.9909352941822414
+          },
+          {
+            "x": 684.0863584556676,
+            "y": 630.6916984455676,
+            "z": 0.989196760801499
+          },
+          {
+            "x": 810.4678619170711,
+            "y": 336.11954546810955,
+            "z": 0.9900959826345382
+          },
+          {
+            "x": 692.4293875711027,
+            "y": 383.68081423787453,
+            "z": 0.9880255964925722
+          }
+        ],
+        "controls": [
+          {
+            "className": "gwe-showcase-caption",
+            "left": 28,
+            "right": 225,
+            "top": 24,
+            "bottom": 185.1875,
+            "width": 197,
+            "height": 161.1875
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-left",
+            "left": 20,
+            "right": 64,
+            "top": 410,
+            "bottom": 454,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-right",
+            "left": 1136,
+            "right": 1180,
+            "top": 410,
+            "bottom": 454,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-tools",
+            "left": 385,
+            "right": 815,
+            "top": 678,
+            "bottom": 796,
+            "width": 430,
+            "height": 118
+          }
+        ],
+        "buttons": [
+          {
+            "label": "Meadow",
+            "left": 33,
+            "right": 125,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Studio",
+            "left": 128,
+            "right": 220,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Rotate view left",
+            "left": 20,
+            "right": 64,
+            "top": 410,
+            "bottom": 454,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Rotate view right",
+            "left": 1136,
+            "right": 1180,
+            "top": 410,
+            "bottom": 454,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Perspective",
+            "left": 397,
+            "right": 537.859375,
+            "top": 690,
+            "bottom": 734,
+            "width": 140.859375,
+            "height": 44
+          },
+          {
+            "label": "Front",
+            "left": 540.859375,
+            "right": 626.234375,
+            "top": 690,
+            "bottom": 734,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Side",
+            "left": 629.234375,
+            "right": 714.609375,
+            "top": 690,
+            "bottom": 734,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Top",
+            "left": 717.609375,
+            "right": 802.984375,
+            "top": 690,
+            "bottom": 734,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Back to building",
+            "left": 394,
+            "right": 549.796875,
+            "top": 743,
+            "bottom": 787,
+            "width": 155.796875,
+            "height": 44
+          },
+          {
+            "label": "Save image",
+            "left": 557.796875,
+            "right": 668.15625,
+            "top": 743,
+            "bottom": 787,
+            "width": 110.359375,
+            "height": 44
+          },
+          {
+            "label": "Use & export",
+            "left": 676.15625,
+            "right": 806,
+            "top": 743,
+            "bottom": 787,
+            "width": 129.84375,
+            "height": 44
+          }
+        ],
+        "overlap": [],
+        "overflow": false,
+        "pose": {
+          "position": [
+            12.140100852267674,
+            9.954698090906179,
+            15.433725056811916
+          ],
+          "quaternion": [
+            -0.16276767998822747,
+            0.32786043083366007,
+            0.05745448769158173,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ]
+        },
+        "bounds": [
+          [
+            -3,
+            1,
+            -1
+          ],
+          [
+            4,
+            5.5,
+            3
+          ]
+        ],
+        "composition": null,
+        "draw": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      "screenshot": "before-perspective-1200x820.png"
+    },
+    {
+      "case": {
+        "width": 390,
+        "height": 844,
+        "view": "perspective"
+      },
+      "layout": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "projected": {
+          "left": 84.32928590157334,
+          "right": 309.45796335247127,
+          "top": 361.1909013075496,
+          "bottom": 550.0970807656512,
+          "width": 225.12867745089792,
+          "height": 188.90617945810158
+        },
+        "vertices": [
+          {
+            "x": 158.6105205499875,
+            "y": 469.2949303286108,
+            "z": 0.9961026537884731
+          },
+          {
+            "x": 88.79437592964445,
+            "y": 499.15366617458204,
+            "z": 0.995724516632406
+          },
+          {
+            "x": 157.194551940888,
+            "y": 361.1909013075496,
+            "z": 0.9959120713193994
+          },
+          {
+            "x": 84.32928590157334,
+            "y": 383.60792027915977,
+            "z": 0.9955027040679025
+          },
+          {
+            "x": 304.6886306315326,
+            "y": 512.8162323600875,
+            "z": 0.9955514910914516
+          },
+          {
+            "x": 238.99224384818143,
+            "y": 550.0970807656512,
+            "z": 0.9950793587793345
+          },
+          {
+            "x": 309.45796335247127,
+            "y": 393.9104665602457,
+            "z": 0.9953145646431267
+          },
+          {
+            "x": 241.07865200782402,
+            "y": 422.16814879956513,
+            "z": 0.9947985384165068
+          }
+        ],
+        "controls": [
+          {
+            "className": "gwe-showcase-caption",
+            "left": 20,
+            "right": 212.265625,
+            "top": 20,
+            "bottom": 151.5,
+            "width": 192.265625,
+            "height": 131.5
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-left",
+            "left": 16,
+            "right": 60,
+            "top": 422,
+            "bottom": 466,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-right",
+            "left": 330,
+            "right": 374,
+            "top": 422,
+            "bottom": 466,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-tools",
+            "left": 35,
+            "right": 355,
+            "top": 714,
+            "bottom": 828,
+            "width": 320,
+            "height": 114
+          }
+        ],
+        "buttons": [
+          {
+            "label": "Meadow",
+            "left": 25,
+            "right": 113,
+            "top": 102.5,
+            "bottom": 146.5,
+            "width": 88,
+            "height": 44
+          },
+          {
+            "label": "Studio",
+            "left": 116,
+            "right": 204,
+            "top": 102.5,
+            "bottom": 146.5,
+            "width": 88,
+            "height": 44
+          },
+          {
+            "label": "Rotate view left",
+            "left": 16,
+            "right": 60,
+            "top": 422,
+            "bottom": 466,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Rotate view right",
+            "left": 330,
+            "right": 374,
+            "top": 422,
+            "bottom": 466,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Perspective",
+            "left": 45,
+            "right": 148.25,
+            "top": 724,
+            "bottom": 768,
+            "width": 103.25,
+            "height": 44
+          },
+          {
+            "label": "Front",
+            "left": 151.25,
+            "right": 213.828125,
+            "top": 724,
+            "bottom": 768,
+            "width": 62.578125,
+            "height": 44
+          },
+          {
+            "label": "Side",
+            "left": 216.828125,
+            "right": 279.40625,
+            "top": 724,
+            "bottom": 768,
+            "width": 62.578125,
+            "height": 44
+          },
+          {
+            "label": "Top",
+            "left": 282.40625,
+            "right": 344.984375,
+            "top": 724,
+            "bottom": 768,
+            "width": 62.578125,
+            "height": 44
+          },
+          {
+            "label": "Back to building",
+            "left": 42,
+            "right": 156.09375,
+            "top": 777,
+            "bottom": 821,
+            "width": 114.09375,
+            "height": 44
+          },
+          {
+            "label": "Save image",
+            "left": 164.09375,
+            "right": 244.90625,
+            "top": 777,
+            "bottom": 821,
+            "width": 80.8125,
+            "height": 44
+          },
+          {
+            "label": "Use & export",
+            "left": 252.90625,
+            "right": 347.984375,
+            "top": 777,
+            "bottom": 821,
+            "width": 95.078125,
+            "height": 44
+          }
+        ],
+        "overlap": [],
+        "overflow": false,
+        "pose": {
+          "position": [
+            22.08264627474204,
+            15.681604254251413,
+            27.76248138068013
+          ],
+          "quaternion": [
+            -0.16276767998822747,
+            0.32786043083366007,
+            0.05745448769158173,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ]
+        },
+        "bounds": [
+          [
+            -3,
+            1,
+            -1
+          ],
+          [
+            4,
+            5.5,
+            3
+          ]
+        ],
+        "composition": null,
+        "draw": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      "screenshot": "before-perspective-390x844.png"
+    },
+    {
+      "case": {
+        "width": 320,
+        "height": 700,
+        "view": "perspective"
+      },
+      "layout": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "projected": {
+          "left": 80.22439527234353,
+          "right": 242.18167076376375,
+          "top": 313.01989593826255,
+          "bottom": 449.091162988039,
+          "width": 161.9572754914202,
+          "height": 136.07126704977645
+        },
+        "vertices": [
+          {
+            "x": 133.4352010545289,
+            "y": 391.68057283626354,
+            "z": 0.9966116257161858
+          },
+          {
+            "x": 83.08557541013458,
+            "y": 413.18353367618494,
+            "z": 0.9963104118631124
+          },
+          {
+            "x": 132.512672644271,
+            "y": 313.01989593826255,
+            "z": 0.9964592111823913
+          },
+          {
+            "x": 80.22439527234353,
+            "y": 329.7233532245825,
+            "z": 0.9961359427981878
+          },
+          {
+            "x": 239.14858007721455,
+            "y": 422.9089891350482,
+            "z": 0.9961741775122495
+          },
+          {
+            "x": 191.43247935203047,
+            "y": 449.091162988039,
+            "z": 0.9958074171611144
+          },
+          {
+            "x": 242.18167076376375,
+            "y": 337.3043081242151,
+            "z": 0.995989225684532
+          },
+          {
+            "x": 192.7323387475167,
+            "y": 357.79495903666015,
+            "z": 0.9955926622965936
+          }
+        ],
+        "controls": [
+          {
+            "className": "gwe-showcase-caption",
+            "left": 20,
+            "right": 212.265625,
+            "top": 20,
+            "bottom": 151.5,
+            "width": 192.265625,
+            "height": 131.5
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-left",
+            "left": 16,
+            "right": 60,
+            "top": 350,
+            "bottom": 394,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-right",
+            "left": 260,
+            "right": 304,
+            "top": 350,
+            "bottom": 394,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-tools",
+            "left": 16,
+            "right": 304,
+            "top": 570,
+            "bottom": 684,
+            "width": 288,
+            "height": 114
+          }
+        ],
+        "buttons": [
+          {
+            "label": "Meadow",
+            "left": 25,
+            "right": 113,
+            "top": 102.5,
+            "bottom": 146.5,
+            "width": 88,
+            "height": 44
+          },
+          {
+            "label": "Studio",
+            "left": 116,
+            "right": 204,
+            "top": 102.5,
+            "bottom": 146.5,
+            "width": 88,
+            "height": 44
+          },
+          {
+            "label": "Rotate view left",
+            "left": 16,
+            "right": 60,
+            "top": 350,
+            "bottom": 394,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Rotate view right",
+            "left": 260,
+            "right": 304,
+            "top": 350,
+            "bottom": 394,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Perspective",
+            "left": 26,
+            "right": 117.890625,
+            "top": 580,
+            "bottom": 624,
+            "width": 91.890625,
+            "height": 44
+          },
+          {
+            "label": "Front",
+            "left": 120.890625,
+            "right": 176.59375,
+            "top": 580,
+            "bottom": 624,
+            "width": 55.703125,
+            "height": 44
+          },
+          {
+            "label": "Side",
+            "left": 179.59375,
+            "right": 235.296875,
+            "top": 580,
+            "bottom": 624,
+            "width": 55.703125,
+            "height": 44
+          },
+          {
+            "label": "Top",
+            "left": 238.296875,
+            "right": 294,
+            "top": 580,
+            "bottom": 624,
+            "width": 55.703125,
+            "height": 44
+          },
+          {
+            "label": "Back to building",
+            "left": 23,
+            "right": 124.5,
+            "top": 633,
+            "bottom": 677,
+            "width": 101.5,
+            "height": 44
+          },
+          {
+            "label": "Save image",
+            "left": 132.5,
+            "right": 204.40625,
+            "top": 633,
+            "bottom": 677,
+            "width": 71.90625,
+            "height": 44
+          },
+          {
+            "label": "Use & export",
+            "left": 212.40625,
+            "right": 296.984375,
+            "top": 633,
+            "bottom": 677,
+            "width": 84.578125,
+            "height": 44
+          }
+        ],
+        "overlap": [],
+        "overflow": false,
+        "pose": {
+          "position": [
+            24.879623715928062,
+            17.29266326037456,
+            31.230733407750797
+          ],
+          "quaternion": [
+            -0.16276767998822744,
+            0.32786043083366007,
+            0.05745448769158172,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ]
+        },
+        "bounds": [
+          [
+            -3,
+            1,
+            -1
+          ],
+          [
+            4,
+            5.5,
+            3
+          ]
+        ],
+        "composition": null,
+        "draw": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      "screenshot": "before-perspective-320x700.png"
+    },
+    {
+      "case": {
+        "width": 844,
+        "height": 390,
+        "view": "perspective"
+      },
+      "layout": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "projected": {
+          "left": 382.1728571476072,
+          "right": 463.0323484885417,
+          "top": 189.81502604056237,
+          "bottom": 257.7483015152821,
+          "width": 80.85949134093448,
+          "height": 67.93327547471972
+        },
+        "vertices": [
+          {
+            "x": 408.74199235199836,
+            "y": 229.0763476011001,
+            "z": 0.9965988244312458
+          },
+          {
+            "x": 383.60572481362505,
+            "y": 239.81174963971165,
+            "z": 0.9962957902181699
+          },
+          {
+            "x": 408.2801855108211,
+            "y": 189.81502604056237,
+            "z": 0.9964455039580818
+          },
+          {
+            "x": 382.1728571476072,
+            "y": 198.14724448482158,
+            "z": 0.9961202112588055
+          },
+          {
+            "x": 461.5131029557012,
+            "y": 244.66861735200078,
+            "z": 0.9961586926898319
+          },
+          {
+            "x": 437.6957671157992,
+            "y": 257.7483015152821,
+            "z": 0.9957894851106983
+          },
+          {
+            "x": 463.0323484885417,
+            "y": 201.93004877669327,
+            "z": 0.9959725292666479
+          },
+          {
+            "x": 438.34718453770387,
+            "y": 212.15832848756563,
+            "z": 0.9955732136776051
+          }
+        ],
+        "controls": [
+          {
+            "className": "gwe-showcase-caption",
+            "left": 28,
+            "right": 225,
+            "top": 24,
+            "bottom": 185.1875,
+            "width": 197,
+            "height": 161.1875
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-left",
+            "left": 20,
+            "right": 64,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-right",
+            "left": 780,
+            "right": 824,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-tools",
+            "left": 207,
+            "right": 637,
+            "top": 248,
+            "bottom": 366,
+            "width": 430,
+            "height": 118
+          }
+        ],
+        "buttons": [
+          {
+            "label": "Meadow",
+            "left": 33,
+            "right": 125,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Studio",
+            "left": 128,
+            "right": 220,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Rotate view left",
+            "left": 20,
+            "right": 64,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Rotate view right",
+            "left": 780,
+            "right": 824,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Perspective",
+            "left": 219,
+            "right": 359.859375,
+            "top": 260,
+            "bottom": 304,
+            "width": 140.859375,
+            "height": 44
+          },
+          {
+            "label": "Front",
+            "left": 362.859375,
+            "right": 448.234375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Side",
+            "left": 451.234375,
+            "right": 536.609375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Top",
+            "left": 539.609375,
+            "right": 624.984375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Back to building",
+            "left": 216,
+            "right": 371.796875,
+            "top": 313,
+            "bottom": 357,
+            "width": 155.796875,
+            "height": 44
+          },
+          {
+            "label": "Save image",
+            "left": 379.796875,
+            "right": 490.15625,
+            "top": 313,
+            "bottom": 357,
+            "width": 110.359375,
+            "height": 44
+          },
+          {
+            "label": "Use & export",
+            "left": 498.15625,
+            "right": 628,
+            "top": 313,
+            "bottom": 357,
+            "width": 129.84375,
+            "height": 44
+          }
+        ],
+        "overlap": [
+          "gwe-showcase-tools"
+        ],
+        "overflow": false,
+        "pose": {
+          "position": [
+            24.801346420575676,
+            17.24757553825159,
+            31.133669561513837
+          ],
+          "quaternion": [
+            -0.16276767998822747,
+            0.32786043083366007,
+            0.05745448769158173,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ]
+        },
+        "bounds": [
+          [
+            -3,
+            1,
+            -1
+          ],
+          [
+            4,
+            5.5,
+            3
+          ]
+        ],
+        "composition": null,
+        "draw": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      "screenshot": "before-perspective-844x390.png"
+    },
+    {
+      "case": {
+        "width": 844,
+        "height": 390,
+        "view": "front"
+      },
+      "layout": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "projected": {
+          "left": 365.6431419086235,
+          "right": 478.3568580913766,
+          "top": 185.27059122697221,
+          "bottom": 257.7294087730278,
+          "width": 112.7137161827531,
+          "height": 72.45881754605557
+        },
+        "vertices": [
+          {
+            "x": 373.28955388121534,
+            "y": 252.81385821921873,
+            "z": 0.9942131833642782
+          },
+          {
+            "x": 365.6431419086235,
+            "y": 257.7294087730278,
+            "z": 0.9931477317982803
+          },
+          {
+            "x": 373.28955388121534,
+            "y": 190.18614178078127,
+            "z": 0.9942131833642782
+          },
+          {
+            "x": 365.6431419086235,
+            "y": 185.27059122697221,
+            "z": 0.9931477317982803
+          },
+          {
+            "x": 470.71044611878466,
+            "y": 252.81385821921873,
+            "z": 0.9942131833642782
+          },
+          {
+            "x": 478.3568580913766,
+            "y": 257.7294087730278,
+            "z": 0.9931477317982803
+          },
+          {
+            "x": 470.71044611878466,
+            "y": 190.18614178078127,
+            "z": 0.9942131833642782
+          },
+          {
+            "x": 478.3568580913766,
+            "y": 185.27059122697221,
+            "z": 0.9931477317982803
+          }
+        ],
+        "controls": [
+          {
+            "className": "gwe-showcase-caption",
+            "left": 28,
+            "right": 225,
+            "top": 24,
+            "bottom": 185.1875,
+            "width": 197,
+            "height": 161.1875
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-left",
+            "left": 20,
+            "right": 64,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-right",
+            "left": 780,
+            "right": 824,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-tools",
+            "left": 207,
+            "right": 637,
+            "top": 248,
+            "bottom": 366,
+            "width": 430,
+            "height": 118
+          }
+        ],
+        "buttons": [
+          {
+            "label": "Meadow",
+            "left": 33,
+            "right": 125,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Studio",
+            "left": 128,
+            "right": 220,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Rotate view left",
+            "left": 20,
+            "right": 64,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Rotate view right",
+            "left": 780,
+            "right": 824,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Perspective",
+            "left": 219,
+            "right": 359.859375,
+            "top": 260,
+            "bottom": 304,
+            "width": 140.859375,
+            "height": 44
+          },
+          {
+            "label": "Front",
+            "left": 362.859375,
+            "right": 448.234375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Side",
+            "left": 451.234375,
+            "right": 536.609375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Top",
+            "left": 539.609375,
+            "right": 624.984375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Back to building",
+            "left": 216,
+            "right": 371.796875,
+            "top": 313,
+            "bottom": 357,
+            "width": 155.796875,
+            "height": 44
+          },
+          {
+            "label": "Save image",
+            "left": 379.796875,
+            "right": 490.15625,
+            "top": 313,
+            "bottom": 357,
+            "width": 110.359375,
+            "height": 44
+          },
+          {
+            "label": "Use & export",
+            "left": 498.15625,
+            "right": 628,
+            "top": 313,
+            "bottom": 357,
+            "width": 129.84375,
+            "height": 44
+          }
+        ],
+        "overlap": [
+          "gwe-showcase-tools"
+        ],
+        "overflow": false,
+        "pose": {
+          "position": [
+            0.5,
+            3.25,
+            28.481465708823755
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ]
+        },
+        "bounds": [
+          [
+            -3,
+            1,
+            -1
+          ],
+          [
+            4,
+            5.5,
+            3
+          ]
+        ],
+        "composition": null,
+        "draw": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      "screenshot": "before-front-844x390.png"
+    },
+    {
+      "case": {
+        "width": 844,
+        "height": 390,
+        "view": "side"
+      },
+      "layout": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "projected": {
+          "left": 389.9470283181591,
+          "right": 454.05297168184075,
+          "top": 185.44040685792905,
+          "bottom": 257.559593142071,
+          "width": 64.10594336368166,
+          "height": 72.11918628414193
+        },
+        "vertices": [
+          {
+            "x": 447.1707411779479,
+            "y": 249.81708382519142,
+            "z": 0.9948627378620107
+          },
+          {
+            "x": 396.829258822052,
+            "y": 249.81708382519142,
+            "z": 0.9948627378620107
+          },
+          {
+            "x": 447.1707411779479,
+            "y": 193.18291617480858,
+            "z": 0.9948627378620107
+          },
+          {
+            "x": 396.829258822052,
+            "y": 193.18291617480858,
+            "z": 0.9948627378620107
+          },
+          {
+            "x": 454.05297168184075,
+            "y": 257.559593142071,
+            "z": 0.9931845395429986
+          },
+          {
+            "x": 389.9470283181591,
+            "y": 257.559593142071,
+            "z": 0.9931845395429986
+          },
+          {
+            "x": 454.05297168184075,
+            "y": 185.44040685792905,
+            "z": 0.9931845395429986
+          },
+          {
+            "x": 389.9470283181591,
+            "y": 185.44040685792905,
+            "z": 0.9931845395429986
+          }
+        ],
+        "controls": [
+          {
+            "className": "gwe-showcase-caption",
+            "left": 28,
+            "right": 225,
+            "top": 24,
+            "bottom": 185.1875,
+            "width": 197,
+            "height": 161.1875
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-left",
+            "left": 20,
+            "right": 64,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-right",
+            "left": 780,
+            "right": 824,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-tools",
+            "left": 207,
+            "right": 637,
+            "top": 248,
+            "bottom": 366,
+            "width": 430,
+            "height": 118
+          }
+        ],
+        "buttons": [
+          {
+            "label": "Meadow",
+            "left": 33,
+            "right": 125,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Studio",
+            "left": 128,
+            "right": 220,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Rotate view left",
+            "left": 20,
+            "right": 64,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Rotate view right",
+            "left": 780,
+            "right": 824,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Perspective",
+            "left": 219,
+            "right": 359.859375,
+            "top": 260,
+            "bottom": 304,
+            "width": 140.859375,
+            "height": 44
+          },
+          {
+            "label": "Front",
+            "left": 362.859375,
+            "right": 448.234375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Side",
+            "left": 451.234375,
+            "right": 536.609375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Top",
+            "left": 539.609375,
+            "right": 624.984375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Back to building",
+            "left": 216,
+            "right": 371.796875,
+            "top": 313,
+            "bottom": 357,
+            "width": 155.796875,
+            "height": 44
+          },
+          {
+            "label": "Save image",
+            "left": 379.796875,
+            "right": 490.15625,
+            "top": 313,
+            "bottom": 357,
+            "width": 110.359375,
+            "height": 44
+          },
+          {
+            "label": "Use & export",
+            "left": 498.15625,
+            "right": 628,
+            "top": 313,
+            "bottom": 357,
+            "width": 129.84375,
+            "height": 44
+          }
+        ],
+        "overlap": [
+          "gwe-showcase-tools"
+        ],
+        "overflow": false,
+        "pose": {
+          "position": [
+            29.601465708823753,
+            3.25,
+            1
+          ],
+          "quaternion": [
+            0,
+            0.7071067811865475,
+            0,
+            0.7071067811865476
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ]
+        },
+        "bounds": [
+          [
+            -3,
+            1,
+            -1
+          ],
+          [
+            4,
+            5.5,
+            3
+          ]
+        ],
+        "composition": null,
+        "draw": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      "screenshot": "before-side-844x390.png"
+    },
+    {
+      "case": {
+        "width": 844,
+        "height": 390,
+        "view": "top"
+      },
+      "layout": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "projected": {
+          "left": 358.7041045381906,
+          "right": 485.2958954618093,
+          "top": 185.33091687896618,
+          "bottom": 257.66908312103396,
+          "width": 126.5917909236187,
+          "height": 72.33816624206779
+        },
+        "vertices": [
+          {
+            "x": 369.180485622095,
+            "y": 191.31742035548294,
+            "z": 0.9936406255126788
+          },
+          {
+            "x": 369.180485622095,
+            "y": 251.68257964451723,
+            "z": 0.9936406255126788
+          },
+          {
+            "x": 358.7041045381906,
+            "y": 185.33091687896618,
+            "z": 0.9921808458576137
+          },
+          {
+            "x": 358.7041045381906,
+            "y": 257.66908312103396,
+            "z": 0.9921808458576137
+          },
+          {
+            "x": 474.819514377905,
+            "y": 191.31742035548294,
+            "z": 0.9936406255126788
+          },
+          {
+            "x": 474.819514377905,
+            "y": 251.68257964451723,
+            "z": 0.9936406255126788
+          },
+          {
+            "x": 485.2958954618093,
+            "y": 185.33091687896618,
+            "z": 0.9921808458576137
+          },
+          {
+            "x": 485.2958954618093,
+            "y": 257.66908312103396,
+            "z": 0.9921808458576137
+          }
+        ],
+        "controls": [
+          {
+            "className": "gwe-showcase-caption",
+            "left": 28,
+            "right": 225,
+            "top": 24,
+            "bottom": 185.1875,
+            "width": 197,
+            "height": 161.1875
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-left",
+            "left": 20,
+            "right": 64,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-right",
+            "left": 780,
+            "right": 824,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-tools",
+            "left": 207,
+            "right": 637,
+            "top": 248,
+            "bottom": 366,
+            "width": 430,
+            "height": 118
+          }
+        ],
+        "buttons": [
+          {
+            "label": "Meadow",
+            "left": 33,
+            "right": 125,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Studio",
+            "left": 128,
+            "right": 220,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Rotate view left",
+            "left": 20,
+            "right": 64,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Rotate view right",
+            "left": 780,
+            "right": 824,
+            "top": 195,
+            "bottom": 239,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Perspective",
+            "left": 219,
+            "right": 359.859375,
+            "top": 260,
+            "bottom": 304,
+            "width": 140.859375,
+            "height": 44
+          },
+          {
+            "label": "Front",
+            "left": 362.859375,
+            "right": 448.234375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Side",
+            "left": 451.234375,
+            "right": 536.609375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Top",
+            "left": 539.609375,
+            "right": 624.984375,
+            "top": 260,
+            "bottom": 304,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Back to building",
+            "left": 216,
+            "right": 371.796875,
+            "top": 313,
+            "bottom": 357,
+            "width": 155.796875,
+            "height": 44
+          },
+          {
+            "label": "Save image",
+            "left": 379.796875,
+            "right": 490.15625,
+            "top": 313,
+            "bottom": 357,
+            "width": 110.359375,
+            "height": 44
+          },
+          {
+            "label": "Use & export",
+            "left": 498.15625,
+            "right": 628,
+            "top": 313,
+            "bottom": 357,
+            "width": 129.84375,
+            "height": 44
+          }
+        ],
+        "overlap": [
+          "gwe-showcase-tools"
+        ],
+        "overflow": false,
+        "pose": {
+          "position": [
+            0.5,
+            28.18796951895445,
+            1
+          ],
+          "quaternion": [
+            -0.7071067811865475,
+            0,
+            0,
+            0.7071067811865476
+          ],
+          "up": [
+            0,
+            0,
+            -1
+          ]
+        },
+        "bounds": [
+          [
+            -3,
+            1,
+            -1
+          ],
+          [
+            4,
+            5.5,
+            3
+          ]
+        ],
+        "composition": null,
+        "draw": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      "screenshot": "before-top-844x390.png"
+    },
+    {
+      "case": {
+        "width": 667,
+        "height": 375,
+        "view": "perspective"
+      },
+      "layout": {
+        "viewport": {
+          "width": 667,
+          "height": 375
+        },
+        "projected": {
+          "left": 294.55790476654926,
+          "right": 373.62051852212966,
+          "top": 183.0191365729943,
+          "bottom": 249.4427837038314,
+          "width": 79.0626137555804,
+          "height": 66.42364713083708
+        },
+        "vertices": [
+          {
+            "x": 320.5366147441762,
+            "y": 221.40798432107567,
+            "z": 0.9965988244312458
+          },
+          {
+            "x": 295.9589309288778,
+            "y": 231.90482186994026,
+            "z": 0.9962957902181699
+          },
+          {
+            "x": 320.0850702772473,
+            "y": 183.0191365729943,
+            "z": 0.9964455039580818
+          },
+          {
+            "x": 294.55790476654926,
+            "y": 191.1661946073811,
+            "z": 0.9961202112588055
+          },
+          {
+            "x": 372.13503400113,
+            "y": 236.65375918862298,
+            "z": 0.9961586926898319
+          },
+          {
+            "x": 348.8469722910036,
+            "y": 249.4427837038314,
+            "z": 0.9957894851106983
+          },
+          {
+            "x": 373.62051852212966,
+            "y": 194.86493658165566,
+            "z": 0.9959725292666479
+          },
+          {
+            "x": 349.48391377019936,
+            "y": 204.86592118784196,
+            "z": 0.9955732136776051
+          }
+        ],
+        "controls": [
+          {
+            "className": "gwe-showcase-caption",
+            "left": 28,
+            "right": 225,
+            "top": 24,
+            "bottom": 185.1875,
+            "width": 197,
+            "height": 161.1875
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-left",
+            "left": 20,
+            "right": 64,
+            "top": 187.5,
+            "bottom": 231.5,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-orbit gwe-showcase-orbit-right",
+            "left": 603,
+            "right": 647,
+            "top": 187.5,
+            "bottom": 231.5,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "className": "gwe-showcase-tools",
+            "left": 118.5,
+            "right": 548.5,
+            "top": 233,
+            "bottom": 351,
+            "width": 430,
+            "height": 118
+          }
+        ],
+        "buttons": [
+          {
+            "label": "Meadow",
+            "left": 33,
+            "right": 125,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Studio",
+            "left": 128,
+            "right": 220,
+            "top": 136.1875,
+            "bottom": 180.1875,
+            "width": 92,
+            "height": 44
+          },
+          {
+            "label": "Rotate view left",
+            "left": 20,
+            "right": 64,
+            "top": 187.5,
+            "bottom": 231.5,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Rotate view right",
+            "left": 603,
+            "right": 647,
+            "top": 187.5,
+            "bottom": 231.5,
+            "width": 44,
+            "height": 44
+          },
+          {
+            "label": "Perspective",
+            "left": 130.5,
+            "right": 271.359375,
+            "top": 245,
+            "bottom": 289,
+            "width": 140.859375,
+            "height": 44
+          },
+          {
+            "label": "Front",
+            "left": 274.359375,
+            "right": 359.734375,
+            "top": 245,
+            "bottom": 289,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Side",
+            "left": 362.734375,
+            "right": 448.109375,
+            "top": 245,
+            "bottom": 289,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Top",
+            "left": 451.109375,
+            "right": 536.484375,
+            "top": 245,
+            "bottom": 289,
+            "width": 85.375,
+            "height": 44
+          },
+          {
+            "label": "Back to building",
+            "left": 127.5,
+            "right": 283.296875,
+            "top": 298,
+            "bottom": 342,
+            "width": 155.796875,
+            "height": 44
+          },
+          {
+            "label": "Save image",
+            "left": 291.296875,
+            "right": 401.65625,
+            "top": 298,
+            "bottom": 342,
+            "width": 110.359375,
+            "height": 44
+          },
+          {
+            "label": "Use & export",
+            "left": 409.65625,
+            "right": 539.5,
+            "top": 298,
+            "bottom": 342,
+            "width": 129.84375,
+            "height": 44
+          }
+        ],
+        "overlap": [
+          "gwe-showcase-tools"
+        ],
+        "overflow": false,
+        "pose": {
+          "position": [
+            24.801346420575676,
+            17.24757553825159,
+            31.133669561513837
+          ],
+          "quaternion": [
+            -0.16276767998822747,
+            0.32786043083366007,
+            0.05745448769158173,
+            0.9288235581039676
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ]
+        },
+        "bounds": [
+          [
+            -3,
+            1,
+            -1
+          ],
+          [
+            4,
+            5.5,
+            3
+          ]
+        ],
+        "composition": null,
+        "draw": {
+          "calls": 87,
+          "triangles": 502
+        }
+      },
+      "screenshot": "before-perspective-667x375.png"
+    }
+  ],
+  "buildingPose": {
+    "position": [
+      7.5,
+      6.2,
+      10
+    ],
+    "quaternion": [
+      -0.12624793629804595,
+      0.30564954150521867,
+      0.040926607536562166,
+      0.942849314129083
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 75,
+    "far": 200
+  },
+  "modelBefore": {
+    "world": "[{\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "stl": "3ea4d6355c9184abbeb6ac274bb3f9d7fb2c66afdfa372009c0442db479978cd",
+    "selected": "[{\"x\":-3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":-1},{\"x\":-2,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":-1},{\"x\":-1,\"y\":1,\"z\":0},{\"x\":-1,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":2},{\"x\":0,\"y\":1,\"z\":-1},{\"x\":0,\"y\":1,\"z\":0},{\"x\":0,\"y\":1,\"z\":1},{\"x\":0,\"y\":1,\"z\":2},{\"x\":1,\"y\":1,\"z\":-1},{\"x\":1,\"y\":1,\"z\":0},{\"x\":1,\"y\":1,\"z\":1},{\"x\":1,\"y\":1,\"z\":2},{\"x\":2,\"y\":1,\"z\":-1},{\"x\":2,\"y\":1,\"z\":0},{\"x\":2,\"y\":1,\"z\":1},{\"x\":3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":2,\"z\":-1},{\"x\":-2,\"y\":2,\"z\":1},{\"x\":2,\"y\":2,\"z\":-1},{\"x\":2,\"y\":2,\"z\":1},{\"x\":-2,\"y\":3,\"z\":-1},{\"x\":-2,\"y\":3,\"z\":1},{\"x\":2,\"y\":3,\"z\":-1},{\"x\":2,\"y\":3,\"z\":1},{\"x\":-2,\"y\":4,\"z\":-1},{\"x\":-2,\"y\":4,\"z\":1},{\"x\":2,\"y\":4,\"z\":-1},{\"x\":2,\"y\":4,\"z\":1},{\"x\":-2,\"y\":5,\"z\":-1},{\"x\":-2,\"y\":5,\"z\":1},{\"x\":-1,\"y\":5,\"z\":-1},{\"x\":-1,\"y\":5,\"z\":1},{\"x\":0,\"y\":5,\"z\":-1},{\"x\":0,\"y\":5,\"z\":1},{\"x\":1,\"y\":5,\"z\":-1},{\"x\":1,\"y\":5,\"z\":1},{\"x\":2,\"y\":5,\"z\":-1},{\"x\":2,\"y\":5,\"z\":1}]",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0}]",
+    "redo": "[]"
+  },
+  "poseBeforeFiles": {
+    "position": [
+      24.801346420575676,
+      17.24757553825159,
+      31.133669561513837
+    ],
+    "quaternion": [
+      -0.16276767998822747,
+      0.32786043083366007,
+      0.05745448769158173,
+      0.9288235581039676
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 42,
+    "far": 200
+  },
+  "poseWithFiles": {
+    "position": [
+      24.801346420575676,
+      17.24757553825159,
+      31.133669561513837
+    ],
+    "quaternion": [
+      -0.16276767998822747,
+      0.32786043083366007,
+      0.05745448769158173,
+      0.9288235581039676
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 42,
+    "far": 200
+  },
+  "poseAfterImage": {
+    "position": [
+      24.801346420575676,
+      17.24757553825159,
+      31.133669561513837
+    ],
+    "quaternion": [
+      -0.16276767998822747,
+      0.32786043083366007,
+      0.05745448769158173,
+      0.9288235581039676
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 42,
+    "far": 200
+  },
+  "modelAfter": {
+    "world": "[{\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "stl": "3ea4d6355c9184abbeb6ac274bb3f9d7fb2c66afdfa372009c0442db479978cd",
+    "selected": "[{\"x\":-3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":-1},{\"x\":-2,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":-1},{\"x\":-1,\"y\":1,\"z\":0},{\"x\":-1,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":2},{\"x\":0,\"y\":1,\"z\":-1},{\"x\":0,\"y\":1,\"z\":0},{\"x\":0,\"y\":1,\"z\":1},{\"x\":0,\"y\":1,\"z\":2},{\"x\":1,\"y\":1,\"z\":-1},{\"x\":1,\"y\":1,\"z\":0},{\"x\":1,\"y\":1,\"z\":1},{\"x\":1,\"y\":1,\"z\":2},{\"x\":2,\"y\":1,\"z\":-1},{\"x\":2,\"y\":1,\"z\":0},{\"x\":2,\"y\":1,\"z\":1},{\"x\":3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":2,\"z\":-1},{\"x\":-2,\"y\":2,\"z\":1},{\"x\":2,\"y\":2,\"z\":-1},{\"x\":2,\"y\":2,\"z\":1},{\"x\":-2,\"y\":3,\"z\":-1},{\"x\":-2,\"y\":3,\"z\":1},{\"x\":2,\"y\":3,\"z\":-1},{\"x\":2,\"y\":3,\"z\":1},{\"x\":-2,\"y\":4,\"z\":-1},{\"x\":-2,\"y\":4,\"z\":1},{\"x\":2,\"y\":4,\"z\":-1},{\"x\":2,\"y\":4,\"z\":1},{\"x\":-2,\"y\":5,\"z\":-1},{\"x\":-2,\"y\":5,\"z\":1},{\"x\":-1,\"y\":5,\"z\":-1},{\"x\":-1,\"y\":5,\"z\":1},{\"x\":0,\"y\":5,\"z\":-1},{\"x\":0,\"y\":5,\"z\":1},{\"x\":1,\"y\":5,\"z\":-1},{\"x\":1,\"y\":5,\"z\":1},{\"x\":2,\"y\":5,\"z\":-1},{\"x\":2,\"y\":5,\"z\":1}]",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0}]",
+    "redo": "[]"
+  },
+  "returnedPose": {
+    "position": [
+      7.5,
+      6.2,
+      10
+    ],
+    "quaternion": [
+      -0.12624793629804595,
+      0.30564954150521867,
+      0.040926607536562166,
+      0.942849314129083
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 75,
+    "far": 200
+  },
+  "shaderErrors": [],
+  "pass": true
+}

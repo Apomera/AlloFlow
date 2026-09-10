@@ -67,7 +67,8 @@ function plugins(dir, re) {
 // only recognised stem_tool_*.js, so a correctly-listed data file was reported
 // as "entry with NO file on disk" and blocked the deploy. Widen the scan rather
 // than delist the file.
-const disk = [...plugins('stem_lab', /^stem_(tool|data)_.*\.js$/), ...plugins('sel_hub', /^sel_.*\.js$/)];
+// Water Worlds loads shared kernel/view assets that also require CDN cache busting.
+const disk = [...plugins('stem_lab', /^(?:stem_(?:tool|data)_.*|water_worlds_(?:kernel|view))\.js$/), ...plugins('sel_hub', /^sel_.*\.js$/)];
 const diskByLower = new Map(disk.map((d) => [d.toLowerCase(), d]));
 const entrySet = new Set(entries);
 

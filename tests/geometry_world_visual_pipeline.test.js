@@ -342,13 +342,13 @@ describe('colour pipeline source contract', () => {
     expect(src).toContain('part.rotation.x += part.userData._spin.x * dt;');
   });
 
-  it('draws dimension labels colour-true and outlined', () => {
+  it('draws dimension labels colour-true without scene-lighting changes', () => {
     // the pill and coloured text were gamma-encoded twice and read as faded pastel,
     // the same defect the character labels had before they were tagged sRGB
     const label = src.slice(src.indexOf('function makeDimLabel'), src.indexOf('function showDimLines'));
     expect(label).toContain('dimTex.encoding = THREE.sRGBEncoding');
-    expect(label).toContain('cx.strokeText(text, 128, 52);');
-    expect(label).toContain('cx.fillText(text, 128, 52);');
+    expect(label).toContain('toneMapped:false');
+    expect(label).toContain('cx.fillText(text,c.width/2,41,c.width-36)');
     expect(label).not.toContain('new THREE.CanvasTexture(c), transparent: true, depthTest: false');
   });
 

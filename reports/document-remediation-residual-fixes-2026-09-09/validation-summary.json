@@ -1,0 +1,148 @@
+{
+  "verifiedAt": "2026-09-10T03:44:14.705Z",
+  "policyVersion": "20260909-6",
+  "findingsFixed": 8,
+  "reviewCasesPassed": 35,
+  "previousEvidenceUnchanged": true,
+  "distinctTestsPassed": 521,
+  "unitTestsPassed": 324,
+  "browserTestsPassed": 197,
+  "unitFiles": [
+    {
+      "file": "tests/aifix_chunk_gates.test.js",
+      "report": "live/tests-final.json",
+      "passed": 20,
+      "complete": true
+    },
+    {
+      "file": "tests/aifix_source_associations.test.js",
+      "report": "live/tests-final.json",
+      "passed": 39,
+      "complete": true
+    },
+    {
+      "file": "tests/remediation_form_association_index.test.js",
+      "report": "live/tests-final.json",
+      "passed": 17,
+      "complete": true
+    },
+    {
+      "file": "tests/remediation_gate_regressions.test.js",
+      "report": "live/tests-final.json",
+      "passed": 43,
+      "complete": true
+    },
+    {
+      "file": "tests/remediation_inline_math_option_groups.test.js",
+      "report": "live/tests-final.json",
+      "passed": 27,
+      "complete": true
+    },
+    {
+      "file": "tests/remediation_residual_live.test.js",
+      "report": "live/tests-final.json",
+      "passed": 61,
+      "complete": true
+    },
+    {
+      "file": "tests/remediation_semantic_fidelity.test.js",
+      "report": "live/tests-final.json",
+      "passed": 29,
+      "complete": true
+    },
+    {
+      "file": "tests/source_remediation_contract.test.js",
+      "report": "live/tests-final.json",
+      "passed": 4,
+      "complete": true
+    },
+    {
+      "file": "tests/document_export_inspection_failures.test.js",
+      "report": "checker-unit-final.json",
+      "passed": 2,
+      "complete": true
+    },
+    {
+      "file": "tests/rendered_fidelity_calibration.test.js",
+      "report": "checker-unit-final.json",
+      "passed": 6,
+      "complete": true
+    },
+    {
+      "file": "tests/rendered_fidelity_resilience.test.js",
+      "report": "checker-unit-final.json",
+      "passed": 19,
+      "complete": true
+    },
+    {
+      "file": "tests/rendered_fidelity_review.test.js",
+      "report": "checker-unit-final.json",
+      "passed": 7,
+      "complete": true
+    },
+    {
+      "file": "tests/doc_pipeline_build_parity.test.js",
+      "report": "build-parity-verified.json",
+      "passed": 1,
+      "complete": true
+    },
+    {
+      "file": "tests/remediation_review_evidence.test.js",
+      "report": "integration-final.json",
+      "passed": 3,
+      "complete": true
+    },
+    {
+      "file": "tests/remediation_review_helpers.test.js",
+      "report": "integration-final.json",
+      "passed": 28,
+      "complete": true
+    },
+    {
+      "file": "tests/remediation_source_contract_integration.test.js",
+      "report": "integration-final.json",
+      "passed": 18,
+      "complete": true
+    }
+  ],
+  "browserReports": [
+    {
+      "report": "rendered-final.json",
+      "passed": 94,
+      "retries": 0,
+      "skipped": 0
+    },
+    {
+      "report": "export-final.json",
+      "passed": 103,
+      "retries": 0,
+      "skipped": 0
+    }
+  ],
+  "generatedModulesMatch": true,
+  "implementationHashes": {
+    "doc_pipeline_source.jsx": "2a246d27928524c54ee16c8419dfd04904f4a05dfbacd07bd94ffb2825419909",
+    "doc_pipeline_module.js": "afaa45adecfcdde819a6d3cb71a0fea924ac55ddfd30aa1baba4b0c1a0c659ae",
+    "desktop/web-app/public/doc_pipeline_module.js": "afaa45adecfcdde819a6d3cb71a0fea924ac55ddfd30aa1baba4b0c1a0c659ae",
+    "dev-tools/document_export_at_acceptance.cjs": "5a88822c0245e20599df33981044b1454d656b93f2b4dccb11628ffdac5b46be",
+    "dev-tools/rendered_document_fidelity.cjs": "63196d71b7984ddaf548187f7e36827f83c92e8d19cb9687b17902783bd24bc9",
+    "dev-tools/document_html_dependencies.cjs": "bc3a9b9da6d9ead77006a9d55afb79d8e944b72c80523153d93a4bdb2e3564cd",
+    "dev-tools/calibrate_rendered_fidelity.cjs": "ea5bccfb26a4fd3d648485a3121c82d5a9f6ca3ecc83e5b0310057ac3f7605e5"
+  },
+  "sharedDependencyCollector": "dev-tools/document_html_dependencies.cjs",
+  "calibrationIdentityIncludesDependencies": true,
+  "mcp": {
+    "passed": true,
+    "durationMs": 66609.641,
+    "scriptedModelCalls": 11,
+    "sourceDrift": false,
+    "report": "mcp-selftest/benchmark-report.json"
+  },
+  "humanValidation": "not-run",
+  "liveModelCalls": 0,
+  "deployment": "not-run",
+  "limitations": [
+    "Synthetic fixtures and scripted model transport do not establish production or human screen-reader acceptance.",
+    "Occurrence evidence binds DOM text; accessible alternatives without DOM text require explicit name checkpoints."
+  ]
+}

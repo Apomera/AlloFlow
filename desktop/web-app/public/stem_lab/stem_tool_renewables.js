@@ -1386,11 +1386,775 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
   // ─────────────────────────────────────────────────────────
   // SECTION 6: TOOL REGISTRATION + RENDER
   // ─────────────────────────────────────────────────────────
+
+  // Deterministic, hourly classroom model. Inputs are illustrative, not a
+  // reconstruction of the US grid. GW over a one-hour interval equals GWh.
+  var RN_REGIONS = [
+    {id:'west',name:'Pacific',x:-7,z:0,weight:.17,sun:.95,wind:.8,offset:-3,solar:.23,turbines:.12,hydro:.34},
+    {id:'mountain',name:'Mountain',x:-3.6,z:-.4,weight:.10,sun:1.08,wind:1.08,offset:-2,solar:.22,turbines:.17,hydro:.17},
+    {id:'plains',name:'Great Plains',x:0,z:-.4,weight:.13,sun:.96,wind:1.3,offset:-1,solar:.13,turbines:.32,hydro:.10},
+    {id:'texas',name:'South Central',x:0,z:3.4,weight:.16,sun:1.02,wind:1.1,offset:-1,solar:.16,turbines:.20,hydro:.04},
+    {id:'northeast',name:'Northeast',x:6,z:-.7,weight:.23,sun:.79,wind:.85,offset:0,solar:.12,turbines:.12,hydro:.20},
+    {id:'southeast',name:'Southeast',x:5.4,z:3.2,weight:.21,sun:.9,wind:.55,offset:0,solar:.14,turbines:.07,hydro:.15}
+  ];
+
+  var RN_DEFAULT = {year:2035,solarBuild:25,windBuild:18,batteryBuild:10,duration:4,transmission:25,retirement:4,growth:1,efficiency:8,weather:'fair',season:'summer',
+    hours:72,transferLoss:3,flexDemand:0,reserve:0,outageRegion:'none',outageStart:24,outageHours:24};
+  function rnNumber(v,fallback,min,max) { return typeof v==='number'&&isFinite(v)?Math.max(min,Math.min(max,v)):fallback; }
+  function rnSettings(input) {
+    input=input&&typeof input==='object'?input:{};
+    var limits={year:[2025,2050],solarBuild:[0,80],windBuild:[0,60],batteryBuild:[0,40],duration:[1,24],transmission:[0,100],retirement:[0,16],growth:[0,3],efficiency:[0,30],transferLoss:[0,15],flexDemand:[0,30],reserve:[0,50]},s={};
+    Object.keys(limits).forEach(function(k){s[k]=rnNumber(input[k],RN_DEFAULT[k],limits[k][0],limits[k][1]);});
+    s.year=Math.round(s.year);
+    s.weather=['fair','lull','heatwave'].indexOf(input.weather)>=0?input.weather:RN_DEFAULT.weather;
+    s.season=['summer','winter','spring'].indexOf(input.season)>=0?input.season:RN_DEFAULT.season;
+    s.hours=input.hours===168?168:72;
+    s.outageRegion=RN_REGIONS.some(function(r){return r.id===input.outageRegion;})?input.outageRegion:'none';
+    s.outageStart=Math.round(rnNumber(input.outageStart,24,0,s.hours-1));
+    s.outageHours=Math.round(rnNumber(input.outageHours,Math.min(24,s.hours-s.outageStart),1,Math.min(72,s.hours-s.outageStart)));
+    s.siting={};
+    RN_REGIONS.forEach(function(r){
+      var raw=input.siting&&input.siting[r.id]||{},v={};
+      ['solar','wind','battery'].forEach(function(k){v[k]=rnNumber(raw[k],100,0,300);});
+      s.siting[r.id]=v;
+    });
+    return s;
+  }
+  function rnPortfolio(input) {
+    var s=rnSettings(input),years=s.year-2025;
+    var cap={solar:240+years*s.solarBuild,wind:160+years*s.windBuild,hydro:80,nuclear:95,fossil:Math.max(0,550-years*s.retirement),
+      batteryPower:30+years*s.batteryBuild,batteryEnergy:(30+years*s.batteryBuild)*s.duration,
+      demand:500*Math.pow(1+s.growth/100,years)*(1-s.efficiency/100),link:s.transmission};
+    var keys={solar:'solar',wind:'turbines',battery:'weight'},shares={};
+    Object.keys(keys).forEach(function(k){
+      var sum=RN_REGIONS.reduce(function(n,r){return n+r[keys[k]]*s.siting[r.id][k];},0);
+      shares[k]=RN_REGIONS.map(function(r){return sum>0?r[keys[k]]*s.siting[r.id][k]/sum:r[keys[k]];});
+    });
+    cap.regions=RN_REGIONS.map(function(r,i){
+      var power=30*r.weight+years*s.batteryBuild*shares.battery[i];
+      return {id:r.id,solar:240*r.solar+years*s.solarBuild*shares.solar[i],wind:160*r.turbines+years*s.windBuild*shares.wind[i],
+        hydro:80*r.hydro,nuclear:95*r.weight,fossil:cap.fossil*r.weight,batteryPower:power,batteryEnergy:power*s.duration,
+        newSolarShare:shares.solar[i],newWindShare:shares.wind[i],newBatteryShare:shares.battery[i]};
+    });
+    return cap;
+  }
+  function rnDemandShape(hour) {
+    return .78+.20*Math.exp(-Math.pow((hour-8)/3,2))+.38*Math.exp(-Math.pow((hour-19)/4,2));
+  }
+  function rnSimulate(input) {
+    var s=rnSettings(input),cap=rnPortfolio(s),eta=Math.sqrt(.88),wireEfficiency=1-s.transferLoss/100;
+    var batteries=RN_REGIONS.map(function(){return {energy:0,renewable:0};});
+    var evening=0;for(var eh=17;eh<=21;eh++)evening+=rnDemandShape(eh);
+    var movedPerMiddayHour=evening*s.flexDemand/100/5;
+    var totals={demand:0,renewable:0,nuclear:0,fossil:0,charge:0,discharge:0,loss:0,curtail:0,unmet:0,servedRenewable:0,transfer:0,transmissionLoss:0,shifted:0,reserveRelease:0};
+    var hours=[],gapHours=0,longestGap=0,streak=0,worstHour=0,peakUnmet=0,peakFossil=0,peakFossilHour=0;
+    for(var t=0;t<s.hours;t++) {
+      var rows=RN_REGIONS.map(function(r,i) {
+        var rc=cap.regions[i],localHour=((t+r.offset)%24+24)%24;
+        var daylight=s.season==='winter'?9:s.season==='summer'?15:12,sunrise=12-daylight/2;
+        var sun=localHour<sunrise||localHour>sunrise+daylight?0:Math.max(0,Math.sin(Math.PI*(localHour-sunrise)/daylight));
+        var solarFactor=Math.min(1,sun*r.sun*(s.weather==='lull'?.32:.9));
+        var windFactor=Math.max(.02,Math.min(.85,(.34+.14*Math.sin(t*.21+i*1.4)+.08*Math.cos(t*.53+i))*r.wind*(s.weather==='lull'?.23:s.weather==='heatwave'?.65:1)));
+        var rawShape=rnDemandShape(localHour),shape=rawShape;
+        if(localHour>=17&&localHour<=21)shape*=1-s.flexDemand/100;
+        if(localHour>=10&&localHour<=14)shape+=movedPerMiddayHour;
+        var demandScale=cap.demand*r.weight*(s.weather==='heatwave'?1.20:1)*(s.season==='winter'?1.08:1);
+        var demand=shape*demandScale,solar=rc.solar*solarFactor,wind=rc.wind*windFactor,hydro=rc.hydro*(s.season==='spring'?.65:.45);
+        var nuclear=rc.nuclear*.9,renewable=solar+wind+hydro,generation=renewable+nuclear;
+        var direct=Math.min(demand,generation),fraction=generation>0?renewable/generation:0;
+        var offline=r.id===s.outageRegion&&t>=s.outageStart&&t<s.outageStart+s.outageHours;
+        return {id:r.id,demand:demand,originalDemand:rawShape*demandScale,shifted:Math.max(0,(rawShape-shape)*demandScale),
+          solar:solar,wind:wind,hydro:hydro,renewable:renewable,nuclear:nuclear,sun:solarFactor,windFactor:windFactor,
+          direct:direct,servedRenewable:direct*fraction,surplus:Math.max(0,generation-demand),shortage:Math.max(0,demand-generation),renFraction:fraction,
+          imports:0,exports:0,charge:0,discharge:0,loss:0,curtail:0,unmet:0,fossil:0,battery:0,transmissionLoss:0,reserveRelease:0,
+          batteryCapacity:rc.batteryEnergy,batteryPower:rc.batteryPower,link:offline?0:cap.link,linkOffline:offline};
+      });
+      // The transfer loss is applied once, end-to-end, to gross exports.
+      var offered=rows.reduce(function(v,r){return v+Math.min(r.surplus,r.link);},0);
+      var wanted=rows.reduce(function(v,r){return v+Math.min(r.shortage,r.link);},0);
+      var transfer=Math.min(offered*wireEfficiency,wanted),renPool=0;
+      rows.forEach(function(r){
+        r.exports=offered>0?transfer/wireEfficiency*Math.min(r.surplus,r.link)/offered:0;
+        r.transmissionLoss=r.exports*(1-wireEfficiency);
+        renPool+=r.exports*wireEfficiency*r.renFraction;r.surplus=Math.max(0,r.surplus-r.exports);
+      });
+      rows.forEach(function(r,i){
+        r.imports=wanted>0?transfer*Math.min(r.shortage,r.link)/wanted:0;
+        r.shortage=Math.max(0,r.shortage-r.imports);
+        r.servedRenewable+=transfer>0?r.imports*renPool/transfer:0;
+        var b=batteries[i];
+        function discharge(limit){
+          var delivered=Math.max(0,Math.min(r.shortage,r.batteryPower-r.discharge,limit*eta));
+          var renewableFraction=b.energy>0?b.renewable/b.energy:0;
+          r.servedRenewable+=delivered*renewableFraction;
+          b.energy=Math.max(0,b.energy-delivered/eta);b.renewable=Math.max(0,b.renewable-delivered/eta*renewableFraction);
+          r.loss+=delivered/eta-delivered;r.shortage=Math.max(0,r.shortage-delivered);r.discharge+=delivered;
+          return delivered;
+        }
+        if(r.surplus>0){
+          r.charge=Math.max(0,Math.min(r.surplus,r.batteryPower,(r.batteryCapacity-b.energy)/eta));
+          b.energy+=r.charge*eta;b.renewable+=r.charge*eta*r.renFraction;
+          r.loss=r.charge*(1-eta);r.curtail=Math.max(0,r.surplus-r.charge);
+        }else if(r.shortage>0){
+          discharge(Math.max(0,b.energy-r.batteryCapacity*s.reserve/100));
+        }
+        r.fossil=Math.min(r.shortage,cap.regions[i].fossil);
+        r.shortage=Math.max(0,r.shortage-r.fossil);
+        // Reserve is available for shortages, still within the battery power limit.
+        if(r.shortage>0&&b.energy>0&&r.charge===0)r.reserveRelease=discharge(b.energy);
+        r.unmet=r.shortage;r.battery=b.energy;
+        r.linkCongested=!r.linkOffline&&r.link>0&&(r.imports>=r.link-1e-6||r.exports>=r.link-1e-6);
+      });
+      var hour={hour:t,regions:rows,transfer:transfer,battery:0};
+      Object.keys(totals).filter(function(k){return k!=='transfer';}).forEach(function(k){
+        hour[k]=rows.reduce(function(v,r){return v+(r[k]||0);},0);totals[k]+=hour[k];
+      });
+      hour.battery=rows.reduce(function(v,r){return v+r.battery;},0);
+      if(hour.unmet>1e-6){gapHours++;streak++;}else streak=0;
+      longestGap=Math.max(longestGap,streak);
+      if(hour.unmet>peakUnmet){peakUnmet=hour.unmet;worstHour=t;}
+      if(hour.fossil>peakFossil){peakFossil=hour.fossil;peakFossilHour=t;}
+      totals.transfer+=transfer;hours.push(hour);
+    }
+    totals.renewableShare=totals.demand?100*totals.servedRenewable/totals.demand:0;
+    totals.demandMet=totals.demand?100*(1-totals.unmet/totals.demand):100;
+    totals.endBattery=hours[hours.length-1].battery;
+    Object.assign(totals,{gapHours:gapHours,longestGap:longestGap,peakUnmet:peakUnmet,worstHour:worstHour,peakFossil:peakFossil,peakFossilHour:peakFossilHour});
+    var regionTotals=RN_REGIONS.map(function(r,i){
+      var sum={id:r.id,name:r.name,demand:0,unmet:0,servedRenewable:0,imports:0,exports:0,curtail:0,fossil:0,congestedHours:0,offlineHours:0};
+      hours.forEach(function(hour){var row=hour.regions[i];
+        ['demand','unmet','servedRenewable','imports','exports','curtail','fossil'].forEach(function(k){sum[k]+=row[k];});
+        if(row.linkCongested)sum.congestedHours++;if(row.linkOffline)sum.offlineHours++;
+      });
+      sum.renewableShare=100*sum.servedRenewable/sum.demand;return sum;
+    });
+    return {version:2,settings:s,capacity:cap,hours:hours,totals:totals,regionTotals:regionTotals};
+  }
+  var RN_STRESS_CASES=[
+    {id:'summer',label:'Summer variability',patch:{season:'summer',weather:'fair',outageRegion:'none'}},
+    {id:'winter',label:'Winter renewable lull',patch:{season:'winter',weather:'lull',outageRegion:'none'}},
+    {id:'heat',label:'Summer heat wave',patch:{season:'summer',weather:'heatwave',outageRegion:'none'}},
+    {id:'outage',label:'Northeast link outage',patch:{season:'summer',weather:'fair',outageRegion:'northeast',outageStart:48,outageHours:48}}
+  ];
+  function rnStressSuite(input){
+    var s=rnSettings(input);
+    return RN_STRESS_CASES.map(function(c){
+      var run=rnSimulate(Object.assign({},s,c.patch,{hours:168}));
+      return {id:c.id,label:c.label,settings:run.settings,totals:run.totals};
+    });
+  }
+
+  var RN_SWEEP_VARIABLES=[
+    {key:'solarBuild',label:'New solar',unit:'GW/yr',values:[0,20,40,60,80]},
+    {key:'windBuild',label:'New wind',unit:'GW/yr',values:[0,15,30,45,60]},
+    {key:'batteryBuild',label:'New battery power',unit:'GW/yr',values:[0,10,20,30,40]},
+    {key:'duration',label:'Battery duration',unit:'h',values:[1,4,8,12,24]},
+    {key:'transmission',label:'Link capacity per region',unit:'GW',values:[0,25,50,75,100]},
+    {key:'flexDemand',label:'Evening demand shifted to midday',unit:'%',values:[0,5,10,20,30]},
+    {key:'efficiency',label:'Demand reduction',unit:'%',values:[0,5,10,20,30]},
+    {key:'reserve',label:'Storage reserve target',unit:'%',values:[0,10,20,35,50]}
+  ];
+  function rnSweep(input,variable){
+    var spec=RN_SWEEP_VARIABLES.find(function(v){return v.key===variable;});
+    if(!spec)return null;
+    var base=rnSimulate(input),s=base.settings;
+    var values=spec.values.concat([s[variable]]).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
+    return {variable:variable,label:spec.label,unit:spec.unit,baseline:{settings:s,totals:base.totals},items:values.map(function(value){
+      var patch={};patch[variable]=value;var run=value===s[variable]?base:rnSimulate(Object.assign({},s,patch));
+      return {value:value,settings:run.settings,totals:run.totals,delta:{
+        fossil:run.totals.fossil-base.totals.fossil,unmet:run.totals.unmet-base.totals.unmet,
+        curtail:run.totals.curtail-base.totals.curtail,renewableShare:run.totals.renewableShare-base.totals.renewableShare}};
+    })};
+  }
+  function rnSweepFresh(study,input,variable){
+    if(!study||study.variable!==variable||!study.baseline)return false;
+    var s=rnSettings(input);s[variable]=study.baseline.settings[variable];
+    return JSON.stringify(s)===JSON.stringify(study.baseline.settings);
+  }
+  var RN_CHALLENGES=[
+    {id:'evening',title:'Carry solar into the evening',description:'A solar-heavy build spills midday energy and leaves an evening gap. Improve storage and demand timing without adding generation.',
+      baseline:{year:2050,solarBuild:65,windBuild:8,batteryBuild:5,duration:2,transmission:10,retirement:10},
+      allowed:['batteryBuild','duration','flexDemand','transmission'],
+      targets:[{metric:'fossil',label:'Cut fossil use by at least 40%',relative:.60,unit:'GWh',direction:'max'},
+        {metric:'unmet',label:'Cut unserved energy by at least 80%',relative:.20,unit:'GWh',direction:'max'}]},
+    {id:'connections',title:'Share the regional surplus',description:'The regions start disconnected. Keep the same generation and storage fleet; use the network to share available electricity.',
+      baseline:{year:2040,solarBuild:65,windBuild:40,batteryBuild:5,duration:4,transmission:0,retirement:8},
+      allowed:['transmission'],
+      targets:[{metric:'fossil',label:'Cut fossil use by at least 45%',relative:.55,unit:'GWh',direction:'max'},
+        {metric:'gapHours',label:'Cover demand in every test hour',value:0,unit:'h',direction:'max'}]},
+    {id:'winter',title:'Prepare for a winter lull',description:'A full week of weak sun and wind meets growing demand and rapid fossil retirement. Find a mix of demand reduction, firm backup, and new construction.',
+      baseline:{year:2045,hours:168,weather:'lull',season:'winter',retirement:16,solarBuild:25,windBuild:18,batteryBuild:10,growth:2},
+      allowed:['solarBuild','windBuild','batteryBuild','duration','transmission','retirement','efficiency','flexDemand','reserve'],
+      targets:[{metric:'demandMet',label:'Serve at least 99% of test demand',value:99,unit:'%',direction:'min'},
+        {metric:'renewableShare',label:'Supply at least 35% of demand from renewables',value:35,unit:'%',direction:'min'},
+        {metric:'fossil',label:'Use no more fossil energy than the starting plan',relative:1,unit:'GWh',direction:'max'}]}
+  ];
+  function rnAssessChallenge(id,input,existingRun){
+    var challenge=RN_CHALLENGES.find(function(c){return c.id===id;});if(!challenge)return null;
+    var reference=rnSimulate(challenge.baseline),run=existingRun||rnSimulate(input),s=run.settings;
+    var changed=Object.keys(reference.settings).filter(function(k){return challenge.allowed.indexOf(k)<0&&JSON.stringify(s[k])!==JSON.stringify(reference.settings[k]);});
+    var targets=challenge.targets.map(function(t){
+      var target=t.relative==null?t.value:reference.totals[t.metric]*t.relative,value=run.totals[t.metric];
+      return {label:t.label,metric:t.metric,unit:t.unit,direction:t.direction,target:target,value:value,
+        passed:t.direction==='max'?value<=target+1e-7:value>=target-1e-7};
+    });
+    return {id:id,valid:changed.length===0,changed:changed,targets:targets,passed:changed.length===0&&targets.every(function(t){return t.passed;}),
+      baseline:reference.settings,baselineTotals:reference.totals};
+  }
+  function rnExplainHour(run,index,id){
+    var hour=run.hours[Math.max(0,Math.min(run.hours.length-1,Math.floor(Number(index)||0)))];
+    var i=RN_REGIONS.findIndex(function(r){return r.id===id;});if(i<0)i=0;
+    var row=hour.regions[i],cap=run.capacity.regions[i],before=hour.hour?run.hours[hour.hour-1].regions[i].battery:0,notes=[];
+    function note(code,text){notes.push({code:code,text:text});}
+    if(row.sun<1e-8)note('night','Solar output is zero at this local hour. Extra solar capacity cannot supply this hour directly.');
+    if(row.linkOffline)note('offline','The regional link is offline. Imports and exports are both zero until the outage ends.');
+    else if(row.link===0)note('disconnected','Link capacity is zero. This region must use local generation and storage.');
+    else if(row.linkCongested)note('link-limit','The regional link has reached its power limit in this hour.');
+    else if(row.fossil+row.unmet>1e-6)note('link-room','The regional link has unused capacity. Imports also depend on surplus and link capacity elsewhere.');
+    if(row.fossil+row.unmet>1e-6){
+      if(row.discharge>=row.batteryPower-1e-6&&row.battery>1e-6)note('discharge-limit','The battery reaches its discharge power limit while energy remains in storage.');
+      if(row.battery<1e-6)note(before<1e-6?'empty-start':'empty-end',before<1e-6?'Storage starts this hour empty. More duration alone would not create stored energy.':'Storage is depleted by the end of this hour.');
+      else if(run.settings.reserve>0&&row.battery<=row.batteryCapacity*run.settings.reserve/100+1e-6&&row.reserveRelease<1e-6)
+        note('reserve','Remaining stored energy is within the reserve target; routine dispatch uses fossil backup before releasing it.');
+    }
+    if(row.reserveRelease>1e-6)note('reserve-release','Storage reserve is released because fossil capacity cannot cover the remaining demand.');
+    if(row.unmet>1e-6&&row.fossil>=cap.fossil-1e-6)note('fossil-limit','Available fossil capacity is fully used, and some demand is still unserved.');
+    if(row.curtail>1e-6){
+      if(row.battery>=row.batteryCapacity-1e-6)note('full','The battery reaches its energy capacity. Remaining surplus cannot be stored this hour.');
+      if(row.charge>=row.batteryPower-1e-6)note('charge-limit','Charging reaches the battery power limit. More duration does not increase that charging rate.');
+      note('curtailment','Surplus remains after regional transfers and battery charging, so the model curtails it.');
+    }
+    if(!notes.length)note('covered','The modeled dispatch covers local demand in this hour. Compare a different hour or weather test before drawing a wider conclusion.');
+    var supply=[{label:'Renewables generated',value:row.renewable},{label:'Nuclear generated',value:row.nuclear},{label:'Fossil generation',value:row.fossil},{label:'Battery discharge',value:row.discharge},{label:'Imports received',value:row.imports}];
+    var uses=[{label:'Demand served',value:row.demand-row.unmet},{label:'Battery charging',value:row.charge},{label:'Exports sent',value:row.exports},{label:'Generation curtailed',value:row.curtail}];
+    return {hour:hour.hour,region:row.id,notes:notes,supply:supply,uses:uses,storageBefore:before,storageAfter:row.battery,storageLoss:row.loss,
+      sourcePower:supply.reduce(function(n,r){return n+r.value;},0),usedPower:uses.reduce(function(n,r){return n+r.value;},0)};
+  }
+
+  window.StemLab.renewablesModel={version:2,simulate:rnSimulate,portfolio:rnPortfolio,settings:rnSettings,regions:RN_REGIONS,stressSuite:rnStressSuite,sweep:rnSweep,sweepFresh:rnSweepFresh,sweepVariables:RN_SWEEP_VARIABLES,challenges:RN_CHALLENGES,assessChallenge:rnAssessChallenge,explainHour:rnExplainHour};
+
+  function RenewablesLandscape(props) {
+    var React=props.React,h=React.createElement,mount=React.useRef(null),live=React.useRef(props),api=React.useRef(null);
+    live.current=props;
+    var statusPair=React.useState('loading'),status=statusPair[0],setStatus=statusPair[1],retryPair=React.useState(0);
+    React.useEffect(function(){
+      var disposed=false,renderer,scene,camera,raf=0,resize,observer,io,visible=true,meshes=[],rotors=[],links=[],panels=[],last=0,dirty=true,lastProps=null,pickables=[],raycaster,drag=null,onDown,onMove,onUp;
+      var container=mount.current,reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)');
+      var viewCamera={yaw:.15,pitch:.78,distance:22};setStatus('loading');
+      function positionCamera(){
+        if(!camera)return;
+        camera.position.set(Math.sin(viewCamera.yaw)*Math.cos(viewCamera.pitch)*viewCamera.distance,Math.sin(viewCamera.pitch)*viewCamera.distance,Math.cos(viewCamera.yaw)*Math.cos(viewCamera.pitch)*viewCamera.distance);
+        camera.lookAt(0,0,0);dirty=true;
+      }
+      api.current=function(action){
+        if(action==='left')viewCamera.yaw-=.22;if(action==='right')viewCamera.yaw+=.22;
+        if(action==='in')viewCamera.distance=Math.max(16,viewCamera.distance-3);
+        if(action==='out')viewCamera.distance=Math.min(46,viewCamera.distance+3);
+        if(action==='top'){viewCamera.pitch=1.48;viewCamera.yaw=0;}
+        if(action==='home')viewCamera={yaw:.15,pitch:.78,distance:22};
+        positionCamera();
+      };
+      var engine=window.THREE?Promise.resolve(window.THREE):window.StemLab.ensureThree?window.StemLab.ensureThree():Promise.reject(new Error('3D unavailable'));
+      function release(){
+        if(!scene)return;var geometries=new Set(),materials=new Set();
+        scene.traverse(function(o){if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){materials.add(m);});});
+        geometries.forEach(function(g){g.dispose();});materials.forEach(function(m){m.dispose();});
+      }
+      function lost(event){event.preventDefault();cancelAnimationFrame(raf);setStatus('failed');}
+      engine.then(function(THREE){
+        if(disposed)return;
+        scene=new THREE.Scene();scene.background=new THREE.Color('#102b3a');scene.fog=new THREE.Fog('#102b3a',42,80);
+        camera=new THREE.PerspectiveCamera(40,1,.1,100);positionCamera();
+        renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;
+        container.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-hidden','true');
+        renderer.domElement.style.cssText='width:100%;height:100%;display:block;touch-action:pan-y';
+        renderer.domElement.addEventListener('webglcontextlost',lost);
+        var ambient=new THREE.HemisphereLight(0xd6f4ff,0x233d27,.7);scene.add(ambient);
+        var light=new THREE.DirectionalLight(0xffedcb,.95);light.position.set(-8,18,12);scene.add(light);
+        function box(parent,x,y,z,w,ht,depth,color){
+          var m=new THREE.Mesh(new THREE.BoxGeometry(w,ht,depth),new THREE.MeshStandardMaterial({color:color,roughness:.8}));
+          m.position.set(x,y,z);parent.add(m);return m;
+        }
+        function line(points,color){
+          var geometry=new THREE.BufferGeometry().setFromPoints(points.map(function(p){return new THREE.Vector3(p[0],p[1],p[2]);}));
+          var l=new THREE.Line(geometry,new THREE.LineBasicMaterial({color:color}));scene.add(l);return l;
+        }
+        function turbine(parent,x,z,idx,ordinal){
+          var assembly=new THREE.Group();parent.add(assembly);parent=assembly;
+          var tower=new THREE.Mesh(new THREE.CylinderGeometry(.065,.13,2.7,7),new THREE.MeshStandardMaterial({color:'#dcebe6'}));tower.position.set(x,1.7,z);parent.add(tower);
+          box(parent,x,3.1,z,.35,.22,.5,'#f0f4f1');
+          var rotor=new THREE.Group();rotor.position.set(x,3.12,z+.3);parent.add(rotor);
+          for(var b=0;b<3;b++){var arm=new THREE.Group();box(arm,0,.61,0,.12,1.35,.05,'#f8fbeb');arm.rotation.z=b*Math.PI*2/3;rotor.add(arm);}
+          rotors.push({mesh:rotor,index:idx,assembly:assembly,number:ordinal});
+        }
+        var outline=[[-10,-4.2],[-6,-4.5],[-2,-4.1],[2,-4.2],[3.1,-3.2],[5,-3.8],[7.4,-4.6],[9.4,-5.4],[9.8,-4],[8.2,-1.2],[7.8,1.8],[6.8,3.4],[7.9,6.2],[6.8,5.6],[5.7,3.6],[3.5,3.8],[1.2,3.6],[.2,5.1],[-1.3,4.7],[-2.2,2.9],[-5,2.6],[-7.2,1.8],[-8.5,-.2],[-9.4,-2.3]];
+        var shape=new THREE.Shape();outline.forEach(function(p,i){if(i===0)shape.moveTo(p[0],-p[1]);else shape.lineTo(p[0],-p[1]);});shape.closePath();
+        var land=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.45,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.12,bevelThickness:.12}),new THREE.MeshStandardMaterial({color:'#47786b',roughness:1}));
+        land.rotation.x=-Math.PI/2;land.position.y=-.1;scene.add(land);
+        RN_REGIONS.forEach(function(r,i){
+          var group=new THREE.Group();group.position.set(r.x,.46,r.z);scene.add(group);
+          var marker=box(group,0,-.04,0,2.65,.12,2.6,'#6b9178');meshes.push({marker:marker,index:i});
+          for(var n=0;n<12;n++){var panel=box(group,-1+(n%4)*.48,.22,-1+Math.floor(n/4)*.48,.4,.045,.37,'#183f74');panel.rotation.x=-.32;panels.push({mesh:panel,index:i,number:n});}
+          turbine(group,-.8,1,i,0);turbine(group,.5,.55,i,1);turbine(group,.4,-.8,i,2);
+          box(group,1,.5,-.5,.45,.85,.6,'#cbd9d6');box(group,1,.97,-.5,.52,.08,.65,'#244d50');
+          meshes[i].battery=box(group,.65,.35,1.3,.4,.45,.65,'#4fe0b0');
+          group.traverse(function(o){if(o.isMesh){o.userData.rnRegion=r.id;pickables.push(o);}});
+          links.push({mesh:line([[r.x,.85,r.z],[r.x,.85,1.1],[2.6,.85,1.1]],'#66cbbc'),index:i});
+        });
+        box(scene,2.6,.78,1.1,.6,.4,.7,'#f2c879');
+        [-6.1,-4.8].forEach(function(x,i){var mountain=new THREE.Mesh(new THREE.ConeGeometry(.75,1.3,4),new THREE.MeshStandardMaterial({color:'#8dafa4'}));mountain.position.set(x,1,-2.8+i*.2);scene.add(mountain);});
+        scene.traverse(function(o){if(o.material&&o.material.color)o.material.color.convertSRGBToLinear();});
+        resize=function(){if(!renderer||disposed)return;var w=container.clientWidth||640,ht=container.clientHeight||360;renderer.setSize(w,ht,false);camera.aspect=w/ht;camera.fov=2*Math.atan(Math.max(12,26/camera.aspect)/44)*180/Math.PI;camera.updateProjectionMatrix();dirty=true;};
+        if(window.ResizeObserver){observer=new ResizeObserver(resize);observer.observe(container);}else window.addEventListener('resize',resize);
+        resize();
+        raycaster=new THREE.Raycaster();
+        onDown=function(e){if(e.button!==0)return;drag={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,moved:false,touch:e.pointerType==='touch'};if(!drag.touch)renderer.domElement.setPointerCapture(e.pointerId);};
+        onMove=function(e){if(!drag||drag.touch)return;var dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(e.clientX-drag.startX)+Math.abs(e.clientY-drag.startY)>5)drag.moved=true;if(drag.moved){viewCamera.yaw-=dx*.006;viewCamera.pitch=Math.max(.25,Math.min(1.48,viewCamera.pitch+dy*.006));positionCamera();}drag.x=e.clientX;drag.y=e.clientY;};
+        onUp=function(e){if(!drag)return;var moved=drag.moved||Math.abs(e.clientX-drag.startX)+Math.abs(e.clientY-drag.startY)>8;drag=null;if(moved||e.type==='pointercancel')return;var rect=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);var hit=raycaster.intersectObjects(pickables,false).find(function(item){var o=item.object;while(o){if(!o.visible)return false;o=o.parent;}return true;});if(hit&&live.current.onPick)live.current.onPick(hit.object.userData.rnRegion);};
+        renderer.domElement.style.cursor='grab';
+        renderer.domElement.addEventListener('pointerdown',onDown);renderer.domElement.addEventListener('pointermove',onMove);renderer.domElement.addEventListener('pointerup',onUp);renderer.domElement.addEventListener('pointercancel',onUp);
+        if(window.IntersectionObserver){io=new IntersectionObserver(function(entries){visible=entries[0].isIntersecting;});io.observe(container);}
+        function frame(time){
+          if(disposed)return;raf=requestAnimationFrame(frame);
+          if(document.hidden||!visible||time-last<45)return;
+          var dt=Math.min(.1,(time-last)/1000);last=time;var p=live.current,rows=p.hour.regions;
+          var animate=p.motion&&!(reduce&&reduce.matches);
+          if(!dirty&&!animate&&lastProps===p)return;dirty=false;lastProps=p;
+          var daylight=rows.reduce(function(n,r){return n+r.sun;},0)/rows.length;ambient.intensity=.35+daylight*.65;light.intensity=.2+daylight*1.3;scene.background.set(daylight>.05?'#102b3a':'#081724');
+          meshes.forEach(function(item){var r=rows[item.index];item.marker.material.color.set(r.id===p.selected?'#f5d487':r.unmet>.01?'#ba6c68':'#6b9178').convertSRGBToLinear();item.battery.scale.y=.15+.85*(r.batteryCapacity?r.battery/r.batteryCapacity:0);});
+          panels.forEach(function(item){item.mesh.material.color.set(rows[item.index].sun>.1?'#174783':'#101e35').convertSRGBToLinear();item.mesh.visible=item.number<Math.min(12,Math.ceil(3*p.capacity.regions[item.index].solar/(240*RN_REGIONS[item.index].solar)));});
+          links.forEach(function(item){var r=rows[item.index];item.mesh.visible=p.network;item.mesh.material.color.set(r.linkOffline?'#fc716b':r.imports>.1?'#f4c55f':r.exports>.1?'#6effd3':'#396679').convertSRGBToLinear();});
+          rotors.forEach(function(rotor){rotor.assembly.visible=rotor.number<Math.min(3,Math.ceil(p.capacity.regions[rotor.index].wind/(200*RN_REGIONS[rotor.index].turbines)));if(animate)rotor.mesh.rotation.z-=dt*rows[rotor.index].windFactor*3;});
+          renderer.render(scene,camera);
+        }
+        raf=requestAnimationFrame(frame);setStatus('ready');
+      }).catch(function(){if(!disposed){cancelAnimationFrame(raf);setStatus('failed');}});
+      return function(){
+        disposed=true;cancelAnimationFrame(raf);api.current=null;
+        if(observer)observer.disconnect();if(io)io.disconnect();if(resize)window.removeEventListener('resize',resize);
+        release();
+        if(renderer){renderer.domElement.removeEventListener('pointerdown',onDown);renderer.domElement.removeEventListener('pointermove',onMove);renderer.domElement.removeEventListener('pointerup',onUp);renderer.domElement.removeEventListener('pointercancel',onUp);renderer.domElement.removeEventListener('webglcontextlost',lost);renderer.dispose();renderer.forceContextLoss();if(renderer.domElement.parentNode)renderer.domElement.remove();}
+      };
+    },[retryPair[0]]);
+    return h('div',{className:'rn-landscape'},
+      h('div',{ref:mount,className:'rn-webgl',role:'img','aria-label':'3D landscape of six illustrative US regions. Solar arrays, turbines, batteries, and electricity links reflect the selected hour. Exact readings are in the region inspector.','data-render-status':status}),
+      status!=='ready'&&h('div',{className:'rn-scene-status',role:'status'},status==='loading'?'Loading the 3D landscape…':'3D is unavailable. The map, chart, and simulation still work.',status==='failed'&&h('button',{type:'button',onClick:function(){retryPair[1](retryPair[0]+1);}},'Retry 3D')),
+      h('div',{className:'rn-camera','aria-label':'3D camera controls'},[['left','Rotate left'],['right','Rotate right'],['in','Zoom in'],['out','Zoom out'],['top','Top view'],['home','Reset camera']].map(function(a){return h('button',{key:a[0],type:'button',disabled:status!=='ready',onClick:function(){if(api.current)api.current(a[0]);}},a[1]);})));
+  }
+
+
+  function RenewablesTransition(props) {
+    var React=props.ctx.React,h=React.createElement,T=props.theme,state=props.state||{};
+    var s=rnSettings(state.settings),key=JSON.stringify(s);
+    var result=React.useMemo(function(){return rnSimulate(s);},[key]),total=result.totals,capacity=result.capacity;
+    var hourState=React.useState(12),hourIndex=Math.min(hourState[0],result.hours.length-1),setHour=hourState[1];
+    var playState=React.useState(false),playing=playState[0],setPlaying=playState[1];
+    var modeState=React.useState('3d'),mode=modeState[0];
+    var regionState=React.useState('west'),selected=regionState[0];
+    var motionState=React.useState(false),motion=motionState[0];
+    var noticeState=React.useState(''),notice=noticeState[0];
+    var stressState=React.useState(null),pathwayState=React.useState(null);
+    var sweepState=React.useState(null),sweepVariable=React.useState('duration'),compactState=React.useState(false);
+    var challengeAssessment=React.useMemo(function(){return state.challenge?rnAssessChallenge(state.challenge.id,s,result):null;},[state.challenge&&state.challenge.id,key]);
+    var uid=React.useId().replace(/:/g,'');
+    var current=result.hours[hourIndex],region=current.regions.find(function(r){return r.id===selected;})||current.regions[0];
+    var regionInfo=RN_REGIONS.find(function(r){return r.id===region.id;});
+    var snapshots=React.useMemo(function(){return (Array.isArray(state.snapshots)?state.snapshots:[]).filter(function(x){return x&&x.settings;}).slice(-4).map(function(x){var run=rnSimulate(x.settings);return Object.assign({},x,{modelVersion:2,settings:run.settings,totals:run.totals});});},[state.snapshots]);
+    React.useEffect(function(){
+      if(!playing)return;
+      var timer=setInterval(function(){if(!document.hidden)setHour(function(v){if(v>=s.hours-1){setPlaying(false);return s.hours-1;}return v+1;});},650);
+      return function(){clearInterval(timer);};
+    },[playing,s.hours]);
+    React.useEffect(function(){setPlaying(false);setHour(function(v){return Math.min(v,s.hours-1);});noticeState[1]('');},[key]);
+    React.useEffect(function(){
+      if(!window.matchMedia)return;
+      var query=window.matchMedia('(max-width: 600px)'),update=function(){compactState[1](query.matches);};update();
+      if(query.addEventListener)query.addEventListener('change',update);else if(query.addListener)query.addListener(update);
+      return function(){if(query.removeEventListener)query.removeEventListener('change',update);else if(query.removeListener)query.removeListener(update);};
+    },[]);
+    function change(patch){props.onChange(Object.assign({},state,patch));}
+    function setting(k,v){var next=Object.assign({},s);next[k]=v;change({settings:next});}
+    function fmt(v,d){return Number(v).toLocaleString(undefined,{maximumFractionDigits:d==null?1:d});}
+    function button(text,fn,active,extra){return h('button',Object.assign({type:'button',onClick:fn,'aria-pressed':active==null?undefined:active},extra||{}),text);}
+    function slider(k,label,min,max,step,unit,hint){
+      return h('div',{className:'rn-control',key:k},
+        h('label',{htmlFor:uid+k},label,h('strong',null,(k==='year'?String(s[k]):fmt(s[k]))+' '+unit)),
+        h('input',{id:uid+k,type:'range',min:min,max:max,step:step,value:s[k],'aria-valuetext':fmt(s[k])+' '+unit,onChange:function(e){setting(k,Number(e.target.value));}}),
+        hint&&h('small',null,hint));
+    }
+    function choose(k,label,options){
+      return h('label',{className:'rn-select',key:k,htmlFor:uid+k},label,h('select',{id:uid+k,'aria-label':label,value:s[k],onChange:function(e){setting(k,k==='hours'?Number(e.target.value):e.target.value);}},options.map(function(o){return h('option',{key:o[0],value:o[0]},o[1]);})));
+    }
+    function save(){
+      var match=snapshots.findIndex(function(x){return JSON.stringify(rnSettings(x.settings))===key;});
+      if(match>=0){
+        if(snapshots[match].prediction!==(state.prediction||'')||snapshots[match].reflection!==(state.reflection||'')){
+          change({snapshots:snapshots.map(function(x,i){return i===match?Object.assign({},x,{prediction:state.prediction||'',reflection:state.reflection||''}):x;})});noticeState[1]('Notes updated for the saved scenario.');
+        }else noticeState[1]('This scenario is already saved. Change a setting to compare another.');return;
+      }
+      var entry={modelVersion:2,settings:s,totals:total,label:'Scenario '+(Number(state.savedCount||0)+1),prediction:state.prediction||'',reflection:state.reflection||''};
+      change({snapshots:snapshots.concat([entry]).slice(-4),savedCount:Number(state.savedCount||0)+1});
+      noticeState[1]('Scenario saved. Compare it with your next experiment below.');
+    }
+    function differences(settings){
+      if(!snapshots.length)return 'Baseline';
+      var labels={year:'year',solarBuild:'solar build',windBuild:'wind build',batteryBuild:'battery build',duration:'storage duration',transmission:'link capacity',retirement:'fossil retirement',growth:'demand growth',efficiency:'efficiency',weather:'weather',season:'season',hours:'test hours',transferLoss:'transfer loss',flexDemand:'demand flexibility',reserve:'storage reserve',outageRegion:'outage region',outageStart:'outage start',outageHours:'outage length'};
+      var first=rnSettings(snapshots[0].settings);var changes=Object.keys(labels).filter(function(k){return first[k]!==settings[k];}).map(function(k){return labels[k]+': '+first[k]+' → '+settings[k];});
+      RN_REGIONS.forEach(function(r){['solar','wind','battery'].forEach(function(k){if(first.siting[r.id][k]!==settings.siting[r.id][k])changes.push(r.name+' '+k+' weight: '+first.siting[r.id][k]+' → '+settings.siting[r.id][k]);});});return changes.join('; ')||'Baseline';
+    }
+    function download(){
+      var payload={title:'Renewables Lab: US transition investigation',modelVersion:2,assumptions:'Six illustrative regions, hourly dispatch, capacity-limited hub links with explicit end-to-end losses and timed outages, energy-conserving demand shifts, empty starting storage, 88% round-trip storage efficiency. Not calibrated to the US grid; not a forecast.',result:result,stressSuite:stressState[0]&&stressState[0].key===key?stressState[0].items:null,pathway:pathwayState[0]&&pathwayState[0].key===JSON.stringify(Object.assign({},s,{year:2025}))?pathwayState[0].items:null,experiment:rnSweepFresh(sweepState[0],s,sweepVariable[0])?sweepState[0]:null,challenge:challengeAssessment,selectedHour:rnExplainHour(result,hourIndex,selected),comparisons:snapshots,prediction:state.prediction||'',reflection:state.reflection||''};
+      var url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'})),a=document.createElement('a');
+      a.href=url;a.download='renewables-investigation.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1500);
+      noticeState[1]('Investigation exported with settings, hourly results, and notes.');
+    }
+
+    function stamp(index){return 'Day '+(Math.floor(index/24)+1)+' · '+String(index%24).padStart(2,'0')+':00';}
+    function setSiting(technology,value){
+      var siting=Object.assign({},s.siting);siting[selected]=Object.assign({},siting[selected]);siting[selected][technology]=value;setting('siting',siting);
+    }
+    function sitingPanel(){
+      var rc=capacity.regions.find(function(r){return r.id===selected;});
+      return h('details',{className:'rn-siting'},h('summary',null,'Plan new construction in '+regionInfo.name),
+        h('p',{className:'rn-muted'},'Change where the national build is placed. A weight of 100 uses the default resource distribution. Other regions adjust automatically; national capacity stays fixed.'),
+        ['solar','wind','battery'].map(function(k){
+          var label={solar:'Solar siting weight',wind:'Wind siting weight',battery:'Battery siting weight'}[k],share={solar:rc.newSolarShare,wind:rc.newWindShare,battery:rc.newBatteryShare}[k];
+          return h('div',{key:k,className:'rn-control'},h('label',{htmlFor:uid+'siting'+k},label,h('strong',null,s.siting[selected][k]+' / 100')),
+            h('input',{id:uid+'siting'+k,'aria-label':label+' in '+regionInfo.name,type:'range',min:0,max:300,step:1,value:s.siting[selected][k],onChange:function(e){setSiting(k,Number(e.target.value));}}),
+            h('small',null,fmt(share*100)+'% of national new '+k+' capacity allocated here.'));
+        }),
+        h('p',null,'Installed here: '+fmt(rc.solar)+' GW solar · '+fmt(rc.wind)+' GW wind · '+fmt(rc.batteryPower)+' GW / '+fmt(rc.batteryEnergy)+' GWh storage.'),
+        h('div',{className:'rn-toolbar'},
+          button('Reset all siting weights',function(){setting('siting',{});}),
+          button('Build near demand',function(){
+            var weights={};RN_REGIONS.forEach(function(r){weights[r.id]={solar:Math.round(100*r.weight/r.solar),wind:Math.round(100*r.weight/r.turbines),battery:100};});setting('siting',weights);
+          })),
+        h('small',null,'Existing 2025 capacity stays in place. If every weight for a technology is zero, its default distribution is used.'));
+    }
+    function storageChart(){
+      var W=880,H=125,L=48,R=16,max=Math.max(1,capacity.batteryEnergy),x=function(i){return L+i/(s.hours-1)*(W-L-R);},y=function(v){return 96-v/max*77;};
+      var points=result.hours.map(function(r,i){return x(i)+','+y(r.battery);}).join(' ');
+      return h('div',{className:'rn-storage-chart'},h('h3',null,'Stored energy through the test'),
+        h('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Stored energy in GWh, starting empty and ending at '+fmt(total.endBattery)+'. Battery capacity '+fmt(capacity.batteryEnergy)+' GWh. Reserve target '+s.reserve+' percent.'},
+          h('polygon',{points:x(0)+',96 '+points+' '+x(s.hours-1)+',96',fill:T.accentHi,opacity:.18}),
+          h('polyline',{points:points,fill:'none',stroke:T.accentHi,strokeWidth:2}),
+          [0,.5,1].map(function(f){return h('g',{key:f},h('line',{x1:L,x2:W-R,y1:y(f*max),y2:y(f*max),stroke:T.border,strokeDasharray:'3 4',opacity:.4}),h('text',{x:L-7,y:y(f*max)+4,textAnchor:'end',fontSize:11,fill:T.muted},fmt(f*max,0)));}),
+          s.reserve>0&&h('line',{x1:L,x2:W-R,y1:y(max*s.reserve/100),y2:y(max*s.reserve/100),stroke:T.warm,strokeDasharray:'5 4',strokeWidth:2}),
+          h('line',{x1:x(hourIndex),x2:x(hourIndex),y1:15,y2:96,stroke:T.text,strokeWidth:1.5}),
+          h('text',{x:8,y:11,fontSize:11,fill:T.muted},'GWh'),
+          [0,Math.floor((s.hours-1)/2),s.hours-1].map(function(i){return h('text',{key:i,x:x(i),y:117,fontSize:11,fill:T.muted,textAnchor:'middle'},i+'h');})),
+        h('small',null,'Selected hour: '+fmt(current.battery)+' GWh stored. '+(s.reserve?'Dashed line: '+s.reserve+'% reserve, released if fossil backup cannot cover demand.':'Reserve target: 0%.')));
+    }
+    function inspect(index){
+      setPlaying(false);setHour(index);
+      var rows=result.hours[index].regions;
+      var hardest=rows.reduce(function(best,r){return (r.unmet>.001?r.unmet+10000:r.fossil)>(best.unmet>.001?best.unmet+10000:best.fossil)?r:best;},rows[0]);regionState[1](hardest.id);
+    }
+    function diagnosticPanel(){
+      var peak=total.peakUnmet>.001?total.worstHour:total.peakFossilHour;
+      var mostCurtailed=result.hours.reduce(function(a,b){return b.curtail>a.curtail?b:a;});
+      var mostDischarged=result.hours.reduce(function(a,b){return b.discharge>a.discharge?b:a;});
+      return h('section',{className:'rn-panel rn-results','aria-label':'Grid diagnostics'},
+        h('h3',null,'Find the weak point'),
+        h('div',{className:'rn-diagnostic-grid'},
+          h('div',null,h('small',null,'Unserved electricity'),h('strong',null,fmt(total.unmet)+' GWh')),
+          h('div',null,h('small',null,'Largest demand gap'),h('strong',null,fmt(total.peakUnmet)+' GW')),
+          h('div',null,h('small',null,'Longest continuous shortfall'),h('strong',null,total.longestGap+' h')),
+          h('div',null,h('small',null,'Energy shifted to midday'),h('strong',null,fmt(total.shifted)+' GWh'))),
+        h('div',{className:'rn-presets'},
+          button((total.peakUnmet>.001?'Inspect largest gap':'Inspect peak fossil use')+' · '+stamp(peak),function(){inspect(peak);}),
+          button('Inspect largest surplus',function(){inspect(mostCurtailed.hour);}),
+          button('Inspect peak battery discharge',function(){inspect(mostDischarged.hour);}),
+          s.outageRegion!=='none'&&button('Inspect outage start',function(){setPlaying(false);setHour(s.outageStart);regionState[1](s.outageRegion);})),
+        h('p',{className:'rn-muted'},'A national total can hide local constraints. Compare regional shortages, surplus, and full-capacity links before choosing your next investment.'),
+        h('details',null,h('summary',null,'Regional outcomes across the test'),
+          h('div',{className:'rn-table-wrap',tabIndex:0,'aria-label':'Scrollable regional outcomes'},h('table',null,
+            h('caption',null,'GWh across '+s.hours+' hours. A congested link reaches its sending or receiving power limit; an offline link is counted separately.'),
+            h('thead',null,h('tr',null,['Region','Renewable demand share','Fossil GWh','Unmet GWh','Curtailed GWh','Congested hours','Offline hours'].map(function(v){return h('th',{key:v,scope:'col'},v);}))),
+            h('tbody',null,result.regionTotals.map(function(r){return h('tr',{key:r.id},h('th',{scope:'row'},r.name),[fmt(r.renewableShare)+'%',fmt(r.fossil),fmt(r.unmet),fmt(r.curtail),r.congestedHours,r.offlineHours].map(function(v,i){return h('td',{key:i},v);}));}))))));
+    }
+    function stressPanel(){
+      var data=stressState[0],fresh=data&&data.key===key;
+      return h('section',{className:'rn-panel rn-results','aria-label':'Seven-day stress suite'},
+        h('div',{className:'rn-toolbar'},h('h3',{style:{margin:0}},'Does the plan hold up across a difficult week?'),
+          button(data?'Rerun stress suite':'Run four stress tests',function(){stressState[1]({key:key,items:rnStressSuite(s)});noticeState[1]('Four seven-day stress tests completed.');})),
+        h('p',{className:'rn-muted'},'Compare summer variability, a winter renewable lull, a heat wave, and a 48-hour Northeast link outage. Each test starts with empty storage and keeps this plan’s build rates, siting, demand flexibility, and reserve policy.'),
+        data&&!fresh&&h('p',{role:'status',className:'rn-stale'},'The plan has changed. Rerun the suite to refresh these results.'),
+        data&&h('div',{className:'rn-table-wrap',tabIndex:0,role:'region','aria-label':'Stress test results'},h('table',null,
+          h('caption',null,'Each test spans 168 hours. Results describe these synthetic weeks; they are not annual reliability estimates.'),
+          h('thead',null,h('tr',null,['Stress case','Demand met','Renewable share','Fossil TWh','Unmet GWh','Longest gap','Inspect'].map(function(v){return h('th',{key:v,scope:'col'},v);}))),
+          h('tbody',null,data.items.map(function(r){return h('tr',{key:r.id},h('th',{scope:'row'},r.label),h('td',null,fmt(r.totals.demandMet,2)+'%'),h('td',null,fmt(r.totals.renewableShare)+'%'),h('td',null,fmt(r.totals.fossil/1000,2)),h('td',null,fmt(r.totals.unmet)),h('td',null,r.totals.longestGap+' h'),
+            h('td',null,button('Load test',function(){change({settings:r.settings});setHour(r.totals.peakUnmet>.001?r.totals.worstHour:r.totals.peakFossilHour);},null,{disabled:!fresh,'aria-label':'Load '+r.label})));})))),
+        !data&&h('div',{className:'rn-coach'},'Try the same plan with 0% and 20% demand flexibility, or with four-hour and twelve-hour storage. Keep the other settings fixed, then rerun the suite.'));
+    }
+    function pathwayPanel(){
+      var path=pathwayState[0],pathKey=JSON.stringify(Object.assign({},s,{year:2025})),fresh=path&&path.key===pathKey;
+      return h('details',{className:'rn-panel rn-results','aria-label':'Adoption pathway'},h('summary',null,'Trace this build plan from 2025 to 2050'),
+        h('p',{className:'rn-muted'},'Hold weather, test length, siting, and policy fixed. Rebuild the portfolio at six milestones to see whether demand growth or retirement outruns new capacity.'),
+        button(path?'Recalculate milestones':'Calculate six milestones',function(){
+          pathwayState[1]({key:pathKey,items:[2025,2030,2035,2040,2045,2050].map(function(year){var run=rnSimulate(Object.assign({},s,{year:year}));return {year:year,settings:run.settings,totals:run.totals};})});
+          noticeState[1]('Six adoption milestones calculated.');
+        }),
+        path&&!fresh&&h('p',{role:'status',className:'rn-stale'},'Plan assumptions changed. Recalculate the milestones.'),
+        path&&h('div',{className:'rn-table-wrap',tabIndex:0,role:'region','aria-label':'Adoption milestone results'},h('table',null,h('caption',null,'Each milestone repeats the same '+path.items[0].settings.hours+'-hour test; intervening years are not continuously simulated.'),
+          h('thead',null,h('tr',null,['Year','Renewable demand share','Demand met','Fossil TWh','Largest gap GW','Inspect'].map(function(v){return h('th',{key:v,scope:'col'},v);}))),
+          h('tbody',null,path.items.map(function(r){return h('tr',{key:r.year},h('th',{scope:'row'},r.year),h('td',null,fmt(r.totals.renewableShare)+'%'),h('td',null,fmt(r.totals.demandMet,2)+'%'),h('td',null,fmt(r.totals.fossil/1000,2)),h('td',null,fmt(r.totals.peakUnmet)),
+            h('td',null,button('Inspect year',function(){setting('year',r.year);},null,{disabled:!fresh,'aria-label':'Inspect year '+r.year})));})))));
+    }
+
+
+    function explainPanel(){
+      var evidence=rnExplainHour(result,hourIndex,selected);
+      return h('details',{className:'rn-explanation','aria-label':'Selected hour explanation'},
+        h('summary',null,'Explain this hour in '+regionInfo.name),
+        h('p',{className:'rn-muted'},'Observed limits in this modeled hour. Use a controlled experiment below to test a possible improvement.'),
+        h('ul',{className:'rn-observations'},evidence.notes.map(function(n){return h('li',{key:n.code},n.text);})),
+        h('div',{className:'rn-ledger'},[['Power into the region',evidence.supply,evidence.sourcePower],['Power accounted for',evidence.uses,evidence.usedPower]].map(function(group){
+          return h('div',{key:group[0]},h('h4',null,group[0]),h('dl',null,group[1].map(function(row){return h('div',{key:row.label},h('dt',null,row.label),h('dd',null,fmt(row.value,2)+' GW'));})),h('strong',null,'Total: '+fmt(group[2],2)+' GW'));
+        })),
+        h('p',{className:'rn-muted'},'Storage: '+fmt(evidence.storageBefore,2)+' GWh at the start → '+fmt(evidence.storageAfter,2)+' GWh at the end. Conversion loss this hour: '+fmt(evidence.storageLoss,2)+' GWh. Exports include electricity lost in transit; imports are measured after those losses. Unserved demand is not an energy use.'));
+    }
+    function challengePanel(){
+      var active=RN_CHALLENGES.find(function(c){return state.challenge&&c.id===state.challenge.id;}),assessment=challengeAssessment;
+      var labels={year:'scenario year',hours:'test length',weather:'weather',season:'season',siting:'regional siting',growth:'demand growth',retirement:'fossil retirement',transferLoss:'transfer loss',outageRegion:'outage region',outageStart:'outage start',outageHours:'outage duration'};
+      RN_SWEEP_VARIABLES.forEach(function(v){labels[v.key]=v.label.toLowerCase();});
+      function start(c){change({settings:rnSettings(c.baseline),challenge:{id:c.id,returnSettings:state.challenge&&state.challenge.returnSettings||s}});setHour(12);setPlaying(false);}
+      return h('section',{className:'rn-panel rn-results',style:{marginBottom:14},'aria-label':'Planning challenges'},
+        h('details',{open:active?true:undefined},h('summary',null,active?'Planning challenge: '+active.title:'Try a planning challenge'),
+          h('p',{className:'rn-muted'},'Start from a difficult portfolio, work within its rules, and compare measurable targets. These are classroom goals for synthetic test days. Your current plan is kept so you can return to it.'),
+          h('div',{className:'rn-challenges'},RN_CHALLENGES.map(function(c){return h('div',{key:c.id,className:'rn-challenge-card'},
+            h('h3',null,c.title),h('p',null,c.description),button(active&&active.id===c.id?'Restart challenge':'Start challenge',function(){start(c);},null,{'aria-label':(active&&active.id===c.id?'Restart ':'Start ')+c.title}));})),
+          active&&assessment&&h('div',{className:'rn-challenge-progress'},
+            h('div',{className:'rn-toolbar'},h('h3',null,assessment.passed?'Challenge targets met':'Your progress'),
+              h('div',{className:'rn-toolbar'},button('Keep plan and leave challenge',function(){change({challenge:null});}),button('Return to previous plan',function(){change({settings:rnSettings(state.challenge.returnSettings),challenge:null});}))),
+            h('p',null,'Allowed changes: '+active.allowed.map(function(k){return labels[k]||k;}).join(', ')+'. All other settings must match the starting plan.'),
+            !assessment.valid&&h('p',{className:'rn-stale',role:'status'},'Outside the challenge rules: '+assessment.changed.map(function(k){return labels[k]||k;}).join(', ')+'. ',
+              button('Restore required settings',function(){var next=rnSettings(active.baseline);active.allowed.forEach(function(k){next[k]=s[k];});change({settings:next});})),
+            h('ul',{className:'rn-targets'},assessment.targets.map(function(t){return h('li',{key:t.metric},
+              h('span',{className:'rn-target-state'},t.passed?'Met':'In progress'),h('div',null,h('strong',null,t.label),h('small',null,'Current '+fmt(t.value,2)+' '+t.unit+' · target '+(t.direction==='max'?'≤ ':'≥ ')+fmt(t.target,2)+' '+t.unit)));})),
+            h('p',{className:'rn-muted'},assessment.passed?'All targets and rules are satisfied for these test conditions. Save the scenario and explain which change helped most.':'Change the allowed controls or use the experiment bench to compare one variable. Targets update as you explore.'))));
+    }
+    function sweepChart(study){
+      var W=compactState[0]?360:820,H=215,L=compactState[0]?44:50,R=16,B=38,Tp=17,items=study.items,lo=items[0].value,hi=items[items.length-1].value;
+      var x=function(v){return L+(v-lo)/Math.max(1,hi-lo)*(W-L-R);},y=function(v){return H-B-v/100*(H-B-Tp);};
+      var series=[{key:'renewableShare',label:'Renewable share',color:T.accentHi,dash:undefined},{key:'demandMet',label:'Demand met',color:T.text,dash:'6 4'}];
+      return h('div',{className:'rn-sweep-chart'},
+        h('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':study.label+' experiment. Solid line: renewable share of demand. Dashed line: demand met. Both use a 0 to 100 percent scale. Exact values and load buttons are in the table below.'},
+          [0,25,50,75,100].map(function(v){return h('g',{key:v},h('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:T.border,strokeDasharray:'3 4',opacity:.45}),h('text',{x:L-8,y:y(v)+4,textAnchor:'end',fill:T.muted,fontSize:11},v+'%'));}),
+          series.map(function(line){return h('g',{key:line.key},h('polyline',{points:items.map(function(r){return x(r.value)+','+y(r.totals[line.key]);}).join(' '),fill:'none',stroke:line.color,strokeWidth:2.5,strokeDasharray:line.dash}),
+            items.map(function(r){return h('circle',{key:r.value,cx:x(r.value),cy:y(r.totals[line.key]),r:r.value===study.baseline.settings[study.variable]?5:3,fill:line.color});}));}),
+          h('line',{x1:x(study.baseline.settings[study.variable]),x2:x(study.baseline.settings[study.variable]),y1:Tp,y2:H-B,stroke:T.muted,strokeDasharray:'2 4'}),
+          items.filter(function(r){return RN_SWEEP_VARIABLES.find(function(v){return v.key===study.variable;}).values.indexOf(r.value)>=0;}).map(function(r){return h('text',{key:r.value,x:x(r.value),y:H-19,textAnchor:'middle',fill:T.muted,fontSize:11},fmt(r.value));})),
+        h('div',{className:'rn-legend'},h('span',null,'Solid: renewable share'),h('span',null,'Dashed: demand met'),h('span',null,'Horizontal axis: '+study.label+' ('+study.unit+') · dotted marker: baseline')),
+        h('small',null,'Lines connect sampled runs; values between points are not simulated.'));
+    }
+    function sweepPanel(){
+      var study=sweepState[0],fresh=rnSweepFresh(study,s,sweepVariable[0]);
+      var spec=RN_SWEEP_VARIABLES.find(function(v){return v.key===sweepVariable[0];});
+      function delta(value){return (value>1e-7?'+':'')+fmt(Math.abs(value)<1e-7?0:value,1);}
+      return h('section',{className:'rn-panel rn-results','aria-label':'Controlled experiment bench'},
+        h('div',{className:'rn-toolbar'},h('h3',{style:{margin:0}},'What changes when you move one lever?'),
+          h('div',{className:'rn-toolbar'},h('label',{className:'rn-select',htmlFor:uid+'sweep'},'Experiment variable',
+            h('select',{id:uid+'sweep','aria-label':'Experiment variable',value:sweepVariable[0],onChange:function(e){sweepVariable[1](e.target.value);}},RN_SWEEP_VARIABLES.map(function(v){return h('option',{key:v.key,value:v.key},v.label);}))),
+            button(study?'Rerun experiment':'Run controlled experiment',function(){sweepState[1](rnSweep(s,sweepVariable[0]));noticeState[1]('Controlled experiment complete. Each sampled run changes only '+spec.label.toLowerCase()+'.');}))),
+        h('p',{className:'rn-muted'},'Use the current plan as a baseline, then test five settings plus your current value. All other assumptions stay fixed. This compares outcomes, not costs or an optimal build plan.'),
+        study&&!fresh&&h('p',{className:'rn-stale',role:'status'},'The experiment variable or another assumption changed. Rerun the experiment before loading a result.'),
+        study&&h(React.Fragment,null,
+          h('p',null,'Baseline: '+study.label+' = '+fmt(study.baseline.settings[study.variable])+' '+study.unit+' · '+study.baseline.settings.year+' · '+study.baseline.settings.season+' · '+study.baseline.settings.weather+' · '+study.baseline.settings.hours+' hours.'),
+          sweepChart(study),
+          h('div',{className:'rn-table-wrap',tabIndex:0,role:'region','aria-label':'Controlled experiment results'},h('table',null,
+            h('caption',null,'Changes are relative to the captured baseline. Negative fossil and unmet-energy changes mean less energy used or unserved. Loading a value keeps the comparison baseline fixed.'),
+            h('thead',null,h('tr',null,[study.label+' ('+study.unit+')','Renewable share','Demand met','Fossil change GWh','Unmet change GWh','Curtailed change GWh','Inspect'].map(function(v){return h('th',{key:v,scope:'col'},v);}))),
+            h('tbody',null,study.items.map(function(r){return h('tr',{key:r.value,'data-baseline':r.value===study.baseline.settings[study.variable]?'true':undefined},
+              h('th',{scope:'row'},fmt(r.value)+(r.value===study.baseline.settings[study.variable]?' · baseline':'')),
+              h('td',null,fmt(r.totals.renewableShare)+'%'),h('td',null,fmt(r.totals.demandMet,2)+'%'),
+              h('td',null,delta(r.delta.fossil)),h('td',null,delta(r.delta.unmet)),h('td',null,delta(r.delta.curtail)),
+              h('td',null,button('Load value',function(){setting(study.variable,r.value);setPlaying(false);setHour(r.totals.peakUnmet>1e-6?r.totals.worstHour:r.totals.peakFossilHour);},null,
+                {disabled:!fresh,'aria-label':'Load '+study.label+' '+r.value+' '+study.unit})));}))))),
+        !study&&h('div',{className:'rn-coach'},'Start with battery duration. Does adding hours of storage help when the batteries never charge? Compare the winter lull with a sunny summer test.'));
+    }
+
+    function map(){
+      var outline='M30 75 L150 65 270 75 365 65 420 85 500 50 550 20 565 70 520 150 495 220 530 295 500 280 470 230 360 225 320 275 290 260 260 220 165 205 100 170 65 130 Z';
+      return h('svg',{viewBox:'0 0 600 320',role:'img','aria-label':'Schematic contiguous-US map with six illustrative regions. Use the region buttons below to inspect measurements.',className:'rn-flat-map'},
+        h('path',{d:outline,fill:'#47786b',stroke:'#9ec7b5',strokeWidth:2}),
+        RN_REGIONS.map(function(r,i){var x=300+r.x*25,y=135+r.z*23,row=current.regions[i];
+          return h('g',{key:r.id},h('path',{d:'M'+x+' '+y+' L365 160',stroke:row.linkOffline?'#fc9d92':row.exports>.1?'#6effd3':row.imports>.1?'#f4c55f':'#6a989c',fill:'none',strokeWidth:2,strokeDasharray:row.linkOffline?'5 4':undefined}),
+            h('circle',{cx:x,cy:y,r:r.id===selected?13:9,fill:row.unmet>.01?'#fc9d92':r.id===selected?'#ffe0a0':'#c5f3df',stroke:'#173b42',strokeWidth:2}),
+            h('text',{x:x,y:y-20,textAnchor:'middle',fill:'#fff',fontSize:13,fontWeight:700,stroke:'#153844',strokeWidth:3,paintOrder:'stroke'},r.name));}));
+    }
+    function chart(){
+      var W=880,H=210,L=46,R=16,top=15,bottom=32,max=Math.max.apply(null,result.hours.map(function(r){return r.demand;}))*1.12;
+      var x=function(i){return L+i/(s.hours-1)*(W-L-R);},y=function(v){return H-bottom-v/max*(H-top-bottom);};
+      var bands=[
+        {label:'Renewables delivered',color:'#2bbf96',value:function(r){return r.servedRenewable;}},
+        {label:'Nuclear delivered',color:'#70a8e3',value:function(r){return Math.max(0,r.demand-r.unmet-r.fossil-r.servedRenewable);}},
+        {label:'Fossil backup',color:'#a89882',value:function(r){return r.fossil;}},
+        {label:'Unmet demand',color:'#e57069',value:function(r){return r.unmet;}}
+      ],base=result.hours.map(function(){return 0;});
+      var paths=bands.map(function(b){
+        var upper=base.map(function(v,i){return v+b.value(result.hours[i]);});
+        var points=upper.map(function(v,i){return x(i)+','+y(v);}).concat(base.map(function(v,i){return x(i)+','+y(v);}).reverse()).join(' ');
+        base=upper;return h('polygon',{key:b.label,points:points,fill:b.color});
+      });
+      return h('div',null,h('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':s.hours+'-hour demand coverage chart, '+fmt(total.renewableShare)+' percent of demand supplied by renewables, '+total.gapHours+' hours with unmet demand. Use the hour slider or data table for values.',className:'rn-chart'},
+        [0,.5,1].map(function(v){return h('g',{key:v},h('line',{x1:L,x2:W-R,y1:y(v*max),y2:y(v*max),stroke:T.border,strokeDasharray:'3 4',opacity:.35}),h('text',{x:L-7,y:y(v*max)+4,textAnchor:'end',fill:T.muted,fontSize:11},Math.round(v*max)));}),
+        paths,h('polyline',{points:result.hours.map(function(r,i){return x(i)+','+y(r.demand);}).join(' '),fill:'none',stroke:T.text,strokeWidth:2,strokeDasharray:'5 3'}),
+        (s.hours===168?[0,24,48,72,96,120,144,167]:[0,12,24,36,48,60,71]).map(function(i){return h('text',{key:i,x:x(i),y:H-9,textAnchor:'middle',fill:T.muted,fontSize:11},i===0?'0h':i+'h');}),
+        h('text',{x:9,y:12,fill:T.muted,fontSize:11},'GW'),
+        h('line',{x1:x(hourIndex),x2:x(hourIndex),y1:top,y2:H-bottom,stroke:T.text,strokeWidth:2}),
+        h('circle',{cx:x(hourIndex),cy:y(current.demand),r:4,fill:T.text})),
+        h('div',{className:'rn-legend'},bands.map(function(b){return h('span',{key:b.label},h('i',{style:{background:b.color}}),b.label);}),h('span',null,'Dashed line: demand')));
+    }
+    var lesson=total.gapHours>0?'The portfolio leaves demand unmet. Test slower fossil retirement, lower demand, or more capacity that is available during the shortage hours.':
+      total.curtail>500?'Some generation cannot be used. Compare stronger regional links with longer storage before adding more generation.':
+      total.fossil/total.demand>.3?'Fossil backup is still doing substantial work. Scrub to the evening, then test wind, storage duration, or efficiency.':
+      'This portfolio covers this test with limited fossil backup. Test a winter weather lull before drawing a wider conclusion.';
+    return h('section',{className:'rn-transition','aria-label':'US energy transition sandbox',style:{'--rn-bg':T.bg,'--rn-card':T.card,'--rn-alt':T.cardAlt,'--rn-text':T.text,'--rn-muted':T.muted,'--rn-border':T.border,'--rn-accent':T.accentHi}},
+      h('style',null,`
+        .rn-transition{padding:20px;max-width:1320px;margin:auto;color:var(--rn-text);font:14px/1.5 system-ui,sans-serif}
+        .rn-transition *{box-sizing:border-box}.rn-transition button,.rn-transition select,.rn-transition textarea{font:inherit}
+        .rn-transition button{border:1px solid var(--rn-border);background:var(--rn-card);color:var(--rn-text);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:38px}
+        .rn-transition button:hover{background:var(--rn-alt)}.rn-transition button[aria-pressed=true]{background:var(--rn-text);color:var(--rn-bg)}
+        .rn-transition button:disabled{opacity:.55;cursor:default}.rn-transition :is(button,input,select,textarea,summary):focus-visible{outline:3px solid var(--rn-accent);outline-offset:3px}
+        .rn-transition h2{font-size:25px;letter-spacing:-.7px;margin:0}.rn-transition h3{font-size:15px;margin:0 0 12px}.rn-transition p{margin:6px 0 14px}
+        .rn-transition small,.rn-transition .rn-muted{color:var(--rn-muted)}.rn-topline,.rn-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+        .rn-topline{margin-bottom:14px}.rn-kicker{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:750;color:var(--rn-accent)}
+        .rn-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+        .rn-metric{padding:13px 16px;background:var(--rn-card);border:1px solid var(--rn-border);border-radius:12px}
+        .rn-metric strong{display:block;font-size:25px;letter-spacing:-.6px}.rn-metric span{display:block;font-size:12px;color:var(--rn-muted)}
+        .rn-workspace{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px}.rn-inputs{align-self:start}.rn-panel{padding:16px;background:var(--rn-card);border:1px solid var(--rn-border);border-radius:12px;min-width:0}
+        .rn-control{margin:0 0 15px}.rn-control label{display:flex;justify-content:space-between;gap:8px;font-size:12px}.rn-control input{width:100%;accent-color:var(--rn-accent);height:22px;margin:5px 0 0}
+        .rn-control small{display:block;font-size:11px}.rn-control strong{white-space:nowrap}.rn-year{display:flex;align-items:center;gap:20px;background:var(--rn-alt);border:1px solid var(--rn-border);border-radius:12px;padding:12px 16px}
+        .rn-year .rn-control{flex:1;margin:0}.rn-year-number{font-size:30px;font-weight:750;line-height:1.1}.rn-year small{font-size:11px}
+        .rn-select{display:flex;flex-direction:column;gap:5px;font-size:12px}.rn-select select{width:100%;color:var(--rn-text);background:var(--rn-card);border:1px solid var(--rn-border);border-radius:7px;padding:8px}
+        .rn-conditions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+        .rn-stage{overflow:hidden;background:#102b3a;border:1px solid var(--rn-border);border-radius:12px;position:relative}
+        .rn-stage-title{display:flex;justify-content:space-between;padding:13px 16px;color:#ecfff7;gap:12px;font-size:12px}
+        .rn-stage-title small{color:#b9d4d4}.rn-webgl{width:100%;height:350px}.rn-landscape{position:relative}
+        .rn-scene-status{position:absolute;inset:30% 15% auto;color:#effff9;text-align:center;background:#102b3a;padding:14px;border-radius:8px}
+        .rn-camera{display:flex;gap:5px;flex-wrap:wrap;padding:8px 12px}.rn-camera button{font-size:10px;padding:5px 8px;min-height:32px;background:#153c48;color:#eefbf9;border-color:#668d94}
+        .rn-camera button:hover{background:#285563}.rn-flat-map{width:100%;height:390px;display:block}
+        .rn-region-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0}.rn-region-buttons button{text-align:left;font-size:11px;line-height:1.4;padding:8px}
+        .rn-region-buttons span{display:block;font-size:10px}.rn-inspector{padding:12px 14px;background:var(--rn-alt);border-radius:10px}
+        .rn-inspector dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 0}.rn-inspector dt{font-size:10px;color:var(--rn-muted)}.rn-inspector dd{font-size:13px;font-weight:700;margin:0}
+        .rn-presets{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 15px}.rn-presets button{font-size:11px;padding:6px 9px}
+        .rn-transition details{margin-top:14px}.rn-transition summary{cursor:pointer;font-weight:650;padding:5px 0}
+        .rn-time{display:flex;gap:12px;align-items:center;margin:12px 0}.rn-time .rn-control{flex:1;margin:0}
+        .rn-chart{display:block;width:100%;min-height:150px}.rn-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--rn-muted)}.rn-legend i{display:inline-block;width:10px;height:10px;margin-right:5px;border-radius:2px}
+        .rn-results{margin-top:14px}.rn-coach{padding:13px 16px;border-left:3px solid var(--rn-accent);background:var(--rn-alt);border-radius:0 8px 8px 0;margin:14px 0}
+        .rn-notes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.rn-notes label{font-size:12px;font-weight:600}
+        .rn-notes textarea{display:block;width:100%;resize:vertical;min-height:85px;margin-top:5px;border:1px solid var(--rn-border);border-radius:8px;padding:9px;background:var(--rn-bg);color:var(--rn-text)}
+        .rn-table-wrap{overflow:auto;max-height:340px}.rn-transition table{border-collapse:collapse;width:100%;font-size:12px}
+        .rn-transition th,.rn-transition td{padding:8px 10px;border-bottom:1px solid var(--rn-border);text-align:right;white-space:nowrap}.rn-transition th:first-child,.rn-transition td:first-child{text-align:left}
+        .rn-transition caption{text-align:left;padding:10px 0;color:var(--rn-muted)}.rn-transition a{color:var(--rn-accent);text-decoration:underline}.rn-assumptions{font-size:12px}.rn-siting{padding:12px;background:var(--rn-card);border:1px solid var(--rn-border);border-radius:10px}.rn-siting p,.rn-siting small{font-size:12px}.rn-storage-chart{margin-top:20px;padding-top:14px;border-top:1px solid var(--rn-border)}.rn-storage-chart svg{display:block;width:100%;min-height:105px}.rn-diagnostic-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.rn-diagnostic-grid strong{display:block;font-size:21px}.rn-stale{padding:10px;border-left:3px solid var(--rn-accent);background:var(--rn-alt)}
+        @media(max-width:850px){.rn-workspace{grid-template-columns:1fr}.rn-inputs{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}.rn-inputs h3,.rn-inputs details{grid-column:1/-1}.rn-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:480px){.rn-conditions{grid-template-columns:1fr}.rn-transition{padding:12px}.rn-transition h2{font-size:22px}.rn-inputs{display:block}.rn-webgl{height:270px}.rn-flat-map{height:280px}.rn-year{gap:12px}.rn-region-buttons{grid-template-columns:1fr 1fr}.rn-inspector dl{grid-template-columns:1fr 1fr}.rn-notes{grid-template-columns:1fr}.rn-metric{padding:10px}.rn-metric strong{font-size:23px}.rn-topline{align-items:flex-start}}
+
+        .rn-explanation{padding-top:10px;border-top:1px solid var(--rn-border)}.rn-explanation p{font-size:12px}.rn-observations{padding-left:20px;margin:12px 0;font-size:12px}.rn-observations li{margin:7px 0}
+        .rn-ledger{display:grid;grid-template-columns:1fr 1fr;gap:14px}.rn-ledger h4{font-size:12px;margin:0 0 7px}.rn-ledger dl{display:block;margin:0 0 8px}.rn-ledger dl>div{display:flex;justify-content:space-between;gap:10px;padding:3px 0}.rn-ledger dt{font-size:11px}.rn-ledger dd{white-space:nowrap;font-size:11px}.rn-ledger strong{font-size:12px}
+        .rn-challenges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.rn-challenge-card{border:1px solid var(--rn-border);border-radius:9px;padding:14px;background:var(--rn-alt);display:flex;flex-direction:column}.rn-challenge-card p{font-size:12px;flex:1}.rn-challenge-card h3{font-size:14px}.rn-challenge-card button{align-self:flex-start}.rn-challenge-progress{margin-top:16px;padding-top:16px;border-top:1px solid var(--rn-border)}
+        .rn-targets{list-style:none;padding:0;margin:14px 0;display:grid;gap:8px}.rn-targets li{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--rn-border);border-radius:8px}.rn-targets strong{font-size:12px}.rn-targets small{display:block;font-size:11px}.rn-target-state{padding:4px 8px;background:var(--rn-alt);border-radius:5px;font-size:11px;min-width:82px;text-align:center}
+        .rn-sweep-chart svg{display:block;width:100%;min-height:140px}.rn-sweep-chart{margin:14px 0}.rn-sweep-chart small{display:block;margin-top:8px}.rn-transition tr[data-baseline=true]{background:var(--rn-alt)}
+        @media(max-width:850px){.rn-challenges{grid-template-columns:1fr}.rn-challenge-card{display:block}}@media(max-width:480px){.rn-ledger{grid-template-columns:1fr}.rn-targets li{align-items:flex-start}}
+
+        @media(prefers-reduced-motion:reduce){.rn-transition *{scroll-behavior:auto}}
+      `),
+      h('div',{className:'rn-topline'},h('div',null,h('div',{className:'rn-kicker'},'Renewables Lab / systems studio'),h('h2',null,'US transition sandbox')),
+        button('← Lab library',props.onBack)),
+      h('p',{className:'rn-muted'},'Build a portfolio. Follow the electricity. Test changing weather across six illustrative regions.'),
+      h('div',{className:'rn-year'},h('div',null,h('div',{className:'rn-year-number'},s.year),h('small',null,'Scenario year')),
+        slider('year','Adoption timeline',2025,2050,1,'','2025 starting portfolio → 2050 scenario')),
+      h('div',{className:'rn-metrics','aria-label':s.hours+'-hour scenario summary'},
+        [['Renewable share of demand',fmt(total.renewableShare)+'%','Delivered, including stored renewables'],
+          ['Demand met',fmt(total.demandMet,2)+'%',total.gapHours+' of '+s.hours+' hours have a shortfall'],
+          ['Fossil backup used',fmt(total.fossil/1000,2)+' TWh','Across this '+(s.hours/24)+'-day test'],
+          ['Generation curtailed',fmt(total.curtail/1000,2)+' TWh','Surplus that could not be used or stored']].map(function(m){return h('div',{className:'rn-metric',key:m[0]},h('span',null,m[0]),h('strong',null,m[1]),h('span',null,m[2]));})),
+      h('div',{className:'rn-presets','aria-label':'Scenario starting points'},
+        button('Balanced build',function(){change({settings:Object.assign({},RN_DEFAULT,{year:s.year})});}),
+        button('Solar sprint',function(){change({settings:Object.assign({},RN_DEFAULT,{year:s.year,solarBuild:65,windBuild:8,batteryBuild:5,transmission:10})});}),
+        button('Wind + connected regions',function(){change({settings:Object.assign({},RN_DEFAULT,{year:s.year,solarBuild:30,windBuild:45,batteryBuild:18,transmission:65,duration:8})});})),
+      challengePanel(),
+      h('div',{className:'rn-workspace'},
+        h('aside',{className:'rn-panel rn-inputs','aria-label':'Portfolio controls'},h('h3',null,'Build each year'),
+          slider('solarBuild','New solar',0,80,5,'GW/yr'),
+          slider('windBuild','New wind',0,60,3,'GW/yr'),
+          slider('batteryBuild','New battery power',0,40,2,'GW/yr'),
+          slider('duration','Battery duration',1,24,1,'h','Energy capacity = power × duration.'),
+          slider('transmission','Link capacity per region',0,100,5,'GW','A shared hub connects all six regions.'),
+          slider('efficiency','Demand reduction',0,30,1,'%','Applied to the entire selected year.'),
+          h('details',null,h('summary',null,'Demand & retirement'),
+            slider('growth','Annual demand growth',0,3,.25,'%/yr'),
+            slider('retirement','Fossil capacity retired',0,16,1,'GW/yr'),
+            slider('flexDemand','Evening demand shifted to midday',0,30,5,'%','Moves use from 17:00–21:00 to 10:00–14:00 local time; total energy is unchanged.'),
+            h('p',{className:'rn-muted'},'Hydro and nuclear capacity remain fixed. New solar and wind are distributed using illustrative resource weights.'),
+            h('p',null,'Installed in '+s.year+': '+fmt(capacity.solar)+' GW solar · '+fmt(capacity.wind)+' GW wind · '+fmt(capacity.batteryPower)+' GW / '+fmt(capacity.batteryEnergy)+' GWh batteries · '+fmt(capacity.fossil)+' GW fossil.')),
+          h('details',null,h('summary',null,'Network & storage resilience'),
+            slider('transferLoss','End-to-end transfer loss',0,15,1,'%','Illustrative loss on regional exports, applied once per transfer.'),
+            slider('reserve','Storage reserve target',0,50,5,'%','Held during routine dispatch; released when fossil capacity cannot cover demand.'),
+            choose('outageRegion','Region with a link outage',[['none','No outage']].concat(RN_REGIONS.map(function(r){return [r.id,r.name];}))),
+            s.outageRegion!=='none'&&h('div',{style:{marginTop:12}},slider('outageStart','Outage starts at hour',0,s.hours-1,1,'h'),slider('outageHours','Outage duration',1,Math.min(72,s.hours-s.outageStart),1,'h')),
+            h('small',null,'An outage disconnects the region from the hub. Its local generation and storage still operate.'))),
+        h('div',{style:{minWidth:0}},
+          h('div',{className:'rn-toolbar'},h('h3',{style:{margin:0}},'Follow a day on the grid'),h('div',{className:'rn-toolbar'},
+            button('3D landscape',function(){modeState[1]('3d');},mode==='3d'),
+            button('Map',function(){modeState[1]('map');},mode==='map'),
+            mode==='3d'&&button('Turbine motion',function(){motionState[1](!motion);},motion))),
+          h('div',{className:'rn-conditions'},
+            choose('hours','Test length',[[72,'Three days · 72 hours'],[168,'Seven days · 168 hours']]),
+            choose('weather','Weather test',[['fair','Typical variability'],['lull','Cloudy + low wind throughout'],['heatwave','Heat wave: higher demand']]),
+            choose('season','Season',[['summer','Summer'],['winter','Winter'],['spring','Spring']])),
+          h('div',{className:'rn-stage'},
+            h('div',{className:'rn-stage-title'},h('strong',null,'Day '+(Math.floor(hourIndex/24)+1)+' · '+String(hourIndex%24).padStart(2,'0')+':00 Eastern'),h('small',null,'Schematic contiguous US')),
+            mode==='3d'?h(RenewablesLandscape,{React:React,hour:current,capacity:capacity,selected:selected,onPick:regionState[1],motion:motion,network:true}):map(),
+            h('div',{className:'rn-stage-title'},h('small',null,'Mint: exports · gold: imports · red: offline'),h('small',null,'Click a region · drag to rotate · symbols track regional capacity'))),
+          h('div',{className:'rn-region-buttons','aria-label':'Inspect a region'},RN_REGIONS.map(function(r,i){var row=current.regions[i];return button(h(React.Fragment,null,r.name,h('span',null,fmt(row.demand)+' GW demand · '+(row.linkOffline?'link offline':row.unmet>.01?'shortfall':row.imports>.1?'importing':row.exports>.1?'exporting':'local balance'))),function(){regionState[1](r.id);},r.id===selected,{key:r.id,'aria-label':'Inspect '+r.name});})),
+          h('div',{className:'rn-inspector','aria-label':'Selected region measurements'},h('strong',null,regionInfo.name+' · '+String(((hourIndex+regionInfo.offset)%24+24)%24).padStart(2,'0')+':00 local scenario time'),
+            h('dl',null,[['Solar + wind',fmt(region.solar+region.wind)+' GW'],['Hydro + nuclear',fmt(region.hydro+region.nuclear)+' GW'],['Fossil backup',fmt(region.fossil)+' GW'],['Unmet demand',fmt(region.unmet)+' GW'],
+              ['Imports / exports',fmt(region.imports)+' / '+fmt(region.exports)+' GW'],['Stored energy',fmt(region.battery)+' GWh'],['Charge / discharge',fmt(region.charge)+' / '+fmt(region.discharge)+' GW'],['Curtailed',fmt(region.curtail)+' GW'],['Link state',region.linkOffline?'Offline':region.linkCongested?'At capacity':'Available'],['Reserve released',fmt(region.reserveRelease)+' GW']].map(function(pair){return h('div',{key:pair[0]},h('dt',null,pair[0]),h('dd',null,pair[1]));})),explainPanel()),sitingPanel())),
+      h('section',{className:'rn-panel rn-results','aria-label':'Hourly energy accounting'},
+        h('div',{className:'rn-toolbar'},h('h3',{style:{margin:0}},'Can this portfolio cover demand?'),h('small',null,'One-hour steps · '+s.hours+'-hour test')),
+        h('div',{className:'rn-time'},button(playing?'Pause timeline':'Play timeline',function(){if(!playing&&hourIndex===s.hours-1)setHour(0);setPlaying(!playing);},playing),
+          h('div',{className:'rn-control'},h('label',{htmlFor:uid+'hour'},'Inspect hour',h('strong',null,'Day '+(Math.floor(hourIndex/24)+1)+' · '+String(hourIndex%24).padStart(2,'0')+':00')),
+            h('input',{id:uid+'hour',type:'range',min:0,max:s.hours-1,step:1,value:hourIndex,onChange:function(e){setPlaying(false);setHour(Number(e.target.value));}}))),
+        chart(),storageChart(),
+        h('p',{className:'rn-muted',style:{fontSize:12,marginTop:12}},'Storage starts empty; ending energy: '+fmt(total.endBattery)+' GWh. Conversion losses: '+fmt(total.loss)+' GWh. Transmission losses: '+fmt(total.transmissionLoss)+' GWh. Regional transfers delivered: '+fmt(total.transfer)+' GWh. Nuclear is low-carbon but is not renewable.'),
+        h('div',{className:'rn-coach'},h('strong',null,'What to investigate next'),h('div',null,lesson)),
+        h('details',null,h('summary',null,'Read hourly data'),
+          h('div',{className:'rn-table-wrap',tabIndex:0,'aria-label':'Scrollable hourly energy table'},
+            h('table',null,h('caption',null,'Hourly power in GW; stored energy in GWh. Each row spans one hour.'),
+              h('thead',null,h('tr',null,['Hour (Eastern)','Demand','Renewables generated','Nuclear generated','Fossil','Charge','Discharge','Curtailed','Unmet','Stored GWh','Transfer loss','Shifted demand','Reserve release'].map(function(v){return h('th',{key:v,scope:'col'},v);}))),
+              h('tbody',null,result.hours.map(function(r){return h('tr',{key:r.hour},h('th',{scope:'row'},'D'+(Math.floor(r.hour/24)+1)+' '+String(r.hour%24).padStart(2,'0')+':00'),
+                [r.demand,r.renewable,r.nuclear,r.fossil,r.charge,r.discharge,r.curtail,r.unmet,r.battery,r.transmissionLoss,r.shifted,r.reserveRelease].map(function(v,i){return h('td',{key:i},fmt(v));}));})))))),
+      diagnosticPanel(),sweepPanel(),stressPanel(),pathwayPanel(),
+      h('section',{className:'rn-panel rn-results','aria-label':'Investigation notebook'},
+        h('div',{className:'rn-toolbar'},h('h3',{style:{margin:0}},'Compare your experiments'),h('div',{className:'rn-toolbar'},button('Save scenario',save),button('Export investigation',download))),
+        h('p',{className:'rn-muted'},'Save a baseline, change one variable, and compare the evidence. Up to four scenarios are kept.'),
+        h('div',{role:'status','aria-live':'polite','aria-atomic':'true'},notice),
+        snapshots.length>0&&h('div',{className:'rn-table-wrap',tabIndex:0,role:'region','aria-label':'Saved scenario results'},h('table',null,h('caption',null,'Saved plans are recalculated with model version 2 for consistent accounting. Restore a scenario to inspect its settings.'),
+          h('thead',null,h('tr',null,['Scenario','Year / test','Renewable demand share','Fossil TWh','Shortfall hours','Changes from baseline','Actions'].map(function(v){return h('th',{key:v,scope:'col'},v);}))),
+          h('tbody',null,snapshots.map(function(row,i){return h('tr',{key:i},h('th',{scope:'row'},row.label),
+            h('td',null,row.settings.year+' / '+row.settings.season+' / '+row.settings.weather+' / '+row.settings.hours+'h'),
+            h('td',null,fmt(row.totals.renewableShare)+'%'),h('td',null,fmt(row.totals.fossil/1000,2)),h('td',null,row.totals.gapHours),h('td',{style:{whiteSpace:'normal',minWidth:200,maxWidth:320}},differences(rnSettings(row.settings))),
+            h('td',null,button('Restore',function(){change({settings:row.settings,prediction:row.prediction||'',reflection:row.reflection||''});},null,{'aria-label':'Restore '+row.label}),
+              ' ',button('Remove',function(){change({snapshots:snapshots.filter(function(_,idx){return idx!==i;})});},null,{'aria-label':'Remove '+row.label})));})))),
+        h('div',{className:'rn-notes'},h('label',null,'My prediction',h('textarea',{'aria-label':'My prediction',value:state.prediction||'',maxLength:3000,placeholder:'If I change… I expect… because…',onChange:function(e){change({prediction:e.target.value});}})),
+          h('label',null,'What the evidence shows',h('textarea',{'aria-label':'What the evidence shows',value:state.reflection||'',maxLength:5000,placeholder:'Compare a number, explain the tradeoff, and name a limitation.',onChange:function(e){change({reflection:e.target.value});}})))),
+      h('details',{className:'rn-panel rn-assumptions'},h('summary',null,'Model assumptions & sources'),
+        h('p',null,'This is an exploratory classroom model of electricity, not a forecast or a grid planning tool. The six regions, resource weights, build rates, and demand profiles are invented teaching assumptions. Alaska, Hawaii, territories, and cross-border exchanges are excluded. Region markers are schematic, not actual grid boundaries.'),
+        h('p',null,'Starting capacity in 2025: 240 GW solar, 160 GW wind, 80 GW hydro, 95 GW nuclear, 550 GW fossil, and 30 GW batteries. The demand scale is 500 GW before hourly shaping, growth, and efficiency. These figures are illustrative and are not calibrated to EIA statistics.'),
+        h('p',null,'Each scenario year adds constant annual solar, wind, and battery capacity and retires fossil capacity. It then reruns the same synthetic three-day or seven-day weather sequence; years between endpoints are not continuously simulated. Hydro and nuclear capacity stay fixed.'),
+        h('p',null,'Dispatch order: local renewables and nuclear, surplus transfers, batteries, then fossil backup. The hub has one capacity-limited link per region, with an adjustable end-to-end transfer loss (default 3%, a teaching assumption). Loss is applied to exported energy once. A timed link outage isolates one region; it is not a model of the real US interconnections. New construction is distributed by normalized regional siting weights; existing capacity is fixed. Demand flexibility shifts selected evening use to midday, conserving each region’s daily energy. Storage reserves are released only after available fossil capacity is used. Batteries start empty with 88% round-trip efficiency split equally between charging and discharging, and separate power and energy limits. Stored renewable energy is tracked to avoid counting nuclear discharge as renewable.'),
+        h('p',null,'No prices, investment budgets, land use, permitting, ramp rates, random plant outages, frequency dynamics, or lifecycle emissions are modeled. Coverage across these test days is not annual reliability. All hourly demand and output profiles are deterministic; the weather tests are not meteorological forecasts.'),
+        h('p',null,'For demand-shifting concepts see ',h('a',{href:'https://www.energy.gov/cmei/systems/integrating-solar-day-day-system-operations',target:'_blank',rel:'noopener noreferrer'},'DOE: Integrating solar into system operations'),'. For the role of transmission see ',h('a',{href:'https://www.eia.gov/energyexplained/electricity/delivery-to-consumers.php',target:'_blank',rel:'noopener noreferrer'},'EIA: Delivery to consumers'),'. The model’s transfer-loss setting is an assumption, not a measured national loss rate.'),
+        h('p',null,'For observed generation statistics see ',h('a',{href:'https://www.eia.gov/energyexplained/electricity/electricity-in-the-us.php',target:'_blank',rel:'noopener noreferrer'},'EIA: Electricity in the United States'),'. For power, energy, and storage losses see ',h('a',{href:'https://www.eia.gov/energyexplained/electricity/energy-storage-for-electricity-generation.php',target:'_blank',rel:'noopener noreferrer'},'EIA: Energy storage for electricity generation'),'. These sources explain concepts; they do not validate this model.')));
+  }
+
   window.StemLab.registerTool('renewablesLab', {
     name: 'Renewables Lab',
     icon: '⚡',
     category: 'physics-chemistry',
-    description: 'How each renewable energy source actually works — the physics and engineering. Solar PV, wind (Betz limit), hydro (head + flow), geothermal, CSP, wave/tidal, biomass, and storage. Live sliders driven by the real formulas. Cited to NREL, IEA, IRENA, DOE.',
+    description: 'Explore a 3D US energy transition sandbox with hourly regional dispatch, storage, and weather stress tests. Learn how each renewable energy source works — the physics and engineering. Solar PV, wind (Betz limit), hydro (head + flow), geothermal, CSP, wave/tidal, biomass, and storage. Live sliders driven by the real formulas. Cited to NREL, IEA, IRENA, DOE.',
     tags: ['energy', 'physics', 'engineering', 'climate', 'renewables', 'solar', 'wind', 'hydro', 'geothermal', 'maine'],
 
     render: function(ctx) {
@@ -1434,6 +2198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             if (seed.modulesVisited && d.modulesVisited === undefined) merge.modulesVisited = seed.modulesVisited;
             if (seed.quizMastery && d.quizMastery === undefined) merge.quizMastery = seed.quizMastery;
             if (seed.installerCo && d.installerCo === undefined) merge.installerCo = seed.installerCo;
+            if (seed.transitionLab && d.transitionLab === undefined) merge.transitionLab = seed.transitionLab;
             if (Object.keys(merge).length > 0) {
               Object.keys(merge).forEach(function (k) { upd(k, merge[k]); });
             }
@@ -1454,12 +2219,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             modulesVisited: d.modulesVisited || {},
             quizMastery: d.quizMastery || {},
             installerCo: d.installerCo || null,
+            transitionLab: d.transitionLab || null,
             _ts: Date.now()
           };
           window.__alloflowRenewablesLab = snapshot;
           try { localStorage.setItem('renewablesLab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
         } catch (e) {}
-      }, [d.badges, d.modulesVisited, d.quizMastery, d.installerCo]);
+      }, [d.badges, d.modulesVisited, d.quizMastery, d.installerCo, d.transitionLab]);
 
       // Hot-reload from project-JSON load mid-session.
       React.useEffect(function () {
@@ -1469,6 +2235,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             if (w.badges) upd('badges', w.badges);
             if (w.modulesVisited) upd('modulesVisited', w.modulesVisited);
             if (w.quizMastery) upd('quizMastery', w.quizMastery);
+            if (w.transitionLab) upd('transitionLab', w.transitionLab);
           } catch (e) {}
         }
         window.addEventListener('alloflow-renewableslab-restored', onRestore);
@@ -1682,6 +2449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // MENU
       // ─────────────────────────────────────────
       var MENU_TILES = [
+        { id: 'transition', icon: '🌎', label: __alloT('stem.renewables.transition_studio', 'US transition sandbox'), desc: __alloT('stem.renewables.transition_studio_desc', 'Site new capacity, explore a 3D energy landscape, and stress-test three to seven days of electricity demand.') },
         // Source modules (the "how does it work?" core)
         { id: 'solarPv',     icon: '☀️',     label: __alloT('stem.renewables.solar_pv', 'Solar PV'),          desc: __alloT('stem.renewables.photovoltaic_effect_irradiance_area_si', 'Photovoltaic effect + irradiance × area sim.') },
         { id: 'wind',        icon: '🌬️', label: __alloT('stem.renewables.wind', 'Wind'),              desc: __alloT('stem.renewables.betz_limit_cube_of_wind_speed_power_cu', 'Betz limit + cube-of-wind-speed power curve.') },
@@ -1723,12 +2491,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
       function renderMenu() {
         var visitedCount = Object.keys(modulesVisited).length;
-        var RENEWABLES_CORE_TILES = ['solarPv', 'wind', 'compare', 'mix', 'gridBalance', 'quiz'];
+        var RENEWABLES_CORE_TILES = ['transition', 'solarPv', 'wind', 'compare', 'mix', 'gridBalance', 'quiz'];
         var showFullRenewablesMenu = !!d.showRenewablesLibrary;
         var visibleRenewablesTiles = showFullRenewablesMenu ? MENU_TILES : MENU_TILES.filter(function(tile) {
           return RENEWABLES_CORE_TILES.indexOf(tile.id) !== -1;
         });
-        var renewablesLaunchTiles = ['solarPv', 'compare', 'mix', 'gridBalance'].map(function(id) {
+        var renewablesLaunchTiles = ['transition', 'solarPv', 'mix', 'gridBalance'].map(function(id) {
           return MENU_TILES.find(function(tile) { return tile.id === id; });
         }).filter(Boolean);
         // Adaptive "Start Here" suggestion based on visited count.
@@ -1784,7 +2552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             __alloT('stem.renewables.for_the_policy_mix_design_side', ' for the policy + mix-design side.')),
           h('section', { 'data-renewables-launch-panel': 'true',
             style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,78,59,0.88), rgba(15,23,42,0.94))', border: '1px solid ' + T.accent + '77', marginBottom: 14, color: '#ecfdf5', boxShadow: '0 16px 38px rgba(2,8,23,0.22)' } },
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(220px,0.8fr)', gap: 12 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', gap: 12 } },
               h('div', null,
                 h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, 'Energy launch board'),
                 h('div', { style: { fontSize: 21, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, __alloT('stem.renewables.pick_a_useful_starting_route', 'Pick a useful starting route')),
@@ -5530,6 +6298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // ─────────────────────────────────────────
       var viewBody;
       switch (view) {
+        case 'transition': viewBody = h(RenewablesTransition, { ctx: ctx, theme: T, state: d.transitionLab, onChange: function(next) { upd('transitionLab', next); }, onBack: function() { upd('view', 'menu'); } }); break;
         case 'solarPv':      viewBody = renderSolarPv(); break;
         case 'wind':         viewBody = renderWind(); break;
         case 'hydro':        viewBody = renderHydro(); break;

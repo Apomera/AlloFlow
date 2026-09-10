@@ -1,0 +1,62 @@
+{
+  "passed": true,
+  "independentBrowsers": 3,
+  "exportedFile": "docs/connected-escape-room-portability/teacher-edition.alloroom.json",
+  "importAiCalls": 0,
+  "importLiveWrites": 0,
+  "scenarios": [
+    "edit from AI finding with keyboard focus",
+    "edit evidence/hints/story",
+    "native JSON download",
+    "fresh-browser import preview",
+    "explicit import before solo",
+    "updated evidence in player journal",
+    "malformed-file recovery",
+    "mismatched language blocked",
+    "mobile light/dark",
+    "200 percent text size"
+  ],
+  "audits": [
+    {
+      "name": "editor-desktop",
+      "width": 1280,
+      "dark": false,
+      "large": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "import-mobile",
+      "width": 320,
+      "dark": false,
+      "large": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "import-dark",
+      "width": 390,
+      "dark": true,
+      "large": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "import-large-text",
+      "width": 320,
+      "dark": false,
+      "large": true,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "language-mismatch-mobile",
+      "width": 320,
+      "dark": false,
+      "large": false,
+      "overflow": false,
+      "violations": []
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,227 @@
+[
+  {
+    "id": "prb-term-1",
+    "kind": "term",
+    "file": "prb-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A blue circular counter appears beside a closed tan bag.",
+    "altHash": "img-ewr-c79dbeba"
+  },
+  {
+    "id": "prb-term-2",
+    "kind": "term",
+    "file": "prb-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three blue counters and one red counter lie in a row; an outline surrounds the red counter.",
+    "altHash": "img-bb3-559a60e7"
+  },
+  {
+    "id": "prb-term-3",
+    "kind": "term",
+    "file": "prb-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A tan bag leads by an arrow to one red counter, representing a single selected result.",
+    "altHash": "img-b63-e2cad58b"
+  },
+  {
+    "id": "prb-term-4",
+    "kind": "term",
+    "file": "prb-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four same-sized counters occupy equal spaces: three blue and one red.",
+    "altHash": "img-a4z-0a526ace"
+  },
+  {
+    "id": "prb-term-5",
+    "kind": "term",
+    "file": "prb-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bag-shaped diagram reveals three blue counters and one red, all the same size.",
+    "altHash": "img-kpj-fbba2906"
+  },
+  {
+    "id": "prb-term-6",
+    "kind": "term",
+    "file": "prb-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Curved motion strokes surround an opaque tan bag whose contents are hidden.",
+    "altHash": "img-gqn-59a882c6"
+  },
+  {
+    "id": "prb-term-7",
+    "kind": "term",
+    "file": "prb-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A red counter above a tan bag has a downward arrow pointing toward the opening.",
+    "altHash": "img-f1b-01540c5f"
+  },
+  {
+    "id": "prb-term-8",
+    "kind": "term",
+    "file": "prb-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A row of six pictured results contains blue, red, blue, blue, red and blue counters.",
+    "altHash": "img-ecz-a41f8654"
+  },
+  {
+    "id": "prb-anchor-1",
+    "kind": "anchor",
+    "file": "prb-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three blue counters and one red counter appear inside a bag-shaped diagram.",
+    "altHash": "img-kpj-fbba2906"
+  },
+  {
+    "id": "prb-anchor-2",
+    "kind": "anchor",
+    "file": "prb-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A downward arrow leads from a red counter toward the opening of a tan bag.",
+    "altHash": "img-ejj-51c3a28e"
+  },
+  {
+    "id": "prb-anchor-3",
+    "kind": "anchor",
+    "file": "prb-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two separate rows show possible results: four blue counters above, then red, blue, red and blue below.",
+    "altHash": "img-hlz-da29aba4"
+  },
+  {
+    "id": "prb-sort-1",
+    "kind": "sort",
+    "file": "prb-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bag diagram contains three blue counters and one red. A separate dashed bubble displays a green target counter.",
+    "altHash": "img-pjb-0664256b"
+  },
+  {
+    "id": "prb-sort-2",
+    "kind": "sort",
+    "file": "prb-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bag diagram contains three blue counters and one red. A separate dashed bubble displays a yellow target counter.",
+    "altHash": "img-qtr-25477849"
+  },
+  {
+    "id": "prb-sort-3",
+    "kind": "sort",
+    "file": "prb-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bag diagram contains three blue counters and one red. A separate dashed bubble displays a red target counter.",
+    "altHash": "img-pv3-092765d5"
+  },
+  {
+    "id": "prb-sort-4",
+    "kind": "sort",
+    "file": "prb-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bag diagram contains three blue counters and one red. A separate dashed bubble displays a blue target counter.",
+    "altHash": "img-pk3-b58dfdb2"
+  },
+  {
+    "id": "prb-sort-5",
+    "kind": "sort",
+    "file": "prb-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bag diagram contains only blue and red counters; a separate dashed bubble shows both target colors.",
+    "altHash": "img-rgf-2c75664a"
+  },
+  {
+    "id": "prb-sort-6",
+    "kind": "sort",
+    "file": "prb-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four red counters appear inside a bag diagram, with another red counter shown separately as the target event.",
+    "altHash": "img-qlj-bbffe3e2"
+  },
+  {
+    "id": "prb-lesson-1",
+    "kind": "lesson",
+    "file": "prb-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An opaque bag appears in one panel. The other shows four possible counters above one example blue result.",
+    "altHash": "img-ghb-0976f4f8"
+  },
+  {
+    "id": "prb-lesson-2",
+    "kind": "lesson",
+    "file": "prb-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four equally sized counters are arranged in equal spaces, with three blue counters and one red.",
+    "altHash": "img-cu3-9288f832"
+  },
+  {
+    "id": "prb-lesson-3",
+    "kind": "lesson",
+    "file": "prb-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A red counter is shown above a tan bag, with a downward arrow indicating its return.",
+    "altHash": "img-f3z-5f261eba"
+  },
+  {
+    "id": "prb-lesson-4",
+    "kind": "lesson",
+    "file": "prb-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three rows show possible four-draw records: all blue; red, blue, red, blue; and blue, blue, red, blue.",
+    "altHash": "img-od7-c68e0550"
+  },
+  {
+    "id": "prb-lesson-5",
+    "kind": "lesson",
+    "file": "prb-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Six outlined record spaces each contain one result: blue, red, blue, blue, red and blue.",
+    "altHash": "img-itj-122942b0"
+  },
+  {
+    "id": "prb-lesson-6",
+    "kind": "lesson",
+    "file": "prb-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Twenty counters form four rows of five. Seven are red and thirteen are blue; these depict a sample record.",
+    "altHash": "img-13r7-72f3a7cb"
+  },
+  {
+    "id": "prb-lesson-7",
+    "kind": "lesson",
+    "file": "prb-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A group of four equal-sized counters contrasts with a separate pair containing one large blue and one small red counter.",
+    "altHash": "img-glz-64b2305e"
+  },
+  {
+    "id": "prb-lesson-8",
+    "kind": "lesson",
+    "file": "prb-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A four-counter model with one red sits above a twenty-result record containing seven red results.",
+    "altHash": "img-xmb-ffbfe7e9"
+  }
+]

@@ -11,6 +11,8 @@ test.beforeAll(async () => {
     .process('@tailwind base; @tailwind utilities;', { from: undefined })).css;
 });
 async function load(page: any) {
+  // Fresh document prevents cached view bundles from retaining a previous React instance.
+  await page.goto('about:blank');
   await page.setContent('<!doctype html><html lang="en"><head><title>Adventure learning settings</title></head><body style="background:#f1f5f9"><main id="root" style="max-width:780px;margin:auto;padding:16px"></main></body></html>');
   await page.addStyleTag({ content: css });
   for (const file of ['desktop/web-app/node_modules/react/umd/react.development.js', 'desktop/web-app/node_modules/react-dom/umd/react-dom.development.js']) await page.addScriptTag({ path: local(file) });
@@ -61,7 +63,7 @@ test('learning profiles are editable and accessible on phone and desktop', async
   }
   await check(page);
   await page.screenshot({ path: info.outputPath('settings-phone.png'), fullPage: true });
-  await page.getByLabel('Episode length').selectOption('open');
+  await page.getByRole('radio',{name:'Open-ended',exact:true}).check();
   await page.getByLabel('Choices per decision').selectOption('2');
   expect(await page.evaluate(() => (window as any).__settings.state)).toMatchObject({ episodeTurnLimit: null, choiceCount: 2, enableAutoClimax: true });
   await expect(page.getByRole('button', { pressed: true })).toHaveCount(1);
@@ -72,7 +74,7 @@ test('learning profiles are editable and accessible on phone and desktop', async
 
 test('locked settings cannot change and student profiles are hidden', async ({ page }) => {
   await load(page); await mountProfiles(page, true);
-  for (const control of await page.locator('button, select').all()) await expect(control).toBeDisabled();
+  for (const control of await page.locator('button, select, input').all()) await expect(control).toBeDisabled();
   await load(page); await mountProfiles(page, false, false);
   await expect(page.getByRole('button')).toHaveCount(0);
   await expect(page.getByLabel('Episode length')).toBeDisabled();

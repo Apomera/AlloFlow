@@ -1,0 +1,5 @@
+const fs=require('fs');
+const edit=(p,fn)=>fs.writeFileSync(p,fn(fs.readFileSync(p,'utf8')));
+edit('doc_pipeline_source.jsx',s=>s.replace("if (scope && scope !== bc[ci].getAttribute('scope'))", "if (scope && ac.length > 1 && scope !== bc[ci].getAttribute('scope'))"));
+edit('tests/remediation_source_contract_integration.test.js',s=>s.replace(" it.each([", " it.each([\n  ['<p>Keep this instruction.</p>', s=>s.replace('<p>', '<p aria-hidden=\"true\">'), 'source-visibility-changed'],\n  ['<label>Name <input value=\"Ada\"></label>', s=>s.replace('value=\"Ada\"', 'value=\"Lin\"'), 'form-state-changed'],"));
+edit('tests/e2e/remediation_preservation_review.spec.ts',s=>s.replace("reason: 'table-cell-transposition' }],", "reason: 'table-cell-transposition', sourceLocation: 'table:1/row:2/cell:2' }],").replace("await page.keyboard.press('Enter');\n  await page.keyboard.press('Tab');", "await page.keyboard.press('Enter');\n  await expect(page.getByText('Location in the input for this attempt: table 1, row 2, cell 2.')).toBeVisible();\n  await page.keyboard.press('Tab');"));

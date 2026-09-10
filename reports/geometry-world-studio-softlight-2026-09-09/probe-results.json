@@ -1,0 +1,50 @@
+{
+  "errors": [],
+  "consoleErrors": [],
+  "captures": [
+    {
+      "spread": 0,
+      "data": {
+        "draw": {
+          "calls": 129,
+          "triangles": 998
+        },
+        "programs": []
+      },
+      "screenshot": "spread-0.png"
+    },
+    {
+      "spread": 0.1,
+      "data": {
+        "draw": {
+          "calls": 129,
+          "triangles": 998
+        },
+        "programs": []
+      },
+      "screenshot": "spread-0_1.png"
+    },
+    {
+      "spread": 0.18,
+      "data": {
+        "draw": {
+          "calls": 129,
+          "triangles": 998
+        },
+        "programs": []
+      },
+      "screenshot": "spread-0_18.png"
+    },
+    {
+      "spread": 0.28,
+      "data": {
+        "draw": {
+          "calls": 129,
+          "triangles": 998
+        },
+        "programs": []
+      },
+      "screenshot": "spread-0_28.png"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "checks": [
+    "branch switch isolation",
+    "actual rewiring",
+    "value edits",
+    "reordering",
+    "undo redo availability",
+    "internal probes",
+    "camera outside electrical history",
+    "schematic and 3D persistence",
+    "copy simple build",
+    "capacity limits",
+    "removal and empty network",
+    "current traces",
+    "snapshot branch labels",
+    "390px overflow",
+    "simple state preserved"
+  ],
+  "axeViolations": 0
+}

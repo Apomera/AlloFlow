@@ -7,6 +7,10 @@
   'use strict';
   var MAX_RECORDS = 100, MAX_REFERENCES = 700;
   var reasons = {
+    "source-visibility-changed": "The suggestion hid source content from view or assistive technology; the original was retained.",
+    "table-semantics-changed": "Existing table headers or associations lost their meaning; the original table was retained.",
+    "form-state-changed": "A form value, state, label association, or destination changed; the original form was retained.",
+    "math-content-changed": "Mathematical notation or structure changed; the original expression was retained.",
     'no-original': 'The suggestion had no usable source for comparison and was rejected.',
     'empty-output': 'The suggestion was empty; the original content was retained.',
     'no-doc-markers': 'The suggestion did not contain a complete document; the original was retained.',
@@ -18,6 +22,13 @@
     'image-reference-uncheckable': 'The image references could not be verified; the original images were retained.',
     'image-reference-changed': 'Image identity or order changed; the original images were retained.',
     'invalid-json-wrapper': 'The suggestion could not be read as HTML; the original was retained.',
+    "table-content-changed": "Table values, cells, or spans changed; the original table was retained.",
+    "source-value-changed": "A source number, sign, or unit changed or was added; the original content was retained.",
+    "link-destination-changed": "A link destination or link order changed; the original links were retained.",
+    "image-association-changed": "An image moved relative to its source content or caption; the original placement was retained.",
+    "source-reading-order-changed": "Source wording or reading order changed; the original content was retained.",
+    "source-content-added": "The suggestion added unsupported source content; the original was retained.",
+    "source-contract-uncheckable": "Source preservation could not be checked; the original content was retained.",
     'content-not-preserved': 'The suggestion did not preserve the document; the original was retained.'
   };
   function count(value) { return Number.isSafeInteger(value) && value >= 0 ? Math.min(value, 1000000) : 0; }
@@ -31,6 +42,7 @@
     }).map(function (r) {
       var item = { chunkId: r.chunkId, phase: r.phase, reason: r.reason };
       if (Number.isSafeInteger(r.pass) && r.pass >= 1 && r.pass <= 1000000) item.pass = r.pass;
+      if (typeof r.sourceLocation === 'string' && /^(?:document|(?:table|row|cell|link|figure|control|math):[1-9][0-9]{0,7}(?:\/(?:row|cell):[1-9][0-9]{0,7}){0,2})$/.test(r.sourceLocation)) item.sourceLocation = r.sourceLocation;
       return item;
     });
   }
@@ -55,6 +67,7 @@
     return records(value && value.candidateRejections).map(function (r, index) {
       var key = ['preservation', index, r.pass, r.chunkId, r.phase, r.reason].join('|');
       return Object.assign({}, r, { key: key, reviewed: !!(reviewed && reviewed[key]), description: reasons[r.reason] || reasons['content-not-preserved'],
+        locationLabel: r.sourceLocation ? 'Location in the input for this attempt: ' + r.sourceLocation.replace(/:/g, ' ').replace(/\//g, ', ') + '.' : '',
         referenceKind: /table/i.test(r.reason) ? 'table' : /image|asset|placeholder/i.test(r.reason) ? 'figure' : null });
     });
   }

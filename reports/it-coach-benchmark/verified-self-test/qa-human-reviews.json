@@ -1,0 +1,10 @@
+{
+  "runId": "0408c3ea-436a-4965-b35c-1609b4fa904d",
+  "cases": [
+    {
+      "id": "captions",
+      "verdict": "pass",
+      "notes": "Reference response points to the correct captions control."
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "scope": "Read-only lifecycle audit using actual source slices and vendored THREE r128; timers/canvas/renderer dependencies stubbed; no browser",
+  "sourceSHA256": "15587a7a55cf5c0cd140ab7c9ce450ccf6133ba32f9de14024c251d22f5d062a",
+  "builderSHA256": "4bdeccda024d578d4c94e8b1d7a69aad87de1d681eb96580cbda81842d4f5001",
+  "reproductionPassed": true,
+  "findings": {
+    "studioLandscapeRebuild": {
+      "confirmed": true,
+      "oldDetached": true,
+      "oldGeometriesDisposed": 6,
+      "replacementVisible": true,
+      "replacementAttached": true,
+      "oldStoredInHidden": true,
+      "replacementStoredInHidden": false,
+      "disposedGroupNotReattached": true
+    },
+    "delayedGlowInStudio": {
+      "confirmed": true,
+      "beforeCount": 1,
+      "afterCount": 2,
+      "visibleCount": 1
+    },
+    "glowResetAndTeardown": {
+      "confirmed": true,
+      "glowsRemainingAfterClearWorld": 1,
+      "newGlowsAfterDestroyed": 1
+    },
+    "dustInStudio": {
+      "confirmed": true,
+      "created": 1,
+      "visible": true,
+      "recordedInStudioHidden": false
+    },
+    "reducedMotion": {
+      "manualDetailedEnablesAmbientMotion": true,
+      "autoUsesSaver": true,
+      "autoDisablesAmbientMotion": true,
+      "npcMovesWithAmbientMotionDisabled": true,
+      "npcY": [
+        0.75,
+        0.8409297426825681
+      ],
+      "dynamicPreferenceListenerPresent": false
+    }
+  }
+}

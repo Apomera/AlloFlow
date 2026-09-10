@@ -83,10 +83,12 @@ beforeAll(() => {
 // bezier strokes sharing one alpha isolates the pass without pinning either.
 const FIBRE_SHAPE = 'moveTo,bezierCurveTo';
 function fibreStrokes(strokes) {
-  const beziers = strokes.filter((s) => s.shape === FIBRE_SHAPE);
   let best = [];
   let run = [];
-  for (const s of beziers) {
+  for (const s of strokes) {
+    // Preserve actual consecutiveness: the new cristae are also cubic strokes,
+    // but their short runs are separated by complete organelle outlines.
+    if (s.shape !== FIBRE_SHAPE) { run = []; continue; }
     if (run.length && Math.abs(run[0].alpha - s.alpha) < 1e-9) run.push(s);
     else run = [s];
     if (run.length > best.length) best = run.slice();

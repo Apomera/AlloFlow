@@ -1687,11 +1687,18 @@ window.StemLab = window.StemLab || {
       (parent || S.model).add(mesh);
       return mesh;
     }
-    function sheave(px, py, parent) {
-      cylinder(0.32, 0.16, px, py, 0, C.frame, 'z', parent);
-      for (var spoke = 0; spoke < 4; spoke++) box(0.74, 0.055, 0.09, px, py, 0.12, C.metal, parent, spoke * Math.PI / 4);
-      cylinder(0.13, 0.26, px, py, 0, C.effort, 'z', parent);
-      cylinder(0.07, 0.31, px, py, 0, C.metal, 'z', parent);
+    function sheave(px, py, radius, parent) {
+      var wheel = new THREE.Group(); wheel.position.set(px, py, 0); (parent || S.model).add(wheel);
+      cylinder(radius * 0.84, 0.15, 0, 0, 0, C.frame, 'z', wheel);
+      torus(radius * 0.875, 0.013, 0, 0, 0, C.metal, 'z', wheel);
+      [-1, 1].forEach(function (side) { cylinder(radius + 0.005, 0.035, 0, 0, side * 0.092, C.frame, 'z', wheel); });
+      [-1, 1].forEach(function (side) {
+        for (var spoke = 0; spoke < 4; spoke++) box(radius * 1.7, 0.035, 0.035, 0, 0, side * 0.13, contrast ? 0x000000 : C.metal, wheel, spoke * Math.PI / 4);
+        if (contrast) torus(radius * 0.7, 0.012, 0, 0, side * 0.15, 0x000000, 'z', wheel);
+      });
+      cylinder(radius * 0.34, 0.33, 0, 0, 0, C.effort, 'z', wheel);
+      cylinder(0.055, 0.48, 0, 0, 0, C.metal, 'z', wheel);
+      return wheel;
     }
     function arrow(px, top, length, color, direction) {
       var group = new THREE.Group();
@@ -1706,6 +1713,28 @@ window.StemLab = window.StemLab || {
       return group;
     }
 
+    // Fixed curved guides show the direction of rotation; the straight effort
+    // arrow follows the grip tangent. Neither cue represents a force magnitude.
+    function turnGuide(radius, x, y, z, horizontal) {
+      var group = new THREE.Group(), points = [], end = Math.PI * 1.25;
+      for (var step = 0; step <= 60; step++) {
+        var angle = end * step / 60;
+        points.push(horizontal
+          ? new THREE.Vector3(radius * Math.cos(angle), 0, -radius * Math.sin(angle))
+          : new THREE.Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0));
+      }
+      var tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 60, 0.025, 6, false), mat(C.effort));
+      group.add(tube);
+      var direction = horizontal ? new THREE.Vector3(-Math.sin(end), 0, -Math.cos(end)) : new THREE.Vector3(-Math.sin(end), Math.cos(end), 0);
+      var head = new THREE.Mesh(new THREE.ConeGeometry(0.105, 0.26, 16), mat(C.effort));
+      head.position.copy(points[points.length - 1]).addScaledVector(direction, 0.1);
+      head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+      group.add(head); group.position.set(x, y, z); S.model.add(group);
+      group.userData.mlRadius = radius; group.userData.mlHorizontal = horizontal;
+      return group;
+    }
+
+    var roomStart = S.model.children.length;
     // Shared workshop landmarks make scale and camera movement legible.
     var ground = finishMesh(new THREE.Mesh(new THREE.PlaneGeometry(18, 14), mat(C.floor)), true);
     ground.rotation.x = -Math.PI / 2;
@@ -1755,6 +1784,11 @@ window.StemLab = window.StemLab || {
       S.model.add(beacon); roomBeacons.push(beacon);
     });
 
+    // Group only the surroundings. The test bed, mechanisms, and learning cues
+    // remain visible when the learner focuses on the machine from any angle.
+    var workshopRoom = new THREE.Group();
+    S.model.children.slice(roomStart).forEach(function (mesh) { workshopRoom.add(mesh); });
+    S.model.add(workshopRoom);
     box(7.4, 0.28, 4.4, 0, 0.14, 0, C.platform);
     // Alternating safety marks and anchor bolts visually lock the test bed to
     // the room and make its front edge easy to read while orbiting.
@@ -1768,74 +1802,175 @@ window.StemLab = window.StemLab || {
     box(7.6, 0.12, 0.14, 0, 0.72, -2.02, C.frame);
     [-3.55, 3.55].forEach(function (x) { box(0.12, 1.25, 0.12, x, 0.72, -2.02, C.frame); });
 
-    // Amber is the long effort path; blue is the shorter load path.
-    var cueMA = Math.max(0.2, Math.min(8, Number(p.ma) || 1));
-    var effortRail = Math.min(3.1, 0.7 + cueMA * 0.3);
-    var loadRail = Math.max(0.45, effortRail / cueMA);
-    box(effortRail, 0.055, 0.12, -3.25 + effortRail / 2, 0.42, 1.72, C.effort);
-    box(loadRail, 0.055, 0.12, 3.25 - loadRail / 2, 0.42, 1.72, C.load);
-    var effortDot = finishMesh(new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 10), mat(C.effort, true)), false);
-    effortDot.position.set(-3.25, 0.42, 1.72); S.model.add(effortDot);
-    var loadDot = finishMesh(new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 10), mat(C.load, true)), false);
-    loadDot.position.set(3.25, 0.42, 1.72); S.model.add(loadDot);
-    var demo = {
-      kind: id, effortStartX: -3.25, effortEndX: -3.25 + effortRail,
-      loadStartX: 3.25, loadEndX: 3.25 - loadRail,
-      lamps: roomLamps, beacons: roomBeacons
+    // Both distances start at the same zero and use one scale. Never clamp the
+    // ratio or inflate a short path: the numeric panel explains tiny movements.
+    var cueMA = Number(p.ma), cueValid = finite(cueMA) && cueMA > 0;
+    var railMax = 6.1, railStart = -3.05, effortZ = 1.52, loadZ = 1.92;
+    var effortRail = cueValid ? railMax * cueMA / Math.max(1, cueMA) : 0;
+    var loadRail = cueValid ? railMax / Math.max(1, cueMA) : 0;
+    box(6.6, 0.08, 0.7, 0, 0.34, 1.72, C.frame);
+    [effortZ, loadZ].forEach(function (z) {
+      box(railMax, 0.018, 0.1, 0, 0.393, z, C.platform);
+      for (var mark = 0; mark <= 4; mark++) box(0.018, 0.016, 0.15, railStart + mark * railMax / 4, 0.41, z, C.metal);
+    });
+    box(0.025, 0.025, 0.6, railStart, 0.409, 1.72, C.metal);
+    var effortTrack = box(cueValid ? effortRail : 1, 0.022, 0.025, railStart + effortRail / 2, 0.411, effortZ, C.effort);
+    var loadTrack = box(cueValid ? loadRail : 1, 0.022, 0.025, railStart + loadRail / 2, 0.411, loadZ, C.load);
+    effortTrack.visible = loadTrack.visible = cueValid;
+    // Thin rails show the complete stroke; wider fills show only the distance
+    // already traveled. Both fills stay anchored to the shared zero.
+    var effortFill = box(cueValid ? effortRail : 1, 0.012, 0.125, railStart, 0.42, effortZ, C.effort);
+    var loadFill = box(cueValid ? loadRail : 1, 0.012, 0.125, railStart, 0.42, loadZ, C.load);
+    effortFill.visible = loadFill.visible = false;
+    // Different silhouettes carry the meaning even when the colors are hard to distinguish.
+    var effortDot = finishMesh(new THREE.Mesh(new THREE.OctahedronGeometry(0.09, 0), mat(C.effort, true)), false);
+    effortDot.position.set(railStart, 0.57, effortZ); effortDot.visible = cueValid; S.model.add(effortDot);
+    var loadDot = finishMesh(new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.023, 8, 24), mat(C.load, true)), false);
+    loadDot.position.set(railStart, 0.57, loadZ); loadDot.visible = cueValid; S.model.add(loadDot);
+    // The host positions its camera after tick(). Orient at render time so a
+    // parked scene also updates the ring on the first frame of a camera change.
+    loadDot.onBeforeRender = function (renderer, scene, camera) {
+      this.quaternion.copy(camera.quaternion);
+      this.updateMatrixWorld(true);
     };
-    function makeMotionTrail(color, startX) {
+    var demo = {
+      kind: id, effortStartX: railStart, effortEndX: railStart + effortRail,
+      loadStartX: railStart, loadEndX: railStart + loadRail,
+      distanceValid: cueValid, effortTrack: effortTrack, loadTrack: loadTrack,
+      effortFill: effortFill, loadFill: loadFill,
+      lamps: roomLamps, beacons: roomBeacons, room: workshopRoom
+    };
+    function makeMotionTrail(color, startX, z) {
       var dots = [];
       for (var trailIndex = 0; trailIndex < 4; trailIndex++) {
         var trailMat = new THREE.MeshLambertMaterial({
           color: color, emissive: color, emissiveIntensity: 0.18,
-          transparent: true, opacity: 0.16 + trailIndex * 0.08
+          transparent: true, opacity: 0.22 + trailIndex * 0.13
         });
-        var trailDot = finishMesh(new THREE.Mesh(new THREE.SphereGeometry(0.055 + trailIndex * 0.008, 12, 8), trailMat), false);
-        trailDot.position.set(startX, 0.42, 1.72);
+        var trailDot = finishMesh(new THREE.Mesh(new THREE.SphereGeometry(0.018 + trailIndex * 0.004, 12, 8), trailMat), false);
+        trailDot.position.set(startX, 0.47, z);
         trailDot.visible = false; S.model.add(trailDot); dots.push(trailDot);
       }
       return dots;
     }
-    demo.effortTrail = makeMotionTrail(C.effort, demo.effortStartX);
-    demo.loadTrail = makeMotionTrail(C.load, demo.loadStartX);
+    demo.effortTrail = makeMotionTrail(C.effort, demo.effortStartX, effortZ);
+    demo.loadTrail = makeMotionTrail(C.load, demo.loadStartX, loadZ);
 
     if (id === 'lever') {
       var ea = Math.max(0.1, Number(p.effortArm) || 2);
       var la = Math.max(0.1, Number(p.loadArm) || 1);
       var total = ea + la;
       var eVis = 5.4 * ea / total, lVis = 5.4 * la / total;
-      var fulcrum = new THREE.Mesh(new THREE.ConeGeometry(0.55, 0.9, 3), mat(C.frame));
-      fulcrum.position.set(0, 0.72, 0); fulcrum.rotation.y = Math.PI / 2; S.model.add(fulcrum);
+      // A fixed bearing cradle carries the axle; only the beam rotates.
+      var pivotY = 1.6;
+      box(1.45, 0.12, 1.65, 0, 0.34, 0, C.metal);
+      [-1, 1].forEach(function (side) {
+        box(0.34, 1.18, 0.18, 0, 0.99, side * 0.53, C.frame);
+        cylinder(0.28, 0.18, 0, pivotY, side * 0.53, C.frame, 'z');
+        torus(0.19, 0.045, 0, pivotY, side * 0.64, C.metal, 'z');
+        cylinder(0.075, 0.06, 0, pivotY, side * 0.7, C.effort, 'z');
+        [-1, 1].forEach(function (foot) {
+          cylinder(0.075, 0.055, foot * 0.53, 0.425, side * 0.58, C.effort, 'y');
+          box(0.1, 0.79, 0.12, foot * 0.25, 0.75, side * 0.53, C.frame, null, foot * 0.55);
+        });
+      });
       var leverMotion = new THREE.Group();
-      leverMotion.position.set(0, 1.24, 0); leverMotion.rotation.z = 0.055; S.model.add(leverMotion);
-      box(eVis + lVis, 0.22, 0.62, (lVis - eVis) / 2, 0, 0, C.wood, leverMotion);
-      cylinder(0.15, 0.82, 0, 0, 0, C.metal, 'z', leverMotion);
+      leverMotion.position.set(0, pivotY, 0); leverMotion.rotation.z = 0.055; S.model.add(leverMotion);
+      // Keep both contacts at the selected arm distances; equal end margins
+      // support the pads without distorting the ratio around the pivot.
+      var leverBeam = box(eVis + lVis + 0.84, 0.22, 0.62, (lVis - eVis) / 2, 0, 0, C.wood, leverMotion);
+      cylinder(0.15, 1.34, 0, 0, 0, C.metal, 'z', leverMotion);
       [-1, 1].forEach(function (side) { cylinder(0.22, 0.06, 0, 0, side * 0.38, C.frame, 'z', leverMotion); });
       for (var graduation = 1; graduation < 18; graduation++) box(0.025, 0.012, graduation % 3 ? 0.13 : 0.26, -eVis + graduation * 5.4 / 18, 0.117, 0.17, C.metal, leverMotion);
-      box(0.7, 0.7, 0.7, lVis - 0.12, 0.58, 0, C.load, leverMotion);
+      var loadX = lVis, effortX = -eVis;
+      var armGuides = [];
+      [-1, 1].forEach(function (side) {
+        var guide = new THREE.Group(); guide.position.z = side * 0.84; leverMotion.add(guide);
+        var effortSpan = box(eVis, 0.035, 0.035, -eVis / 2, -0.28, 0, C.effort, guide);
+        var loadSpan = box(lVis, 0.035, 0.035, lVis / 2, -0.28, 0, C.load, guide);
+        [effortX, 0, loadX].forEach(function (x) {
+          box(0.022, x === 0 ? 0.32 : 0.2, 0.04, x, x === 0 ? -0.14 : -0.22, 0, C.metal, guide);
+        });
+        armGuides.push({ group: guide, effort: effortSpan, load: loadSpan });
+      });
+      demo.leverBeam = leverBeam; demo.armGuides = armGuides;
+      var leverLoad = box(0.7, 0.7, 0.7, loadX, 0.48, 0, C.load, leverMotion);
+      box(0.78, 0.02, 0.78, loadX, 0.12, 0, C.metal, leverMotion);
+      box(Math.min(0.4, eVis * 0.7), 0.08, 0.72, effortX, 0.15, 0, C.effort, leverMotion);
       demo.motion = leverMotion; demo.baseRotation = 0.055;
-      demo.effortArrow = arrow(-eVis + 0.12, 2.75, 0.8, C.effort);
-      demo.loadArrow = arrow(lVis - 0.12, 2.25, 0.48, C.load, 'up');
+      // Limit travel at extreme arm ratios so the beam clears the test bed.
+      demo.leverTravel = Math.min(0.22, Math.asin(1.02 / (Math.max(eVis, lVis) + 0.42)) - demo.baseRotation);
+      demo.leverLoad = leverLoad;
+      demo.effortContact = new THREE.Vector3(effortX, 0.19, 0);
+      demo.loadContact = new THREE.Vector3(loadX, 0.13, 0);
+      demo.effortArrow = arrow(effortX, 3.0, 0.65, C.effort);
+      demo.loadArrow = arrow(loadX, 1.7, 0.4, C.load, 'up');
     } else if (id === 'pulley') {
       var segs = Math.max(1, Math.min(6, Math.round(Number(p.segments) || 2)));
-      box(5.4, 0.18, 0.45, 0, 3.25, 0, C.frame);
-      [-2.5, 2.5].forEach(function (x) { box(0.18, 3.0, 0.35, x, 1.72, 0, C.frame); });
-      var spread = Math.min(3.6, 0.62 * (segs - 1));
-      var supportingRopes = [];
-      for (var si = 0; si < segs; si++) {
-        var sx = segs === 1 ? 0 : -spread / 2 + spread * si / (segs - 1);
-        supportingRopes.push(cylinder(0.035, 2.24, sx, 2.04, 0, C.rope, 'y'));
-      }
-      torus(0.48, 0.12, -0.62, 2.68, 0, C.metal, 'z');
-      sheave(-0.62, 2.68);
+      var pulleyRadius = 0.28, pulleyTop = 3.05, pulleyBottom = 1.5;
+      var strandSpacing = pulleyRadius * 2, ropeStartX = -(segs - 1) * strandSpacing / 2;
+      var freeX = ropeStartX + segs * strandSpacing, gripY = 2.15;
+      var ropeSpan = pulleyTop - pulleyBottom, freeSpan = pulleyTop - gripY;
+      box(5.4, 0.18, 0.6, 0, 3.65, 0, C.frame);
+      [-2.5, 2.5].forEach(function (x) {
+        box(0.62, 0.12, 1.05, x, 0.34, 0, C.metal);
+        box(0.18, 3.2, 0.35, x, 1.98, 0, C.frame);
+        [-1, 1].forEach(function (side) { cylinder(0.07, 0.05, x, 0.425, side * 0.36, C.effort, 'y'); });
+        cylinder(0.08, 0.66, x, 3.65, 0, C.metal, 'z');
+      });
       var pulleyMotion = new THREE.Group(); S.model.add(pulleyMotion);
-      torus(0.48, 0.12, 0.62, 1.35, 0, C.metal, 'z', pulleyMotion);
-      sheave(0.62, 1.35, pulleyMotion);
-      box(Math.max(2.2, spread + 0.3), 0.2, 0.72, 0, 0.82, 0, C.frame, pulleyMotion);
-      box(1.25, 0.72, 0.92, 0, 0.43, 0, C.load, pulleyMotion);
-      demo.motion = pulleyMotion; demo.supportingRopes = supportingRopes;
-      demo.effortArrow = arrow(2.0, 2.75, 0.9, C.effort);
-      demo.loadArrow = arrow(0, 1.05, 0.45, C.load, 'up');
+      var supportingRopes = [], ropeArcs = [], pulleyWheels = [], supportCues = [];
+      var leftTravel = segs % 2 ? 1 : 0;
+      // Start on the load for odd strand counts, or on the fixed frame for even
+      // counts. Alternating lower and upper turns always ends at a downward pull.
+      for (var si = 0; si < segs; si++) {
+        var sx = ropeStartX + si * strandSpacing;
+        supportingRopes.push(cylinder(0.027, ropeSpan, sx, (pulleyTop + pulleyBottom) / 2, 0, C.rope, 'y'));
+        // One equal-size upward cue per supporting strand. These indicate the
+        // equal tension in the ideal rope, not the direction the rope travels.
+        var supportCue = new THREE.Group();
+        supportCue.position.set(sx, (pulleyTop + pulleyBottom) / 2, 0.34); S.model.add(supportCue);
+        cylinder(0.023, 0.26, 0, -0.07, 0, C.load, 'y', supportCue);
+        var supportTip = finishMesh(new THREE.Mesh(new THREE.ConeGeometry(0.085, 0.18, 16), mat(C.load, true)), false);
+        supportTip.position.y = 0.11; supportCue.add(supportTip); supportCues.push(supportCue);
+        var movingSheave = (segs - si) % 2 === 0;
+        var wheelY = movingSheave ? pulleyBottom : pulleyTop;
+        var wheelParent = movingSheave ? pulleyMotion : S.model;
+        var wheelX = sx + pulleyRadius;
+        var wheel = sheave(wheelX, wheelY, pulleyRadius, wheelParent);
+        pulleyWheels.push({mesh:wheel, moving:movingSheave, turnPerLift:((movingSheave ? 1 : 0) - leftTravel) / pulleyRadius});
+        leftTravel = (movingSheave ? 2 : 0) - leftTravel;
+        [-1, 1].forEach(function (side) {
+          var mountY = movingSheave ? 1.05 : 3.65;
+          box(0.105, Math.abs(mountY - wheelY), 0.08, wheelX, (mountY + wheelY) / 2, side * 0.21, C.frame, wheelParent);
+        });
+        var arcPoints = [];
+        for (var arcStep = 0; arcStep <= 32; arcStep++) {
+          var arcAngle = Math.PI + (movingSheave ? 1 : -1) * arcStep * Math.PI / 32;
+          arcPoints.push(new THREE.Vector3(pulleyRadius * Math.cos(arcAngle), pulleyRadius * Math.sin(arcAngle), 0));
+        }
+        var ropeArc = finishMesh(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(arcPoints), 32, 0.027, 6, false), mat(C.rope)));
+        ropeArc.position.set(wheelX, wheelY, 0); wheelParent.add(ropeArc); ropeArcs.push(ropeArc);
+      }
+      var anchorParent = segs % 2 ? pulleyMotion : S.model;
+      var anchorY = segs % 2 ? pulleyBottom : pulleyTop;
+      var anchorMount = segs % 2 ? 1.05 : 3.65;
+      cylinder(0.035, Math.abs(anchorMount - anchorY), ropeStartX, (anchorY + anchorMount) / 2, 0, C.metal, 'y', anchorParent);
+      var ropeAnchor = torus(0.075, 0.023, ropeStartX, anchorY, 0, C.metal, 'z', anchorParent);
+      cylinder(0.045, 0.09, ropeStartX, anchorY, 0, C.rope, 'y', anchorParent);
+      box(Math.max(1.35, (segs - 1) * strandSpacing + 0.32), 0.14, 0.6, 0, 1.05, 0, C.frame, pulleyMotion);
+      cylinder(0.045, 0.08, 0, 0.94, 0, C.metal, 'y', pulleyMotion);
+      cylinder(0.085, 0.46, 0, 0.99, 0, C.metal, 'z', pulleyMotion);
+      var pulleyLoad = box(1.15, 0.6, 0.85, 0, 0.63, 0, C.load, pulleyMotion);
+      var freeRope = cylinder(0.027, freeSpan, freeX, (pulleyTop + gripY) / 2, 0, C.rope, 'y');
+      var pullGrip = cylinder(0.08, 0.36, freeX, gripY, 0, C.effort, 'x');
+      demo.motion = pulleyMotion; demo.supportingRopes = supportingRopes; demo.supportCues = supportCues;
+      demo.ropeArcs = ropeArcs; demo.pulleyWheels = pulleyWheels; demo.ropeAnchor = ropeAnchor; demo.pulleyLoad = pulleyLoad;
+      demo.pulleyTop = pulleyTop; demo.pulleyBottom = pulleyBottom; demo.ropeSpan = ropeSpan;
+      demo.freeRope = freeRope; demo.freeSpan = freeSpan; demo.pullGrip = pullGrip; demo.gripY = gripY;
+      demo.pulleySegments = segs; demo.pulleyLift = Math.min(0.65, 1.4 / segs);
+      demo.effortArrow = arrow(freeX + 0.3, gripY + 0.36, 0.35, C.effort);
+      demo.loadArrow = arrow(-0.78, 0.55, 0.4, C.load, 'up');
     } else if (id === 'windlass') {
       var handleR = Math.max(0.05, Number(p.handleR) || 0.45);
       var drumR = Math.max(0.02, Number(p.drumR) || 0.1);
@@ -1859,8 +1994,25 @@ window.StemLab = window.StemLab || {
       box(wheelR * 2, 0.09, 0.09, 0, 0, 0, C.effort, wheelMotion, 0.58);
       box(wheelR * 2, 0.09, 0.09, 0, 0, 0, C.effort, wheelMotion, 0.58 + Math.PI / 2);
       cylinder(0.16, 0.26, 0, 0, 0, C.metal, 'z', wheelMotion);
-      cylinder(0.10, 0.38, wheelR * Math.cos(0.58), wheelR * Math.sin(0.58), 0.2, C.wood, 'z', wheelMotion);
-      [-1, 1].forEach(function (side) { cylinder(drumVis + 0.12, 0.09, 0, axleY, side * 1.05, C.metal, 'z'); });
+      var wheelGrip = cylinder(0.10, 0.38, wheelR * Math.cos(0.58), wheelR * Math.sin(0.58), 0.2, C.wood, 'z', wheelMotion);
+      var drumMarkInk = contrast ? 0x000000 : 0xf8fafc;
+      var wheelMark = cylinder(0.055, 0.025, wheelGrip.position.x, wheelGrip.position.y, 0.4, drumMarkInk, 'z', wheelMotion);
+      // Surface marks make the shared wheel-and-drum rotation visible. The
+      // winding remains a continuous guide to the hanging rope's tangent.
+      var drumRotor = new THREE.Group(); drumRotor.position.y = axleY; S.model.add(drumRotor);
+      var drumStripes = [], drumMarks = [], flangeRadius = drumVis + 0.12;
+      [-1, 1].forEach(function (side) {
+        cylinder(flangeRadius, 0.09, 0, 0, side * 1.05, C.metal, 'z', drumRotor);
+        [-1, 1].forEach(function (face) {
+          drumMarks.push(cylinder(0.05, 0.012, flangeRadius * 0.76 * Math.cos(0.58),
+            flangeRadius * 0.76 * Math.sin(0.58), side * 1.05 + face * 0.049,
+            drumMarkInk, 'z', drumRotor));
+        });
+        var stripeAngle = 0.58 + (side < 0 ? Math.PI : 0), stripeRadius = drumVis + 0.012;
+        drumStripes.push(box(0.03, 0.045, 0.76, stripeRadius * Math.cos(stripeAngle),
+          stripeRadius * Math.sin(stripeAngle), 0.52, drumMarkInk, drumRotor, stripeAngle));
+      });
+      demo.drumRotor = drumRotor; demo.drumStripes = drumStripes; demo.drumMarks = drumMarks; demo.wheelMark = wheelMark;
       // A continuous winding ends at the tangent of the hanging rope.
       var coilPoints=[],ropeRadius=drumVis+0.03;
       for(var coil=0;coil<=320;coil++){
@@ -1873,8 +2025,10 @@ window.StemLab = window.StemLab || {
       var windlassLoad=box(0.86,0.72,0.72,ropeRadius,loadY,0,C.load);
       demo.motion=wheelMotion;demo.drum=windlassDrum;demo.load=windlassLoad;demo.loadY=loadY;demo.hangingRope=hangingRope;
       demo.axleY=axleY;demo.ropeLength=ropeLength;demo.winding=winding;
-      demo.effortArrow = arrow(1.55, 3.25, 0.72, C.effort);
-      demo.loadArrow = arrow(0.48, 0.92, 0.42, C.load, 'up');
+      demo.wheelGrip = wheelGrip; demo.wheelRadius = wheelR;
+      demo.turnGuide = turnGuide(wheelR + 0.28, 0, axleY, 1.97, false);
+      demo.effortArrow = arrow(0, axleY, 0.55, C.effort);
+      demo.loadArrow = arrow(ropeRadius + 0.64, loadY - 0.14, 0.42, C.load, 'up');
     } else if (id === 'ramp') {
       var L = Math.max(0.5, Number(p.length) || 4);
       var H = Math.max(0.2, Math.min(L, Number(p.height) || 1));
@@ -1885,38 +2039,133 @@ window.StemLab = window.StemLab || {
         -0.72 * Math.cos(angle) - 0.545 * Math.sin(angle),
         0.42 + visH / 2 - 0.72 * Math.sin(angle) + 0.545 * Math.cos(angle), 0, C.load, null, angle);
       demo.motion = rampCrate; demo.baseX = rampCrate.position.x; demo.baseY = rampCrate.position.y; demo.angle = angle;
-      box(0.16, visH, 1.85, (visL / 2 - 0.12) * Math.cos(angle), 0.28 + visH / 2, 0, C.frame);
+      // Deck seams and underside ribs follow the incline, including near-vertical settings.
+      var rampDeck = new THREE.Group();
+      rampDeck.position.set(0, 0.42 + visH / 2, 0); rampDeck.rotation.z = angle; S.model.add(rampDeck);
+      for (var plank = -4; plank <= 4; plank++) {
+        box(0.018, 0.012, 1.96, plank * 0.55, 0.126, 0, contrast ? 0x000000 : 0x533921, rampDeck);
+        var ribBottom = 0.42 + visH / 2 + (plank * 0.55 - 0.06) * Math.sin(angle) - 0.22 * Math.cos(angle);
+        if (ribBottom > 0.29) box(0.12, 0.1, 2.08, plank * 0.55, -0.17, 0, C.frame, rampDeck);
+      }
+      var rampSupports = [];
+      [-1, 1].forEach(function (side) {
+        var stations = Math.cos(angle) < 0.15 ? [2.35] : [-0.65, 2.35];
+        var joints = [];
+        stations.forEach(function (station) {
+          var x = station * Math.cos(angle) + 0.12 * Math.sin(angle);
+          var y = 0.42 + visH / 2 + station * Math.sin(angle) - 0.12 * Math.cos(angle);
+          if (y < 0.4) return;
+          box(0.44, 0.06, 0.42, x, 0.31, side * 0.87, C.metal);
+          var post = cylinder(0.065, y - 0.34, x, (y + 0.34) / 2, side * 0.87, C.frame, 'y');
+          rampSupports.push(post); joints.push(new THREE.Vector3(x, y, side * 0.87));
+          cylinder(0.12, 0.3, x, y, side * 0.87, C.metal, 'z');
+          [-1, 1].forEach(function (bolt) { cylinder(0.045, 0.035, x + bolt * 0.14, 0.3575, side * 0.87, C.effort, 'y'); });
+        });
+        if (joints.length === 2) {
+          var lower = new THREE.Vector3(joints[0].x, 0.4, side * 0.87);
+          var braceDelta = joints[1].clone().sub(lower);
+          var brace = cylinder(0.045, braceDelta.length(), 0, 0, 0, C.frame, 'y');
+          brace.position.copy(lower).add(joints[1]).multiplyScalar(0.5);
+          brace.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), braceDelta.normalize());
+        }
+      });
+      demo.rampSupports = rampSupports; demo.rampDeck = rampDeck;
       [-1, 1].forEach(function (side) { box(visL, 0.08, 0.07, -0.16 * Math.sin(angle), 0.42 + visH / 2 + 0.16 * Math.cos(angle), side * 1.01, C.metal, null, angle); });
       demo.effortArrow = arrow(rampCrate.position.x - 1.65 * Math.cos(angle), rampCrate.position.y - 1.65 * Math.sin(angle), 0.72, C.effort);
       demo.effortArrow.rotation.z = angle + Math.PI / 2;
       demo.effortArrow.userData.mlBaseX = demo.effortArrow.position.x;
-      demo.loadArrow = arrow(1.35, 2.0 + visH / 2, 0.46, C.load, 'up');
+      // A front-edge ruler follows the same incline as the crate. The progress
+      // strip starts exactly at the crate's initial station and ends after one
+      // working stroke; tick marks are fractions of that stroke, not metres.
+      var rampTravel = new THREE.Group();
+      rampTravel.position.set(-0.72 * Math.cos(angle) - 0.25 * Math.sin(angle),
+        0.42 + visH / 2 - 0.72 * Math.sin(angle) + 0.25 * Math.cos(angle), 1.26);
+      rampTravel.rotation.z = angle; S.model.add(rampTravel);
+      box(1.65, 0.065, 0.15, 0.725, 0, 0, C.frame, rampTravel);
+      var travelFill = box(1.45, 0.045, 0.045, 0.725, 0.053, 0.07, C.load, rampTravel);
+      for (var travelTick = 0; travelTick <= 4; travelTick++) {
+        box(0.018, travelTick % 2 ? 0.12 : 0.18, 0.025, travelTick * 1.45 / 4, 0.06, 0.105, C.metal, rampTravel);
+      }
+      var travelCursor = new THREE.Group(); rampTravel.add(travelCursor);
+      var cursorRing = torus(0.105, 0.023, 0, 0.13, 0.14, C.load, 'z', travelCursor);
+      // The upright and cross-line connect the marker to the crate's centre.
+      box(0.022, 0.165, 0.022, 0, 0.2125, 0.14, C.load, travelCursor);
+      box(0.022, 0.022, 0.79, 0, 0.295, -0.255, C.load, travelCursor);
+      demo.rampTravel = rampTravel; demo.rampTravelFill = travelFill;
+      demo.rampTravelCursor = travelCursor; demo.rampTravelRing = cursorRing;
+      demo.loadArrow = arrow(rampCrate.position.x + 0.82, rampCrate.position.y - 0.35, 0.46, C.load, 'up');
+      demo.loadArrow.position.z = 0.75;
+      demo.loadArrow.userData.mlBaseX = demo.loadArrow.position.x;
     } else if (id === 'wedge') {
-      var ratio = Math.max(1, (Number(p.length) || 0.3) / Math.max(0.001, Number(p.thickness) || 0.06));
+      // Preserve the selected length/thickness ratio, even for a short, broad wedge.
+      var ratio = Math.max(0.001, (Number(p.length) || 0.3) / Math.max(0.001, Number(p.thickness) || 0.06));
+      var bladeLength = 1.65 * Math.min(1, ratio), wedgeHalf = 0.825 / Math.max(1, ratio);
+      var wedgeBevel = Math.min(0.018, wedgeHalf * 0.16);
+      var woodBase = 0.4, woodHeight = 1.45, woodTop = woodBase + woodHeight;
+      var entryDepth = Math.min(0.12, bladeLength * 0.12);
+      var wedgeY = woodTop - entryDepth + bladeLength / 2;
+      var wedgeTravel = Math.min(0.78, bladeLength * 0.65);
+      // A bevel offsets the sloping face along its normal, not just horizontally.
+      var bevelClearance = wedgeBevel * Math.sqrt(1 + Math.pow(wedgeHalf / bladeLength, 2));
+      var startGap = entryDepth * wedgeHalf / bladeLength + bevelClearance;
       var splitLeft = new THREE.Group(), splitRight = new THREE.Group();
       S.model.add(splitLeft); S.model.add(splitRight);
-      box(1.12, 2.0, 3.2, -0.57, 1.36, 0, C.wood, splitLeft);
-      box(1.12, 2.0, 3.2, 0.57, 1.36, 0, C.wood, splitRight);
-      // Dark end-grain seams make it obvious that this is one block about to
-      // separate, rather than two unrelated objects beside the wedge.
-      box(0.055, 1.72, 2.9, -0.015, 1.36, 0, C.frame, splitLeft);
-      box(0.055, 1.72, 2.9, 0.015, 1.36, 0, C.frame, splitRight);
-      var wedgeHalf = Math.max(0.18, 1.4 / Math.sqrt(ratio));
+      var woodHalves = [];
+      [-1, 1].forEach(function (side) {
+        var half = side < 0 ? splitLeft : splitRight;
+        half.position.x = side * startGap;
+        woodHalves.push(box(1.12, woodHeight, 3.2, side * 0.56, woodBase + woodHeight / 2, 0, C.wood, half));
+        // Matching growth rings on both ends reveal one piece of timber opening.
+        var grainPoints = [];
+        [-1, 1].forEach(function (end) {
+          for (var ring = 1; ring <= 5; ring++) {
+            for (var arc = 0; arc < 24; arc++) {
+              for (var edge = 0; edge < 2; edge++) {
+                var theta = -Math.PI / 2 + (arc + edge) * Math.PI / 24;
+                var r = ring / 5 + 0.016 * Math.sin(theta * 5 + ring);
+                grainPoints.push(new THREE.Vector3(side * 1.03 * r * Math.cos(theta), woodBase + woodHeight / 2 + 0.64 * r * Math.sin(theta), end * 1.607));
+              }
+            }
+          }
+        });
+        var grain = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(grainPoints),
+          new THREE.LineBasicMaterial({color:contrast ? 0x000000 : 0x563416, transparent:!contrast, opacity:contrast ? 1 : 0.72}));
+        half.add(grain);
+        // Fine fracture lines stay on the exposed inner face as the halves slide.
+        var fracturePoints = [];
+        for (var fibre = 0; fibre < 9; fibre++) {
+          var fz = -1.42 + fibre * 0.355;
+          fracturePoints.push(new THREE.Vector3(-side * 0.003, woodBase + 0.13, fz),
+            new THREE.Vector3(-side * 0.003, woodTop - 0.09, fz + 0.045 * Math.sin(fibre * 3)));
+        }
+        half.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(fracturePoints), grain.material));
+      });
+      // The timber slides on two fixed rails instead of rotating through the bed.
+      [-1, 1].forEach(function (side) {
+        box(4.9, 0.12, 0.24, 0, 0.34, side * 1.12, C.frame);
+        [-1, 1].forEach(function (end) {
+          box(0.32, 0.06, 0.44, end * 2.25, 0.31, side * 1.12, C.metal);
+          cylinder(0.065, 0.05, end * 2.25, 0.425, side * 1.12, C.effort, 'y');
+        });
+      });
       var wedgeProfile = new THREE.Shape();
-      wedgeProfile.moveTo(-wedgeHalf, 1.4); wedgeProfile.lineTo(wedgeHalf, 1.4);
-      wedgeProfile.lineTo(0, -1.4); wedgeProfile.closePath();
-      var wedgeGeometry = new THREE.ExtrudeGeometry(wedgeProfile, {depth:2.6, bevelEnabled:true, bevelSegments:1, steps:1, bevelSize:0.025, bevelThickness:0.025});
+      wedgeProfile.moveTo(-wedgeHalf, bladeLength / 2); wedgeProfile.lineTo(wedgeHalf, bladeLength / 2);
+      wedgeProfile.lineTo(0, -bladeLength / 2); wedgeProfile.closePath();
+      var wedgeGeometry = new THREE.ExtrudeGeometry(wedgeProfile, {depth:2.6, bevelEnabled:true, bevelSegments:1, steps:1, bevelSize:wedgeBevel, bevelThickness:wedgeBevel});
       wedgeGeometry.translate(0,0,-1.3);
       var wedge = finishMesh(new THREE.Mesh(wedgeGeometry, mat(C.metal)));
       var bladeEdges = new THREE.LineSegments(new THREE.EdgesGeometry(wedgeGeometry, 25),
         new THREE.LineBasicMaterial({color:contrast ? 0x000000 : 0x334155, transparent:!contrast, opacity:contrast ? 1 : 0.6}));
       wedge.add(bladeEdges);
-      wedge.position.set(0, 2.05, 0); S.model.add(wedge);
-      demo.motion = wedge; demo.baseY = 2.05; demo.splitLeft = splitLeft; demo.splitRight = splitRight;
-      box(2.5, 0.24, 0.24, 0, 3.42, 0, C.effort);
-      demo.effortArrow = arrow(0, 4.0, 0.55, C.effort);
+      wedge.position.set(0, wedgeY, 0); S.model.add(wedge);
+      var strikingCap = box(wedgeHalf * 2 + 0.12, 0.12, 2.78, 0, bladeLength / 2 + 0.06, 0, C.effort, wedge);
+      [-1, 1].forEach(function (end) { cylinder(Math.min(0.055, wedgeHalf * 0.6), 0.025, 0, bladeLength / 2 + 0.1325, end * 1.05, C.metal, 'y', wedge); });
+      demo.motion = wedge; demo.baseY = wedgeY; demo.splitLeft = splitLeft; demo.splitRight = splitRight;
+      demo.wedgeLength = bladeLength; demo.wedgeHalf = wedgeHalf; demo.wedgeTravel = wedgeTravel;
+      demo.wedgeBevel = wedgeBevel; demo.wedgeStartGap = startGap; demo.woodTop = woodTop; demo.woodHalves = woodHalves; demo.strikingCap = strikingCap;
+      demo.effortArrow = arrow(0, wedgeY + bladeLength / 2 + 0.93, 0.38, C.effort);
       demo.splitArrows = [-1,1].map(function (side) {
-        var splitArrow = arrow(side * 0.7, 1.8, 0.65, C.load);
+        var splitArrow = arrow(side * (0.7 + startGap), 1.18, 0.65, C.load);
         splitArrow.position.z = 1.85; splitArrow.rotation.z = side * Math.PI / 2;
         splitArrow.userData.mlSide = side; return splitArrow;
       });
@@ -1924,16 +2173,20 @@ window.StemLab = window.StemLab || {
       var pitch = Math.max(0.001, Number(p.pitch) || 0.005);
       var hr = Math.max(0.02, Number(p.handleR) || 0.15);
       var screwMotion = new THREE.Group(); S.model.add(screwMotion);
-      cylinder(0.35, 2.2, 0, 2.15, 0, C.metal, 'y', screwMotion);
+      var screwShaft = cylinder(0.35, 2.4, 0, 2.25, 0, C.metal, 'y', screwMotion);
       var rings = Math.max(6, Math.min(22, Math.round(0.055 / pitch)));
       // A continuous thread shows the inclined plane wrapped around the shaft.
+      var threadRadius = Math.min(0.055, (1.99 / rings) * 0.3), threadOrbit = 0.35 + threadRadius * 0.8;
       var threadPoints = [];
       for (var ri = 0; ri <= rings * 32; ri++) {
         var threadT = ri / (rings * 32), threadAngle = threadT * rings * Math.PI * 2;
-        threadPoints.push(new THREE.Vector3(0.4 * Math.cos(threadAngle), 1.08 + threadT * 1.99, 0.4 * Math.sin(threadAngle)));
+        threadPoints.push(new THREE.Vector3(threadOrbit * Math.cos(threadAngle), 1.08 + threadT * 1.99, threadOrbit * Math.sin(threadAngle)));
       }
-      var thread = finishMesh(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(threadPoints), rings * 32, 0.055, 6, false), mat(C.effort)));
+      var thread = finishMesh(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(threadPoints), rings * 32, threadRadius, 6, false), mat(C.effort)));
       screwMotion.add(thread);
+      // One revolution advances by one rendered thread spacing, keeping the
+      // helix aligned with the fixed nut at every selected pitch.
+      demo.screwTravel = 1.99 / rings; demo.screwThread = thread; demo.screwShaft = screwShaft;
       [-1, 1].forEach(function (side) { box(0.2, 2.5, 0.28, side * 1.05, 1.55, -0.35, C.frame); });
       box(2.5, 0.24, 0.55, 0, 2.68, -0.12, C.frame);
       cylinder(0.54, 0.32, 0, 2.68, 0, C.metal, 'y');
@@ -1952,19 +2205,32 @@ window.StemLab = window.StemLab || {
       for(var pressMark=0;pressMark<8;pressMark++)box(pressMark%2 ? 0.09 : 0.15,0.018,0.015,1.05,0.88+pressMark*0.12,-0.195,C.effort);
       var handleW = 1.8 + Math.min(2.2, hr * 5);
       box(handleW, 0.2, 0.28, 0, 3.45, 0, C.effort, screwMotion);
-      cylinder(0.14, 0.52, -handleW / 2, 3.45, 0, C.wood, 'y', screwMotion);
+      var screwGrip = cylinder(0.14, 0.52, -handleW / 2, 3.45, 0, C.wood, 'y', screwMotion);
       demo.pressLoad = box(1.55, 0.48, 1.55, 0, 0.67, 0, C.load);
+      demo.pressBands = [];
+      [-1, 1].forEach(function (side) {
+        [-0.12, 0, 0.12].forEach(function (height) {
+          demo.pressBands.push(box(1.4, 0.015, 0.012, 0, height, side * 0.782,
+            contrast ? 0x000000 : 0xd9f5ff, demo.pressLoad));
+        });
+      });
       demo.pressShoe=pressShoe;demo.pressBaseY=0.43;
       demo.motion = screwMotion;
-      demo.effortArrow = arrow(-handleW / 2, 4.1, 0.5, C.effort);
-      demo.loadArrow = arrow(0, 0.66, 0.38, C.load, 'up');
+      demo.screwGrip = screwGrip; demo.handleHalfWidth = handleW / 2;
+      demo.turnGuide = turnGuide(handleW / 2 + 0.32, 0, 3.94, 0, true);
+      demo.effortArrow = arrow(0, 3.7, 0.5, C.effort);
+      demo.loadArrow = arrow(0.9, 1.38, 0.38, C.load);
     }
 
-    S.target = new THREE.Vector3(0, 1.65, 0);
+    S.target = new THREE.Vector3(0, id === 'ramp' ? Math.max(1.65, (visH + 0.9) / 2) : 1.65, 0);
     S.fitPts = [
       new THREE.Vector3(-4.1, 0, -2.5), new THREE.Vector3(4.1, id === 'ramp' ? Math.max(4.4, visH + 0.9) : 4.4, 2.5),
       new THREE.Vector3(0, 0, 2.8), new THREE.Vector3(0, 3.5, -2.8)
     ];
+    if (id === 'wedge') S.fitPts.push(new THREE.Vector3(0, Math.max(4.8, demo.effortArrow.position.y + 0.3), 0));
+    if (id === 'lever') {
+      S.fitPts.push(new THREE.Vector3(-eVis - 0.5, 0.28, 0), new THREE.Vector3(lVis + 0.5, 3.7, 0));
+    }
     demo.effortDot = effortDot; demo.loadDot = loadDot;
     S.mlDemo = demo; S.mlDemoId = null;
     S.tick = function (now) {
@@ -1974,8 +2240,11 @@ window.StemLab = window.StemLab || {
       var elapsed = active ? Math.max(0, (now - (S.mlDemoT0 == null ? now : S.mlDemoT0)) / 1000) : 0;
       var reducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var wave = active ? (reducedMotion ? 1 : Math.sin(Math.min(1, elapsed / 2.2) * Math.PI)) : 0;
-      var k = wave * wave * (3 - 2 * wave);
+      // A manually selected pose uses linear travel and stays independent of the clock.
+      var inspecting = !active && finite(data.motionProgress);
+      var k = inspecting ? Math.max(0, Math.min(1, data.motionProgress)) : wave * wave * (3 - 2 * wave);
       var D = S.mlDemo || {};
+      if (D.room) D.room.visible = !data.focusMechanism;
       if (D.lamps) {
         for (var li = 0; li < D.lamps.length; li++) {
           D.lamps[li].material.emissiveIntensity = active && !reducedMotion ? 0.58 + 0.06 * Math.sin(elapsed * 2 + li) : 0.48;
@@ -1988,14 +2257,26 @@ window.StemLab = window.StemLab || {
           D.beacons[bi].material.emissiveIntensity = active ? 0.5 : 0.24;
         }
       }
-      if (D.kind === 'lever' && D.motion) D.motion.rotation.z = D.baseRotation - 0.22 * k;
-      if (D.kind === 'pulley' && D.motion) D.motion.position.y = 0.72 * k;
-      if (D.supportingRopes) D.supportingRopes.forEach(function (rope) {
-        rope.scale.y = (2.24 - 0.72 * k) / 2.24; rope.position.y = 2.04 + 0.36 * k;
-      });
+      if (D.kind === 'lever' && D.motion) D.motion.rotation.z = D.baseRotation + D.leverTravel * k;
+      if (D.kind === 'pulley') {
+        var pulleyLift = D.pulleyLift * k, pulled = D.pulleySegments * pulleyLift;
+        D.motion.position.y = pulleyLift;
+        D.supportingRopes.forEach(function (rope) {
+          rope.scale.y = (D.ropeSpan - pulleyLift) / D.ropeSpan;
+          rope.position.y = (D.pulleyTop + D.pulleyBottom + pulleyLift) / 2;
+        });
+        D.supportCues.forEach(function (cue, index) {
+          cue.position.y = D.supportingRopes[index].position.y;
+        });
+        D.freeRope.scale.y = (D.freeSpan + pulled) / D.freeSpan;
+        D.freeRope.position.y = (D.pulleyTop + D.gripY - pulled) / 2;
+        D.pullGrip.position.y = D.gripY - pulled;
+        D.pulleyWheels.forEach(function (wheel) { wheel.mesh.rotation.z = wheel.turnPerLift * pulleyLift; });
+      }
       if (D.kind === 'windlass') {
         if (D.motion) D.motion.rotation.z = Math.PI * 2 * k;
         if (D.drum) D.drum.rotation.y = Math.PI * 2 * k;
+        if (D.drumRotor) D.drumRotor.rotation.z = Math.PI * 2 * k;
         if (D.load) D.load.position.y = D.loadY + 0.72 * k;
         if (D.hangingRope) { D.hangingRope.scale.y = (D.ropeLength - 0.72 * k) / D.ropeLength; D.hangingRope.position.y = D.axleY-D.ropeLength/2 + 0.36 * k; }
       }
@@ -2003,41 +2284,99 @@ window.StemLab = window.StemLab || {
         D.motion.position.x = D.baseX + 1.45 * Math.cos(D.angle) * k;
         D.motion.position.y = D.baseY + 1.45 * Math.sin(D.angle) * k;
       }
-      if (D.kind === 'wedge' && D.motion) D.motion.position.y = D.baseY - 0.62 * k;
+      if (D.kind === 'wedge' && D.motion) D.motion.position.y = D.baseY - D.wedgeTravel * k;
       if (D.kind === 'wedge') {
-        if (D.splitLeft) { D.splitLeft.position.x = -0.42 * k; D.splitLeft.rotation.z = 0.1 * k; }
-        if (D.splitRight) { D.splitRight.position.x = 0.42 * k; D.splitRight.rotation.z = -0.1 * k; }
+        var opening = D.wedgeStartGap + D.wedgeTravel * D.wedgeHalf / D.wedgeLength * k;
+        if (D.splitLeft) D.splitLeft.position.x = -opening;
+        if (D.splitRight) D.splitRight.position.x = opening;
       }
       if (D.kind === 'screw' && D.motion) {
         D.motion.rotation.y = Math.PI * 2 * k;
-        D.motion.position.y = -0.18 * k;
-        if(D.pressShoe)D.pressShoe.position.y=-0.18*k;
-        if (D.pressLoad) { D.pressLoad.scale.y = 1 - 0.375 * k; D.pressLoad.position.y = D.pressBaseY + 0.24 * (1 - 0.375 * k); }
+        D.motion.position.y = -D.screwTravel * k;
+        if(D.pressShoe)D.pressShoe.position.y=-D.screwTravel*k;
+        if (D.pressLoad) {
+          var pressHeight = 0.48 - D.screwTravel * k;
+          D.pressLoad.scale.y = pressHeight / 0.48;
+          D.pressLoad.position.y = D.pressBaseY + pressHeight / 2;
+        }
       }
       if (D.effortDot) D.effortDot.position.x = D.effortStartX + (D.effortEndX - D.effortStartX) * k;
       if (D.loadDot) D.loadDot.position.x = D.loadStartX + (D.loadEndX - D.loadStartX) * k;
+      if (D.effortFill && D.loadFill) {
+        D.effortFill.visible = D.loadFill.visible = D.distanceValid && k > 0;
+        D.effortFill.scale.x = D.loadFill.scale.x = k;
+        D.effortFill.position.x = D.effortStartX + (D.effortEndX - D.effortStartX) * k / 2;
+        D.loadFill.position.x = D.loadStartX + (D.loadEndX - D.loadStartX) * k / 2;
+      }
       if (D.effortArrow) D.effortArrow.position.y = D.effortArrow.userData.mlBaseY - 0.16 * k;
       if (D.kind === 'ramp' && D.effortArrow) {
         D.effortArrow.position.x = D.effortArrow.userData.mlBaseX + 1.45 * Math.cos(D.angle) * k;
         D.effortArrow.position.y = D.effortArrow.userData.mlBaseY + 1.45 * Math.sin(D.angle) * k;
       }
-      if (D.splitArrows) D.splitArrows.forEach(function (a) { a.position.x = a.userData.mlSide * (0.7 + 0.42 * k); });
+      if (D.kind === 'wedge' && D.effortArrow) D.effortArrow.position.y = D.effortArrow.userData.mlBaseY - D.wedgeTravel * k;
+      if (D.splitArrows) D.splitArrows.forEach(function (a) { a.position.x = a.userData.mlSide * 0.7 + (a.userData.mlSide < 0 ? D.splitLeft.position.x : D.splitRight.position.x); });
       if (D.loadArrow) {
         D.loadArrow.position.y = D.loadArrow.userData.mlBaseY + 0.12 * k;
         D.loadArrow.scale.setScalar(1 + 0.18 * k);
+      }
+      if (D.kind === 'ramp') {
+        D.loadArrow.position.x = D.loadArrow.userData.mlBaseX + 1.45 * Math.cos(D.angle) * k;
+        D.loadArrow.position.y = D.loadArrow.userData.mlBaseY + 1.45 * Math.sin(D.angle) * k;
+        D.loadArrow.scale.setScalar(1);
+        D.rampTravelFill.visible = k > 0;
+        D.rampTravelFill.scale.x = k;
+        D.rampTravelFill.position.x = 0.725 * k;
+        D.rampTravelCursor.position.x = 1.45 * k;
+      }
+      if (D.kind === 'windlass' || D.kind === 'screw') {
+        var turn = Math.PI * 2 * k, tangent, grip;
+        if (D.kind === 'windlass') {
+          var gripAngle = turn + 0.58;
+          tangent = new THREE.Vector3(-Math.sin(gripAngle), Math.cos(gripAngle), 0);
+          grip = new THREE.Vector3(D.wheelRadius * Math.cos(gripAngle), D.axleY + D.wheelRadius * Math.sin(gripAngle), 2.12);
+          D.loadArrow.position.y = D.loadArrow.userData.mlBaseY + 0.72 * k;
+        } else {
+          tangent = new THREE.Vector3(Math.sin(turn), 0, Math.cos(turn));
+          grip = new THREE.Vector3(-D.handleHalfWidth * Math.cos(turn), 3.7 - D.screwTravel * k, D.handleHalfWidth * Math.sin(turn));
+          D.turnGuide.position.y = 3.94 - D.screwTravel * k;
+          D.loadArrow.position.y = D.loadArrow.userData.mlBaseY - D.screwTravel * k;
+        }
+        D.effortArrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), tangent);
+        // End the arrow just beside the grip; avoid an arrow that pushes through it.
+        D.effortArrow.position.copy(grip).addScaledVector(tangent, D.kind === 'windlass' ? -0.84 : -0.79);
+        D.loadArrow.scale.setScalar(1);
+      }
+      if (D.kind === 'pulley') {
+        D.effortArrow.position.y = D.effortArrow.userData.mlBaseY - D.pulleySegments * D.motion.position.y;
+        D.loadArrow.position.y = D.loadArrow.userData.mlBaseY + D.motion.position.y;
+        D.loadArrow.scale.setScalar(1);
+      }
+      if (D.kind === 'lever') {
+        // World-vertical forces track the beam contacts without tilting with it.
+        var leverAngle = D.motion.rotation.z, leverCos = Math.cos(leverAngle), leverSin = Math.sin(leverAngle);
+        [D.effortArrow, D.loadArrow].forEach(function (force, index) {
+          var contact = index ? D.loadContact : D.effortContact;
+          force.position.x = contact.x * leverCos - contact.y * leverSin;
+          force.position.y = D.motion.position.y + contact.x * leverSin + contact.y * leverCos + (index ? -0.83 : 1.02);
+          force.scale.setScalar(1);
+        });
       }
       function trace(list, startX, endX) {
         if (!list) return;
         for (var ti = 0; ti < list.length; ti++) {
           var fraction = ((ti + 1) / (list.length + 1)) * k;
           list[ti].position.x = startX + (endX - startX) * fraction;
-          list[ti].visible = !!active && k > 0.04;
+          list[ti].visible = D.distanceValid && (!!active || inspecting) && k > 0.04 && Math.abs(endX - startX) > 0.12;
         }
       }
       trace(D.effortTrail, D.effortStartX, D.effortEndX);
       trace(D.loadTrail, D.loadStartX, D.loadEndX);
       if (D.effortDot) D.effortDot.scale.setScalar(1 + 0.45 * k);
-      if (D.loadDot) D.loadDot.scale.setScalar(1 + 0.25 * k);
+      if (D.loadDot) {
+        D.loadDot.scale.setScalar(1 + 0.25 * k);
+        // Keep the hole visible from side, rear, and elevated camera views.
+        // Camera-facing orientation is applied by onBeforeRender above.
+      }
     };
   }
 
@@ -6334,6 +6673,8 @@ window.StemLab = window.StemLab || {
       provenBenches: {},
       shopDemoId: 0,
       shopAnimating: false,
+      shopMotionProgress: null,
+      shopFocusMechanism: false,
       shopDemoBench: null,
 
       // ── P2/P3: siege machines ──
@@ -6775,7 +7116,7 @@ window.StemLab = window.StemLab || {
             key: b.id,
             role: 'tab',
             'aria-selected': active ? 'true' : 'false',
-            onClick: function () { updMulti({ bench: b.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false }); },
+            onClick: function () { updMulti({ bench: b.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false, shopMotionProgress: null }); },
             style: {
               minHeight: 58, padding: '8px 10px', borderRadius: 12, cursor: 'pointer',
               border: '1px solid ' + (active ? T.accent : T.border), textAlign: 'left',
@@ -6938,21 +7279,56 @@ window.StemLab = window.StemLab || {
       // that prove it for the current settings.
       function tradePanel() {
         if (band === 'k2') {
+          var simpleTrade = ma !== null && ma < 1
+            ? __alloT('stem.machinelab.k2_trade_short', 'Here you push harder, but your hand moves a shorter distance. The machine does not create energy.')
+            : ma === 1
+              ? __alloT('stem.machinelab.k2_trade_equal', 'Here your hand and the load move the same distance, with the same force. The machine can still change the direction of your push or pull.')
+              : __alloT('stem.machinelab.k2_trade', 'A simple machine does not give you extra power. It lets you push less hard, but you have to push for longer.');
           return card([
-            h('p', { key: 'p', style: { margin: 0, fontSize: 14, color: T.text, lineHeight: 1.5 } },
-              __alloT('stem.machinelab.k2_trade', 'A simple machine does not give you extra power. It lets you push less hard, but you have to push for longer.'))
+            h('p', { key: 'p', style: { margin: 0, fontSize: 14, color: T.text, lineHeight: 1.5 } }, simpleTrade)
           ], 'trade');
         }
         var eq = work && work.equal;
+        var loadInk = isContrast ? '#00ffff' : T.load;
+        function comparisonBars(kind, title, first, second, firstLabel, unit) {
+          var scale = Math.max(first, second);
+          var rows = [{id:'effort',label:firstLabel,value:first,color:T.effort},{id:'load',label:__alloT('stem.machinelab.load', 'Load'),value:second,color:loadInk}];
+          return h('div', {key:kind, 'data-ml-comparison':kind, role:'group', 'aria-label':title,
+            style:{padding:10,borderRadius:9,background:T.bg,border:'1px solid '+T.border,minWidth:0}}, [
+            h('h4', {key:'title',style:{margin:'0 0 9px',fontSize:12,color:T.text}}, title)
+          ].concat(rows.map(function (row) {
+            var value = fmt(row.value, row.value > 0 && row.value < 0.1 ? 3 : 2) + ' ' + unit;
+            return h('div', {key:row.id,'data-ml-side':row.id,style:{marginTop:8}}, [
+              h('div', {key:'label',style:{display:'flex',justifyContent:'space-between',gap:8,fontSize:12,color:T.text}}, [
+                h('span', {key:'name'},row.label),
+                h('strong', {key:'value',style:{fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}},value)
+              ]),
+              h('div', {key:'track','aria-hidden':'true',style:{height:10,marginTop:5,borderRadius:3,background:T.card,outline:'1px solid '+T.border,overflow:'hidden'}},
+                h('div', {'data-ml-bar':row.id,style:{width:(row.value/scale*100)+'%',height:'100%',background:row.color,borderRadius:2}}))
+            ]);
+          })));
+        }
+        var exchange = ma === null ? null : (ma > 1
+          ? __alloT('stem.machinelab.trade_less_force', 'Less force · more distance')
+          : ma < 1 ? __alloT('stem.machinelab.trade_more_force', 'More force · less distance')
+            : __alloT('stem.machinelab.trade_equal', 'Same force · same distance'));
         return card([
           h('h3', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
             __alloT('stem.machinelab.the_trade', 'The trade')),
           h('p', { key: 'p', style: { margin: '0 0 8px', fontSize: 13, color: T.muted, lineHeight: 1.5 } },
             __alloT('stem.machinelab.trade_body', 'Mechanical advantage trades distance for force. It never creates energy.')),
+          work ? h('div', {key:'comparison',className:'ml-trade-comparison'}, [
+            h('div', {key:'exchange',style:{display:'inline-block',padding:'5px 8px',marginBottom:10,borderRadius:6,background:T.bg,border:'1px solid '+T.border,color:T.text,fontSize:12,fontWeight:750}},exchange),
+            h('div', {key:'pairs',style:{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',gap:8}}, [
+              comparisonBars('distance',__alloT('stem.machinelab.compare_distance', 'Distance comparison'),effortDist,loadDist,__alloT('stem.machinelab.your_hand', 'Your hand'),'m'),
+              comparisonBars('force',__alloT('stem.machinelab.compare_force', 'Force comparison'),effort,load,__alloT('stem.machinelab.your_effort', 'Your effort'),'N')
+            ]),
+            h('p', {key:'scale',style:{fontSize:11,lineHeight:1.4,color:T.dim,margin:'8px 0 12px'}},__alloT('stem.machinelab.pair_scale', 'Bars share a scale within each pair. Read the values beside very small bars.'))
+          ]) : null,
           (band === 'g68' || band === 'g912') && work ? h('div', {
             key: 'w',
             style: {
-              display: 'flex', flexWrap: 'wrap', gap: 12, padding: 10, borderRadius: 8,
+              display: 'grid', gridTemplateColumns:'repeat(2, minmax(0, 1fr))', gap: 8, padding: 10, borderRadius: 8,
               background: T.bg, border: '1px solid ' + T.border
             }
           }, [
@@ -6960,7 +7336,7 @@ window.StemLab = window.StemLab || {
               __alloT('stem.machinelab.work_in', 'Work in: ') + fmt(work.workIn, 2) + ' J'),
             h('span', { key: 'wo', style: { fontSize: 13, color: T.text } },
               __alloT('stem.machinelab.work_out', 'Work out: ') + fmt(work.workOut, 2) + ' J'),
-            h('span', { key: 'eqs', style: { fontSize: 13, fontWeight: 700, color: eq ? T.ok : T.bad } },
+            h('span', { key: 'eqs', style: {gridColumn:'1 / -1',fontSize: 12, fontWeight: 700, color: eq ? T.ok : T.bad } },
               eq ? __alloT('stem.machinelab.identical', 'identical') : __alloT('stem.machinelab.mismatch', 'mismatch'))
           ]) : null
         ], 'trade');
@@ -7720,7 +8096,22 @@ window.StemLab = window.StemLab || {
             function () { cam.setView(0, 8, 1.08); }) : null,
           fsWhich === 'shop' ? btn('close', __alloT('stem.machinelab.cam_close_short', 'Close'),
             __alloT('stem.machinelab.cam_close', 'Show a close three-quarter view'),
-            function () { cam.setView(24, 12, 1.38); }) : null,
+            function () { cam.setView(24, d.bench === 'screw' ? 32 : 12, 1.38); }) : null,
+          fsWhich === 'shop' ? h('button', {
+            key: 'focus', type: 'button', 'aria-pressed': !!d.shopFocusMechanism,
+            'aria-label': __alloT('stem.machinelab.focus_mechanism', 'Focus mechanism'),
+            title: __alloT('stem.machinelab.focus_mechanism_hint', 'Hide the room to inspect the machine from any angle. Select again to restore the workshop.'),
+            onClick: function () {
+              upd('shopFocusMechanism', !d.shopFocusMechanism);
+              announceToSR(d.shopFocusMechanism
+                ? __alloT('stem.machinelab.focus_room_restored', 'Workshop surroundings restored.')
+                : __alloT('stem.machinelab.focus_room_hidden', 'Workshop surroundings hidden. The machine and motion guides remain visible.'));
+            },
+            style: { padding: '5px 10px', minHeight: 34, borderRadius: 8, cursor: 'pointer',
+              border: '1px solid ' + (d.shopFocusMechanism ? T.accent : T.border),
+              background: d.shopFocusMechanism ? T.accent : T.card,
+              color: d.shopFocusMechanism ? T.accentInk : T.text, fontSize: 12, fontWeight: 800 }
+          }, __alloT('stem.machinelab.focus_mechanism', 'Focus mechanism')) : null,
           fsWhich === 'range' ? btn('launch', __alloT('stem.machinelab.cam_launch_short', 'Launch'),
             __alloT('stem.machinelab.cam_launch', 'Focus the launch deck'),
             function () { cam.setView(48, 16, 1.18); }) : null,
@@ -8774,12 +9165,18 @@ window.StemLab = window.StemLab || {
         var nextBench = BENCHES[(benchIndex + 1) % BENCHES.length];
         var hasRunDemo = d.shopDemoBench === bench.id;
         var observationCues = {
-          lever: __alloT('stem.machinelab.observe_lever', 'The long effort arm travels farther while the load rises.'),
-          pulley: __alloT('stem.machinelab.observe_pulley', 'More supporting rope segments share the load.'),
-          windlass: __alloT('stem.machinelab.observe_windlass', 'The large wheel turns the smaller axle.'),
-          ramp: __alloT('stem.machinelab.observe_ramp', 'A longer path reduces the force needed.'),
+          lever: ma < 1
+            ? __alloT('stem.machinelab.observe_lever_short', 'The shorter effort arm moves less and needs more force to raise the load.')
+            : ma === 1
+              ? __alloT('stem.machinelab.observe_lever_equal', 'Equal arms move equal distances as effort lowers one end and raises the load.')
+              : __alloT('stem.machinelab.observe_lever', 'The long effort arm travels farther while the load rises.'),
+          pulley: ma === 1
+            ? __alloT('stem.machinelab.observe_pulley_fixed', 'A fixed pulley changes the pull direction; ideal effort equals the load.')
+            : __alloT('stem.machinelab.observe_pulley', 'More supporting rope segments share the load.'),
+          windlass: __alloT('stem.machinelab.observe_windlass_coupling', 'The marked grip and striped drum turn together as the rope lifts the load. Rotate to a side view to follow the drum; the curved arrow shows the turn.'),
+          ramp: __alloT('stem.machinelab.observe_ramp_travel', 'The blue marker tracks the crate along the front rail. Each interval is a quarter of the demonstration stroke; the upright arrow follows the rising load.'),
           wedge: __alloT('stem.machinelab.observe_wedge', 'Downward effort redirects force out to the sides.'),
-          screw: __alloT('stem.machinelab.observe_screw', 'Rotation becomes a small, powerful downward move.')
+          screw: __alloT('stem.machinelab.observe_screw_thread', 'Turn the handle to press downward by one visible thread spacing per revolution. The bands show the block compressing without turning.')
         };
         function beginShopOrbit(ev) {
           if (!ev || ev.button !== 0 || ev.pointerType === 'touch') return;
@@ -8802,21 +9199,66 @@ window.StemLab = window.StemLab || {
           try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (e) {}
           ev.currentTarget.style.cursor = 'grab'; SHOP_DRAG = null;
         }
+        var shopProgress = finite(d.shopMotionProgress) ? Math.max(0, Math.min(1, d.shopMotionProgress)) : 0;
+        function inspectShopMotion(value) {
+          if (shopStatus === 'failed') return;
+          var progress = Math.max(0, Math.min(1, Number(value)));
+          if (!finite(progress)) return;
+          updMulti({ shopAnimating: false, shopMotionProgress: progress });
+        }
+        function shopMotionInspector() {
+          return h('div', { key: 'inspect', className: 'ml-shop-inspector', style: {
+            padding: '10px 12px', marginTop: 8, borderRadius: 12,
+            background: T.bg, border: '1px solid ' + T.border
+          } }, [
+            h('div', { key: 'heading', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, [
+              h('label', { key: 'label', id: 'ml-shop-stroke-label', htmlFor: 'ml-shop-stroke', style: { fontSize: 12, fontWeight: 800, color: T.text } },
+                __alloT('stem.machinelab.inspect_motion', 'Inspect the motion')),
+              h('span', { key: 'position', style: { fontSize: 12, fontWeight: 800, color: T.text, fontVariantNumeric: 'tabular-nums' } },
+                d.shopAnimating ? __alloT('stem.machinelab.demo_running', 'Running...') : Math.round(shopProgress * 100) + '%')
+            ]),
+            h('input', {
+              key: 'stroke', id: 'ml-shop-stroke', type: 'range', min: 0, max: 100, step: 1,
+              value: Math.round(shopProgress * 100), disabled: !!d.shopAnimating || shopStatus === 'failed',
+              'aria-label': __alloT('stem.machinelab.inspect_motion', 'Inspect the motion'), 'aria-describedby': 'ml-shop-stroke-help',
+              'aria-valuetext': Math.round(shopProgress * 100) + __alloT('stem.machinelab.stroke_percent', '% of the working stroke'),
+              onChange: function (ev) { inspectShopMotion(Number(ev.target.value) / 100); },
+              style: { width: '100%', minWidth: 0, height: 32, margin: '4px 0', accentColor: T.effort, cursor: 'pointer' }
+            }),
+            h('div', { key: 'poses', role: 'group', 'aria-label': __alloT('stem.machinelab.stroke_positions', 'Working stroke positions'),
+              style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 6 } },
+              [0, 0.5, 1].map(function (progress, index) {
+                var selected = !d.shopAnimating && shopProgress === progress;
+                return h('button', { key: index, type: 'button', disabled: shopStatus === 'failed',
+                  'aria-pressed': selected, onClick: function () { inspectShopMotion(progress); },
+                  style: { minHeight: 40, padding: '5px 6px', borderRadius: 8, fontSize: 11, fontWeight: 800,
+                    cursor: 'pointer', color: selected ? T.accentInk : T.text, background: selected ? T.accent : T.card,
+                    border: '1px solid ' + (selected ? T.accent : T.border) }
+                }, index === 0 ? __alloT('stem.machinelab.stroke_start', 'Start') : index === 1
+                  ? __alloT('stem.machinelab.stroke_half', 'Halfway') : __alloT('stem.machinelab.stroke_full', 'Full stroke'));
+              })),
+            h('p', { key: 'help', id: 'ml-shop-stroke-help', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
+              __alloT('stem.machinelab.inspect_help', 'Choose a position, then rotate the view to inspect it. The model stays still. These positions show the working stroke of the demonstration.'))
+          ]);
+        }
         function runShopDemo() {
           if (d.shopAnimating || shopStatus === 'failed') return;
-          updMulti({ shopDemoId: (d.shopDemoId || 0) + 1, shopAnimating: true, shopDemoBench: bench.id });
+          var runId = (d.shopDemoId || 0) + 1, runBench = bench.id;
+          updMulti({ shopDemoId: runId, shopAnimating: true, shopMotionProgress: null, shopDemoBench: runBench });
           announceToSR(__alloT('stem.machinelab.demo_started', 'Demonstration started for ') + bench.label + '.');
           if (typeof setTimeout === 'function') {
             setTimeout(function () {
               setLabToolData(function (prev) {
                 var cur = (prev && prev.machineLab) || {};
+                // A previous run must not stop a newer run after inspection or a station change.
+                if (!cur.shopAnimating || cur.shopDemoId !== runId || cur.bench !== runBench) return prev;
                 return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { shopAnimating: false }) });
               });
             }, 2300);
           }
         }
         function openNextBench() {
-          updMulti({ bench: nextBench.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false });
+          updMulti({ bench: nextBench.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false, shopMotionProgress: null });
           announceToSR(__alloT('stem.machinelab.next_station_open', 'Opened the next station: ') + nextBench.label + '.');
         }
         SHOP_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
@@ -8829,6 +9271,8 @@ window.StemLab = window.StemLab || {
           rotY: shopCam.rotY, rotX: shopCam.rotX, zoom: shopCam.zoom,
           static: !d.shopAnimating,
           demoId: d.shopAnimating ? d.shopDemoId : 0,
+          motionProgress: finite(d.shopMotionProgress) ? shopProgress : null,
+          focusMechanism: !!d.shopFocusMechanism,
           dark: isDark, contrast: isContrast,
           params: {
             ma: ma, effortArm: d.leverEffortArm, loadArm: d.leverLoadArm,
@@ -8857,7 +9301,7 @@ window.StemLab = window.StemLab || {
               onPointerDown: beginShopOrbit, onPointerMove: moveShopOrbit,
               onPointerUp: endShopOrbit, onPointerCancel: endShopOrbit,
               'aria-label': __alloT('stem.machinelab.aria_shop3d', 'Interactive three-dimensional workshop showing the selected simple machine: ') +
-                bench.label + '. ' + __alloT('stem.machinelab.aria_shop3d2', 'Amber marks the effort path and blue marks the load path. Drag with a mouse or pen to orbit. The camera buttons and panels below provide complete keyboard and numeric equivalents.'),
+                bench.label + '. ' + __alloT('stem.machinelab.aria_shop3d_shapes', 'A solid diamond marks the effort distance and an open ring marks the load distance on the front tracks. Both distances share one scale. Drag with a mouse or pen to orbit. The camera buttons and panels below provide complete keyboard and numeric equivalents.') + ' ' + __alloT('stem.machinelab.distance_fill_guide', 'Thin rails show the full stroke; wide bars show distance traveled.'),
               style: {
                 width: '100%', height: 'clamp(330px, 52vh, 520px)', minHeight: 280,
                 flex: '1 1 auto', borderRadius: 13, background: T.bg, border: '1px solid ' + T.border,
@@ -8895,7 +9339,11 @@ window.StemLab = window.StemLab || {
               }, [
                 h('span', { key: 'eye', style: { display: 'block', marginBottom: 2, color: '#fbbf24', fontSize: 9, fontWeight: 850, letterSpacing: 1, textTransform: 'uppercase' } },
                   d.shopAnimating ? __alloT('stem.machinelab.watch_motion', 'Watch the motion') : __alloT('stem.machinelab.what_to_notice', 'What to notice')),
-                h('span', { key: 'cue' }, observationCues[bench.id])
+                h('span', { key: 'cue' }, observationCues[bench.id]),
+                bench.id === 'lever' ? h('span', { key: 'arms', style: { display: 'block', marginTop: 4 } },
+                  __alloT('stem.machinelab.lever_arm_guides', 'The colored guides beneath the beam measure each arm from the pivot to its contact point.')) : null,
+                bench.id === 'pulley' ? h('span', { key: 'supports', 'data-ml-pulley-support-guide': '', style: { display: 'block', marginTop: 4 } },
+                  __alloT('stem.machinelab.pulley_support_guides', 'The small up arrows mark the supporting strands. Equal arrows show equal tension in this ideal rope; the free end is pulled down.')) : null
               ]),
               h('div', {
                 key: 'metric', style: {
@@ -8909,23 +9357,26 @@ window.StemLab = window.StemLab || {
                 h('div', { key: 'v', style: { marginTop: 1, fontSize: 22, fontWeight: 900, color: '#fbbf24' } },
                   ma === null ? '—' : fmt(ma, 2) + '×'),
                 ma !== null ? h('div', { key: 'trade', style: { marginTop: 2, fontSize: 9, fontWeight: 750, color: '#cbd5e1' } },
-                  __alloT('stem.machinelab.distance_times', 'Distance ×') + fmt(ma, 1) +
-                  '  ·  ' + __alloT('stem.machinelab.force_div', 'Force ÷') + fmt(ma, 1)) : null
+                  __alloT('stem.machinelab.distance_times', 'Distance ×') + fmt(ma, 2) +
+                  '  ·  ' + __alloT('stem.machinelab.force_div', 'Force ÷') + fmt(ma, 2)) : null
               ])
             ]),
             h('div', {
               key: 'legend', 'aria-hidden': 'true', className:'ml-shop-legend',
               style: {
-                position: 'absolute', left: 22, bottom: 104, display: 'flex', gap: 12,
-                padding: '6px 9px', borderRadius: 999, color: '#f8fafc',
+                position: 'relative', alignSelf: 'flex-start', marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', maxWidth: '100%',
+                padding: '6px 9px', borderRadius: 10, color: '#f8fafc',
                 background: 'rgba(7,17,31,.76)', fontSize: 10, fontWeight: 750,
                 pointerEvents: 'none', backdropFilter: 'blur(8px)'
               }
             }, [
-              h('span', { key: 'e', style: { color: '#fbbf24' } }, '● ' + __alloT('stem.machinelab.effort_path', 'Effort path')),
-              h('span', { key: 'l', style: { color: '#7dd3fc' } }, '● ' + __alloT('stem.machinelab.load_path', 'Load path'))
+              h('span', { key: 'e', 'data-ml-distance-symbol': 'effort', style: { color: isContrast ? '#ffff00' : '#fbbf24' } }, '◆ ' + __alloT('stem.machinelab.effort_path', 'Effort path')),
+              h('span', { key: 'l', 'data-ml-distance-symbol': 'load', style: { color: isContrast ? '#00ffff' : '#7dd3fc' } }, '○ ' + __alloT('stem.machinelab.load_path', 'Load path')),
+              h('span', { key: 'scale' }, __alloT('stem.machinelab.same_distance_scale', 'Same distance scale')),
+              h('span', { key: 'fill', 'data-ml-distance-fill-guide': '', style: { flexBasis: '100%', fontWeight: 500 } }, __alloT('stem.machinelab.distance_fill_guide', 'Thin rails show the full stroke; wide bars show distance traveled.'))
             ]),
             camControls(shopCam, __alloT('stem.machinelab.workshop', 'simple-machine workshop'), 'shop'),
+            shopMotionInspector(),
             h('div', {
               key: 'mission',
               style: {

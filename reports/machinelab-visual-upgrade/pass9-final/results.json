@@ -1,0 +1,22 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "workshop9-lever-ready",
+    "workshop9-lever-lift",
+    "workshop9-lever-long-effort",
+    "workshop9-lever-long-load",
+    "workshop9-ramp-ready",
+    "workshop9-ramp-lift",
+    "workshop9-ramp-low",
+    "workshop9-ramp-steep",
+    "workshop9-ramp-vertical"
+  ]
+}

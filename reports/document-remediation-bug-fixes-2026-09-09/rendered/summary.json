@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-09-10T02:04:06.191Z",
+  "kind": "rendered-fidelity-bug-fix-validation",
+  "fixedReviewFindings": [
+    6,
+    7,
+    8,
+    9,
+    12
+  ],
+  "implementation": {
+    "path": "dev-tools/rendered_document_fidelity.cjs",
+    "sha256": "c8310dbf87f169b8c84534ebd86ee887685bf6b2e8b37b78c0483331938818cb"
+  },
+  "tests": {
+    "newBrowserRegressions": 22,
+    "browser": {
+      "report": "final-browser.json",
+      "startTime": "2026-09-10T02:02:38.869Z",
+      "duration": 46247.787000000004,
+      "expected": 67,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "unit": {
+      "report": "final-unit.json",
+      "total": 30,
+      "passed": 30,
+      "failed": 0,
+      "success": true
+    }
+  },
+  "scope": "Local synthetic Chromium and unit checks. No application pipeline changes, deployment, live model calls, or human assistive technology acceptance."
+}

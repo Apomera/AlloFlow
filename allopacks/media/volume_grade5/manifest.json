@@ -1,0 +1,2794 @@
+{
+  "slug": "volume_grade5",
+  "prefix": "vo",
+  "status": "complete",
+  "style": "Warm hand-printed object illustrations and exact cube diagrams",
+  "provider": "Built-in image generation and deterministic SVG diagrams",
+  "groups": [
+    "Build with unit cubes",
+    "Count complete layers",
+    "Add and compare solids",
+    "Inside space and outside covering"
+  ],
+  "lessonTitles": [
+    "One cubic unit",
+    "One layer",
+    "Five layers make a solid",
+    "Separate layers to count",
+    "Join without overlap",
+    "Same volume, different shapes",
+    "Water inside a tank",
+    "Cover the outside"
+  ],
+  "note": "Artwork has no baked-in text. Use the native captions for dimensions and units. Gridded solids include hidden cubes; do not count visible faces as cubes. Gaps in the separated-layer diagram are only for display. Object illustrations are conceptual and must not be measured to calculate exact volumes. The tank water is below the rim, so the amount shown is less than full capacity. Sort area cards ask for surface coverage, and perimeter cards ask for boundary length. The packaging challenge uses ideal closed rectangular boxes: ignore material thickness, seams, tabs and waste, and treat rotations as the same dimensions. Educator review remains pending.",
+  "sources": [
+    {
+      "key": "sand",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. An open rectangular wooden sandbox filled with pale sand to a visible level below its rim, with one small scoop resting beside it. Show depth as well as the top surface, three-quarter view. No children.",
+      "alt": "A wooden sandbox holds pale sand below its rim, with a small scoop beside it.",
+      "status": "visual-review-passed",
+      "file": "source-sand-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-6121dc7e-10d2-4da1-964b-72b18f76d187.png"
+    },
+    {
+      "key": "garden",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A rectangular raised wooden garden bed filled with dark soil visibly below its rim, a few small seedlings emerging. Three-quarter view shows the soil mass and the tall side walls. Isolate the bed.",
+      "alt": "A raised wooden bed contains dark soil and a few small seedlings.",
+      "status": "visual-review-passed",
+      "file": "source-garden-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-864371f0-4f1a-4de2-b1b1-f0e7c62bb08d.png"
+    },
+    {
+      "key": "tank",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A transparent rectangular aquarium on a plain plinth, containing clear blue water below the rim, visible flat water surface and glass edges. No fish, no plants, no gravel, no decorations, no equipment. Focus on the inside space occupied by water.",
+      "alt": "A clear rectangular tank contains blue water below its top edge, with no objects inside.",
+      "status": "visual-review-passed",
+      "file": "source-tank-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-324849ed-2467-400a-ae48-fe6072d8f6d5.png"
+    },
+    {
+      "key": "carpet",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. An empty rectangular room corner seen from above at an angle. A teal carpet covers most of the floor with a short remaining section rolled back at one edge exposing the floor underneath. No furniture. Focus on surface coverage.",
+      "alt": "Teal carpet covers most of an empty room's floor, with one edge rolled back.",
+      "status": "visual-review-passed",
+      "file": "source-carpet-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-062df3b2-9f42-47af-a4f5-633cbd315a01.png"
+    },
+    {
+      "key": "paint",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A single flat rectangular interior wall being covered with ochre paint, a broad nearly complete painted area and a small unpainted patch. A paint roller rests in a tray below the wall. No people, no room clutter. Focus on surface coverage.",
+      "alt": "An ochre painted wall has an unpainted patch, with a roller and paint tray below.",
+      "status": "visual-review-passed",
+      "file": "source-paint-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-00887938-30e8-4c98-9507-6d1af1ef6148.png"
+    },
+    {
+      "key": "window",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. One plain rectangular wooden window frame holding one single large pale-blue glass pane, no mullions or subdivisions. A faint reflection makes the whole glass surface visible. Flat front view on cream ground.",
+      "alt": "A wooden rectangular window frame surrounds one pale-blue glass pane.",
+      "status": "visual-review-passed",
+      "file": "source-window-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-49732c96-840a-4d0b-9012-11bd851bd840.png"
+    },
+    {
+      "key": "fence",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. Overhead oblique view of a plain rectangular grassy yard enclosed by a continuous low wooden fence on all four sides. No trees, no house, no person. Make the outside boundary clear and the interior simple.",
+      "alt": "A low wooden fence surrounds all four sides of a rectangular grassy yard.",
+      "status": "visual-review-passed",
+      "file": "source-fence-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-3f629973-0bcc-4fa0-9766-905adea1d1b5.png"
+    },
+    {
+      "key": "ribbon",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A rectangular closed plain gift box in a three-quarter overhead view. Exactly one narrow coral ribbon band wraps HORIZONTALLY around the four side walls at mid-height. The top face is completely plain with NO ribbon, no bow. Focus on the single perimeter loop. No second band, no cross.",
+      "alt": "A coral ribbon forms a single horizontal band around the side walls of a plain rectangular box.",
+      "status": "visual-review-passed",
+      "file": "source-ribbon-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-086aa590-15c5-40e6-96f8-fb85c4708453.png"
+    },
+    {
+      "key": "mirror",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. One rectangular mirror seen straight-on, with a continuous thick ochre trim border on all four sides. The interior is plain pale blue with a subtle reflection. No people or furniture reflected.",
+      "alt": "Ochre trim forms a border around all four sides of a rectangular mirror.",
+      "status": "visual-review-passed",
+      "file": "source-mirror-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-51371439-d170-4709-aa71-6e34517a0715.png"
+    }
+  ],
+  "assets": [
+    {
+      "id": "vo-term-1",
+      "kind": "term",
+      "index": 0,
+      "sourceKey": "stack",
+      "prompt": "Exact text-free diagram: A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+      "caption": "This solid is 4 by 3 by 5 units. Each of five layers contains 12 unit cubes, so its volume is 60 cubic units. Count hidden cubes too, not just visible faces.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-term-1-diagram.png",
+      "vectorFile": "vo-term-1.svg",
+      "alt": "A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-term-2",
+      "kind": "term",
+      "index": 1,
+      "sourceKey": "unit",
+      "prompt": "Exact text-free diagram: One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+      "caption": "Choose one length unit for every edge of this cube. Its volume is one cubic unit. If each edge is 1 cm, the volume is 1 cubic cm.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-term-2-diagram.png",
+      "vectorFile": "vo-term-2.svg",
+      "alt": "One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-term-3",
+      "kind": "term",
+      "index": 2,
+      "sourceKey": "unit",
+      "prompt": "Exact text-free diagram: One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+      "caption": "Choose one length unit for every edge of this cube. Its volume is one cubic unit. If each edge is 1 cm, the volume is 1 cubic cm.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-term-3-diagram.png",
+      "vectorFile": "vo-term-3.svg",
+      "alt": "One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-term-4",
+      "kind": "term",
+      "index": 3,
+      "sourceKey": "stack",
+      "prompt": "Exact text-free diagram: A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+      "caption": "This solid is 4 by 3 by 5 units. Each of five layers contains 12 unit cubes, so its volume is 60 cubic units. Count hidden cubes too, not just visible faces.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-term-4-diagram.png",
+      "vectorFile": "vo-term-4.svg",
+      "alt": "A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-term-5",
+      "kind": "term",
+      "index": 4,
+      "sourceKey": "base",
+      "prompt": "Exact text-free diagram: A four-by-three-by-five cube block has its two visible bottom edges emphasized in coral.",
+      "caption": "The base is the bottom 4-by-3 rectangle, with area 12 square units. Its back edges are hidden. Base area times perpendicular height gives prism volume.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-term-5-diagram.png",
+      "vectorFile": "vo-term-5.svg",
+      "alt": "A four-by-three-by-five cube block has its two visible bottom edges emphasized in coral.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-term-6",
+      "kind": "term",
+      "index": 5,
+      "sourceKey": "layer",
+      "prompt": "Exact text-free diagram: A single layer of cubes has a top grid four units long and three units wide.",
+      "caption": "Four cubes in each of three rows gives 12 unit cubes in one layer. The base area is 12 square units; the one-unit-thick layer has volume 12 cubic units.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-term-6-diagram.png",
+      "vectorFile": "vo-term-6.svg",
+      "alt": "A single layer of cubes has a top grid four units long and three units wide.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-term-7",
+      "kind": "term",
+      "index": 6,
+      "sourceKey": "area",
+      "prompt": "Exact text-free diagram: Twelve flat teal squares form three rows of four.",
+      "caption": "This is a flat area model: 4 by 3 makes 12 square units. Giving every square a height of one unit creates a layer of 12 unit cubes.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-term-7-diagram.png",
+      "vectorFile": "vo-term-7.svg",
+      "alt": "Twelve flat teal squares form three rows of four.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-term-8",
+      "kind": "term",
+      "index": 7,
+      "sourceKey": "height",
+      "prompt": "Exact text-free diagram: A bracket beside a cube block spans vertically from its top level to its base level.",
+      "caption": "Height is measured perpendicular to the base. This right rectangular prism is five unit cubes tall. In an oblique prism, a slanted side edge is not the height.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-term-8-diagram.png",
+      "vectorFile": "vo-term-8.svg",
+      "alt": "A bracket beside a cube block spans vertically from its top level to its base level.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-term-9",
+      "kind": "term",
+      "index": 8,
+      "sourceKey": "tank",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A transparent rectangular aquarium on a plain plinth, containing clear blue water below the rim, visible flat water surface and glass edges. No fish, no plants, no gravel, no decorations, no equipment. Focus on the inside space occupied by water.",
+      "caption": "The water occupies three-dimensional inside space. The pictured water level is below the rim, so it is less than the full capacity. Use internal measurements to calculate capacity; wall thickness does not hold water.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-tank-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-324849ed-2467-400a-ae48-fe6072d8f6d5.png",
+      "alt": "A clear rectangular tank contains blue water below its top edge, with no objects inside.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-term-10",
+      "kind": "term",
+      "index": 9,
+      "sourceKey": "joined",
+      "prompt": "Exact text-free diagram: An L-shaped cube solid joins a teal four-by-two-by-two block to an ochre two-by-three-by-two block without overlapping.",
+      "caption": "The teal block holds 4 × 2 × 2 = 16 cubes. The ochre block holds 2 × 3 × 2 = 12 cubes. They share a boundary face but no space, so add: 28 cubic units.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-term-10-diagram.png",
+      "vectorFile": "vo-term-10.svg",
+      "alt": "An L-shaped cube solid joins a teal four-by-two-by-two block to an ochre two-by-three-by-two block without overlapping.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-anchor-1",
+      "kind": "anchor",
+      "index": 0,
+      "sourceKey": "small",
+      "prompt": "Exact text-free diagram: A two-by-two-by-two cube block has a grid across its three visible outer faces.",
+      "caption": "The solid contains 8 unit cubes: 4 in the bottom layer and 4 in the top. Some cubes are hidden. Visible squares are faces, not extra cubes.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-anchor-1-diagram.png",
+      "vectorFile": "vo-anchor-1.svg",
+      "alt": "A two-by-two-by-two cube block has a grid across its three visible outer faces.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-anchor-2",
+      "kind": "anchor",
+      "index": 1,
+      "sourceKey": "exploded",
+      "prompt": "Exact text-free diagram: Five separate four-by-three cube layers are arranged in two pairs and one lower layer, with all top grids visible.",
+      "caption": "Five layers, each containing 12 cubes, make 60 cubic units when joined. The layers are laid out separately for counting; join them without gaps to form the solid.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-anchor-2-diagram.png",
+      "vectorFile": "vo-anchor-2.svg",
+      "alt": "Five separate four-by-three cube layers are arranged in two pairs and one lower layer, with all top grids visible.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-anchor-3",
+      "kind": "anchor",
+      "index": 2,
+      "sourceKey": "stack",
+      "prompt": "Exact text-free diagram: A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+      "caption": "This solid is 4 by 3 by 5 units. Each of five layers contains 12 unit cubes, so its volume is 60 cubic units. Count hidden cubes too, not just visible faces.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-anchor-3-diagram.png",
+      "vectorFile": "vo-anchor-3.svg",
+      "alt": "A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-anchor-4",
+      "kind": "anchor",
+      "index": 3,
+      "sourceKey": "joined",
+      "prompt": "Exact text-free diagram: An L-shaped cube solid joins a teal four-by-two-by-two block to an ochre two-by-three-by-two block without overlapping.",
+      "caption": "The teal block holds 4 × 2 × 2 = 16 cubes. The ochre block holds 2 × 3 × 2 = 12 cubes. They share a boundary face but no space, so add: 28 cubic units.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-anchor-4-diagram.png",
+      "vectorFile": "vo-anchor-4.svg",
+      "alt": "An L-shaped cube solid joins a teal four-by-two-by-two block to an ochre two-by-three-by-two block without overlapping.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-anchor-5",
+      "kind": "anchor",
+      "index": 4,
+      "sourceKey": "unit",
+      "prompt": "Exact text-free diagram: One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+      "caption": "Choose one length unit for every edge of this cube. Its volume is one cubic unit. If each edge is 1 cm, the volume is 1 cubic cm.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-anchor-5-diagram.png",
+      "vectorFile": "vo-anchor-5.svg",
+      "alt": "One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-sort-1",
+      "kind": "sort",
+      "index": 0,
+      "sourceKey": "sand",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. An open rectangular wooden sandbox filled with pale sand to a visible level below its rim, with one small scoop resting beside it. Show depth as well as the top surface, three-quarter view. No children.",
+      "caption": "Use the card statement to identify what is measured: filled space, surface coverage or boundary length.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-sand-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-6121dc7e-10d2-4da1-964b-72b18f76d187.png",
+      "alt": "A wooden sandbox holds pale sand below its rim, with a small scoop beside it.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-sort-2",
+      "kind": "sort",
+      "index": 1,
+      "sourceKey": "garden",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A rectangular raised wooden garden bed filled with dark soil visibly below its rim, a few small seedlings emerging. Three-quarter view shows the soil mass and the tall side walls. Isolate the bed.",
+      "caption": "Use the card statement to identify what is measured: filled space, surface coverage or boundary length.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-garden-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-864371f0-4f1a-4de2-b1b1-f0e7c62bb08d.png",
+      "alt": "A raised wooden bed contains dark soil and a few small seedlings.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-sort-3",
+      "kind": "sort",
+      "index": 2,
+      "sourceKey": "tank",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A transparent rectangular aquarium on a plain plinth, containing clear blue water below the rim, visible flat water surface and glass edges. No fish, no plants, no gravel, no decorations, no equipment. Focus on the inside space occupied by water.",
+      "caption": "Use the card statement to identify what is measured: filled space, surface coverage or boundary length.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-tank-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-324849ed-2467-400a-ae48-fe6072d8f6d5.png",
+      "alt": "A clear rectangular tank contains blue water below its top edge, with no objects inside.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-sort-4",
+      "kind": "sort",
+      "index": 3,
+      "sourceKey": "carpet",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. An empty rectangular room corner seen from above at an angle. A teal carpet covers most of the floor with a short remaining section rolled back at one edge exposing the floor underneath. No furniture. Focus on surface coverage.",
+      "caption": "Use the card statement to identify what is measured: filled space, surface coverage or boundary length.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-carpet-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-062df3b2-9f42-47af-a4f5-633cbd315a01.png",
+      "alt": "Teal carpet covers most of an empty room's floor, with one edge rolled back.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-sort-5",
+      "kind": "sort",
+      "index": 4,
+      "sourceKey": "paint",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A single flat rectangular interior wall being covered with ochre paint, a broad nearly complete painted area and a small unpainted patch. A paint roller rests in a tray below the wall. No people, no room clutter. Focus on surface coverage.",
+      "caption": "Use the card statement to identify what is measured: filled space, surface coverage or boundary length.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-paint-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-00887938-30e8-4c98-9507-6d1af1ef6148.png",
+      "alt": "An ochre painted wall has an unpainted patch, with a roller and paint tray below.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-sort-6",
+      "kind": "sort",
+      "index": 5,
+      "sourceKey": "window",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. One plain rectangular wooden window frame holding one single large pale-blue glass pane, no mullions or subdivisions. A faint reflection makes the whole glass surface visible. Flat front view on cream ground.",
+      "caption": "Use the card statement to identify what is measured: filled space, surface coverage or boundary length.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-window-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-49732c96-840a-4d0b-9012-11bd851bd840.png",
+      "alt": "A wooden rectangular window frame surrounds one pale-blue glass pane.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-sort-7",
+      "kind": "sort",
+      "index": 6,
+      "sourceKey": "fence",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. Overhead oblique view of a plain rectangular grassy yard enclosed by a continuous low wooden fence on all four sides. No trees, no house, no person. Make the outside boundary clear and the interior simple.",
+      "caption": "Use the card statement to identify what is measured: filled space, surface coverage or boundary length.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-fence-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-3f629973-0bcc-4fa0-9766-905adea1d1b5.png",
+      "alt": "A low wooden fence surrounds all four sides of a rectangular grassy yard.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-sort-8",
+      "kind": "sort",
+      "index": 7,
+      "sourceKey": "ribbon",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A rectangular closed plain gift box in a three-quarter overhead view. Exactly one narrow coral ribbon band wraps HORIZONTALLY around the four side walls at mid-height. The top face is completely plain with NO ribbon, no bow. Focus on the single perimeter loop. No second band, no cross.",
+      "caption": "Use the card statement to identify what is measured: filled space, surface coverage or boundary length.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-ribbon-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-086aa590-15c5-40e6-96f8-fb85c4708453.png",
+      "alt": "A coral ribbon forms a single horizontal band around the side walls of a plain rectangular box.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-sort-9",
+      "kind": "sort",
+      "index": 8,
+      "sourceKey": "mirror",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. One rectangular mirror seen straight-on, with a continuous thick ochre trim border on all four sides. The interior is plain pale blue with a subtle reflection. No people or furniture reflected.",
+      "caption": "Use the card statement to identify what is measured: filled space, surface coverage or boundary length.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-mirror-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-51371439-d170-4709-aa71-6e34517a0715.png",
+      "alt": "Ochre trim forms a border around all four sides of a rectangular mirror.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-lesson-1",
+      "kind": "lesson",
+      "index": 0,
+      "sourceKey": "unit",
+      "prompt": "Exact text-free diagram: One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+      "caption": "Choose one length unit for every edge of this cube. Its volume is one cubic unit. If each edge is 1 cm, the volume is 1 cubic cm.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-lesson-1-diagram.png",
+      "vectorFile": "vo-lesson-1.svg",
+      "alt": "One cube has three visible faces shaded in teal; its hidden faces complete the solid.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-lesson-2",
+      "kind": "lesson",
+      "index": 1,
+      "sourceKey": "layer",
+      "prompt": "Exact text-free diagram: A single layer of cubes has a top grid four units long and three units wide.",
+      "caption": "Four cubes in each of three rows gives 12 unit cubes in one layer. The base area is 12 square units; the one-unit-thick layer has volume 12 cubic units.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-lesson-2-diagram.png",
+      "vectorFile": "vo-lesson-2.svg",
+      "alt": "A single layer of cubes has a top grid four units long and three units wide.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-lesson-3",
+      "kind": "lesson",
+      "index": 2,
+      "sourceKey": "stack",
+      "prompt": "Exact text-free diagram: A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+      "caption": "This solid is 4 by 3 by 5 units. Each of five layers contains 12 unit cubes, so its volume is 60 cubic units. Count hidden cubes too, not just visible faces.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-lesson-3-diagram.png",
+      "vectorFile": "vo-lesson-3.svg",
+      "alt": "A rectangular block has four by three squares across its top and five rows of cubes on its sides.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-lesson-4",
+      "kind": "lesson",
+      "index": 3,
+      "sourceKey": "exploded",
+      "prompt": "Exact text-free diagram: Five separate four-by-three cube layers are arranged in two pairs and one lower layer, with all top grids visible.",
+      "caption": "Five layers, each containing 12 cubes, make 60 cubic units when joined. The layers are laid out separately for counting; join them without gaps to form the solid.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-lesson-4-diagram.png",
+      "vectorFile": "vo-lesson-4.svg",
+      "alt": "Five separate four-by-three cube layers are arranged in two pairs and one lower layer, with all top grids visible.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-lesson-5",
+      "kind": "lesson",
+      "index": 4,
+      "sourceKey": "joined",
+      "prompt": "Exact text-free diagram: An L-shaped cube solid joins a teal four-by-two-by-two block to an ochre two-by-three-by-two block without overlapping.",
+      "caption": "The teal block holds 4 × 2 × 2 = 16 cubes. The ochre block holds 2 × 3 × 2 = 12 cubes. They share a boundary face but no space, so add: 28 cubic units.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-lesson-5-diagram.png",
+      "vectorFile": "vo-lesson-5.svg",
+      "alt": "An L-shaped cube solid joins a teal four-by-two-by-two block to an ochre two-by-three-by-two block without overlapping.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-lesson-6",
+      "kind": "lesson",
+      "index": 5,
+      "sourceKey": "compare",
+      "prompt": "Exact text-free diagram: Two gridded rectangular solids have different proportions: six by three by two above, nine by two by two below.",
+      "caption": "With edges measured in centimeters, 6 × 3 × 2 and 9 × 2 × 2 both give 36 cubic cm. Different dimensions can enclose the same volume.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-lesson-6-diagram.png",
+      "vectorFile": "vo-lesson-6.svg",
+      "alt": "Two gridded rectangular solids have different proportions: six by three by two above, nine by two by two below.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-lesson-7",
+      "kind": "lesson",
+      "index": 6,
+      "sourceKey": "tank",
+      "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A transparent rectangular aquarium on a plain plinth, containing clear blue water below the rim, visible flat water surface and glass edges. No fish, no plants, no gravel, no decorations, no equipment. Focus on the inside space occupied by water.",
+      "caption": "The water occupies three-dimensional inside space. The pictured water level is below the rim, so it is less than the full capacity. Use internal measurements to calculate capacity; wall thickness does not hold water.",
+      "method": "built-in-imagegen",
+      "status": "visual-review-passed",
+      "file": "source-tank-print.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-324849ed-2467-400a-ae48-fe6072d8f6d5.png",
+      "alt": "A clear rectangular tank contains blue water below its top edge, with no objects inside.",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "vo-lesson-8",
+      "kind": "lesson",
+      "index": 7,
+      "sourceKey": "net",
+      "prompt": "Exact text-free diagram: Six equal ochre squares form a cross-shaped cube net: four in a row, with one above and one below the second square.",
+      "caption": "This net folds into a closed cube. If each edge is 2 cm, the six faces total 24 square cm of surface area, while the cube encloses 8 cubic cm. Ignore tabs, seams and material thickness in this model.",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "file": "vo-lesson-8-diagram.png",
+      "vectorFile": "vo-lesson-8.svg",
+      "alt": "Six equal ochre squares form a cross-shaped cube net: four in a row, with one above and one below the second square.",
+      "reviewedAt": "2026-09-09"
+    }
+  ],
+  "models": {
+    "unit": {
+      "cubes": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        }
+      ]
+    },
+    "layer": {
+      "cubes": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        }
+      ]
+    },
+    "stack": {
+      "cubes": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        }
+      ]
+    },
+    "exploded": {
+      "sets": [
+        [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          }
+        ],
+        [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          }
+        ],
+        [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          }
+        ],
+        [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          }
+        ],
+        [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          }
+        ]
+      ]
+    },
+    "small": {
+      "cubes": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        }
+      ]
+    },
+    "base": {
+      "cubes": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        }
+      ]
+    },
+    "height": {
+      "cubes": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 2,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 3,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 4,
+          "color": "teal"
+        }
+      ]
+    },
+    "joined": {
+      "cubes": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 0,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 0,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 1,
+          "color": "teal"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "color": "gold"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0,
+          "color": "gold"
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 0,
+          "color": "gold"
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 0,
+          "color": "gold"
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 0,
+          "color": "gold"
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 0,
+          "color": "gold"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 1,
+          "color": "gold"
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 1,
+          "color": "gold"
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 1,
+          "color": "gold"
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 1,
+          "color": "gold"
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 1,
+          "color": "gold"
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 1,
+          "color": "gold"
+        }
+      ]
+    },
+    "compare": {
+      "sets": [
+        [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 5,
+            "y": 2,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 5,
+            "y": 2,
+            "z": 1,
+            "color": "teal"
+          }
+        ],
+        [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 6,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 7,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 8,
+            "y": 0,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 6,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 7,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 8,
+            "y": 1,
+            "z": 0,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 6,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 7,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 8,
+            "y": 0,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 6,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 7,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          },
+          {
+            "x": 8,
+            "y": 1,
+            "z": 1,
+            "color": "teal"
+          }
+        ]
+      ]
+    },
+    "net": {
+      "netCells": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ]
+    }
+  }
+}

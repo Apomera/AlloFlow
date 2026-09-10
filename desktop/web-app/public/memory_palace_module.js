@@ -1065,11 +1065,11 @@
     return lines.length ? lines : [''];
   }
 
-  function makeLabelSprite(THREE, text, hex, fontPx, occlusionSafe, anisotropy, appearance) {
+  function makeLabelSprite(THREE, text, hex, fontPx, occlusionSafe, anisotropy, appearance, roomIndex) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     var type = _appTypography(fontPx);
-    var plaque = appearance === 'plaque';
+    var plaque = appearance === 'plaque', plate = appearance === 'plate';
     var font = type.font, padX = Math.round(font * 0.72), padY = Math.round(font * 0.45);
     var lineH = Math.round(font * 1.2), maxTextW = Math.round(420 * (font / 24));
     ctx.font = '800 ' + font + 'px ' + type.family;
@@ -1077,28 +1077,50 @@
     var lines = _labelLines(ctx, text, maxTextW);
     var tw = 2;
     lines.forEach(function (line) { tw = Math.max(tw, Math.ceil(ctx.measureText(line).width)); });
-    var logicalW = tw + padX * 2, logicalH = lines.length * lineH + padY * 2;
+    var hasRoomSymbol = typeof roomIndex === 'number' && roomIndex > 0;
+    var roomSymbolWidth = hasRoomSymbol ? Math.round(font * 1.7) : 0;
+    var logicalW = tw + padX * 2 + roomSymbolWidth, logicalH = lines.length * lineH + padY * 2;
     var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     canvas.width = Math.ceil(logicalW * dpr); canvas.height = Math.ceil(logicalH * dpr);
     ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
     ctx.font = '800 ' + font + 'px ' + type.family;
     if ('letterSpacing' in ctx) ctx.letterSpacing = type.spacing;
-    var rad = plaque ? 5 : Math.min(18, logicalH / 2);
-    ctx.fillStyle = type.contrast ? '#000000' : (plaque ? '#f4ecdc' : 'rgba(2,6,23,0.97)');
+    var rad = plaque || plate ? 5 : Math.min(18, logicalH / 2);
+    ctx.fillStyle = type.contrast ? '#000000' : (plaque ? '#f4ecdc' : plate ? '#132b43' : 'rgba(2,6,23,0.97)');
     _roundRect(ctx, 1, 1, logicalW - 2, logicalH - 2, rad);
-    ctx.strokeStyle = type.contrast ? '#ffffff' : (plaque ? '#b9a782' : (hex || '#cbd5e1'));
-    ctx.lineWidth = type.contrast ? 5 : (plaque ? 1.5 : 3.5);
+    ctx.strokeStyle = type.contrast ? '#ffffff' : (plaque ? '#b9a782' : plate ? '#819bb1' : (hex || '#cbd5e1'));
+    ctx.lineWidth = type.contrast ? 5 : (plaque || plate ? 1.5 : 3.5);
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(2.5, 2.5, logicalW - 5, logicalH - 5, Math.max(2, rad - 2));
     else ctx.rect(2.5, 2.5, logicalW - 5, logicalH - 5);
     ctx.stroke();
-    if (plaque && !type.contrast) {
+    if ((plaque || plate) && !type.contrast) {
       ctx.fillStyle=hex || '#6366f1';ctx.fillRect(5,8,3,Math.max(4,logicalH-16));
+    }
+    if (hasRoomSymbol) {
+      // Bake the same permanent place motif into the room plaque itself.
+      var tileSize = Math.round(font * 1.3), tileX = padX * 0.7, tileY = (logicalH - tileSize) / 2;
+      ctx.save(); ctx.shadowBlur = 0;
+      ctx.fillStyle = type.contrast ? '#fff200' : (hex || '#818cf8');
+      _roundRect(ctx, tileX, tileY, tileSize, tileSize, Math.max(3, font * 0.15));
+      ctx.translate(tileX + tileSize * 0.17, tileY + tileSize * 0.17); ctx.scale(tileSize * 0.66 / 24, tileSize * 0.66 / 24);
+      ctx.strokeStyle = type.contrast ? '#000000' : contrastForeground(hex || '#818cf8');
+      ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath();
+      switch ((roomIndex - 1) % 4) {
+        case 0: ctx.arc(12, 12, 8, -Math.PI / 4, Math.PI / 4, true); break;
+        case 1: ctx.moveTo(12,2); ctx.lineTo(21,12); ctx.lineTo(12,22); ctx.lineTo(3,12); ctx.closePath(); break;
+        case 2:
+          ctx.moveTo(4,8); ctx.bezierCurveTo(4,0,20,0,20,8); ctx.bezierCurveTo(20,16,4,24,4,16); ctx.bezierCurveTo(4,8,20,0,20,8); break;
+        default:
+          ctx.moveTo(12,2); ctx.lineTo(21,9); ctx.lineTo(18,20); ctx.lineTo(6,20); ctx.lineTo(3,9); ctx.closePath();
+          ctx.moveTo(12,2); ctx.lineTo(6,20); ctx.moveTo(12,2); ctx.lineTo(18,20); ctx.moveTo(3,9); ctx.lineTo(21,9);
+      }
+      ctx.stroke(); ctx.restore();
     }
     ctx.fillStyle = type.contrast ? '#fff200' : (plaque ? '#182b3d' : '#ffffff');
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.95)'; ctx.shadowBlur = plaque && !type.contrast ? 0 : 4;
-    lines.forEach(function (line, i) { ctx.fillText(line, logicalW / 2, padY + lineH * (i + 0.5)); });
+    ctx.shadowColor = 'rgba(0,0,0,0.95)'; ctx.shadowBlur = (plaque || plate) && !type.contrast ? 0 : 4;
+    lines.forEach(function (line, i) { ctx.fillText(line, (logicalW + roomSymbolWidth) / 2, padY + lineH * (i + 0.5)); });
     var tex = new THREE.CanvasTexture(canvas);
     if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
     tex.anisotropy = Math.max(1, Number(anisotropy) || 1);
@@ -1116,6 +1138,7 @@
     var k = 0.5; sp.scale.set(logicalW * k, logicalH * k, 1);
     sp.userData.typographyKey = type.key;
     sp.userData.captionAppearance = appearance || 'standard';
+    if (hasRoomSymbol) sp.userData.roomSymbolVariant = (roomIndex - 1) % 4;
     sp.userData.baseScale = { x: logicalW * k, y: logicalH * k };
     sp.renderOrder = occlusionSafe ? 24 : 12;
     sp.userData.occlusionSafe = !!occlusionSafe;
@@ -1129,6 +1152,47 @@
     var backdrop = g.createLinearGradient(0, 0, 256, 192);
     backdrop.addColorStop(0, '#233a48'); backdrop.addColorStop(1, '#080f1b');
     g.fillStyle = backdrop; g.fillRect(0, 0, 256, 192);
+    // Fine deterministic grain gives the numbered insert a printed surface.
+    for (var grain = 0; grain < 1700; grain++) {
+      var grainX = (grain * 73 + 19) % 256, grainY = (grain * 47 + Math.floor(grain / 256) * 17) % 192;
+      g.fillStyle = grain % 3 ? 'rgba(223,237,246,0.028)' : 'rgba(0,0,0,0.045)';
+      g.fillRect(grainX, grainY, 0.6, 0.6);
+    }
+    var cardVariant = (Math.max(1, Number(number) || 1) - 1) % 4;
+    var accentWash = g.createRadialGradient(40 + cardVariant * 54, 36, 8, 128, 90, 210);
+    accentWash.addColorStop(0, hex || '#818cf8'); accentWash.addColorStop(1, '#102234');
+    g.save(); g.globalAlpha = 0.25; g.fillStyle = accentWash; g.fillRect(0, 0, 256, 192);
+    g.beginPath(); g.rect(15, 15, 226, 162); g.clip();
+    g.fillStyle = '#adc8c8'; g.strokeStyle = '#e8d5ad'; g.lineWidth = 0.8;
+    if (cardVariant === 0) {
+      // Tall, offset architectural layers frame a quiet central opening.
+      for (var layer = 0; layer < 3; layer++) {
+        g.globalAlpha = 0.055 + layer * 0.025;
+        g.beginPath(); g.moveTo(18 + layer * 13, 192); g.lineTo(18 + layer * 13, 88);
+        g.bezierCurveTo(18 + layer * 13, 2, 190 - layer * 13, 2, 190 - layer * 13, 88);
+        g.lineTo(190 - layer * 13, 192); g.closePath(); g.fill();
+      }
+    } else if (cardVariant === 1) {
+      var sphere = g.createRadialGradient(182, 43, 3, 197, 67, 58);
+      sphere.addColorStop(0, '#d8ddbf'); sphere.addColorStop(0.45, '#728d95'); sphere.addColorStop(1, '#15263d');
+      g.globalAlpha = 0.6; g.fillStyle = sphere; g.beginPath(); g.arc(197, 67, 53, 0, Math.PI * 2); g.fill();
+      g.globalAlpha = 0.35; g.beginPath(); g.ellipse(197, 67, 80, 19, -0.58, 0, Math.PI * 2); g.stroke();
+    } else if (cardVariant === 2) {
+      for (var facet = 0; facet < 3; facet++) {
+        g.globalAlpha = 0.1 + facet * 0.03;
+        g.beginPath(); g.moveTo(12 + facet * 42, 183); g.lineTo(100 + facet * 38, 31 + facet * 20);
+        g.lineTo(245, 183); g.closePath(); g.fill();
+        g.beginPath(); g.moveTo(100 + facet * 38, 31 + facet * 20); g.lineTo(156 + facet * 24, 183); g.stroke();
+      }
+    } else {
+      for (var band = 0; band < 4; band++) {
+        g.globalAlpha = 0.07 + band * 0.025;
+        g.beginPath(); g.moveTo(0, 104 + band * 19);
+        g.bezierCurveTo(78, 24 + band * 16, 158, 192 - band * 4, 256, 90 + band * 19);
+        g.lineTo(256, 192); g.lineTo(0, 192); g.closePath(); g.fill();
+      }
+    }
+    g.restore();
     // Four deterministic, abstract compositions distinguish unfilled stops while
     // keeping the route number dominant. Nothing here encodes an answer.
     g.save(); g.strokeStyle = hex; g.fillStyle = hex; g.lineWidth = 1;
@@ -1157,14 +1221,27 @@
       }
     }
     g.restore();
+    // A soft central ink wash keeps the numeral legible over every composition.
+    var numeralShade = g.createRadialGradient(128, 95, 18, 128, 95, 85);
+    numeralShade.addColorStop(0, 'rgba(7,17,29,0.58)'); numeralShade.addColorStop(1, 'rgba(7,17,29,0)');
+    g.fillStyle = numeralShade; g.fillRect(0, 0, 256, 192);
     var halo = g.createRadialGradient(120, 72, 0, 120, 72, 140);
     halo.addColorStop(0, 'rgba(255,237,193,0.08)'); halo.addColorStop(1, 'rgba(255,237,193,0)');
     g.fillStyle = halo; g.fillRect(0,0,256,192);
     g.strokeStyle = '#d5c29b'; g.globalAlpha = 0.55; g.lineWidth = 1; g.strokeRect(9,9,238,174);
     g.strokeStyle = hex; g.globalAlpha = 0.35; g.strokeRect(13,13,230,166); g.globalAlpha = 1;
-    g.fillStyle = '#f9f1df'; g.font = '500 ' + (busy ? 64 : (number > 99 ? 62 : 78)) + 'px Georgia, serif';
+    g.strokeStyle = '#ead9b5'; g.globalAlpha = 0.75; g.lineWidth = 1;
+    [[17,17,1,1],[239,17,-1,1],[17,175,1,-1],[239,175,-1,-1]].forEach(function(corner){
+      g.beginPath(); g.moveTo(corner[0],corner[1]+corner[3]*10); g.lineTo(corner[0],corner[1]); g.lineTo(corner[0]+corner[2]*10,corner[1]); g.stroke();
+    }); g.globalAlpha = 1;
+    var numeral = busy ? '…' : (number < 10 ? '0' : '') + String(number);
+    var numeralSize = busy ? 64 : (number > 99 ? 62 : 78);
+    g.font = '500 ' + numeralSize + 'px Georgia, serif';
+    while (g.measureText(numeral).width > 174 && numeralSize > 20) { numeralSize -= 2; g.font = '500 ' + numeralSize + 'px Georgia, serif'; }
+    g.fillStyle = '#f9f1df';
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(busy ? '…' : (number < 10 ? '0' : '') + String(number),128,94);
+    g.save(); g.shadowColor = 'rgba(0,0,0,0.65)'; g.shadowBlur = 7; g.shadowOffsetY = 2;
+    g.fillText(numeral,128,94); g.restore();
     g.fillStyle = '#d5c29b'; g.globalAlpha = 0.7; g.fillRect(113,148,30,1); g.globalAlpha = 1;
     // The language-independent add affordance stays separate from the number.
     g.beginPath(); g.arc(223,32,12,0,Math.PI*2); g.fillStyle = '#f1e6d0'; g.fill();
@@ -1239,7 +1316,6 @@
     visualStyles.textContent = '[data-memory-palace-viewport] [hidden]{display:none!important}' +
       '[data-memory-palace-viewport] button:focus-visible,[data-memory-palace-viewport] canvas:focus-visible{outline:3px solid #fef08a!important;outline-offset:3px!important}' +
       '[data-memory-palace-viewport] button:hover:not(:disabled){filter:brightness(1.18)}' +
-      '[data-memory-palace-viewport] [data-visited="true"]::after{content:" ✓";color:#86efac}' +
       '@media(prefers-reduced-motion:reduce){[data-memory-palace-viewport] *{transition:none!important;animation:none!important}}' +
       '@media(forced-colors:active){[data-memory-palace-viewport] [data-palace-overlay]{background:Canvas!important;color:CanvasText!important;border:2px solid CanvasText!important}[data-memory-palace-viewport] button{border:1px solid ButtonText!important}}';
     visualStyles.textContent +=
@@ -1250,6 +1326,28 @@
       '[data-memory-palace-viewport] [data-palace-action="begin-walk"]{background:linear-gradient(120deg,#6258ce,#4338a5)!important;box-shadow:0 4px 14px rgba(99,102,241,.25)}' +
       '[data-memory-palace-viewport] [data-palace-action="previous"],[data-memory-palace-viewport] [data-palace-action="next"]{background:linear-gradient(145deg,#33435f,#1b293f)!important;border-color:#8191ad!important}' +
       '@media(forced-colors:active){[data-memory-palace-viewport] [data-palace-overlay],[data-memory-palace-viewport] [data-palace-action]{background:Canvas!important;color:CanvasText!important;box-shadow:none!important}}';
+    visualStyles.textContent +=
+      '[data-memory-palace-viewport] [data-palace-dock-group]{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0}' +
+      '[data-memory-palace-viewport] [data-palace-dock-group="route"]{gap:8px}' +
+      '[data-memory-palace-viewport] [data-palace-dock-group="explore"]{padding:0 8px;border-left:1px solid #3d4b61;border-right:1px solid #3d4b61;flex-wrap:wrap}' +
+      '[data-memory-palace-viewport] [data-palace-dock-group="zoom"]{flex-wrap:wrap}' +
+      '[data-memory-palace-viewport] [data-palace-dock-summary]{display:flex;flex-direction:column;align-items:stretch;gap:3px;min-width:0;width:clamp(130px,16vw,180px)}' +
+      '[data-memory-palace-viewport] [data-palace-dock-summary] [data-palace-room-badge]{max-width:100%!important;border:0!important;background:transparent!important;padding:0 2px!important;justify-content:center;font-weight:650!important}' +
+      '[data-memory-palace-viewport] [data-palace-dock-summary] [data-palace-progress]{min-width:0!important;max-width:none!important;flex-direction:row!important;align-items:center;justify-content:center;gap:6px!important}' +
+      '[data-memory-palace-viewport] [data-palace-progress] > :first-child{width:34px!important;min-width:34px!important}' +
+      '[data-memory-palace-viewport] [data-palace-progress] > :last-child{min-width:0!important;font-weight:500!important}' +
+      '[data-memory-palace-viewport] [data-palace-dock-group="explore"] button{border-radius:11px!important;font-weight:650!important}' +
+      '[data-memory-palace-viewport][data-palace-layout="compact"] [data-palace-dock-group="route"]{flex-basis:100%;padding-bottom:7px;border-bottom:1px solid #3d4b61}' +
+      '[data-memory-palace-viewport][data-palace-layout="compact"] [data-palace-dock-summary]{flex:1;width:auto}' +
+      '[data-memory-palace-viewport][data-palace-layout="compact"] [data-palace-dock-group="explore"]{border:0;padding:0;flex-basis:100%}' +
+      '[data-memory-palace-viewport][data-palace-layout="compact"] [data-palace-dock-group="zoom"]{flex-basis:100%}';
+    visualStyles.textContent += '[data-memory-palace-viewport] [data-palace-overlay="free-nav"][data-blocked="true"]{border-color:#fbbf24!important}' +
+      '[data-memory-palace-viewport] [data-blocked="true"] [data-palace-room-guidance]{color:#fde68a;background:rgba(120,70,8,.32);border-radius:5px;padding:3px 5px}' +
+      '@media(forced-colors:active){[data-memory-palace-viewport] [data-palace-room-guidance]{color:CanvasText!important;background:Canvas!important}}';
+    visualStyles.textContent +=
+      '[data-memory-palace-viewport][data-palace-narrow-room="true"] [data-palace-overlay="free-nav"] > button{flex-basis:100%!important}' +
+      '[data-memory-palace-viewport][data-palace-narrow-room="true"] [data-palace-room-controls]{grid-template-columns:repeat(2,minmax(0,1fr))!important}' +
+      '[data-memory-palace-viewport][data-palace-narrow-room="true"] [data-palace-room-controls] button{flex-direction:row!important;min-height:44px!important;gap:7px!important}';
     holder.appendChild(visualStyles);
     state.cleanup.push(function () { if (visualStyles.parentNode) visualStyles.parentNode.removeChild(visualStyles); });
     state.renderer = renderer;
@@ -1448,6 +1546,25 @@
       group.add(mesh);
     }
 
+    // Stationary contact shades share one texture and one draw call. Clip each
+    // floor stamp before transforming it so outdoor shading stops at deck edges.
+    var groundShadePositions = [], groundShadeUVs = [], roomFloorGroups = {};
+    function addGroundShade(parent, x, z, width, depth, y, clipToFloor) {
+      var left = x - width / 2, right = x + width / 2;
+      var near = z - depth / 2, far = z + depth / 2;
+      var x0 = clipToFloor ? Math.max(left, -ROOM_W / 2) : left;
+      var x1 = clipToFloor ? Math.min(right, ROOM_W / 2) : right;
+      var z0 = clipToFloor ? Math.max(near, -ROOM_D / 2) : near;
+      var z1 = clipToFloor ? Math.min(far, ROOM_D / 2) : far;
+      if (x0 >= x1 || z0 >= z1) return;
+      parent.updateWorldMatrix(true, false);
+      [[x0,z0],[x0,z1],[x1,z0],[x1,z0],[x0,z1],[x1,z1]].forEach(function (corner) {
+        var point = new THREE.Vector3(corner[0], y, corner[1]).applyMatrix4(parent.matrixWorld);
+        groundShadePositions.push(point.x, point.y, point.z);
+        groundShadeUVs.push((corner[0] - left) / width, (corner[1] - near) / depth);
+      });
+    }
+
     // Shared baked architectural details add depth without shadow maps or lights.
     var nicheMat = null, skylightMat = null, floorContactMat = null;
     if (theme.walls && palace.rooms.length > 1) {
@@ -1480,12 +1597,31 @@
       if(THREE.sRGBEncoding) skylightTex.encoding=THREE.sRGBEncoding;
       skylightMat=new THREE.MeshBasicMaterial({map:skylightTex,toneMapped:false});
     }
+    // A shared paving texture ties the room approaches to their environment.
+    // Room identity lives in a narrow inlay, keeping the hub compass unobscured.
+    var approachCanvas = document.createElement('canvas'); approachCanvas.width = 128; approachCanvas.height = 256;
+    var approachCtx = approachCanvas.getContext('2d');
+    approachCtx.fillStyle = theme.walls ? '#d0c5b0' : theme.ground ? '#d4cbb2' : '#486079';
+    approachCtx.fillRect(0, 0, 128, 256);
+    approachCtx.strokeStyle = theme.ground || theme.walls ? 'rgba(63,54,39,0.18)' : 'rgba(185,224,247,0.22)';
+    approachCtx.lineWidth = 1;
+    for (var joint = 0; joint <= 256; joint += 64) {
+      approachCtx.beginPath(); approachCtx.moveTo(0, joint); approachCtx.lineTo(128, joint); approachCtx.stroke();
+    }
+    approachCtx.strokeStyle = 'rgba(255,255,255,0.16)'; approachCtx.strokeRect(6, 0, 116, 256);
+    var approachTexture = new THREE.CanvasTexture(approachCanvas); approachTexture.anisotropy = _textureAnisotropy;
+    if (THREE.sRGBEncoding) approachTexture.encoding = THREE.sRGBEncoding;
+    var approachMat = new THREE.MeshStandardMaterial({ map: approachTexture, color: theme.ground ? 0xaaa18d : theme.walls ? 0x9b9383 : 0x667a8d, roughness: 0.86 });
+    var approachEdgeMat = new THREE.MeshStandardMaterial({ color: theme.ground ? 0x746951 : theme.walls ? 0x887651 : 0x526f88, roughness: 0.65, metalness: theme.ground ? 0.05 : 0.35 });
+    var landmarkBackGeometry = palace.rooms.length > 1 ? new THREE.CylinderGeometry(75, 75, 5, 64) : null;
+    var landmarkLipGeometry = palace.rooms.length > 1 ? new THREE.TorusGeometry(70, 1.2, 6, 64) : null;
+    var landmarkBackMaterial = new THREE.MeshStandardMaterial({ color: theme.ground ? 0x233b37 : 0x172b40, roughness: 0.72, metalness: theme.ground ? 0.12 : 0.3 });
     var _focusLight = null, _roomLabels = {}, _roomPortals = {}, _roomOutlines = {}, _roomHeatmaps = {}, _roomCanopies = {};
     palace.rooms.forEach(function (room, ri) {
       var cx = room.center.x, cz = room.center.z, ang = room.angle || 0;
       // Each room lives in its own group, positioned on its spoke and rotated to
       // face the hub, so floor + walls are built in simple room-local coordinates.
-      var rg = new THREE.Group(); rg.position.set(cx, 0, cz); rg.rotation.y = ang; group.add(rg);
+      var rg = new THREE.Group(); rg.position.set(cx, 0, cz); rg.rotation.y = ang; group.add(rg); roomFloorGroups[ri] = rg;
       function addLocalWall(x, z, lenX, lenZ) {
         var m = new THREE.Mesh(new THREE.BoxGeometry(Math.max(lenX, 8), WALL_H, Math.max(lenZ, 8)), wallMat);
         m.position.set(x, WALL_H / 2, z); rg.add(m);
@@ -1601,7 +1737,7 @@
         // Doorway columns + lintel — frame the threshold so each room reads as a
         // distinct chamber from the hub (helps the "walk into a room" mental map).
         try {
-          var colMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.5, metalness: 0.15 });
+          var colMat = new THREE.MeshStandardMaterial({ color: 0x827761, roughness: 0.72, metalness: 0.15 });
           [-1, 1].forEach(function (cs) {
             var col = new THREE.Mesh(new THREE.CylinderGeometry(16, 19, WALL_H * 0.88, 14), colMat);
             col.position.set(-ROOM_W / 2, WALL_H * 0.44, cs * (DOOR_W / 2 + 24)); rg.add(col);
@@ -1613,8 +1749,11 @@
             roughness: 0.55,
             metalness: 0.2
           });
-          var lintel = new THREE.Mesh(new THREE.BoxGeometry(26, 24, DOOR_W + 92), portalMat);
+          var lintel = new THREE.Mesh(new THREE.BoxGeometry(26, 24, DOOR_W + 92), colMat);
           lintel.position.set(-ROOM_W / 2, WALL_H * 0.88 + 12, 0); rg.add(lintel);
+          var portalInlay = new THREE.Mesh(new THREE.BoxGeometry(1.8, 4, DOOR_W + 70), portalMat);
+          portalInlay.position.set(-ROOM_W / 2 - 14, WALL_H * 0.88 + 12, 0);
+          portalInlay.userData.visualRole = 'gallery-portal-inlay'; rg.add(portalInlay);
           _roomPortals[ri] = portalMat;
         } catch (eD) {}
       }
@@ -1666,16 +1805,30 @@
         emblem.rotation.y = -Math.PI / 2;
         emblem.userData.visualRole = 'room-landmark'; emblem.userData.variant = (ri - 1) % 4;
         architecture.add(emblem);
-        var medallion = new THREE.Mesh(new THREE.TorusGeometry(79, 5, 8, 48), bronze); emblem.add(medallion);
+        var medallion = new THREE.Mesh(new THREE.TorusGeometry(79, 5, 10, 64), bronze); emblem.add(medallion);
+        var landmarkBack = new THREE.Mesh(landmarkBackGeometry, landmarkBackMaterial);
+        landmarkBack.rotation.x = Math.PI / 2; landmarkBack.position.z = 1.5;
+        landmarkBack.userData.visualRole = 'landmark-enamel-back'; emblem.add(landmarkBack);
+        var landmarkLip = new THREE.Mesh(landmarkLipGeometry, bronze); landmarkLip.position.z = 5;
+        landmarkLip.userData.visualRole = 'landmark-inner-rim'; emblem.add(landmarkLip);
+        var landmarkMount = new THREE.Mesh(new THREE.CylinderGeometry(9, 12, 43, 16), bronze);
+        landmarkMount.rotation.x = Math.PI / 2; landmarkMount.position.z = 25;
+        landmarkMount.userData.visualRole = 'landmark-symbol-mount'; emblem.add(landmarkMount);
         var shape;
         switch ((ri - 1) % 4) {
-          case 0: shape = new THREE.TorusGeometry(43, 8, 8, 40); break;
+          case 0: shape = new THREE.TorusGeometry(43, 8, 12, 64); break;
           case 1: shape = new THREE.OctahedronGeometry(49); break;
-          case 2: shape = new THREE.TorusKnotGeometry(30, 7, 48, 6); break;
+          case 2: shape = new THREE.TorusKnotGeometry(30, 7, 64, 10); break;
           default: shape = new THREE.IcosahedronGeometry(46); break;
         }
-        var symbol = new THREE.Mesh(shape, new THREE.MeshStandardMaterial({ color: room.color, emissive: room.color, emissiveIntensity: 0.24, metalness: 0.45, roughness: 0.35 }));
-        symbol.rotation.set(0.25, 0.35, 0.2); emblem.add(symbol);
+        var symbol = new THREE.Mesh(shape, new THREE.MeshStandardMaterial({ color: room.color, emissive: room.color, emissiveIntensity: 0.12, metalness: 0.32, roughness: 0.42 }));
+        symbol.rotation.set(0.25, 0.35, 0.2);
+        // Keep the complete silhouette in front of its backing and the far wall.
+        symbol.position.z = 55; symbol.userData.visualRole = 'landmark-symbol'; emblem.add(symbol);
+        if ((ri - 1) % 4 === 1 || (ri - 1) % 4 === 3) {
+          var facetEdges = new THREE.LineSegments(new THREE.EdgesGeometry(shape, 20), new THREE.LineBasicMaterial({ color: new THREE.Color(room.color).lerp(new THREE.Color('#fff1d4'), 0.7), transparent: true, opacity: 0.48 }));
+          facetEdges.userData.visualRole = 'landmark-facet-edges'; symbol.add(facetEdges);
+        }
         // Batch the twelve ticks into one draw call per room.
         var markers = new THREE.InstancedMesh(new THREE.BoxGeometry(3, 9, 3), glow, 12);
         var markerTransform = new THREE.Object3D();
@@ -1713,13 +1866,65 @@
             detail(new THREE.BoxGeometry(ROOM_W - 62, 3, 6), glow, 0, WALL_H - 25, side * (ROOM_D / 2 - 14), 'gallery-light-strip');
           });
         } else {
-          // Open-air rooms retain a threshold and a low plinth under their landmark.
+          // Outdoor landmarks sit in a supported exhibition mount, framed by
+          // low landscaping or flush deck lights that leave the route clear.
           detail(new THREE.CylinderGeometry(70, 84, 18, 32), stone, ROOM_W / 2 - 36, 9, 0, 'landmark-plinth');
+          addGroundShade(rg, ROOM_W / 2 - 36, 0, 240, 230, 1.3, true);
           [-1, 1].forEach(function (side) {
-            detail(new THREE.BoxGeometry(9, 112, 9), bronze, -ROOM_W / 2, 56, side * (DOOR_W / 2 + 16), 'open-threshold');
-            detail(new THREE.SphereGeometry(8, 10, 8), glow, -ROOM_W / 2, 115, side * (DOOR_W / 2 + 16), 'open-threshold');
+            detail(new THREE.BoxGeometry(8, 130, 8), bronze, ROOM_W / 2 - 15, 74, side * 49, 'landmark-support');
           });
+          if (theme.ground) {
+            var planterMat = new THREE.MeshStandardMaterial({ color: 0x8d7758, roughness: 0.92 });
+            var soilMat = new THREE.MeshStandardMaterial({ color: 0x3b3825, roughness: 1 });
+            var leafMat = new THREE.MeshStandardMaterial({ color: 0x416740, roughness: 0.92 });
+            var shrubGeo = new THREE.IcosahedronGeometry(24, 1);
+            [-1, 1].forEach(function (side) {
+              var gardenX = ROOM_W / 2 + 55, gardenZ = side * (ROOM_D / 2 - 95);
+              detail(new THREE.BoxGeometry(75, 34, 125), planterMat, gardenX, 15, gardenZ, 'garden-planter');
+              addGroundShade(rg, gardenX, gardenZ, 145, 195, -1.5, false);
+              detail(new THREE.BoxGeometry(65, 2, 115), soilMat, gardenX, 33, gardenZ, 'garden-soil');
+              for (var shrub = 0; shrub < 3; shrub++) {
+                var foliage = detail(shrubGeo, leafMat, gardenX, 49 + (shrub % 2) * 6, gardenZ + (shrub - 1) * 32, 'garden-foliage');
+                foliage.scale.set(1, 0.85, 0.92); foliage.rotation.y = shrub * 1.3 + side;
+              }
+            });
+          } else {
+            var deckLightMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(room.color).lerp(new THREE.Color('#bde8ff'), 0.68), transparent: true, opacity: 0.65, depthWrite: false, toneMapped: false });
+            var deckLights = new THREE.InstancedMesh(new THREE.BoxGeometry(46, 1.4, 3), deckLightMat, 12);
+            var deckTransform = new THREE.Object3D();
+            for (var lamp = 0; lamp < 12; lamp++) {
+              deckTransform.position.set(-ROOM_W / 2 + 95 + (lamp % 6) * ((ROOM_W - 190) / 5), 1.8, (lamp < 6 ? -1 : 1) * (ROOM_D / 2 - 18));
+              deckTransform.updateMatrix(); deckLights.setMatrixAt(lamp, deckTransform.matrix);
+            }
+            deckLights.userData.visualRole = 'orbital-edge-lights'; architecture.add(deckLights);
+          }
+          var gatewayMat = new THREE.MeshStandardMaterial({ color: theme.ground ? 0x6b573b : 0x304d66, roughness: theme.ground ? 0.88 : 0.5, metalness: theme.ground ? 0.05 : 0.42 });
+          [-1, 1].forEach(function (side) {
+            var postZ = side * (DOOR_W / 2 + 16);
+            detail(new THREE.BoxGeometry(13, 244, 13), gatewayMat, -ROOM_W / 2, 122, postZ, 'open-threshold');
+            detail(new THREE.BoxGeometry(25, 8, 25), stone, -ROOM_W / 2, 4, postZ, 'gateway-footing');
+            addGroundShade(rg, -ROOM_W / 2, postZ, 84, 84, 1.3, true);
+            detail(new THREE.BoxGeometry(2, 160, 3), glow, -ROOM_W / 2 - 7, 125, postZ, 'gateway-edge-light');
+          });
+          detail(new THREE.BoxGeometry(22, 14, DOOR_W + 66), gatewayMat, -ROOM_W / 2, 244, 0, 'gateway-header');
+          if (theme.ground) {
+            // Short cross-members give the garden entrance a pergola silhouette.
+            [-1, 0, 1].forEach(function (beam) {
+              detail(new THREE.BoxGeometry(48, 7, 8), gatewayMat, -ROOM_W / 2, 253, beam * 90, 'garden-gateway-beam');
+            });
+          }
         }
+        // Echo the permanent landmark at the entrance, using its shared geometry.
+        // These symbols identify places and never encode a memory answer.
+        var gatewayEmblem = new THREE.Group();
+        gatewayEmblem.position.set(-ROOM_W / 2 - 22, theme.walls ? WALL_H * 0.88 + 12 : 244, 0);
+        gatewayEmblem.rotation.y = -Math.PI / 2;
+        gatewayEmblem.userData.visualRole = 'gateway-emblem'; gatewayEmblem.userData.variant = (ri - 1) % 4;
+        var emblemBack = new THREE.Mesh(new THREE.CircleGeometry(22, 32), new THREE.MeshBasicMaterial({ color: 0x182735, toneMapped: false }));
+        gatewayEmblem.add(emblemBack);
+        var emblemRim = new THREE.Mesh(new THREE.TorusGeometry(21, 1.5, 6, 32), bronze); emblemRim.position.z = 1; gatewayEmblem.add(emblemRim);
+        var gatewaySymbol = new THREE.Mesh(shape, glow); gatewaySymbol.scale.setScalar(0.23); gatewaySymbol.rotation.copy(symbol.rotation); gatewaySymbol.position.z = 3;
+        gatewayEmblem.add(gatewaySymbol); architecture.add(gatewayEmblem);
         detail(new THREE.BoxGeometry(20, 2, DOOR_W - 10), glow, -ROOM_W / 2 + 10, 2.4, 0, 'threshold-inlay');
         if(theme.walls){
           [-1,1].forEach(function(edge){
@@ -1731,22 +1936,45 @@
         var doorZ = cz + Math.sin(ang) * ROOM_W / 2;
         var distance = Math.hypot(doorX, doorZ);
         if (distance > 50) {
-          var promenade = new THREE.Mesh(new THREE.PlaneGeometry(110, distance), new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(0.38), roughness: 0.86, side: THREE.DoubleSide }));
+          var ux = doorX / distance, uz = doorZ / distance;
+          var hubEdge = Math.min((ROOM_W / 2) / Math.max(0.0001, Math.abs(ux)), (ROOM_D / 2) / Math.max(0.0001, Math.abs(uz)));
+          var pathStart = Math.min(distance - 12, Math.max(0, hubEdge - 6));
+          var pathLength = distance - pathStart + 6;
+          var promenade = new THREE.Mesh(new THREE.PlaneGeometry(110, pathLength), approachMat);
           promenade.geometry.rotateX(-Math.PI / 2); promenade.rotation.y = Math.atan2(doorX, doorZ);
-          promenade.position.set(doorX / 2, 0.7, doorZ / 2); promenade.userData.visualRole = 'hub-promenade'; group.add(promenade);
+          var pathMid = (pathStart + distance + 6) / 2;
+          promenade.position.set(ux * pathMid, 0.7, uz * pathMid);
+          promenade.userData.visualRole = 'hub-promenade'; group.add(promenade);
+          // Everything is flush paving: the edging introduces no walking barrier.
+          [-1, 1].forEach(function (side) {
+            var edging = new THREE.Mesh(new THREE.BoxGeometry(3, 1.2, pathLength), approachEdgeMat);
+            edging.position.set(side * 51, 0.9, 0); promenade.add(edging);
+          });
+          var routeInlayMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(room.color).multiplyScalar(theme.ground ? 0.64 : 0.76), toneMapped: false });
+          var pathInlay = new THREE.Mesh(new THREE.PlaneGeometry(7, pathLength), routeInlayMat);
+          pathInlay.rotation.x = -Math.PI / 2; pathInlay.position.y = 0.2;
+          pathInlay.userData.visualRole = 'approach-route-inlay'; promenade.add(pathInlay);
+          // A thin radial guide meets the path at the plaza edge without covering its stonework.
+          var hubGuideLength = Math.max(0, pathStart - 140);
+          if (hubGuideLength > 0) {
+            var hubGuide = new THREE.Mesh(new THREE.PlaneGeometry(4, hubGuideLength), routeInlayMat);
+            hubGuide.geometry.rotateX(-Math.PI / 2); hubGuide.rotation.y = Math.atan2(doorX, doorZ);
+            hubGuide.position.set(ux * (140 + hubGuideLength / 2), 2.6, uz * (140 + hubGuideLength / 2));
+            hubGuide.userData.visualRole = 'plaza-route-inlay'; group.add(hubGuide);
+          }
         }
       }
 
       // Room name sprite (world coords; sprites always face the camera).
       // A single movable focus light is created after the rooms, avoiding
       // one forward-rendered point light per branch in large palaces.
-      var name = makeLabelSprite(THREE, room.label, room.color, 30, false, _textureAnisotropy, theme.walls ? 'plaque' : undefined);
+      var name = makeLabelSprite(THREE, room.label, room.color, 30, false, _textureAnisotropy, theme.walls || theme.ground ? 'plaque' : 'plate', ri);
       name.position.set(cx, WALL_H + 40, cz);
       name.userData = name.userData || {};
       name.userData.roomBaseScale = name.scale.clone();
       name.userData.roomMapPosition = name.position.clone();
       name.userData.roomWalkPosition = ri > 0
-        ? new THREE.Vector3(cx-Math.cos(ang)*(ROOM_W/2+16),WALL_H+42,cz+Math.sin(ang)*(ROOM_W/2+16))
+        ? new THREE.Vector3(cx-Math.cos(ang)*(ROOM_W/2+16),theme.walls ? WALL_H+42 : 288,cz+Math.sin(ang)*(ROOM_W/2+16))
         : name.position.clone();
       name.position.copy(name.userData.roomWalkPosition);
       name.userData.visualRole='room-wayfinding-label';
@@ -1813,7 +2041,7 @@
         var endpoint = !!focusedLink && (focusedLink.from === roomIdx || focusedLink.to === roomIdx);
         var activeRoom = roomIdx === _activeRoomIdx;
         try {
-          if (_roomLabels[key].material) _roomLabels[key].material.opacity = endpoint ? 1 : (activeRoom ? 1 : 0.62);
+          if (_roomLabels[key].material) _roomLabels[key].material.opacity = endpoint ? 1 : (activeRoom ? 1 : 0.78);
           var base = _roomLabels[key].userData && _roomLabels[key].userData.roomBaseScale;
           if (base) _roomLabels[key].scale.copy(base).multiplyScalar(endpoint ? 1.14 : (activeRoom ? 1.08 : 1));
         } catch (eCrossLabel) {}
@@ -1829,12 +2057,43 @@
     // Entry plinth (the palace title) + a slow sparkle ring orbiting the orb.
     var _orbRing = null;
     (function () {
-      var plinth = new THREE.Mesh(new THREE.CylinderGeometry(46, 56, 110, 20),
-        new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5, metalness: 0.25 }));
-      plinth.position.set(0, 55, 0); group.add(plinth);
-      var orb = new THREE.Mesh(new THREE.SphereGeometry(30, 24, 24),
-        new THREE.MeshStandardMaterial({ color: 0x818cf8, emissive: 0x6366f1, emissiveIntensity: 0.9, roughness: 0.3 }));
-      orb.position.set(0, 140, 0); orb.userData.locusId = '__entry'; group.add(orb);
+      // Recessed vertical panels are baked into one small, seamless surface map.
+      var pedestalCanvas = document.createElement('canvas'); pedestalCanvas.width = pedestalCanvas.height = 256;
+      var pedestalCtx = pedestalCanvas.getContext('2d');
+      pedestalCtx.fillStyle = '#d8d6cc'; pedestalCtx.fillRect(0, 0, 256, 256);
+      for (var flute = 0; flute < 16; flute++) {
+        var fluteX = flute * 16;
+        var fluteShade = pedestalCtx.createLinearGradient(fluteX + 3, 0, fluteX + 13, 0);
+        fluteShade.addColorStop(0, '#8e938e'); fluteShade.addColorStop(0.4, '#b7bcb4'); fluteShade.addColorStop(1, '#dedfd4');
+        pedestalCtx.fillStyle = fluteShade; pedestalCtx.fillRect(fluteX + 3, 27, 10, 199);
+        pedestalCtx.fillStyle = '#858c86'; pedestalCtx.fillRect(fluteX + 3, 27, 10, 2);
+        pedestalCtx.fillStyle = '#e7e4d8'; pedestalCtx.fillRect(fluteX + 3, 225, 10, 2);
+      }
+      pedestalCtx.fillStyle = 'rgba(62,68,63,.18)'; pedestalCtx.fillRect(0, 20, 256, 2); pedestalCtx.fillRect(0, 234, 256, 2);
+      var pedestalTexture = new THREE.CanvasTexture(pedestalCanvas); pedestalTexture.anisotropy = _textureAnisotropy;
+      if (THREE.sRGBEncoding) pedestalTexture.encoding = THREE.sRGBEncoding;
+      var pedestalMaterial = new THREE.MeshStandardMaterial({ color: theme.walls ? 0x827766 : theme.ground ? 0xa29478 : 0x385776, map: pedestalTexture, roughness: theme.ground ? 0.86 : 0.62, metalness: theme.ground ? 0.05 : 0.22 });
+      var plinth = new THREE.Mesh(new THREE.CylinderGeometry(46, 56, 110, 48), pedestalMaterial);
+      plinth.position.set(0, 55, 0); plinth.userData.visualRole = 'entrance-pedestal'; group.add(plinth);
+      addGroundShade(group, 0, 0, 190, 190, 2.5, false);
+      // A low-glow celestial globe retains its curvature instead of blooming white.
+      var globeCanvas = document.createElement('canvas'); globeCanvas.width = 512; globeCanvas.height = 256;
+      var globeCtx = globeCanvas.getContext('2d'), globeGradient = globeCtx.createLinearGradient(0, 0, 0, 256);
+      globeGradient.addColorStop(0, '#8cc3de'); globeGradient.addColorStop(0.45, '#386989'); globeGradient.addColorStop(1, '#132e50');
+      globeCtx.fillStyle = globeGradient; globeCtx.fillRect(0, 0, 512, 256);
+      globeCtx.strokeStyle = 'rgba(213,236,234,.38)'; globeCtx.lineWidth = 1;
+      for (var meridian = 0; meridian <= 512; meridian += 64) { globeCtx.beginPath(); globeCtx.moveTo(meridian, 0); globeCtx.lineTo(meridian, 256); globeCtx.stroke(); }
+      for (var latitude = 32; latitude < 256; latitude += 32) { globeCtx.beginPath(); globeCtx.moveTo(0, latitude); globeCtx.lineTo(512, latitude); globeCtx.stroke(); }
+      globeCtx.strokeStyle = 'rgba(239,216,162,.55)'; globeCtx.lineWidth = 2; globeCtx.beginPath();
+      for (var longitude = 0; longitude <= 512; longitude += 4) {
+        var arcY = 128 + Math.sin(longitude / 512 * Math.PI * 2) * 52;
+        if (longitude === 0) globeCtx.moveTo(longitude, arcY); else globeCtx.lineTo(longitude, arcY);
+      } globeCtx.stroke();
+      var globeTexture = new THREE.CanvasTexture(globeCanvas); globeTexture.anisotropy = _textureAnisotropy;
+      if (THREE.sRGBEncoding) globeTexture.encoding = THREE.sRGBEncoding;
+      var orb = new THREE.Mesh(new THREE.SphereGeometry(30, 40, 32),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, map: globeTexture, emissive: 0x5c8faf, emissiveMap: globeTexture, emissiveIntensity: 0.18, roughness: 0.48, metalness: 0.12 }));
+      orb.position.set(0, 140, 0); orb.userData.locusId = '__entry'; orb.userData.visualRole = 'entrance-globe'; group.add(orb);
       // A stationary armillary gives the entrance a recognisable silhouette.
       // It stays within the existing orb halo and needs no animated transforms.
       var armillaryMetal=new THREE.MeshStandardMaterial({color:0xc7ad79,metalness:0.58,roughness:0.38});
@@ -1845,7 +2104,9 @@
       [5,106].forEach(function(level){
         var collar=new THREE.Mesh(new THREE.CylinderGeometry(51,53,5,32),armillaryMetal);collar.position.set(0,level,0);collar.userData.visualRole='entrance-plinth-collar';group.add(collar);
       });
-      var title = makeLabelSprite(THREE, palace.title || '', '#818cf8', 32, false, _textureAnisotropy, theme.walls ? 'plaque' : undefined);
+      var pedestalFoot = new THREE.Mesh(new THREE.CylinderGeometry(57, 61, 7, 48), pedestalMaterial);
+      pedestalFoot.position.y = 4.5; pedestalFoot.userData.visualRole = 'entrance-pedestal-foot'; group.add(pedestalFoot);
+      var title = makeLabelSprite(THREE, palace.title || '', '#818cf8', 32, false, _textureAnisotropy, theme.walls || theme.ground ? 'plaque' : 'plate');
       title.position.set(0, 223, 0); group.add(title);
       try {
         var ORB_N = 18, op3 = new Float32Array(ORB_N * 3);
@@ -1933,11 +2194,11 @@
         _washMat = new THREE.MeshBasicMaterial({ map: wtex, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false });
       }
     } catch (e) {}
-    // Shared gallery-frame geometry keeps the richer molding inexpensive.
+    // Shared display geometry gives each environment a finished exhibition case.
     var frameRailHGeo = new THREE.BoxGeometry(FRAME_W + 28, 10, 9);
     var frameRailVGeo = new THREE.BoxGeometry(10, FRAME_H + 8, 9);
-    var frameCaseMat = theme.walls && palace.loci.length > 1 ? new THREE.MeshStandardMaterial({ color: 0x746145, roughness: 0.46, metalness: 0.48 }) : null;
-    // One shared planar ring gives each brass case a slim status-colour inlay.
+    var frameCaseMat = palace.loci.length > 1 ? new THREE.MeshStandardMaterial({ color: theme.walls ? 0x746145 : theme.ground ? 0x705b3e : 0x405c73, roughness: theme.ground ? 0.82 : 0.46, metalness: theme.ground ? 0.06 : 0.48 }) : null;
+    // One shared planar ring gives each case a slim status-colour inlay.
     // The existing border material still communicates focus, recall, and loading.
     var frameAccentGeo = null;
     if (frameCaseMat) {
@@ -1950,20 +2211,21 @@
       frameAccentGeo=new THREE.ShapeGeometry(accentShape);
     }
     var frameInsetGeo = new THREE.PlaneGeometry(FRAME_W + 10, FRAME_H + 10);
-    var frameInsetMat = new THREE.MeshStandardMaterial({ color: theme.walls ? 0xe8dcc5 : 0x111827, roughness: 0.96, metalness: 0.01 });
-    // Fine inner bevels catch the gallery light without covering the artwork.
+    var frameInsetMat = new THREE.MeshStandardMaterial({ color: theme.walls || theme.ground ? 0xe8dcc5 : 0x162a3d, roughness: 0.96, metalness: 0.01 });
+    // Fine inner bevels catch the light without covering the artwork.
     var bevelHGeo = frameCaseMat ? new THREE.BoxGeometry(FRAME_W + 4, 1.6, 1.8) : null;
     var bevelVGeo = frameCaseMat ? new THREE.BoxGeometry(1.6, FRAME_H + 4, 1.8) : null;
-    var bevelLightMat = frameCaseMat ? new THREE.MeshStandardMaterial({ color: 0xdecda9, roughness: 0.48, metalness: 0.35 }) : null;
-    var bevelShadeMat = frameCaseMat ? new THREE.MeshStandardMaterial({ color: 0x6e5d43, roughness: 0.55, metalness: 0.28 }) : null;
+    var bevelLightMat = frameCaseMat ? new THREE.MeshStandardMaterial({ color: theme.walls || theme.ground ? 0xdecda9 : 0xa2bdcf, roughness: 0.48, metalness: 0.35 }) : null;
+    var bevelShadeMat = frameCaseMat ? new THREE.MeshStandardMaterial({ color: theme.walls || theme.ground ? 0x6e5d43 : 0x294258, roughness: 0.55, metalness: 0.28 }) : null;
+    var displayBackGeo = !theme.walls ? new THREE.BoxGeometry(FRAME_W + 20, FRAME_H + 20, 5) : null;
     // Reuse fixture geometry across all stops; the diffuser is the only glowing part.
     var lampHoodGeo = new THREE.CylinderGeometry(5.5, 5.5, FRAME_W * 0.66, 12);
     var lampArmGeo = new THREE.BoxGeometry(2.6, 2.6, 14);
     var lampDiffuserGeo = new THREE.BoxGeometry(FRAME_W * 0.59, 1.4, 5);
-    var lampHoodMat = new THREE.MeshStandardMaterial({ color: 0x9b825c, roughness: 0.38, metalness: 0.62 });
+    var lampHoodMat = new THREE.MeshStandardMaterial({ color: theme.walls || theme.ground ? 0x9b825c : 0x8ba6b9, roughness: 0.38, metalness: 0.62 });
     var lampMat = new THREE.MeshStandardMaterial({ color: 0xffedc9, emissive: 0xffd9a0, emissiveIntensity: 0.7, roughness: 0.5, metalness: 0 });
     var frameShadowMat = null;
-    try {
+    if (theme.walls) try {
       var shadowCanvas = document.createElement('canvas'); shadowCanvas.width = 128; shadowCanvas.height = 96;
       var shadowCtx = shadowCanvas.getContext('2d'); shadowCtx.clearRect(0, 0, 128, 96);
       shadowCtx.shadowColor = 'rgba(0,0,0,0.9)'; shadowCtx.shadowBlur = 18; shadowCtx.fillStyle = 'rgba(0,0,0,0.52)'; shadowCtx.fillRect(22, 18, 84, 60);
@@ -1981,12 +2243,16 @@
       // Frame border + canvas. The border carries an (initially dark) emissive in
       // the room accent so the CURRENT locus can glow — tick pulses emissiveIntensity.
       var borderMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.8), roughness: 0.38, metalness: 0.28, emissive: new THREE.Color(color), emissiveIntensity: 0 });
+      if (displayBackGeo) {
+        var displayBack = new THREE.Mesh(displayBackGeo, frameCaseMat);
+        displayBack.position.z = -3; displayBack.userData.visualRole = 'display-case-back'; g2.add(displayBack);
+      }
       var inset = new THREE.Mesh(frameInsetGeo, frameInsetMat); inset.position.z = 1.2; g2.add(inset);
       [[frameRailHGeo, 0, FRAME_H / 2 + 8], [frameRailHGeo, 0, -(FRAME_H / 2 + 8)], [frameRailVGeo, FRAME_W / 2 + 9, 0], [frameRailVGeo, -(FRAME_W / 2 + 9), 0]].forEach(function (railSpec) {
-        var rail = new THREE.Mesh(railSpec[0], theme.walls ? frameCaseMat : borderMat); rail.position.set(railSpec[1], railSpec[2], 3);
+        var rail = new THREE.Mesh(railSpec[0], frameCaseMat); rail.position.set(railSpec[1], railSpec[2], 3);
         rail.userData.visualRole = 'frame-molding'; g2.add(rail);
       });
-      if (theme.walls) {
+      if (frameCaseMat) {
         var accentInlay=new THREE.Mesh(frameAccentGeo,borderMat);accentInlay.position.z=8;
         accentInlay.userData.visualRole='frame-accent-inlay';g2.add(accentInlay);
         [[bevelHGeo, 0, FRAME_H / 2 + 1.2, bevelShadeMat], [bevelHGeo, 0, -FRAME_H / 2 - 1.2, bevelLightMat], [bevelVGeo, -FRAME_W / 2 - 1.2, 0, bevelShadeMat], [bevelVGeo, FRAME_W / 2 + 1.2, 0, bevelLightMat]].forEach(function (edge) {
@@ -1995,7 +2261,7 @@
           bevel.userData.visualRole = 'frame-inner-bevel'; g2.add(bevel);
         });
       }
-      if (frameShadowMat && !l.mine) {
+      if (frameShadowMat && theme.walls && !l.mine) {
         var frameShadow = new THREE.Mesh(new THREE.PlaneGeometry(FRAME_W + 52, FRAME_H + 48), frameShadowMat);
         frameShadow.position.z = -0.35; frameShadow.userData.visualRole = 'frame-contact-shadow'; g2.add(frameShadow);
       }
@@ -2013,19 +2279,24 @@
       var lampBar = new THREE.Mesh(lampDiffuserGeo, lampMat);
       lampBar.position.set(0, FRAME_H / 2 + 18.6, 15);
       lampBar.userData.visualRole = 'picture-light-diffuser'; g2.add(lampBar);
-      // A student-built locus stands free in the room rather than hanging on a
-      // wall, so it gets a post and a base plate to sit on — and skips the wall
-      // wash, which would otherwise glow on thin air behind it.
-      if (l.mine) {
+      // Student-built and outdoor displays need visible supports. Keep the
+      // slim post behind the caption and the footing beneath the frame.
+      if (l.mine || !theme.walls) {
         try {
-          var postMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.55), roughness: 0.7, metalness: 0.25 });
+          var postMat = new THREE.MeshStandardMaterial({ color: theme.ground ? 0x776a50 : new THREE.Color(color).multiplyScalar(0.55), roughness: 0.7, metalness: 0.25 });
           var postH = Math.max(10, l.framePos.y - FRAME_H / 2 - 1);
           var post = new THREE.Mesh(new THREE.CylinderGeometry(5, 6.5, postH, 10), postMat);
-          post.position.set(0, -(FRAME_H / 2) - postH / 2, 0);
-          g2.add(post);
+          post.position.set(0, -(FRAME_H / 2) - postH / 2, -4);
+          post.userData.visualRole = 'display-support'; g2.add(post);
           var base = new THREE.Mesh(new THREE.CylinderGeometry(16, 19, 3.5, 16), postMat);
-          base.position.set(0, -(FRAME_H / 2) - postH + 1.75, 0);
-          g2.add(base);
+          base.position.set(0, -(FRAME_H / 2) - postH + 1.75, -4);
+          base.userData.visualRole = 'display-footing'; g2.add(base);
+          var floorGroup = roomFloorGroups[l.roomIdx];
+          if (floorGroup) {
+            var basePoint = new THREE.Vector3(0, 0, -4).applyAxisAngle(new THREE.Vector3(0, 1, 0), g2.rotation.y).add(g2.position);
+            floorGroup.worldToLocal(basePoint);
+            addGroundShade(floorGroup, basePoint.x, basePoint.z, 88, 88, 1.3, true);
+          }
         } catch (eP) {}
       }
       // Warm wash on the wall around the frame — the picture light "shining".
@@ -2074,7 +2345,7 @@
         } catch (eEmptyBeacon) {}
       }
       // Item label under the frame ('?' while its answer is unearned in recall).
-      var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false, _textureAnisotropy, theme.walls ? 'plaque' : undefined);
+      var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false, _textureAnisotropy, theme.walls || theme.ground ? 'plaque' : 'plate');
       lab.userData.visualRole = 'locus-caption'; lab.userData.locusId = l.id;
       lab.position.set(0, -(FRAME_H / 2 + 34), 10);
       g2.add(lab);
@@ -2091,7 +2362,7 @@
       var stopRing = null;
       try {
         if (l.camPos) {
-          var ring = new THREE.Mesh(new THREE.RingGeometry(18, 25, 28),
+          var ring = new THREE.Mesh(new THREE.RingGeometry(21, 25, 48),
             new THREE.MeshBasicMaterial({ color: new THREE.Color(color), transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide }));
           ring.rotation.x = -Math.PI / 2;
           ring.position.set(l.camPos.x, 1.6, l.camPos.z);
@@ -2134,6 +2405,26 @@
       // Existing relief pair (reload path): upgrade the flat frame in place.
       if (img && depths[l.id]) applyRelief(frameRefs[l.id], routeNo, color, img, depths[l.id]);
     });
+
+    if (groundShadePositions.length) {
+      var groundShadeCanvas = document.createElement('canvas'); groundShadeCanvas.width = groundShadeCanvas.height = 128;
+      var groundShadeCtx = groundShadeCanvas.getContext('2d');
+      var groundShadeGradient = groundShadeCtx.createRadialGradient(64, 64, 0, 64, 64, 63);
+      groundShadeGradient.addColorStop(0, 'rgba(9,16,23,0.62)');
+      groundShadeGradient.addColorStop(0.35, 'rgba(9,16,23,0.42)');
+      groundShadeGradient.addColorStop(0.65, 'rgba(9,16,23,0.15)');
+      groundShadeGradient.addColorStop(1, 'rgba(9,16,23,0)');
+      groundShadeCtx.fillStyle = groundShadeGradient; groundShadeCtx.fillRect(0, 0, 128, 128);
+      var groundShadeTexture = new THREE.CanvasTexture(groundShadeCanvas);
+      var groundShadeGeometry = new THREE.BufferGeometry();
+      groundShadeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(groundShadePositions, 3));
+      groundShadeGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(groundShadeUVs, 2));
+      var groundShades = new THREE.Mesh(groundShadeGeometry, new THREE.MeshBasicMaterial({ map: groundShadeTexture, transparent: true, opacity: theme.ground ? 0.8 : 0.65, depthWrite: false, toneMapped: false }));
+      groundShades.userData.visualRole = 'ground-contact-shades';
+      groundShades.userData.stampCount = groundShadePositions.length / 18;
+      groundShades.raycast = function () {}; // Decorative floor shading never intercepts a placement.
+      root.add(groundShades);
+    }
 
     // Recreate the invitation when an existing locus is cleared after mount. This
     // keeps the visual affordance in sync with live decorate/remove actions.
@@ -2381,7 +2672,7 @@
     var masteryLegend = null, masteryLegendCurrent = null;
     // Overview journey map: a compact, clickable route index that mirrors the
     // palace's room grouping without making learners decode the 3D geometry.
-    var journeyMap = null, journeyMapTitle = null, journeyMapMeta = null, journeyMapStops = [], journeyMapLinks = [];
+    var journeyMap = null, journeyMapTitle = null, journeyMapMeta = null, journeyMapStops = [], journeyMapLinks = [], journeyRoomProgress = [];
     var helpPanel = null, helpBtn = null, helpCloseBtn = null, helpVisible = false;
     var zoomValue = null, zoomOutBtn = null, zoomInBtn = null, resetViewBtn = null;
     function _setJourneyMapState() {
@@ -2395,17 +2686,33 @@
         : _tr(t, 'memory_palace.journey_map_progress', 'Stop {current} of {total}').replace('{current}', String(curIdx)).replace('{total}', String(totalStops));
       journeyMapStops.forEach(function (stop) {
         var active = stop.index === curIdx;
+        var visited = !!visitedStops[palace.route[stop.index]];
         var color = stop.color || '#818cf8';
         stop.button.setAttribute('aria-current', active ? 'step' : 'false');
         stop.button.style.backgroundColor = active ? '#24334b' : '#0c182b';
-        stop.button.style.borderColor = active ? '#ffffff' : color;
+        stop.button.style.borderColor = active ? color : '#35445c';
         stop.button.style.color = '#f8fafc';
         if(stop.number){stop.number.style.backgroundColor=active?color:'#25334b';stop.number.style.color=active?contrastForeground(color):'#dce5f5';}
         stop.button.style.transform = 'none';
         stop.button.setAttribute('data-visited', visitedStops[palace.route[stop.index]] ? 'true' : 'false');
-        stop.button.style.outline = active ? '2px solid #ffffff' : 'none';
+        var visitLabel = visited ? _tr(t, 'memory_palace.stop_visited', 'Visited') : _tr(t, 'memory_palace.stop_unvisited', 'Not yet visited');
+        stop.button.setAttribute('aria-label', stop.label + '. ' + visitLabel);
+        var markerKind = active ? 'next' : visited ? 'check' : '';
+        if (stop.marker.getAttribute('data-state') !== markerKind) {
+          stop.marker.textContent = '';
+          if (markerKind) stop.marker.appendChild(palaceIcon(markerKind, 16));
+          stop.marker.setAttribute('data-state', markerKind);
+        }
+        stop.marker.style.color = active ? '#ffffff' : '#a8d4c4';
+        stop.segment.style.backgroundColor = visited ? color : '#35445c';
+        stop.segment.style.boxShadow = active ? 'inset 0 0 0 1px #ffffff' : 'none';
+        stop.button.style.outline = active ? '1px solid #ffffff' : 'none';
         stop.button.style.outlineOffset = active ? '2px' : '0';
-        stop.button.style.boxShadow = active ? ('0 0 0 3px ' + color + '55') : 'none';
+        stop.button.style.boxShadow = active ? ('inset 3px 0 0 ' + color) : 'none';
+      });
+      journeyRoomProgress.forEach(function (room) {
+        var visited = room.ids.filter(function (id) { return !!visitedStops[id]; }).length;
+        room.label.textContent = _tr(t, 'memory_palace.room_visits', '{visited} of {total} visited').replace('{visited}', String(visited)).replace('{total}', String(room.ids.length));
       });
       journeyMapLinks.forEach(function (connection) {
         var focused = connection.index === focusedCrossLink;
@@ -2480,7 +2787,7 @@
           try { if (old.material.map) old.material.map.dispose(); old.material.dispose(); } catch (eD) {}
         }
         var overlay = !!(ref.locus && ref.locus.roomIdx === _captionOverlayRoomIdx);
-        ref.label = makeLabelSprite(THREE, text, ref.baseColor, 24, overlay, _textureAnisotropy, theme.walls ? 'plaque' : undefined);
+        ref.label = makeLabelSprite(THREE, text, ref.baseColor, 24, overlay, _textureAnisotropy, theme.walls || theme.ground ? 'plaque' : 'plate');
         ref.label.userData.visualRole = 'locus-caption'; ref.label.userData.locusId = ref.locus && ref.locus.id;
         ref.label.position.set(0, -(FRAME_H / 2 + 38), 11);
         if (ref.label.material) ref.label.material.opacity = 1;
@@ -3234,6 +3541,7 @@
         } catch (eHeatState) {}
       });
     }
+    var focusCardMarker = null;
     function _setRoomBadgeState() {
       if (!roomBadge) return;
       var ref = freeMode ? _freeStopRef : _hlRef;
@@ -3244,8 +3552,10 @@
       var label = room.label || _tr(t, 'memory_palace.hub', 'Hub plaza');
       roomBadge.hidden = false;
       roomBadgeText.textContent = label;
-      roomBadgeDot.style.backgroundColor = room.color || '#64748b';
-      roomBadgeDot.style.boxShadow = room.color ? ('0 0 0 2px ' + room.color + '44') : '0 0 0 2px rgba(148,163,184,0.35)';
+      setRoomSymbol(roomBadgeDot, roomIdx, 16);
+      roomBadgeDot.style.color = room.color || '#a5b4ca';
+      roomBadgeDot.style.backgroundColor = 'transparent';
+      roomBadgeDot.style.boxShadow = 'none';
       roomBadge.setAttribute('aria-label', _tr(t, 'memory_palace.room_current', 'Current room: {room}').replace('{room}', label));
       roomBadge.title = label;
     }
@@ -3253,6 +3563,7 @@
       if (!focusCard) return;
       var l = _hlRef && _hlRef.locus ? _hlRef.locus : locusById(palace, palace.route[curIdx]);
       var show = !recall && !overview && !freeMode && !state.xrActive && !routeVisible && !helpVisible && !buildMode && !!l;
+      if (completionCard && !completionCard.hidden) show = false;
       focusCard.hidden = !show;
       if (!show) return;
       var idx = Math.max(0, palace.route.indexOf(l.id));
@@ -3261,6 +3572,9 @@
       var roomLabel = room && room.label ? room.label : _tr(t, 'memory_palace.hub', 'Hub plaza');
       var entry = l.id === '__entry';
       var accent = room && room.color ? room.color : '#818cf8';
+      setRoomSymbol(focusCardMarker, entry ? 0 : l.roomIdx, 25);
+      focusCardMarker.style.color = accent;
+      focusCard.style.setProperty('--palace-room-accent', accent);
       focusCardKicker.textContent = entry ? _tr(t, 'memory_palace.focus_entry', 'Palace entrance') : _tr(t, 'memory_palace.focus_current', 'Current locus');
       focusCardTitle.textContent = l.label || _tr(t, 'memory_palace.focus_stop', 'Stop {index}').replace('{index}', String(idx));
       focusCardMeta.textContent = entry
@@ -3293,6 +3607,7 @@
         completionGlow.cap.material.opacity = 0.72;
       }
     }
+    var completionMarker = null, completionProgress = null, completionProgressFill = null;
     function _setCompletionCardState() {
       if (!completionCard) return;
       var total = Math.max(0, palace.route.length - 1);
@@ -3310,9 +3625,24 @@
           visitRemainingBtn.textContent = _tr(t, 'memory_palace.visit_remaining', 'Visit remaining stops ({count})').replace('{count}', String(Math.max(0, total - visited)));
           visitRemainingBtn.setAttribute('aria-label', visitRemainingBtn.textContent);
         }
+        if (completionProgress) {
+          completionProgress.setAttribute('aria-valuemax', String(total));
+          completionProgress.setAttribute('aria-valuenow', String(Math.min(visited, total)));
+          completionProgressFill.style.width = (total ? Math.min(100, visited / total * 100) : 0) + '%';
+          var finished = visited >= total;
+          completionProgressFill.style.background = finished ? '#9bd5c1' : '#a5b4fc';
+          var kind = finished ? 'check' : 'map';
+          if (completionMarker.getAttribute('data-state') !== kind) {
+            completionMarker.textContent = ''; completionMarker.appendChild(palaceIcon(kind, 24));
+            completionMarker.setAttribute('data-state', kind);
+          }
+          completionMarker.style.color = finished ? '#b8ebd9' : '#c7d2fe';
+          completionWalkBtn.style.background = finished ? '#4f46a5' : '#25334b';
+        }
         completionCard.setAttribute('aria-label', completionCardTitle.textContent + '. ' + completionCardMeta.textContent);
       }
       _setCompletionGlowState();
+      _setFocusCardState();
     }
     function _setActiveRoom(roomIdx) {
       _activeRoomIdx = typeof roomIdx === 'number' ? roomIdx : -1;
@@ -3327,7 +3657,7 @@
       Object.keys(_roomLabels).forEach(function (key) {
         var label = _roomLabels[key], active = Number(key) === _activeRoomIdx;
         try {
-          if (label.material) label.material.opacity = active ? 1 : 0.62;
+          if (label.material) label.material.opacity = active ? 1 : 0.78;
           var base = label.userData && label.userData.roomBaseScale;
           if (base) label.scale.copy(base).multiplyScalar(active ? 1.08 : 1);
         } catch (e) {}
@@ -3343,6 +3673,7 @@
       _setFocusCardState();
       _setArrivalHaloState();
     }
+    var freeNavRoom = null, freeNavGuidance = null;
     function _updateFreeCue(roomIdx, ref) {
       if (!freeNavCue) return;
       if (explorationControls) explorationControls.hidden = !freeMode || overview || recall || buildMode || state.xrActive || routeVisible || helpVisible;
@@ -3388,7 +3719,8 @@
         freeNavCompass.hidden = blocked || !headingGlyph;
         if (!blocked && headingGlyph && freeNavCompassArrow) freeNavCompassArrow.style.transform = 'rotate(' + String(headingBin * 45) + 'deg)';
       }
-      if (freeNavText) freeNavText.textContent = roomLabel + ' · ' + context + direction;
+      if (freeNavRoom) freeNavRoom.textContent = roomLabel;
+      if (freeNavGuidance) freeNavGuidance.textContent = context + direction;
       var announceKey = String(roomIdx) + '|' + (ref && ref.locus ? ref.locus.id : '');
       if (_freeAnnounceKey !== announceKey && !blocked) {
         _freeAnnounceKey = announceKey;
@@ -3520,12 +3852,21 @@
       b.type = 'button'; b.onclick = fn; return b;
     }
     function palaceIcon(kind, size) {
-      var paths={previous:'M15 5l-7 7 7 7',next:'M9 5l7 7-7 7',map:'M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2V5m6-2v16m6-14v16',home:'M3 11l9-8 9 8M6 9v12h12V9M10 21v-7h4v7',orbit:'M18 6a8 8 0 1 0 0 12',diamond:'M12 2l9 10-9 10L3 12z',weave:'M4 8c0-8 16-8 16 0S4 24 4 16 20 0 20 8',facet:'M12 2l9 7-3 11H6L3 9zm0 0L6 20m6-18 6 18M3 9h18'};
+      var paths={turnLeft:'M9 4L4 9l5 5M4 9h9a6 6 0 0 1 6 6v5',turnRight:'M15 4l5 5-5 5m5-5h-9a6 6 0 0 0-6 6v5',forward:'M12 20V4m-6 6 6-6 6 6',back:'M12 4v16m-6-6 6 6 6-6',check:'M5 12l4 4L19 6',previous:'M15 5l-7 7 7 7',next:'M9 5l7 7-7 7',map:'M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2V5m6-2v16m6-14v16',home:'M3 11l9-8 9 8M6 9v12h12V9M10 21v-7h4v7',orbit:'M18 6a8 8 0 1 0 0 12',diamond:'M12 2l9 10-9 10L3 12z',weave:'M4 8c0-8 16-8 16 0S4 24 4 16 20 0 20 8',facet:'M12 2l9 7-3 11H6L3 9zm0 0L6 20m6-18 6 18M3 9h18'};
       var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
       svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width',String(size||20));svg.setAttribute('height',String(size||20));
       svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.style.cssText='display:block;flex:none;';
       var path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',paths[kind]||paths.map);
       path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');path.setAttribute('stroke-width','1.7');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');svg.appendChild(path);return svg;
+    }
+    // Reuse the same place symbols in the map, study card, and route dock.
+    // Cache the SVG so status updates do not rebuild unchanged markup.
+    function setRoomSymbol(node, roomIdx, size) {
+      if (!node) return;
+      var kind = roomIdx > 0 ? ['orbit', 'diamond', 'weave', 'facet'][(roomIdx - 1) % 4] : 'home';
+      if (node.getAttribute('data-room-symbol') === kind) return;
+      node.textContent = ''; node.appendChild(palaceIcon(kind, size));
+      node.setAttribute('data-room-symbol', kind);
     }
     function setPalaceIcon(button, kind) { button.textContent='';button.appendChild(palaceIcon(kind));button.style.display='inline-flex';button.style.alignItems='center';button.style.justifyContent='center'; }
     var prevBtn = mkBtn('◀', _tr(t, 'memory_palace.prev', 'Previous locus'), function () { goTo(curIdx - 1); });
@@ -3536,19 +3877,30 @@
     focusCard.setAttribute('aria-label', _tr(t, 'memory_palace.focus_card', 'Current locus focus'));
     focusCard.setAttribute('data-palace-overlay', 'focus');
     focusCard.style.cssText = 'position:absolute;left:12px;top:12px;z-index:6;width:min(350px,calc(100% - 24px));box-sizing:border-box;padding:11px 13px 12px;border:1px solid #818cf8;border-radius:14px;background:rgba(2,6,23,0.94);color:#f8fafc;box-shadow:0 12px 30px rgba(2,6,23,0.3);pointer-events:auto;overflow:auto;scrollbar-width:thin;backdrop-filter:blur(14px);transition:border-color 180ms ease,box-shadow 180ms ease;';
+    var focusHeader = document.createElement('div');
+    focusHeader.style.cssText = 'display:grid;grid-template-columns:40px minmax(0,1fr);align-items:start;gap:10px;';
+    focusCardMarker = document.createElement('span');
+    focusCardMarker.setAttribute('aria-hidden', 'true');
+    focusCardMarker.style.cssText = 'display:flex;align-items:center;justify-content:center;width:40px;height:40px;box-sizing:border-box;border:1px solid #64748b;border-radius:11px;background:rgba(148,163,184,0.08);';
+    var focusHeading = document.createElement('div'); focusHeading.style.minWidth = '0';
+    focusHeader.appendChild(focusCardMarker); focusHeader.appendChild(focusHeading); focusCard.appendChild(focusHeader);
     focusCardKicker = document.createElement('div');
     focusCardKicker.style.cssText = 'color:#c4b5fd;font-size:clamp(0.625rem,1.5vw,0.75rem);font-weight:900;letter-spacing:0.06em;line-height:1.2;text-transform:uppercase;';
-    focusCard.appendChild(focusCardKicker);
+    focusHeading.appendChild(focusCardKicker);
     focusCardTitle = document.createElement('div');
     focusCardTitle.setAttribute('data-palace-focus-heading','true');
     focusCardTitle.style.cssText = 'margin-top:4px;color:#ffffff;font-size:clamp(0.95rem,2.2vw,1.2rem);font-weight:950;line-height:1.18;overflow-wrap:anywhere;';
-    focusCard.appendChild(focusCardTitle);
+    focusHeading.appendChild(focusCardTitle);
     focusCardMeta = document.createElement('div');
-    focusCardMeta.style.cssText = 'margin-top:4px;color:#cbd5e1;font-size:clamp(0.6875rem,1.6vw,0.8125rem);font-weight:800;line-height:1.25;overflow-wrap:anywhere;';
-    focusCard.appendChild(focusCardMeta);
+    focusCardMeta.style.cssText = 'margin-top:5px;color:#b8c6d9;font-size:clamp(0.6875rem,1.6vw,0.8125rem);font-weight:500;line-height:1.4;overflow-wrap:anywhere;';
+    focusHeading.appendChild(focusCardMeta);
+    // Keep padding outside the clamped text to avoid exposing partial lines.
+    var cueSurface = document.createElement('div');
+    cueSurface.setAttribute('data-palace-cue-surface', 'true');
+    cueSurface.style.cssText = 'margin-top:10px;padding:9px 10px;border:1px solid rgba(148,163,184,0.2);border-left:3px solid var(--palace-room-accent,#818cf8);border-radius:3px 10px 10px 3px;background:rgba(148,163,184,0.065);';
     focusCardCue = document.createElement('div');
-    focusCardCue.style.cssText = 'margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,0.35);color:#f8fafc;font-size:clamp(0.8125rem,1.55vw,0.875rem);font-weight:500;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;';
-    focusCard.appendChild(focusCardCue);
+    focusCardCue.style.cssText = 'color:#f1f5f9;font-size:clamp(0.8125rem,1.55vw,0.875rem);font-weight:500;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;';
+    cueSurface.appendChild(focusCardCue); focusCard.appendChild(cueSurface);
     var cueExpanded = false;
     var cueToggle = mkBtn(_tr(t, 'memory_palace.cue_expand', 'Read full cue'), _tr(t, 'memory_palace.cue_expand', 'Read full cue'), function () {
       cueExpanded = !cueExpanded;
@@ -3573,14 +3925,16 @@
     focusCard.appendChild(beginWalkBtn);
     var roomBadge = document.createElement('span');
     roomBadge.hidden = true;
+    roomBadge.setAttribute('data-palace-room-badge', 'true');
     roomBadge.style.cssText = 'display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:min(34vw,160px);padding:5px 9px;border:1px solid #475569;border-radius:999px;background:#172033;color:#f8fafc;font-size:0.75rem;font-weight:900;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;';
     roomBadgeDot = document.createElement('span');
     roomBadgeDot.setAttribute('aria-hidden', 'true');
-    roomBadgeDot.style.cssText = 'width:8px;height:8px;border-radius:999px;flex:0 0 auto;background:#64748b;';
+    roomBadgeDot.style.cssText = 'display:flex;align-items:center;justify-content:center;width:16px;height:18px;flex:0 0 auto;';
     roomBadgeText = document.createElement('span');
     roomBadgeText.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;';
     roomBadge.appendChild(roomBadgeDot); roomBadge.appendChild(roomBadgeText);
     var progressWrap = document.createElement('span');
+    progressWrap.setAttribute('data-palace-progress', 'true');
     progressWrap.style.cssText = 'display:flex;flex-direction:column;align-items:stretch;gap:3px;min-width:82px;max-width:26vw;flex:0 1 auto;';
     var progressTrack = document.createElement('span');
     progressTrack.setAttribute('aria-hidden', 'true');
@@ -3599,6 +3953,8 @@
       if (overview) { applyOverview(); if (reduce) { camPos.copy(camPosT); look.copy(lookT); } } else { goTo(curIdx, true); }
     });
     ovBtn.setAttribute('data-palace-action', 'overview'); setPalaceIcon(ovBtn,'map');
+    var mapButtonLabel = document.createElement('span'); mapButtonLabel.textContent = _tr(t, 'memory_palace.map_short', 'Map');
+    ovBtn.appendChild(mapButtonLabel); ovBtn.style.gap = '6px';
     var inspectRoomBtn = mkBtn(_tr(t, 'memory_palace.room_view', 'Room'), _tr(t, 'memory_palace.inspect_room', 'Explore the current room'), inspectRoom);
     inspectRoomBtn.setAttribute('data-palace-action', 'inspect-room');
     inspectRoomBtn.setAttribute('aria-keyshortcuts', 'R');
@@ -3677,15 +4033,32 @@
     completionCard.setAttribute('aria-label', _tr(t, 'memory_palace.complete_card', 'Route complete'));
     completionCard.setAttribute('data-palace-overlay', 'completion');
     completionCard.style.cssText = 'position:absolute;left:50%;bottom:calc(max(92px,env(safe-area-inset-bottom,92px)) + 10px);transform:translateX(-50%);z-index:7;width:min(430px,calc(100% - 24px));box-sizing:border-box;padding:13px 15px 14px;border:1px solid #a5b4fc;border-radius:16px;background:linear-gradient(145deg,rgba(30,27,75,0.97),rgba(2,6,23,0.96));color:#f8fafc;box-shadow:0 16px 42px rgba(2,6,23,0.45),0 0 0 1px rgba(129,140,248,0.18);';
+    completionCard.style.cssText += 'overflow:auto;scrollbar-width:thin;background:linear-gradient(145deg,rgba(29,43,63,.98),rgba(9,18,34,.98));';
+    var completionHeader = document.createElement('div');
+    completionHeader.style.cssText = 'display:flex;align-items:flex-start;gap:10px;min-width:0;';
+    completionMarker = document.createElement('span'); completionMarker.setAttribute('aria-hidden', 'true');
+    completionMarker.style.cssText = 'width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid #6a7d96;border-radius:12px;background:rgba(148,163,184,.08);';
+    var completionHeading = document.createElement('div'); completionHeading.style.cssText = 'flex:1;min-width:0;overflow-wrap:anywhere;';
+    completionHeader.appendChild(completionMarker); completionHeader.appendChild(completionHeading); completionCard.appendChild(completionHeader);
     var completionKicker = document.createElement('div');
     completionKicker.textContent = _tr(t, 'memory_palace.complete_kicker', 'Journey milestone');
     completionKicker.style.cssText = 'color:#c4b5fd;font-size:clamp(0.625rem,1.5vw,0.75rem);font-weight:900;letter-spacing:0.08em;line-height:1.2;text-transform:uppercase;';
-    completionCard.appendChild(completionKicker);
+    completionHeading.appendChild(completionKicker);
     completionCardTitle = document.createElement('div');
     completionCardTitle.style.cssText = 'margin-top:4px;color:#ffffff;font-size:clamp(1.05rem,2.5vw,1.35rem);font-weight:950;line-height:1.16;';
-    completionCard.appendChild(completionCardTitle);
+    completionCardTitle.style.cssText += 'font-weight:750;line-height:1.25;';
+    completionHeading.appendChild(completionCardTitle);
     completionCardMeta = document.createElement('div');
     completionCardMeta.style.cssText = 'margin-top:5px;color:#e2e8f0;font-size:clamp(0.6875rem,1.7vw,0.8125rem);font-weight:750;line-height:1.35;overflow-wrap:anywhere;';
+    completionCardMeta.style.cssText += 'margin-top:12px;font-weight:500;line-height:1.55;';
+    completionProgress = document.createElement('div');
+    completionProgress.setAttribute('role', 'progressbar');
+    completionProgress.setAttribute('aria-label', _tr(t, 'memory_palace.stops_visited', 'Stops visited'));
+    completionProgress.setAttribute('aria-valuemin', '0');
+    completionProgress.style.cssText = 'height:5px;margin-top:13px;border-radius:999px;overflow:hidden;background:#34445d;';
+    completionProgressFill = document.createElement('div');
+    completionProgressFill.style.cssText = 'height:100%;width:0%;border-radius:inherit;background:#a5b4fc;';
+    completionProgress.appendChild(completionProgressFill); completionCard.appendChild(completionProgress);
     completionCard.appendChild(completionCardMeta);
     var completionActions = document.createElement('div');
     completionActions.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:11px;';
@@ -3703,8 +4076,8 @@
     });
     visitRemainingBtn.hidden = true;
     visitRemainingBtn.setAttribute('data-palace-action', 'visit-remaining');
-    visitRemainingBtn.style.cssText += 'border-color:#86efac;background:#14532d;color:#fff;';
-    completionActions.appendChild(visitRemainingBtn);
+    visitRemainingBtn.style.cssText += 'border-color:#a5b4fc;background:#4f46a5;color:#fff;white-space:normal;flex:1 1 100%;font-weight:650;';
+    completionActions.insertBefore(visitRemainingBtn, completionWalkBtn);
     completionOverviewBtn = document.createElement('button');
     completionOverviewBtn.type = 'button';
     completionOverviewBtn.textContent = _tr(t, 'memory_palace.complete_overview', 'Review overview');
@@ -3726,7 +4099,8 @@
     completionCardDismiss.title = _tr(t, 'memory_palace.complete_dismiss', 'Dismiss completion message');
     completionCardDismiss.style.cssText = 'min-width:44px;min-height:44px;margin-left:auto;padding:5px 9px;border:1px solid #475569;border-radius:999px;background:transparent;color:#cbd5e1;font-size:1.05rem;font-weight:900;cursor:pointer;';
     completionCardDismiss.onclick = function () { completionCardDismissed = true; _setCompletionCardState(); };
-    completionActions.appendChild(completionCardDismiss);
+    completionCardDismiss.style.cssText += 'flex:0 0 44px;margin-left:0;border-radius:10px;';
+    completionHeader.appendChild(completionCardDismiss);
     completionCard.appendChild(completionActions);
     holder.appendChild(completionCard);
     journeyMap = document.createElement('section');
@@ -3761,13 +4135,18 @@
       var roomName = document.createElement('span');
       roomName.textContent = room.label || _tr(t, 'memory_palace.hub', 'Hub plaza');
       roomName.title = roomName.textContent;
-      roomName.style.cssText = 'min-width:0;overflow-wrap:anywhere;color:#e2e8f0;font-size:0.8125rem;font-weight:900;';
+      roomName.style.cssText = 'min-width:0;overflow-wrap:anywhere;color:#e2e8f0;font-size:0.8125rem;font-weight:750;line-height:1.35;';
       var roomHeading=document.createElement('div');roomHeading.style.cssText='display:flex;align-items:center;gap:9px;min-width:0;';
       var emblem=document.createElement('span');emblem.style.cssText='display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid '+(room.color||'#818cf8')+';border-radius:9px;flex:none;color:'+(room.color||'#c4b5fd')+';background:#0b1729;';
       emblem.appendChild(palaceIcon(['orbit','diamond','weave','facet'][(Number(key)-1+4)%4],20));roomHeading.appendChild(emblem);
       var headingText=document.createElement('div');headingText.style.cssText='min-width:0;flex:1;';headingText.appendChild(roomName);
       var roomCount=document.createElement('div');roomCount.textContent=bucket.stops.length===1?_tr(t,'memory_palace.room_stop_one','1 stop'):_tr(t,'memory_palace.room_stop_count','{count} stops').replace('{count}',String(bucket.stops.length));
       roomCount.style.cssText='margin-top:2px;color:#a5b4ca;font-size:0.6875rem;font-weight:500;';headingText.appendChild(roomCount);roomHeading.appendChild(headingText);row.appendChild(roomHeading);
+      var roomProgressStrip = document.createElement('div');
+      roomProgressStrip.setAttribute('aria-hidden', 'true');
+      roomProgressStrip.style.cssText = 'display:flex;gap:3px;height:4px;margin-top:7px;';
+      headingText.appendChild(roomProgressStrip);
+      journeyRoomProgress.push({ ids: bucket.stops.map(function (stop) { return stop.id; }), label: roomCount });
       var stopRail = document.createElement('div');
       stopRail.style.cssText = 'display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;';
       bucket.stops.forEach(function (stop) {
@@ -3778,13 +4157,21 @@
         numberChip.setAttribute('aria-hidden','true');numberChip.style.cssText='display:flex;align-items:center;justify-content:center;width:28px;min-height:28px;border-radius:7px;background:#25334b;font-size:0.75rem;font-weight:750;font-variant-numeric:tabular-nums;';
         var stopText=document.createElement('span');stopText.textContent=stop.locus.label||'';
         stopText.style.cssText='min-width:0;white-space:normal;overflow-wrap:anywhere;';button.appendChild(numberChip);button.appendChild(stopText);
+        var visitMarker = document.createElement('span');
+        visitMarker.setAttribute('aria-hidden', 'true');
+        visitMarker.setAttribute('data-journey-marker', 'true');
+        visitMarker.style.cssText = 'display:flex;align-items:center;justify-content:center;width:18px;min-height:20px;';
+        button.appendChild(visitMarker);
+        var visitSegment = document.createElement('span');
+        visitSegment.style.cssText = 'flex:1;min-width:0;border-radius:2px;background:#35445c;';
+        roomProgressStrip.appendChild(visitSegment);
         button.setAttribute('data-journey-index', String(stop.index));
         button.setAttribute('aria-label', _tr(t, 'memory_palace.journey_map_stop', 'Go to stop {index}: {label}').replace('{index}', String(stop.index)).replace('{label}', stop.locus.label || ''));
         button.title = stop.locus.label || ('Stop ' + stop.index);
         button.style.cssText = 'display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:9px;min-width:44px;min-height:44px;max-width:100%;padding:7px 9px;text-align:left;border:1px solid ' + color + ';border-radius:10px;background:#0f172a;color:#f8fafc;font-size:0.75rem;font-weight:800;line-height:1.3;cursor:pointer;transition:transform 160ms ease,box-shadow 160ms ease,background-color 160ms ease;';
         button.onclick = function () { goTo(stop.index); };
         stopRail.appendChild(button);
-        journeyMapStops.push({ index: stop.index, button: button, color: color, number: numberChip });
+        journeyMapStops.push({ index: stop.index, button: button, color: color, number: numberChip, marker: visitMarker, segment: visitSegment, label: button.getAttribute('aria-label') });
       });
       row.appendChild(stopRail);
       journeyMapBody.appendChild(row);
@@ -3878,6 +4265,7 @@
         var bounds = holder.getBoundingClientRect();
         var compact = bounds.width < 640 || bounds.height < 460;
         holder.setAttribute('data-palace-layout', compact ? 'compact' : 'wide');
+        holder.setAttribute('data-palace-narrow-room', bounds.width < 360 ? 'true' : 'false');
         holder.setAttribute('data-memory-palace-viewport', 'true');
         hud.style.width = compact ? 'calc(100% - 16px)' : 'max-content';
         hud.style.maxWidth = compact ? 'calc(100% - 16px)' : 'calc(100% - 24px)';
@@ -3899,7 +4287,7 @@
         });
         if (journeyMap) journeyMap.style.bottom = overlayBottom + 'px';
         if (freeNavCue) freeNavCue.style.bottom = overlayBottom + 'px';
-        if (completionCard) completionCard.style.bottom = (overlayBottom + 8) + 'px';
+        if (completionCard) { completionCard.style.bottom = (overlayBottom + 8) + 'px'; completionCard.style.maxHeight = Math.max(80, bounds.height - overlayBottom - 28) + 'px'; }
         var hintVisible = ctrlHint && parseFloat(ctrlHint.style.opacity || '1') > 0.05;
         var statusTop = 12 + (hintVisible ? Math.ceil(ctrlHint.getBoundingClientRect().height || 0) + 8 : 0);
         if (focusCard) {
@@ -4000,8 +4388,15 @@
     helpBtn.setAttribute('aria-controls', helpPanel.id); helpBtn.setAttribute('aria-pressed', 'false'); helpBtn.setAttribute('aria-expanded', 'false');
     helpCloseBtn.onclick = function () { _setHelpVisible(false, true); };
     helpPanel.addEventListener('keydown', onHelpKeyDown);
-    hud.appendChild(prevBtn); hud.appendChild(roomBadge); hud.appendChild(progressWrap); hud.appendChild(nextBtn); hud.appendChild(inspectRoomBtn); hud.appendChild(ovBtn); hud.appendChild(routeBtn);
-    hud.appendChild(zoomOutBtn); hud.appendChild(zoomValue); hud.appendChild(zoomInBtn); hud.appendChild(resetViewBtn); hud.appendChild(helpBtn);
+    var routeDock = document.createElement('div'); routeDock.setAttribute('data-palace-dock-group', 'route');
+    var dockSummary = document.createElement('div'); dockSummary.setAttribute('data-palace-dock-summary', 'true');
+    dockSummary.appendChild(roomBadge); dockSummary.appendChild(progressWrap);
+    routeDock.appendChild(prevBtn); routeDock.appendChild(dockSummary); routeDock.appendChild(nextBtn);
+    var exploreDock = document.createElement('div'); exploreDock.setAttribute('data-palace-dock-group', 'explore');
+    exploreDock.appendChild(inspectRoomBtn); exploreDock.appendChild(ovBtn); exploreDock.appendChild(routeBtn);
+    var zoomDock = document.createElement('div'); zoomDock.setAttribute('data-palace-dock-group', 'zoom');
+    zoomDock.appendChild(zoomOutBtn); zoomDock.appendChild(zoomValue); zoomDock.appendChild(zoomInBtn); zoomDock.appendChild(resetViewBtn); zoomDock.appendChild(helpBtn);
+    hud.appendChild(routeDock); hud.appendChild(exploreDock); hud.appendChild(zoomDock);
     holder.appendChild(hud);
     _updateZoomControls();
     function updateHud() {
@@ -4085,12 +4480,18 @@
     freeNavCompass.title = _tr(t, 'memory_palace.free_compass', 'Direction to the next route stop');
     freeNavCompass.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:0 0 auto;border:1px solid rgba(255,255,255,0.4);border-radius:999px;background:rgba(15,23,42,0.72);';
     freeNavCompassArrow = document.createElement('span');
-    freeNavCompassArrow.textContent = '\u2191';
+    freeNavCompassArrow.appendChild(palaceIcon('forward', 20));
     freeNavCompassArrow.style.cssText = 'display:block;color:#f8fafc;font-size:1.05rem;font-weight:900;line-height:1;transition:transform 180ms ease;';
     freeNavCompass.appendChild(freeNavCompassArrow);
     freeNavCue.appendChild(freeNavCompass);
     freeNavText = document.createElement('span');
-    freeNavText.style.cssText = 'min-width:0;overflow:hidden;white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.35;overflow-wrap:anywhere;';
+    freeNavText.style.cssText = 'min-width:0;display:flex;flex-direction:column;gap:3px;white-space:normal;line-height:1.35;overflow-wrap:anywhere;';
+    freeNavRoom = document.createElement('span');
+    freeNavRoom.style.cssText = 'font-size:0.8125rem;font-weight:750;';
+    freeNavGuidance = document.createElement('span');
+    freeNavGuidance.setAttribute('data-palace-room-guidance', 'true');
+    freeNavGuidance.style.cssText = 'font-size:0.6875rem;font-weight:500;color:#bccbdd;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;';
+    freeNavText.appendChild(freeNavRoom); freeNavText.appendChild(freeNavGuidance);
     freeNavCue.appendChild(freeNavText);
     freeReturnBtn = document.createElement('button');
     freeReturnBtn.type = 'button';
@@ -4098,6 +4499,7 @@
     freeReturnBtn.setAttribute('aria-label', _tr(t, 'memory_palace.free_return', 'Return to guided route'));
     freeReturnBtn.title = _tr(t, 'memory_palace.free_return', 'Return to guided route');
     freeReturnBtn.style.cssText = 'border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.12);color:#fff;border-radius:999px;min-width:44px;min-height:44px;padding:6px 10px;font-size:0.875rem;font-weight:900;cursor:pointer;flex:0 0 auto;';
+    freeReturnBtn.style.cssText += 'border-radius:11px;font-size:0.75rem;font-weight:650;background:#263951;border-color:#8396af;';
     freeReturnBtn.onclick = function () { goTo(curIdx); renderer.domElement.focus(); };
     freeNavCue.appendChild(freeReturnBtn);
     freeNavCue.style.cssText += 'box-sizing:border-box;width:min(440px,calc(100% - 24px));flex-wrap:wrap;border-radius:16px;padding:8px;';
@@ -4117,6 +4519,12 @@
       var button = mkBtn(_tr(t, 'memory_palace.control_' + action[0], action[1]), _tr(t, 'memory_palace.control_' + action[0] + '_label', action[2]), action[3]);
       button.setAttribute('data-palace-action', action[0]);
       button.style.cssText = 'min-width:0;min-height:44px;padding:7px 3px;border:1px solid #64748b;border-radius:10px;background:#1e293b;color:#f8fafc;font-size:0.75rem;font-weight:800;line-height:1.25;overflow-wrap:anywhere;cursor:pointer;';
+      var controlText = button.textContent; button.textContent = '';
+      var controlSymbol = { 'turn-left': 'turnLeft', 'step-forward': 'forward', 'step-back': 'back', 'turn-right': 'turnRight' };
+      button.appendChild(palaceIcon(controlSymbol[action[0]], 20));
+      var controlLabel = document.createElement('span'); controlLabel.textContent = controlText; button.appendChild(controlLabel);
+      button.style.cssText += 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:60px;padding:7px 3px;font-weight:600;border-color:#4c6079;';
+      if (action[0] === 'step-forward' || action[0] === 'step-back') button.style.background = '#2a3b53';
       explorationControls.appendChild(button);
     });
     freeNavCue.appendChild(explorationControls);
@@ -4390,7 +4798,7 @@
       if (ctrlHintTimer) { try { window.clearTimeout(ctrlHintTimer); } catch (e) {} ctrlHintTimer = 0; }
       if (_dockResizeObserver) { try { _dockResizeObserver.disconnect(); } catch (eResize) {} _dockResizeObserver = null; }
       [hud, live, instr, ctrlHint, freeNavCue, freeNavLive, routePanel, helpPanel, journeyMap, masteryLegend, roomBadge, progressWrap, focusCard, completionCard].forEach(function (nd) { try { if (nd && nd.parentNode) nd.parentNode.removeChild(nd); } catch (e) {} });
-      try { holder.removeAttribute('data-palace-layout'); holder.removeAttribute('data-memory-palace-viewport'); holder.style.removeProperty('--palace-dock-height'); if (holder.parentElement) holder.parentElement.style.removeProperty('--palace-dock-height'); if (holder.parentElement && holder.parentElement.parentElement) holder.parentElement.parentElement.style.removeProperty('--palace-dock-height'); } catch (eLayout) {}
+      try { holder.removeAttribute('data-palace-layout'); holder.removeAttribute('data-palace-narrow-room'); holder.removeAttribute('data-memory-palace-viewport'); holder.style.removeProperty('--palace-dock-height'); if (holder.parentElement) holder.parentElement.style.removeProperty('--palace-dock-height'); if (holder.parentElement && holder.parentElement.parentElement) holder.parentElement.parentElement.style.removeProperty('--palace-dock-height'); } catch (eLayout) {}
       helpPanel = null; helpBtn = null; helpCloseBtn = null; helpVisible = false;
       zoomValue = null; zoomOutBtn = null; zoomInBtn = null; resetViewBtn = null;
       masteryLegend = null;
@@ -4399,11 +4807,11 @@
       roomBadgeText = null;
       roomBadgeDot = null;
       focusCard = null;
-      focusCardKicker = null;
+      focusCardKicker = null; focusCardMarker = null;
       focusCardTitle = null;
       focusCardMeta = null;
       focusCardCue = null;
-      completionCard = null;
+      completionCard = null; completionMarker = null; completionProgress = null; completionProgressFill = null;
       completionCardTitle = null;
       completionCardMeta = null;
       completionCardDismiss = null;
@@ -4413,7 +4821,7 @@
       completionGlow = null;
       guidedTether = null;
       arrivalHalo = null;
-      freeNavCue = null;
+      freeNavCue = null; freeNavRoom = null; freeNavGuidance = null;
       explorationControls = null;
       freeNavLive = null;
       freeNavText = null;
@@ -4431,7 +4839,7 @@
       journeyMap = null;
       journeyMapTitle = null;
       journeyMapMeta = null;
-      journeyMapStops = [];
+      journeyMapStops = []; journeyRoomProgress = [];
       journeyMapLinks = [];
       focusedCrossLink = -1;
     });

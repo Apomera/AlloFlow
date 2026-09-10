@@ -1,0 +1,28 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "ramp-0.2-50",
+    "ramp-0.2-100",
+    "ramp-1-50",
+    "ramp-1-100",
+    "ramp-3.9-50",
+    "ramp-3.9-100",
+    "ramp-4-50",
+    "ramp-4-100"
+  ],
+  "checks": [
+    "Keyboard and held camera pose: ramp 390",
+    "Keyboard and held camera pose: ramp 320",
+    "Reduced motion holds half stroke",
+    "Old timer cannot interrupt newer run",
+    "Next station starts at rest"
+  ]
+}

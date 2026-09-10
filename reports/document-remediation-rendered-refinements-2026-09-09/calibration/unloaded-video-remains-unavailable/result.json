@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\unloaded-video-remains-unavailable\\source.html",
+    "sha256": "27306b9e2c7a3d585aeaf9d72809ed3f2b9fa76b736f8779a72e3703e5cf65fa",
+    "bytes": 241
+  },
+  "candidate": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\unloaded-video-remains-unavailable\\candidate.html",
+    "sha256": "27306b9e2c7a3d585aeaf9d72809ed3f2b9fa76b736f8779a72e3703e5cf65fa",
+    "bytes": 241
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 527.9108000000124,
+  "status": "unavailable",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": false,
+    "wholeDocument": false,
+    "reasons": [
+      "unresolved-resources"
+    ]
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 1,
+      "animations": 0
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 1,
+      "animations": 0
+    }
+  },
+  "checks": [
+    {
+      "id": "clip",
+      "sourceSelector": "#clip",
+      "candidateSelector": "#clip",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "windlass-0.05-0.02-50",
+    "windlass-0.05-0.02-100",
+    "windlass-0.45-0.1-50",
+    "windlass-0.45-0.1-100",
+    "windlass-1-0.5-50",
+    "windlass-1-0.5-100",
+    "windlass-0.05-0.5-50",
+    "windlass-0.05-0.5-100",
+    "windlass-1-0.02-50",
+    "windlass-1-0.02-100",
+    "windlass-0.45-0.25-50",
+    "windlass-0.45-0.25-100",
+    "windlass-side-0",
+    "windlass-side-25",
+    "windlass-side-50",
+    "windlass-side-75",
+    "windlass-side-100",
+    "windlass-rear"
+  ],
+  "checks": [
+    "Keyboard and held camera pose: windlass 390",
+    "Keyboard and held camera pose: windlass 320",
+    "Reduced motion holds half stroke",
+    "Old timer cannot interrupt newer run",
+    "Next station starts at rest"
+  ]
+}

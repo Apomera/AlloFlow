@@ -1,4 +1,28 @@
 // @mode react
+// The same local-only boundary is bundled into chat, command routing and Store.
+const _commandRecognitionTools = typeof createSchoolStoreRecognitionTools === 'function' ? createSchoolStoreRecognitionTools() : null;
+function _isPrivateRecognitionText(value) {
+  try { return _isCommandStoreSetupGuideRequest(value) || /^__allo_store_/.test(String(value || '')) || !_commandRecognitionTools || _commandRecognitionTools.isRecognitionRequest(value); }
+  catch (_) { return true; }
+}
+function _isCommandStoreSetupGuideRequest(value) {
+  if (typeof value !== 'string') return false;
+  // Detection only: an obfuscated sentinel is blocked, never normalized to run.
+  if (/^__allo_store_guide_/i.test(value.normalize('NFKC').replace(/[\p{Cf}\u034f\u180b-\u180d\ufe00-\ufe0f\u0000-\u001f\u007f-\u009f]/gu, '').trim())) return true;
+  if (value.length > 200 || /[\u0000-\u001f\u007f-\u009f\p{Cf}]/u.test(value)) return false;
+  const text = value.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ').replace(/[.!?]$/, '');
+  const products = ['school store', 'school rewards', 'alloflow school store', 'alloflow school rewards'];
+  return products.some(product => [
+    'help me set up ' + product, 'help me setup ' + product, 'help me use ' + product, 'help me with ' + product,
+    'set up ' + product, 'setup ' + product, 'how do i set up ' + product, 'how can i set up ' + product,
+    product + ' setup help', product + ' setup guide', product + ' setup', product + ' help', product + ' guide', product + ' manual',
+    'open ' + product + ' manual', 'show ' + product + ' manual', 'show me the ' + product + ' manual'
+  ].some(alias => text === alias || text === 'please ' + alias));
+}
+function _privateRecognitionResult(rawText) {
+  if (_isCommandStoreSetupGuideRequest(rawText)) return { handled: true, ok: false, localOnly: true, reason: 'school-store-setup-guide', narration: 'Ask Allobot chat for School Store setup help, then choose a local guide path. Nothing opens until you choose. Keep student details and credentials out of chat; no school settings or records were changed.' };
+  return { handled: true, ok: false, localOnly: true, reason: 'school-store-recognition', narration: 'Use the signed-in School Store. Type there or use its dedicated on-device dictation when available, then review and confirm the award. The ordinary Allobot microphone may use remote transcription and is not for student awards. No points were awarded. This recognition command does not use the AI router.' };
+}
 /*
     AlloFlow - Adaptive Levels, Layers, & Outputs
     Copyright (C) 2026 Aaron Pomeranz, PsyD
@@ -2513,6 +2537,7 @@ function _sanitizeLearnerScopedParams(command, params) {
 }
 
 async function routeScopedUtterance(ctx, rawText, meta = {}) {
+  if (_isPrivateRecognitionText(rawText)) return null;
   const text = String(rawText || '').trim();
   if (!text || text.length > 200) return null;
   _throwIfCommandPlanningAborted(meta && meta.signal);
@@ -2773,6 +2798,7 @@ function createCommandKernel(ctxFactory, opts = {}) {
   }
 
   async function handleUtterance(rawText, meta = {}) {
+    if (_isPrivateRecognitionText(rawText)) { pendingConfirmation = null; return _privateRecognitionResult(rawText); }
     if (destroyed) return { handled: false, ok: false, reason: 'destroyed' };
     const text = String(rawText || '').trim();
     if (!text || text.length > 200) return null;
@@ -2941,6 +2967,7 @@ function commandOfferPrompt(command, ctx, params) {
 }
 
 async function routeUtterance(ctx, rawText, opts = {}) {
+  if (_isPrivateRecognitionText(rawText)) return _privateRecognitionResult(rawText);
   const text = String(rawText || '').trim();
   const t = _mkT(ctx && ctx.t);
   // "Where is X?" — answered by POINTING (spotlight on the live control)
@@ -3359,6 +3386,7 @@ function _cleanPlanParams(p) {
 // lesson-creation goals reuse the 24-step Agent Core CommandWorkflow horizon.
 // or null. Nothing here executes — the caller must confirm + runPlan.
 async function planUtterance(ctx, rawText, opts = {}) {
+  if (_isPrivateRecognitionText(rawText)) return null;
   const text = String(rawText || '').trim();
   if (!text) return null;
   if (text.length > 12000) {

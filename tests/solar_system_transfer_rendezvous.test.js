@@ -51,6 +51,13 @@ describe('Sun-centered transfer rendezvous',()=>{
     const p9=rendezvous(1,1.524,0.9,0).ship,end=rendezvous(1,1.524,1,0).ship;
     expect(Math.hypot(p1.x-start.x,p1.y-start.y)).toBeGreaterThan(Math.hypot(end.x-p9.x,end.y-p9.y));
   });
+  it('holds the craft and origin fixed across synchronized alignment experiments',()=>{
+    for(const [a,b] of [[1,1.524],[1.524,1],[0.387,5.203]])for(const progress of [0,0.1,0.5,0.9,1])for(const offset of [-30,0,30]){
+      const reference=rendezvous(a,b,progress,0),trial=rendezvous(a,b,progress,offset);
+      expect(trial.ship).toEqual(reference.ship);expect(trial.origin).toEqual(reference.origin);expect(trial.elapsedDays).toBe(reference.elapsedDays);
+      expect(Math.hypot(trial.destination.x-reference.destination.x,trial.destination.y-reference.destination.y)).toBeCloseTo(2*b*Math.abs(Math.sin(offset*Math.PI/360)),8);
+    }
+  });
   it('treats the same planet as no transfer',()=>{
     const result=rendezvous(1,1,0.5,30);
     expect(result.same).toBe(true);expect(result.transitDays).toBe(0);expect(result.separation).toBe(0);

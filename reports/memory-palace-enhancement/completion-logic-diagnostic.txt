@@ -1,0 +1,160 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/memory_palace.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/memory_palace.test.js
+[MemoryPalace] Registered (method-of-loci 3D walk; lazy three.js, route-list fallback)
+
+ ✓ tests/memory_palace.test.js > MemoryPalace visual contrast helpers > chooses a readable journey-stop foreground for every room accent 2ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildPalace (pure palace model) > creates an entry hall plus one room per branch, on radial spokes off the hub 2ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildPalace (pure palace model) > route = entrance then every item in reading order, ids matching adaptGenerated 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildPalace (pure palace model) > normalizes persisted route order, removes stale duplicates, and appends new loci 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildPalace (pure palace model) > lets an unsaved preview override the persisted route without mutating source data 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildPalace (pure palace model) > loci carry labels, mnemonics ({text} items handled), and per-stop camera rails 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildPalace (pure palace model) > adapts live camera framing to captions, images, reliefs, and sculptures 22ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildPalace (pure palace model) > alternates walls left/right within a room (classic loci pattern) 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildPalace (pure palace model) > is deterministic and survives an empty outline 2ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildPalace (pure palace model) > summarizes mastery by room with average strength and coverage 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildPalace (pure palace model) > normalizes explicit non-linear branch connections into room links 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — route navigation + SR descriptions > navigateRoute walks in order with clamping, no wrap 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — route navigation + SR descriptions > describeLocusForSR announces locus position, room, item, and the mnemonic 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — recall game (pure logic) > buildRecallBank shuffles deterministically by seed and covers every locus once 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — recall game (pure logic) > matchAnswer forgives case/accents/punctuation and small typos, rejects different answers 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — recall game (pure logic) > scoreRecall: first-try full marks, eventual half, reveals nothing; perfect detection 10ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — recall game (pure logic) > describeLocusForRecall asks the question but NEVER leaks the answer or mnemonic 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — recall game (pure logic) > recall-mode fallback route list hides every answer too 441ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — spaced-repetition mastery (pure scheduling) > updateMastery advances the interval on strong recall, drops back on a slip 14ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — spaced-repetition mastery (pure scheduling) > a give-up REVEAL reschedules for tomorrow, not weeks out (regression) 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — spaced-repetition mastery (pure scheduling) > eventual (second-attempt) and revealed recalls score partial strength 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — spaced-repetition mastery (pure scheduling) > dueLoci splits never-reviewed (new) from scheduled-and-due, ignores future 2ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — spaced-repetition mastery (pure scheduling) > masteryStrength returns the value or null for unseen loci 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — directed-generation prompt gate (pure) > buildPromptEvalPrompt names the fact, the student prompt, the verdicts, and JSON-only 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — directed-generation prompt gate (pure) > parsePromptEval accepts the three verdicts, strips fences, clamps, rejects junk 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — directed-generation prompt gate (pure) > buildRefinePrompt embeds the current recipe JSON, the instruction, and the shape rules 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — graceful degradation (no WebGL in jsdom) > isWebGLAvailable() is false under jsdom 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — graceful degradation (no WebGL in jsdom) > render() falls back to a VISIBLE walking-route list + notice, never crashes 121ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — depth-relief prompt (pure, P4a statues) > buildDepthPrompt asks for a grayscale depth map of the subject (white=near, black=far) 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — depth-relief prompt (pure, P4a statues) > is pure and null-safe 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — depth-relief prompt (pure, P4a statues) > the GL handle contract includes setLocusRelief (fallback path too) 10ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — in-VR recall bank contract > render() tolerates vrRecall opts on the fallback path (no WebGL) without throwing 5ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.decorSpot / landmarkSpot (radial placement math) > rotates the beside-the-frame offset with faceYaw so sculptures stay inside rotated rooms 2ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.decorSpot / landmarkSpot (radial placement math) > falls back to the legacy axis-aligned offset for pre-faceYaw persisted palaces 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.decorSpot / landmarkSpot (radial placement math) > landmarkSpot stands against the far wall of each rotated room, facing the doorway 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — decorate handle contract > the handle includes clearLocus as a safe no-op on the fallback path 11ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — CC0 collectible references > the fallback handle tolerates { glbItem } object refs without throwing 7ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - decoration SR labels (accessibility parity) > describeLocusForSR appends the decoration name when supplied 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - decoration SR labels (accessibility parity) > describeLocusForRecall includes the decoration as a CUE but never the answer 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - decoration SR labels (accessibility parity) > setDecor is on the handle (fallback path) as a safe no-op 8ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - live 3D organizer HUD contract > keeps route controls accessible and provides a persistent visual route companion 6ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - live 3D organizer HUD contract > surfaces customization choices only near empty loci and uses hysteresis 35ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - live 3D organizer HUD contract > keeps in-world frame captions legible and responsive to app typography 6ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - live 3D organizer HUD contract > provides a clickable status map and a responsive frame callout 7ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - live 3D organizer HUD contract > keeps a bounded three-version tray and replaces regenerated sculptures live 5ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - live 3D organizer HUD contract > adds a guided self-check journey without replacing the existing quiz modes 9ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - live 3D organizer HUD contract > shows study-only in-world mastery rings with weak, developing, and strong colors 13ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - live 3D organizer HUD contract > provides a distraction-free palace presentation with native fullscreen fallback 10ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - live 3D organizer HUD contract > supports accessible drag, move, preview, save, reset, and undo route arrangement 21ms
+ ✓ tests/memory_palace.test.js > MemoryPalace - live 3D organizer HUD contract > offers a paced, narrated cinematic tour that pauses on interaction 54ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — self-authored mnemonics > lets a saved own-image outrank the generated one and keeps the AI line 4ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — self-authored mnemonics > carries the student own image into the screen-reader announcement 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — self-authored mnemonics > ignores blank overrides and never rewrites the entrance 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — self-authored mnemonics > applyOwnMnemonic swaps in place and reverts to the generated line when cleared 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — self-authored mnemonics > mnemonicFeedback flags empty, too-short and label-echo drafts 4ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — self-authored mnemonics > judges non-Latin drafts by the same rules (no ASCII-only word matching) 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — self-authored mnemonics > setLocusMnemonic updates the accessible route list without a rebuild 22ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildRecallOrder > walks forward by default and excludes the entrance 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildRecallOrder > reverses the route for the backward check 4ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildRecallOrder > shuffles deterministically per seed and covers every locus exactly once 2ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.buildRecallOrder > never mutates the palace route and survives a junk direction 4ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — own image + recall order wiring > offers a zero-AI own-image editor that persists to its own sub-store 8ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — own image + recall order wiring > pushes an edited image into the live walk instead of remounting it 10ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — own image + recall order wiring > drops a stale draft when the walker moves to another locus 5ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — own image + recall order wiring > runs the recall check in a chosen order without moving the palace 14ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — own image + recall order wiring > keeps the harder orders as a next step, not a fourth start button 8ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > merges student rooms and loci into the walk, marked as theirs 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > re-homes a locus whose room disappeared instead of deleting the student work 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > never moves a generated room when the student adds an annex 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > never moves an existing annex or wall frame when another is added 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > keeps the annex ring inside the palace bounds 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > mints ids that cannot collide with generated ones, even after gaps 2ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > round-trips a floor click into room-local space and back 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > refuses floor points that are not inside a room 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > auto-placed spots stay inside the room and do not stack 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > lets student loci carry own images and join the recall check 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student-built extensions > exposes build mode on the handle as a safe no-op without WebGL 6ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.resolvePalaceMovement (pure gallery collision) > stops at solid side and far walls with body clearance 2ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.resolvePalaceMovement (pure gallery collision) > slides along a wall instead of cancelling tangential motion 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.resolvePalaceMovement (pure gallery collision) > passes through the doorway but blocks the adjacent near-wall segments 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.resolvePalaceMovement (pure gallery collision) > prevents high-speed tunnelling and works in a rotated spoke room 7ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.resolvePalaceMovement (pure gallery collision) > degrades safely for malformed palace data 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace.resolvePalaceMovement (pure gallery collision) > wires collision, persistent help, shared zoom, and quiet free-roam announcements 3ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — build wiring > turns a floor click into a named locus persisted in its own sub-store 55ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — build wiring > rebuilds the scene for structural additions (unlike a rewritten image) 27ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — build wiring > removing a student spot also clears anything hung on it 57ms
+ ✓ tests/memory_palace.test.js > Memory Palace generation prompt > asks for a walkable palace of about 16 loci without padding 26ms
+ ✓ tests/memory_palace.test.js > doc_pipeline — Memory Palace print projection > projects the palace from the same store the walk uses 51ms
+ ✓ tests/memory_palace.test.js > doc_pipeline — Memory Palace print projection > prints student-built rooms and loci, re-homing orphans like buildPalace 29ms
+ ✓ tests/memory_palace.test.js > doc_pipeline — Memory Palace print projection > labels a self-authored image as the student's own 44ms
+ ✓ tests/memory_palace.test.js > doc_pipeline — Memory Palace print projection > leaves no path still reading the raw mnemonics array for the palace 57ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — assessment spine > massed practice cannot buy a longer interval 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — assessment spine > still advances on a genuinely later day 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — assessment spine > a same-day FAILURE still demotes — forgetting is news whenever it happens 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — assessment spine > guessing through the options earns no ladder advance 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — assessment spine > a self-rated recall is never scored as a verified first-try one 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — assessment spine > a review can be narrowed to the loci that are actually due 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — assessment spine > the choice set stays a real question at every locus 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — assessment spine > choices are stable for a locus but differ between loci and runs 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — assessment spine > caps the choice set without ever dropping the answer 5ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — assessment spine wiring > Review now starts a focused walk, unlike the plain recall button 11ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — assessment spine wiring > a focused walk only scores what it actually covered 8ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — assessment spine wiring > renders per-locus choices rather than a bank that empties as you go 6ms
+ ✓ tests/memory_palace.test.js > MemoryPalace view — assessment spine wiring > marks a self-check result as self-reported for everything downstream 4ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student work never re-attaches to different content > fingerprints are language-neutral and stable 2ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student work never re-attaches to different content > withholds a self-authored image once its locus holds a different fact 1ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student work never re-attaches to different content > reports drift when an id survives but now holds another fact 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student work never re-attaches to different content > reports work orphaned by a deleted locus, and leaves legacy stores alone 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — student work never re-attaches to different content > a matching fingerprint keeps the work attached 0ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — recall answer leaks and announcements > an AI sculpture name is not spoken as the cue during a quiz 5ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — recall answer leaks and announcements > answers are announced, not only coloured and beeped 24ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — recall answer leaks and announcements > progress-rail numerals no longer sit at 1.49:1 27ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — graceful degradation and reachability > the engine tells the host every time it falls back to the route list 3ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — graceful degradation and reachability > controls that need the 3D walk are withdrawn, not left inert 18ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — graceful degradation and reachability > build mode has a keyboard path, not just a floor click 25ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — graceful degradation and reachability > a decorative stamp no longer destroys the illustration underneath it 16ms
+ ✓ tests/memory_palace.test.js > MemoryPalace — graceful degradation and reachability > the covered artwork is stripped from BOTH the cloud and local quota paths 159ms
+stdout | tests/collaborative_memory_palace.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > registers a separate ready class activity without replacing Realm Builder
+[CDN] arcade_mode_realm_builder loaded
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > normalizes and bounds session-authored rooms and loci
+[CDN] arcade_mode_realm_builder loaded
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > keeps group palaces separate and auto-balances participant roles
+[CDN] arcade_mode_realm_builder loaded
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > turns the approved shared state into the existing MemoryPalace contract
+[CDN] arcade_mode_realm_builder loaded
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > rejects incomplete contributions before they reach the shared queue
+[CDN] arcade_mode_realm_builder loaded
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > bounds session history while preserving actionable submissions and class capacity
+[CDN] arcade_mode_realm_builder loaded
+
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > registers a separate ready class activity without replacing Realm Builder 6ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > normalizes and bounds session-authored rooms and loci 5ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > keeps group palaces separate and auto-balances participant roles 2ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > turns the approved shared state into the existing MemoryPalace contract 2ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > rejects incomplete contributions before they reach the shared queue 2ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > bounds session history while preserving actionable submissions and class capacity 14ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > pins teacher setup, moderated contributions, 3D reuse, and remote close wiring 11ms
+
+ Test Files  2 passed (2)
+      Tests  124 passed (124)
+   Start at  19:09:24
+   Duration  7.14s (transform 209ms, setup 99ms, import 200ms, tests 1.74s, environment 4.12s)
+

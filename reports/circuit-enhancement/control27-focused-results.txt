@@ -1,0 +1,115 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_controlled.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > normalizes voltage controls, signed gains, and invalid sense references without mutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCVS with gain 3 without drawing input current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCVS with gain -3 without drawing input current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCVS with gain 0 without drawing input current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCCS with signed transconductance 0.002 A/V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCCS with signed transconductance -0.002 A/V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves a VCCS with signed transconductance 0 A/V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > senses a voltage difference in an otherwise floating control loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > keeps unsupplied control nodes and their output unknown instead of treating them as ground
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > knows a zero-gain output even when its sensing voltage is unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > solves feedback simultaneously using the closed-loop gain
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > preserves self-feedback ambiguity and rejects inconsistent feedback
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > copies a sensed branch current with gain 2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > copies a sensed branch current with gain -2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > copies a sensed branch current with gain 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > converts current into voltage with transresistance 1000 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > converts current into voltage with transresistance -1000 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > converts current into voltage with transresistance 0 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > uses the actual signed source current, including negative supplying current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > can sense another controlled voltage source independent of component order
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > rejects missing or non-voltage sense sources with a recoverable message
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > keeps ambiguous sensed currents unknown while resolving a zero-gain output
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > follows periodic inputs through a controlled amplifier at each actual sample
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·······················stdout | tests/circuit_network_controlled.test.js > controlled source networks > senses transient capacitor current through a zero-volt series sensor
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_controlled.test.js > controlled source networks > combines nonlinear diode iteration with a controlled voltage source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > exports gain units, sensing connections, and the actual control reading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_controlled.test.js > controlled source networks > renders sensing controls and explains ideal source limits without calling it an op-amp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_camera.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > bounds saved camera input without changing its source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > preserves placement across camera changes and includes control-only nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·
+
+ Test Files  2 passed (2)
+      Tests  33 passed (33)
+   Start at  00:20:30
+   Duration  7.57s (transform 51ms, setup 82ms, import 146ms, tests 3.09s, environment 3.62s)
+

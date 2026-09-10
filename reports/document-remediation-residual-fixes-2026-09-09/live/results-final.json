@@ -1,0 +1,312 @@
+{
+  "measuredAt": "2026-09-10T03:32:39.546Z",
+  "policyVersion": "20260909-6",
+  "sourceSha256": "2a246d27928524c54ee16c8419dfd04904f4a05dfbacd07bd94ffb2825419909",
+  "sourceUnchangedDuringRun": true,
+  "scope": "Actual source strict gate and aiFixChunked with transport mocked; static Chromium accessibility snapshots verify local semantic changes. No downstream export or human-screen-reader conclusion.",
+  "results": [
+    {
+      "id": "image-label-overridden",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"student\"><img alt=\"Student name\" src=\"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E\"></label><input id=\"student\" value=\"Ada\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"student\"><img alt=\"Student name\" src=\"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E\"></label><input aria-label=\"Teacher name\" id=\"student\" value=\"Ada\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "form-state-changed",
+              "sourceLocation": "control:1"
+            }
+          ]
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "aria": "- textbox \"Student name\": Ada",
+          "dom": {
+            "html": "<input id=\"student\" value=\"Ada\">",
+            "text": "",
+            "role": null,
+            "scripts": []
+          }
+        },
+        "candidate": {
+          "aria": "- textbox \"Teacher name\": Ada",
+          "dom": {
+            "html": "<input aria-label=\"Teacher name\" id=\"student\" value=\"Ada\">",
+            "text": "",
+            "role": null,
+            "scripts": []
+          }
+        }
+      }
+    },
+    {
+      "id": "image-label-equivalent-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"student\"><img alt=\"Student name\" src=\"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E\"></label><input id=\"student\" value=\"Ada\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"student\"><img alt=\"Student name\" src=\"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E\"></label><input aria-label=\"Student name\" id=\"student\" value=\"Ada\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.026943005181347,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "aria": "- textbox \"Student name\": Ada",
+          "dom": {
+            "html": "<input id=\"student\" value=\"Ada\">",
+            "text": "",
+            "role": null,
+            "scripts": []
+          }
+        },
+        "candidate": {
+          "aria": "- textbox \"Student name\": Ada",
+          "dom": {
+            "html": "<input aria-label=\"Student name\" id=\"student\" value=\"Ada\">",
+            "text": "",
+            "role": null,
+            "scripts": []
+          }
+        }
+      }
+    },
+    {
+      "id": "table-role-list",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><table role=\"list\"><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": false,
+        "reason": "table-semantics-changed",
+        "sourceLocation": "table:1"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "table-semantics-changed",
+              "sourceLocation": "table:1"
+            }
+          ]
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "aria": "- table:\n  - rowgroup:\n    - row \"Group Score\":\n      - columnheader \"Group\"\n      - columnheader \"Score\"\n    - row \"North 95\":\n      - cell \"North\"\n      - cell \"95\"",
+          "dom": {
+            "html": "<table><tbody><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></tbody></table>",
+            "text": "GroupScoreNorth95",
+            "role": null,
+            "scripts": []
+          }
+        },
+        "candidate": {
+          "aria": "- list:\n  - rowgroup:\n    - row \"Group Score\":\n      - columnheader \"Group\"\n      - columnheader \"Score\"\n    - row \"North 95\":\n      - cell \"North\"\n      - cell \"95\"",
+          "dom": {
+            "html": "<table role=\"list\"><tbody><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></tbody></table>",
+            "text": "GroupScoreNorth95",
+            "role": "list",
+            "scripts": []
+          }
+        }
+      }
+    },
+    {
+      "id": "table-explicit-role-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><table role=\"table\"><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0146726862302482,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "aria": "- table:\n  - rowgroup:\n    - row \"Group Score\":\n      - columnheader \"Group\"\n      - columnheader \"Score\"\n    - row \"North 95\":\n      - cell \"North\"\n      - cell \"95\"",
+          "dom": {
+            "html": "<table><tbody><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></tbody></table>",
+            "text": "GroupScoreNorth95",
+            "role": null,
+            "scripts": []
+          }
+        },
+        "candidate": {
+          "aria": "- table:\n  - rowgroup:\n    - row \"Group Score\":\n      - columnheader \"Group\"\n      - columnheader \"Score\"\n    - row \"North 95\":\n      - cell \"North\"\n      - cell \"95\"",
+          "dom": {
+            "html": "<table role=\"table\"><tbody><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr><td>North</td><td>95</td></tr></tbody></table>",
+            "text": "GroupScoreNorth95",
+            "role": "table",
+            "scripts": []
+          }
+        }
+      }
+    },
+    {
+      "id": "caption-exponent-base-moved",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><figure><img alt=\"Expression graph\" src=\"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E\"><figcaption>Compare x<sup>2</sup> plus y2.</figcaption></figure><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><figure><img alt=\"Expression graph\" src=\"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E\"><figcaption>Compare x2 plus y<sup>2</sup>.</figcaption></figure><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": false,
+        "reason": "math-content-changed",
+        "sourceLocation": "figure:1"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "math-content-changed",
+              "sourceLocation": "figure:1"
+            }
+          ]
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "aria": "- text: Compare x\n- superscript: \"2\"\n- text: plus y2.",
+          "dom": {
+            "html": "<figcaption>Compare x<sup>2</sup> plus y2.</figcaption>",
+            "text": "Compare x2 plus y2.",
+            "role": null,
+            "scripts": [
+              {
+                "kind": "SUP",
+                "text": "2",
+                "previousSiblingText": "Compare x"
+              }
+            ]
+          }
+        },
+        "candidate": {
+          "aria": "- text: Compare x2 plus y\n- superscript: \"2\"\n- text: .",
+          "dom": {
+            "html": "<figcaption>Compare x2 plus y<sup>2</sup>.</figcaption>",
+            "text": "Compare x2 plus y2.",
+            "role": null,
+            "scripts": [
+              {
+                "kind": "SUP",
+                "text": "2",
+                "previousSiblingText": "Compare x2 plus y"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "caption-inline-wrapper-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><figure><img alt=\"Expression graph\" src=\"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E\"><figcaption>Compare x<sup>2</sup> plus y2.</figcaption></figure><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><figure><img alt=\"Expression graph\" src=\"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E\"><figcaption>Compare <span>x</span><sup><span>2</span></sup> plus y2.</figcaption></figure><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.026530612244898,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "aria": "- text: Compare x\n- superscript: \"2\"\n- text: plus y2.",
+          "dom": {
+            "html": "<figcaption>Compare x<sup>2</sup> plus y2.</figcaption>",
+            "text": "Compare x2 plus y2.",
+            "role": null,
+            "scripts": [
+              {
+                "kind": "SUP",
+                "text": "2",
+                "previousSiblingText": "Compare x"
+              }
+            ]
+          }
+        },
+        "candidate": {
+          "aria": "- text: Compare x\n- superscript: \"2\"\n- text: plus y2.",
+          "dom": {
+            "html": "<figcaption>Compare <span>x</span><sup><span>2</span></sup> plus y2.</figcaption>",
+            "text": "Compare x2 plus y2.",
+            "role": null,
+            "scripts": [
+              {
+                "kind": "SUP",
+                "text": "2",
+                "previousSiblingText": "x"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

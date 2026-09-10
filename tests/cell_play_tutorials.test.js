@@ -345,7 +345,7 @@ describe('cell simulator organism play tutorials', () => {
       expect(html).toContain('data-cell-anatomy-jump="true"');
       expect(html).toContain('aria-label="Show Pseudopods in the Amoeba live dish. Mission focus structure. Moves focus to the simulation."');
       expect(html).toContain('Explore structures');
-      expect(html).toContain('Select a row \u2192 live dish');
+      expect(html).toContain('Select a structure to locate it in the live dish.');
       expect(html).toContain('Show in live dish');
       expect(html).toContain('How the gameplay teaches the biology');
       expect(html).toContain('Control \u2192 Observe \u2192 Explain');
@@ -834,7 +834,7 @@ describe('cell simulator organism play tutorials', () => {
       expect(source).toContain("gridTemplateColumns: 'minmax(0, 1fr) auto'");
       expect(source).toContain("style: { gridColumn: '1 / -1' }");
       expect(source).toContain('"data-cell-hud-mechanism": true');
-      expect(source).toContain('function readCellMissionOverlaySafeBand()');
+      expect(source).toContain('function readCellMissionOverlaySafeBand(forceRead)');
       expect(source).toContain('"data-cell-mission-ribbon": true');
       expect(source).toContain('"data-cell-ribbon-state": activePlayMissionRibbonState');
       expect(source).toContain('"data-cell-mission-ribbon-primary": true');
@@ -847,12 +847,12 @@ describe('cell simulator organism play tutorials', () => {
       const anatomyButtonStart = source.indexOf('"data-cell-anatomy-jump": true');
       const anatomyButtonMarkup = source.slice(anatomyButtonStart, anatomyButtonStart + 1800);
       expect(anatomyButtonMarkup).toContain('focus-visible:outline-violet-700');
-      expect(source).toContain('var labelFollowRate = prefersReducedCellMotion ? 1 : 0.08;');
+      expect(source).toContain('var labelBoxes = layoutCellAnatomyLabels(items,');
       expect(source).toContain('var anatomySafeBand = readCellMissionOverlaySafeBand();');
-      expect(source).toContain('Math.min(labelSafeBottom - pillH, pillY)');
-      expect(source).toContain('cctx.lineDashOffset = prefersReducedCellMotion ? 0 : -(tNow * 0.8);');
-      expect(source).toContain('var pulse = prefersReducedCellMotion ? 0.6 : 0.6 + Math.sin');
-      expect(source).toContain('if (playAsOrg && o !== playAsOrg) {\n                  cctx.globalAlpha = 0.34;');
+      expect(source).toContain('bottom: Math.max(labelSafeTop + 30 * dpr, labelSafeBottom)');
+      expect(source).not.toContain('cctx.lineDashOffset = prefersReducedCellMotion ? 0 : -(tNow * 0.8);');
+      expect(source).toContain('var focalOrganism = playAsOrg || selectedOrg;');
+      expect(source).toContain('if (focalOrganism) drawOrganism(focalOrganism);');
       expect(source).toContain("containerType: 'inline-size'");
       expect(source).toContain('@container (max-width: 340px)');
       expect(source).toContain('@container (max-width: 420px)');

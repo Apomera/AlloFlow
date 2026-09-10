@@ -1,0 +1,33 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "pulley-1-50",
+    "pulley-1-100",
+    "pulley-2-50",
+    "pulley-2-100",
+    "pulley-3-50",
+    "pulley-3-100",
+    "pulley-4-50",
+    "pulley-4-100",
+    "pulley-5-50",
+    "pulley-5-100",
+    "pulley-6-50",
+    "pulley-6-100",
+    "pulley-rear"
+  ],
+  "checks": [
+    "Keyboard and held camera pose: pulley 390",
+    "Keyboard and held camera pose: pulley 320",
+    "Reduced motion holds half stroke",
+    "Old timer cannot interrupt newer run",
+    "Next station starts at rest"
+  ]
+}

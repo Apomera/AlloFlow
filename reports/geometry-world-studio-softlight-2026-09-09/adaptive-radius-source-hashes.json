@@ -1,0 +1,13 @@
+{
+  "before": {
+    "canonical": "17a00837ef131cac45b6578676f2e8349131c5b55f3817552bf93549d474077a",
+    "mirror": "17a00837ef131cac45b6578676f2e8349131c5b55f3817552bf93549d474077a"
+  },
+  "after": {
+    "canonical": "de92c523db3f677332ba94e94946e63180e738bcd3bb76a4a0da23e9eb980856",
+    "mirror": "de92c523db3f677332ba94e94946e63180e738bcd3bb76a4a0da23e9eb980856"
+  },
+  "syntax": true,
+  "parity": true,
+  "lineEnding": "LF"
+}

@@ -1,0 +1,24 @@
+exports.refine=function(p){const changes=[];function edit(id,path,to){const r=p.history.find(r=>r.id===id);let o=r;const keys=path.split('.');for(const k of keys.slice(0,-1))o=o[k];const key=keys.at(-1),from=o[key];if(from!==to){o[key]=to;changes.push({resourceId:id,path,from,to});}}const get=id=>p.history.find(r=>r.id===id);
+edit('fr-anchor','data.title','FRACTIONS ARE NUMBERS WITH PLACES');
+edit('fr-anchor','data.sections.0.bullets.2','For the same whole, more equal parts means each unit fraction is smaller');
+edit('fr-anchor','data.sections.0.iconPrompt','A number line with four equal intervals and five boundary ticks, including the endpoints');
+edit('fr-anchor','data.sections.3.bullets.1','For the same whole, more equal parts means smaller unit fractions');
+let reading=get('fr-reading').data;
+reading=reading.replace('and every fraction in this lesson is a piece of it.','and this distance sets the size of one whole. Fractions greater than 1 extend beyond it.');
+reading=reading.replace('So 3/4 is not a pizza. It is a **location**.','A picture of equal pizza slices can model 3/4, and 3/4 is also a number with a **location**.');
+reading=reading.replace('which one sits farther from 0.','which one sits farther to the right. For these positive fractions, that also means farther from 0.');
+reading=reading.replace('**More pieces means smaller pieces.**','**For the same whole, more equal pieces means smaller unit fractions.**');
+edit('fr-reading','data',reading);
+edit('fr-faq','data.1.answer','Yes! They name the same location. A terminating decimal can be written as a fraction with a denominator of 10, 100, 1000, and so on: 0.5 = 5/10 = 1/2. Some fractions have repeating decimals, such as 1/3 = 0.333..., which does not terminate.');
+edit('fr-faq','data.4.question','What is the biggest fraction strictly between 0 and 1?');
+edit('fr-faq','data.4.answer','There is no greatest fraction strictly less than 1 and greater than 0. Given any fraction there, the halfway value between it and 1 is another, larger fraction still below 1. Between any two distinct fractions there is another fraction.');
+edit('fr-frames','data.items.4.text','For the same whole, when the denominator gets bigger, each unit fraction gets ____, because ____.');
+edit('fr-math','data.problems.1.realWorld','Share one candy bar equally among 4 people, or an identical bar equally among 8 people. Each person in the group of 4 gets the larger share.');
+edit('fr-memory','data.sourceExcerpt',get('fr-memory').data.sourceExcerpt.replace('More pieces means smaller pieces.','For the same whole, more equal pieces means smaller unit fractions.'));
+edit('fr-memory','data.cards.1.target','For the same whole, more equal parts means smaller unit fractions: 1/8 is smaller than 1/4');
+edit('fr-memory','data.cards.1.mapping','The rhyme compares equal shares of the same whole. A larger denominator makes each unit fraction smaller; do not apply the shortcut to fractions with different numerators.');
+edit('fr-memory','data.cards.0.hookFact.text','3/4 is a number with a location: walk three fourth-sized steps from 0 and stop. Equal slices can also model that amount.');
+edit('fr-challenge','data.brief.lockedLessonFacts.2','For the same whole, more equal pieces means smaller unit fractions: 1/8 is closer to 0 than 1/4.');
+edit('fr-quiz','data.questions.3.question','What does it mean to describe 3/4 as a location on the number line?');
+return changes;};
+

@@ -1,0 +1,458 @@
+{
+  "stage": "after",
+  "sources": {
+    "stem_tool_geometryworld.js": "d404aa8eb50229a15cd1b847413896376c694196f4cf59be7c7ff1958dab263a",
+    "stem_tool_geometryworld_builder.js": "a6fa9937733393863977912c02e240dd7101bf2f6c8f8d61e6af8c102653cec2",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [],
+  "captures": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "keyboard": {
+        "choice": {
+          "material": 2,
+          "shape": 3,
+          "rotation": 3
+        },
+        "live": {
+          "selectedBlock": 2,
+          "selectedShape": 3,
+          "blockRotation": 3,
+          "collabMode": false
+        },
+        "feedback": "Matched Wood · Quarter wedge · 270°",
+        "ghost": {
+          "shape": "quarter",
+          "rotation": 3,
+          "visible": true
+        },
+        "focus": "geoworld-fs-wrap"
+      },
+      "button": {
+        "width": 75.375,
+        "height": 44,
+        "inViewport": true,
+        "hit": true,
+        "label": "Match aimed block"
+      },
+      "cue": {
+        "text": "Matched Wood · Quarter wedge · 270°",
+        "inViewport": true,
+        "overlaps": []
+      },
+      "utilityButtons": [
+        {
+          "label": "Match aimed block",
+          "width": 75.375,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "width": 58,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "width": 93.359375,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "width": 74.25,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "width": 69.375,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-match-1440x900.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "keyboard": {
+        "choice": {
+          "material": 2,
+          "shape": 3,
+          "rotation": 3
+        },
+        "live": {
+          "selectedBlock": 2,
+          "selectedShape": 3,
+          "blockRotation": 3,
+          "collabMode": false
+        },
+        "feedback": "Matched Wood · Quarter wedge · 270°",
+        "ghost": {
+          "shape": "quarter",
+          "rotation": 3,
+          "visible": true
+        },
+        "focus": "geoworld-fs-wrap"
+      },
+      "button": {
+        "width": 79.78125,
+        "height": 44,
+        "inViewport": true,
+        "hit": true,
+        "label": "Match aimed block"
+      },
+      "cue": {
+        "text": "Matched Wood · Quarter wedge · 270°",
+        "inViewport": true,
+        "overlaps": []
+      },
+      "utilityButtons": [
+        {
+          "label": "Match aimed block",
+          "width": 79.78125,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "width": 60.84375,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "width": 61.5625,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "width": 78.578125,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "width": 73.234375,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-match-390x844.png"
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "keyboard": {
+        "choice": {
+          "material": 2,
+          "shape": 3,
+          "rotation": 3
+        },
+        "live": {
+          "selectedBlock": 2,
+          "selectedShape": 3,
+          "blockRotation": 3,
+          "collabMode": false
+        },
+        "feedback": "Matched Wood · Quarter wedge · 270°",
+        "ghost": {
+          "shape": "quarter",
+          "rotation": 3,
+          "visible": true
+        },
+        "focus": "geoworld-fs-wrap"
+      },
+      "button": {
+        "width": 56.796875,
+        "height": 44,
+        "inViewport": true,
+        "hit": true,
+        "label": "Match aimed block"
+      },
+      "cue": {
+        "text": "Matched Wood · Quarter wedge · 270°",
+        "inViewport": true,
+        "overlaps": []
+      },
+      "utilityButtons": [
+        {
+          "label": "Match aimed block",
+          "width": 56.796875,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "width": 56.8125,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "width": 56.796875,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "width": 56.796875,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "width": 56.796875,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-match-320x700.png"
+    },
+    {
+      "size": {
+        "width": 844,
+        "height": 390
+      },
+      "keyboard": {
+        "choice": {
+          "material": 2,
+          "shape": 3,
+          "rotation": 3
+        },
+        "live": {
+          "selectedBlock": 2,
+          "selectedShape": 3,
+          "blockRotation": 3,
+          "collabMode": false
+        },
+        "feedback": "Matched Wood · Quarter wedge · 270°",
+        "ghost": {
+          "shape": "quarter",
+          "rotation": 3,
+          "visible": true
+        },
+        "focus": "geoworld-fs-wrap"
+      },
+      "button": {
+        "width": 75.375,
+        "height": 44,
+        "inViewport": true,
+        "hit": true,
+        "label": "Match aimed block"
+      },
+      "cue": {
+        "text": "Matched Wood · Quarter wedge · 270°",
+        "inViewport": true,
+        "overlaps": []
+      },
+      "utilityButtons": [
+        {
+          "label": "Match aimed block",
+          "width": 75.375,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "width": 58,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "width": 93.359375,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "width": 74.25,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "width": 69.375,
+          "height": 44,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-match-844x390.png"
+    }
+  ],
+  "fixture": [
+    {
+      "x": 0,
+      "z": 0,
+      "shape": "halfA",
+      "shapeIndex": 1,
+      "rotation": 1,
+      "key": "0,1,0"
+    },
+    {
+      "x": 2,
+      "z": 0,
+      "shape": "quarter",
+      "shapeIndex": 3,
+      "rotation": 3,
+      "key": "2,1,0"
+    },
+    {
+      "x": 4,
+      "z": 0,
+      "shape": "halfB",
+      "shapeIndex": 2,
+      "rotation": 2,
+      "key": "4,1,0"
+    }
+  ],
+  "dockScreenshot": "after-building-dock-1440x900.png",
+  "dockText": "SANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nAim at a block you placed, then choose Select build to inspect your creation.\n\nBuilding with\nMaterial\n🪵 Wood\nShape\n◣ Quarter wedge\n270° rotation\nMatch aimed block\nI\n\nAim at a block to reuse its material, shape, and rotation.\n\nYour creation\n3\nPlaced\n—\nSelected\n—\nBlock bounds\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options",
+  "middle": {
+    "choice": {
+      "material": 2,
+      "shape": 3,
+      "rotation": 3
+    },
+    "live": {
+      "selectedBlock": 2,
+      "selectedShape": 3,
+      "blockRotation": 3,
+      "collabMode": false
+    },
+    "feedback": "Matched Wood · Quarter wedge · 270°",
+    "ghost": {
+      "shape": "quarter",
+      "rotation": 3,
+      "visible": true
+    },
+    "focus": "geoworld-fs-wrap",
+    "nativePointerLock": true
+  },
+  "immediate": {
+    "type": "wood",
+    "shape": "quarter",
+    "rotation": 3
+  },
+  "redoUtilities": [
+    {
+      "label": "Match aimed block",
+      "width": 46.828125,
+      "height": 44,
+      "inViewport": true,
+      "hit": true
+    },
+    {
+      "label": "Toggle fly mode",
+      "width": 46.84375,
+      "height": 44,
+      "inViewport": true,
+      "hit": true
+    },
+    {
+      "label": "Undo last action",
+      "width": 46.828125,
+      "height": 44,
+      "inViewport": true,
+      "hit": true
+    },
+    {
+      "label": "Redo last action",
+      "width": 46.84375,
+      "height": 44,
+      "inViewport": true,
+      "hit": true
+    },
+    {
+      "label": "Return to spawn point",
+      "width": 46.828125,
+      "height": 44,
+      "inViewport": true,
+      "hit": true
+    },
+    {
+      "label": "Clear my placed blocks",
+      "width": 46.828125,
+      "height": 44,
+      "inViewport": true,
+      "hit": true
+    }
+  ],
+  "redoScreenshot": "after-redo-320x700.png",
+  "emptyMatch": {
+    "choice": {
+      "material": 6,
+      "shape": 0,
+      "rotation": 0
+    },
+    "live": {
+      "selectedBlock": 6,
+      "selectedShape": 0,
+      "blockRotation": 0,
+      "collabMode": false
+    },
+    "feedback": "Aim at a block to match its material, shape and rotation.",
+    "ghost": {
+      "shape": "cube",
+      "rotation": 0,
+      "visible": false
+    },
+    "focus": "geoworld-fs-wrap"
+  },
+  "protectedBreak": {
+    "before": {
+      "world": "[{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}]",
+      "stl": "90a306f59f16043ecdb24176382f84b1465625f768ba564206147523c1dddb09",
+      "history": "[[{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}],[{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3}]]",
+      "placed": 4,
+      "selection": "null",
+      "camera": "[[5.2,3.4,5.2],[-0.15423208694159532,0.25446828842374647,0.041147526672992166,0.9538161429714976]]",
+      "geometry": "[{\"key\":\"0,1,0\",\"positions\":[-0.5,0,-0.5,0.5,1,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0.5,1,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0.5,1,0.5,0.5,1,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0.5,1,0.5,0.5,0,-0.5,0.5,1,0.5,0.5,0,0.5,0.5,0,-0.5,0.5,1,-0.5,0.5,1,0.5],\"material\":\"3A130D15-648E-49CF-937A-615414E25F1B\",\"scale\":[1,1,1],\"rotation\":[0,0.7071067811865475,0,0.7071067811865476]},{\"key\":\"2,1,0\",\"positions\":[-0.5,0,-0.5,0,0.5,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0,0.5,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0,0.5,0.5,0,0.5,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,-0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,0.5,0.5,0,0.5],\"material\":\"EB8CC1D0-2EDB-4083-B654-8A6DE8F4B356\",\"scale\":[1,1,1],\"rotation\":[0,0.7071067811865476,0,-0.7071067811865475]},{\"key\":\"4,1,0\",\"positions\":[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],\"material\":\"21EDB4EA-1699-4CDC-BF21-61F2D76E148A\",\"scale\":[1,1,1],\"rotation\":[0,1,0,6.123233995736766e-17]}]"
+    },
+    "after": {
+      "world": "[{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}]",
+      "stl": "90a306f59f16043ecdb24176382f84b1465625f768ba564206147523c1dddb09",
+      "history": "[[{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":2}],[{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":0,\"type\":\"wood\",\"shape\":\"quarter\",\"rotation\":3}]]",
+      "placed": 4,
+      "selection": "null",
+      "camera": "[[5.2,3.4,5.2],[-0.15423208694159532,0.25446828842374647,0.041147526672992166,0.9538161429714976]]",
+      "geometry": "[{\"key\":\"0,1,0\",\"positions\":[-0.5,0,-0.5,0.5,1,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0.5,1,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0.5,1,0.5,0.5,1,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0.5,1,0.5,0.5,0,-0.5,0.5,1,0.5,0.5,0,0.5,0.5,0,-0.5,0.5,1,-0.5,0.5,1,0.5],\"material\":\"3A130D15-648E-49CF-937A-615414E25F1B\",\"scale\":[1,1,1],\"rotation\":[0,0.7071067811865475,0,0.7071067811865476]},{\"key\":\"2,1,0\",\"positions\":[-0.5,0,-0.5,0,0.5,-0.5,0.5,0,-0.5,-0.5,0,0.5,0.5,0,0.5,0,0.5,0.5,-0.5,0,-0.5,0.5,0,-0.5,0.5,0,0.5,-0.5,0,-0.5,0.5,0,0.5,-0.5,0,0.5,-0.5,0,-0.5,0,0.5,0.5,0,0.5,-0.5,-0.5,0,-0.5,-0.5,0,0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,-0.5,0,0.5,0.5,0.5,0,-0.5,0,0.5,0.5,0.5,0,0.5],\"material\":\"EB8CC1D0-2EDB-4083-B654-8A6DE8F4B356\",\"scale\":[1,1,1],\"rotation\":[0,0.7071067811865476,0,-0.7071067811865475]},{\"key\":\"4,1,0\",\"positions\":[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],\"material\":\"21EDB4EA-1699-4CDC-BF21-61F2D76E148A\",\"scale\":[1,1,1],\"rotation\":[0,1,0,6.123233995736766e-17]}]"
+    }
+  },
+  "shaders": [],
+  "pass": true
+}

@@ -70,7 +70,8 @@ describe('parking rules and control', () => {
       return car;
     };
     const slow = run(30), fast = run(120);
-    expect(slow.x).toBeGreaterThan(254.3);
+    expect(slow.x - 16 * Math.cos(slow.heading)).toBeGreaterThan(254.3);
+    expect(slow.x + 16 * Math.cos(slow.heading)).toBeLessThan(254.3);
     expect(fast.speed).toBeCloseTo(slow.speed, 6);
     expect(Math.hypot(slow.x - fast.x, slow.y - fast.y)).toBeLessThan(1);
     for (let i = 0; i < 120; i++) RR.parkingDrillMotion(fast, { ' ': true }, 1 / 60);

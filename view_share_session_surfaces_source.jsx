@@ -162,7 +162,7 @@ function ClassMailboxSetupView(props) {
                 hand-raise) but lack the session-doc store that powers polls,
                 quiz, groups and Pictionary — tell the teacher how to update
                 (same URL, ~1 minute). */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 20 && (
+            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 21 && (
               <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
                 <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. Update it to v18 for current surveys, assignments, live visual-organizer readiness, secure live tools, and automatic student submissions (about 1 minute, the URL stays the same):</p>
                 <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">

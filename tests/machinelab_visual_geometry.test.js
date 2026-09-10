@@ -33,8 +33,8 @@ describe('Machine Lab: connected demonstration geometry', () => {
     expect(d.supportingRopes).toHaveLength(segments);
     d.supportingRopes.forEach(rope => {
       const half=rope.geometry.parameters.height * rope.scale.y / 2;
-      expect(rope.position.y+half).toBeCloseTo(3.16,8);
-      expect(rope.position.y-half).toBeCloseTo(0.92+d.motion.position.y,8);
+      expect(rope.position.y+half).toBeCloseTo(d.pulleyTop,8);
+      expect(rope.position.y-half).toBeCloseTo(d.pulleyBottom+d.motion.position.y,8);
     });
   });
   it('keeps the winding rope attached to the lifted load', () => {
@@ -49,7 +49,7 @@ describe('Machine Lab: connected demonstration geometry', () => {
       s.tick(t);s.model.updateMatrixWorld(true);
       const load = new THREE.Box3().setFromObject(s.mlDemo.pressLoad);
       expect(load.min.y).toBeGreaterThan(0.14);
-      expect(s.mlDemo.motion.position.y).toBeGreaterThanOrEqual(-0.18);
+      expect(s.mlDemo.motion.position.y).toBeGreaterThanOrEqual(-s.mlDemo.screwTravel);
     }
   });
   it('holds geometry and decorative lights still with reduced motion', () => {
@@ -303,5 +303,508 @@ describe('Machine Lab: workshop lifting and pressing assemblies',()=>{
   });
   it('advances workshop motion when the first frame timestamp is zero',()=>{
     const s=scene('windlass');s.mlDemoId=null;s.tick(0);s.tick(1100);expect(s.mlDemo.load.position.y).toBeCloseTo(s.mlDemo.loadY+0.72,8);
+  });
+});
+
+describe('Machine Lab: supported lever and ramp assemblies',()=>{
+  for(const reduced of [false,true])for(const [effortArm,loadArm] of [[2,1],[4,0.2],[0.2,4]])it(`keeps lever contacts, force directions and bed clearance at ${effortArm}:${loadArm}, reduced ${reduced}`,()=>{
+    const s=scene('lever',{effortArm,loadArm},reduced),d=s.mlDemo;
+    s.data.demoId=0;s.tick(0);s.model.updateMatrixWorld(true);
+    const startEffort=d.motion.localToWorld(d.effortContact.clone());
+    const startLoad=d.motion.localToWorld(d.loadContact.clone());
+    s.data.demoId=2;s.tick(0);s.tick(1100);s.model.updateMatrixWorld(true);
+    expect(d.motion.localToWorld(d.effortContact.clone()).y).toBeLessThan(startEffort.y);
+    expect(d.motion.localToWorld(d.loadContact.clone()).y).toBeGreaterThan(startLoad.y);
+    for(const t of [0,550,1100,1650,2200]){
+      s.tick(t);s.model.updateMatrixWorld(true);
+      const effort=d.motion.localToWorld(d.effortContact.clone()),load=d.motion.localToWorld(d.loadContact.clone());
+      expect(d.effortArrow.position.x).toBeCloseTo(effort.x,8);
+      expect(d.effortArrow.position.y-1.02).toBeCloseTo(effort.y,8);
+      expect(d.loadArrow.position.x).toBeCloseTo(load.x,8);
+      expect(d.loadArrow.position.y+0.83).toBeCloseTo(load.y,8);
+      expect(d.effortArrow.rotation.z).toBe(0);expect(d.loadArrow.rotation.z).toBe(0);
+      const bottom=d.leverLoad.localToWorld(new THREE.Vector3(0,-0.35,0));
+      expect(bottom.distanceTo(load)).toBeLessThan(1e-7);
+      let lowest=Infinity;const v=new THREE.Vector3();
+      d.motion.traverse(mesh=>{const p=mesh.geometry?.attributes?.position;if(p)for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(mesh.matrixWorld);lowest=Math.min(lowest,v.y);}});
+      expect(lowest).toBeGreaterThan(0.28);
+      const bounds=new THREE.Box3().setFromPoints(s.fitPts);
+      expect(effort.x).toBeGreaterThan(bounds.min.x);expect(load.x).toBeLessThan(bounds.max.x);
+    }
+    s.data.demoId=0;s.tick(2300);expect(d.motion.rotation.z).toBe(d.baseRotation);
+    expect(d.leverLoad.position.y).toBe(0.48);
+  });
+  for(const [length,height] of [[4,0.2],[4,1],[4,3.9],[4,4],[8,0.2]])it(`seats ramp supports on the base and underside at ${height}/${length}`,()=>{
+    const d=scene('ramp',{length,height}).mlDemo;
+    expect(d.rampSupports.length).toBeGreaterThanOrEqual(2);
+    d.rampDeck.updateMatrixWorld(true);
+    expect(new THREE.Box3().setFromObject(d.rampDeck).min.y).toBeGreaterThan(0.28);
+    d.rampSupports.forEach(post=>{
+      const half=post.geometry.parameters.height/2;
+      expect(post.position.y-half).toBeCloseTo(0.34,8);
+      const x=post.position.x,y=post.position.y+half-(0.42+5.4*height/length/2);
+      expect(-x*Math.sin(d.angle)+y*Math.cos(d.angle)).toBeCloseTo(-0.12,8);
+      expect(half).toBeGreaterThan(0);expect(Number.isFinite(half)).toBe(true);
+    });
+  });
+});
+
+describe('Machine Lab: wedge contact and splitting geometry',()=>{
+  for(const reduced of [false,true])for(const [length,thickness] of [[0.3,0.06],[0.6,0.01],[0.05,0.2],[0.2,0.2]])it(`keeps the ${length}/${thickness} wedge attached and clear of the timber, reduced ${reduced}`,()=>{
+    const s=scene('wedge',{length,thickness},reduced),d=s.mlDemo;
+    expect(d.wedgeLength/(2*d.wedgeHalf)).toBeCloseTo(length/thickness,8);
+    for(const t of [100,650,1200,1750,2300]){
+      s.tick(t);s.model.updateMatrixWorld(true);
+      d.woodHalves.forEach(half=>expect(new THREE.Box3().setFromObject(half).min.y).toBeCloseTo(0.4,6));
+      expect(d.splitLeft.rotation.z).toBe(0);expect(d.splitRight.rotation.z).toBe(0);
+      expect(d.splitLeft.position.x).toBeCloseTo(-d.splitRight.position.x,8);
+      expect(new THREE.Box3().setFromObject(d.motion).min.y).toBeGreaterThan(0.4);
+      // Slice actual blade triangles at the timber's upper edge. Neither face may
+      // overlap the solid wood, including the bevel at the broadest setting.
+      const positions=d.motion.geometry.attributes.position,level=d.woodTop-d.motion.position.y;
+      let bladeEdge=0;
+      for(let i=0;i<positions.count;i+=3)for(let e=0;e<3;e++){
+        const a=i+e,b=i+(e+1)%3,ya=positions.getY(a),yb=positions.getY(b);
+        if(Math.abs(ya-yb)<1e-8 || level<Math.min(ya,yb) || level>Math.max(ya,yb))continue;
+        const f=(level-ya)/(yb-ya);bladeEdge=Math.max(bladeEdge,Math.abs(positions.getX(a)+f*(positions.getX(b)-positions.getX(a))));
+      }
+      expect(bladeEdge).toBeGreaterThan(0);
+      expect(bladeEdge).toBeLessThanOrEqual(d.splitRight.position.x+1e-6);
+      const capBottom=d.strikingCap.getWorldPosition(new THREE.Vector3()).y-0.06;
+      expect(capBottom).toBeCloseTo(d.motion.position.y+d.wedgeLength/2,8);
+      expect(d.effortArrow.position.y-capBottom).toBeCloseTo(0.93,8);
+      d.splitArrows.forEach(a=>expect(a.position.x-a.userData.mlSide*d.splitRight.position.x).toBeCloseTo(a.userData.mlSide*0.7,8));
+    }
+    s.data.demoId=0;s.tick(2400);expect(d.motion.position.y).toBe(d.baseY);expect(d.splitRight.position.x).toBeCloseTo(d.wedgeStartGap,8);
+  });
+  it('matches the opening-distance ratio to the selected wedge advantage',()=>{
+    for(const [length,thickness] of [[0.3,0.06],[0.6,0.01],[0.05,0.2]]){
+      const s=scene('wedge',{length,thickness}),d=s.mlDemo;s.data.demoId=0;s.tick(0);
+      const before=d.splitRight.position.x-d.splitLeft.position.x;s.data.demoId=2;s.tick(0);s.tick(1100);
+      const opening=d.splitRight.position.x-d.splitLeft.position.x-before,travel=d.baseY-d.motion.position.y;
+      expect(travel/opening).toBeCloseTo(length/thickness,8);
+    }
+  });
+});
+
+describe('Machine Lab: continuous pulley reeving',()=>{
+  for(const reduced of [false,true])for(const segments of [1,2,3,4,5,6])it(`conserves rope and follows each of ${segments} supporting strands, reduced ${reduced}`,()=>{
+    const s=scene('pulley',{segments},reduced),d=s.mlDemo;
+    const straightLength=()=>d.supportingRopes.reduce((sum,r)=>sum+r.geometry.parameters.height*r.scale.y,0)+d.freeRope.geometry.parameters.height*d.freeRope.scale.y;
+    s.data.demoId=0;s.tick(0);const originalLength=straightLength();
+    expect(d.pulleyWheels.filter(w=>w.moving)).toHaveLength(Math.floor(segments/2));
+    expect(d.pulleyWheels.filter(w=>!w.moving)).toHaveLength(Math.ceil(segments/2));
+    s.data.demoId=2;s.tick(0);
+    const ropeEnd=(rope,upper)=>new THREE.Vector3(0,(upper?1:-1)*rope.geometry.parameters.height/2,0).applyMatrix4(rope.matrixWorld);
+    for(const t of [0,550,1100,1650,2200]){
+      s.tick(t);s.model.updateMatrixWorld(true);
+      expect(straightLength()).toBeCloseTo(originalLength,8);
+      expect(d.gripY-d.pullGrip.position.y).toBeCloseTo(segments*d.motion.position.y,8);
+      d.ropeArcs.forEach((arc,i)=>{
+        const path=arc.geometry.parameters.path,moving=d.pulleyWheels[i].moving;
+        const left=arc.localToWorld(path.getPoint(0).clone()),right=arc.localToWorld(path.getPoint(1).clone());
+        expect(left.distanceTo(ropeEnd(d.supportingRopes[i],!moving))).toBeLessThan(1e-6);
+        expect(right.distanceTo(ropeEnd(i+1<segments?d.supportingRopes[i+1]:d.freeRope,!moving))).toBeLessThan(1e-6);
+      });
+      expect(d.ropeAnchor.getWorldPosition(new THREE.Vector3()).distanceTo(ropeEnd(d.supportingRopes[0],segments%2===0))).toBeLessThan(1e-6);
+      expect(d.pullGrip.getWorldPosition(new THREE.Vector3()).distanceTo(ropeEnd(d.freeRope,false))).toBeLessThan(1e-6);
+      expect(new THREE.Box3().setFromObject(d.pulleyLoad).min.y).toBeGreaterThan(0.28);
+      expect(new THREE.Box3().setFromObject(d.pullGrip).min.y).toBeGreaterThan(0.28);
+      expect(d.loadArrow.position.y-d.loadArrow.userData.mlBaseY).toBeCloseTo(d.motion.position.y,8);
+      expect(d.effortArrow.userData.mlBaseY-d.effortArrow.position.y).toBeCloseTo(d.gripY-d.pullGrip.position.y,8);
+      // Tangential rim travel must match on both sides of every wheel. The
+      // final side must equal the actual displacement of the hand grip.
+      let ropeTravel=segments%2?d.motion.position.y:0;
+      d.pulleyWheels.forEach(w=>{
+        const centerTravel=w.moving?d.motion.position.y:0,rotationTravel=w.mesh.rotation.z*0.28;
+        expect(centerTravel-rotationTravel).toBeCloseTo(ropeTravel,8);
+        ropeTravel=centerTravel+rotationTravel;
+      });
+      expect(ropeTravel).toBeCloseTo(d.pullGrip.position.y-d.gripY,8);
+    }
+    s.data.demoId=0;s.tick(2300);expect(d.motion.position.y).toBe(0);expect(d.pullGrip.position.y).toBe(d.gripY);
+    expect(d.pulleyWheels.every(w=>w.mesh.rotation.z===0)).toBe(true);
+  });
+});
+
+describe('Machine Lab: distance tracks share a true linear scale',()=>{
+  for(const reduced of [false,true])for(const ma of [0.05,0.25,1,2,6,40,200,Math.PI*1000])it(`preserves the ${ma} ratio in geometry and motion, reduced ${reduced}`,()=>{
+    const s=scene('lever',{ma},reduced),d=s.mlDemo;
+    expect(d.effortStartX).toBe(d.loadStartX);
+    expect(d.effortTrack.geometry.parameters.width/d.loadTrack.geometry.parameters.width).toBeCloseTo(ma,8);
+    expect(Math.max(d.effortTrack.geometry.parameters.width,d.loadTrack.geometry.parameters.width)).toBeCloseTo(6.1,8);
+    for(const t of [100,650,1200,1750,2300]){
+      s.tick(t);s.model.updateMatrixWorld(true);
+      const a=d.effortDot.position.x-d.effortStartX,b=d.loadDot.position.x-d.loadStartX;
+      if(b>1e-10)expect(a/b).toBeCloseTo(ma,5);
+      expect(d.effortDot.position.x).toBeGreaterThanOrEqual(d.effortStartX);
+      expect(d.loadDot.position.x).toBeGreaterThanOrEqual(d.loadStartX);
+      for(const track of [d.effortTrack,d.loadTrack]){
+        expect(track.visible).toBe(true);const box=new THREE.Box3().setFromObject(track);
+        expect(box.min.x).toBeGreaterThan(-3.3);expect(box.max.x).toBeLessThan(3.3);
+        expect(box.min.y).toBeGreaterThan(0.38);
+      }
+    }
+    s.data.demoId=0;s.tick(2400);expect(d.effortDot.position.x).toBe(d.effortStartX);expect(d.loadDot.position.x).toBe(d.loadStartX);
+  });
+  for(const ma of [undefined,null,0,-1,NaN])it(`does not invent a comparison for invalid advantage ${ma}`,()=>{
+    const d=scene('lever',{ma}).mlDemo;
+    expect(d.distanceValid).toBe(false);expect(d.effortTrack.visible).toBe(false);expect(d.loadTrack.visible).toBe(false);
+    expect(d.effortDot.visible).toBe(false);expect(d.loadDot.visible).toBe(false);
+    expect([...d.effortTrail,...d.loadTrail].some(x=>x.visible)).toBe(false);
+  });
+});
+
+
+describe('Machine Lab: held working-stroke inspection',()=>{
+  for(const kind of ['lever','pulley','windlass','ramp','wedge','screw'])for(const reduced of [false,true])it('holds linear '+kind+' poses with reduced motion '+reduced,()=>{
+    const s=scene(kind,{ma:2,segments:6},reduced),d=s.mlDemo;
+    s.data.demoId=0;
+    function measured(){
+      if(kind==='lever')return (d.motion.rotation.z-d.baseRotation)/d.leverTravel;
+      if(kind==='pulley')return d.motion.position.y/d.pulleyLift;
+      if(kind==='windlass')return (d.load.position.y-d.loadY)/0.72;
+      if(kind==='ramp')return d.motion.position.clone().sub(new THREE.Vector3(d.baseX,d.baseY,0)).length()/1.45;
+      if(kind==='wedge')return (d.baseY-d.motion.position.y)/d.wedgeTravel;
+      return -d.pressShoe.position.y/d.screwTravel;
+    }
+    function snapshot(){return [measured(),d.effortDot.position.x,d.loadDot.position.x,...d.lamps.map(x=>x.material.emissiveIntensity),...d.beacons.map(x=>x.scale.x)];}
+    for(const progress of [0,0.25,0.5,1,0.37,0]){
+      s.data.motionProgress=progress;s.tick(3000);
+      expect(measured()).toBeCloseTo(progress,8);
+      expect((d.effortDot.position.x-d.effortStartX)/(d.effortEndX-d.effortStartX)).toBeCloseTo(progress,8);
+      expect((d.loadDot.position.x-d.loadStartX)/(d.loadEndX-d.loadStartX)).toBeCloseTo(progress,8);
+      expect(d.effortTrail.some(x=>x.visible)).toBe(progress>0.04);
+      const before=snapshot();s.tick(300000);expect(snapshot()).toEqual(before);
+    }
+  });
+  for(const [value,expected] of [[-2,0],[3,1],[NaN,0],[Infinity,0],[null,0],[undefined,0],['0.5',0]])it('handles invalid or out-of-range inspection '+String(value),()=>{
+    const s=scene('screw');s.data={demoId:0,motionProgress:value};s.tick(3000);
+    expect(s.mlDemo.pressShoe.position.y).toBeCloseTo(-s.mlDemo.screwTravel*expected,8);
+  });
+  it('lets a new demonstration take over a held pose',()=>{
+    const s=scene('screw');s.data={demoId:0,motionProgress:1};s.tick(3000);
+    s.data.demoId=2;s.tick(4000);expect(s.mlDemo.pressShoe.position.y).toBeCloseTo(0,8);
+    s.tick(5100);expect(s.mlDemo.pressShoe.position.y).toBeCloseTo(-s.mlDemo.screwTravel,8);
+  });
+});
+
+
+describe('Machine Lab: rotational force guides',()=>{
+  for(const kind of ['windlass','screw'])for(const handleR of [0.05,0.5,1])for(const reduced of [false,true])it('tracks the '+kind+' grip tangent at radius '+handleR+' with reduced motion '+reduced,()=>{
+    const s=scene(kind,{handleR,ma:4},reduced),d=s.mlDemo;
+    s.data.demoId=0;
+    const guideGeometry=d.turnGuide.children[0].geometry;
+    for(const progress of [0,0.125,0.25,0.5,0.75,1,0.37]){
+      s.data.motionProgress=progress;s.tick(4000);s.model.updateMatrixWorld(true);
+      const direction=new THREE.Vector3(0,-1,0).applyQuaternion(d.effortArrow.quaternion);
+      const gripObject=kind==='screw'?d.screwGrip:d.wheelGrip;
+      const grip=gripObject.getWorldPosition(new THREE.Vector3());
+      const axis=kind==='screw'?new THREE.Vector3(0,1,0):new THREE.Vector3(0,0,1);
+      const radial=kind==='screw'?new THREE.Vector3(grip.x,0,grip.z):new THREE.Vector3(grip.x,grip.y-d.axleY,0);
+      const expected=axis.clone().cross(radial).normalize();
+      expect(direction.dot(expected)).toBeCloseTo(1,8);
+      expect(direction.dot(radial.clone().normalize())).toBeCloseTo(0,8);
+      const tip=d.effortArrow.position.clone().addScaledVector(direction,kind==='screw'?0.79:0.84);
+      if(kind==='screw'){
+        expect(tip.x).toBeCloseTo(grip.x,8);expect(tip.z).toBeCloseTo(grip.z,8);
+        expect(tip.y-grip.y).toBeCloseTo(0.25,8);
+        expect(d.turnGuide.position.y).toBeCloseTo(3.94-d.screwTravel*progress,8);
+        expect(d.loadArrow.position.y-d.loadArrow.userData.mlBaseY).toBeCloseTo(-d.screwTravel*progress,8);
+        expect(new THREE.Vector3(0,-1,0).applyQuaternion(d.loadArrow.quaternion).y).toBe(-1);
+      }else{
+        expect(tip.x).toBeCloseTo(grip.x,8);expect(tip.y).toBeCloseTo(grip.y,8);
+        expect(tip.z-grip.z).toBeCloseTo(0.4,8);
+        expect(d.loadArrow.position.y-d.loadArrow.userData.mlBaseY).toBeCloseTo(0.72*progress,8);
+        expect(d.turnGuide.position.y).toBe(d.axleY);
+      }
+      expect(d.loadArrow.scale.toArray()).toEqual([1,1,1]);
+      expect(d.turnGuide.children[0].geometry).toBe(guideGeometry);
+    }
+  });
+  for(const kind of ['windlass','screw'])it('points the curved '+kind+' guide in the same direction as rotation',()=>{
+    const d=scene(kind).mlDemo,g=d.turnGuide,head=g.children[1];
+    const direction=new THREE.Vector3(0,1,0).applyQuaternion(head.quaternion);
+    const axis=kind==='screw'?new THREE.Vector3(0,1,0):new THREE.Vector3(0,0,1);
+    expect(direction.dot(axis.clone().cross(head.position).normalize())).toBeGreaterThan(0.99);
+    expect(direction.dot(axis)).toBeCloseTo(0,8);
+    expect(g.children[0].geometry.parameters.path.getPoints(20).every(p=>Math.abs(p.length()-g.userData.mlRadius)<0.003)).toBe(true);
+  });
+});
+
+
+describe('Machine Lab: ramp travel rail and rising load cue',()=>{
+  for(const height of [0.2,1,3,3.9,4])for(const reduced of [false,true])it('tracks the crate at slope '+height+'/4 with reduced motion '+reduced,()=>{
+    const s=scene('ramp',{length:4,height,ma:4/height},reduced),d=s.mlDemo;
+    s.data.demoId=0;
+    const normal=new THREE.Vector3(-Math.sin(d.angle),Math.cos(d.angle),0);
+    const slope=new THREE.Vector3(Math.cos(d.angle),Math.sin(d.angle),0);
+    const geometry=d.rampTravelFill.geometry;
+    for(const progress of [0,0.01,0.25,0.5,0.75,1,0.37,0]){
+      s.data.motionProgress=progress;s.tick(3000);s.model.updateMatrixWorld(true);
+      const marker=d.rampTravelCursor.getWorldPosition(new THREE.Vector3());
+      const expected=d.motion.position.clone().addScaledVector(normal,-0.295);expected.z=1.26;
+      expect(marker.distanceTo(expected)).toBeLessThan(1e-8);
+      expect(d.loadArrow.position.x-d.motion.position.x).toBeCloseTo(0.82,8);
+      expect(d.loadArrow.position.y-d.motion.position.y).toBeCloseTo(-0.35,8);
+      expect(d.loadArrow.scale.toArray()).toEqual([1,1,1]);
+      expect(d.loadArrow.rotation.z).toBe(0);
+      expect(d.rampTravelFill.geometry).toBe(geometry);
+      expect(d.rampTravelFill.visible).toBe(progress>0);
+      expect(d.rampTravelFill.position.x-0.725*d.rampTravelFill.scale.x).toBeCloseTo(0,8);
+      expect(d.rampTravelFill.position.x+0.725*d.rampTravelFill.scale.x).toBeCloseTo(1.45*progress,8);
+      const point=d.rampTravel.localToWorld(new THREE.Vector3(1.45*progress,0,0));
+      expect(point.distanceTo(marker)).toBeLessThan(1e-8);
+      const origin=d.rampTravel.getWorldPosition(new THREE.Vector3());
+      expect(marker.clone().sub(origin).dot(slope)).toBeCloseTo(1.45*progress,8);
+      const before=[...marker.toArray(),...d.loadArrow.position.toArray()];s.tick(300000);s.model.updateMatrixWorld(true);
+      expect([...d.rampTravelCursor.getWorldPosition(new THREE.Vector3()).toArray(),...d.loadArrow.position.toArray()]).toEqual(before);
+    }
+  });
+  it('also follows the normal playback cycle and clears on reset',()=>{
+    const s=scene('ramp',{length:4,height:1,ma:4}),d=s.mlDemo;
+    for(const time of [100,650,1200,1750,2300]){
+      s.tick(time);const travel=(d.motion.position.x-d.baseX)/Math.cos(d.angle);
+      expect(d.rampTravelCursor.position.x).toBeCloseTo(travel,8);
+    }
+    s.data.demoId=0;s.tick(2400);expect(d.rampTravelFill.visible).toBe(false);expect(d.rampTravelCursor.position.x).toBe(0);
+  });
+});
+
+
+describe('Machine Lab: focus mechanism scene isolation',()=>{
+  for(const kind of ['lever','pulley','windlass','ramp','wedge','screw'])for(const reduced of [false,true])it('isolates '+kind+' without changing the held pose, reduced '+reduced,()=>{
+    const s=scene(kind,{ma:4},reduced),d=s.mlDemo;s.data={demoId:0,motionProgress:0.37};s.tick(3000);
+    const objects=[];s.model.traverse(x=>objects.push(x));const ids=objects.map(x=>x.uuid);
+    const pose=()=>[...d.motion.position.toArray(),...d.motion.quaternion.toArray(),...d.effortArrow.position.toArray(),d.effortDot.position.x,d.loadDot.position.x];
+    const before=pose(),target=s.target.clone(),fit=s.fitPts.map(x=>x.clone());
+    expect(d.room.visible).toBe(true);expect(d.room.children.length).toBeGreaterThan(20);
+    const withinRoom=x=>{for(let p=x;p;p=p.parent)if(p===d.room)return true;return false;};
+    [...d.lamps,...d.beacons].forEach(x=>expect(withinRoom(x)).toBe(true));
+    [d.motion,d.effortArrow,d.effortTrack,d.loadTrack,d.effortDot,d.loadDot].forEach(x=>expect(withinRoom(x)).toBe(false));
+    s.data.focusMechanism=true;s.tick(4000);expect(d.room.visible).toBe(false);expect(pose()).toEqual(before);
+    expect(s.target.equals(target)).toBe(true);s.fitPts.forEach((x,i)=>expect(x.equals(fit[i])).toBe(true));
+    s.data.focusMechanism=false;s.tick(5000);expect(d.room.visible).toBe(true);expect(pose()).toEqual(before);
+    const after=[];s.model.traverse(x=>after.push(x.uuid));expect(after).toEqual(ids);
+  });
+  it('keeps the automatic demonstration moving when the room is hidden',()=>{
+    const s=scene('pulley',{ma:2}),d=s.mlDemo;s.data.focusMechanism=true;s.tick(650);const half=d.motion.position.y;s.tick(1200);
+    expect(d.room.visible).toBe(false);expect(d.motion.position.y).toBeGreaterThan(half);
+  });
+});
+
+
+describe('Machine Lab: distance markers carry distinct shapes',()=>{
+  for(const kind of ['lever','pulley','windlass','ramp','wedge','screw'])for(const reduced of [false,true])it('preserves shape and track clearance for '+kind+', reduced '+reduced,()=>{
+    const s=scene(kind,{ma:2},reduced),d=s.mlDemo;s.data.demoId=0;
+    expect(d.effortDot.geometry.type).toBe('OctahedronGeometry');expect(d.loadDot.geometry.type).toBe('TorusGeometry');
+    expect(d.loadDot.geometry.parameters.radius).toBeGreaterThan(d.loadDot.geometry.parameters.tube*3);
+    for(const progress of [0,0.25,0.5,1]){
+      s.data.motionProgress=progress;s.tick(3000);s.model.updateMatrixWorld(true);
+      for(const marker of [d.effortDot,d.loadDot]){
+        const bounds=new THREE.Box3().setFromObject(marker);
+        expect(bounds.min.y).toBeGreaterThan(0.422);
+        expect(bounds.min.x).toBeGreaterThan(-3.3);expect(bounds.max.x).toBeLessThan(3.3);
+      }
+      expect(d.effortDot.position.x-d.effortStartX).toBeCloseTo((d.effortEndX-d.effortStartX)*progress,8);
+      expect(d.loadDot.position.x-d.loadStartX).toBeCloseTo((d.loadEndX-d.loadStartX)*progress,8);
+    }
+  });
+  it('keeps the open ring facing the camera without moving it or changing its geometry',()=>{
+    const s=scene('pulley',{ma:6}),d=s.mlDemo;s.data={demoId:0,motionProgress:0.5};
+    s.camera=new THREE.PerspectiveCamera(45,1,0.1,100);
+    const geometry=d.loadDot.geometry;
+    for(const [yaw,pitch] of [[0,0],[Math.PI,0.3],[1.3,1.2],[-1.5,-0.7]]){
+      s.camera.quaternion.setFromEuler(new THREE.Euler(pitch,yaw,0));s.tick(3000);
+      d.loadDot.onBeforeRender(null,s.scene,s.camera);
+      expect(Math.abs(d.loadDot.quaternion.dot(s.camera.quaternion))).toBeCloseTo(1,8);
+      expect(d.loadDot.geometry).toBe(geometry);expect(d.loadDot.position.x).toBeCloseTo(d.loadStartX+(d.loadEndX-d.loadStartX)/2,8);
+      s.model.updateMatrixWorld(true);
+      // Rotating an axis-aligned box exaggerates a ring's extent. Check the
+      // transformed surface vertices so the assertion measures actual clearance.
+      const vertices=d.loadDot.geometry.attributes.position,point=new THREE.Vector3();let lowest=Infinity;
+      for(let i=0;i<vertices.count;i++){point.fromBufferAttribute(vertices,i).applyMatrix4(d.loadDot.matrixWorld);lowest=Math.min(lowest,point.y);}
+      expect(lowest).toBeGreaterThan(0.422);
+    }
+  });
+});
+
+
+describe('Machine Lab: lever arm guides preserve selected leverage',()=>{
+  for(const [effortArm,loadArm] of [[2,1],[2,2],[4,0.2],[0.2,4],[0.2,0.2]])for(const reduced of [false,true])it('shows exact contact-arm ratio '+effortArm+':'+loadArm+', reduced '+reduced,()=>{
+    const s=scene('lever',{effortArm,loadArm,ma:effortArm/loadArm},reduced),d=s.mlDemo;
+    expect(-d.effortContact.x/d.loadContact.x).toBeCloseTo(effortArm/loadArm,10);
+    const beam=d.leverBeam,half=beam.geometry.parameters.width/2;
+    expect(d.effortContact.x-(beam.position.x-half)).toBeCloseTo(0.42,8);
+    expect(beam.position.x+half-d.loadContact.x).toBeCloseTo(0.42,8);
+    expect(d.armGuides).toHaveLength(2);
+    for(const g of d.armGuides){
+      expect(g.group.parent).toBe(d.motion);
+      expect(g.effort.geometry.parameters.width/g.load.geometry.parameters.width).toBeCloseTo(effortArm/loadArm,10);
+      expect(g.effort.position.x+g.effort.geometry.parameters.width/2).toBeCloseTo(0,8);
+      expect(g.load.position.x-g.load.geometry.parameters.width/2).toBeCloseTo(0,8);
+      expect(g.effort.position.x-g.effort.geometry.parameters.width/2).toBeCloseTo(d.effortContact.x,8);
+      expect(g.load.position.x+g.load.geometry.parameters.width/2).toBeCloseTo(d.loadContact.x,8);
+      expect(Math.abs(g.group.position.z)).toBeGreaterThan(0.73);
+    }
+    s.data.demoId=0;
+    for(const progress of [0,0.25,0.5,1]){
+      s.data.motionProgress=progress;s.tick(3000);s.model.updateMatrixWorld(true);
+      let lowest=Infinity;const v=new THREE.Vector3();
+      d.motion.traverse(mesh=>{const p=mesh.geometry?.attributes?.position;if(p)for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(mesh.matrixWorld);lowest=Math.min(lowest,v.y);}});
+      expect(lowest).toBeGreaterThan(0.28);
+      const pivot=d.motion.localToWorld(new THREE.Vector3());
+      const effort=d.motion.localToWorld(new THREE.Vector3(d.effortContact.x,0,0));
+      const load=d.motion.localToWorld(new THREE.Vector3(d.loadContact.x,0,0));
+      expect(effort.distanceTo(pivot)/load.distanceTo(pivot)).toBeCloseTo(effortArm/loadArm,8);
+    }
+  });
+});
+
+
+describe('Machine Lab: equal-tension pulley support cues',()=>{
+  for(const segments of [1,2,3,4,5,6])for(const reduced of [false,true])it('identifies exactly '+segments+' supporting strands, reduced '+reduced,()=>{
+    const s=scene('pulley',{segments,ma:segments},reduced),d=s.mlDemo;
+    expect(d.supportCues).toHaveLength(segments);
+    const geometries=d.supportCues.map(c=>c.children.map(m=>m.geometry));
+    s.data.demoId=0;
+    for(const progress of [0,0.25,0.5,1,0.37,0]){
+      s.data.motionProgress=progress;s.tick(3000);s.model.updateMatrixWorld(true);
+      d.supportCues.forEach((cue,index)=>{
+        const rope=d.supportingRopes[index],bounds=new THREE.Box3().setFromObject(cue);
+        expect(cue.position.x).toBe(rope.position.x);expect(cue.position.y).toBe(rope.position.y);
+        expect(cue.position.x).toBeLessThan(d.freeRope.position.x-0.3);
+        expect(cue.scale.toArray()).toEqual([1,1,1]);expect(cue.rotation.toArray().slice(0,3)).toEqual([0,0,0]);
+        expect(bounds.min.y).toBeGreaterThan(d.pulleyBottom+d.motion.position.y+0.05);
+        expect(bounds.max.y).toBeLessThan(d.pulleyTop-0.05);
+        expect(bounds.min.z).toBeGreaterThan(0.24);
+        expect(bounds.max.x-bounds.min.x).toBeLessThan(0.2);
+        expect(bounds.max.y-bounds.min.y).toBeCloseTo(0.4,6);
+        cue.children.forEach((mesh,i)=>expect(mesh.geometry).toBe(geometries[index][i]));
+        const head=cue.children[1],direction=new THREE.Vector3(0,1,0).applyQuaternion(head.quaternion).applyQuaternion(cue.quaternion);
+        expect(direction.toArray()).toEqual([0,1,0]);
+      });
+    }
+    s.data.focusMechanism=true;s.tick(4000);expect(d.room.visible).toBe(false);
+    d.supportCues.forEach(cue=>expect(cue.parent).toBe(s.model));
+  });
+});
+
+
+describe('Machine Lab: traveled-distance fills',()=>{
+  for(const kind of ['lever','pulley','windlass','ramp','wedge','screw'])for(const reduced of [false,true])it('fills exact traveled distances for '+kind+', reduced '+reduced,()=>{
+    for(const ma of [0.05,1,6,Math.PI*1000]){
+      const s=scene(kind,{ma},reduced),d=s.mlDemo;s.data.demoId=0;
+      const geometry=[d.effortFill.geometry,d.loadFill.geometry];
+      for(const progress of [0,0.01,0.25,0.5,1,0.37,0]){
+        s.data.motionProgress=progress;s.tick(3000);s.model.updateMatrixWorld(true);
+        for(const [fill,track,dot,start,end,index] of [[d.effortFill,d.effortTrack,d.effortDot,d.effortStartX,d.effortEndX,0],[d.loadFill,d.loadTrack,d.loadDot,d.loadStartX,d.loadEndX,1]]){
+          expect(fill.visible).toBe(progress>0);expect(fill.geometry).toBe(geometry[index]);
+          const half=fill.geometry.parameters.width*fill.scale.x/2;
+          expect(fill.position.x-half).toBeCloseTo(start,10);
+          expect(fill.position.x+half).toBeCloseTo(dot.position.x,10);
+          expect(half*2).toBeCloseTo((end-start)*progress,10);
+          expect(fill.geometry.parameters.depth).toBeGreaterThan(track.geometry.parameters.depth*3);
+          expect(fill.parent).toBe(s.model);
+          const top=fill.position.y+fill.geometry.parameters.height/2;
+          expect(top).toBeGreaterThan(track.position.y+track.geometry.parameters.height/2);
+          expect(top).toBeLessThan(new THREE.Box3().setFromObject(dot).min.y);
+        }
+        if(progress>0)expect((d.effortFill.geometry.parameters.width*d.effortFill.scale.x)/(d.loadFill.geometry.parameters.width*d.loadFill.scale.x)).toBeCloseTo(ma,8);
+      }
+    }
+  });
+  for(const ma of [undefined,null,0,-1,NaN])it('hides fills for invalid advantage '+ma,()=>{
+    const s=scene('lever',{ma}),d=s.mlDemo;s.data={demoId:0,motionProgress:0.5};s.tick(3000);
+    expect(d.effortFill.visible).toBe(false);expect(d.loadFill.visible).toBe(false);
+  });
+  it('follows playback and clears the traveled bars on reset',()=>{
+    const s=scene('pulley',{ma:6,segments:6}),d=s.mlDemo;
+    for(const t of [100,650,1200,1750,2300]){
+      s.tick(t);
+      for(const [fill,dot] of [[d.effortFill,d.effortDot],[d.loadFill,d.loadDot]]){
+        expect(fill.position.x+fill.geometry.parameters.width*fill.scale.x/2).toBeCloseTo(dot.position.x,10);
+      }
+    }
+    s.data.demoId=0;s.tick(2500);expect(d.effortFill.visible).toBe(false);expect(d.loadFill.visible).toBe(false);
+  });
+});
+
+
+describe('Machine Lab: screw lead and visible compression',()=>{
+  for(const pitch of [0.001,0.002,0.005,0.007,0.01,0.02])for(const reduced of [false,true])it('keeps the thread engaged at pitch '+pitch+', reduced '+reduced,()=>{
+    const s=scene('screw',{pitch,ma:20},reduced),d=s.mlDemo;
+    s.data={demoId:0,motionProgress:0};s.tick(3000);s.model.updateMatrixWorld(true);
+    const path=d.screwThread.geometry.parameters.path,points=path.points;
+    const lead=points[32].y-points[0].y;
+    expect(d.screwTravel).toBeCloseTo(lead,10);
+    const reference=d.screwThread.localToWorld(path.getPoint(0.8));
+    expect(reference.y).toBeGreaterThan(2.52);expect(reference.y).toBeLessThan(2.84);
+    const radius=d.screwThread.geometry.parameters.radius,core=d.screwShaft.geometry.parameters.radiusTop;
+    expect(radius*2).toBeLessThan(lead);
+    expect(points[0].x-radius).toBeLessThan(core);expect(points[0].x+radius).toBeGreaterThan(core);
+    const geometry=d.screwThread.geometry;expect(d.pressBands).toHaveLength(6);
+    for(const progress of [0,0.125,0.25,0.5,0.75,1,0]){
+      s.data.motionProgress=progress;s.tick(4000);s.model.updateMatrixWorld(true);
+      // Follow a point one revolution farther along the helix as the shaft
+      // turns. Its world position must stay fixed in the stationary nut.
+      const engaged=d.screwThread.localToWorld(path.getPoint(0.8+progress*32/(points.length-1)));
+      expect(engaged.distanceTo(reference)).toBeLessThan(0.00001);
+      expect(d.screwThread.geometry).toBe(geometry);
+      const height=d.pressLoad.geometry.parameters.height*d.pressLoad.scale.y;
+      expect(height).toBeGreaterThan(0.14);
+      expect(d.pressLoad.position.y-height/2).toBeCloseTo(d.pressBaseY,8);
+      expect(d.pressLoad.position.y+height/2).toBeCloseTo(0.91+d.pressShoe.position.y,8);
+      expect(d.pressShoe.position.y).toBeCloseTo(-lead*progress,8);
+      expect(d.pressShoe.rotation.toArray().slice(0,3)).toEqual([0,0,0]);
+      expect(d.pressLoad.rotation.toArray().slice(0,3)).toEqual([0,0,0]);
+      const shaftTop=d.screwShaft.localToWorld(new THREE.Vector3(0,d.screwShaft.geometry.parameters.height/2,0));
+      expect(shaftTop.y).toBeCloseTo(d.screwGrip.getWorldPosition(new THREE.Vector3()).y,8);
+      for(const band of d.pressBands){
+        expect(band.parent).toBe(d.pressLoad);
+        const position=band.getWorldPosition(new THREE.Vector3());
+        expect(Math.abs(position.z)).toBeGreaterThan(0.775);
+        expect(position.y).toBeGreaterThan(d.pressBaseY);
+        expect(position.y).toBeLessThan(d.pressBaseY+height);
+      }
+      const top=d.pressBands[2].getWorldPosition(new THREE.Vector3()),bottom=d.pressBands[0].getWorldPosition(new THREE.Vector3());
+      expect(top.y-bottom.y).toBeCloseTo(height/2,8);
+    }
+  });
+});
+
+
+describe('Machine Lab: visible wheel-and-drum coupling',()=>{
+  for(const [handleR,drumR] of [[0.05,0.02],[0.45,0.1],[1,0.5],[0.05,0.5],[1,0.02],[0.45,0.25]])for(const reduced of [false,true])it('keeps marks coupled at radii '+handleR+'/'+drumR+', reduced '+reduced,()=>{
+    const s=scene('windlass',{handleR,drumR,ma:handleR/drumR},reduced),d=s.mlDemo;s.data.demoId=0;
+    expect(d.drumStripes).toHaveLength(2);expect(d.drumMarks).toHaveLength(4);
+    const geometry=d.drumRotor.children.map(x=>x.geometry),winding=d.winding.geometry;
+    for(const progress of [0,0.125,0.25,0.5,0.75,1,0.37,0]){
+      s.data.motionProgress=progress;s.tick(3000);s.model.updateMatrixWorld(true);
+      expect(d.drumRotor.rotation.z).toBe(d.motion.rotation.z);expect(d.drum.rotation.y).toBe(d.motion.rotation.z);
+      const grip=d.wheelMark.getWorldPosition(new THREE.Vector3());grip.y-=d.axleY;grip.z=0;grip.normalize();
+      for(const marker of d.drumMarks){
+        const p=marker.getWorldPosition(new THREE.Vector3());p.y-=d.axleY;p.z=0;
+        expect(p.normalize().dot(grip)).toBeCloseTo(1,8);expect(marker.parent).toBe(d.drumRotor);
+      }
+      for(const stripe of d.drumStripes){
+        const p=stripe.getWorldPosition(new THREE.Vector3());p.y-=d.axleY;p.z=0;
+        expect(Math.abs(p.normalize().dot(grip))).toBeCloseTo(1,8);
+        const bounds=new THREE.Box3().setFromObject(stripe);
+        expect(bounds.min.z).toBeGreaterThan(0.1);expect(bounds.max.z).toBeLessThan(0.95);
+        expect(bounds.min.y).toBeGreaterThan(0.28);
+        expect(Math.hypot(stripe.position.x,stripe.position.y)-stripe.geometry.parameters.width/2).toBeLessThan(d.drum.geometry.parameters.radiusTop);
+      }
+      d.drumRotor.children.forEach((x,i)=>expect(x.geometry).toBe(geometry[i]));expect(d.winding.geometry).toBe(winding);
+      const ropeHalf=d.hangingRope.geometry.parameters.height*d.hangingRope.scale.y/2;
+      expect(d.hangingRope.position.y+ropeHalf).toBeCloseTo(d.axleY,8);
+      expect(d.hangingRope.position.y-ropeHalf).toBeCloseTo(d.load.position.y+0.36,8);
+    }
+    s.data.focusMechanism=true;s.tick(4000);expect(d.room.visible).toBe(false);expect(d.drumRotor.parent).toBe(s.model);
+  });
+  it('turns the marked rotor during playback and restores its starting position',()=>{
+    const s=scene('windlass',{ma:4}),d=s.mlDemo;
+    for(const t of [100,650,1200,1750,2300]){s.tick(t);expect(d.drumRotor.rotation.z).toBe(d.motion.rotation.z);}
+    s.data.demoId=0;s.tick(2500);expect(d.drumRotor.rotation.z).toBe(0);
   });
 });

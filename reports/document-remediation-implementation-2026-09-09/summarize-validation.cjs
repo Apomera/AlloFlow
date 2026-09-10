@@ -1,0 +1,13 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const root='reports/document-remediation-implementation-2026-09-09';
+const broad=JSON.parse(fs.readFileSync(path.join(root,'final-tests.json'),'utf8'));
+const lifecycle=JSON.parse(fs.readFileSync(path.join(root,'lifecycle-final.json'),'utf8'));
+const report=JSON.parse(fs.readFileSync(path.join(root,'remote-report-tests.json'),'utf8'));
+const results=new Map(broad.testResults.map(r=>[r.name,{...r,evidence:'final-tests.json'}]));
+for(const r of lifecycle.testResults)results.set(r.name,{...r,evidence:'lifecycle-final.json'});
+const suites=[...results.values()].map(r=>({file:r.name,evidence:r.evidence,tests:r.assertionResults.length,passed:r.assertionResults.filter(t=>t.status==='passed').length,status:r.status}));
+const summary={root:{files:suites.length,tests:suites.reduce((n,r)=>n+r.tests,0),passed:suites.reduce((n,r)=>n+r.passed,0),suites},remote:{tests:report.numTotalTests,passed:report.numPassedTests,evidence:'remote-report-tests.json'},note:'Latest result per file, not a single uninterrupted invocation. The combined run had one 30-second AST-inspection timeout; the full 18-test lifecycle suite passed in isolation with a 120-second allowance (AST test: 23.8 seconds). No application changes were made between these runs.'};
+if(summary.root.tests!==summary.root.passed||summary.remote.tests!==summary.remote.passed)throw Error('Unresolved failing tests');
+fs.writeFileSync(path.join(root,'validation-summary.json'),JSON.stringify(summary,null,2));
+console.log(JSON.stringify({rootTests:summary.root.tests,rootFiles:summary.root.files,remoteTests:summary.remote.tests}));

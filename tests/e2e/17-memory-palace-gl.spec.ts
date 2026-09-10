@@ -259,6 +259,7 @@ test.describe('Memory Palace — real WebGL walk', () => {
   });
 
   test('build mode picks the room under the pointer and rejects the hub', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await mount(page);
     const box = (await page.locator('#wrap canvas').boundingBox())!;
     // Focus the canvas FIRST (keyboard goes to the body otherwise, so 'o' would
@@ -266,16 +267,24 @@ test.describe('Memory Palace — real WebGL walk', () => {
     // cannot itself place anything.
     await page.locator('#wrap canvas').click({ position: { x: 4, y: 4 } });
     await page.keyboard.press('o');            // overview: look down on the whole palace
-    await page.waitForTimeout(1000);
+    await expect.poll(() => page.evaluate(() => (window as any).__lastCamera.position.y)).toBeGreaterThan(1000);
     await page.evaluate(() => { (window as any).__handle.setBuildMode(true); });
     await expect(page.locator('[data-palace-overlay="journey"]')).toBeHidden();
     await page.waitForTimeout(200);
-    // Scan a grid of clicks. Hits must name a real room; the exact centre is the
-    // hub plaza, which is deliberately NOT placeable.
-    for (let gx = 1; gx <= 5; gx++) {
-      for (let gy = 1; gy <= 3; gy++) {
-        await page.mouse.click(box.x + (box.width * gx) / 6, box.y + (box.height * gy) / 4);
-      }
+    // Project known floor locations instead of hoping a sparse screen grid
+    // overlaps the rooms at the final overview zoom. Every room must be pickable.
+    const targets = await page.evaluate(data => {
+      const w = window as any, model = w.AlloModules.MemoryPalace.buildPalace(data);
+      return model.rooms.map((room: any, index: number) => {
+        const p = new w.THREE.Vector3(room.center.x, 0, room.center.z).project(w.__lastCamera);
+        return { x: p.x, y: p.y, key: index === 0 ? null : room.key };
+      });
+    }, SAMPLE);
+    for (const target of targets) {
+      expect(Math.abs(target.x)).toBeLessThan(1); expect(Math.abs(target.y)).toBeLessThan(1);
+      await page.mouse.click(box.x + box.width * (target.x + 1) / 2, box.y + box.height * (1 - target.y) / 2);
+      const placed = await page.evaluate(() => (window as any).__events.floor.at(-1));
+      expect(placed?.roomKey || null).toBe(target.key);
     }
     const floor = await page.evaluate(() => (window as any).__events.floor);
     expect(floor.length).toBeGreaterThan(0);
@@ -416,6 +425,22 @@ test.describe('Memory Palace — real WebGL walk', () => {
       return out;
     });
     expect(new Set(variants).size).toBe(4);
+    const clearances = await page.evaluate(() => {
+      const w = window as any, out: number[] = [];
+      w.__lastScene.traverse((o: any) => {
+        if (o.userData.visualRole !== 'landmark-symbol') return;
+        o.updateMatrix(); const positions = o.geometry.attributes.position;
+        let nearest = Infinity;
+        for (let i = 0; i < positions.count; i++) {
+          const p = new w.THREE.Vector3().fromBufferAttribute(positions, i).applyMatrix4(o.matrix);
+          nearest = Math.min(nearest, p.z);
+        }
+        out.push(nearest);
+      });
+      return out;
+    });
+    expect(clearances).toHaveLength(4);
+    clearances.forEach(z => expect(z).toBeGreaterThan(4));
     await page.locator('[data-palace-action="overview"]').click();
     expect(await page.evaluate(() => (window as any).__lastScene.fog.density)).toBe(0);
     await page.evaluate(() => (window as any).__handle.goTo(1));
@@ -430,9 +455,16 @@ test.describe('Memory Palace — real WebGL walk', () => {
     const summary = page.locator('[data-palace-overlay="completion"]');
     await expect(summary).toContainText('Final stop reached');
     await expect(summary).toContainText('Visited 1 of 8 stops');
+    await expect(page.locator('[data-palace-overlay="focus"]')).toBeHidden();
+    await summary.getByRole('button', { name: 'Dismiss completion message', exact: true }).click();
+    await expect(page.locator('[data-palace-overlay="focus"]')).toContainText('Attic thing');
+    await page.evaluate(() => (window as any).__handle.goTo(8));
+    await expect(summary.getByRole('progressbar', { name: 'Stops visited' })).toHaveAttribute('aria-valuenow', '1');
+    await expect(summary.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '8');
     await page.evaluate(() => { for (let i = 1; i <= 8; i++) (window as any).__handle.goTo(i); });
     await expect(summary).toContainText('Route complete');
     await expect(summary).toContainText('Visited 8 of 8 stops');
+    await expect(summary.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '8');
     await summary.getByRole('button', { name: 'Walk again', exact: true }).click();
     await expect(page.locator('#wrap canvas')).toBeFocused();
     await expect(summary).toBeHidden();
@@ -462,6 +494,27 @@ test.describe('Memory Palace — real WebGL walk', () => {
     await expect(first).toHaveAttribute('data-visited', 'true');
     await page.locator('[data-journey-index="2"]').click();
     await expect(card).toContainText('Condensation');
+  });
+
+  test('shows visited map stops separately from skipped stops and the current position', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await mount(page, SAMPLE);
+    await page.evaluate(() => { (window as any).__handle.goTo(1); (window as any).__handle.goTo(3); });
+    await page.locator('[data-palace-action="overview"]').click();
+    const first = page.locator('[data-journey-index="1"]');
+    const skipped = page.locator('[data-journey-index="2"]');
+    const current = page.locator('[data-journey-index="3"]');
+    await expect(first.locator('[data-journey-marker]')).toHaveAttribute('data-state', 'check');
+    await expect(first).toHaveAccessibleName(/Visited$/);
+    await expect(skipped.locator('[data-journey-marker]')).toHaveAttribute('data-state', '');
+    await expect(skipped).toHaveAccessibleName(/Not yet visited$/);
+    await expect(current).toHaveAttribute('aria-current', 'step');
+    await expect(current.locator('[data-journey-marker]')).toHaveAttribute('data-state', 'next');
+    await skipped.click();
+    await page.locator('[data-palace-action="overview"]').click();
+    await expect(current.locator('[data-journey-marker]')).toHaveAttribute('data-state', 'check');
+    await expect(skipped).toHaveAttribute('aria-current', 'step');
+    await expect(page.locator('[data-palace-overlay="journey"]')).toContainText('3 of 3 visited');
   });
 
   test('keeps landmarks in recall while withholding memory answers and cue controls', async ({ page }) => {
@@ -696,5 +749,68 @@ test.describe('Memory Palace — real WebGL walk', () => {
     await expect.poll(() => page.evaluate(() => (window as any).__lastCamera.aspect)).toBeCloseTo(500/600,3);
     expect(await page.evaluate(() => (window as any).__lastCamera.position.toArray())).toEqual(position);
   });
+
+  for (const theme of ['gallery', 'pasture', 'space']) {
+    test('keeps the ' + theme + ' environment stable through mobile study, recall, and teardown', async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await mount(page, SAMPLE, { theme });
+      const skyFingerprint = () => page.evaluate(() => {
+        const w = window as any; let sky: any;
+        w.__lastScene.traverse((o: any) => { if (o.userData.visualRole === 'sky-dome') sky = o; });
+        if (!sky?.material?.map?.image) return null;
+        const canvas = sky.material.map.image;
+        const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+        let hash = 2166136261; const colors = new Set<string>();
+        for (let i = 0; i < pixels.length; i += 64) {
+          hash = Math.imul(hash ^ pixels[i], 16777619);
+          colors.add(pixels[i] + ',' + pixels[i + 1] + ',' + pixels[i + 2]);
+        }
+        return { theme: sky.userData.environment, hash: hash >>> 0, colors: colors.size };
+      });
+      const studySky = await skyFingerprint();
+      expect(studySky?.theme).toBe(theme);
+      expect(studySky?.colors).toBeGreaterThan(100);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.evaluate(() => { const wrap = document.getElementById('wrap')!; wrap.style.width = '390px'; wrap.style.height = '740px'; (window as any).__handle.goTo(1); });
+      await expect(page.locator('[data-palace-overlay="focus"]')).toContainText('Evaporation');
+      await expect.poll(() => page.evaluate(() => (window as any).__lastCamera.aspect)).toBeCloseTo(390 / 740, 3);
+      expect(await skyFingerprint()).toEqual(studySky);
+      await page.locator('[data-palace-action="overview"]').click();
+      await expect.poll(() => page.evaluate(() => (window as any).__lastCamera.position.y)).toBeGreaterThan(1000);
+      expect(await skyFingerprint()).toEqual(studySky);
+      await page.evaluate(() => {
+        const w = window as any; w.__skyDisposals = 0;
+        w.__contactDisposals = { texture: 0, geometry: 0 };
+        w.__entranceDisposals = { globe: 0, pedestal: 0 };
+        w.__lastScene.traverse((o: any) => {
+          if (o.userData.visualRole === 'entrance-globe') o.material.map.addEventListener('dispose', () => w.__entranceDisposals.globe++);
+          if (o.userData.visualRole === 'entrance-pedestal') o.material.map.addEventListener('dispose', () => w.__entranceDisposals.pedestal++);
+        });
+        w.__lastScene.traverse((o: any) => {
+          if (o.userData.visualRole !== 'ground-contact-shades') return;
+          o.material.map.addEventListener('dispose', () => w.__contactDisposals.texture++);
+          o.geometry.addEventListener('dispose', () => w.__contactDisposals.geometry++);
+        });
+        w.__lastScene.traverse((o: any) => { if (o.userData.visualRole === 'sky-dome') o.material.map.addEventListener('dispose', () => w.__skyDisposals++); });
+        w.__handle.destroy();
+      });
+      expect(await page.evaluate(() => (window as any).__skyDisposals)).toBeGreaterThan(0);
+      const contactDisposals = await page.evaluate(() => (window as any).__contactDisposals);
+      expect(contactDisposals.texture).toBeGreaterThan(0);
+      expect(contactDisposals.geometry).toBeGreaterThan(0);
+      const entranceDisposals = await page.evaluate(() => (window as any).__entranceDisposals);
+      expect(entranceDisposals.globe).toBeGreaterThan(0);
+      expect(entranceDisposals.pedestal).toBeGreaterThan(0);
+      await page.evaluate(([data, theme]) => (window as any).__mount(data, { theme, recall: true }), [SAMPLE, theme]);
+      await expect.poll(skyFingerprint).toEqual(studySky);
+      await expect(page.locator('[data-palace-overlay="focus"]')).toBeHidden();
+      await page.evaluate(() => (window as any).__handle.goTo(1));
+      await expect(page.locator('[data-palace-action="expand-cue"]')).toBeHidden();
+      await expect(page.locator('[data-palace-overlay="journey"]')).toBeHidden();
+      expect(await skyFingerprint()).toEqual(studySky);
+      expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+      expect((await page.evaluate(() => (window as any).__glLive())).lost).toBe(false);
+    });
+  }
 
 });

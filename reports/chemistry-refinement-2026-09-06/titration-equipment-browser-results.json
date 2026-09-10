@@ -1,0 +1,266 @@
+{
+  "checks": [
+    "volumetric-flask: three distinct keyboard-selectable illustrated steps, reference link, reopening reset, close/Escape focus return, experiment preservation, desktop and phone accessibility/layout.",
+    "pipette-filler: three distinct keyboard-selectable illustrated steps, reference link, reopening reset, close/Escape focus return, experiment preservation, desktop and phone accessibility/layout.",
+    "funnel: three distinct keyboard-selectable illustrated steps, reference link, reopening reset, close/Escape focus return, experiment preservation, desktop and phone accessibility/layout.",
+    "stand-clamp: three distinct keyboard-selectable illustrated steps, reference link, reopening reset, close/Escape focus return, experiment preservation, desktop and phone accessibility/layout.",
+    "magnetic-stirrer: three distinct keyboard-selectable illustrated steps, reference link, reopening reset, close/Escape focus return, experiment preservation, desktop and phone accessibility/layout.",
+    "ph-electrode: three distinct keyboard-selectable illustrated steps, reference link, reopening reset, close/Escape focus return, experiment preservation, desktop and phone accessibility/layout."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "id": "volumetric-flask",
+      "phase": 0,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "volumetric-flask",
+      "phase": 0,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "volumetric-flask",
+      "phase": 1,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "volumetric-flask",
+      "phase": 1,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "volumetric-flask",
+      "phase": 2,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "volumetric-flask",
+      "phase": 2,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "pipette-filler",
+      "phase": 0,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "pipette-filler",
+      "phase": 0,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "pipette-filler",
+      "phase": 1,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "pipette-filler",
+      "phase": 1,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "pipette-filler",
+      "phase": 2,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "pipette-filler",
+      "phase": 2,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "funnel",
+      "phase": 0,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "funnel",
+      "phase": 0,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "funnel",
+      "phase": 1,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "funnel",
+      "phase": 1,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "funnel",
+      "phase": 2,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "funnel",
+      "phase": 2,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "stand-clamp",
+      "phase": 0,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "stand-clamp",
+      "phase": 0,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "stand-clamp",
+      "phase": 1,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "stand-clamp",
+      "phase": 1,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "stand-clamp",
+      "phase": 2,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "stand-clamp",
+      "phase": 2,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "magnetic-stirrer",
+      "phase": 0,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "magnetic-stirrer",
+      "phase": 0,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "magnetic-stirrer",
+      "phase": 1,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "magnetic-stirrer",
+      "phase": 1,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "magnetic-stirrer",
+      "phase": 2,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "magnetic-stirrer",
+      "phase": 2,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "ph-electrode",
+      "phase": 0,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "ph-electrode",
+      "phase": 0,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "ph-electrode",
+      "phase": 1,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "ph-electrode",
+      "phase": 1,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "ph-electrode",
+      "phase": 2,
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "id": "ph-electrode",
+      "phase": 2,
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ],
+  "fullGuideViolations": []
+}

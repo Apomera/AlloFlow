@@ -1,0 +1,44 @@
+{
+  "tests": 195,
+  "passed": 195,
+  "suites": 11,
+  "browserWorkflows": 15,
+  "browserFailures": 0,
+  "sources": [
+    {
+      "file": "stem_lab/stem_tool_algebracas.js",
+      "mirror": "desktop/web-app/public/stem_lab/stem_tool_algebracas.js",
+      "sha256": "7263891fee9ad6079d04212c9cf9b6c3e7d483124250f4e273ddc455ca22f0e4",
+      "syntax": true,
+      "mirrorEqual": true
+    },
+    {
+      "file": "stem_lab/stem_tool_openbim.js",
+      "mirror": "desktop/web-app/public/stem_lab/stem_tool_openbim.js",
+      "sha256": "2e65a25e7a49f3a7e8f7367cc0581b95fee2c8a841bae98cd29942a64511e54e",
+      "syntax": true,
+      "mirrorEqual": true
+    },
+    {
+      "file": "stem_lab/stem_tool_organismid.js",
+      "mirror": "desktop/web-app/public/stem_lab/stem_tool_organismid.js",
+      "sha256": "9bb7cadbc2a708fe62d418e07b0bbce0b2d3f47914a796057d0019c15c396e12",
+      "syntax": true,
+      "mirrorEqual": true
+    },
+    {
+      "file": "stem_lab/stem_tool_graphcalc.js",
+      "mirror": "desktop/web-app/public/stem_lab/stem_tool_graphcalc.js",
+      "sha256": "51fdf1d7d89d26bd768c95401ce33671ebad01ed65d6f38df3cc176cb70d75cc",
+      "syntax": true,
+      "mirrorEqual": true
+    },
+    {
+      "file": "stem_lab/stem_tool_funcgrapher.js",
+      "mirror": "desktop/web-app/public/stem_lab/stem_tool_funcgrapher.js",
+      "sha256": "21ab1c73f05972aace417c1f8da8b05b4e3186946c0dc758d04048383353fb99",
+      "syntax": true,
+      "mirrorEqual": true
+    }
+  ]
+}

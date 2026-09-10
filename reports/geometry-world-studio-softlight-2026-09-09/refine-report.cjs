@@ -1,0 +1,11 @@
+const fs=require('node:fs'),path=require('node:path');
+const p=path.join(__dirname,'finalize-softlight.cjs');let s=fs.readFileSync(p,'utf8');
+s=s.replace("exports=read('export-pixels.json')","pngExports=read('export-pixels.json')");
+s=s.replace('pixels.pass&&exports.pass&&tests.size===75','pixels.pass&&pngExports.pass&&tests.size>=75&&new Set([...tests.values()].map(t=>t.file)).size===5');
+s=s.replace('},pixels,exports,scope:', '},pixels,exports:pngExports,scope:').replace('worldSpaceSoftness:.14','maxWorldSpaceSoftness:.14');
+s=s.replace('Its 0.14-world-unit radius stays consistent across different build bounds and export resolutions.','Its radius scales with the creation’s bounds up to 0.14 world units, so single-block close-ups retain clean edges. The radius stays consistent across live and exported views of each build.');
+s=s.replace('**75 tests passed across five suites.**','**${summary.tests.passed} tests passed across five suites.**');
+const fd=fs.openSync(p,'r+');fs.writeFileSync(fd,s);fs.ftruncateSync(fd,Buffer.byteLength(s));fs.closeSync(fd);
+fs.copyFileSync(path.join(__dirname,'edge-build-results.json'),path.join(__dirname,'initial-edge-build-results.json'));
+for(const size of ['balanced-1200x820','detail-390x844'])fs.copyFileSync(path.join(__dirname,'after-rotated-wedge-'+size+'.png'),path.join(__dirname,'initial-rotated-wedge-'+size+'.png'));
+new(require('node:vm').Script)(s,{filename:p});console.log('Updated final report and preserved the small-build visual finding.');

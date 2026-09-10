@@ -1,0 +1,152 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_image_export.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_image_export.test.js > portable 3D bench snapshots > includes the circuit measurements and every divider part
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_image_export.test.js > portable 3D bench snapshots > keeps unknown voltages and important model notes explicit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_image_export.test.js > portable 3D bench snapshots > includes all parts even when the camera is in close-up
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_image_export.test.js > portable 3D bench snapshots > records short-path and LED overcurrent limitations
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_image_export.test.js > portable 3D bench snapshots > preserves tiny readings in the saved table
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_part_comparison.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_part_comparison.test.js > 3D part comparison cards > uses one labeled scale for divider voltage and power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_part_comparison.test.js > 3D part comparison cards > shows equal series current and different parallel branch currents
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_part_comparison.test.js > 3D part comparison cards > distinguishes unknown voltages from known zero readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_part_comparison.test.js > 3D part comparison cards > shows an all-zero scale without inventing a positive bar
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_part_comparison.test.js > 3D part comparison cards > preserves small nonzero switch voltage rather than rounding it to zero
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_part_comparison.test.js > 3D part comparison cards > keeps details as the default, labels card readings, and handles empty benches
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_part_comparison.test.js > consistent small measurements across circuit views > keeps a small switch voltage consistent in the scene, inspector, and comparison
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_part_comparison.test.js > consistent small measurements across circuit views > preserves small source power and nonzero current in the SVG alternative
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_model.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > solves the voltage divider with KVL and conserved power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > sums parallel branch currents, including measurement loading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > uses exact zero for an open switch and a steady-state capacitor
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > keeps a parallel resistor energized when another branch is open
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > does not invent a voltage split across multiple blocking components
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > models LED forward drop, polarity, turn-on and power balance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > does not let a resistor on a separate branch protect an LED
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > identifies meter faults and preserves nearly ideal series measurements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > handles empty, unpowered and malformed state without non-finite readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > conserves power across a grid of series and parallel networks
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > circuit bench learning and view contract > renders a named 3D view with an equivalent numeric inspector
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···········stdout | tests/circuit_model.test.js > circuit bench learning and view contract > offers prediction, reversible edits, and progressive explanations
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > circuit response presentation > explains the LED knee instead of claiming an Ohmic straight line
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > circuit response presentation > renders every supported component in either representation without invalid values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_voltage_probes.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_voltage_probes.test.js > ideal differential voltage probes > recovers voltage-divider node potentials and signed differences
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_voltage_probes.test.js > ideal differential voltage probes > agrees with each known component drop, including an LED and tiny switch drop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_voltage_probes.test.js > ideal differential voltage probes > leaves unknown internal nodes unknown while retaining both known ends
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_voltage_probes.test.js > ideal differential voltage probes > resolves the voltage across a single open switch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_voltage_probes.test.js > ideal differential voltage probes > uses the same two rail potentials for every parallel branch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_voltage_probes.test.js > ideal differential voltage probes > handles source-off, empty, and obsolete node selections
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_voltage_probes.test.js > ideal differential voltage probes > keeps under-threshold internal LED nodes unresolved
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_voltage_probes.test.js > ideal differential voltage probes > includes signed probe readings in saved images
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+······stdout | tests/circuit_voltage_probes.test.js > differential readings within floating sections > measures known drops between unresolved absolute potentials
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all eight SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··
+
+ Test Files  5 passed (5)
+      Tests  40 passed (40)
+   Start at  20:42:17
+   Duration  112.42s (transform 1.53s, setup 1.88s, import 856ms, tests 20.01s, environment 68.02s)
+

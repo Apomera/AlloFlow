@@ -125,7 +125,7 @@ describe('Printing Press SVG alternatives', () => {
       }
     });
 
-    expect(declarations).toHaveLength(51);
+    expect(declarations).toHaveLength(53);
     for (const declaration of declarations) {
       expect(
         /aria-label|role\s*:\s*['"]img['"]|aria-hidden/.test(

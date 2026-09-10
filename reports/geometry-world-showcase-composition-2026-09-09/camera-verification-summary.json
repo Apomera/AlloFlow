@@ -1,0 +1,24 @@
+{
+  "pass": true,
+  "uniqueTests": 33,
+  "runs": [
+    {
+      "file": "showcase-composition-final-tests.json",
+      "loadedFiles": 1,
+      "passed": 27,
+      "failed": 0,
+      "observedProcessExitCode": 0
+    },
+    {
+      "file": "showcase-pop-contacts-tests.json",
+      "loadedFiles": 1,
+      "passed": 6,
+      "failed": 0,
+      "observedProcessExitCode": 0
+    }
+  ],
+  "syntaxValid": true,
+  "desktopMirrorMatches": true,
+  "builderSha256": "21a65c2cb1e9e111a76ebcc1fdb90ce8d448778c78b3c172eed00406522e8dcb",
+  "browserLaunched": false
+}

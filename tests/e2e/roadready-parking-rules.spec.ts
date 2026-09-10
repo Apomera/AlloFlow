@@ -25,7 +25,7 @@ test('parking lesson opens the real trainer; phone controls and legal completion
   await expect.poll(() => page.evaluate(() => Math.abs((window as any).__testHooks.parking.carRef.current.speed))).toBe(0);
   await page.getByRole('button', { name: 'Reset practice', exact: true }).click();
   await page.keyboard.down('s'); await page.keyboard.down('d');
-  await expect.poll(() => page.evaluate(() => (window as any).__testHooks.parking.carRef.current.x)).toBeGreaterThan(start.x + 1);
+  await expect.poll(() => page.evaluate(() => { const car = (window as any).__testHooks.parking.carRef.current; return car.x - 16 * Math.cos(car.heading); })).toBeGreaterThan(start.x + 1);
   await page.evaluate(() => window.dispatchEvent(new Event('blur')));
   await page.keyboard.up('s'); await page.keyboard.up('d');
   await expect.poll(() => page.evaluate(() => Math.abs((window as any).__testHooks.parking.carRef.current.speed))).toBe(0);
@@ -33,7 +33,7 @@ test('parking lesson opens the real trainer; phone controls and legal completion
   await page.screenshot({ path: 'reports/roadready-review/parking-start-mobile.png', fullPage: true, scale: 'css' });
   await page.evaluate(() => Object.assign((window as any).__testHooks.parking.carRef.current, { x: 280, y: 167.5, speed: 0, steering: 0, heading: -Math.PI / 2 }));
   await page.getByRole('button', { name: 'Park + parking brake', exact: true }).click();
-  await expect(page.getByText('Keep clear of the curb and no more than 18 inches away.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Parking instructor' }).getByText('Keep clear of the curb and no more than 18 inches away.', { exact: true })).toBeVisible();
   expect(await page.evaluate(() => !!(window as any).__testHooks.parking.carRef.current.parkingBrake)).toBe(false);
   await page.evaluate(() => Object.assign((window as any).__testHooks.parking.carRef.current, { x: 285, y: 167.5, speed: 0, steering: 0 }));
   await page.getByRole('button', { name: 'Park + parking brake', exact: true }).click();

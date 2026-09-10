@@ -1,0 +1,326 @@
+[
+  {
+    "id": "sk-term-1",
+    "kind": "term",
+    "file": "sk-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A long teal bar rests on a triangular pivot near its right end, supporting a brown load; arrows point down at the long end and up near the load.",
+    "altHash": "img-51v-e6a82326"
+  },
+  {
+    "id": "sk-term-2",
+    "kind": "term",
+    "file": "sk-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A long teal bar rests on a triangular pivot near its right end, supporting a brown load; arrows point down at the long end and up near the load.",
+    "altHash": "img-51v-e6a82326"
+  },
+  {
+    "id": "sk-term-3",
+    "kind": "term",
+    "file": "sk-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rope passes over one overhead pulley; a brown load hangs from one end and a downward arrow marks the free end.",
+    "altHash": "img-60b-2bebe278"
+  },
+  {
+    "id": "sk-term-4",
+    "kind": "term",
+    "file": "sk-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal triangular wedge points down between two brown blocks; a downward arrow above it branches into opposing sideways arrows.",
+    "altHash": "img-63b-ebb47354"
+  },
+  {
+    "id": "sk-term-5",
+    "kind": "term",
+    "file": "sk-term-5.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A gray paper screw has a slotted head, pointed tip and one continuous spiral thread around its shaft.",
+    "altHash": "img-413-3f41ee2b"
+  },
+  {
+    "id": "sk-term-6",
+    "kind": "term",
+    "file": "sk-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A sloped ramp reaches a raised platform with a teal block; arrows compare the slope route and the vertical rise.",
+    "altHash": "img-ahj-dd7bfb50"
+  },
+  {
+    "id": "sk-term-7",
+    "kind": "term",
+    "file": "sk-term-7.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A broad round teal doorknob connects to a narrower square ochre shaft extending to the right.",
+    "altHash": "img-4c7-df4070b6"
+  },
+  {
+    "id": "sk-term-8",
+    "kind": "term",
+    "file": "sk-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rightward arrow points toward the left side of a teal block.",
+    "altHash": "img-35z-7489191d"
+  },
+  {
+    "id": "sk-term-9",
+    "kind": "term",
+    "file": "sk-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A dashed block outline and a solid block sit far apart on one surface, joined by a rightward arrow.",
+    "altHash": "img-5b3-9d3b9395"
+  },
+  {
+    "id": "sk-term-10",
+    "kind": "term",
+    "file": "sk-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal block rests on an ochre surface; an arrow above points right and an arrow at the contact surface points left.",
+    "altHash": "img-3t3-0e8ef91c"
+  },
+  {
+    "id": "sk-term-11",
+    "kind": "term",
+    "file": "sk-term-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A long teal bar rests on a triangular pivot near its right end, supporting a brown load; arrows point down at the long end and up near the load.",
+    "altHash": "img-51v-e6a82326"
+  },
+  {
+    "id": "sk-term-12",
+    "kind": "term",
+    "file": "sk-term-12.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A long teal bar rests on a triangular pivot near its right end, supporting a brown load; arrows point down at the long end and up near the load.",
+    "altHash": "img-51v-e6a82326"
+  },
+  {
+    "id": "sk-anchor-1",
+    "kind": "anchor",
+    "file": "sk-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A long teal bar rests on a triangular pivot near its right end, supporting a brown load; arrows point down at the long end and up near the load.",
+    "altHash": "img-51v-e6a82326"
+  },
+  {
+    "id": "sk-anchor-2",
+    "kind": "anchor",
+    "file": "sk-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A ramp leading to a raised platform appears above a separate wedge with outward-pointing arrows.",
+    "altHash": "img-aof-e912765f"
+  },
+  {
+    "id": "sk-anchor-3",
+    "kind": "anchor",
+    "file": "sk-anchor-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A gray paper screw has a slotted head, pointed tip and one continuous spiral thread around its shaft.",
+    "altHash": "img-37f-7cd03ba5"
+  },
+  {
+    "id": "sk-anchor-4",
+    "kind": "anchor",
+    "file": "sk-anchor-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A broad round teal doorknob connects to a narrower square ochre shaft extending to the right.",
+    "altHash": "img-37r-c66fba72"
+  },
+  {
+    "id": "sk-anchor-5",
+    "kind": "anchor",
+    "file": "sk-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rope passes over one overhead pulley; a brown load hangs from one end and a downward arrow marks the free end.",
+    "altHash": "img-60b-2bebe278"
+  },
+  {
+    "id": "sk-anchor-6",
+    "kind": "anchor",
+    "file": "sk-anchor-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Eight teal tiles form two rows of four above eight ochre tiles arranged in one longer row.",
+    "altHash": "img-4i7-146bfa52"
+  },
+  {
+    "id": "sk-sort-1",
+    "kind": "sort",
+    "file": "sk-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A long ochre seesaw plank tilts on a central pivot above a triangular terracotta stand, with seats at both ends.",
+    "altHash": "img-4g7-66d55cf8"
+  },
+  {
+    "id": "sk-sort-2",
+    "kind": "sort",
+    "file": "sk-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A sloped ramp and adjacent steps reach the same doorway landing, where an empty wheelchair rests.",
+    "altHash": "img-85j-9fad5328"
+  },
+  {
+    "id": "sk-sort-3",
+    "kind": "sort",
+    "file": "sk-sort-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A broad round teal doorknob connects to a narrower square ochre shaft extending to the right.",
+    "altHash": "img-37r-c66fba72"
+  },
+  {
+    "id": "sk-sort-4",
+    "kind": "sort",
+    "file": "sk-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A bracket holds a pulley beside a flagpole; rope passes over the wheel and a plain teal flag attaches to one side.",
+    "altHash": "img-4xr-d4e472c9"
+  },
+  {
+    "id": "sk-sort-5",
+    "kind": "sort",
+    "file": "sk-sort-5.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A gray axe blade sits in the split of an upright wooden log, with its wooden handle extending sideways.",
+    "altHash": "img-5d3-6acd9ee7"
+  },
+  {
+    "id": "sk-sort-6",
+    "kind": "sort",
+    "file": "sk-sort-6.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A crowbar tip extends under a lifted plank while its curved heel rests on a lower wooden support.",
+    "altHash": "img-4jn-07756736"
+  },
+  {
+    "id": "sk-sort-7",
+    "kind": "sort",
+    "file": "sk-sort-7.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A teal steering-wheel rim joins a central hub through three spokes; a short shaft projects behind the hub.",
+    "altHash": "img-6bz-d5ef8784"
+  },
+  {
+    "id": "sk-sort-8",
+    "kind": "sort",
+    "file": "sk-sort-8.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Horizontal blind slats gather near the bottom; lift cords pass through them, with a small roller visible in the headrail.",
+    "altHash": "img-5xf-1962c56b"
+  },
+  {
+    "id": "sk-sort-9",
+    "kind": "sort",
+    "file": "sk-sort-9.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A cropped paper mouth shows two flat-edged front teeth pressing into the edge of an apple slice.",
+    "altHash": "img-5w7-db227bcd"
+  },
+  {
+    "id": "sk-sort-10",
+    "kind": "sort",
+    "file": "sk-sort-10.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A gray opener rests across a bottle cap with its hook beneath the near edge and its long handle angled upward.",
+    "altHash": "img-6mv-d522df55"
+  },
+  {
+    "id": "sk-lesson-1",
+    "kind": "lesson",
+    "file": "sk-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A long teal bar rests on a triangular pivot near its right end, supporting a brown load; arrows point down at the long end and up near the load.",
+    "altHash": "img-51v-e6a82326"
+  },
+  {
+    "id": "sk-lesson-2",
+    "kind": "lesson",
+    "file": "sk-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A sloped ramp reaches a raised platform with a teal block; arrows compare the slope route and the vertical rise.",
+    "altHash": "img-ahj-dd7bfb50"
+  },
+  {
+    "id": "sk-lesson-3",
+    "kind": "lesson",
+    "file": "sk-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rope passes over one overhead pulley; a brown load hangs from one end and a downward arrow marks the free end.",
+    "altHash": "img-60b-2bebe278"
+  },
+  {
+    "id": "sk-lesson-4",
+    "kind": "lesson",
+    "file": "sk-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rope is anchored overhead, passes under a wheel attached to a brown load, and extends upward at its free end beside an upward arrow.",
+    "altHash": "img-62v-9ddf749c"
+  },
+  {
+    "id": "sk-lesson-5",
+    "kind": "lesson",
+    "file": "sk-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A ramp leading to a raised platform appears above a separate wedge with outward-pointing arrows.",
+    "altHash": "img-aof-e912765f"
+  },
+  {
+    "id": "sk-lesson-6",
+    "kind": "lesson",
+    "file": "sk-lesson-6.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A gray paper screw has a slotted head, pointed tip and one continuous spiral thread around its shaft.",
+    "altHash": "img-bqb-61c1a0da"
+  },
+  {
+    "id": "sk-lesson-7",
+    "kind": "lesson",
+    "file": "sk-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal block rests on an ochre surface; an arrow above points right and an arrow at the contact surface points left.",
+    "altHash": "img-3t3-0e8ef91c"
+  },
+  {
+    "id": "sk-lesson-8",
+    "kind": "lesson",
+    "file": "sk-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Eight teal tiles form two rows of four above eight ochre tiles arranged in one longer row.",
+    "altHash": "img-4i7-146bfa52"
+  }
+]

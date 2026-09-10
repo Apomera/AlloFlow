@@ -345,3 +345,53 @@ describe('Visual notebook comparison',()=>{
   });
   it('never draws non-finite coordinate ranges from malformed saved values',()=>{expect(comparisonFrame({...a,value:-1e308},{...b,value:1e308})).toBe(null);});
 });
+
+
+const colorPreviewValue=new Function(pureSource+';return titrationColorPreviewValue;')();
+describe('Independent color reference values',()=>{
+  it('preserves useful indicator midpoints at hundredth-pH precision',()=>{expect(colorPreviewValue('3.75',14,false)).toBe(3.75);expect(colorPreviewValue(9.111,14,false)).toBe(9.11);});
+  it('uses tenths of a milliliter for the redox reference',()=>{expect(colorPreviewValue('5.1',12,true)).toBe(5.1);expect(colorPreviewValue(5.05,12,true)).toBe(5.1);});
+  it('clamps preview choices to the selected scale',()=>{expect(colorPreviewValue(-2,14,false)).toBe(0);expect(colorPreviewValue(99,14,false)).toBe(14);expect(colorPreviewValue(99,12,true)).toBe(12);});
+  it('rejects absent and malformed preview values',()=>{for(const value of [null,undefined,'',' ',true,[],{},NaN,Infinity,'no'])expect(colorPreviewValue(value,14,false)).toBe(null);expect(colorPreviewValue(5,0,false)).toBe(null);expect(colorPreviewValue(5,Infinity,false)).toBe(null);});
+});
+
+const notebookPlot=new Function(pureSource+';return {series:titrationNotebookSeries,frame:titrationNotebookPlotFrame,nearest:titrationNotebookNearest};')();
+describe('Saved-reading notebook plot',()=>{
+  const reading=(id,volume,value,extra={})=>({id,volume,value,preset:'sa_sb',setup:'0.1 M HCl + NaOH',axis:'pH',...extra});
+  it('keeps preset, reagent and signal groups separate without reordering records',()=>{
+    const records=[reading(1,25,7),reading(2,0,1),reading(3,5,1.2,{preset:'redox',axis:'E'}),reading(4,5,2,{setup:'Different concentration'}),reading(5,3,1,{preset:'other'})];
+    const s=notebookPlot.series(records,2);expect(s.groups).toHaveLength(4);expect(s.group.records.map(r=>r.id)).toEqual([1,2]);expect(s.selected.id).toBe(2);expect(records[0].volume).toBe(25);
+  });
+  it('defaults to the last valid saved reading and recovers after removal',()=>{
+    const records=[reading(1,0,1),reading(2,5,2),{id:3,value:Infinity}];expect(notebookPlot.series(records,null).selected.id).toBe(2);expect(notebookPlot.series(records,99).selected.id).toBe(2);expect(notebookPlot.series([],1).selected).toBeNull();
+  });
+  it('places all saved observations within padded axes, with response increasing upward',()=>{
+    const f=notebookPlot.frame([reading(1,0,1),reading(2,25,7),reading(3,30,12)]);expect(f.volume.low).toBe(0);for(const p of f.points){expect(p.x).toBeGreaterThanOrEqual(74);expect(p.x).toBeLessThan(450);expect(p.y).toBeGreaterThan(42);expect(p.y).toBeLessThan(218);}expect(f.points[0].y).toBeGreaterThan(f.points[2].y);
+  });
+  it('provides usable axes for one reading and preserves coincident observations',()=>{
+    const one=notebookPlot.frame([reading(1,0,7)]),both=notebookPlot.frame([reading(1,25,7),reading(2,25,7)]);expect(one.volume.high).toBeGreaterThan(one.volume.low);expect(one.response.high).toBeGreaterThan(one.response.low);expect(both.points).toHaveLength(2);expect(both.points[0].x).toBe(both.points[1].x);expect(both.points[0].y).toBe(both.points[1].y);
+  });
+  it('retains millivolt precision for redox records',()=>{
+    const f=notebookPlot.frame([reading(1,5,1.531,{axis:'E'}),reading(2,5.1,1.532,{axis:'E'})]);expect(f.axis).toBe('E');expect(f.points[0].y).toBeGreaterThan(f.points[1].y);expect(f.response.low).toBeCloseTo(1.521);expect(f.response.high).toBeCloseTo(1.542);
+  });
+  it('rejects incompatible series and ranges that overflow',()=>{
+    expect(notebookPlot.frame([reading(1,0,1),reading(2,2,3,{preset:'other'})])).toBeNull();expect(notebookPlot.frame([reading(1,0,-Number.MAX_VALUE),reading(2,2,Number.MAX_VALUE)])).toBeNull();expect(notebookPlot.frame([])).toBeNull();
+  });
+  it('selects the nearest point, ignores axis-label taps and leaves duplicate readings in the list',()=>{
+    const f=notebookPlot.frame([reading(1,0,1),reading(2,25,7),reading(3,25,7)]),p=f.points[1];expect(notebookPlot.nearest(f,p.x,p.y)).toBe(3);expect(notebookPlot.nearest(f,f.points[0].x+2,f.points[0].y-1)).toBe(1);expect(notebookPlot.nearest(f,60,80)).toBeNull();expect(notebookPlot.nearest(f,100,240)).toBeNull();expect(notebookPlot.nearest(f,NaN,50)).toBeNull();expect(f.points.map(p=>p.id)).toEqual([1,2,3]);
+  });
+});
+
+const volumeTracker=new Function(pureSource+';return {position:titrationBurettePosition,difference:titrationVolumeDifference};')();
+describe('Burette delivered-volume tracker',()=>{
+  it('matches exact empty-fill and refill boundaries',()=>{
+    expect(volumeTracker.position(0)).toEqual({volume:0,reading:0,refills:0});expect(volumeTracker.position(50)).toEqual({volume:50,reading:50,refills:0});expect(volumeTracker.position(50.1)).toEqual({volume:50.1,reading:0.1,refills:1});expect(volumeTracker.position(100)).toEqual({volume:100,reading:50,refills:1});expect(volumeTracker.position(100.1)).toEqual({volume:100.1,reading:0.1,refills:2});for(const raw of [49.96,50.04,99.96,100.04]){const p=volumeTracker.position(raw);expect(p.refills).toBe(Math.max(0,Math.ceil(raw/50)-1));expect(p.reading).toBe(Number(((raw%50)||50).toFixed(1)));}
+  });
+  it('rejects missing, malformed and out-of-range cumulative readings',()=>{for(const v of [null,undefined,'5',NaN,Infinity,-0.1,150.1])expect(volumeTracker.position(v)).toBeNull();expect(volumeTracker.position(150).reading).toBe(50);});
+  it('uses the same tenths as the simulation and avoids floating-point drift',()=>{expect(volumeTracker.position(0.1+0.2).reading).toBe(0.3);expect(volumeTracker.difference(24.9,25).total).toBe(0.1);});
+  it('subtracts readings within a fill, including later fills',()=>{const d=volumeTracker.difference(70,75);expect(d.total).toBe(5);expect(d.start.reading).toBe(20);expect(d.current.reading).toBe(25);expect(d.refills).toBe(0);});
+  it('counts both sides of a refill rather than subtracting wrapped scales',()=>{const d=volumeTracker.difference(49.5,50.5);expect(d.total).toBe(1);expect(d.first).toBe(0.5);expect(d.last).toBe(0.5);expect(d.refills).toBe(1);expect(d.full).toBe(0);});
+  it('handles a start marked on an empty burette',()=>{const d=volumeTracker.difference(50,50.1);expect(d.first).toBe(0);expect(d.last).toBe(0.1);expect(d.total).toBe(0.1);expect(d.refills).toBe(1);});
+  it('counts complete intervening fills without losing the final empty fill',()=>{const d=volumeTracker.difference(49,150);expect(d.refills).toBe(2);expect(d.full).toBe(1);expect(d.first+d.full*50+d.last).toBe(d.total);expect(d.total).toBe(101);});
+  it('does not infer negative delivered volume or invent an unset mark',()=>{expect(volumeTracker.difference(null,20)).toBeNull();expect(volumeTracker.difference(20,19.9)).toBeNull();expect(volumeTracker.difference(20,20).total).toBe(0);});
+});

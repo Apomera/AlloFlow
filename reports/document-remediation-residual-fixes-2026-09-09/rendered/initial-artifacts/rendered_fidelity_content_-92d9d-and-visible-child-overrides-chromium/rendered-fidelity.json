@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "f7983de29caa3c9b771885ba095bfa3e780ab9551a2ca899b9354cf219d0150e",
+    "bytes": 99
+  },
+  "candidate": {
+    "sha256": "4391ebb4231edbdb887513dedd911ed122cb949906546ddd64d0ab08ac470927",
+    "bytes": 116
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 523.9708000000028,
+  "status": "passed",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "p",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Keep the instruction.",
+          "candidate": "Keep the instruction."
+        },
+        {
+          "property": "visibleText",
+          "status": "passed",
+          "source": "Keep the instruction.",
+          "candidate": "Keep the instruction.",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                4
+              ],
+              [
+                5,
+                8
+              ],
+              [
+                9,
+                21
+              ]
+            ],
+            "candidate": [
+              [
+                0,
+                4
+              ],
+              [
+                5,
+                8
+              ],
+              [
+                9,
+                21
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

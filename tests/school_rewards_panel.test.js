@@ -71,7 +71,9 @@ async function mountPanel(props) {
   document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host);
   await act(async () => {
-    root.render(React.createElement(SchoolRewardsPanel, { isOpen: true, onClose: () => {}, t: () => null, addToast: () => {}, ...props }));
+    // Legacy technical-flow fixtures explicitly select setup. Entry-path tests
+    // below pass initialPath:null or join/practice to exercise the real defaults.
+    root.render(React.createElement(SchoolRewardsPanel, { isOpen: true, onClose: () => {}, t: () => null, addToast: () => {}, initialPath: 'setup', ...props }));
     await new Promise((res) => setTimeout(res, 30));
   });
   return host.querySelector('[role="dialog"]');
@@ -85,13 +87,13 @@ describe('not connected: the setup checklist', () => {
   it('opens on the checklist with the first step next and no launcher buttons', async () => {
     const dialog = await mountPanel({ portalUrl: '' });
     expect(dialog).toBeTruthy();
-    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toMatch(/Not connected/);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toMatch(/No Store address saved/);
     expect(dialog.querySelector('[data-help-key="schoolrewards_open_portal"]')).toBeNull();
     expect(dialog.querySelector('[data-help-key="schoolrewards_next_step"]').textContent).toMatch(/Confirm district review/);
     expect(dialog.querySelector('#schoolrewards-setup-body').hidden).toBe(false);
     expect(dialog.querySelectorAll('[data-help-key="schoolrewards_copy_source"]').length).toBe(4);
     expect(SERIOUS(await axe.run(dialog, AXE_OPTS))).toEqual([]);
-  });
+  }, 15000);
 
   it('copying a package file marks its step and advances the next-step banner', async () => {
     window.alloCopyText = vi.fn(async () => true);
@@ -171,12 +173,12 @@ describe('not connected: the setup checklist', () => {
     };
     await settle(() => setValue('https://example.com/macros/s/abc/exec'));
     await settle(() => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
-    expect(onSavePortalUrl).toHaveBeenCalledWith('https://example.com/macros/s/abc/exec');
-    expect(dialog.querySelector('#schoolrewards-portal-url-help').textContent).toBe('bad url');
-    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toMatch(/Not connected/);
+    expect(onSavePortalUrl).not.toHaveBeenCalled();
+    expect(dialog.querySelector('#schoolrewards-portal-url-help').textContent).toMatch(/HTTPS Apps Script/);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toMatch(/No Store address saved/);
     await settle(() => setValue(PORTAL));
     await settle(() => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
-    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toBe('Connected');
+    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toBe('Store address saved');
     expect(dialog.querySelector('#sr-step-connected').checked).toBe(true);
     expect(dialog.querySelector('[data-help-key="schoolrewards_open_portal"]')).toBeTruthy();
   });
@@ -192,23 +194,34 @@ describe('not connected: the setup checklist', () => {
 });
 
 describe('connected: the launcher', () => {
+  it('opens only a clean recognition view and explains the voice and pathway boundaries', async () => {
+    const open = vi.spyOn(window, 'open').mockReturnValue({});
+    const onOpenPortal = vi.fn();
+    const dialog = await mountPanel({ portalUrl: PORTAL, onOpenPortal, initialPath: 'join' });
+    expect(open).not.toHaveBeenCalled();
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_open_recognition"]').click());
+    expect(open).toHaveBeenCalledExactlyOnceWith(PORTAL + '?view=recognition', '_blank', 'noopener,noreferrer');
+    expect(onOpenPortal).not.toHaveBeenCalled();
+    const note = dialog.querySelector('[data-help-key="schoolrewards_voice_boundary"]').textContent;
+    for (const copy of ['signed-in Store', 'on-device speech', 'confirm the award separately', 'type instead', 'ordinary Allobot microphone', 'Classroom authorization only imports rosters', 'practice uses fictional data', 'Educator Evaluation']) expect(note).toContain(copy);
+  });
   it('shows the saved deployment, opens the portal through the host, and opens the health check', async () => {
     const onOpenPortal = vi.fn();
     const open = vi.spyOn(window, 'open').mockReturnValue({});
-    const dialog = await mountPanel({ portalUrl: PORTAL, onOpenPortal });
-    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toBe('Connected');
+    const dialog = await mountPanel({ portalUrl: PORTAL, onOpenPortal, initialPath: 'join' });
+    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toBe('Store address saved');
     expect(dialog.querySelector('#schoolrewards-saved-url').value).toBe(PORTAL);
-    expect(dialog.querySelector('#schoolrewards-setup-body').hidden).toBe(true);
+    expect(dialog.querySelector('#schoolrewards-setup-body')).toBeNull();
     await settle(() => dialog.querySelector('[data-help-key="schoolrewards_open_portal"]').click());
     expect(onOpenPortal).toHaveBeenCalledTimes(1);
     await settle(() => dialog.querySelector('[data-help-key="schoolrewards_open_check"]').click());
     expect(open).toHaveBeenCalledWith(PORTAL + '?api=status', '_blank', 'noopener,noreferrer');
     expect(SERIOUS(await axe.run(dialog, AXE_OPTS))).toEqual([]);
-  });
+  }, 20000);
 
   it('the checklist can be reopened and the next step is verification', async () => {
-    const dialog = await mountPanel({ portalUrl: PORTAL });
-    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_toggle_setup"]').click());
+    const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'join' });
+    await settle(() => dialog.querySelector('[data-store-path="setup"]').click());
     expect(dialog.querySelector('#schoolrewards-setup-body').hidden).toBe(false);
     expect(dialog.querySelector('#sr-step-connected').checked).toBe(true);
     expect(dialog.querySelector('#sr-step-connected').disabled).toBe(true);
@@ -219,7 +232,7 @@ describe('connected: the launcher', () => {
     const dialog = await mountPanel({ portalUrl: PORTAL, onSavePortalUrl });
     await settle(() => dialog.querySelector('[data-help-key="schoolrewards_disconnect"]').click());
     expect(onSavePortalUrl).toHaveBeenCalledWith('');
-    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toMatch(/Not connected/);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toMatch(/No Store address saved/);
   });
 
   it('Escape closes and focus returns to the opener', async () => {
@@ -235,6 +248,333 @@ describe('connected: the launcher', () => {
     expect(document.activeElement).toBe(opener);
     opener.remove();
   });
+});
+
+describe('role-first Store entry and local setup guide', () => {
+  const value = (input, text) => {
+    Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, text);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  const route = (dialog, path) => settle(() => dialog.querySelector('[data-store-path="' + path + '"]').click());
+  const guideButton = (dialog, action) => dialog.querySelector('[data-help-key="schoolrewards_guide_' + action + '"]');
+
+  it('starts with three choices when no address is saved, without setup/network/storage mutations', async () => {
+    const open = vi.spyOn(window, 'open'), save = vi.fn();
+    const dialog = await mountPanel({ portalUrl: '', initialPath: null, onSavePortalUrl: save });
+    expect(Array.from(dialog.querySelectorAll('[data-store-path]'), button => button.textContent)).toEqual(['Try demo', 'Join existing Store', 'Set up school Store']);
+    expect(dialog.querySelector('#schoolrewards-setup-body')).toBeNull();
+    expect(dialog.querySelector('#schoolrewards-portal-url')).toBeNull();
+    expect(globalThis.fetch).not.toHaveBeenCalled(); expect(open).not.toHaveBeenCalled(); expect(save).not.toHaveBeenCalled();
+    expect(localStorage.getItem(testing.SR_SETUP_KEY)).toBeNull();
+    expect(SERIOUS(await axe.run(dialog, AXE_OPTS))).toEqual([]);
+  });
+
+  it('defaults to the short join path for a saved address and does not expose technical cards', async () => {
+    const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: null });
+    expect(dialog.querySelector('[data-store-path="join"]').getAttribute('aria-pressed')).toBe('true');
+    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toBe('Store address saved');
+    expect(dialog.querySelector('#schoolrewards-portal-url').value).toBe(PORTAL);
+    expect(dialog.querySelector('#schoolrewards-setup-body')).toBeNull();
+    expect(dialog.querySelector('[data-help-key="schoolrewards_copy_source"]')).toBeNull();
+    expect(dialog.querySelector('[data-help-key="schoolrewards_handoff"]')).toBeNull();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(['__proto__', 'constructor', 'https://outside.invalid/', { path: 'setup' }])('rejects an unrecognized initial path %j', async initialPath => {
+    const dialog = await mountPanel({ portalUrl: '', initialPath, initialGuide: true });
+    expect(dialog.querySelector('[data-store-path][aria-pressed="true"]')).toBeNull();
+    expect(dialog.querySelector('#sr-local-guide')).toBeNull();
+    expect(dialog.querySelector('#schoolrewards-setup-body')).toBeNull();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('opens only the public fictional practice URL after an explicit user action', async () => {
+    const open = vi.spyOn(window, 'open');
+    const dialog = await mountPanel({ portalUrl: '', initialPath: 'practice' });
+    const link = dialog.querySelector('[data-help-key="schoolrewards_practice"]');
+    expect(link.href).toBe('https://alloflow-cdn.pages.dev/school-rewards-practice');
+    expect(link.rel).toBe('noopener noreferrer');
+    expect(dialog.textContent).toMatch(/local guided demo is optional.*presentation server/i);
+    expect(dialog.innerHTML).not.toContain('localhost'); expect(dialog.innerHTML).not.toContain('8767');
+    expect(dialog.querySelector('#schoolrewards-setup-body')).toBeNull();
+    expect(globalThis.fetch).not.toHaveBeenCalled(); expect(open).not.toHaveBeenCalled();
+    expect(SERIOUS(await axe.run(dialog, AXE_OPTS))).toEqual([]);
+  });
+
+  it('joining saves only a validated address; guide navigation does not save, open or approve it', async () => {
+    const saved = vi.fn(raw => ({ ok: true, url: raw })), open = vi.spyOn(window, 'open');
+    const dialog = await mountPanel({ portalUrl: '', initialPath: 'join', initialGuide: true, onSavePortalUrl: saved });
+    expect(dialog.querySelector('#sr-guide-title').textContent).toBe('Get the approved Store link');
+    await settle(() => guideButton(dialog, 'next').click());
+    expect(dialog.querySelector('#sr-guide-title').textContent).toBe('Save the address on this device');
+    await settle(() => guideButton(dialog, 'section').click());
+    expect(document.activeElement).toBe(dialog.querySelector('#schoolrewards-portal-url'));
+    await settle(() => value(document.activeElement, PORTAL));
+    expect(saved).not.toHaveBeenCalled(); expect(open).not.toHaveBeenCalled(); expect(globalThis.fetch).not.toHaveBeenCalled();
+    await settle(() => dialog.querySelector('#schoolrewards-portal-url').closest('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+    expect(saved).toHaveBeenCalledExactlyOnceWith(PORTAL);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_status"]').textContent).toBe('Store address saved');
+    expect(dialog.textContent).toMatch(/not a connection test/);
+    expect(JSON.parse(localStorage.getItem(testing.SR_SETUP_KEY) || '{"steps":[]}').steps).not.toContain('verified');
+    expect(open).not.toHaveBeenCalled();
+  });
+
+  it('presents one shared guide step at a time and focuses the existing technical targets without ticking boxes', async () => {
+    const original = { steps: ['approval'], form: { schoolName: 'Fictional Existing School', allowedDomain: 'school.example' } };
+    localStorage.setItem(testing.SR_SETUP_KEY, JSON.stringify(original));
+    const savedBefore = localStorage.getItem(testing.SR_SETUP_KEY);
+    const open = vi.spyOn(window, 'open');
+    const dialog = await mountPanel({ portalUrl: '', initialPath: 'setup', initialGuide: true });
+    const titles = ['Confirm district review and ownership', 'Choose who will do the technical work', 'Prepare the reviewed project files', 'Run the reviewed one-time setup', 'Deploy privately and save the link', 'Verify with approved test accounts', 'Finish the Store’s first-week checklist'];
+    const targets = ['sr-card-approval', 'sr-path-handoff', 'sr-card-code', 'sr-card-setup', 'sr-card-deployed', 'sr-path-check', 'sr-path-launch'];
+    for (let index = 0; index < titles.length; index++) {
+      expect(dialog.querySelectorAll('#sr-local-guide h4')).toHaveLength(1);
+      expect(dialog.querySelector('#sr-guide-title').textContent).toBe(titles[index]);
+      await settle(() => guideButton(dialog, 'section').click());
+      expect(document.activeElement.id).toBe(targets[index]);
+      if (index < titles.length - 1) await settle(() => guideButton(dialog, 'next').click());
+    }
+    expect(guideButton(dialog, 'next').disabled).toBe(true);
+    await settle(() => guideButton(dialog, 'back').click());
+    expect(dialog.querySelector('#sr-guide-title').textContent).toBe(titles[5]);
+    expect(localStorage.getItem(testing.SR_SETUP_KEY)).toBe(savedBefore);
+    expect(globalThis.fetch).not.toHaveBeenCalled(); expect(open).not.toHaveBeenCalled();
+    expect(SERIOUS(await axe.run(dialog, AXE_OPTS))).toEqual([]);
+  });
+
+  it('switches paths without changing checklist, form, roster mapping or an unsaved address draft', async () => {
+    const original = { steps: ['approval', 'code'], form: { schoolName: 'Fictional Preserved School' } };
+    const roster = JSON.stringify({ classId: 'CLS-kept', students: { 'Calm Otter': 'group' }, groups: { group: { name: 'Group' } } });
+    localStorage.setItem(testing.SR_SETUP_KEY, JSON.stringify(original)); localStorage.setItem('alloflow_roster_key', roster);
+    const dialog = await mountPanel({ portalUrl: '', initialPath: 'setup' });
+    await settle(() => value(dialog.querySelector('#schoolrewards-portal-url'), PORTAL));
+    const savedBefore = localStorage.getItem(testing.SR_SETUP_KEY);
+    for (const path of ['join', 'practice', 'setup']) await route(dialog, path);
+    expect(dialog.querySelector('#schoolrewards-portal-url').value).toBe(PORTAL);
+    expect(dialog.querySelector('#sr-step-code').checked).toBe(true);
+    expect(dialog.querySelector('#schoolrewards-setup-snippet').value).toContain('Fictional Preserved School');
+    expect(localStorage.getItem(testing.SR_SETUP_KEY)).toBe(savedBefore);
+    expect(localStorage.getItem('alloflow_roster_key')).toBe(roster);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('invalidates a self-attested verification when the address draft changes without clearing other progress', async () => {
+    localStorage.setItem(testing.SR_SETUP_KEY, JSON.stringify({ steps: ['approval', 'verified'], form: { schoolName: 'Fictional School' }, verifiedPortalUrl: PORTAL }));
+    const dialog = await mountPanel({ portalUrl: PORTAL });
+    expect(dialog.querySelector('#sr-step-verified').checked).toBe(true);
+    await settle(() => value(dialog.querySelector('#schoolrewards-portal-url'), PORTAL.replace('xyz', 'changed')));
+    expect(dialog.querySelector('#sr-step-verified').checked).toBe(false);
+    expect(dialog.querySelector('#sr-step-approval').checked).toBe(true);
+    expect(JSON.parse(localStorage.getItem(testing.SR_SETUP_KEY)).steps).toEqual(['approval']);
+  });
+
+  it('invalidates verification after a host URL change and restarts same-path guide requests by serial', async () => {
+    localStorage.setItem(testing.SR_SETUP_KEY, JSON.stringify({ steps: ['approval', 'verified'], form: {}, verifiedPortalUrl: PORTAL }));
+    const props = { portalUrl: PORTAL, initialPath: 'setup', initialGuide: true, guideRequestSerial: 1, onClose: () => {}, t: () => null };
+    const dialog = await mountPanel(props);
+    await settle(() => guideButton(dialog, 'next').click());
+    expect(dialog.querySelector('#sr-guide-title').textContent).toBe('Choose who will do the technical work');
+    await act(async () => { root.render(React.createElement(SchoolRewardsPanel, { ...props, portalUrl: PORTAL.replace('xyz', 'new'), guideRequestSerial: 2 })); });
+    expect(dialog.querySelector('#sr-guide-title').textContent).toBe('Confirm district review and ownership');
+    expect(dialog.querySelector('#sr-step-verified').checked).toBe(false);
+    expect(dialog.querySelector('#schoolrewards-portal-url').value).toContain('new');
+    expect(document.activeElement.id).toBe('sr-local-guide');
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('does not treat opening the separate check page as verification', async () => {
+    const open = vi.spyOn(window, 'open').mockReturnValue({});
+    const dialog = await mountPanel({ portalUrl: PORTAL });
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_open_check"]').click());
+    expect(open).toHaveBeenCalledWith(PORTAL + '?api=status', '_blank', 'noopener,noreferrer');
+    expect(dialog.querySelector('#sr-step-verified').checked).toBe(false);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_health_hint"]').textContent).toMatch(/No verification box was changed/);
+  });
+});
+
+describe('address edits, launch recovery and resumable setup', () => {
+  const NEW_PORTAL = PORTAL.replace('xyz', 'new_store');
+  const inputValue = (input, text) => {
+    Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, text);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  const submitAddress = dialog => settle(() => dialog.querySelector('#schoolrewards-portal-url').closest('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+
+  it('blocks old-target opening, checking and sharing until unsaved changes are discarded', async () => {
+    const open = vi.spyOn(window, 'open').mockReturnValue(null), hostOpen = vi.fn(), save = vi.fn();
+    const dialog = await mountPanel({ portalUrl: PORTAL, onOpenPortal: hostOpen, onSavePortalUrl: save });
+    expect(dialog.querySelector('[data-help-key="schoolrewards_share_staff"]')).not.toBeNull();
+    await settle(() => inputValue(dialog.querySelector('#schoolrewards-portal-url'), NEW_PORTAL));
+    expect(dialog.querySelector('[data-help-key="schoolrewards_unsaved_address"]').textContent).toMatch(/unsaved address changes/i);
+    for (const key of ['open_portal', 'open_recognition', 'open_check']) {
+      const button = dialog.querySelector('[data-help-key="schoolrewards_' + key + '"]');
+      expect(button.disabled).toBe(true); await settle(() => button.click());
+    }
+    expect(dialog.querySelector('[data-help-key="schoolrewards_share_staff"]')).toBeNull();
+    expect(open).not.toHaveBeenCalled(); expect(hostOpen).not.toHaveBeenCalled(); expect(save).not.toHaveBeenCalled();
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_discard_address"]').click());
+    expect(dialog.querySelector('#schoolrewards-portal-url').value).toBe(PORTAL);
+    expect(document.activeElement.id).toBe('schoolrewards-portal-url');
+    expect(dialog.querySelector('[data-help-key="schoolrewards_unsaved_address"]')).toBeNull();
+    expect(dialog.querySelector('[data-help-key="schoolrewards_open_portal"]').disabled).toBe(false);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_share_staff"]')).not.toBeNull();
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('saves an edited address before enabling actions for the new destination', async () => {
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'join' });
+    await settle(() => inputValue(dialog.querySelector('#schoolrewards-portal-url'), NEW_PORTAL));
+    await submitAddress(dialog);
+    expect(dialog.querySelector('#schoolrewards-saved-url').value).toBe(NEW_PORTAL);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_unsaved_address"]')).toBeNull();
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_open_check"]').click());
+    expect(open).toHaveBeenCalledExactlyOnceWith(NEW_PORTAL + '?api=status', '_blank', 'noopener,noreferrer');
+  });
+
+  it('blank Save never disconnects; only the explicit Disconnect action removes the address', async () => {
+    const saved = vi.fn(() => ({ ok: true, url: '' }));
+    const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'join', onSavePortalUrl: saved });
+    await settle(() => inputValue(dialog.querySelector('#schoolrewards-portal-url'), ''));
+    await submitAddress(dialog);
+    expect(saved).not.toHaveBeenCalled();
+    expect(dialog.querySelector('#schoolrewards-saved-url').value).toBe(PORTAL);
+    expect(dialog.querySelector('#schoolrewards-portal-url').getAttribute('aria-invalid')).toBe('true');
+    expect(dialog.querySelector('#schoolrewards-portal-url-help').textContent).toMatch(/use Disconnect/);
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_disconnect"]').click());
+    expect(saved).toHaveBeenCalledExactlyOnceWith('');
+    expect(dialog.querySelector('#schoolrewards-saved-url')).toBeNull();
+  });
+
+  it('marks malformed input invalid without sending it to the host, then clears the error on editing', async () => {
+    const saved = vi.fn(), dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'join', onSavePortalUrl: saved });
+    const input = dialog.querySelector('#schoolrewards-portal-url');
+    await settle(() => inputValue(input, 'https://outside.invalid/not-a-store')); await submitAddress(dialog);
+    expect(input.getAttribute('aria-invalid')).toBe('true'); expect(saved).not.toHaveBeenCalled();
+    await settle(() => inputValue(input, NEW_PORTAL));
+    expect(input.hasAttribute('aria-invalid')).toBe(false);
+    expect(dialog.querySelector('#schoolrewards-saved-url').value).toBe(PORTAL);
+  });
+
+  it.each(['reject', 'throw', 'different-address', 'undefined', 'null', 'false', 'empty-object', 'promise', 'thenable', 'missing-url', 'malformed-url'])('preserves the saved destination and draft after host save failure: %s', async kind => {
+    const results = { reject: { ok: false, error: 'This browser did not save the address.' }, 'different-address': { ok: true, url: PORTAL }, undefined: undefined, null: null, false: false, 'empty-object': {}, promise: Promise.resolve({ ok: true, url: NEW_PORTAL }), thenable: { ok: true, url: NEW_PORTAL, then() {} }, 'missing-url': { ok: true }, 'malformed-url': { ok: true, url: 'https://unapproved.example/exec' } };
+    const saved = vi.fn(() => { if (kind === 'throw') throw new Error('Synthetic write failure'); return results[kind]; });
+    const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'join', onSavePortalUrl: saved });
+    await settle(() => inputValue(dialog.querySelector('#schoolrewards-portal-url'), NEW_PORTAL)); await submitAddress(dialog);
+    expect(dialog.querySelector('#schoolrewards-saved-url').value).toBe(PORTAL);
+    expect(dialog.querySelector('#schoolrewards-portal-url').value).toBe(NEW_PORTAL);
+    expect(dialog.querySelector('#schoolrewards-portal-url').hasAttribute('aria-invalid')).toBe(false);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_open_portal"]').disabled).toBe(true);
+    expect(dialog.querySelector('#schoolrewards-portal-url-help').textContent).toMatch(/could not save|did not save|not confirmed/);
+  });
+
+  it('keeps the previous local address when browser storage rejects an address update', async () => {
+    localStorage.setItem(testing.SR_PORTAL_URL_KEY, PORTAL);
+    const original = window.Storage.prototype.setItem;
+    vi.spyOn(window.Storage.prototype, 'setItem').mockImplementation(function (key, value) {
+      if (key === testing.SR_PORTAL_URL_KEY) throw new DOMException('Synthetic quota failure', 'QuotaExceededError');
+      return original.call(this, key, value);
+    });
+    const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'join' });
+    await settle(() => inputValue(dialog.querySelector('#schoolrewards-portal-url'), NEW_PORTAL)); await submitAddress(dialog);
+    expect(localStorage.getItem(testing.SR_PORTAL_URL_KEY)).toBe(PORTAL);
+    expect(dialog.querySelector('#schoolrewards-saved-url').value).toBe(PORTAL);
+    expect(dialog.querySelector('#schoolrewards-portal-url').value).toBe(NEW_PORTAL);
+  });
+
+  it.each([['open_portal', '', 'Open saved Store directly'], ['open_recognition', '?view=recognition', 'Open recognition directly'], ['open_check', '?api=status', 'Open deployment check directly']])('treats noopener null as unconfirmed and gives the fixed direct target for %s', async (action, suffix, label) => {
+    const open = vi.spyOn(window, 'open').mockReturnValue(null), addToast = vi.fn();
+    const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'join', addToast });
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_' + action + '"]').click());
+    expect(open).toHaveBeenCalledExactlyOnceWith(PORTAL + suffix, '_blank', 'noopener,noreferrer');
+    const feedback = dialog.querySelector('[data-help-key="schoolrewards_launch_feedback"]');
+    expect(feedback.textContent).toMatch(/cannot confirm whether a new tab opened/);
+    expect(feedback.textContent).not.toMatch(/was blocked|successfully opened/i); expect(addToast).not.toHaveBeenCalled();
+    const fallback = feedback.querySelector('[data-help-key="schoolrewards_launch_fallback"]');
+    expect(fallback.href).toBe(PORTAL + suffix); expect(fallback.textContent).toBe(label);
+    expect(fallback.target).toBe('_blank'); expect(fallback.rel).toBe('noopener noreferrer');
+  });
+
+  it.each([true, false])('preserves the host callback and distinguishes dispatch result %s without claiming access', async dispatched => {
+    const hostOpen = vi.fn(() => dispatched), open = vi.spyOn(window, 'open');
+    const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'join', onOpenPortal: hostOpen });
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_open_portal"]').click());
+    expect(hostOpen).toHaveBeenCalledExactlyOnceWith(); expect(open).not.toHaveBeenCalled();
+    const feedback = dialog.querySelector('[data-help-key="schoolrewards_launch_feedback"]');
+    expect(feedback.textContent).toMatch(dispatched ? /cannot confirm/ : /could not be dispatched/);
+    expect(feedback.querySelector('a').href).toBe(PORTAL);
+  });
+
+  it('clears direct links on draft edits, discarded changes and new host destinations', async () => {
+    vi.spyOn(window, 'open').mockReturnValue(null);
+    const props = { portalUrl: PORTAL, initialPath: 'join', onClose: () => {}, t: () => null };
+    const dialog = await mountPanel(props);
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_open_check"]').click());
+    expect(dialog.querySelector('[data-help-key="schoolrewards_launch_fallback"]')).not.toBeNull();
+    await settle(() => inputValue(dialog.querySelector('#schoolrewards-portal-url'), NEW_PORTAL));
+    expect(dialog.querySelector('[data-help-key="schoolrewards_launch_fallback"]')).toBeNull();
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_discard_address"]').click());
+    expect(dialog.querySelector('[data-help-key="schoolrewards_launch_fallback"]')).toBeNull();
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_open_check"]').click());
+    await act(async () => { root.render(React.createElement(SchoolRewardsPanel, { ...props, portalUrl: NEW_PORTAL })); });
+    expect(dialog.querySelector('[data-help-key="schoolrewards_launch_fallback"]')).toBeNull();
+  });
+
+  it('shows a tab-only warning for failed checklist persistence and retries exactly the current selections', async () => {
+    const original = window.Storage.prototype.setItem;
+    let reject = true;
+    vi.spyOn(window.Storage.prototype, 'setItem').mockImplementation(function (key, value) {
+      if (reject && key === testing.SR_SETUP_KEY) throw new DOMException('Synthetic quota failure', 'QuotaExceededError');
+      return original.call(this, key, value);
+    });
+    const dialog = await mountPanel({ portalUrl: '', initialPath: 'setup' });
+    await settle(() => dialog.querySelector('#sr-step-approval').click());
+    expect(dialog.querySelector('#sr-step-approval').checked).toBe(true);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_persistence_warning"]').textContent).toMatch(/kept in this tab only/);
+    expect(localStorage.getItem(testing.SR_SETUP_KEY)).toBeNull();
+    await settle(() => dialog.querySelector('[data-store-path="join"]').click());
+    expect(dialog.querySelector('[data-help-key="schoolrewards_persistence_warning"]')).not.toBeNull();
+    reject = false;
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_retry_setup_save"]').click());
+    expect(JSON.parse(localStorage.getItem(testing.SR_SETUP_KEY)).steps).toEqual(['approval']);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_persistence_warning"]')).toBeNull();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('persistence retry preserves the in-memory form and never rechecks deployment verification', async () => {
+    const original = window.Storage.prototype.setItem;
+    let reject = true;
+    vi.spyOn(window.Storage.prototype, 'setItem').mockImplementation(function (key, value) {
+      if (reject && key === testing.SR_SETUP_KEY) throw new Error('Synthetic storage denial');
+      return original.call(this, key, value);
+    });
+    const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'setup' });
+    const school = dialog.querySelector('[data-help-key="schoolrewards_step_setup"] input[placeholder="Example Elementary"]');
+    await settle(() => inputValue(school, 'Fictional Unsaved School'));
+    expect(school.value).toBe('Fictional Unsaved School');
+    reject = false;
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_retry_setup_save"]').click());
+    expect(JSON.parse(localStorage.getItem(testing.SR_SETUP_KEY)).form.schoolName).toBe('Fictional Unsaved School');
+    expect(dialog.querySelector('#sr-step-verified').checked).toBe(false);
+  });
+
+  it('shows five collapsed local help entries without requests and keeps keyboard focus inside the dialog', async () => {
+    const open = vi.spyOn(window, 'open');
+    const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'join' });
+    const help = dialog.querySelector('[data-help-key="schoolrewards_opening_help"]');
+    expect(help.open).toBe(false);
+    expect(help.querySelectorAll('[data-help-key="schoolrewards_troubleshooting_item"]')).toHaveLength(5);
+    const summary = help.querySelector('summary'); summary.focus();
+    await settle(() => summary.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })));
+    expect(document.activeElement).toBe(dialog.querySelector('[data-help-key="schoolrewards_manual"]'));
+    help.open = true;
+    const entries = Array.from(help.querySelectorAll('[data-help-key="schoolrewards_troubleshooting_item"]'));
+    for (const item of entries) { expect(item.open).toBe(false); item.open = true; }
+    expect(help.textContent).toMatch(/not a diagnosis/i);
+    expect(Array.from(help.querySelectorAll('a')).every(link => link.href.startsWith('https://alloflow-cdn.pages.dev/school-rewards-manual#'))).toBe(true);
+    expect(globalThis.fetch).not.toHaveBeenCalled(); expect(open).not.toHaveBeenCalled();
+    expect(SERIOUS(await axe.run(dialog, AXE_OPTS))).toEqual([]);
+  }, 15000);
 });
 
 describe('helpers', () => {
@@ -302,7 +642,9 @@ describe('IT handoff (2026-09-02)', () => {
     expect(text).toContain("allowedDomain: 'lincoln.k12.example'");
     expect(text).toContain('runInitialSchoolRewardsSetup');
     expect(text).toContain('dropdown beside Debug');
-    expect(text).toContain('Go to AlloFlow School Rewards (unsafe)');
+    expect(text).toContain('stop and consult IT; do not bypass a warning');
+    expect(text).not.toContain('Go to AlloFlow School Rewards (unsafe)');
+    expect(text).toContain('Saving the address does not verify the Store');
     expect(text).toContain('8. Send the link back');
     // The steps themselves never mention a technical format; only the pasted function's log line does.
     expect(text.slice(0, text.indexOf('Setup function to paste'))).not.toMatch(/JSON/);
@@ -350,6 +692,8 @@ describe('share with staff (2026-09-02)', () => {
     const share = dialog.querySelector('[data-help-key="schoolrewards_share_staff"]');
     expect(share).toBeTruthy();
     expect(share.querySelector('#schoolrewards-share-link').value).toBe(PORTAL);
+    expect(window.__alloMakeQrSvg).not.toHaveBeenCalled();
+    await settle(() => share.querySelector('[data-help-key="schoolrewards_share_qr"]').click());
     expect(share.querySelector('svg[data-test="qr"]')).toBeTruthy();
     await settle(() => share.querySelector('[data-help-key="schoolrewards_share_copy"]').click());
     expect(window.alloCopyText).toHaveBeenCalledWith(PORTAL);
@@ -513,4 +857,3 @@ describe('themes (2026-09-02)', () => {
     for (const [fg, bg] of pairs) expect(ratio(fg, bg), fg + ' on ' + bg).toBeGreaterThanOrEqual(4.5);
   });
 });
-

@@ -1,0 +1,1 @@
+module.exports={...require('../cell-microscope-controls/playwright.config.cjs'),testMatch:['cell-observation-refinement.spec.ts','cell-annotation-refinement.spec.ts','cell-microscope-controls.spec.ts'],outputDir:'./browser-results'};

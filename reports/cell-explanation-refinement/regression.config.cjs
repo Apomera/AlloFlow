@@ -1,0 +1,1 @@
+module.exports={...require('../cell-petri-visuals/regression.config.cjs'),outputDir:'./regression-results',grep:/mobile play controls|live control cue/};

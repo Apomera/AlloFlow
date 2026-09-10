@@ -1,0 +1,24 @@
+import {afterEach,beforeAll,describe,it,expect} from 'vitest';
+import {React,ReactDOMClient,loadTool,makeCtx,resetStemLab} from './helpers/stem_widgets_smoke_harness.js';
+globalThis.IS_REACT_ACT_ENVIRONMENT=true;let cfg,mounted;
+const box=extra=>({shape:'box',size:[1,2,.5],position:[1,.5,-1],rotation:[0,0,0],color:'#60a5fa',group:'Pair',...extra});
+beforeAll(()=>{resetStemLab();cfg=loadTool('stem_lab/stem_tool_geosandbox.js','geoSandbox');});
+afterEach(()=>{if(mounted){React.act(()=>mounted.root.unmount());mounted.container.remove();mounted=null;}});
+function mount(parts=[box()],bucket={}){const container=document.createElement('div');document.body.appendChild(container);const v={container,root:ReactDOMClient.createRoot(container)};function Host(){const[data,setData]=React.useState({_threeLoaded:true,geoSandbox:{mode:'sculpt',sculptRecipe:{parts},...bucket}});v.state=data.geoSandbox;return cfg.render(makeCtx({toolData:data,setToolData:setData}));}mounted=v;React.act(()=>v.root.render(React.createElement(Host)));click(container.querySelector('#geo-sculpt-tab-edit'));return v;}
+function click(el){expect(el).toBeTruthy();React.act(()=>el.click());}
+function field(label){const el=mounted.container.querySelector('[aria-label="'+label+'"]');expect(el).toBeTruthy();return el;}
+function value(el,v,blur=false){React.act(()=>{const proto=el.tagName==='SELECT'?window.HTMLSelectElement.prototype:window.HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(el,String(v));el.dispatchEvent(new window.Event('input',{bubbles:true}));el.dispatchEvent(new window.Event('change',{bubbles:true}));if(blur)el.dispatchEvent(new window.FocusEvent('focusout',{bubbles:true}));});}
+function history(name){click([...mounted.container.querySelectorAll('button')].find(el=>el.textContent.trim()===name));}
+
+
+const parts=()=>Array.from({length:6},(_,i)=>box({partId:'p'+i,label:'Part '+(i+1),group:i===1?'Supports':'',locked:i===1,color:i===1?'#c98566':'#60a5fa'}));
+function button(name){return [...mounted.container.querySelectorAll('button')].find(b=>b.textContent.trim()===name);}
+function title(){return mounted.container.querySelector('#geo-part-inspector h3').textContent;}
+describe('Compact sculpt part switcher',()=>{
+ it('starts with a compact switcher and a closed full browser',()=>{const v=mount(parts());expect(field('Selected part').options).toHaveLength(6);expect(field('Selected part').value).toBe('0');expect(v.container.querySelector('.geo-part-switcher-browser').open).toBe(false);expect(v.container.querySelector('.geo-part-switcher-count').textContent).toBe('1 of 6');expect(field('Previous part').disabled).toBe(true);expect(field('Next part').disabled).toBe(false);});
+ it('steps through parts and keeps geometry and undo history unchanged',()=>{const v=mount(parts()),before=JSON.stringify(v.state.sculptRecipe);click(field('Next part'));expect(title()).toBe('Part 2');expect(field('Selected part').value).toBe('1');expect(v.container.querySelector('.geo-part-switcher-meta').textContent).toContain('Supports · Locked');expect(v.container.querySelector('.geo-part-switcher-select .geo-part-swatch').style.backgroundColor).toBe('rgb(201, 133, 102)');click(field('Previous part'));expect(title()).toBe('Part 1');expect(JSON.stringify(v.state.sculptRecipe)).toBe(before);expect(button('↶ Undo').disabled).toBe(true);});
+ it('selects a distant part directly and disables Next at the last part',()=>{mount(parts());value(field('Selected part'),'5');expect(title()).toBe('Part 6');expect(field('Next part').disabled).toBe(true);expect(field('Previous part').disabled).toBe(false);expect(field('Selected part').options[1].textContent).toContain('Locked');});
+ it('can switch to any part even while the visual browser is filtered',()=>{const v=mount(parts());const filter=v.container.querySelector('#geo-sculpt-panel-edit [aria-label="Search parts"]');value(filter,'Part 2');expect(v.container.querySelector('.geo-part-filter-badge').textContent).toBe('Filtered');value(field('Selected part'),'4');expect(title()).toBe('Part 5');expect(field('Selected part').options).toHaveLength(6);expect(v.container.querySelector('#geo-sculpt-panel-edit').textContent).toContain('outside this filter');});
+ it('keeps dropdown selection synchronized with the visual list and part duplication',()=>{const v=mount(parts());click(v.container.querySelector('#geo-sculpt-choice-edit-3'));expect(field('Selected part').value).toBe('3');click(button('Duplicate'));expect(field('Selected part').options).toHaveLength(7);expect(field('Selected part').value).toBe('6');expect(title()).toContain('copy');history('↶ Undo');expect(field('Selected part').options).toHaveLength(6);expect(Number(field('Selected part').value)).toBeLessThan(6);});
+ it('disables both step buttons for a single part',()=>{mount();expect(field('Previous part').disabled).toBe(true);expect(field('Next part').disabled).toBe(true);});
+});

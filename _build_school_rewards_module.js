@@ -17,6 +17,7 @@ const TMP = path.join(ROOT, '_tmp_school_rewards_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
+const setupGuide = fs.readFileSync(path.join(ROOT, 'school_store_setup_guide.js'), 'utf8');
 const entry = `/* global React */\n\n${source}\n\nwindow.__schoolRewardsExports = { SchoolRewardsPanel };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 
@@ -53,6 +54,7 @@ const outputCode = `/**
   var React = window.React;
   if (!React) { console.error('[SchoolRewards] React not found on window'); return; }
 
+${setupGuide}
 ${compiled}
 
   window.AlloModules = window.AlloModules || {};
@@ -89,3 +91,12 @@ try {
     console.warn('[SchoolRewards] Could not sync to desktop/web-app/public/:', e.message);
 }
 console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines)`);
+
+// The setup controls distribute these canonical school-owned project files.
+// Keep them aligned with the launcher, including reviewed portal fixes.
+for (const name of ['Code.gs', 'Portal.html', 'Index.html', 'appsscript.json']) {
+  const destination = path.join(ROOT, 'desktop/web-app/public/apps_script/school_rewards', name);
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  fs.copyFileSync(path.join(ROOT, 'apps_script/school_rewards', name), destination);
+}
+console.log('Synced the four School Rewards deployment files.');

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "pairs": [
+    {
+      "id": "mobile-only-instruction-hidden",
+      "sourcePath": "calibration/mobile-only-instruction-hidden/source.html",
+      "candidatePath": "calibration/mobile-only-instruction-hidden/candidate.html",
+      "profiles": [
+        {
+          "id": "desktop",
+          "viewport": {
+            "width": 1100,
+            "height": 800
+          }
+        },
+        {
+          "id": "mobile",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          }
+        },
+        {
+          "id": "print",
+          "media": "print",
+          "viewport": {
+            "width": 1100,
+            "height": 800
+          }
+        }
+      ],
+      "checkpoints": [
+        {
+          "id": "instruction",
+          "sourceSelector": "#instruction",
+          "properties": [
+            "text",
+            "visible",
+            "exposed"
+          ]
+        }
+      ]
+    }
+  ]
+}

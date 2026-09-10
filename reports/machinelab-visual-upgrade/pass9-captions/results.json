@@ -1,0 +1,18 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "workshop9-lever-ready",
+    "workshop9-lever-lift",
+    "workshop9-lever-long-effort",
+    "workshop9-lever-equal",
+    "workshop9-lever-long-load"
+  ]
+}

@@ -1,0 +1,599 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/document-remediation-rendered-refinements-2026-09-09/export-binding-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "document_export_artifact_binding.spec.ts",
+      "file": "document_export_artifact_binding.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "stable artifacts without source fidelity retain passing acceptance and exact byte identity",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 757,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:10:14.701Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b462144772e9447adb0-568536cfe097cc6e368e",
+          "file": "document_export_artifact_binding.spec.ts",
+          "line": 37,
+          "column": 5
+        },
+        {
+          "title": "inspects captured HTML and rejects a file that becomes changed before browser inspection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 489,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:10:16.085Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b462144772e9447adb0-e3b08845ace065166111",
+          "file": "document_export_artifact_binding.spec.ts",
+          "line": 48,
+          "column": 7
+        },
+        {
+          "title": "inspects captured HTML and rejects a file that becomes missing before browser inspection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 492,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:10:16.588Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b462144772e9447adb0-edba47222544b453460a",
+          "file": "document_export_artifact_binding.spec.ts",
+          "line": 48,
+          "column": 7
+        },
+        {
+          "title": "rechecks earlier artifacts after later inspections",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1808,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:10:17.093Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b462144772e9447adb0-6c03203608338b69027c",
+          "file": "document_export_artifact_binding.spec.ts",
+          "line": 66,
+          "column": 5
+        },
+        {
+          "title": "PDF inspection accepts captured bytes without rereading the source path",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 37379,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:10:18.915Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b462144772e9447adb0-6a521d634d111414c635",
+          "file": "document_export_artifact_binding.spec.ts",
+          "line": 75,
+          "column": 5
+        },
+        {
+          "title": "invalidates a rendered pass when its artifact changes during a later inspection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 72762,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:10:56.314Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b462144772e9447adb0-eb2acfe84db3d29be81f",
+          "file": "document_export_artifact_binding.spec.ts",
+          "line": 83,
+          "column": 5
+        },
+        {
+          "title": "rechecks a rendered source that becomes changed during a later artifact inspection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19340,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:12:09.116Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b462144772e9447adb0-6f0b631598f046264a64",
+          "file": "document_export_artifact_binding.spec.ts",
+          "line": 103,
+          "column": 7
+        },
+        {
+          "title": "rechecks a rendered source that becomes missing during a later artifact inspection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 50825,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:12:28.486Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b462144772e9447adb0-fa41269a40c496e5410e",
+          "file": "document_export_artifact_binding.spec.ts",
+          "line": 103,
+          "column": 7
+        },
+        {
+          "title": "CLI writes a rendered review only when source fidelity is absent",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 65874,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "(node:46764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:13:19.331Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b462144772e9447adb0-4c00f9638a9b9be8d309",
+          "file": "document_export_artifact_binding.spec.ts",
+          "line": 121,
+          "column": 7
+        },
+        {
+          "title": "CLI writes a rendered review only when source fidelity is enabled",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 91840,
+                  "error": {
+                    "message": "Error: spawnSync C:\\Program Files\\nodejs\\node.exe ETIMEDOUT",
+                    "stack": "Error: spawnSync C:\\Program Files\\nodejs\\node.exe ETIMEDOUT\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\document_export_artifact_binding.spec.ts:125:17",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\document_export_artifact_binding.spec.ts",
+                      "column": 17,
+                      "line": 125
+                    },
+                    "snippet": "  123 |     const { manifest } = setup(testInfo, 1, optedIn);\n  124 |     const output = testInfo.outputPath('acceptance-output');\n> 125 |     execFileSync(process.execPath, [path.resolve(__dirname, '../../dev-tools/document_export_at_acceptance.cjs'), manifest, output], { timeout: 90000, encoding: 'utf8', windowsHide: true });\n      |                 ^\n  126 |     const report = JSON.parse(fs.readFileSync(path.join(output, 'automated-results.json'), 'utf8'));\n  127 |     expect(report.automatedStatus).toBe('passed');\n  128 |     expect(fs.existsSync(path.join(output, 'rendered-fidelity-review.html'))).toBe(optedIn);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\document_export_artifact_binding.spec.ts",
+                        "column": 17,
+                        "line": 125
+                      },
+                      "message": "Error: spawnSync C:\\Program Files\\nodejs\\node.exe ETIMEDOUT\n\n  123 |     const { manifest } = setup(testInfo, 1, optedIn);\n  124 |     const output = testInfo.outputPath('acceptance-output');\n> 125 |     execFileSync(process.execPath, [path.resolve(__dirname, '../../dev-tools/document_export_at_acceptance.cjs'), manifest, output], { timeout: 90000, encoding: 'utf8', windowsHide: true });\n      |                 ^\n  126 |     const report = JSON.parse(fs.readFileSync(path.join(output, 'automated-results.json'), 'utf8'));\n  127 |     expect(report.automatedStatus).toBe('passed');\n  128 |     expect(fs.existsSync(path.join(output, 'rendered-fidelity-review.html'))).toBe(optedIn);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\document_export_artifact_binding.spec.ts:125:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "(node:46112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:14:25.229Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\export-binding-artifacts\\document_export_artifact_b-f9956--source-fidelity-is-enabled-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\export-binding-artifacts\\document_export_artifact_b-f9956--source-fidelity-is-enabled-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\document_export_artifact_binding.spec.ts",
+                    "column": 17,
+                    "line": 125
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2b462144772e9447adb0-b7bd1795a6b91e1902d7",
+          "file": "document_export_artifact_binding.spec.ts",
+          "line": 121,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "document_export_at_acceptance.spec.ts",
+      "file": "document_export_at_acceptance.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "education HTML/PDF exports expose expected semantics and keyboard behavior; human AT stays not run",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 75706,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:17:38.801Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9adb0dfc7bd3d4235ed9-b91af4ce69da52d469c6",
+          "file": "document_export_at_acceptance.spec.ts",
+          "line": 16,
+          "column": 5
+        },
+        {
+          "title": "a heading demotion and positive tabindex fail the keyboard/semantic acceptance contract",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3468,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:18:55.543Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9adb0dfc7bd3d4235ed9-466bb066bee16b008f59",
+          "file": "document_export_at_acceptance.spec.ts",
+          "line": 31,
+          "column": 5
+        },
+        {
+          "title": "a tagged PDF with changed table values fails cell and reading-order expectations",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 35298,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:18:59.439Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9adb0dfc7bd3d4235ed9-3903a90ffed1404bdfeb",
+          "file": "document_export_at_acceptance.spec.ts",
+          "line": 48,
+          "column": 5
+        },
+        {
+          "title": "searchable but untagged PDF text does not establish tagged reading-order acceptance",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1992,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T23:19:34.984Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9adb0dfc7bd3d4235ed9-5600e10ebe4c48bc37fe",
+          "file": "document_export_at_acceptance.spec.ts",
+          "line": 60,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-09T23:10:12.581Z",
+    "duration": 584166.384,
+    "expected": 13,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

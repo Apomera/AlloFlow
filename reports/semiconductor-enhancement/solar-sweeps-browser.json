@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "checks": [
+    "paired power curves",
+    "zero light",
+    "variable switching",
+    "keyboard sample selection",
+    "fixed-setting restoration",
+    "open circuit",
+    "short circuit",
+    "mobile overflow",
+    "immutable recorded runs",
+    "both curves in notebook and Markdown export",
+    "five WCAG variants"
+  ],
+  "errors": []
+}

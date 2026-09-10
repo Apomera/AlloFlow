@@ -1,0 +1,20 @@
+{
+  "scenarios": [
+    "Sine-filter overlay, shared cursor, source focus jump, logarithmic keyboard control, undo, fit cycles, and DC/time semantics",
+    "Pulse shaping, dependent edge limits, invalid input recovery, triangle and phase edits",
+    "Current-source overlay, mA conversion, and real waveform export",
+    "Scope/generator accessibility and full-width layouts at 390/320 pixels",
+    "Cycle-budget diagnosis, time-window recovery, and workspace persistence"
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "view": "scope",
+      "violations": []
+    },
+    {
+      "view": "generator",
+      "violations": []
+    }
+  ]
+}

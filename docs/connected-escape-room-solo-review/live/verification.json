@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "transport": "Real AlloFlow session adapter + real Apps Script handlers with local service substitutes",
+  "ai": "Deterministic provider fixture through production generation and validation flow",
+  "independentBrowsers": 4,
+  "completedReceiptCount": 3,
+  "completedDocumentChars": 7646,
+  "permissionCheckedWrites": 24,
+  "scenarios": [
+    "AI repair",
+    "keyboard focus trap",
+    "setup accessibility",
+    "bounded acknowledgement history",
+    "AI failure preserves preview",
+    "preview reset",
+    "launch failure and retry",
+    "concurrent discoveries",
+    "functional tool",
+    "wrong settings preserve draft",
+    "pause/resume",
+    "shared hints",
+    "relevant collected clues",
+    "unsent device draft reload",
+    "sequence draft reload",
+    "read-only teammate navigation",
+    "teacher retry overview",
+    "failed action retry identity",
+    "student reload with pending action",
+    "host reconnection drains queue",
+    "late join",
+    "sequence device",
+    "shared final exit",
+    "restart",
+    "teacher rescue reason",
+    "end room"
+  ],
+  "audits": [
+    {
+      "width": 1280,
+      "dark": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "dark": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "dark": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "dark": true,
+      "overflow": false,
+      "violations": []
+    }
+  ],
+  "errors": []
+}

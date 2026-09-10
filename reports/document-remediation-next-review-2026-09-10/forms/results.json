@@ -1,0 +1,286 @@
+{
+  "measuredAt": "2026-09-10T04:05:42.335Z",
+  "policyVersion": "20260909-6",
+  "sourceSha256": "2a246d27928524c54ee16c8419dfd04904f4a05dfbacd07bd94ffb2825419909",
+  "sourceUnchangedDuringRun": true,
+  "browserVersion": "148.0.7778.96",
+  "scope": "Actual source strict gate and aiFixChunked with transport mocked; native Chromium input typing and accessibility snapshots verify local functional changes. No downstream export or human-screen-reader conclusion.",
+  "results": [
+    {
+      "id": "maxlength-truncates-response",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><label for=\"response\">Explain your observations</label><textarea id=\"response\" maxlength=\"200\"></textarea></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form><label for=\"response\">Explain your observations</label><textarea id=\"response\" maxlength=\"5\"></textarea></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 0.9977653631284916,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": true,
+      "browser": {
+        "source": {
+          "aria": "- text: Explain your observations\n- textbox \"Explain your observations\"",
+          "dom": {
+            "html": "<form><label for=\"response\">Explain your observations</label><textarea id=\"response\" maxlength=\"200\"></textarea></form>",
+            "text": "Explain your observations",
+            "controls": [
+              {
+                "id": "response",
+                "maxLength": 200,
+                "minLength": -1,
+                "fieldsetId": null,
+                "fieldsetLegend": null
+              }
+            ]
+          },
+          "typing": {
+            "typed": "Blueberries grow well.",
+            "received": "Blueberries grow well."
+          }
+        },
+        "candidate": {
+          "aria": "- text: Explain your observations\n- textbox \"Explain your observations\"",
+          "dom": {
+            "html": "<form><label for=\"response\">Explain your observations</label><textarea id=\"response\" maxlength=\"5\"></textarea></form>",
+            "text": "Explain your observations",
+            "controls": [
+              {
+                "id": "response",
+                "maxLength": 5,
+                "minLength": -1,
+                "fieldsetId": null,
+                "fieldsetLegend": null
+              }
+            ]
+          },
+          "typing": {
+            "typed": "Blueberries grow well.",
+            "received": "Blueb"
+          }
+        }
+      }
+    },
+    {
+      "id": "maxlength-preserving-wrapper-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><label for=\"response\">Explain your observations</label><textarea id=\"response\" maxlength=\"200\"></textarea></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form><label for=\"response\">Explain your observations</label><span><textarea id=\"response\" maxlength=\"200\"></textarea></span></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0145251396648045,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "aria": "- text: Explain your observations\n- textbox \"Explain your observations\"",
+          "dom": {
+            "html": "<form><label for=\"response\">Explain your observations</label><textarea id=\"response\" maxlength=\"200\"></textarea></form>",
+            "text": "Explain your observations",
+            "controls": [
+              {
+                "id": "response",
+                "maxLength": 200,
+                "minLength": -1,
+                "fieldsetId": null,
+                "fieldsetLegend": null
+              }
+            ]
+          },
+          "typing": {
+            "typed": "Blueberries grow well.",
+            "received": "Blueberries grow well."
+          }
+        },
+        "candidate": {
+          "aria": "- text: Explain your observations\n- textbox \"Explain your observations\"",
+          "dom": {
+            "html": "<form><label for=\"response\">Explain your observations</label><span><textarea id=\"response\" maxlength=\"200\"></textarea></span></form>",
+            "text": "Explain your observations",
+            "controls": [
+              {
+                "id": "response",
+                "maxLength": 200,
+                "minLength": -1,
+                "fieldsetId": null,
+                "fieldsetLegend": null
+              }
+            ]
+          },
+          "typing": {
+            "typed": "Blueberries grow well.",
+            "received": "Blueberries grow well."
+          }
+        }
+      }
+    },
+    {
+      "id": "fieldset-name-association-lost",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><fieldset id=\"student\"><legend>Student details</legend><label for=\"student-name\">Name</label><input id=\"student-name\"></fieldset><fieldset id=\"teacher\"><legend>Teacher details</legend><label for=\"teacher-name\">Name</label><input id=\"teacher-name\"></fieldset></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form><fieldset id=\"student\"><legend>Student details</legend></fieldset><label for=\"student-name\">Name</label><input id=\"student-name\"><fieldset id=\"teacher\"><legend>Teacher details</legend><label for=\"teacher-name\">Name</label><input id=\"teacher-name\"></fieldset></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": true,
+      "browser": {
+        "source": {
+          "aria": "- group \"Student details\":\n  - text: Student details Name\n  - textbox \"Name\"\n- group \"Teacher details\":\n  - text: Teacher details Name\n  - textbox \"Name\"",
+          "dom": {
+            "html": "<form><fieldset id=\"student\"><legend>Student details</legend><label for=\"student-name\">Name</label><input id=\"student-name\"></fieldset><fieldset id=\"teacher\"><legend>Teacher details</legend><label for=\"teacher-name\">Name</label><input id=\"teacher-name\"></fieldset></form>",
+            "text": "Student detailsNameTeacher detailsName",
+            "controls": [
+              {
+                "id": "student-name",
+                "maxLength": -1,
+                "minLength": -1,
+                "fieldsetId": "student",
+                "fieldsetLegend": "Student details"
+              },
+              {
+                "id": "teacher-name",
+                "maxLength": -1,
+                "minLength": -1,
+                "fieldsetId": "teacher",
+                "fieldsetLegend": "Teacher details"
+              }
+            ]
+          }
+        },
+        "candidate": {
+          "aria": "- group \"Student details\"\n- text: Name\n- textbox \"Name\"\n- group \"Teacher details\":\n  - text: Teacher details Name\n  - textbox \"Name\"",
+          "dom": {
+            "html": "<form><fieldset id=\"student\"><legend>Student details</legend></fieldset><label for=\"student-name\">Name</label><input id=\"student-name\"><fieldset id=\"teacher\"><legend>Teacher details</legend><label for=\"teacher-name\">Name</label><input id=\"teacher-name\"></fieldset></form>",
+            "text": "Student detailsNameTeacher detailsName",
+            "controls": [
+              {
+                "id": "student-name",
+                "maxLength": -1,
+                "minLength": -1,
+                "fieldsetId": null,
+                "fieldsetLegend": null
+              },
+              {
+                "id": "teacher-name",
+                "maxLength": -1,
+                "minLength": -1,
+                "fieldsetId": "teacher",
+                "fieldsetLegend": "Teacher details"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "fieldset-preserving-wrapper-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><fieldset id=\"student\"><legend>Student details</legend><label for=\"student-name\">Name</label><input id=\"student-name\"></fieldset><fieldset id=\"teacher\"><legend>Teacher details</legend><label for=\"teacher-name\">Name</label><input id=\"teacher-name\"></fieldset></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form><fieldset id=\"student\"><legend>Student details</legend><div><label for=\"student-name\">Name</label><input id=\"student-name\"></div></fieldset><fieldset id=\"teacher\"><legend>Teacher details</legend><label for=\"teacher-name\">Name</label><input id=\"teacher-name\"></fieldset></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0105062082139447,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "mismatch": false,
+      "browser": {
+        "source": {
+          "aria": "- group \"Student details\":\n  - text: Student details Name\n  - textbox \"Name\"\n- group \"Teacher details\":\n  - text: Teacher details Name\n  - textbox \"Name\"",
+          "dom": {
+            "html": "<form><fieldset id=\"student\"><legend>Student details</legend><label for=\"student-name\">Name</label><input id=\"student-name\"></fieldset><fieldset id=\"teacher\"><legend>Teacher details</legend><label for=\"teacher-name\">Name</label><input id=\"teacher-name\"></fieldset></form>",
+            "text": "Student detailsNameTeacher detailsName",
+            "controls": [
+              {
+                "id": "student-name",
+                "maxLength": -1,
+                "minLength": -1,
+                "fieldsetId": "student",
+                "fieldsetLegend": "Student details"
+              },
+              {
+                "id": "teacher-name",
+                "maxLength": -1,
+                "minLength": -1,
+                "fieldsetId": "teacher",
+                "fieldsetLegend": "Teacher details"
+              }
+            ]
+          }
+        },
+        "candidate": {
+          "aria": "- group \"Student details\":\n  - text: Student details Name\n  - textbox \"Name\"\n- group \"Teacher details\":\n  - text: Teacher details Name\n  - textbox \"Name\"",
+          "dom": {
+            "html": "<form><fieldset id=\"student\"><legend>Student details</legend><div><label for=\"student-name\">Name</label><input id=\"student-name\"></div></fieldset><fieldset id=\"teacher\"><legend>Teacher details</legend><label for=\"teacher-name\">Name</label><input id=\"teacher-name\"></fieldset></form>",
+            "text": "Student detailsNameTeacher detailsName",
+            "controls": [
+              {
+                "id": "student-name",
+                "maxLength": -1,
+                "minLength": -1,
+                "fieldsetId": "student",
+                "fieldsetLegend": "Student details"
+              },
+              {
+                "id": "teacher-name",
+                "maxLength": -1,
+                "minLength": -1,
+                "fieldsetId": "teacher",
+                "fieldsetLegend": "Teacher details"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "67e6003e84156a930178921b9d73fe131b69da1a2e3ed773fc2d1325c9077e36",
+    "bytes": 435
+  },
+  "candidate": {
+    "sha256": "0142969edd5d2600e21aa735b5aa2e488080747d9913903a105e0270f8906880",
+    "bytes": 471
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 951.5841999999998,
+  "status": "passed",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "results-content",
+      "sourceSelector": "#results",
+      "candidateSelector": "#results",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Trial resultsTrialScoreA95",
+          "candidate": "Trial resultsTrialScoreA95"
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "visibleText",
+          "status": "passed",
+          "source": "Trial resultsTrialScoreA95",
+          "candidate": "Trial resultsTrialScoreA95"
+        },
+        {
+          "property": "exposedText",
+          "status": "passed",
+          "source": "Trial resultsTrialScoreA95",
+          "candidate": "Trial resultsTrialScoreA95"
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

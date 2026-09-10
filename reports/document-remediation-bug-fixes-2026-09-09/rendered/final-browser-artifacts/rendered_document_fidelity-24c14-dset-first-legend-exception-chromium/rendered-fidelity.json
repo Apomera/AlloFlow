@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "a1c7a9c1f977bc98eee35fdf1aeaa9840a35312fbe5f9f9e0c0729e958cc64d3",
+    "bytes": 464
+  },
+  "candidate": {
+    "sha256": "b0802f04b3fa75535849295950f5382b07c090404ebab9c410112d72e33c9f52",
+    "bytes": 473
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 678.6241999999997,
+  "status": "passed",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "first-legend-control",
+      "sourceSelector": "#override",
+      "candidateSelector": "#override",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "name",
+          "status": "passed",
+          "source": "Enable alternate delivery",
+          "candidate": "Enable alternate delivery"
+        },
+        {
+          "property": "role",
+          "status": "passed",
+          "source": "checkbox",
+          "candidate": "checkbox"
+        },
+        {
+          "property": "disabled",
+          "status": "passed",
+          "source": false,
+          "candidate": false
+        },
+        {
+          "property": "checked",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

@@ -104,7 +104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       '.rr-learning-path{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:20px}.rr-learning-path button{display:flex;flex-direction:column;gap:8px;padding:18px;text-align:left;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;background:var(--allo-stem-panel,#111827);color:var(--allo-stem-text,#e2e8f0);cursor:pointer;min-height:132px}.rr-learning-path strong{font-size:16px}.rr-learning-path small{font-size:13px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.rr-step-number{font-size:11px;letter-spacing:.1em;font-weight:800;color:var(--rr-cyan,#22d3ee)}.rr-rule-brief{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.rr-rule-brief article{padding:14px;border-radius:12px;background:var(--allo-stem-canvas,#0f172a);border:1px solid var(--allo-stem-border,#334155)}.rr-rule-brief h4{font-size:14px;margin:10px 0 6px}.rr-rule-brief p{font-size:13px;line-height:1.55;margin:0;color:var(--allo-stem-text-soft,#cbd5e1)}.rr-drive-dock{padding:6px;border-radius:12px;background:rgba(8,15,28,.92);border:1px solid #475569;box-shadow:0 6px 24px #0005}.rr-drive-dock button{min-height:38px}' +
       '@media(max-width:560px){.rr-drive-shell .touch-controls{bottom:calc(168px + env(safe-area-inset-bottom, 0px))!important}.rr-learning-path,.rr-rule-brief{grid-template-columns:1fr}.rr-learning-path button{min-height:0;padding:15px}.rr-rule-brief article{padding:14px}.rr-rule-brief h4{margin-top:4px}}' +
       ".rr-lesson-shell{padding:24px;max-width:1000px;margin:0 auto;color:var(--allo-stem-text,#e2e8f0)}.rr-lesson-shell *{box-sizing:border-box}.rr-lesson-shell button:focus-visible,[data-rr-view=\"scenarioBriefing\"] button:focus-visible{outline:3px solid var(--rr-amber,#fbbf24);outline-offset:3px}.rr-back-link{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;color:var(--rr-blue,#60a5fa);background:none;border:0;cursor:pointer;font-size:13px;font-weight:700}.rr-lesson-eyebrow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--rr-cyan,#22d3ee)}.rr-lesson-shell h2{font-size:clamp(25px,4vw,34px);letter-spacing:-.035em;margin:6px 0 8px;line-height:1.15}.rr-lesson-intro{font-size:14px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8);margin:0 0 22px;max-width:620px}.rr-vehicle-picker{padding:18px;border:1px solid var(--allo-stem-border,#334155);border-radius:16px;background:var(--allo-stem-panel,#111827);margin-bottom:28px}.rr-vehicle-picker h3{font-size:15px;margin:0 0 12px}.rr-vehicle-options{display:flex;flex-wrap:wrap;gap:8px}.rr-vehicle-options button{display:flex;align-items:center;gap:7px;min-height:44px;padding:9px 13px;border:1px solid var(--allo-stem-border,#334155);border-radius:9px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);font-size:13px;font-weight:700;cursor:pointer}.rr-vehicle-options button[aria-pressed=\"true\"]{border-color:var(--rr-cyan,#22d3ee);box-shadow:inset 0 0 0 1px var(--rr-cyan,#22d3ee);background:color-mix(in srgb,var(--rr-cyan,#22d3ee) 12%,var(--allo-stem-canvas,#0f172a))}.rr-vehicle-picker p{font-size:13px;line-height:1.55;margin:12px 0 8px;color:var(--allo-stem-text-soft,#94a3b8)}.rr-vehicle-picker details{font-size:12px;color:var(--allo-stem-text-soft,#94a3b8);line-height:1.6}.rr-vehicle-picker summary{cursor:pointer;padding:5px 0;width:fit-content}.rr-lesson-group{margin:0 0 28px}.rr-lesson-group>header{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:12px}.rr-lesson-group h3{font-size:19px;letter-spacing:-.02em;margin:0}.rr-lesson-group>header p{font-size:13px;color:var(--allo-stem-text-soft,#94a3b8);margin:0}.rr-lesson-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}.rr-lesson-card{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:18px;text-align:left;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;background:var(--allo-stem-panel,#111827);color:var(--allo-stem-text,#e2e8f0);cursor:pointer}@media(hover:hover){.rr-lesson-card:hover{border-color:var(--rr-cyan,#22d3ee);box-shadow:0 5px 18px #0002}.rr-vehicle-options button:hover{border-color:var(--rr-cyan,#22d3ee)}}.rr-lesson-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.rr-lesson-difficulty{font-size:11px;font-weight:700;color:var(--allo-stem-text-soft,#94a3b8)}.rr-limit-sign{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:54px;min-height:65px;border:2px solid #0f172a;outline:1px solid #cbd5e1;outline-offset:2px;border-radius:5px;background:#fff;color:#111827;padding:5px;line-height:1;box-shadow:0 3px 8px #0002}.rr-limit-sign small{font-size:8px;font-weight:800;letter-spacing:.04em}.rr-limit-sign strong{font-size:29px;letter-spacing:-.05em;margin:3px 0}.rr-limit-sign em{font-size:8px;font-weight:700;font-style:normal}.rr-lesson-name{font-size:18px;font-weight:800;line-height:1.25;letter-spacing:-.02em}.rr-lesson-skill{font-size:12px;font-weight:700;color:var(--rr-cyan,#22d3ee);margin-top:5px}.rr-lesson-description{font-size:13px;line-height:1.55;color:var(--allo-stem-text-soft,#94a3b8)}.rr-lesson-meta{display:flex;gap:6px;flex-wrap:wrap;font-size:11px;color:var(--allo-stem-text-soft,#94a3b8);text-transform:capitalize}.rr-lesson-meta span{padding:4px 7px;border:1px solid var(--allo-stem-border,#334155);border-radius:5px}.rr-lesson-goal{margin-top:auto;padding-top:12px;border-top:1px solid var(--allo-stem-border,#334155);font-size:12px;line-height:1.5}.rr-lesson-goal strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--allo-stem-text-soft,#94a3b8);margin-bottom:4px}.rr-lesson-open{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800;color:var(--rr-blue,#60a5fa)}.rr-lesson-open small{font-size:11px;font-weight:500;color:var(--allo-stem-text-soft,#94a3b8)}.rr-briefing-steps{display:flex;flex-wrap:wrap;gap:8px 18px;padding:0;margin:4px 0 18px;list-style:none;font-size:12px;color:var(--allo-stem-text-soft,#94a3b8)}.rr-briefing-steps li{display:flex;gap:7px;align-items:center}.rr-briefing-steps span{display:grid;place-items:center;width:23px;height:23px;border:1px solid var(--allo-stem-border,#475569);border-radius:50%;font-size:10px;font-weight:800}.rr-briefing-steps [aria-current=\"step\"]{font-weight:800;color:var(--rr-cyan,#22d3ee)}.rr-briefing-steps [aria-current=\"step\"] span{border-color:currentColor}.rr-briefing-header{padding:24px;background:linear-gradient(120deg,rgba(14,116,144,.18),transparent);border-bottom:1px solid var(--allo-stem-border,#334155);display:flex;align-items:center;gap:20px}.rr-briefing-header>div{min-width:0;flex:1}.rr-briefing-header h2{margin:5px 0 8px;font-size:clamp(24px,4vw,32px);letter-spacing:-.035em;line-height:1.15}.rr-briefing-header p{margin:0;font-size:14px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.rr-briefing-body{padding:22px;display:grid;gap:22px}.rr-briefing-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.rr-briefing-vehicle{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;font-size:13px;padding:12px 14px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px;background:var(--allo-stem-canvas,#0f172a)}.rr-briefing-vehicle small{display:block;color:var(--allo-stem-text-soft,#94a3b8);font-size:11px;margin-bottom:3px}.rr-briefing-vehicle>div{flex:1;min-width:130px}.rr-briefing-vehicle button{min-height:36px;padding:5px 10px;border:1px solid var(--allo-stem-border,#475569);border-radius:7px;background:transparent;color:var(--rr-blue,#60a5fa);font-size:12px;font-weight:700;cursor:pointer}@media(max-width:420px){.rr-briefing-vehicle button{width:100%;min-height:44px}.rr-briefing-body>div:last-child>button{flex:1 1 220px}}@media(max-width:560px){.rr-lesson-shell{padding:16px}.rr-vehicle-picker{padding:14px}.rr-vehicle-options button{flex:1 1 130px}.rr-briefing-header{padding:18px;gap:14px}.rr-briefing-body{padding:16px}.rr-briefing-header .rr-limit-sign{width:48px}.rr-lesson-card{padding:16px}}" +
-      ".rr-parking-shell{padding:18px;max-width:1020px;margin:0 auto;color:var(--allo-stem-text,#e2e8f0)}.rr-parking-shell *{box-sizing:border-box}.rr-parking-shell h2{font-size:27px;letter-spacing:-.03em;margin:8px 0}.rr-parking-intro{font-size:13px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8);margin:0 0 18px}.rr-parking-workspace{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(270px,1fr);gap:18px;align-items:start}.rr-parking-scene{padding:10px;border:1px solid var(--allo-stem-border,#475569);border-radius:14px;background:var(--allo-stem-canvas,#0f172a)}.rr-parking-scene canvas{width:100%;height:auto;aspect-ratio:420/320;display:block;border-radius:8px}.rr-parking-scene-heading{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:2px 2px 10px;font-size:12px;font-weight:700}.rr-parking-scene-heading span{color:var(--allo-stem-text-soft,#94a3b8);font-weight:400}.rr-parking-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:12px 2px 4px;color:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-legend span:before{content:'';display:inline-block;width:10px;height:10px;border-radius:2px;background:#22d3ee;margin-right:6px}.rr-parking-legend span:last-child:before{background:transparent;border:1px dashed #4ade80}.rr-parking-key-help{font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8);margin:10px 2px 2px}.rr-parking-sidebar{display:grid;gap:14px}.rr-parking-readout{padding:15px;background:var(--allo-stem-panel,#111827);border:1px solid var(--allo-stem-border,#334155);border-radius:14px}.rr-parking-response{display:grid;gap:5px;padding:10px 12px;margin-bottom:12px;border-radius:9px;background:rgba(14,116,144,.12);font-size:12px}.rr-parking-response strong{font-size:13px;color:var(--rr-cyan,#22d3ee)}.rr-parking-response span{color:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-steering-track{position:relative;height:4px;background:var(--allo-stem-border,#475569);margin:6px 5px;border-radius:4px}.rr-parking-steering-track:after{content:'';position:absolute;left:50%;top:-3px;height:10px;width:1px;background:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-steering-track i{position:absolute;top:-3px;width:10px;height:10px;transform:translateX(-50%);border-radius:50%;background:var(--rr-cyan,#22d3ee);z-index:1}.rr-parking-readout h3{font-size:14px;margin:0 0 12px;font-weight:800}.rr-parking-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.rr-parking-metrics>div{min-width:0;border:1px solid var(--allo-stem-border,#334155);border-radius:9px;padding:10px;background:var(--allo-stem-canvas,#0f172a)}.rr-parking-metrics dt{font-size:11px;color:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-metrics dd{font-size:21px;font-weight:800;margin:5px 0;letter-spacing:-.02em}.rr-parking-metrics small{font-size:11px;line-height:1.4;color:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-readiness{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.45;background:rgba(14,116,144,.12);border:1px solid var(--allo-stem-border,#334155)}.rr-parking-readiness[data-ready=\"true\"]{border-color:var(--rr-cyan,#22d3ee);color:var(--rr-cyan,#22d3ee)}.rr-parking-coach{padding:15px;border:1px solid var(--allo-stem-border,#334155);background:var(--allo-stem-panel,#111827);border-radius:14px;font-size:13px;line-height:1.6}.rr-parking-coach h3{font-size:14px;margin:0 0 8px;font-weight:800}.rr-parking-coach p{margin:0 0 10px}.rr-parking-coach small{font-size:12px;color:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-shell button:focus-visible{outline:3px solid var(--rr-amber,#fbbf24);outline-offset:3px}@media(max-width:680px){.rr-parking-shell{padding:14px}.rr-parking-workspace{grid-template-columns:minmax(0,1fr)}.rr-parking-sidebar>[role=group]{order:-1}.rr-parking-shell h2{font-size:24px}.rr-parking-scene{max-width:460px;width:100%;margin:auto}}" +
+      ".rr-parking-shell{padding:18px;max-width:1020px;margin:0 auto;color:var(--allo-stem-text,#e2e8f0)}.rr-parking-shell *{box-sizing:border-box}.rr-parking-shell h2{font-size:27px;letter-spacing:-.03em;margin:8px 0}.rr-parking-intro{font-size:13px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8);margin:0 0 18px}.rr-parking-workspace{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(270px,1fr);gap:18px;align-items:start}.rr-parking-scene{padding:10px;border:1px solid var(--allo-stem-border,#475569);border-radius:14px;background:var(--allo-stem-canvas,#0f172a)}.rr-parking-scene canvas{width:100%;height:auto;aspect-ratio:420/320;display:block;border-radius:8px}.rr-parking-scene-heading{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:2px 2px 10px;font-size:12px;font-weight:700}.rr-parking-scene-heading span{color:var(--allo-stem-text-soft,#94a3b8);font-weight:400}.rr-parking-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:12px 2px 4px;color:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-legend span:before{content:'';display:inline-block;width:10px;height:10px;border-radius:2px;background:#22d3ee;margin-right:6px}.rr-parking-legend span:last-child:before{background:transparent;border:1px dashed #4ade80}.rr-parking-key-help{font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8);margin:10px 2px 2px}.rr-parking-sidebar{display:grid;gap:14px}.rr-parking-readout{padding:15px;background:var(--allo-stem-panel,#111827);border:1px solid var(--allo-stem-border,#334155);border-radius:14px}.rr-parking-response{display:grid;gap:5px;padding:10px 12px;margin-bottom:12px;border-radius:9px;background:rgba(14,116,144,.12);font-size:12px}.rr-parking-response strong{font-size:13px;color:var(--rr-cyan,#22d3ee)}.rr-parking-response span{color:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-steering-track{position:relative;height:4px;background:var(--allo-stem-border,#475569);margin:6px 5px;border-radius:4px}.rr-parking-steering-track:after{content:'';position:absolute;left:50%;top:-3px;height:10px;width:1px;background:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-steering-track i{position:absolute;top:-3px;width:10px;height:10px;transform:translateX(-50%);border-radius:50%;background:var(--rr-cyan,#22d3ee);z-index:1}.rr-parking-readout h3{font-size:14px;margin:0 0 12px;font-weight:800}.rr-parking-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.rr-parking-metrics>div{min-width:0;border:1px solid var(--allo-stem-border,#334155);border-radius:9px;padding:10px;background:var(--allo-stem-canvas,#0f172a)}.rr-parking-metrics dt{font-size:11px;color:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-metrics dd{font-size:21px;font-weight:800;margin:5px 0;letter-spacing:-.02em}.rr-parking-metrics small{font-size:11px;line-height:1.4;color:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-readiness{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.45;background:rgba(14,116,144,.12);border:1px solid var(--allo-stem-border,#334155)}.rr-parking-readiness[data-ready=\"true\"]{border-color:var(--rr-cyan,#22d3ee);color:var(--rr-cyan,#22d3ee)}.rr-parking-coach{padding:15px;border:1px solid var(--allo-stem-border,#334155);background:var(--allo-stem-panel,#111827);border-radius:14px;font-size:13px;line-height:1.6}.rr-parking-coach h3{font-size:14px;margin:0 0 8px;font-weight:800}.rr-parking-coach p{margin:0 0 10px}.rr-parking-coach small{font-size:12px;color:var(--allo-stem-text-soft,#94a3b8)}.rr-parking-shell button:focus-visible{outline:3px solid var(--rr-amber,#fbbf24);outline-offset:3px}@media(max-width:680px){.rr-parking-shell{padding:14px}.rr-parking-workspace{grid-template-columns:minmax(0,1fr)}.rr-parking-sidebar>[role=group]{order:0}.rr-parking-shell h2{font-size:24px}.rr-parking-scene{max-width:460px;width:100%;margin:auto}}" +
       '.touch-controls button{min-width:44px;min-height:44px}' +
       '#roadready-certificate{box-sizing:border-box}' +
       '@media(max-width:720px){.rr-drive-shell{height:calc(100dvh - 56px)!important;min-height:340px!important;border-radius:0!important}.rr-drive-dock{width:calc(100% - 12px);justify-content:center;bottom:calc(98px + env(safe-area-inset-bottom, 0px))!important}.rr-drive-dock button{flex:1 1 auto;padding-left:5px!important;padding-right:5px!important}.rr-drive-more{right:6px!important;bottom:calc(144px + env(safe-area-inset-bottom, 0px))!important}.touch-controls{bottom:calc(150px + env(safe-area-inset-bottom, 0px))!important}.touch-controls button{min-width:44px;min-height:44px}.rr-world-controls{max-height:42vh;overflow:auto}#roadready-certificate{padding:34px 18px 24px!important}}' +
@@ -1545,12 +1545,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // Preserve physical-button edge latches so a held Start/A/D-pad button
     // cannot fire again merely because pause cleared the movement controls.
     ['_gpA', '_gpB', '_gpX', '_gpY', '_gpStart', '_gpUp', '_gpDown',
-     '_gpLeft', '_gpRight', '_gpLB', '_gpRB'].forEach(function(key) {
+     '_gpLeft', '_gpRight', '_gpLB', '_gpRB', '_gpPark'].forEach(function(key) {
       if (Object.prototype.hasOwnProperty.call(source, key)) cleared[key] = !!source[key];
     });
     cleared._gpSteer = 0;
     cleared._gpThrottle = 0;
-    cleared._gpBrake = 0;
+    cleared._gpBrake = 0;cleared._gpLookLeft=false;cleared._gpLookRight=false;
     return cleared;
   }
   function longitudinalNetForce(thrustForce, resistanceForce, speedMps, gradeForce) {
@@ -6034,15 +6034,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var fwd = keys.w || keys.arrowup;
     var rev = keys.s || keys.arrowdown || keys.shift;
     var steer = ((keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0)) * 0.7;
+    if(Math.abs(keys._gpSteer||0)>0.001)steer=keys._gpSteer*0.7;
     car.steering += (steer - car.steering) * (1 - Math.exp(-6 * dt));
-    var target = fwd && !rev ? 22 : rev && !fwd ? -14 : 0;
+    var target = fwd && !rev ? 22 : rev && !fwd ? -8 : 0;
+    // Keep the indicated gear until the assisted direction change has stopped the car.
+    if(fwd&&!rev&&car.speed>=0)car.driveGear='D';else if(rev&&!fwd&&car.speed<=0)car.driveGear='R';
+    if(keys._gpThrottle>0&&!fwd&&!rev)target=(car.driveGear==='R'?-8:22)*keys._gpThrottle;
+    var pedalBrake=keys._gpBrake>0.05;
+    car.brakeHeld = !!keys[' '] || pedalBrake;
     // Direction buttons include an assisted stop before engaging the other direction.
     // Never integrate across zero into reverse in the same update.
     car.directionChange = target * car.speed < 0 ? (target < 0 ? 'reverse' : 'forward') : null;
-    if (keys[' '] || car.directionChange || car.parkingBrake) target = 0;
-    car.braking = !!keys[' '] || !!car.directionChange || (target === 0 && Math.abs(car.speed) > 0.1);
+    if (keys[' '] || pedalBrake || car.directionChange || car.parkingBrake) target = 0;
+    car.braking = !!keys[' '] || pedalBrake || !!car.directionChange || (target === 0 && Math.abs(car.speed) > 0.1);
     if (car.parkingBrake) { car.speed = 0; car.directionChange = null; return; }
-    car.speed += (target - car.speed) * (1 - Math.exp(-(target ? 2.4 : 8) * dt));
+    car.speed += (target - car.speed) * (1 - Math.exp(-(target ? 2.4 : pedalBrake ? 2+10*keys._gpBrake : 8) * dt));
     if (Math.abs(car.speed) < (car.directionChange ? 0.1 : 0.02)) car.speed = 0;
     // The stored pose is the body center, midway between the axles.
     // Its velocity includes the bicycle-model slip angle; using rear-axle
@@ -6055,11 +6061,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     car.heading += yaw;
   }
 
+  // A contact stops the maneuver at its last clear pose; it does not bounce or
+  // let held controls push the body through another vehicle.
+  function parkingLampState(car) {
+    // Reverse lamps indicate the selected gear, including when held at a stop.
+    // Completing this trainer releases the service brake and secures the car in Park.
+    return { reverse: !car.parkingBrake && car.driveGear === 'R', brake: !car.parkingBrake && !!car.braking };
+  }
+
+  function parkingControllerKeys(car, keys, actions) {
+    actions = actions || {};
+    var input = Object.assign({}, keys);
+    car.driveGear = car.driveGear || 'D';
+    function edge(name, held) { var key = '_pad_' + name, first = !!held && !car[key]; car[key] = !!held; return first; }
+    // Track every edge even while paused so held actions cannot be queued on resume.
+    var drive = edge('drive', actions.drive > 0.5 || keys.f);
+    var reverse = edge('reverse', actions.reverse > 0.5 || keys.g);
+    // Preserve a complete key tap between frames; the last gear request wins.
+    if (keys._parkingGear) {
+      drive = keys._parkingGear === 'D'; reverse = keys._parkingGear === 'R';
+      keys._parkingGear = null;
+    }
+    var park = edge('park', actions.park > 0.5 || keys.p);
+    var pause = edge('pause', actions.pause > 0.5);
+    if (pause || keys._pausePractice) {
+      keys._pausePractice = false;
+      car.practicePaused = !car.practicePaused;
+      car.requireParkingNeutral = true;
+    }
+    var held = ['w','s','a','d','arrowup','arrowdown','arrowleft','arrowright','shift',' ','f','g','p'].some(function(key) { return !!keys[key]; }) ||
+      Math.abs(actions.steer || 0) > 0.05 || actions.throttle > 0.05 || actions.brake > 0.05 || actions.drive > 0.5 || actions.reverse > 0.5 || actions.park > 0.5;
+    if (car.practicePaused || car.requireParkingNeutral) {
+      keys._securePark = false;
+      car.speed = 0; car.braking = true; car.directionChange = null;
+      if (!car.practicePaused && !held) car.requireParkingNeutral = false;
+      return { _practiceInactive: true, ' ': true };
+    }
+    if (drive) { if (Math.abs(car.speed) <= 0.1) { car.driveGear = 'D'; car.controlNotice = ''; } else car.controlNotice = 'Stop before changing gear.'; }
+    if (reverse) { if (Math.abs(car.speed) <= 0.1) { car.driveGear = 'R'; car.controlNotice = ''; } else car.controlNotice = 'Stop before changing gear.'; }
+    if (park) keys._securePark = true;
+    input._gpSteer = Number(actions.steer) || 0;
+    input._gpThrottle = Math.max(0, Math.min(1, Number(actions.throttle) || 0));
+    input._gpBrake = Math.max(0, Math.min(1, Number(actions.brake) || 0));
+    return input;
+  }
+
+  function parkingDrillStep(car, keys, dt, scn) {
+    car.settingsPaused = !!(window.StemInput && window.StemInput.isSuspended());
+    if (car.settingsPaused) {
+      car.speed = 0; car.braking = true; car.directionChange = null;
+      car.requireParkingNeutral = true;
+      keys._securePark = false; keys._pausePractice = false; keys._parkingGear = null;
+      return { kind: null, isNew: false, recovered: false, inactive: true };
+    }
+    var controlKeys=parkingControllerKeys(car,keys,window.StemInput?window.StemInput.read('roadReady'):{});
+    if (controlKeys._practiceInactive) return { kind: null, isNew: false, recovered: false, inactive: true };
+    var before = { x: car.x, y: car.y, heading: car.heading };
+    var collision = function(pose) {
+      if (scn.curb && scn.curb.x > 0 && parkingCurbGapInches(pose, scn.curb.x, scn.curb.side) < -0.01) return 'curb';
+      return scn.obstacles.some(function(ob) { return parkingCarHitsObstacle(pose, ob); }) ? 'obstacle' : null;
+    };
+    parkingDrillMotion(car, controlKeys, dt);
+    var kind = collision(car);
+    if (kind) {
+      if (!collision(before)) { car.x = before.x; car.y = before.y; car.heading = before.heading; }
+      car.speed = 0; car.braking = true; car.directionChange = null;
+      var isNew = !car.contactState;
+      if (isNew) car.contactState = { x: car.x, y: car.y, kind: kind };
+      return { kind: kind, isNew: isNew, recovered: false };
+    }
+    var recovered = !!car.contactState && Math.hypot(car.x - car.contactState.x, car.y - car.contactState.y) >= 2;
+    if (recovered) car.contactState = null;
+    return { kind: null, isNew: false, recovered: recovered };
+  }
+
+  // Cues for this training car and starting pose, not universal steering landmarks.
+  function parallelParkingPhase(car, phase, scenario) {
+    // Corrections need not follow every demonstration cue. A valid stopped pose
+    // can proceed directly to the final check, but never completes automatically.
+    if (scenario && parkingFinishCheck(car, scenario).ready) return 4;
+    var heading = ((car.heading * 180 / Math.PI) % 360 + 360) % 360;
+    var turnTowardSpace = (270 - heading + 540) % 360 - 180;
+    if (phase === 0 && car.speed < -0.5) return 1;
+    if (phase === 1 && turnTowardSpace >= 30 && turnTowardSpace < 90 && car.speed < 0) return 2;
+    if (phase === 2 && parkingCurbGapInches(car, 300, 'right') < 30) return 3;
+    if (phase === 3 && parkingAngleDeltaDeg(heading, 270) < 3) return 4;
+    return phase;
+  }
+
   function parkingPracticeMetrics(car, scn) {
     var angle = ((car.heading * 180 / Math.PI) % 360 + 360) % 360;
     var alignment = parkingAngleDeltaDeg(angle, scn.slot.requiredHeadingDeg == null ? 270 : scn.slot.requiredHeadingDeg);
     var curb = scn.curb && scn.curb.x > 0 ? parkingCurbGapInches(car, scn.curb.x, scn.curb.side) : null;
-    var bumper = null;
+    var bumper = null, frontBumper = null, rearBumper = null;
     if (curb !== null && alignment <= 10) {
       var box = parkingCarObb(car);
       var radiusY = Math.abs(box.forward.y) * box.halfLength + Math.abs(box.side.y) * box.halfWidth;
@@ -6067,15 +6161,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (vehicles.length >= 2) {
         var front = Math.min.apply(null, vehicles.map(function(ob) { return ob.y + ob.h; }));
         var rear = Math.max.apply(null, vehicles.map(function(ob) { return ob.y; }));
-        if (box.cy > front && box.cy < rear) bumper = Math.min(box.cy - radiusY - front, rear - box.cy - radiusY) * PARKING_INCHES_PER_PX;
+        if (box.cy > front && box.cy < rear) {
+          frontBumper = (box.cy - radiusY - front) * PARKING_INCHES_PER_PX;
+          rearBumper = (rear - box.cy - radiusY) * PARKING_INCHES_PER_PX;
+          bumper = Math.min(frontBumper, rearBumper);
+        }
       }
     }
     var finish = parkingFinishCheck(car, scn);
     return { stopped: Math.abs(car.speed) <= 0.1, speedMph: Math.abs(car.speed) * PARKING_INCHES_PER_PX / 17.6,
       steeringDegrees: (car.steering || 0) * 180 / Math.PI,
-      motionLabel: car.parkingBrake ? 'Park secured' : car.directionChange ? 'Stopping before ' + car.directionChange : car.braking ? 'Braking' : Math.abs(car.speed) <= 0.1 ? 'Stopped' : car.speed < 0 ? 'Reversing' : 'Moving forward',
-      angle: alignment, curbInches: curb, bumperInches: bumper,
-      ready: finish.ready, secured: !!car.parkingBrake, message: finish.message };
+      driveGear: car.driveGear||'D', controlNotice: car.settingsPaused ? 'Close Controls to return to practice.' : car.practicePaused ? 'Resume practice when you are ready.' : car.requireParkingNeutral ? 'Release the driving controls to continue.' : car.controlNotice||'',
+      motionLabel: car.settingsPaused ? 'Controls open · Practice paused' : car.practicePaused ? 'Practice paused' : car.requireParkingNeutral ? 'Waiting for controls to release' : car.parkingBrake ? 'Park secured' : car.directionChange ? 'Stopping before ' + car.directionChange : car.brakeHeld && Math.abs(car.speed) <= 0.1 ? 'Brake held' : car.braking && Math.abs(car.speed) > 0.1 ? 'Braking' : Math.abs(car.speed) <= 0.1 ? 'Stopped' : car.speed < 0 ? 'Reversing' : 'Moving forward',
+      angle: alignment, curbInches: curb, bumperInches: bumper, frontBumperInches: frontBumper, rearBumperInches: rearBumper,
+      ready: finish.ready && !car.practicePaused && !car.settingsPaused && !car.requireParkingNeutral, secured: !!car.parkingBrake,
+      message: car.settingsPaused ? 'Close Controls to continue the maneuver.' : car.practicePaused ? 'Practice paused · resume before securing the car.' : car.requireParkingNeutral ? 'Release the driving controls before continuing.' : finish.message };
+  }
+
+  function parkingClearanceGuideGeometry(car, scenario) {
+    var readings = parkingPracticeMetrics(car, scenario);
+    if (readings.frontBumperInches === null || readings.rearBumperInches === null || readings.frontBumperInches < 0 || readings.rearBumperInches < 0) return null;
+    var box = parkingCarObb(car);
+    var radiusY = Math.abs(box.forward.y) * box.halfLength + Math.abs(box.side.y) * box.halfWidth;
+    return {
+      x: car.x - 35,
+      front: { from: car.y - radiusY - readings.frontBumperInches / PARKING_INCHES_PER_PX, to: car.y - radiusY, inches: readings.frontBumperInches },
+      rear: { from: car.y + radiusY, to: car.y + radiusY + readings.rearBumperInches / PARKING_INCHES_PER_PX, inches: readings.rearBumperInches },
+      curb: { from: scenario.curb.x - readings.curbInches / PARKING_INCHES_PER_PX, to: scenario.curb.x,
+        y: car.y + (Math.abs(box.forward.x) < 0.000001 ? 0 : Math.sign(box.forward.x) * box.halfLength * box.forward.y) +
+          (Math.abs(box.side.x) < 0.000001 ? 0 : Math.sign(box.side.x) * box.halfWidth * box.side.y), inches: readings.curbInches }
+    };
+  }
+
+  function drawParkingClearanceGuides(gfx, car, scenario) {
+    var guides = parkingClearanceGuideGeometry(car, scenario);
+    if (!guides) return;
+    var fontSize = Math.min(18, Math.max(12, 12 * gfx.canvas.width / (gfx.canvas.clientWidth || gfx.canvas.width)));
+    gfx.save(); gfx.lineWidth = 2; gfx.setLineDash([]); gfx.font = 'bold ' + fontSize + 'px system-ui';
+    function label(text, x, y, color, right) {
+      var lines = Array.isArray(text) ? text : [text];
+      var width = Math.max.apply(null, lines.map(function(line) { return gfx.measureText(line).width; }));
+      var left = right ? x - width : x;
+      gfx.fillStyle = '#0f172a'; gfx.fillRect(left - 5, y - fontSize - 2, width + 10, (fontSize + 3) * lines.length + 5);
+      gfx.fillStyle = color; gfx.textAlign = 'left';
+      lines.forEach(function(line, index) { gfx.fillText(line, left, y + index * (fontSize + 3)); });
+    }
+    ['front', 'rear'].forEach(function(name) {
+      var gap = guides[name], color = gap.inches < 24 ? '#fbbf24' : '#22d3ee';
+      gfx.strokeStyle = color;
+      gfx.beginPath(); gfx.moveTo(guides.x, gap.from); gfx.lineTo(guides.x, gap.to);
+      gfx.moveTo(guides.x - 4, gap.from); gfx.lineTo(guides.x + 4, gap.from);
+      gfx.moveTo(guides.x - 4, gap.to); gfx.lineTo(guides.x + 4, gap.to); gfx.stroke();
+      label((name === 'front' ? 'Front ' : 'Rear ') + (gap.inches / 12).toFixed(1) + ' ft', guides.x - 10, (gap.from + gap.to) / 2 + 4, color, true);
+    });
+    var curb = guides.curb, curbColor = curb.inches < 0 || curb.inches > 18 ? '#fbbf24' : '#22d3ee';
+    gfx.strokeStyle = curbColor;
+    gfx.beginPath(); gfx.moveTo(curb.from, curb.y); gfx.lineTo(curb.to, curb.y);
+    gfx.moveTo(curb.from, curb.y - 4); gfx.lineTo(curb.from, curb.y + 4);
+    gfx.moveTo(curb.to, curb.y - 4); gfx.lineTo(curb.to, curb.y + 4); gfx.stroke();
+    label(['Curb', curb.inches.toFixed(1) + ' in'], curb.to + 10, curb.y - 4, curbColor, false);
+    gfx.restore();
+  }
+
+  function ParkingClearanceToggle(props) {
+    var h = props.h, state = props.React.useState(props.guidesRef.current);
+    props.React.useEffect(function() { state[1](props.guidesRef.current); }, [props.resetToken]);
+    return h('div', { style: { margin: '8px 0', fontSize: '12px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+      h('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px', cursor: 'pointer' } },
+        h('input', { type: 'checkbox', checked: state[0], onChange: function(e) { props.guidesRef.current = e.target.checked; state[1](e.target.checked); } }), 'Show clearance guides'),
+      state[0] ? h('p', { style: { margin: '0', lineHeight: 1.5 } }, 'Guides appear when aligned between the cars. Amber marks a gap that needs attention. Readings also appear in Check your position.') : null
+    );
   }
 
   // A small independent component updates readings without restarting the driving loop.
@@ -6087,28 +6242,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var timer = setInterval(function() { setReadings(parkingPracticeMetrics(props.carRef.current, props.scenario)); }, 200);
       return function() { clearInterval(timer); };
     }, [props.carRef, props.scenario]);
-    var metric = function(label, value, hint) { return h('div', { key: label }, h('dt', null, label), h('dd', null, value), h('small', null, hint)); };
+    var metric = function(label, value, hint, wide) { return h('div', { key: label, style: wide ? { gridColumn: '1 / -1' } : undefined }, h('dt', null, label), h('dd', null, value), h('small', null, hint)); };
     return h('section', { className: 'rr-parking-readout', 'aria-label': 'Live parking measurements' },
       h('h3', null, 'Check your position'),
       h('div', { className: 'rr-parking-response', 'aria-label': 'Car response' },
-        h('strong', null, readings.motionLabel),
+        h('strong', null, readings.motionLabel + ' · ' + (readings.secured ? 'P' : readings.driveGear)),
+        readings.controlNotice && h('span',{role:'status'},readings.controlNotice),
         h('span', null, 'Front wheels · ' + (Math.abs(readings.steeringDegrees) < 1 ? 'Straight' : (readings.steeringDegrees < 0 ? 'Left ' : 'Right ') + Math.round(Math.abs(readings.steeringDegrees)) + '°')),
         h('div', { className: 'rr-parking-steering-track', 'aria-hidden': 'true' }, h('i', { style: { left: Math.max(0, Math.min(100, 50 + readings.steeringDegrees / 0.84)) + '%' } }))
       ),
       h('dl', { className: 'rr-parking-metrics', style: { margin: 0 } },
         metric('Speed', readings.stopped ? 'Stopped' : Math.max(0.1, readings.speedMph).toFixed(1) + ' mph', 'Stop before selecting Park'),
         metric('Alignment', Math.round(readings.angle) + '°', '0° = parallel with traffic'),
-        metric('Curb gap', readings.curbInches === null ? 'No curb' : readings.curbInches < 0 ? 'Contact' : readings.curbInches.toFixed(1) + ' in', 'Finish within 18 inches'),
-        metric('Bumper space', readings.bumperInches === null ? 'Align first' : readings.bumperInches < 0 ? 'Overlap' : (readings.bumperInches / 12).toFixed(1) + ' ft', 'At least 2 feet at both ends')
+        metric('Curb gap', readings.curbInches === null ? 'No curb' : readings.curbInches < 0 ? 'Contact' : readings.curbInches.toFixed(1) + ' in', 'Finish within 18 inches', true),
+        metric('Front bumper space', readings.frontBumperInches === null ? 'Align first' : readings.frontBumperInches < 0 ? 'Overlap' : (readings.frontBumperInches / 12).toFixed(1) + ' ft', readings.frontBumperInches !== null && readings.frontBumperInches < 24 ? 'Too close to the car ahead' : 'Leave at least 2 feet ahead'),
+        metric('Rear bumper space', readings.rearBumperInches === null ? 'Align first' : readings.rearBumperInches < 0 ? 'Overlap' : (readings.rearBumperInches / 12).toFixed(1) + ' ft', readings.rearBumperInches !== null && readings.rearBumperInches < 24 ? 'Too close to the car behind' : 'Leave at least 2 feet behind')
       ),
       h('div', { className: 'rr-parking-readiness', 'data-ready': readings.ready || readings.secured ? 'true' : 'false', role: 'status', 'aria-live': 'polite' },
         readings.secured ? 'Parking secured · Park + parking brake' : readings.ready ? 'Ready to secure · select Park + parking brake' : readings.message)
     );
   }
 
-  function parkingTouchControls(h, keysRef, onReset, secure) {
+  function ParkingPracticeReview(props) {
+    var h = props.h, ref = props.React.useRef(null);
+    props.React.useEffect(function() { if (ref.current) ref.current.focus(); }, []);
+    var message = props.hits === 0
+      ? 'You parked without contact. Repeat with clearance guides hidden, or try a tighter space when you feel ready.'
+      : 'You secured the car after ' + props.hits + (props.hits === 1 ? ' contact.' : ' contacts.') + ' Try again with guides: stop and check both ends before each correction.';
+    var button = function(label, action) { return h('button', { type: 'button', onClick: action, style: { minHeight: '44px', padding: '8px 12px', border: '1px solid #64748b', borderRadius: '8px', background: '#1e293b', color: '#fff', cursor: 'pointer' } }, label); };
+    return h('section', { ref: ref, tabIndex: -1, 'aria-label': 'Parking practice review', className: 'rr-parking-coach', style: { borderColor: 'var(--rr-cyan, #22d3ee)' } },
+      h('h3', null, 'Choose your next practice'),
+      h('p', null, message),
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+        button('Retry with guides', function() { props.onRetry(true); }),
+        button('Retry without guides', function() { props.onRetry(false); }),
+        props.onNext ? button('Try Tight Parallel', props.onNext) : null),
+      h('p', { style: { margin: '10px 0 0', fontSize: '12px' } }, 'Hiding guides removes the scene measurements; the instructor and live readings remain available.')
+    );
+  }
+
+  function ParkingPracticeControls(props) {
+    var React = props.React, h = props.h, keysRef = props.keysRef, onReset = props.onReset, secure = props.secure;
+    var readState = function() {
+      var car = props.carRef.current;
+      return [!!car.practicePaused, !!car.settingsPaused, !!props.doneRef.current, !!car.requireParkingNeutral].map(Number).join('');
+    };
+    var state = React.useState(readState), flags = state[0];
+    React.useEffect(function() {
+      var timer = setInterval(function() { state[1](readState()); }, 100);
+      return function() { clearInterval(timer); };
+    }, [props.carRef, props.doneRef]);
+    var paused = flags[0] === '1', settings = flags[1] === '1', finished = flags[2] === '1', waiting = flags[3] === '1';
+    var inactive = paused || settings || finished;
+    var buttonStyle = function(disabled, primary) { return { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: primary ? '#0e7490' : '#1e293b', color: '#fff', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.55 : 1 }; };
     var hold = function(key, label) {
-      return h('button', { key: key, type: 'button', 'aria-label': label,
+      return h('button', { key: key, type: 'button', disabled: inactive, 'aria-label': label, 'data-stem-touch-controls': 'true',
         onPointerDown: function(e) { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); keysRef.current[key] = true; },
         onPointerUp: function() { keysRef.current[key] = false; },
         onPointerCancel: function() { keysRef.current[key] = false; },
@@ -6116,13 +6304,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         onKeyDown: function(e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); keysRef.current[key] = true; } },
         onKeyUp: function(e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); keysRef.current[key] = false; } },
         onBlur: function() { keysRef.current[key] = false; },
-        style: { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: '#1e293b', color: '#fff', touchAction: 'none', cursor: 'pointer' }
+        style: Object.assign(buttonStyle(inactive, false), { touchAction: 'none' })
       }, label);
     };
     return h('div', { role: 'group', 'aria-label': 'Parking controls', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '12px 0' } },
       hold('w', 'Forward'), hold('s', 'Reverse'), hold('a', 'Steer left'), hold('d', 'Steer right'), hold(' ', 'Brake'),
-      h('button', { type: 'button', onClick: onReset, style: { minHeight: '44px', padding: '8px 12px' } }, 'Reset practice'),
-      secure ? h('button', { type: 'button', onClick: function() { keysRef.current._securePark = true; }, style: { minHeight: '44px', padding: '8px 12px', background: '#0e7490', color: '#fff', borderRadius: '8px', border: 0 } }, 'Park + parking brake') : null
+      h('button', { type: 'button', disabled: settings || finished, onClick: function() { keysRef.current._pausePractice = true; }, style: buttonStyle(settings || finished, false) }, finished ? 'Practice complete' : paused ? 'Resume practice' : 'Pause practice'),
+      h('button', { type: 'button', onClick: onReset, style: buttonStyle(false, false) }, 'Reset practice'),
+      secure ? h('button', { type: 'button', disabled: inactive || waiting, onClick: function() { keysRef.current._securePark = true; }, style: buttonStyle(inactive || waiting, true) }, finished ? 'Parking secured' : 'Park + parking brake') : null
     );
   }
 
@@ -6153,6 +6342,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (DRILL_KEYS.indexOf(k) !== -1) e.preventDefault();   // arrows and space scroll the page otherwise
       if (e.repeat) return;
       keysRef.current[k] = true;
+      if (k === 'f' || k === 'g') keysRef.current._parkingGear = k === 'f' ? 'D' : 'R';
+      if (k === 'p') keysRef.current._securePark = true;
       if (k === 'r' && typeof onReset === 'function') onReset();
     };
     var onUp = function(e) {
@@ -6180,7 +6371,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var useEffect = React.useEffect;
     var useRef = React.useRef;
     var scn = props.scenario;
+    var completeRef = useRef(props.onComplete);
+    completeRef.current = props.onComplete;
     var canvasRef = useRef(null);
+    var guidesRef = useRef(true);
     var carRef = useRef(Object.assign({ speed: 0, steering: 0 }, scn.startCar));
     var keysRef = useRef({});
     var animRef = useRef(null);
@@ -6230,30 +6424,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var update = function(dt) {
         var car = carRef.current;
         var k = keysRef.current;
-        parkingDrillMotion(car, k, dt);
-
-        // Hit detection vs obstacles (axis-aligned approximation; rotated
-        // obstacles collide via their drawn footprint's enclosing box)
-        var curbPenetration = scn.curb.x > 0 ? parkingCurbGapInches(car, scn.curb.x, scn.curb.side) : 0;
-        var anyHit = curbPenetration < -0.01;
-        if (curbPenetration < 0) car.x += curbPenetration / PARKING_INCHES_PER_PX;
-        scn.obstacles.forEach(function(ob) {
-          if (parkingCarHitsObstacle(car, ob)) anyHit = true;
-        });
-        if (anyHit) {
-          if (hitCooldownRef.current <= 0) {
-            hitCooldownRef.current = 0.5;
-            var newSt = Object.assign({}, stRef.current);
-            newSt.score = Math.max(0, newSt.score - 25);
-            newSt.hits += 1;
-            commitSt(newSt);
-            setFeedback('💥 You hit an obstacle. -25. Press R to reset.');
-          }
-          car.speed *= -0.3;
-        } else {
-          hitCooldownRef.current = Math.max(0, hitCooldownRef.current - dt);
+        var contact = parkingDrillStep(car, k, dt, scn);
+        if (contact.inactive) return;
+        if (contact.isNew) {
+          var newSt = Object.assign({}, stRef.current);
+          newSt.score = Math.max(0, newSt.score - 25); newSt.hits += 1;
+          commitSt(newSt);
+          setFeedback((contact.kind === 'curb' ? 'Curb contact.' : 'Obstacle contact.') + ' −25. The car has stopped. Check clearance, then move away gently or reset practice.');
+        } else if (contact.recovered) {
+          setFeedback('Clear again. ' + scn.hint);
         }
+        hitCooldownRef.current = Math.max(0, hitCooldownRef.current - dt);
 
+        if (contact.kind) { k._securePark = false; return; }
         // Boundary breach (if scenario has bounds)
         if (scn.bounds) {
           var bd = scn.bounds;
@@ -6279,7 +6462,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var finalSt = Object.assign({}, stRef.current, { parked: true });
           commitSt(finalSt);
           setFeedback('✓ Maneuver complete. Score: ' + finalSt.score + '/100. ' + (curbCourse ? finish.message : 'Stopped safely inside the course.'));
-          if (props.onComplete) props.onComplete(finalSt.score);
+          if (completeRef.current) completeRef.current(finalSt.score);
         }
       };
 
@@ -6351,16 +6534,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         gfx.fillRect(-25, -12, 50, 24);
         gfx.fillStyle = '#0c4a6e';
         gfx.fillRect(6, -10, 14, 20);
-        if (car.speed < -0.5) {
+        var lamps = parkingLampState(car);
+        if (lamps.reverse) {
           gfx.fillStyle = '#fff';
           gfx.fillRect(-25, -10, 5, 6); gfx.fillRect(-25, 4, 5, 6);
         }
-        if (car.braking || car.parkingBrake) { gfx.fillStyle = '#fb7185'; gfx.fillRect(-25, -12, 3, 3); gfx.fillRect(-25, 9, 3, 3); }
+        if (lamps.brake) { gfx.fillStyle = '#fb7185'; gfx.fillRect(-25, -12, 3, 3); gfx.fillRect(-25, 9, 3, 3); }
         [-12, 12].forEach(function(wheelY) {
           gfx.save(); gfx.translate(15, wheelY); gfx.rotate(car.steering);
           gfx.fillStyle = '#0f172a'; gfx.fillRect(-5, -2, 10, 4); gfx.restore();
         });
         gfx.restore();
+        if (guidesRef.current && scn.curb.x > 0) drawParkingClearanceGuides(gfx, car, scn);
         // HUD
         gfx.fillStyle = 'rgba(15,23,42,0.85)';
         gfx.fillRect(10, 10, 180, 56);
@@ -6378,17 +6563,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     return h('div', { style: { padding: '14px', maxWidth: '760px', margin: '0 auto' } },
       h('button', { onClick: props.onExit, style: { fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, marginBottom: '8px' } }, '← Menu'),
+      h(RoadReadyControlSettings,{React:React}),
+      h(RoadReadyInputHint,{React:React}),
       scn.curb.x > 0 ? h(ParkingPracticeReadout, { h: h, React: React, carRef: carRef, scenario: scn }) : null,
-      parkingTouchControls(h, keysRef, resetCar, !!scn.curb.x),
+      h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, secure: !!scn.curb.x }),
       h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, #1e293b)' } },
         h('div', { style: { fontSize: '15px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, scn.label + ' · ' + scn.difficulty),
         h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, feedbackText),
         h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloRRT('stem.roadready.a11y_top_down_2d_driving_scenario_your_car_obstacles', 'Top-down 2D driving scenario: your car, obstacles (cones, parked cars, or boundary lines), and the dashed practice boundary. The scene updates as you drive with WASD or arrow keys.'), style: { width: '100%', height: 'auto', aspectRatio: scn.curb.x > 0 ? '420 / 480' : '700 / 560', borderRadius: '8px', background: 'var(--allo-stem-panel, #1e293b)', display: 'block' } }),
+        scn.curb.x > 0 ? h(ParkingClearanceToggle, { h: h, React: React, guidesRef: guidesRef }) : null,
         h('div', { style: { marginTop: '8px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)' } },
           'WASD or arrows: maneuver. Space: brake. Use Park + parking brake to finish curb parking. The training car starts stationary.'
         )
       )
     );
+  }
+
+  function roadReadyControlLabel(action,code,fallback){
+    var api=window.StemInput;if(!api)return fallback;var mode=api.preferences().mode;
+    if(mode==='controller'||(mode==='auto'&&api.state().connected))return api.bindingLabel('roadReady',action);
+    var key=api.keyLabel('roadReady',code);return key===' '?'Space':String(key).toUpperCase();
+  }
+  function RoadReadyInputHint(props){
+    var React=props.React,h=React.createElement,refresh=React.useState(0);
+    React.useEffect(function(){return window.StemInput?window.StemInput.subscribe(function(){refresh[1](function(n){return n+1;});}):undefined;},[]);
+    var api=window.StemInput;if(!api)return null;var mode=api.preferences().mode;
+    var label=function(code){var value=api.keyLabel('roadReady',code);return value===' '?'Space':String(value).toUpperCase();};
+    return h('p',{className:'rr-parking-key-help','aria-label':'Current control bindings'},mode==='controller'?
+      'Steer: '+api.bindingLabel('roadReady','steer')+' · Move: '+api.bindingLabel('roadReady','throttle')+' · Brake: '+api.bindingLabel('roadReady','brake')+' · Drive/Reverse: '+api.bindingLabel('roadReady','drive')+' / '+api.bindingLabel('roadReady','reverse')+' · Park: '+api.bindingLabel('roadReady','park')+' · Pause: '+api.bindingLabel('roadReady','pause'):
+      'Move: '+label('KeyW')+' / '+label('KeyS')+' · Steer: '+label('KeyA')+' / '+label('KeyD')+' · Brake: '+label(props.driving?'KeyS':'Space')+' · Reset: '+label('KeyR')+' · Park: '+label('KeyP'));
+  }
+
+  function RoadReadyControlSettings(props) {
+    var React=props.React,h=React.createElement,state=React.useState(false),open=state[0],setOpen=state[1];
+    if(!window.StemInput)return null;
+    return h('div',{style:props.floating?{position:'absolute',top:'12px',right:'12px',zIndex:360,maxWidth:'calc(100% - 24px)'}:{margin:'10px 0'}},
+      h('button',{type:'button',onClick:function(){if(props.onOpen)props.onOpen();setOpen(!open);},style:{minHeight:'44px',padding:'8px 12px',border:'1px solid #64748b',borderRadius:'8px',background:'#0f172a',color:'#fff'}},'Controls'),
+      open&&h('div',{style:props.floating?{position:'fixed',inset:'5%',zIndex:1000,overflow:'auto'}:{}},h(window.StemInput.Panel,{React:React,toolId:'roadReady',onClose:function(){setOpen(false);}}),props.floating&&h('p',{style:{padding:'12px',background:'#0f172a',color:'#fff'},'aria-label':'Driving controller guide'},'Shoulder checks: '+window.StemInput.bindingLabel('roadReady','lookLeft')+' / '+window.StemInput.bindingLabel('roadReady','lookRight')+'. Hold for the cockpit shoulder view; release to return. Drive: '+window.StemInput.bindingLabel('roadReady','drive')+' · Reverse: '+window.StemInput.bindingLabel('roadReady','reverse')+' · Park: '+window.StemInput.bindingLabel('roadReady','park')+'. Stop before shifting.')));
   }
 
   function ParkingMode(props) {
@@ -6397,19 +6608,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var useState = React.useState;
     var useEffect = React.useEffect;
     var useRef = React.useRef;
+    var completeRef = useRef(props.onComplete);
+    completeRef.current = props.onComplete;
     var canvasRef = useRef(null);
+    var headingRef = useRef(null);
+    var guidesRef = useRef(true);
     var carRef = useRef({ x: 254.3, y: 95, heading: -Math.PI / 2, speed: 0, steering: 0 });
     var keysRef = useRef({});
     var animRef = useRef(null);
     if (window.__testHooks) window.__testHooks.parking = { carRef: carRef, keysRef: keysRef };
     var timeRef = useRef(0);
     var stepRef = useRef(0);
-    var hitConeRef = useRef(false);
+    var correctionRef = useRef(null);
     var doneRef = useRef(false);
     var feedback = useState('Before reversing: signal, check mirrors and look over your right shoulder. You start alongside the front car, about 2 feet away.');
     var feedbackText = feedback[0]; var setFeedback = feedback[1];
     var status = useState({ score: 100, time: 0, hits: 0, parked: false });
     var st = status[0]; var setSt = status[1];
+    var stRef = useRef(st);
+    function commitSt(next) { stRef.current = next; setSt(next); }
 
     // Two parked cars + curb. The slot is between them.
     var FRONT_CAR = { x: 273, y: 70, w: 24, h: 50 };
@@ -6421,12 +6638,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       stepCheck: function(car, scn, angle) { return Math.abs(car.x - SLOT.x) < SLOT.w / 2 && Math.abs(car.y - SLOT.y) < SLOT.h / 2 && parkingAngleDeltaDeg(angle, 270) < 10; }
     }; }, []);
 
+    var STEP_TITLES = ['Check and line up', 'Reverse and steer right', 'Reverse with wheels straight', 'Steer left into the space', 'Straighten, stop and secure'];
     var STEPS = [
       'You start alongside the front car with rear bumpers aligned. Before reversing, signal and check mirrors, blind spots, and the space behind you.',
-      'Step 2: Begin reversing. Steer FULL RIGHT. Back slowly until your car is at ~45°.',
-      'Step 3: Straighten the wheel. Keep reversing slowly toward the curb.',
-      'Step 4: Steer FULL LEFT. Continue reversing to swing the front in.',
-      'Step 5: Straighten the car parallel to the curb. Pull forward to center in the slot.',
+      'Reverse slowly and steer right. For this training car, straighten the wheels when Alignment reaches about 30°.',
+      'Straighten the wheels and keep reversing slowly. Steer left when the curb gap reaches about 2½ feet; watch the front car clearance.',
+      'Steer left while reversing to bring the front into the space. As Alignment approaches 0°, straighten the wheels and brake.',
+      'Straighten the wheels and stop. Check both bumper clearances and the curb gap; adjust only if needed, then select Park + parking brake.',
       '✅ PARKED! You completed the maneuver. Score: '
     ];
 
@@ -6438,10 +6656,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       carRef.current = { x: 254.3, y: 95, heading: -Math.PI / 2, speed: 0, steering: 0 };
       keysRef.current = {};
       stepRef.current = 0;
+      correctionRef.current = null;
       doneRef.current = false;
-      hitConeRef.current = false;
-      setSt({ score: 100, time: 0, hits: 0, parked: false });
+      commitSt({ score: 100, time: 0, hits: 0, parked: false });
       setFeedback(STEPS[0]);
+      if (headingRef.current) headingRef.current.focus();
     }
 
     useEffect(function() {
@@ -6462,40 +6681,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var update = function(dt) {
         var car = carRef.current;
         var k = keysRef.current;
-        parkingDrillMotion(car, k, dt);
-        // Hit detection vs parked cars
-        if (parkingCarHitsObstacle(car, FRONT_CAR) || parkingCarHitsObstacle(car, REAR_CAR) || parkingCurbGapInches(car, CURB_X, 'right') < -0.01) {
-          if (!hitConeRef.current) {
-            hitConeRef.current = true;
-            var newSt = Object.assign({}, st);
-            newSt.score = Math.max(0, newSt.score - 25);
-            newSt.hits += 1;
-            setSt(newSt);
-            setFeedback(parkingCurbGapInches(car, CURB_X, 'right') < -0.01 ? 'Curb contact. −25. Move clear or reset practice.' : 'Parked-car contact. −25. Move clear or reset practice.');
-          }
-          car.speed *= -0.3;
-        } else {
-          hitConeRef.current = false;
+        var contact = parkingDrillStep(car, k, dt, practiceScenario);
+        if (contact.inactive) return;
+        if (contact.isNew) {
+          commitSt(Object.assign({}, stRef.current, { score: Math.max(0, stRef.current.score - 25), hits: stRef.current.hits + 1 }));
+          setFeedback((contact.kind === 'curb' ? 'Curb contact.' : 'Parked-car contact.') + ' −25. The car has stopped. Check clearance, then move away gently or reset practice.');
+        } else if (contact.recovered) {
+          setFeedback('Clear again. ' + STEPS[stepRef.current]);
         }
-        // Clamp the oriented body at the curb. Rotation changes the projected
-        // body edge, so a fixed center offset is not physically valid.
-        var curbPenetrationInches = parkingCurbGapInches(car, CURB_X, 'right');
-        if (curbPenetrationInches < 0) {
-          car.x -= (-curbPenetrationInches / PARKING_INCHES_PER_PX);
-          car.speed *= 0.3;
-        }
+        if (contact.kind) { k._securePark = false; return; }
         // Step progression follows the same orientation used by rendering and OBB collision.
         var headingDeg = (car.heading * 180 / Math.PI + 360) % 360;
         var parallelHeading = parkingAngleDeltaDeg(headingDeg, 270) < 10;
         var inSlot = Math.abs(car.x - SLOT.x) < SLOT.w / 2 && Math.abs(car.y - SLOT.y) < SLOT.h / 2;
-        if (stepRef.current === 0 && car.speed < -0.5) {
-          stepRef.current = 1; setFeedback(STEPS[1]);
-        } else if (stepRef.current === 1 && parkingAngleDeltaDeg(headingDeg, 270) > 40 && car.speed < 0) {
-          stepRef.current = 2; setFeedback(STEPS[2]);
-        } else if (stepRef.current === 2 && parkingCurbGapInches(car, CURB_X, 'right') < 36) {
-          stepRef.current = 3; setFeedback(STEPS[3]);
-        } else if (stepRef.current === 3 && parallelHeading) {
-          stepRef.current = 4; setFeedback(STEPS[4]);
+        var nextPhase = car.contactState ? stepRef.current : parallelParkingPhase(car, stepRef.current, practiceScenario);
+        var finalCheck = nextPhase === 4 ? parkingFinishCheck(car, practiceScenario) : null;
+        var correction = finalCheck && !finalCheck.ready ? finalCheck.message : null;
+        if (!car.contactState && (nextPhase !== stepRef.current || correction !== correctionRef.current || contact.recovered)) {
+          stepRef.current = nextPhase;
+          correctionRef.current = correction;
+          setFeedback(STEPS[nextPhase] + (correction ? ' ' + correction : ''));
         }
         if (k._securePark) {
           k._securePark = false;
@@ -6506,10 +6711,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           doneRef.current = true;
           car.speed = 0;
           car.parkingBrake = true;
-          var newSt2 = Object.assign({}, st, { parked: true });
-          setSt(newSt2);
+          var newSt2 = Object.assign({}, stRef.current, { parked: true });
+          commitSt(newSt2);
           setFeedback('✓ Parked safely. ' + finish.message + ' Score: ' + newSt2.score + '/100 (' + newSt2.hits + ' hits).');
-          if (props.onComplete) props.onComplete(newSt2.score);
+          if (completeRef.current) completeRef.current(newSt2.score);
         }
       };
 
@@ -6569,17 +6774,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         gfx.fillStyle = '#0c4a6e';
         gfx.fillRect(6, -10, 14, 20);
         // White reversing lamps are separate from red brake lamps
-        if (car.speed < -0.5) {
+        var lamps = parkingLampState(car);
+        if (lamps.reverse) {
           gfx.fillStyle = '#fff';
           gfx.fillRect(-25, -10, 5, 6); gfx.fillRect(-25, 4, 5, 6);
         }
-        if (car.braking || car.parkingBrake) { gfx.fillStyle = '#fb7185'; gfx.fillRect(-25, -12, 3, 3); gfx.fillRect(-25, 9, 3, 3); }
+        if (lamps.brake) { gfx.fillStyle = '#fb7185'; gfx.fillRect(-25, -12, 3, 3); gfx.fillRect(-25, 9, 3, 3); }
         // Each front wheel turns about its own contact point.
         [-12, 12].forEach(function(wheelY) {
           gfx.save(); gfx.translate(15, wheelY); gfx.rotate(car.steering);
           gfx.fillStyle = '#0f172a'; gfx.fillRect(-5, -2, 10, 4); gfx.restore();
         });
         gfx.restore();
+        if (guidesRef.current) drawParkingClearanceGuides(gfx, car, practiceScenario);
         gfx.restore(); // practice camera
 
       };
@@ -6595,23 +6802,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return h('div', { className: 'rr-parking-shell' },
       h('button', { onClick: props.onExit, className: 'rr-back-link' }, '← Parking practice'),
       h('div', { className: 'rr-lesson-eyebrow' }, 'Maneuver practice · Training car'),
-      h('h2', null, 'Parallel parking'),
-      h('p', { className: 'rr-parking-intro' }, 'Work slowly into the space. Use the live measurements to adjust your position, then stop and secure the car.'),
+      h('h2', { ref: headingRef, tabIndex: -1 }, 'Parallel parking'),
+      h(RoadReadyControlSettings,{React:React}),
+      h('p', { className: 'rr-parking-intro' }, 'Learn to parallel park between two cars. Follow the instructor one step at a time, using the live clearances to guide small, slow adjustments.'),
       h('div', { className: 'rr-parking-workspace' },
         h('div', { className: 'rr-parking-scene' },
           h('div', { className: 'rr-parking-scene-heading' }, 'Practice space', h('span', null, 'Score ' + st.score + '/100 · Contacts ' + st.hits)),
           h('canvas', { ref: canvasRef, role: 'img', 'aria-label': 'Top-down parallel parking scene with the learner car, two parked cars, a right-hand curb, and the target space. Traffic travels toward the top of the scene.' }),
+          h(ParkingClearanceToggle, { h: h, React: React, guidesRef: guidesRef, resetToken: st }),
           h('div', { className: 'rr-parking-legend', 'aria-label': 'Scene legend' }, h('span', null, 'Your car'), h('span', null, 'Target space')),
-          h('p', { className: 'rr-parking-key-help' }, 'Hold to drive at walking pace; release to slow. Changing direction stops the car first. Keyboard: ↑/W forward · ↓/S reverse · ←/→ or A/D steer · Space brake · R reset.')
+          window.StemInput ? h(RoadReadyInputHint,{React:React}) : h('p', { className: 'rr-parking-key-help' }, 'Keyboard: W/↑ forward, S/↓ reverse, A/D or arrows steer, Space brake, R reset.')
         ),
         h('div', { className: 'rr-parking-sidebar' },
-          h(ParkingPracticeReadout, { h: h, React: React, carRef: carRef, scenario: practiceScenario }),
-          parkingTouchControls(h, keysRef, resetCar, true),
           h('section', { className: 'rr-parking-coach', 'aria-label': 'Parking instructor' },
             h('h3', null, st.parked ? 'Maneuver complete' : 'Your next move'),
-            h('p', null, feedbackText),
+            h('p', { className: 'rr-parking-step', 'aria-label': 'Current parking step', style: { fontWeight: 700, color: 'var(--rr-blue, #60a5fa)' } }, st.parked ? 'All 5 steps complete' : 'Step ' + (stepRef.current + 1) + ' of 5 · ' + STEP_TITLES[stepRef.current]),
+            h('p', { 'aria-live': 'polite', 'aria-atomic': 'true' }, feedbackText),
             h('small', null, 'Maine: finish parallel within 18 inches of the curb, with at least 2 feet to cars ahead and behind. Check for traffic and cyclists before opening a door.')
-          )
+          ),
+          st.parked ? h(ParkingPracticeReview, { h: h, React: React, hits: st.hits, onRetry: function(showGuides) { guidesRef.current = showGuides; resetCar(); }, onNext: props.onNextPractice }) : null,
+          h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, secure: true }),
+          h(ParkingPracticeReadout, { h: h, React: React, carRef: carRef, scenario: practiceScenario }),
+          h('details', { className: 'rr-parking-walkthrough', style: { margin: '12px 0', borderTop: '1px solid #475569', paddingTop: '8px' } },
+              h('summary', { style: { cursor: 'pointer', minHeight: '44px', display: 'list-item', padding: '10px 0', fontWeight: 700 } }, 'Preview the 5-step parking guide'),
+              h('p', null, 'Left and right describe the steering wheel. In reverse, the rear turns toward the side you steer; the front swings the other way. Watch both ends of the car. White rear lights indicate Reverse is selected, even when stopped; red brake lights indicate braking.'),
+              h('ol', { 'aria-label': 'Parallel parking steps', style: { paddingLeft: '24px', margin: '12px 0' } },
+                STEP_TITLES.map(function(title, index) {
+                  return h('li', { key: title, 'aria-current': !st.parked && stepRef.current === index ? 'step' : undefined,
+                    style: { marginBottom: '12px', padding: '6px', borderRadius: '6px', background: !st.parked && stepRef.current === index ? '#1e3a5f' : 'transparent' } },
+                    h('strong', null, (index + 1) + '. ' + title), h('p', { style: { margin: '4px 0' } }, STEPS[index]));
+                })
+              ),
+              h('p', null, 'The angle and curb-gap cues are tuned to this training car and starting position. If you miss a cue, brake, check the clearances, and make a small correction. Reset practice to try the full sequence again.')
+            )
         )
       )
     );
@@ -7300,6 +7523,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       };
 
       var view = d.view || 'menu';
+      var inputPreferencesVersion=useState(0);
+      useEffect(function(){return window.StemInput ? window.StemInput.subscribe(function(){inputPreferencesVersion[1](function(n){return n+1;});}) : undefined;},[]);
+      useEffect(function(){return window.StemInput ? window.StemInput.claim('roadReady') : undefined;},[]);
+      useEffect(function(){if(window.StemInput)window.StemInput.setContext(view === 'driving' ? 'driving' : 'parking');},[view]);
       var selectedVehicle = d.vehicle || 'sedan';
       var selectedScenario = d.scenario || 'residential';
       var selectedLesson = d.lesson || null;
@@ -7573,6 +7800,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       useEffect(function() {
         if (typeof window !== 'undefined' && window.__testHooks) {
           window.__testHooks.roadReady = {
+            headCheckRef: headCheckRef,
             trafficRef: trafficRef,
             carRef: carRef,
             pedsRef: pedsRef,
@@ -9312,7 +9540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         // ── Gamepad API support ──
         var pollGamepad = function() {
-          var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+          var gamepads = window.StemInput ? [window.StemInput.gamepad('roadReady')] : navigator.getGamepads ? navigator.getGamepads() : [];
           var gpFound = false;
           for (var gi = 0; gi < gamepads.length; gi++) {
             var gp = gamepads[gi];
@@ -9345,9 +9573,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var gpMovementLocked = gpRideAlongLocked || pausedRef.current || gpRearmBlocked;
             // Steering from left stick X (axis 0) — analog. Pause/resume and
             // hot-plug boundaries require a neutral sample before motion returns.
-            k._gpSteer = !gpMovementLocked && Math.abs(rawGpSteer) > 0.1 ? rawGpSteer : 0;
+            k._gpSteer = !gpMovementLocked && Math.abs(rawGpSteer) > (window.StemInput ? 0 : 0.1) ? rawGpSteer : 0;
             k._gpThrottle = gpMovementLocked ? 0 : rtVal;
             k._gpBrake = gpMovementLocked ? 0 : ltVal;
+            k._gpLookLeft = !gpMovementLocked && (window.StemInput ? !!(buttons[10] && buttons[10].value>0.2) : Number(axes[2]) < -0.3);
+            k._gpLookRight = !gpMovementLocked && (window.StemInput ? !!(buttons[11] && buttons[11].value>0.2) : Number(axes[2]) > 0.3);
             // Buttons (edge-triggered)
             if (buttons[0] && buttons[0].pressed && !k._gpA) { k._gpA = true; if (!gpRideAlongLocked) playHorn(0.35); }
             else if (!buttons[0] || !buttons[0].pressed) k._gpA = false;
@@ -9359,10 +9589,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             else if (!buttons[3] || !buttons[3].pressed) k._gpY = false;
             if (buttons[9] && buttons[9].pressed && !k._gpStart) { k._gpStart = true; togglePause(); }
             else if (!buttons[9] || !buttons[9].pressed) k._gpStart = false;
+            if (buttons[8] && buttons[8].pressed && !k._gpPark) { k._gpPark = true; attemptDriveGear('P', true); }
+            else if (!buttons[8] || !buttons[8].pressed) k._gpPark = false;
             // D-pad gear shifting
             if (buttons[12] && buttons[12].pressed && !k._gpUp) { k._gpUp = true; attemptDriveGear('D', true); }
             else if (!buttons[12] || !buttons[12].pressed) k._gpUp = false;
-            if (buttons[13] && buttons[13].pressed && !k._gpDown) { k._gpDown = true; attemptDriveGear(gearRef.current === 'R' ? 'P' : 'R', true); }
+            if (buttons[13] && buttons[13].pressed && !k._gpDown) { k._gpDown = true; attemptDriveGear('R', true); }
             else if (!buttons[13] || !buttons[13].pressed) k._gpDown = false;
             // Standard D-pad left/right mirror the X/Y signal buttons. This
             // mapping was documented but previously had no implementation.
@@ -9384,6 +9616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!gpFound) {
             gamepadNeedsNeutralRef.current = true;
             var kGone = keysRef.current;
+            kGone._gpLookLeft=false;kGone._gpLookRight=false;
             if (kGone._gpSteer || kGone._gpThrottle || kGone._gpBrake) {
               kGone._gpSteer = 0; kGone._gpThrottle = 0; kGone._gpBrake = 0;
             }
@@ -9412,7 +9645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               try { audioRef.current.ctx.resume(); } catch (e) {}
             }
           }
-          if (!pausedRef.current) {
+          if (!pausedRef.current && !(window.StemInput && window.StemInput.isSuspended())) {
             // Waiting at the belt prompt is pre-drive setup, not simulated road
             // time. Once belted, the mirror scan uses this clock while the parked
             // dynamic world remains held below.
@@ -18014,6 +18247,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Camera follows car
           var camMode = cameraModeRef.current;
+          var shoulderKeys=keysRef.current||{};
+          // A shoulder check needs the driver's actual view, even when cruising
+          // with the chase camera. Release returns to the selected camera.
+          if(shoulderKeys.z||shoulderKeys.x||shoulderKeys._gpLookLeft||shoulderKeys._gpLookRight)camMode='cockpit';
+          else if(camMode!=='cockpit'){headCheckRef.current.dir=0;headCheckRef.current.swivel=0;}
           // Dynamic weather update (for Free Explore weather toggle)
           var isNightNow = scn.time === 'night';
           var isFogNow = scn.weather === 'fog';
@@ -18132,8 +18370,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var kHold = keysRef.current || {};
             var hc = headCheckRef.current;
             var targetSwivel = 0;
-            if (kHold['z']) { targetSwivel = -1.2; hc.dir = -1; hc.lastCheckLeft = timeRef.current; }
-            else if (kHold['x']) { targetSwivel = 1.2; hc.dir = 1; hc.lastCheckRight = timeRef.current; }
+            if (kHold['z'] || kHold._gpLookLeft) { targetSwivel = -1.2; hc.dir = -1; hc.lastCheckLeft = timeRef.current; }
+            else if (kHold['x'] || kHold._gpLookRight) { targetSwivel = 1.2; hc.dir = 1; hc.lastCheckRight = timeRef.current; }
             else { hc.dir = 0; }
             // Smooth lerp toward target — fast enough to feel responsive, slow enough to feel natural (~0.3s)
             hc.swivel += (targetSwivel - hc.swivel) * 0.25;
@@ -25842,7 +26080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillText(scn.icon + ' ' + scn.name, 20, hudTopStackY + 18);
             gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui';
             gfx.fillText(veh.icon + ' ' + veh.name, 20, hudTopStackY + 34);
-            gfx.fillText(cameraModeRef.current.toUpperCase() + ' — C to switch', 20, hudTopStackY + 48);
+            gfx.fillText(cameraModeRef.current.toUpperCase() + ' — '+roadReadyControlLabel('camera','KeyC','C')+' to switch', 20, hudTopStackY + 48);
           }
 
           // Signal ahead — prominent mini traffic light HUD indicator. Keep a
@@ -26092,7 +26330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           } else if (!hudCompact && hudScience) {
             // Subtle hint in the controls row
             gfx.fillStyle = '#475569'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText(rideAlongHudActive ? 'Observe the automated scan before each maneuver' : 'Z=look left  X=look right (shoulder check)', W / 2, H - 22);
+            gfx.fillText(rideAlongHudActive ? 'Observe the automated scan before each maneuver' : 'Look: '+roadReadyControlLabel('lookLeft','KeyZ','Z')+' / '+roadReadyControlLabel('lookRight','KeyX','X'), W / 2, H - 22, W - 24);
           }
 
           // MPG sparkline
@@ -27296,7 +27534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(0, 0, W, H);
             gfx.fillStyle = '#fff'; gfx.font = 'bold 32px system-ui'; gfx.textAlign = 'center';
             gfx.fillText('⏸ PAUSED', W / 2, H / 2);
-            gfx.font = '14px system-ui'; gfx.fillText('Press SPACE to resume', W / 2, H / 2 + 30);
+            gfx.font = '14px system-ui'; gfx.fillText('Press '+roadReadyControlLabel('pause','Space','SPACE')+' to resume', W / 2, H / 2 + 30);
           }
         };
 
@@ -28844,6 +29082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Three.js WebGL canvas (behind). role=img + aria-label so SR users
           // hear what the 3D scene contains; the HUD canvas above carries the
           // live driving data + controls reference.
+          h(RoadReadyControlSettings,{React:React,floating:true,onOpen:function(){if(!pausedRef.current)togglePause();}}),
           webglError
             ? h('div', {
                 style: {
@@ -29032,9 +29271,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Wrapped in isTouchDeviceRef check so they only render on touch-
           // capable devices. On desktop they were ~10% of the viewport in
           // visual clutter for no benefit (keyboard handles all input).
-          isTouchDeviceRef.current && !rideAlongActiveUi ? h('div', {
+          (isTouchDeviceRef.current || (window.StemInput && (window.StemInput.preferences().mode !== 'auto' || window.StemInput.preferences().showTouch))) && !rideAlongActiveUi ? h('div', {
             style: { position: 'absolute', bottom: 'calc(150px + env(safe-area-inset-bottom, 0px))', right: d.freeExplore && worldControlsOpen ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20, opacity: touchControlsLockedUi ? 0.64 : 1, transition: reducedMotionRef.current ? 'none' : 'opacity 160ms ease' },
-            className: 'touch-controls rr-touch-pedals',
+            className: 'touch-controls rr-touch-pedals', 'data-stem-touch-controls': 'true',
             'data-rr-controls-locked': touchControlsLockedUi ? 'true' : 'false'
           },
             touchControlsLockedUi ? h('div', { 'aria-hidden': 'true', style: { alignSelf: 'center', padding: '3px 7px', borderRadius: '999px', background: 'rgba(15,23,42,0.92)', border: '1px solid #cbd5e1', color: '#fff', fontSize: '9px', fontWeight: 900, letterSpacing: '0.08em' } }, '🔒 SCAN') : null,
@@ -29063,12 +29302,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ))
           ) : null,
           // Left side touch: gear + signals (same touch-only guard)
-          isTouchDeviceRef.current && !rideAlongActiveUi ? h('div', {
+          (isTouchDeviceRef.current || (window.StemInput && (window.StemInput.preferences().mode !== 'auto' || window.StemInput.preferences().showTouch))) && !rideAlongActiveUi ? h('div', {
             style: { position: 'absolute', bottom: 'calc(150px + env(safe-area-inset-bottom, 0px))', left: '10px', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 20, opacity: touchControlsLockedUi ? 0.64 : 1, transition: reducedMotionRef.current ? 'none' : 'opacity 160ms ease' },
             className: 'touch-controls rr-touch-secondary',
             'data-rr-controls-locked': touchControlsLockedUi ? 'true' : 'false'
           },
-            h('div', { role: 'group', 'aria-label': __alloT('stem.roadready.a11y_transmission', 'Transmission'), style: { display: 'flex', gap: '4px' } },
+            h('div', { role: 'group', 'data-stem-touch-controls': 'true', 'aria-label': __alloT('stem.roadready.a11y_transmission', 'Transmission'), style: { display: 'flex', gap: '4px' } },
               ['P', 'D', 'R'].map(function(touchGear) {
                 return h('button', {
                   key: touchGear,
@@ -29081,7 +29320,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }, touchGear);
               })
             ),
-            h('div', { role: 'group', 'aria-label': __alloT('stem.roadready.a11y_turn_signals', 'Turn signals'), style: { display: 'flex', gap: '4px' } },
+            h('div', { role: 'group', 'data-stem-touch-controls': 'true', 'aria-label': __alloT('stem.roadready.a11y_turn_signals', 'Turn signals'), style: { display: 'flex', gap: '4px' } },
             h('button', { onClick: function() { applyTurnSignal(blinkerRef.current === -1 ? 0 : -1, true); },
               'aria-label': __alloT('stem.roadready.toggle_left_turn_signal', 'Toggle left turn signal'),
               'aria-pressed': turnSignalUi === -1,
@@ -34307,7 +34546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Tip
           h('div', { style: { background: 'rgba(34,211,238,0.08)', borderRadius: '8px', padding: '12px', border: '1px solid #22d3ee', marginTop: '14px', fontSize: '11px', color: '#a5f3fc', lineHeight: '1.5' } },
-            h('b', null, __alloT('stem.roadready.gamepad_support', '💡 Gamepad support: ')), __alloT('stem.roadready.roadready_auto_detects_a_connected_gam', 'RoadReady auto-detects a connected gamepad. Use the left stick for steering, right trigger for throttle, left trigger for brake, A for horn, B to cycle cameras, D-pad for signals, and Start to pause.')
+            h('b', null, __alloT('stem.roadready.gamepad_support', '💡 Gamepad support: ')), __alloT('stem.roadready.roadready_auto_detects_a_connected_gam', 'Default gamepad controls: left stick steers, right stick checks shoulders, RT accelerates, LT brakes, A sounds the horn, B changes cameras, D-pad up/down selects Drive/Reverse, D-pad left/right signals, Back/View selects Park, and Start pauses. Use Controls to view or change your bindings.')
           )
         );
       }
@@ -35934,8 +36173,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── PARALLEL PARKING (2D) ──
       if (view === 'parking') {
         return h(ParkingMode, { key: 'parking-mode', ctx: ctx, h: h, React: React,
+          onNextPractice: function() { upd('view', 'tightParallel'); },
           onExit: function() { upd('view', 'parkingMenu'); },
           onComplete: function(score) {
+            var previousBest = (d.parkingBest || {}).standardParallel;
+            if (typeof previousBest !== 'number' || score > previousBest) {
+              var parkingBest = Object.assign({}, d.parkingBest || {}, { standardParallel: score });
+              upd('parkingBest', parkingBest);
+              lsSet('roadReady.parkingBest.v1', parkingBest);
+            }
             if (score >= 80 && !(d.badges && d.badges.park_master)) {
               var pkBadges = Object.assign({}, d.badges || {});
               pkBadges.park_master = true;
@@ -36006,11 +36252,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var pb = d.parkingBest || {};
         var diffColor = function(diff) { return diff === 'hard' ? '#ef4444' : diff === 'medium' ? '#f59e0b' : '#4ade80'; };
         var scenarioCard = function(label, icon, viewKey, difficulty, bestKey, hint) {
-          var best = bestKey && pb[bestKey] ? pb[bestKey] : null;
+          var best = bestKey && typeof pb[bestKey] === 'number' && isFinite(pb[bestKey]) ? pb[bestKey] : null;
           return h('button', {
             key: viewKey,
             onClick: function() { upd('view', viewKey); },
-            'aria-label': label + ' (' + difficulty + ')' + (best ? ', best score ' + best : ''),
+            'aria-label': label + ' (' + difficulty + ')' + (best !== null ? ', best score ' + best : ''),
             'data-rr-focusable': true,
             style: { padding: '14px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '6px' }
           },
@@ -36022,15 +36268,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('span', { style: { padding: '2px 8px', borderRadius: '8px', background: diffColor(difficulty) + '22', border: '1px solid ' + diffColor(difficulty), fontSize: '9px', fontWeight: 800, color: diffColor(difficulty), textTransform: 'uppercase' } }, difficulty)
             ),
             h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.4' } }, hint),
-            best ? h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', fontWeight: 700 } }, '🏅 Personal best: ' + best + '/100') : null
+            best !== null ? h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', fontWeight: 700 } }, '🏅 Personal best: ' + best + '/100') : null
           );
         };
         return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, marginBottom: '12px' } }, __alloT('stem.roadready.menu_58', '← Menu')),
           h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.parking_practice', '🅿️ Parking Practice')),
           h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '16px' } }, __alloT('stem.roadready.9_scenarios_across_3_difficulty_tiers_', '9 hands-on drills in a top-down training car. Start with Standard Parallel; selected road vehicles do not change this trainer.')),
-          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } },
-            scenarioCard('Standard Parallel', '🅿️', 'parking',       'medium', null,            'Park between two cars on a curb. The classic.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '10px' } },
+            scenarioCard('Standard Parallel', '🅿️', 'parking',       'medium', 'standardParallel',            'Start here: a guided 5-step parallel-parking lesson with live steering, curb and bumper feedback.'),
             scenarioCard('Tight Parallel',    '🅿️', 'tightParallel', 'hard',   'tightParallel', 'A 20 ft space. Leave at least 2 ft to each parked car.'),
             scenarioCard('3-Point Turn',      '↪️', 'threePoint',    'medium', null,            'Reverse the car\'s direction in three movements.'),
             scenarioCard('Backing Drill',     '⬅️', 'backingDrill',  'easy',   null,            'Reverse straight without drifting off line.'),
@@ -37961,8 +38207,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       parkingObstacleObb: parkingObstacleObb, parkingObbsOverlap: parkingObbsOverlap,
       parkingCarHitsObstacle: parkingCarHitsObstacle, parkingCurbGapInches: parkingCurbGapInches,
       parkingPointClearanceInches: parkingPointClearanceInches, parkingObbInsideBounds: parkingObbInsideBounds,
+      parkingControllerKeys: parkingControllerKeys,
+      parkingDrillStep: parkingDrillStep,
+      parallelParkingPhase: parallelParkingPhase,
       parkingPracticeMetrics: parkingPracticeMetrics,
+      parkingClearanceGuideGeometry: parkingClearanceGuideGeometry,
       drivingStartPose: drivingStartPose, parkingFinishCheck: parkingFinishCheck, parkingDrillMotion: parkingDrillMotion,
+      parkingLampState: parkingLampState,
       parkingAngleDeltaDeg: parkingAngleDeltaDeg
     };
   }

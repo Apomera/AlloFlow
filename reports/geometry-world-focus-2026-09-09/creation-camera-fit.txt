@@ -1,0 +1,54 @@
+  // Fit an exact transformed Box3 into an asymmetric clear screen rectangle.
+  // The returned pose uses world-up (0,1,0); the caller retains a normal
+  // perspective projection and applies camera.lookAt(result.target).
+  // No camera, box, rect, construction mesh or selection state is mutated.
+  function fitCreationCamera(box, camera, rect, minCameraY) {
+    var THREE = window.THREE;
+    if (!THREE || !box || !box.min || !box.max || !camera) return null;
+    var bounds = [box.min.x,box.min.y,box.min.z,box.max.x,box.max.y,box.max.z];
+    if (!bounds.every(function(value){return typeof value === 'number' && isFinite(value);}) || box.min.x > box.max.x || box.min.y > box.max.y || box.min.z > box.max.z) return null;
+    var aspect = Number(camera.aspect);
+    var fov = typeof camera.getEffectiveFOV === 'function' ? Number(camera.getEffectiveFOV()) : Number(camera.fov);
+    if (!isFinite(aspect) || aspect <= 0 || !isFinite(fov) || fov <= 0 || fov >= 179.9) return null;
+    var tanY = Math.tan(fov * Math.PI / 360), tanX = tanY * aspect;
+    if (!isFinite(tanX) || !isFinite(tanY) || tanX <= 0 || tanY <= 0) return null;
+    var input = rect || {left:-0.9,right:0.9,bottom:-0.85,top:0.85};
+    var values = [input.left,input.right,input.bottom,input.top];
+    if (!values.every(function(value){return typeof value === 'number' && isFinite(value);})) return null;
+    var left=Math.max(-1,input.left),right=Math.min(1,input.right),bottom=Math.max(-1,input.bottom),top=Math.min(1,input.top);
+    if (right <= left || top <= bottom) return null;
+    var cx=(left+right)/2,cy=(bottom+top)/2,hx=(right-left)*0.48,hy=(top-bottom)*0.48;
+    var safe={left:cx-hx,right:cx+hx,bottom:cy-hy,top:cy+hy};
+    var center=new THREE.Vector3((box.min.x+box.max.x)/2,(box.min.y+box.max.y)/2,(box.min.z+box.max.z)/2);
+    var horizontal=Math.sqrt(1.25*1.25+1.55*1.55),baseElevation=Math.atan2(0.72,horizontal);
+    // Moving the frame upward on screen lowers the camera. Raise the bearing
+    // enough that increasing fit distance still raises its physical height.
+    // The remaining-angle cap also supports unusually wide effective FOVs.
+    var requiredElevation=Math.atan(Math.max(0,cy)*tanY);
+    var lift=Math.min(Math.PI/18,(Math.PI/2-requiredElevation)*0.5);
+    var elevation=Math.max(baseElevation,requiredElevation+lift),cosElevation=Math.cos(elevation);
+    var direction=new THREE.Vector3(1.25/horizontal*cosElevation,Math.sin(elevation),1.55/horizontal*cosElevation);
+    var rightAxis=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),direction).normalize();
+    var upAxis=new THREE.Vector3().crossVectors(direction,rightAxis).normalize();
+    var near=Number(camera.near);if(!isFinite(near) || near<=0)near=0.1;
+    var nearClearance=Math.max(0.05,near*0.5),distance=near+nearClearance,corners=[];
+    [box.min.x,box.max.x].forEach(function(x){[box.min.y,box.max.y].forEach(function(y){[box.min.z,box.max.z].forEach(function(z){
+      var relative=new THREE.Vector3(x,y,z).sub(center),px=relative.dot(rightAxis),py=relative.dot(upAxis),pz=relative.dot(direction);
+      corners.push(pz);
+      distance=Math.max(distance,pz+near+nearClearance,pz+Math.abs(px+cx*pz*tanX)/(hx*tanX),pz+Math.abs(py+cy*pz*tanY)/(hy*tanY));
+    });});});
+    var floor=typeof minCameraY === 'number' && isFinite(minCameraY) ? minCameraY : 2.8;
+    var heightSlope=direction.y-cx*tanX*rightAxis.y-cy*tanY*upAxis.y;
+    if (!isFinite(heightSlope) || heightSlope<=0) return null;
+    distance=Math.max(distance,(floor-center.y)/heightSlope);
+    distance+=Math.max(0.00001,distance*0.0000001);
+    if (!isFinite(distance)) return null;
+    var shift=rightAxis.clone().multiplyScalar(-cx*distance*tanX).addScaledVector(upAxis,-cy*distance*tanY);
+    var target=center.clone().add(shift),position=target.clone().addScaledVector(direction,distance);
+    var depthNear=Infinity,depthFar=-Infinity;
+    corners.forEach(function(depth){depthNear=Math.min(depthNear,distance-depth);depthFar=Math.max(depthFar,distance-depth);});
+    var diagonal=new THREE.Vector3().subVectors(box.max,box.min).length(),oldFar=Number(camera.far);
+    var far=Math.max(isFinite(oldFar) && oldFar>near ? oldFar : 200,depthFar+Math.max(10,diagonal*0.05));
+    if (![position.x,position.y,position.z,target.x,target.y,target.z,far,depthNear,depthFar].every(isFinite)) return null;
+    return {position:position,target:target,far:far,depthNear:depthNear,depthFar:depthFar,rect:safe};
+  }

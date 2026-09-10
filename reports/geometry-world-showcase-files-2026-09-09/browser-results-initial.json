@@ -1,0 +1,1120 @@
+{
+  "sources": {
+    "stem_tool_geometryworld.js": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+    "stem_tool_geometryworld_builder.js": "2158809aa2f2b5a3198730d7a2b25d4fa44b254c8166638fa15b61112a315f88",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [],
+  "captures": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "layout": {
+        "x": 1012,
+        "y": 33.84375,
+        "width": 408,
+        "height": 832.3125,
+        "inBounds": true,
+        "overflow": false,
+        "bodyScrolls": false,
+        "buttons": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Download editable JSON",
+            "height": 44,
+            "width": 338
+          },
+          {
+            "text": "Download STL",
+            "height": 44,
+            "width": 150.453125
+          },
+          {
+            "text": "Open in Print Lab",
+            "height": 44,
+            "width": 180.546875
+          },
+          {
+            "text": "Choose editable JSON",
+            "height": 44,
+            "width": 338
+          },
+          {
+            "text": "Save image",
+            "height": 44,
+            "width": 90.15625
+          }
+        ]
+      },
+      "screenshot": "files-1440x900.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "layout": {
+        "x": 10,
+        "y": 23,
+        "width": 370,
+        "height": 798,
+        "inBounds": true,
+        "overflow": false,
+        "bodyScrolls": false,
+        "buttons": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Download editable JSON",
+            "height": 44,
+            "width": 314
+          },
+          {
+            "text": "Download STL",
+            "height": 44,
+            "width": 139.53125
+          },
+          {
+            "text": "Open in Print Lab",
+            "height": 44,
+            "width": 167.46875
+          },
+          {
+            "text": "Choose editable JSON",
+            "height": 44,
+            "width": 314
+          },
+          {
+            "text": "Save image",
+            "height": 44,
+            "width": 90.15625
+          }
+        ]
+      },
+      "screenshot": "files-390x844.png"
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "layout": {
+        "x": 10,
+        "y": 10,
+        "width": 300,
+        "height": 680,
+        "inBounds": true,
+        "overflow": false,
+        "bodyScrolls": true,
+        "buttons": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Download editable JSON",
+            "height": 44,
+            "width": 244
+          },
+          {
+            "text": "Download STL",
+            "height": 44,
+            "width": 107.71875
+          },
+          {
+            "text": "Open in Print Lab",
+            "height": 44,
+            "width": 129.28125
+          },
+          {
+            "text": "Choose editable JSON",
+            "height": 44,
+            "width": 244
+          },
+          {
+            "text": "Save image",
+            "height": 44,
+            "width": 90.15625
+          }
+        ]
+      },
+      "screenshot": "files-320x700.png"
+    },
+    {
+      "size": {
+        "width": 844,
+        "height": 390
+      },
+      "layout": {
+        "x": 428,
+        "y": 8,
+        "width": 408,
+        "height": 374,
+        "inBounds": true,
+        "overflow": false,
+        "bodyScrolls": true,
+        "buttons": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Download editable JSON",
+            "height": 44,
+            "width": 346
+          },
+          {
+            "text": "Download STL",
+            "height": 44,
+            "width": 154.078125
+          },
+          {
+            "text": "Open in Print Lab",
+            "height": 44,
+            "width": 184.921875
+          },
+          {
+            "text": "Choose editable JSON",
+            "height": 44,
+            "width": 346
+          },
+          {
+            "text": "Save image",
+            "height": 44,
+            "width": 90.15625
+          }
+        ]
+      },
+      "screenshot": "files-844x390.png"
+    }
+  ],
+  "fixture": {
+    "selectedBlocks": 42,
+    "totalBlocks": 43
+  },
+  "building": {
+    "world": "[{\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "worldStl": "3ea4d6355c9184abbeb6ac274bb3f9d7fb2c66afdfa372009c0442db479978cd",
+    "selected": "[{\"x\":-3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":-1},{\"x\":-2,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":-1},{\"x\":-1,\"y\":1,\"z\":0},{\"x\":-1,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":2},{\"x\":0,\"y\":1,\"z\":-1},{\"x\":0,\"y\":1,\"z\":0},{\"x\":0,\"y\":1,\"z\":1},{\"x\":0,\"y\":1,\"z\":2},{\"x\":1,\"y\":1,\"z\":-1},{\"x\":1,\"y\":1,\"z\":0},{\"x\":1,\"y\":1,\"z\":1},{\"x\":1,\"y\":1,\"z\":2},{\"x\":2,\"y\":1,\"z\":-1},{\"x\":2,\"y\":1,\"z\":0},{\"x\":2,\"y\":1,\"z\":1},{\"x\":3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":2,\"z\":-1},{\"x\":-2,\"y\":2,\"z\":1},{\"x\":2,\"y\":2,\"z\":-1},{\"x\":2,\"y\":2,\"z\":1},{\"x\":-2,\"y\":3,\"z\":-1},{\"x\":-2,\"y\":3,\"z\":1},{\"x\":2,\"y\":3,\"z\":-1},{\"x\":2,\"y\":3,\"z\":1},{\"x\":-2,\"y\":4,\"z\":-1},{\"x\":-2,\"y\":4,\"z\":1},{\"x\":2,\"y\":4,\"z\":-1},{\"x\":2,\"y\":4,\"z\":1},{\"x\":-2,\"y\":5,\"z\":-1},{\"x\":-2,\"y\":5,\"z\":1},{\"x\":-1,\"y\":5,\"z\":-1},{\"x\":-1,\"y\":5,\"z\":1},{\"x\":0,\"y\":5,\"z\":-1},{\"x\":0,\"y\":5,\"z\":1},{\"x\":1,\"y\":5,\"z\":-1},{\"x\":1,\"y\":5,\"z\":1},{\"x\":2,\"y\":5,\"z\":-1},{\"x\":2,\"y\":5,\"z\":1}]",
+    "selectedStl": "3e5df87594694285264e448fc23a90d36dc08db6943de7ceec6c5a53f5828003",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0}]",
+    "redo": "[]",
+    "camera": [
+      7.5,
+      6.2,
+      10
+    ],
+    "quaternion": [
+      -0.12624793629804595,
+      0.30564954150521867,
+      0.040926607536562166,
+      0.942849314129083
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 75,
+    "scale": 12.5,
+    "showcase": false,
+    "showcaseState": false
+  },
+  "initialShowcase": {
+    "world": "[{\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "worldStl": "3ea4d6355c9184abbeb6ac274bb3f9d7fb2c66afdfa372009c0442db479978cd",
+    "selected": "[{\"x\":-3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":-1},{\"x\":-2,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":-1},{\"x\":-1,\"y\":1,\"z\":0},{\"x\":-1,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":2},{\"x\":0,\"y\":1,\"z\":-1},{\"x\":0,\"y\":1,\"z\":0},{\"x\":0,\"y\":1,\"z\":1},{\"x\":0,\"y\":1,\"z\":2},{\"x\":1,\"y\":1,\"z\":-1},{\"x\":1,\"y\":1,\"z\":0},{\"x\":1,\"y\":1,\"z\":1},{\"x\":1,\"y\":1,\"z\":2},{\"x\":2,\"y\":1,\"z\":-1},{\"x\":2,\"y\":1,\"z\":0},{\"x\":2,\"y\":1,\"z\":1},{\"x\":3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":2,\"z\":-1},{\"x\":-2,\"y\":2,\"z\":1},{\"x\":2,\"y\":2,\"z\":-1},{\"x\":2,\"y\":2,\"z\":1},{\"x\":-2,\"y\":3,\"z\":-1},{\"x\":-2,\"y\":3,\"z\":1},{\"x\":2,\"y\":3,\"z\":-1},{\"x\":2,\"y\":3,\"z\":1},{\"x\":-2,\"y\":4,\"z\":-1},{\"x\":-2,\"y\":4,\"z\":1},{\"x\":2,\"y\":4,\"z\":-1},{\"x\":2,\"y\":4,\"z\":1},{\"x\":-2,\"y\":5,\"z\":-1},{\"x\":-2,\"y\":5,\"z\":1},{\"x\":-1,\"y\":5,\"z\":-1},{\"x\":-1,\"y\":5,\"z\":1},{\"x\":0,\"y\":5,\"z\":-1},{\"x\":0,\"y\":5,\"z\":1},{\"x\":1,\"y\":5,\"z\":-1},{\"x\":1,\"y\":5,\"z\":1},{\"x\":2,\"y\":5,\"z\":-1},{\"x\":2,\"y\":5,\"z\":1}]",
+    "selectedStl": "3e5df87594694285264e448fc23a90d36dc08db6943de7ceec6c5a53f5828003",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0}]",
+    "redo": "[]",
+    "camera": [
+      11.468019806083058,
+      9.56757940830384,
+      14.600344559542991
+    ],
+    "quaternion": [
+      -0.16276767998822747,
+      0.32786043083366007,
+      0.05745448769158173,
+      0.9288235581039676
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 42,
+    "scale": 12.5,
+    "showcase": true,
+    "showcaseState": true
+  },
+  "jsonDownload": {
+    "suggested": "geometry-world-selected-creation-editable.json",
+    "file": "selected-creation.json",
+    "size": 5279
+  },
+  "json": {
+    "schema": "alloflow-geometry-world/2",
+    "blocks": 42,
+    "types": [
+      "stone",
+      "brick",
+      "wood"
+    ],
+    "minY": 1
+  },
+  "jsonValidation": {
+    "ok": true,
+    "value": {
+      "schema": "alloflow-geometry-world/2",
+      "title": "Geometry World selected creation",
+      "coordinateSystem": "x-right,y-up,z-depth",
+      "blocks": [
+        {
+          "x": -3,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "halfA",
+          "rotation": 1
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": -1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": -1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 2,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": -1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 2,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": -1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 2,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": -1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "quarter",
+          "rotation": 3
+        },
+        {
+          "x": -2,
+          "y": 2,
+          "z": -1,
+          "type": "brick",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 2,
+          "z": 1,
+          "type": "brick",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": -1,
+          "type": "brick",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 1,
+          "type": "brick",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 3,
+          "z": -1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 3,
+          "z": 1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": -1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 4,
+          "z": -1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 4,
+          "z": 1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "z": -1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "z": 1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 5,
+          "z": -1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 5,
+          "z": 1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 5,
+          "z": -1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 5,
+          "z": 1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": -1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": 1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "z": -1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "z": 1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "z": -1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "z": 1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        }
+      ]
+    },
+    "summary": {
+      "blockCount": 42,
+      "bounds": {
+        "width": 7,
+        "depth": 4,
+        "height": 5
+      },
+      "min": {
+        "x": -3,
+        "y": 1,
+        "z": -1
+      },
+      "max": {
+        "x": 3,
+        "y": 5,
+        "z": 2
+      }
+    }
+  },
+  "stlDownload": {
+    "suggested": "geometry-world-selected-build-mm.stl",
+    "file": "selected-creation-mm.stl",
+    "size": 16084
+  },
+  "stl": {
+    "maxVertexError": 0,
+    "normalsMatch": true,
+    "triangles": 320,
+    "expectedTriangles": 320,
+    "header": "Geometry World; coordinates in mm; 12.5 mm per block\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+  },
+  "afterDownloads": {
+    "world": "[{\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "worldStl": "3ea4d6355c9184abbeb6ac274bb3f9d7fb2c66afdfa372009c0442db479978cd",
+    "selected": "[{\"x\":-3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":-1},{\"x\":-2,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":-1},{\"x\":-1,\"y\":1,\"z\":0},{\"x\":-1,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":2},{\"x\":0,\"y\":1,\"z\":-1},{\"x\":0,\"y\":1,\"z\":0},{\"x\":0,\"y\":1,\"z\":1},{\"x\":0,\"y\":1,\"z\":2},{\"x\":1,\"y\":1,\"z\":-1},{\"x\":1,\"y\":1,\"z\":0},{\"x\":1,\"y\":1,\"z\":1},{\"x\":1,\"y\":1,\"z\":2},{\"x\":2,\"y\":1,\"z\":-1},{\"x\":2,\"y\":1,\"z\":0},{\"x\":2,\"y\":1,\"z\":1},{\"x\":3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":2,\"z\":-1},{\"x\":-2,\"y\":2,\"z\":1},{\"x\":2,\"y\":2,\"z\":-1},{\"x\":2,\"y\":2,\"z\":1},{\"x\":-2,\"y\":3,\"z\":-1},{\"x\":-2,\"y\":3,\"z\":1},{\"x\":2,\"y\":3,\"z\":-1},{\"x\":2,\"y\":3,\"z\":1},{\"x\":-2,\"y\":4,\"z\":-1},{\"x\":-2,\"y\":4,\"z\":1},{\"x\":2,\"y\":4,\"z\":-1},{\"x\":2,\"y\":4,\"z\":1},{\"x\":-2,\"y\":5,\"z\":-1},{\"x\":-2,\"y\":5,\"z\":1},{\"x\":-1,\"y\":5,\"z\":-1},{\"x\":-1,\"y\":5,\"z\":1},{\"x\":0,\"y\":5,\"z\":-1},{\"x\":0,\"y\":5,\"z\":1},{\"x\":1,\"y\":5,\"z\":-1},{\"x\":1,\"y\":5,\"z\":1},{\"x\":2,\"y\":5,\"z\":-1},{\"x\":2,\"y\":5,\"z\":1}]",
+    "selectedStl": "3e5df87594694285264e448fc23a90d36dc08db6943de7ceec6c5a53f5828003",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0}]",
+    "redo": "[]",
+    "camera": [
+      11.468019806083058,
+      9.56757940830384,
+      14.600344559542991
+    ],
+    "quaternion": [
+      -0.16276767998822747,
+      0.32786043083366007,
+      0.05745448769158173,
+      0.9288235581039676
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 42,
+    "scale": 12.5,
+    "showcase": true,
+    "showcaseState": true
+  },
+  "invalid": {
+    "world": "[{\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "worldStl": "3ea4d6355c9184abbeb6ac274bb3f9d7fb2c66afdfa372009c0442db479978cd",
+    "selected": "[{\"x\":-3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":-1},{\"x\":-2,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":-1},{\"x\":-1,\"y\":1,\"z\":0},{\"x\":-1,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":2},{\"x\":0,\"y\":1,\"z\":-1},{\"x\":0,\"y\":1,\"z\":0},{\"x\":0,\"y\":1,\"z\":1},{\"x\":0,\"y\":1,\"z\":2},{\"x\":1,\"y\":1,\"z\":-1},{\"x\":1,\"y\":1,\"z\":0},{\"x\":1,\"y\":1,\"z\":1},{\"x\":1,\"y\":1,\"z\":2},{\"x\":2,\"y\":1,\"z\":-1},{\"x\":2,\"y\":1,\"z\":0},{\"x\":2,\"y\":1,\"z\":1},{\"x\":3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":2,\"z\":-1},{\"x\":-2,\"y\":2,\"z\":1},{\"x\":2,\"y\":2,\"z\":-1},{\"x\":2,\"y\":2,\"z\":1},{\"x\":-2,\"y\":3,\"z\":-1},{\"x\":-2,\"y\":3,\"z\":1},{\"x\":2,\"y\":3,\"z\":-1},{\"x\":2,\"y\":3,\"z\":1},{\"x\":-2,\"y\":4,\"z\":-1},{\"x\":-2,\"y\":4,\"z\":1},{\"x\":2,\"y\":4,\"z\":-1},{\"x\":2,\"y\":4,\"z\":1},{\"x\":-2,\"y\":5,\"z\":-1},{\"x\":-2,\"y\":5,\"z\":1},{\"x\":-1,\"y\":5,\"z\":-1},{\"x\":-1,\"y\":5,\"z\":1},{\"x\":0,\"y\":5,\"z\":-1},{\"x\":0,\"y\":5,\"z\":1},{\"x\":1,\"y\":5,\"z\":-1},{\"x\":1,\"y\":5,\"z\":1},{\"x\":2,\"y\":5,\"z\":-1},{\"x\":2,\"y\":5,\"z\":1}]",
+    "selectedStl": "3e5df87594694285264e448fc23a90d36dc08db6943de7ceec6c5a53f5828003",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0}]",
+    "redo": "[]",
+    "camera": [
+      22.08264627474204,
+      15.681604254251413,
+      27.76248138068013
+    ],
+    "quaternion": [
+      -0.16276767998822747,
+      0.32786043083366007,
+      0.05745448769158173,
+      0.9288235581039676
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 42,
+    "scale": 12.5,
+    "showcase": true,
+    "showcaseState": true
+  },
+  "beforeCancel": {
+    "world": "[{\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "worldStl": "3ea4d6355c9184abbeb6ac274bb3f9d7fb2c66afdfa372009c0442db479978cd",
+    "selected": "[{\"x\":-3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":-1},{\"x\":-2,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":-1},{\"x\":-1,\"y\":1,\"z\":0},{\"x\":-1,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":2},{\"x\":0,\"y\":1,\"z\":-1},{\"x\":0,\"y\":1,\"z\":0},{\"x\":0,\"y\":1,\"z\":1},{\"x\":0,\"y\":1,\"z\":2},{\"x\":1,\"y\":1,\"z\":-1},{\"x\":1,\"y\":1,\"z\":0},{\"x\":1,\"y\":1,\"z\":1},{\"x\":1,\"y\":1,\"z\":2},{\"x\":2,\"y\":1,\"z\":-1},{\"x\":2,\"y\":1,\"z\":0},{\"x\":2,\"y\":1,\"z\":1},{\"x\":3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":2,\"z\":-1},{\"x\":-2,\"y\":2,\"z\":1},{\"x\":2,\"y\":2,\"z\":-1},{\"x\":2,\"y\":2,\"z\":1},{\"x\":-2,\"y\":3,\"z\":-1},{\"x\":-2,\"y\":3,\"z\":1},{\"x\":2,\"y\":3,\"z\":-1},{\"x\":2,\"y\":3,\"z\":1},{\"x\":-2,\"y\":4,\"z\":-1},{\"x\":-2,\"y\":4,\"z\":1},{\"x\":2,\"y\":4,\"z\":-1},{\"x\":2,\"y\":4,\"z\":1},{\"x\":-2,\"y\":5,\"z\":-1},{\"x\":-2,\"y\":5,\"z\":1},{\"x\":-1,\"y\":5,\"z\":-1},{\"x\":-1,\"y\":5,\"z\":1},{\"x\":0,\"y\":5,\"z\":-1},{\"x\":0,\"y\":5,\"z\":1},{\"x\":1,\"y\":5,\"z\":-1},{\"x\":1,\"y\":5,\"z\":1},{\"x\":2,\"y\":5,\"z\":-1},{\"x\":2,\"y\":5,\"z\":1}]",
+    "selectedStl": "3e5df87594694285264e448fc23a90d36dc08db6943de7ceec6c5a53f5828003",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0}]",
+    "redo": "[]",
+    "camera": [
+      22.08264627474204,
+      15.681604254251413,
+      27.76248138068013
+    ],
+    "quaternion": [
+      -0.16276767998822747,
+      0.32786043083366007,
+      0.05745448769158173,
+      0.9288235581039676
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 42,
+    "scale": 12.5,
+    "showcase": true,
+    "showcaseState": true
+  },
+  "importPreview": "import-preview-390x844.png",
+  "printScale": 12.5,
+  "returned": {
+    "world": "[{\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "worldStl": "3ea4d6355c9184abbeb6ac274bb3f9d7fb2c66afdfa372009c0442db479978cd",
+    "selected": "[{\"x\":-3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":-1},{\"x\":-2,\"y\":1,\"z\":0},{\"x\":-2,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":-1},{\"x\":-1,\"y\":1,\"z\":0},{\"x\":-1,\"y\":1,\"z\":1},{\"x\":-1,\"y\":1,\"z\":2},{\"x\":0,\"y\":1,\"z\":-1},{\"x\":0,\"y\":1,\"z\":0},{\"x\":0,\"y\":1,\"z\":1},{\"x\":0,\"y\":1,\"z\":2},{\"x\":1,\"y\":1,\"z\":-1},{\"x\":1,\"y\":1,\"z\":0},{\"x\":1,\"y\":1,\"z\":1},{\"x\":1,\"y\":1,\"z\":2},{\"x\":2,\"y\":1,\"z\":-1},{\"x\":2,\"y\":1,\"z\":0},{\"x\":2,\"y\":1,\"z\":1},{\"x\":3,\"y\":1,\"z\":0},{\"x\":-2,\"y\":2,\"z\":-1},{\"x\":-2,\"y\":2,\"z\":1},{\"x\":2,\"y\":2,\"z\":-1},{\"x\":2,\"y\":2,\"z\":1},{\"x\":-2,\"y\":3,\"z\":-1},{\"x\":-2,\"y\":3,\"z\":1},{\"x\":2,\"y\":3,\"z\":-1},{\"x\":2,\"y\":3,\"z\":1},{\"x\":-2,\"y\":4,\"z\":-1},{\"x\":-2,\"y\":4,\"z\":1},{\"x\":2,\"y\":4,\"z\":-1},{\"x\":2,\"y\":4,\"z\":1},{\"x\":-2,\"y\":5,\"z\":-1},{\"x\":-2,\"y\":5,\"z\":1},{\"x\":-1,\"y\":5,\"z\":-1},{\"x\":-1,\"y\":5,\"z\":1},{\"x\":0,\"y\":5,\"z\":-1},{\"x\":0,\"y\":5,\"z\":1},{\"x\":1,\"y\":5,\"z\":-1},{\"x\":1,\"y\":5,\"z\":1},{\"x\":2,\"y\":5,\"z\":-1},{\"x\":2,\"y\":5,\"z\":1}]",
+    "selectedStl": "3e5df87594694285264e448fc23a90d36dc08db6943de7ceec6c5a53f5828003",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":-1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":-3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"halfA\",\"rotation\":1},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"quarter\",\"rotation\":3},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":4,\"type\":\"diamond\",\"shape\":\"cube\",\"rotation\":0}]",
+    "redo": "[]",
+    "camera": [
+      7.5,
+      6.2,
+      10
+    ],
+    "quaternion": [
+      -0.12624793629804595,
+      0.30564954150521867,
+      0.040926607536562166,
+      0.942849314129083
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 75,
+    "scale": 12.5,
+    "showcase": false,
+    "showcaseState": false
+  },
+  "imported": {
+    "world": {
+      "schema": "alloflow-geometry-world/2",
+      "title": "Geometry World editable build",
+      "coordinateSystem": "x-right,y-up,z-depth",
+      "blocks": [
+        {
+          "x": -3,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "halfA",
+          "rotation": 1
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": -1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": -1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 2,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": -1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 2,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": -1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 2,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": -1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "quarter",
+          "rotation": 3
+        },
+        {
+          "x": -2,
+          "y": 2,
+          "z": -1,
+          "type": "brick",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 2,
+          "z": 1,
+          "type": "brick",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": -1,
+          "type": "brick",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 1,
+          "type": "brick",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 3,
+          "z": -1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 3,
+          "z": 1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": -1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 4,
+          "z": -1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 4,
+          "z": 1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "z": -1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "z": 1,
+          "type": "wood",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 5,
+          "z": -1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": -2,
+          "y": 5,
+          "z": 1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 5,
+          "z": -1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": -1,
+          "y": 5,
+          "z": 1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": -1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": 1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "z": -1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "z": 1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "z": -1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "z": 1,
+          "type": "stone",
+          "shape": "halfB",
+          "rotation": 0
+        }
+      ]
+    },
+    "undo": 0,
+    "redo": 0,
+    "showcase": false,
+    "panel": "build"
+  },
+  "shaderErrors": [],
+  "pass": true
+}

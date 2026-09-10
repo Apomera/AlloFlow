@@ -1,0 +1,196 @@
+{
+  "baselineRef": "52ee51a6a",
+  "cpuSlowdown": 4,
+  "scope": "Actual generated Inbox, synthetic JSON file imports, mounted queue updates, production React, inline component styles. Three warmups and five alternating measured runs per version. Normalization counters measured separately.",
+  "scenarios": [
+    {
+      "students": 40,
+      "submissions": 40,
+      "normalizationCalls": {
+        "before": 3320,
+        "after": 120
+      },
+      "rowTextParity": true,
+      "rowsCompared": 40,
+      "refreshedRoster": {
+        "before": {
+          "unknown": 39,
+          "confirmationRequired": true,
+          "confirmed": true
+        },
+        "after": {
+          "unknown": 39,
+          "confirmationRequired": true,
+          "confirmed": true
+        }
+      },
+      "warmup": [
+        {
+          "mode": "before",
+          "fourUpdatesMs": 211.5
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 16
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 1289.5
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 9.399999998509884
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 9
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 20.600000001490116
+        }
+      ],
+      "measured": [
+        {
+          "mode": "before",
+          "fourUpdatesMs": 8.299999997019768
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 7.0999999940395355
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 8
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 579.7999999970198
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 28.399999998509884
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 63.79999999701977
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 4053.7000000029802
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 37.099999994039536
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 5.600000001490116
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 8
+        }
+      ],
+      "medians": {
+        "before": 28.399999998509884,
+        "after": 8
+      }
+    },
+    {
+      "students": 300,
+      "submissions": 300,
+      "normalizationCalls": {
+        "before": 180900,
+        "after": 900
+      },
+      "rowTextParity": true,
+      "rowsCompared": 300,
+      "refreshedRoster": {
+        "before": {
+          "unknown": 299,
+          "confirmationRequired": true,
+          "confirmed": true
+        },
+        "after": {
+          "unknown": 299,
+          "confirmationRequired": true,
+          "confirmed": true
+        }
+      },
+      "warmup": [
+        {
+          "mode": "before",
+          "fourUpdatesMs": 196.30000000447035
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 82.59999999403954
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 77.39999999850988
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 127.39999999850988
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 179.40000000596046
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 57.400000005960464
+        }
+      ],
+      "measured": [
+        {
+          "mode": "before",
+          "fourUpdatesMs": 186.80000000447035
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 222.10000000149012
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 215.10000000149012
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 248
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 379.80000000447035
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 63.80000000447035
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 906.6999999955297
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 1130.6999999955297
+        },
+        {
+          "mode": "before",
+          "fourUpdatesMs": 585.5
+        },
+        {
+          "mode": "after",
+          "fourUpdatesMs": 37.599999994039536
+        }
+      ],
+      "medians": {
+        "before": 379.80000000447035,
+        "after": 215.10000000149012
+      }
+    }
+  ],
+  "errors": []
+}

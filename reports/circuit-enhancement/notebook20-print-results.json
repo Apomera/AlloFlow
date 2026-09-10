@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "format": "A4",
+  "pages": 3,
+  "method": "Playwright browser PDF output, Poppler page rendering, visual inspection of every final page",
+  "visualReviewPassed": true,
+  "checks": ["legible text and symbols", "no clipping", "comparison kept together", "response graph visible", "notes and model limits preserved"],
+  "report": "notebook20-report.html",
+  "reproductionScript": "notebook20-print-qa.cjs",
+  "temporaryPdfRendersRemovedAfterReview": true
+}

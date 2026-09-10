@@ -1,0 +1,22 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "workshop11-pulley-1",
+    "workshop11-pulley-2",
+    "workshop11-pulley-3",
+    "workshop11-pulley-4",
+    "workshop11-pulley-5",
+    "workshop11-pulley-6",
+    "workshop11-pulley-lift-two",
+    "workshop11-pulley-lift-six",
+    "workshop11-pulley-rear"
+  ]
+}

@@ -1,0 +1,65 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_mixed_network.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > solves branch voltage drops and conserves current and power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > isolates an open switch to its branch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > changes topology when a part moves between branches
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > measures internal junctions and signed cross-branch voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > keeps floating absolute voltages unknown but resolves a floating resistor differential
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > limits LED current using resistance in the same branch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > reports shorts without turning absent branches into wires
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > retains source-off semantics
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > preserves the simple solver
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > renders the schematic and connection editor accessibly
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··········stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all nine SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····
+
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  23:21:29
+   Duration  5.32s (transform 107ms, setup 133ms, import 193ms, tests 1.43s, environment 3.03s)
+

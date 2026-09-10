@@ -114,6 +114,196 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
   // local useState (see dev-tools/scan_render_scoped_components.cjs).
   // stableType() hands React a stable wrapper type and swaps the fresh closure
   // in each render. Gate: tests/stem_view_identity_stability.test.js.
+  function marsMissionProgress(mission, entries, marsName) {
+    mission = mission || {};
+    var trials = mission.trials || {};
+    var transferDone = !!(trials.aligned && trials.offset);
+    var evidence = (entries || []).filter(function(entry) {
+      return mission.startedAt > 0 && entry && entry.source === 'drone' && entry.planet === marsName && entry.timestamp >= mission.startedAt && typeof entry.observation === 'string' && entry.observation.trim();
+    });
+    var scan = evidence.find(function(entry) { return entry.kind === 'Scan'; }) || null;
+    var sample = evidence.find(function(entry) { return entry.kind === 'Sample'; }) || null;
+    var predicted = mission.prediction === 'meet' || mission.prediction === 'miss';
+    return { predicted: predicted, transferDone: transferDone, scan: scan, sample: sample,
+      surfaceDone: !!(scan && sample), complete: !!mission.completedAt,
+      count: Number(predicted) + Number(transferDone) + Number(!!(scan && sample)) + Number(!!mission.completedAt) };
+  }
+  function marsExpeditionDebrief(mission, entries) {
+    if (!mission || !mission.completedAt || !(mission.startedAt > 0)) return null;
+    var report = (Array.isArray(entries) ? entries : []).find(function(entry) {
+      return entry && entry.missionId === 'earth-mars' && entry.source === 'mission' && entry.missionStartedAt === mission.startedAt && entry.expedition;
+    });
+    if (!report) return null;
+    var expedition = report.expedition, trials = expedition.trials || {};
+    var text = function(value) { return typeof value === 'string' ? value : ''; };
+    var evidence = function(entry) { return entry && text(entry.observation).trim() ? { title: text(entry.title), observation: text(entry.observation) } : null; };
+    return { prediction: text(report.prediction), reflection: text(expedition.reflection) || text(report.reasoning), question: text(report.question),
+      scan: evidence(expedition.scan), sample: evidence(expedition.sample),
+      trials: ['aligned', 'offset'].map(function(key) { var trial = trials[key]; return trial && Number.isFinite(trial.separation) && trial.separation >= 0 && Number.isFinite(trial.days) && trial.days > 0 ? { label: key === 'aligned' ? 'Aligned · 0°' : 'Offset · +30°', separation: trial.separation, days: trial.days } : null; }) };
+  }
+  function marsFollowUpPlan(mission) {
+    var draft = mission && mission.followUp || {}, choices = [-30, 60, -60];
+    var offset = choices.indexOf(draft.offset) >= 0 ? draft.offset : -30;
+    var prediction = typeof draft.prediction === 'string' ? draft.prediction : '';
+    var question = offset === -30 ? 'Will reversing +30° to -30° change the arrival gap?' : offset === 60 ? 'How will +60° compare with the recorded +30° arrival gap?' : 'How will -60° compare with the recorded +30° arrival gap?';
+    return { offset: offset, prediction: prediction, question: question, ready: !!(mission && mission.completedAt && prediction.trim().length >= 20),
+      launched: !!(draft.launched && draft.launched.offset === offset && draft.launched.prediction === prediction.trim()) };
+  }
+  function marsFollowUpCapture(mission, route, offset, now) {
+    var launched = mission && mission.followUp && mission.followUp.launched;
+    if (!mission || !mission.completedAt || !(mission.startedAt > 0) || route !== 'earth-mars' || !launched || !Number.isFinite(launched.timestamp) || launched.timestamp > now || launched.timestamp < mission.startedAt || [-30, 60, -60].indexOf(launched.offset) < 0 || launched.offset !== offset || typeof launched.prediction !== 'string' || !launched.prediction.trim()) return null;
+    return { launchedAt: launched.timestamp, offset: launched.offset, prediction: launched.prediction };
+  }
+  function marsFollowUpOutcome(mission, entries) {
+    var launched = mission && mission.followUp && mission.followUp.launched;
+    if (!launched) return null;
+    var link = marsFollowUpCapture(mission, 'earth-mars', launched.offset, launched.timestamp);
+    if (!link) return null;
+    return transferExperimentHistory(entries, 'earth-mars').find(function(entry) {
+      var shot = entry.transferComparison, followUp = shot.followUp;
+      return shot.missionStartedAt === mission.startedAt && shot.timestamp >= link.launchedAt && shot.offset === link.offset && followUp && followUp.launchedAt === link.launchedAt && followUp.offset === link.offset && followUp.prediction === link.prediction;
+    }) || null;
+  }
+  function addMarsTransferTrial(mission, trial) {
+    if (!mission || !mission.active || mission.completedAt || ['meet', 'miss'].indexOf(mission.prediction) < 0) return mission;
+    if (!trial || trial.from !== 'earth' || trial.to !== 'mars' || trial.progress !== 1 || !Number.isFinite(trial.separation) || trial.separation < 0 || !Number.isFinite(trial.days) || !(trial.days > 0) || !Number.isFinite(trial.offset) || !Number.isFinite(trial.timestamp) || trial.timestamp < mission.startedAt) return mission;
+    var key = Math.abs(trial.offset) < 0.001 ? 'aligned' : Math.abs(trial.offset - 30) < 0.001 ? 'offset' : null;
+    if (!key || (mission.trials && mission.trials[key])) return mission;
+    var trials = Object.assign({}, mission.trials || {});
+    trials[key] = { offset: trial.offset, separation: trial.separation, days: trial.days, prediction: mission.prediction, timestamp: trial.timestamp };
+    return Object.assign({}, mission, { trials: trials });
+  }
+  function sameDroneSpecimen(entry, specimen) {
+    return !!(entry && specimen && entry.source === 'drone' && entry.kind === 'Sample' && entry.planet === specimen.planet && entry.timestamp === specimen.timestamp && entry.title === specimen.title);
+  }
+  function saveDroneSpecimenReview(entries, specimen, observation, question, now) {
+    observation = String(observation || '').trim().slice(0, 1000);
+    question = String(question || '').trim().slice(0, 500);
+    if (!observation || !question) return entries;
+    var changed = false;
+    var next = entries.map(function(entry) {
+      if (!sameDroneSpecimen(entry, specimen)) return entry;
+      if (entry.review && entry.review.observation === observation && entry.review.question === question) return entry;
+      changed = true;
+      return Object.assign({}, entry, { review: { observation: observation, question: question, timestamp: now }, surprise: observation, question: question });
+    });
+    return changed ? next : entries;
+  }
+  function droneSpecimenFacets(angle) {
+    var vertices = [[0,-0.9,0],[0,0.85,0]], faces = [];
+    for (var ring = 0; ring < 2; ring++) for (var i = 0; i < 6; i++) {
+      var a = i * Math.PI / 3 + ring * 0.24, radius = (ring ? 0.68 : 0.86) * (i % 2 ? 0.86 : 1);
+      vertices.push([Math.cos(a)*radius, ring ? 0.38 : -0.32, Math.sin(a)*radius]);
+    }
+    var c = Math.cos(angle), n = Math.sin(angle);
+    vertices = vertices.map(function(v) { var x=v[0]*c+v[2]*n,z=v[2]*c-v[0]*n; return [x,v[1]*0.94-z*0.342,z*0.94+v[1]*0.342]; });
+    for (var j=0;j<6;j++) { var k=(j+1)%6; faces.push([0,j+2,k+2],[1,k+8,j+8],[j+2,j+8,k+8],[j+2,k+8,k+2]); }
+    return faces.map(function(face,index) { var points=face.map(function(v){return vertices[v];});return {points:points,depth:(points[0][2]+points[1][2]+points[2][2])/3,shade:0.55+(index%5)*0.09}; }).sort(function(a,b){return a.depth-b.depth;});
+  }
+  function drawDroneSpecimen(ctx, specimen, angle, reveal) {
+    var w=720,h=360,mode=specimen.mode||'surface',color=Number.isFinite(specimen.color)?specimen.color:0xe7b778;
+    var r=(color>>16)&255,g=(color>>8)&255,b=color&255;
+    var ink='rgb('+r+','+g+','+b+')';
+    ctx.clearRect(0,0,w,h);ctx.save();
+    var bg=ctx.createRadialGradient(360,180,5,360,180,390);bg.addColorStop(0,'#17384b');bg.addColorStop(1,'#061321');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle='rgba(125,211,252,0.1)';ctx.lineWidth=1;
+    for(var x=0;x<w;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+    for(var y=0;y<h;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+    ctx.fillStyle='#b5d6e9';ctx.font='600 17px system-ui';ctx.fillText(mode==='surface'?'GEOLOGY / SEALED SPECIMEN':mode==='ocean'?'MARINE / SEALED SPECIMEN':'ATMOSPHERE / SEALED SPECIMEN',24,32);
+    ctx.fillStyle='#102838';ctx.beginPath();ctx.ellipse(360,296,154,27,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#54829b';ctx.beginPath();ctx.ellipse(360,290,147,24,0,0,Math.PI*2);ctx.stroke();
+    ctx.globalAlpha=0.3+0.7*reveal;
+    if(mode==='surface') {
+      droneSpecimenFacets(angle).forEach(function(face){ctx.beginPath();face.points.forEach(function(v,i){var px=360+v[0]*97,py=170+v[1]*99;if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);});ctx.closePath();ctx.fillStyle='rgb('+Math.round(r*face.shade)+','+Math.round(g*face.shade)+','+Math.round(b*face.shade)+')';ctx.fill();ctx.strokeStyle='rgba(255,236,206,0.18)';ctx.stroke();});
+    } else {
+      var fill=ctx.createLinearGradient(285,0,435,0);fill.addColorStop(0,'rgba('+r+','+g+','+b+',0.12)');fill.addColorStop(0.5,'rgba('+r+','+g+','+b+',0.42)');fill.addColorStop(1,'rgba('+r+','+g+','+b+',0.12)');ctx.fillStyle=fill;ctx.fillRect(286,92,148,158);ctx.beginPath();ctx.ellipse(360,250,74,14,0,0,Math.PI*2);ctx.fill();
+      for(var dot=0;dot<24;dot++){var phase=dot*2.399+angle,px=360+Math.cos(phase)*(22+dot%5*10),py=106+(dot*37)%132;ctx.fillStyle=dot%3?'rgba(231,248,255,0.6)':ink;ctx.beginPath();ctx.ellipse(px,py,mode==='ocean'?4+dot%4:3,mode==='ocean'?2+dot%3:3,phase,0,Math.PI*2);ctx.fill();}
+    }
+    ctx.globalAlpha=1;ctx.strokeStyle='#8cc7da';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(269,80);ctx.lineTo(269,260);ctx.ellipse(360,260,91,18,0,Math.PI,0,true);ctx.lineTo(451,80);ctx.stroke();
+    ctx.fillStyle='#294c60';ctx.beginPath();ctx.ellipse(360,77,94,19,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.strokeStyle='#b8dfeb';ctx.beginPath();ctx.ellipse(360,68,83,14,0,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='rgba(214,247,255,0.3)';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(281,104);ctx.lineTo(281,236);ctx.stroke();
+    ctx.strokeStyle='#5eead4';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(360,286,150,25,0,-Math.PI/2,-Math.PI/2+Math.PI*2*reveal);ctx.stroke();
+    ctx.fillStyle='#a7f3d0';ctx.font='700 16px system-ui';ctx.textAlign='center';ctx.fillText('SEALED · READY TO REVIEW',360,333);ctx.restore();
+  }
+  // Read existing evidence without awarding progress or rewriting activity state.
+  function solarMissionDashboardState(data, worlds) {
+    var d=data||{},entries=(Array.isArray(d.journalEntries)?d.journalEntries:[]).filter(function(e){return e&&typeof e.observation==='string'&&e.observation.trim();});
+    var text=function(v){return typeof v==='string'&&!!v.trim();},step=function(label,done){return {label:label,done:!!done};};
+    var evidence=function(e){return {title:e.title||e.planet||'Journal observation',detail:e.observation};};
+    var mars=d.marsMission||{},mp=marsMissionProgress(mars,entries,worlds.mars),trials=mars.trials||{};
+    var marsEvidence=['aligned','offset'].filter(function(k){return trials[k]&&Number.isFinite(trials[k].separation);}).map(function(k){return {title:k==='aligned'?'Aligned arrival':'Offset arrival',detail:trials[k].separation.toFixed(3)+' AU separation'};});
+    [mp.scan,mp.sample].filter(Boolean).forEach(function(e){marsEvidence.push(evidence(e));});
+    var sg=d.seasonsGuide||{},prediction=['together','opposite','unchanged'].indexOf(sg.prediction)>=0;
+    var records=[25,75].map(function(position){var r=(sg.records||{})[position];return r&&r.world==='Earth'&&r.phase===position&&['northHours','southHours','northNoon','southNoon'].every(function(k){return Number.isFinite(r[k])&&r[k]>=0&&r[k]<=(k.indexOf('Hours')>=0?24:90);})?r:null;});
+    var signature=JSON.stringify([sg.prediction,records,sg.claim,typeof sg.explanation==='string'?sg.explanation.trim():'']);
+    var seasonSaved=prediction&&records.every(Boolean)&&sg.claim==='tilt'&&sg.savedSignature===signature;
+    var orbitIds=['earth_distance','mercury_speed','longer_year'],orbitTitles=['Earth live orbit','Mercury speed zone','Longer year'],orbit=d.orr_mission_progress||{};
+    var nextOrbit=orbitIds.findIndex(function(id){return !orbit[id]||!orbit[id].correct;});
+    var labs=[['compare','Visual Compare'],['seasons','Tilt + Seasons'],['signal','Signal Delay'],['gravity','Gravity Drop'],['moon','Moon + Eclipses']].map(function(pair){var saved=entries.filter(function(e){return e.investigation&&e.investigation.id===pair[0];});return {id:pair[0],title:pair[1],entries:saved,explained:saved.some(function(e){return text(e.investigation.explanation);})};});
+    var nextLab=labs.find(function(lab){return lab.entries.length&&!lab.explained;})||labs.find(function(lab){return !lab.explained;});
+    var comparisonEntries=entries.filter(function(e){return e.planet===worlds.earth||e.planet===worlds.jupiter;});
+    var samples=entries.filter(function(e){return e.source==='drone'&&e.kind==='Sample'&&worlds.all.indexOf(e.planet)>=0;});
+    var reviews=samples.filter(function(e){return e.review&&text(e.review.observation)&&text(e.review.question);});
+    var nextSample=samples.slice().reverse().find(function(e){return !e.review||!text(e.review.observation)||!text(e.review.question);});
+    var journeys=[
+      {id:'mars',title:'Earth → Mars expedition',description:'Connect a launch experiment, surface evidence, and your explanation.',accent:'#fb923c',icon:'↗',started:!!mars.startedAt,steps:[step('Predict',mp.predicted),step('Compare arrivals',mp.transferDone),step('Scan + sample',mp.surfaceDone),step('Save report',mp.complete)],next:mp.complete?'Revisit your expedition report':!mp.predicted?'Predict the effect of launch alignment':!mp.transferDone?'Record the aligned and +30° arrivals':!text(mars.surfacePrediction)?'Predict what surface evidence could tell you':!mp.surfaceDone?'Collect your Mars scan and specimen':'Explain your results and save the report',evidence:marsEvidence},
+      {id:'seasons',title:'Opposite seasons',description:'Use two Earth observations to explain opposite seasons.',accent:'#fbbf24',icon:'☀',started:!!d.seasonsGuideActive||prediction||records.some(Boolean),steps:[step('Predict',prediction),step('Two observations',records.every(Boolean)),step('Check a claim',sg.claim==='tilt'),step('Save explanation',seasonSaved)],next:seasonSaved?'Review your saved seasonal explanation':!prediction?'Predict how the hemispheres change':!records.every(Boolean)?'Capture the missing solstice observation':sg.claim!=='tilt'?'Check your claim against the two observations':'Explain the pattern and save your work',evidence:records.filter(Boolean).map(function(r){return {title:r.phase===25?'June observation':'December observation',detail:'45° N: '+r.northHours.toFixed(1)+' h daylight · 45° S: '+r.southHours.toFixed(1)+' h'};})},
+      {id:'orbits',title:'Orbital detectives',description:'Work through the three existing guided Orrery challenges.',accent:'#c4b5fd',icon:'◎',started:orbitIds.some(function(id){return orbit[id]&&orbit[id].started;}),steps:orbitIds.map(function(id,i){return step(orbitTitles[i],orbit[id]&&orbit[id].correct);}),next:nextOrbit<0?'Revisit your completed orbital challenges':'Investigate: '+orbitTitles[nextOrbit],target:Math.max(0,nextOrbit),evidence:orbitIds.filter(function(id){return orbit[id]&&orbit[id].correct;}).map(function(id){return {title:orbitTitles[orbitIds.indexOf(id)],detail:orbit[id].detail||'Guided challenge completed'};})},
+      {id:'labs',title:'Five science investigations',description:'Build linked evidence and your own explanation in each lab.',accent:'#67e8f9',icon:'◇',started:labs.some(function(lab){return lab.entries.length;}),steps:labs.map(function(lab){return step(lab.title,lab.explained);}),next:!nextLab?'Review or connect evidence across labs':nextLab.entries.length?'Add your explanation: '+nextLab.title:'Gather evidence: '+nextLab.title,target:nextLab?nextLab.id:null,needsExplanation:!!(nextLab&&nextLab.entries.length),evidence:entries.filter(function(e){return e.investigation&&labs.some(function(lab){return lab.id===e.investigation.id;});}).map(evidence),summary:labs.filter(function(lab){return lab.entries.length;}).length+'/5 labs with evidence · '+labs.filter(function(lab){return lab.explained;}).length+'/5 with an explanation'},
+      {id:'comparison',title:'Earth + Jupiter comparison',description:'Follow the existing world, size, orbit, and journal checkpoints.',accent:'#93c5fd',icon:'◐',started:!!d.evidenceMissionActive||!!d.evidenceMissionObserved,steps:[step('Earth view',d.evidenceMissionObserved),step('Compare view',d.evidenceMissionCompared),step('Orbit view',d.evidenceMissionOrbitSeen),step('Journal record',d.evidenceMissionActive&&comparisonEntries.length)],next:!d.evidenceMissionObserved?'Visit Earth and inspect its properties':!d.evidenceMissionCompared?'Compare Earth and Jupiter on a shared scale':!d.evidenceMissionOrbitSeen?'Inspect Jupiter in the Orrery':'Review or write your comparison journal entry',evidence:comparisonEntries.map(evidence)},
+      {id:'field',title:'Collect → review → explore',description:'Collect one specimen, then save an observation and a next question.',accent:'#6ee7b7',icon:'⬡',started:samples.length>0,steps:[step('Collect a specimen',samples.length>0),step('Save your review',reviews.length>0)],next:reviews.length?'Revisit your specimen observations':samples.length?'Review a collected specimen':'Deploy a rover and collect a specimen',target:nextSample?nextSample.planet:worlds.mars,hasSample:!!samples.length,evidence:samples.map(evidence),summary:samples.length+' specimens recorded · '+reviews.length+' reviewed'}
+    ];
+    journeys.forEach(function(j){j.done=j.steps.filter(function(st){return st.done;}).length;j.complete=j.done===j.steps.length;});
+    var selected=journeys.find(function(j){return j.id===d.solarMissionFocus;})||journeys.find(function(j){return j.started&&!j.complete;})||journeys[0];
+    return {journeys:journeys,selected:selected,journalCount:entries.length,completed:journeys.filter(function(j){return j.complete;}).length};
+  }
+  function transferExperimentHistory(entries, route) {
+    var seen = {};
+    return (Array.isArray(entries) ? entries : []).filter(function(entry) {
+      var snapshot = entry && entry.transferComparison;
+      if (!entry || entry.source !== 'experiment' || typeof entry.transferComparisonId !== 'string' || !entry.transferComparisonId || !snapshot || snapshot.route !== route ||
+        !['offset','days','referenceGap','testGap','timestamp'].every(function(k) { return Number.isFinite(snapshot[k]); }) ||
+        Math.abs(snapshot.offset) < 0.001 || Math.abs(snapshot.offset) > 90 || snapshot.days <= 0 || snapshot.referenceGap < 0 || snapshot.testGap < 0 ||
+        typeof entry.observation !== 'string' || !entry.observation.trim() || seen[entry.transferComparisonId]) return false;
+      seen[entry.transferComparisonId] = true; return true;
+    }).slice().sort(function(a, b) { return b.transferComparison.timestamp - a.transferComparison.timestamp; });
+  }
+  function compareTransferExperiments(first, second) {
+    if (!first || !second || first.transferComparisonId === second.transferComparisonId) return null;
+    var a = first.transferComparison, b = second.transferComparison;
+    if (!a || !b || !a.route || a.route !== b.route || transferExperimentHistory([first, second], a.route).length !== 2) return null;
+    var sameTime = Math.abs(a.days - b.days) < 0.000001, sameReference = Math.abs(a.referenceGap - b.referenceGap) < 0.000001;
+    return { a: a, b: b, sameTime: sameTime, sameReference: sameReference,
+      sameOffset: Math.abs(a.offset - b.offset) < 0.000001,
+      oppositeOffsets: Math.abs(a.offset + b.offset) < 0.000001,
+      gapChange: b.testGap - a.testGap, sameGap: Math.abs(b.testGap - a.testGap) < 0.000001,
+      ruler: Math.max(1, Math.ceil(Math.max(a.testGap, b.testGap))) };
+  }
+  function transferDebriefSignature(note) {
+    if (!note || !note.snapshot) return '';
+    return JSON.stringify([note.snapshot, note.changed, (note.explanation || '').trim(), (note.question || '').trim()]);
+  }
+  function saveTransferDebrief(data, route, now) {
+    var note = (data.transferDebriefs || {})[route], snapshot = note && note.snapshot;
+    if (!snapshot || snapshot.route !== route || !snapshot.from || !snapshot.to || snapshot.from === snapshot.to || !snapshot.planet ||
+      !['offset','days','referenceGap','testGap','timestamp'].every(function(k) { return Number.isFinite(snapshot[k]); }) ||
+      Math.abs(snapshot.offset) < 0.001 || Math.abs(snapshot.offset) > 90 || snapshot.days <= 0 || snapshot.referenceGap < 0 || snapshot.testGap < 0 ||
+      note.changed !== 'destination' || typeof note.explanation !== 'string' || note.explanation.trim().length < 20 || typeof note.question !== 'string' || note.question.trim().length < 10) return data;
+    var signature = transferDebriefSignature(note);
+    var entries = Array.isArray(data.journalEntries) ? data.journalEntries : [], id = 'transfer-comparison:' + route + ':' + snapshot.timestamp;
+    var index = entries.findIndex(function(e) { return e && e.transferComparisonId === id; });
+    if (note.savedSignature === signature && index >= 0) return data;
+    var entry = Object.assign({}, index >= 0 ? entries[index] : {}, { planet: snapshot.planet, source: 'experiment', kind: 'Experiment', title: 'Launch alignment: ' + snapshot.from + ' → ' + snapshot.to,
+      observation: 'At arrival after ' + snapshot.days.toFixed(1) + ' days, aligned 0° gap was ' + snapshot.referenceGap.toFixed(3) + ' AU; test ' + (snapshot.offset > 0 ? '+' : '') + snapshot.offset + '° gap was ' + snapshot.testGap.toFixed(3) + ' AU. The spacecraft path and flight time were held constant.',
+      prediction: snapshot.followUp ? 'Follow-up prediction: ' + snapshot.followUp.prediction : '',
+      reasoning: note.explanation.trim(), surprise: note.explanation.trim(), question: note.question.trim(), timestamp: index >= 0 ? entries[index].timestamp : now,
+      transferComparisonId: id, transferComparison: Object.assign({}, snapshot), missionStartedAt: snapshot.missionStartedAt || null });
+    var nextEntries = entries.slice(); if (index >= 0) nextEntries[index] = entry; else nextEntries.push(entry);
+    var notes = Object.assign({}, data.transferDebriefs); notes[route] = Object.assign({}, note, { savedSignature: signature });
+    return Object.assign({}, data, { transferDebriefs: notes, journalEntries: nextEntries });
+  }
   var _stableViewTypes = {};
   function stableType(name, impl) {
     var slot = _stableViewTypes[name];
@@ -243,6 +433,19 @@ const d = labToolData.solarSystem || {};
           // WCAG 2.1.1 / 2.4.3: the first-visit tutorial is a real modal with
           // render-synchronized initial focus, containment, Escape, and focus return.
           const solarBackButtonRef = React.useRef(null);
+          const marsMissionFocusRef = React.useRef(null);
+          React.useEffect(function() {
+            var request = marsMissionFocusRef.current;
+            if (!request) return;
+            var timer = window.setTimeout(function() {
+              var target = document.querySelector(typeof request === 'string' ? request : request.selector);
+              if (request.reveal) { var disclosure = document.querySelector(request.reveal); if (disclosure) disclosure.open = true; }
+              if (target && request.activate) target.click();
+              else if (target) { if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1'); target.scrollIntoView({ block: 'center' }); target.focus({ preventScroll: true }); }
+              marsMissionFocusRef.current = null;
+            }, 120);
+            return function() { window.clearTimeout(timer); };
+          });
           const solarChallengeTimerRef = React.useRef(null);
           React.useEffect(function() {
             return function() {
@@ -3712,6 +3915,196 @@ const d = labToolData.solarSystem || {};
           var spotlightMoonCount = Math.min(3, Number(spotlightPlanet.moons) || 0);
           var spotlightRingColor = spotlightPlanet.key === 'Saturn' ? 'rgba(250,219,140,.92)' : (spotlightPlanet.key === 'Uranus' ? 'rgba(165,243,252,.56)' : (spotlightPlanet.key === 'Neptune' ? 'rgba(147,197,253,.48)' : 'rgba(231,210,167,.40)'));
           var missionJupiter = PLANETS.find(function(p) { return p.key === 'Jupiter'; }) || PLANETS[4];
+          var marsWorld = PLANETS.find(function(p) { return p.key === 'Mars'; });
+          var marsMission = d.marsMission || {};
+          var marsProgress = marsMissionProgress(marsMission, journalEntries, marsWorld.name);
+          function patchMarsMission(patch) {
+            setLabToolData(function(prev) {
+              var data = prev.solarSystem || {};
+              return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { marsMission: Object.assign({}, data.marsMission || {}, patch) }) });
+            });
+          }
+          function openMarsPlanner() {
+            marsMissionFocusRef.current = '[data-transfer-flight] canvas';
+            updMulti({ orreryMode: true, modelLens: 'orbit', orr_tab: 5, orr_trf: 'earth', orr_trt: 'mars', orr_paused: true });
+          }
+          function deployMarsMissionRover() {
+            if (!marsProgress.complete && (!marsProgress.transferDone || !(marsMission.surfacePrediction || '').trim())) return;
+            marsMissionFocusRef.current = '[data-drone-canvas]';
+            updMulti({ orreryMode: false, modelLens: 'story', selectedPlanet: marsWorld.name, viewTab: 'drone', showVisualCompare: false, showScaleWalk: false, showSeasonsLab: false, showSignalLab: false, showGravityLab: false, showMoonLab: false });
+          }
+          function saveMarsArrival(trial) {
+            setLabToolData(function(prev) {
+              var data = prev.solarSystem || {}, next = addMarsTransferTrial(data.marsMission, trial);
+              if (next === data.marsMission) return prev;
+              return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { marsMission: next }) });
+            });
+          }
+          function finishMarsMission() {
+            if (!marsProgress.complete && marsProgress.predicted && marsProgress.transferDone && marsProgress.surfaceDone && (marsMission.reflection || '').trim().length >= 20) marsMissionFocusRef.current = '#mars-expedition-debrief-title';
+            setLabToolData(function(prev) {
+              var data = prev.solarSystem || {}, mission = data.marsMission || {}, entries = data.journalEntries || [];
+              var progress = marsMissionProgress(mission, entries, marsWorld.name);
+              var reflection = (mission.reflection || '').trim();
+              if (mission.completedAt || !progress.predicted || !progress.transferDone || !progress.surfaceDone || reflection.length < 20) return prev;
+              var now = Date.now();
+              var entry = { planet: marsWorld.name, source: 'mission', kind: 'Mission', title: 'Earth-to-Mars expedition', missionId: 'earth-mars', missionStartedAt: mission.startedAt,
+                prediction: 'Launch prediction: ' + mission.prediction + '. Surface prediction: ' + (mission.surfacePrediction || ''),
+                observation: 'Aligned arrival: ' + mission.trials.aligned.separation.toFixed(3) + ' AU separation. +30° arrival: ' + mission.trials.offset.separation.toFixed(3) + ' AU. Mars scan: ' + progress.scan.observation + ' Sample: ' + progress.sample.observation,
+                reasoning: reflection, surprise: reflection, question: 'What additional measurements would test this explanation?', timestamp: now,
+                expedition: { trials: mission.trials, scan: { title: progress.scan.title, observation: progress.scan.observation, timestamp: progress.scan.timestamp }, sample: { title: progress.sample.title, observation: progress.sample.observation, timestamp: progress.sample.timestamp }, reflection: reflection } };
+              return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { marsMission: Object.assign({}, mission, { completedAt: now }), journalEntries: entries.concat([entry]) }) });
+            });
+          }
+          function buildMarsFollowUpOutcome(buttonStyle) {
+            var h = React.createElement, launched = marsMission.followUp && marsMission.followUp.launched;
+            if (!launched) return null;
+            var result = marsFollowUpOutcome(marsMission, journalEntries), savedReport = marsExpeditionDebrief(marsMission, journalEntries);
+            var reference = savedReport && savedReport.trials[1], shot = result && result.transferComparison;
+            var line = isDark ? '#496078' : '#bed0df', muted = isDark ? '#bfcede' : '#476078';
+            var ruler = Math.max(1, Math.ceil(Math.max(reference ? reference.separation : 0, shot ? shot.testGap : 0)));
+            return h('section', { 'data-mars-follow-up-outcome': true, 'aria-label': 'Follow-up outcome', style: { marginTop: '14px', padding: '12px', borderRadius: '12px', border: '1px solid ' + line, background: isDark ? '#122e35' : '#ecf8f1', overflowWrap: 'anywhere' } },
+              h('h4', { id: 'mars-follow-up-result-title', tabIndex: -1, style: { fontSize: '16px', fontWeight: 800, margin: '0 0 10px' } }, result ? 'Prediction → result → explanation' : 'Your last launched experiment'),
+              h('p', { style: { fontSize: '12px', lineHeight: 1.5 } }, 'Launched offset: ' + (launched.offset > 0 ? '+' : '') + launched.offset + '°. This panel follows that launch, even if you edit the next prediction above.'),
+              h('strong', { style: { fontSize: '12px' } }, 'What you predicted'),
+              h('p', { 'data-mars-outcome-prediction': true, style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: '5px 0 12px' } }, launched.prediction),
+              !result ? h('p', { role: 'status', style: { fontSize: '12px', lineHeight: 1.6 } }, 'No saved comparison is linked to this launch yet. In the transfer activity, inspect Arrival, capture the comparison, and save your explanation. Older captures do not complete this investigation.') : h(React.Fragment, null,
+                h('strong', { style: { fontSize: '12px' } }, 'What you recorded'),
+                [{ label: 'Original +30°', gap: reference ? reference.separation : null, color: '#69a9df' }, { label: 'Follow-up ' + (shot.offset > 0 ? '+' : '') + shot.offset + '°', gap: shot.testGap, color: '#e57c34' }].map(function(row) { return h('div', { key: row.label, style: { margin: '10px 0', fontSize: '12px' } }, h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '5px' } }, h('span', null, row.label), h('strong', null, row.gap === null ? 'Unavailable' : row.gap.toFixed(3) + ' AU')), row.gap === null ? null : h('div', { 'aria-hidden': true, style: { height: '8px', borderRadius: '5px', background: isDark ? '#42566d' : '#d3dfeb', marginTop: '5px' } }, h('div', { style: { height: '100%', width: row.gap / ruler * 100 + '%', borderRadius: '5px', background: row.color } }))); }),
+                h('p', { style: { fontSize: '11px', color: muted, lineHeight: 1.5 } }, 'Shared 0–' + ruler + ' AU ruler. Follow-up arrival time: ' + shot.days.toFixed(1) + ' days. Compare these recorded gaps with your prediction.'),
+                h('strong', { style: { fontSize: '12px' } }, 'How you explained the evidence'),
+                h('p', { 'data-mars-outcome-explanation': true, style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: '5px 0 12px' } }, result.reasoning || result.surprise || 'No explanation recorded.'),
+                h('strong', { style: { fontSize: '12px' } }, 'Your next question'),
+                h('p', { style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, result.question || 'What would you test next?'),
+                h('p', { role: 'status', style: { fontSize: '11px', color: muted, lineHeight: 1.5 } }, 'This outcome is linked to the saved experiment. Your explanation is preserved as written, not automatically graded.')
+              )
+            );
+          }
+          function buildMarsFollowUp(buttonStyle) {
+            var h = React.createElement, plan = marsFollowUpPlan(marsMission);
+            var line = isDark ? '#496078' : '#bed0df', muted = isDark ? '#bfcede' : '#476078';
+            function patchPlan(patch) {
+              setLabToolData(function(prev) { var data = prev.solarSystem || {}, mission = data.marsMission || {}; return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { marsMission: Object.assign({}, mission, { followUp: Object.assign({}, mission.followUp || {}, patch) }) }) }); });
+            }
+            function launchPlan() {
+              if (!plan.ready) return;
+              marsMissionFocusRef.current = '[data-transfer-flight] canvas';
+              setLabToolData(function(prev) {
+                var data = prev.solarSystem || {}, mission = data.marsMission || {}, currentPlan = marsFollowUpPlan(mission);
+                if (!currentPlan.ready) return prev;
+                return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { marsMission: Object.assign({}, mission, { followUp: Object.assign({}, mission.followUp || {}, { offset: currentPlan.offset, launched: { offset: currentPlan.offset, prediction: currentPlan.prediction.trim(), timestamp: Date.now() } }) }), orreryMode: true, modelLens: 'orbit', orr_tab: 5, orr_trf: 'earth', orr_trt: 'mars', orr_paused: true, orr_marsReplay: (Number(data.orr_marsReplay) || 0) + 1, orr_marsReplayOffset: currentPlan.offset }) });
+              });
+            }
+            return h('details', { 'data-mars-follow-up': true, style: { marginTop: '12px', padding: '12px', border: '1px solid ' + line, borderRadius: '12px', background: isDark ? '#102839' : '#f1f7ff' } },
+              h('summary', { style: { minHeight: '44px', paddingTop: '10px', boxSizing: 'border-box', cursor: 'pointer', fontSize: '13px', fontWeight: 800 } }, 'Plan your next transfer experiment'),
+              h('section', { 'aria-label': 'Mars follow-up investigation' },
+                h('p', { style: { fontSize: '12px', lineHeight: 1.6, margin: '6px 0 12px' } }, 'Use your +30° result as the reference. Choose one new starting angle and predict what will happen before testing it.'),
+                h('div', { role: 'group', 'aria-label': 'Choose the next launch angle', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '8px' } }, [{ offset: -30, label: 'Reverse the angle' }, { offset: 60, label: 'Double the angle' }, { offset: -60, label: 'Reverse and double' }].map(function(choice) {
+                  return h('button', { key: choice.offset, type: 'button', 'aria-pressed': choice.offset === plan.offset, onClick: function() { patchPlan({ offset: choice.offset }); }, style: Object.assign({}, buttonStyle, { textAlign: 'left', padding: '12px', border: (choice.offset === plan.offset ? '2px solid ' : '1px solid ') + (choice.offset === plan.offset ? isDark ? '#7dd3fc' : '#285a83' : line) }) },
+                    h('span', { style: { display: 'block', fontSize: '20px', fontWeight: 800, marginBottom: '5px' } }, (choice.offset > 0 ? '+' : '') + choice.offset + '°'), h('span', { style: { fontSize: '12px' } }, choice.label));
+                })),
+                h('p', { 'data-mars-follow-up-question': true, style: { fontSize: '14px', fontWeight: 700, lineHeight: 1.5, margin: '12px 0' } }, plan.question),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: '8px', margin: '12px 0' } },
+                  [{ title: 'Change', body: 'Destination starting angle: +30° → ' + (plan.offset > 0 ? '+' : '') + plan.offset + '°' }, { title: 'Keep constant', body: 'Earth → Mars route, spacecraft path, and flight time.' }, { title: 'Measure', body: 'Spacecraft-to-Mars gap in AU at Arrival.' }].map(function(item) { return h('div', { key: item.title, style: { padding: '10px', borderRadius: '8px', background: isDark ? '#203b50' : '#fff', fontSize: '12px', lineHeight: 1.5 } }, h('strong', null, item.title), h('p', { style: { margin: '5px 0 0' } }, item.body)); })
+                ),
+                h('label', { htmlFor: 'mars-follow-up-prediction', style: { display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700 } }, 'Predict the new gap and explain your reasoning'),
+                h('textarea', { id: 'mars-follow-up-prediction', rows: 3, maxLength: 1500, value: plan.prediction, onChange: function(ev) { patchPlan({ prediction: ev.target.value }); }, placeholder: 'Compared with my +30° result, I expect… because…', style: { width: '100%', boxSizing: 'border-box', minHeight: '80px', padding: '10px', borderRadius: '8px', border: '1px solid ' + line, background: isDark ? '#102237' : '#fff', color: isDark ? '#e2e8f0' : '#18334c', fontSize: '12px' } }),
+                h('p', { style: { fontSize: '11px', lineHeight: 1.5, color: muted } }, 'Your draft is saved with this mission. Write at least 20 characters. Changing the angle keeps your writing; check that the prediction still matches your plan.'),
+                h('button', { type: 'button', disabled: !plan.ready, style: buttonStyle, onClick: launchPlan }, plan.launched ? 'Relaunch planned experiment' : 'Launch planned experiment'),
+                h('p', { role: 'status', style: { fontSize: '12px', lineHeight: 1.5, margin: '10px 0 0' } }, plan.launched ? 'Setup launched. Use Arrival, capture the comparison, and explain what you found. Then compare your saved result with +30° on the experiment shelf.' : 'The experiment opens paused at departure with your chosen angle. Capture its result in the transfer explanation activity; the original expedition report stays unchanged.'),
+                buildMarsFollowUpOutcome(buttonStyle)
+              )
+            );
+          }
+          function buildMarsExpeditionDebrief(buttonStyle) {
+            var h = React.createElement, report = marsExpeditionDebrief(marsMission, journalEntries);
+            var muted = isDark ? '#bfcede' : '#476078', line = isDark ? '#496078' : '#bed0df';
+            var cardStyle = { minWidth: 0, padding: '13px', border: '1px solid ' + line, borderRadius: '12px', background: isDark ? '#102237' : '#fff', overflowWrap: 'anywhere' };
+            if (!report) return h('p', { id: 'mars-expedition-debrief-title', tabIndex: -1, role: 'status', style: { fontSize: '12px', lineHeight: 1.6 } }, 'This mission is marked complete, but its saved report is unavailable. Open the journal to inspect the remaining evidence.');
+            var ruler = Math.max(1, Math.ceil(Math.max.apply(null, report.trials.filter(Boolean).map(function(trial) { return trial.separation; }).concat([0]))));
+            return h('section', { 'aria-label': 'Mars expedition debrief', 'data-mars-debrief': true, style: { margin: '12px 0', minWidth: 0 } },
+              h('div', { style: { padding: '16px', border: '1px solid ' + line, borderRadius: '14px', background: isDark ? 'linear-gradient(125deg,#102b46,#382b30)' : 'linear-gradient(125deg,#e0f2ff,#ffe9db)' } },
+                h('div', { 'aria-hidden': true, style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' } },
+                  h('span', { style: { width: '42px', height: '42px', flexShrink: 0, borderRadius: '50%', background: 'radial-gradient(circle at 28% 25%,#9ae4ec,#2672aa 44%,#09284d 78%)', boxShadow: '0 0 18px #60a5fa33' } }),
+                  h('span', { style: { flex: 1, borderTop: '2px dashed ' + line } }),
+                  h('span', { style: { width: '50px', height: '50px', flexShrink: 0, borderRadius: '50%', background: 'radial-gradient(circle at 28% 25%,#ffd0a0,#bb6540 48%,#4e292c 82%)', boxShadow: '0 0 20px #fb923c33' } })
+                ),
+                h('h3', { id: 'mars-expedition-debrief-title', tabIndex: -1, style: { margin: '0 0 6px', fontSize: '20px', fontWeight: 800 } }, 'Your expedition, connected'),
+                h('p', { style: { margin: 0, fontSize: '12px', lineHeight: 1.6, color: muted } }, 'Flight experiment → field observations → your explanation. This debrief reads the saved mission report; later exploration leaves these results intact.')
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: '10px', marginTop: '12px' } },
+                h('article', { style: cardStyle },
+                  h('h4', { style: { margin: '0 0 10px', fontSize: '14px', fontWeight: 800 } }, '01 · Flight evidence'),
+                  report.trials.map(function(trial, i) { return trial ? h('div', { key: i, style: { margin: '12px 0', fontSize: '12px' } },
+                    h('strong', null, trial.label), h('p', { style: { margin: '4px 0' } }, trial.separation.toFixed(3) + ' AU gap · ' + trial.days.toFixed(1) + ' days'),
+                    h('div', { 'aria-hidden': true, style: { height: '8px', background: isDark ? '#42566d' : '#d3dfeb', borderRadius: '5px' } }, h('div', { style: { width: trial.separation / ruler * 100 + '%', height: '100%', borderRadius: '5px', background: i ? '#e57c34' : '#36a98b' } }))
+                  ) : h('p', { key: i, style: { fontSize: '12px' } }, (i ? 'Offset' : 'Aligned') + ' result unavailable in this report.'); }),
+                  h('p', { style: { margin: '8px 0 0', fontSize: '11px', lineHeight: 1.5, color: muted } }, 'Shared 0–' + ruler + ' AU ruler. Positional arrival in an ideal orbit model; landing is not simulated.')
+                ),
+                [{ title: '02 · Environment scan', entry: report.scan, note: 'A scan describes the simulated environment at collection.' }, { title: '03 · Collected specimen', entry: report.sample, note: 'Preset sample data supports investigation; appearance alone cannot establish real composition.' }].map(function(item) {
+                  return h('article', { key: item.title, style: cardStyle }, h('h4', { style: { margin: '0 0 10px', fontSize: '14px', fontWeight: 800 } }, item.title),
+                    item.entry && item.entry.title ? h('strong', { style: { fontSize: '12px' } }, item.entry.title) : null,
+                    h('p', { style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, item.entry ? item.entry.observation : 'This evidence is unavailable in the saved report.'),
+                    h('p', { style: { fontSize: '11px', lineHeight: 1.5, color: muted } }, item.note));
+                })
+              ),
+              h('article', { style: Object.assign({}, cardStyle, { marginTop: '12px', borderLeft: '4px solid ' + (isDark ? '#93c5fd' : '#3476a8') }) },
+                h('h4', { style: { margin: '0 0 8px', fontSize: '15px', fontWeight: 800 } }, '04 · Your explanation'),
+                h('p', { 'data-mars-debrief-reflection': true, style: { fontSize: '13px', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, report.reflection || 'No explanation is available in this report.'),
+                h('p', { style: { fontSize: '11px', color: muted } }, 'Your reasoning is preserved as written and is not automatically graded.'),
+                report.prediction ? h('details', null, h('summary', { style: { minHeight: '44px', paddingTop: '12px', boxSizing: 'border-box', cursor: 'pointer', fontSize: '12px', fontWeight: 700 } }, 'Revisit your original predictions'), h('p', { style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, report.prediction)) : null
+              ),
+              h('div', { style: { marginTop: '12px', padding: '12px', borderRadius: '12px', background: isDark ? '#183c3e' : '#e3f5ed' } },
+                h('strong', { style: { fontSize: '13px' } }, 'Where will you investigate next?'),
+                buildMarsFollowUp(buttonStyle),
+                h('p', { style: { fontSize: '12px', lineHeight: 1.6 } }, report.question || 'What additional measurements would test your explanation?'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+                  h('button', { type: 'button', style: buttonStyle, onClick: function() { marsMissionFocusRef.current = '[data-transfer-flight] canvas'; updMulti({ orreryMode: true, modelLens: 'orbit', orr_tab: 5, orr_trf: 'earth', orr_trt: 'mars', orr_paused: true, orr_marsReplay: (Number(d.orr_marsReplay) || 0) + 1, orr_marsReplayOffset: 30 }); } }, 'Compare recorded flights'),
+                  h('button', { type: 'button', style: buttonStyle, onClick: deployMarsMissionRover }, 'Return to Mars fieldwork'),
+                  h('button', { type: 'button', style: buttonStyle, onClick: function() { marsMissionFocusRef.current = '#solar-mission-dashboard-title'; updMulti({ solarMissionDashboardOpen: true }); } }, 'Choose another journey')
+                )
+              )
+            );
+          }
+          function buildMarsMissionCard() {
+            var h = React.createElement;
+            var missionButton = { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#536480' : '#bacce3'), background: isDark ? '#21334e' : '#fff', color: isDark ? '#e0f2fe' : '#163c61', fontSize: '12px', fontWeight: 700, cursor: 'pointer' };
+            var missionInput = { display: 'block', width: '100%', boxSizing: 'border-box', minHeight: '44px', borderRadius: '8px', padding: '9px', border: '1px solid ' + (isDark ? '#536480' : '#bacce3'), background: isDark ? '#101c30' : '#fff', color: isDark ? '#e2e8f0' : '#172c45', fontSize: '12px' };
+            var steps = [{ label: 'Predict', done: marsProgress.predicted }, { label: 'Test transfer', done: marsProgress.transferDone }, { label: 'Explore Mars', done: marsProgress.surfaceDone }, { label: 'Explain', done: marsProgress.complete }];
+            return h('section', { id: 'solar-mars-expedition', 'aria-label': 'Earth-to-Mars mission', style: { marginBottom: '12px', padding: '14px', borderRadius: '14px', border: '1px solid ' + (isDark ? '#415b7a' : '#c4d8ec'), background: isDark ? 'linear-gradient(120deg,#14273f,#302338)' : 'linear-gradient(120deg,#eaf5ff,#fff1e8)', color: isDark ? '#e2e8f0' : '#18334c', minWidth: 0 } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '8px' } },
+                h('strong', { style: { fontSize: '16px' } }, 'Earth → Mars expedition'),
+                h('button', { type: 'button', style: missionButton, onClick: function() { patchMarsMission({ active: !marsMission.active, startedAt: marsMission.startedAt || Date.now() }); } }, marsMission.active ? 'Hide mission' : marsMission.startedAt ? 'Resume Earth-to-Mars mission' : 'Start Earth-to-Mars mission')
+              ),
+              !marsMission.active ? h('p', { style: { fontSize: '12px', margin: '7px 0 0' } }, 'Plan a flight, investigate Mars, and connect your observations in one evidence report.') : h(React.Fragment, null,
+                h('ol', { 'aria-label': 'Mars mission stages', style: { display: 'flex', flexWrap: 'wrap', gap: '7px', listStyle: 'none', margin: '12px 0', padding: 0 } }, steps.map(function(step, i) { return h('li', { key: step.label, 'data-mars-step': i, 'data-complete': String(step.done), style: { flex: '1 1 115px', padding: '8px', borderRadius: '8px', border: '1px solid ' + (step.done ? '#208569' : isDark ? '#536480' : '#bacce3'), fontSize: '12px', fontWeight: 700 } }, (step.done ? '✓ ' : (i + 1) + '. ') + step.label); })),
+                !marsProgress.complete ? h(React.Fragment, null,
+                  h('label', { htmlFor: 'mars-launch-prediction', style: { fontSize: '12px', fontWeight: 700 } }, 'Predict: if Mars starts +30° from the planned alignment, will the craft meet it?'),
+                  h('select', { id: 'mars-launch-prediction', value: marsMission.prediction || '', disabled: !!(marsMission.trials && Object.keys(marsMission.trials).length), style: missionInput, onChange: function(ev) { patchMarsMission({ prediction: ev.target.value }); } }, h('option', { value: '' }, 'Choose a prediction'), h('option', { value: 'meet' }, 'They will meet'), h('option', { value: 'miss' }, 'They will miss')),
+                  h('p', { style: { fontSize: '12px', lineHeight: 1.5 } }, 'Test Earth → Mars at 0° and +30° launch offsets. At each arrival, use Record arrival for Mars mission. Your first recorded trial locks the prediction; a revised explanation is welcome.'),
+                  h('button', { type: 'button', style: missionButton, onClick: openMarsPlanner }, 'Open Earth-to-Mars planner')
+                ) : h(React.Fragment, null, h('p', { role: 'status', style: { fontWeight: 700, fontSize: '13px' } }, 'Mission complete · review your saved evidence.'), buildMarsExpeditionDebrief(missionButton)),
+                !marsProgress.complete && marsMission.trials && Object.keys(marsMission.trials).length ? h('div', { 'aria-label': 'Recorded transfer trials', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '12px 0' } }, ['aligned','offset'].map(function(key) { var trial = marsMission.trials[key]; return h('article', { key: key, style: { flex: '1 1 180px', padding: '10px', borderRadius: '9px', background: isDark ? '#132139' : '#fff' } }, h('strong', { style: { fontSize: '12px' } }, key === 'aligned' ? 'Aligned launch · 0°' : 'Misaligned launch · +30°'), h('p', { style: { fontSize: '12px', margin: '5px 0' } }, trial ? trial.separation.toFixed(3) + ' AU separation after ' + trial.days.toFixed(1) + ' days' : 'Not recorded yet'), trial ? h('div', { role: 'img', 'aria-label': 'Arrival separation ' + trial.separation.toFixed(3) + ' AU; common 1 AU ruler', style: { height: '8px', borderRadius: '4px', background: isDark ? '#334155' : '#dce6ef' } }, h('div', { style: { width: Math.min(100, trial.separation * 100) + '%', height: '100%', borderRadius: '4px', background: key === 'aligned' ? '#059669' : '#e97723' } })) : null); })) : null,
+                !marsProgress.complete && marsProgress.transferDone ? h(React.Fragment, null,
+                  h('button', { type: 'button', style: Object.assign({}, missionButton, { marginBottom: '8px' }), onClick: function() { marsMissionFocusRef.current = '[data-transfer-flight] canvas'; updMulti({ orreryMode: true, modelLens: 'orbit', orr_tab: 5, orr_trf: 'earth', orr_trt: 'mars', orr_paused: true, orr_marsReplay: (Number(d.orr_marsReplay) || 0) + 1, orr_marsReplayOffset: 30 }); } }, 'Compare recorded flights'),
+                  h('p', { style: { fontSize: '11px', margin: '0 0 10px' } }, 'Replay reconstructs your 0° and +30° experiments using the same ideal transfer model. Your saved results stay unchanged.'),
+                  h('p', { role: 'status', style: { fontSize: '12px' } }, marsMission.prediction === 'miss' ? 'Your launch prediction was supported: changing the starting angle caused a miss.' : 'Revise your launch prediction: the +30° trial missed even though it used the same flight path.'),
+                  h('label', { htmlFor: 'mars-surface-prediction', style: { fontSize: '12px', fontWeight: 700 } }, 'Before surface work: what do you expect a scan or sample to tell you about Mars?'),
+                  h('textarea', { id: 'mars-surface-prediction', rows: 2, maxLength: 1000, disabled: marsProgress.complete, value: marsMission.surfacePrediction || '', style: missionInput, onChange: function(ev) { patchMarsMission({ surfacePrediction: ev.target.value }); } }),
+                  h('p', { style: { fontSize: '11px', lineHeight: 1.5 } }, 'Continue the lesson in the Mars rover scene; entry and landing are not simulated. Use Scan (or press G) for an environment scan, then Find samples and collect one specimen. Appearance alone cannot establish composition or past water.'),
+                  h('button', { type: 'button', disabled: !(marsMission.surfacePrediction || '').trim(), style: missionButton, onClick: deployMarsMissionRover }, 'Deploy Mars rover'),
+                  h('ul', { 'aria-label': 'Mars field evidence', style: { fontSize: '12px', lineHeight: 1.6, paddingLeft: '20px' } }, h('li', null, marsProgress.scan ? '✓ Scan: ' + marsProgress.scan.observation : 'Environment scan not yet recorded'), h('li', null, marsProgress.sample ? '✓ Sample: ' + marsProgress.sample.title + ' — ' + marsProgress.sample.observation : 'Sample not yet collected'))
+                ) : null,
+                !marsProgress.complete && marsProgress.surfaceDone && marsProgress.transferDone ? h(React.Fragment, null,
+                  h('label', { htmlFor: 'mars-mission-reflection', style: { fontSize: '12px', fontWeight: 700 } }, 'Explain using a transfer result and your Mars evidence. What is one limitation of these models?'),
+                  h('textarea', { id: 'mars-mission-reflection', rows: 3, maxLength: 2500, disabled: marsProgress.complete, style: missionInput, value: marsMission.reflection || '', onChange: function(ev) { patchMarsMission({ reflection: ev.target.value }); } }),
+                  h('button', { type: 'button', style: Object.assign({}, missionButton, { marginTop: '8px' }), disabled: marsProgress.complete || (marsMission.reflection || '').trim().length < 20, onClick: finishMarsMission }, marsProgress.complete ? 'Mission report saved' : 'Save Mars mission report'),
+                  h('span', { style: { fontSize: '11px', marginLeft: '8px' } }, 'Write at least 20 characters; your explanation is not automatically graded.')
+                ) : null,
+                marsProgress.complete ? h('button', { type: 'button', style: Object.assign({}, missionButton, { marginTop: '8px' }), onClick: function() { marsMissionFocusRef.current = '[data-mars-mission-report]'; updMulti({ orreryMode: false, selectedPlanet: marsWorld.name, viewTab: 'overview', showJournal: true, journalInvestigationFilter: 'all', journalVisibleCount: Math.max(5, journalEntries.length) }); } }, 'Open mission journal') : null
+              )
+            );
+          }
           var evidenceMissionActive = !!d.evidenceMissionActive;
           var evidenceJournalDone = evidenceMissionActive && journalEntries.some(function(entry) {
             return entry.planet === missionEarth.name || entry.planet === missionJupiter.name;
@@ -3747,6 +4140,84 @@ const d = labToolData.solarSystem || {};
             return journalFilter === 'all' || (journalFilter === 'synthesis' ? !!item.entry.synthesis : journalFilter === 'unlinked' ? !linked && !item.entry.synthesis : linked && item.entry.investigation.id === journalFilter);
           });
           var journalVisibleCount = Math.max(5, Math.min(journalEntries.length || 5, Math.floor(Number(d.journalVisibleCount) || 5)));
+          var solarDashboard = solarMissionDashboardState(d, { earth: missionEarth.name, mars: marsWorld.name, jupiter: missionJupiter.name, all: PLANETS.map(function(p) { return p.name; }) });
+          function navigateSolarDashboard(journey, evidenceOnly) {
+            var patch = { solarMissionFocus: journey.id, solarMissionDashboardOpen: false };
+            var worldRoute = { orreryMode: false, modelLens: 'story', selectedPlanet: missionEarth.name, viewTab: 'overview', showVisualCompare: false, showScaleWalk: false, showSeasonsLab: false, showSignalLab: false, showGravityLab: false, showMoonLab: false };
+            function journalRoute(filter) { Object.assign(patch, worldRoute, { showJournal: true, journalInvestigationFilter: filter || 'all', journalVisibleCount: Math.max(5, journalEntries.length) }); marsMissionFocusRef.current = '#solar-journal-filter'; }
+            if (evidenceOnly) journalRoute(journey.id === 'labs' ? journey.target : journey.id === 'field' ? 'unlinked' : 'all');
+            else if (journey.id === 'mars') {
+              patch.marsMission = Object.assign({}, marsMission, { active: true, startedAt: marsMission.startedAt || Date.now() });
+              if (marsProgress.complete) { journalRoute('all'); marsMissionFocusRef.current = '[data-mars-mission-report]'; }
+              else if (!marsProgress.predicted) marsMissionFocusRef.current = '#mars-launch-prediction';
+              else if (!marsProgress.transferDone) { Object.assign(patch, { orreryMode: true, modelLens: 'orbit', orr_tab: 5, orr_trf: 'earth', orr_trt: 'mars', orr_paused: true }); marsMissionFocusRef.current = '[data-transfer-flight] canvas'; }
+              else if (!(marsMission.surfacePrediction || '').trim()) marsMissionFocusRef.current = '#mars-surface-prediction';
+              else if (!marsProgress.surfaceDone) { Object.assign(patch, worldRoute, { selectedPlanet: marsWorld.name, viewTab: 'drone' }); marsMissionFocusRef.current = '[data-drone-canvas]'; }
+              else marsMissionFocusRef.current = '#mars-mission-reflection';
+            } else if (journey.id === 'seasons') {
+              Object.assign(patch, worldRoute, { showSeasonsLab: true, seasonsGuideActive: true, seasonsWorld: 'Earth' });
+              if (!journey.started) patch.seasonsPhase = 25;
+              marsMissionFocusRef.current = '#solar-season-guide-title';
+            } else if (journey.id === 'orbits') {
+              Object.assign(patch, { orreryMode: true, modelLens: 'orbit', orr_tab: 0, orr_mission_idx: journey.target, orr_paused: true }); marsMissionFocusRef.current = '#orrery-guided-objective';
+            } else if (journey.id === 'labs') {
+              if (journey.complete || journey.needsExplanation) journalRoute(journey.target);
+              else {
+                Object.assign(patch, worldRoute);
+                var fields = { compare: 'showVisualCompare', seasons: 'showSeasonsLab', signal: 'showSignalLab', gravity: 'showGravityLab', moon: 'showMoonLab' };
+                patch[fields[journey.target]] = true;
+                if (journey.target === 'compare') Object.assign(patch, { modelLens: 'size', showScale: true, compare1: d.compare1 || missionEarth.name, compare2: d.compare2 || missionJupiter.name });
+                if (journey.target === 'seasons') patch.seasonsGuideActive = false;
+                marsMissionFocusRef.current = '#' + investigationCards.find(function(c) { return c.id === journey.target; }).controls;
+              }
+            } else if (journey.id === 'comparison') {
+              if (journey.complete) journalRoute('all');
+              else { Object.assign(patch, worldRoute, { evidenceMissionActive: true }); marsMissionFocusRef.current = '[data-solarsystem-evidence-mission]'; }
+            } else if (journey.id === 'field') {
+              if (journey.complete) journalRoute('unlinked');
+              else { Object.assign(patch, worldRoute, { selectedPlanet: journey.target, viewTab: 'drone' }); marsMissionFocusRef.current = journey.hasSample ? { selector: '[data-drone-review-launch]', activate: true } : '[data-drone-canvas]'; }
+            }
+            updMulti(patch);
+          }
+          function buildSolarMissionDashboard() {
+            var h = React.createElement, journey = solarDashboard.selected, open = d.solarMissionDashboardOpen !== false;
+            var ink = isDark ? '#e2e8f0' : '#18334c', muted = isDark ? '#bdcce0' : '#415973', line = isDark ? '#425a76' : '#b8cce1';
+            var button = { minHeight: '44px', padding: '9px 12px', borderRadius: '9px', border: '1px solid ' + line, background: isDark ? '#20344e' : '#fff', color: ink, cursor: 'pointer', fontSize: '12px', fontWeight: 700, minWidth: 0 };
+            return h('section', { 'aria-label': 'Mission dashboard', style: { marginBottom: '12px', padding: '14px', borderRadius: '16px', border: '1px solid ' + line, background: isDark ? 'linear-gradient(135deg,#111f36,#172f45)' : 'linear-gradient(135deg,#eef7ff,#e5eff9)', color: ink, minWidth: 0, overflowWrap: 'anywhere' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '10px' } },
+                h('div', null, h('h2', { id: 'solar-mission-dashboard-title', tabIndex: -1, style: { margin: 0, fontSize: '18px', fontWeight: 800 } }, 'Mission dashboard'), h('p', { style: { margin: '3px 0 0', color: muted, fontSize: '12px' } }, solarDashboard.completed + '/6 journeys complete · ' + solarDashboard.journalCount + ' journal records')),
+                h('button', { type: 'button', style: button, 'aria-expanded': open, 'aria-controls': 'solar-mission-dashboard-content', onClick: function() { if (!open) marsMissionFocusRef.current = '#solar-mission-dashboard-title'; upd('solarMissionDashboardOpen', !open); } }, open ? 'Collapse dashboard' : 'Open mission dashboard')
+              ),
+              !open ? h('p', { style: { margin: '9px 0 0', fontSize: '12px', color: muted } }, journey.title + ' · ' + journey.next) : null,
+              h('div', { id: 'solar-mission-dashboard-content', hidden: !open },
+                h('p', { style: { fontSize: '13px', margin: '12px 0', color: muted } }, 'Choose a journey. Pick up where your evidence leaves off.'),
+                h('div', { role: 'group', 'aria-label': 'Choose a science journey', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '7px' } }, solarDashboard.journeys.map(function(item) {
+                  return h('button', { key: item.id, type: 'button', 'data-solar-journey': item.id, 'aria-pressed': item.id === journey.id, onClick: function() { upd('solarMissionFocus', item.id); }, style: Object.assign({}, button, { textAlign: 'left', padding: '10px', border: (item.id === journey.id ? '2px solid ' : '1px solid ') + (item.id === journey.id ? (isDark ? item.accent : '#315d88') : line), background: item.id === journey.id ? (isDark ? '#29425e' : '#fff') : (isDark ? '#14283d' : '#f4f8fc') }) },
+                    h('span', { 'aria-hidden': true, style: { color: isDark ? item.accent : '#315d88', marginRight: '6px' } }, item.icon), item.title,
+                    h('span', { style: { display: 'block', marginTop: '5px', fontWeight: 400, fontSize: '11px', color: muted } }, item.complete ? '✓ Complete' : item.done + '/' + item.steps.length + ' checkpoints')
+                  );
+                })),
+                h('div', { 'data-selected-solar-journey': journey.id, style: { marginTop: '12px', padding: '14px', borderRadius: '12px', border: '1px solid ' + line, background: isDark ? '#0b192c' : '#fff' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+                    h('div', { 'aria-hidden': true, style: { width: '48px', height: '48px', flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: '50%', background: 'radial-gradient(circle at 28% 23%,' + journey.accent + ',#254768 65%,#0a1327)', boxShadow: '0 0 20px ' + journey.accent + '22', color: '#fff', fontSize: '23px' } }, journey.icon),
+                    h('div', { style: { minWidth: 0 } }, h('h3', { style: { margin: 0, fontSize: '16px', fontWeight: 800 } }, journey.title), h('p', { style: { margin: '4px 0 0', fontSize: '12px', color: muted } }, journey.description))
+                  ),
+                  h('ol', { 'aria-label': 'Journey checkpoints', style: { display: 'flex', flexWrap: 'wrap', gap: '6px', listStyle: 'none', padding: 0, margin: '13px 0' } }, journey.steps.map(function(st, i) { return h('li', { key: st.label, 'data-complete': String(st.done), style: { fontSize: '11px', border: '1px solid ' + line, padding: '6px 8px', borderRadius: '7px', background: st.done ? (isDark ? '#164539' : '#dcfce7') : 'transparent' } }, (st.done ? '✓ ' : (i + 1) + '. ') + st.label); })),
+                  journey.summary ? h('p', { style: { fontSize: '12px', color: muted } }, journey.summary) : null,
+                  h('p', { 'data-journey-next': true, style: { fontSize: '13px', fontWeight: 700, margin: '10px 0' } }, 'Next: ' + journey.next),
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+                    h('button', { type: 'button', 'data-journey-continue': true, style: Object.assign({}, button, { background: isDark ? '#cde9ff' : '#184c75', color: isDark ? '#102b44' : '#fff' }), onClick: function() { navigateSolarDashboard(journey, false); } }, journey.id === 'mars' && !journey.started ? 'Start Earth-to-Mars mission' : journey.complete ? 'Review journey' : journey.started ? 'Continue journey' : 'Start journey'),
+                    h('button', { type: 'button', style: button, onClick: function() { navigateSolarDashboard(journey, true); } }, 'Open evidence journal')
+                  ),
+                  h('details', { key: journey.id, style: { marginTop: '12px', fontSize: '12px', color: muted } },
+                    h('summary', { style: { cursor: 'pointer', minHeight: '44px', display: 'list-item', paddingTop: '12px', boxSizing: 'border-box' } }, 'Evidence preview · ' + journey.evidence.length + ' records'),
+                    journey.evidence.length ? h('ul', { style: { paddingLeft: '18px', margin: '6px 0' } }, journey.evidence.slice(-3).reverse().map(function(e, i) { return h('li', { key: i, style: { marginBottom: '8px' } }, h('strong', null, e.title), h('p', { style: { margin: '3px 0', whiteSpace: 'pre-wrap' } }, e.detail)); })) : h('p', null, 'No evidence yet. Your recorded observations will appear here.')
+                  )
+                ),
+                h('p', { style: { fontSize: '11px', color: muted, margin: '10px 0 0' } }, 'Checkpoints reflect activity records and saved work. Written explanations are not automatically graded.')
+              )
+            );
+          }
           function openLearningJournal(filter) {
             updMulti({ showJournal: true, journalInvestigationFilter: filter || 'all', journalVisibleCount: 5, orreryMode: false, selectedPlanet: sel ? sel.name : missionEarth.name });
             setTimeout(function() {
@@ -6077,6 +6548,9 @@ const d = labToolData.solarSystem || {};
 
               React.createElement("span", { className: "px-2 py-0.5 text-[0.6875rem] font-bold rounded-full ml-1 " + (isDark ? 'bg-indigo-900 text-indigo-200' : 'bg-indigo-100 text-indigo-700') }, d.orreryMode ? "Orrery" : "3D")
             ),
+
+            buildSolarMissionDashboard(),
+            marsMission.active ? buildMarsMissionCard() : null,
 
             React.createElement("details", {
               "data-solarsystem-science-trust": true,
@@ -11376,7 +11850,7 @@ const d = labToolData.solarSystem || {};
 
   function TransferFlight(props) {
     var from = props.fromBody, to = props.toBody;
-    var flight = React.useRef({ progress: 0, offset: 0, playing: false, stamp: null, uiAt: null }).current;
+    var flight = React.useRef({ progress: 0, offset: 0, compare: false, playing: false, stamp: null, uiAt: null }).current;
     var redraw = React.useState(0)[1];
     var pathRef = React.useRef(null);
     if (!pathRef.current) {
@@ -11387,6 +11861,141 @@ const d = labToolData.solarSystem || {};
     function changeFlight(patch) {
       Object.assign(flight, patch); flight.stamp = null; flight.uiAt = null;
       redraw(function(value) { return value + 1; });
+    }
+    React.useEffect(function() {
+      if (props.replayToken && from.id === 'earth' && to.id === 'mars' && (marsProgress.transferDone || marsProgress.complete)) changeFlight({ progress: 0, offset: [-60, -30, 30, 60].indexOf(props.replayOffset) >= 0 ? props.replayOffset : 30, compare: true, playing: false });
+    }, [props.replayToken]);
+    var historySelection = React.useState(null), selectedHistoryId = historySelection[0], selectHistory = historySelection[1];
+    var historyReference = React.useState(null), referenceHistoryId = historyReference[0], setHistoryReference = historyReference[1];
+    var debriefRoute = from.id + '-' + to.id;
+    var debrief = (d.transferDebriefs || {})[debriefRoute] || {};
+    function patchDebrief(patch) {
+      setLabToolData(function(prev) {
+        var data = prev.solarSystem || {}, notes = Object.assign({}, data.transferDebriefs || {});
+        notes[debriefRoute] = Object.assign({}, notes[debriefRoute] || {}, patch);
+        return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { transferDebriefs: notes }) });
+      });
+    }
+    function captureComparison() {
+      if (!flight.compare || flight.playing || flight.progress < 1 || current.same || Math.abs(flight.offset) < 0.001) return;
+      var reference = transferRendezvous(from.a, to.a, 1, 0), trial = transferRendezvous(from.a, to.a, 1, flight.offset);
+      var capturedAt = Date.now(), followUp = marsFollowUpCapture(marsMission, debriefRoute, flight.offset, capturedAt);
+      if (debrief.snapshot && debrief.snapshot.offset === flight.offset && debrief.snapshot.days === trial.transitDays && debrief.snapshot.testGap === trial.separation && JSON.stringify(debrief.snapshot.followUp || null) === JSON.stringify(followUp)) return;
+      var world = PLANETS.find(function(p) { return p.key.toLowerCase() === to.id; });
+      patchDebrief({ snapshot: { route: debriefRoute, from: from.name, to: to.name, planet: world ? world.name : to.name, offset: flight.offset, days: trial.transitDays, referenceGap: reference.separation, testGap: trial.separation, timestamp: capturedAt, followUp: followUp, missionStartedAt: (followUp || marsMission.active) && from.id === 'earth' && to.id === 'mars' ? marsMission.startedAt : null } });
+    }
+    function buildTransferDebrief() {
+      var snapshot = debrief.snapshot, saved = !!snapshot && debrief.savedSignature === transferDebriefSignature(debrief) && (d.journalEntries || []).some(function(entry) { return entry && entry.transferComparisonId === 'transfer-comparison:' + debriefRoute + ':' + snapshot.timestamp; });
+      var ready = snapshot && debrief.changed === 'destination' && (debrief.explanation || '').trim().length >= 20 && (debrief.question || '').trim().length >= 10;
+      var inputStyle = { width: '100%', boxSizing: 'border-box', minHeight: '44px', border: '1px solid ' + border, borderRadius: '8px', padding: '9px', background: cardBg, color: fg, fontSize: '12px' };
+      return h('details', { 'data-transfer-debrief': true, style: { marginTop: '12px', padding: '10px', border: '1px solid ' + border, borderRadius: '10px', background: cardBg, color: fg } },
+        h('summary', { style: { cursor: 'pointer', minHeight: '44px', fontSize: '13px', fontWeight: 800, paddingTop: '10px', boxSizing: 'border-box' } }, 'Build an evidence-based explanation'),
+        h('section', { 'aria-label': 'Transfer explanation' },
+          h('p', { style: { fontSize: '12px', lineHeight: 1.5 } }, '1. Pause at Arrival with a nonzero test offset, then capture the two results. Your capture stays fixed when the live controls change.'),
+          btn(snapshot ? 'Capture current arrival' : 'Capture this arrival', false, captureComparison, { disabled: flight.playing || flight.progress < 1 || current.same || Math.abs(flight.offset) < 0.001, style: buttonStyle }),
+          snapshot ? h(React.Fragment, null,
+            snapshot.followUp ? h('aside', { 'aria-label': 'Prediction at launch', style: { padding: '10px', marginTop: '10px', borderRadius: '9px', background: isDark ? '#273448' : '#eef3ff', fontSize: '12px', lineHeight: 1.6 } }, h('strong', null, 'Your prediction at launch'), h('p', { style: { margin: '5px 0', whiteSpace: 'pre-wrap' } }, snapshot.followUp.prediction), h('p', { style: { margin: 0, fontSize: '11px' } }, 'Use the captured gaps below to explain whether you would keep or revise this prediction.')) : null,
+            h('div', { 'data-transfer-capture': true, style: { margin: '12px 0', padding: '10px', borderRadius: '9px', background: isDark ? '#10283b' : '#edf5ff', border: '1px solid ' + border } },
+              h('strong', { style: { fontSize: '12px' } }, 'Captured arrival · ' + snapshot.from + ' → ' + snapshot.to),
+              h('p', { style: { margin: '5px 0 10px', fontSize: '11px', lineHeight: 1.5 } }, 'Same route · same ' + snapshot.days.toFixed(1) + ' days · starting angle changed'),
+              [{ label: 'Aligned · 0°', value: snapshot.referenceGap, color: '#15966e' }, { label: 'Test · ' + (snapshot.offset > 0 ? '+' : '') + snapshot.offset + '°', value: snapshot.testGap, color: '#e77a24' }].map(function(row) {
+                var ruler = Math.max(1, Math.ceil(Math.max(snapshot.referenceGap, snapshot.testGap)));
+                return h('div', { key: row.label, style: { margin: '9px 0', fontSize: '12px' } }, h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '5px' } }, h('span', null, row.label), h('strong', null, row.value.toFixed(3) + ' AU')),
+                  h('div', { 'aria-hidden': true, style: { marginTop: '5px', height: '8px', borderRadius: '5px', background: isDark ? '#3e526a' : '#ccdbea' } }, h('div', { style: { width: (100 * row.value / ruler) + '%', height: '100%', borderRadius: '5px', background: row.color } })));
+              }),
+              h('p', { style: { fontSize: '11px', margin: '8px 0 0' } }, 'Both bars use 0–' + Math.max(1, Math.ceil(Math.max(snapshot.referenceGap, snapshot.testGap))) + ' AU. A zero gap means positions meet in this ideal model.')
+            ),
+            h('label', { htmlFor: 'transfer-explanation-variable', style: { display: 'block', fontSize: '12px', fontWeight: 700, margin: '10px 0 5px' } }, '2. What changed between these experiments?'),
+            h('select', { id: 'transfer-explanation-variable', value: debrief.changed || '', style: inputStyle, onChange: function(ev) { patchDebrief({ changed: ev.target.value }); } }, h('option', { value: '' }, 'Choose the changed variable'), h('option', { value: 'destination' }, 'Destination starting position'), h('option', { value: 'path' }, 'Spacecraft path'), h('option', { value: 'time' }, 'Flight duration')),
+            debrief.changed ? h('p', { role: 'status', style: { fontSize: '12px', lineHeight: 1.5 } }, debrief.changed === 'destination' ? 'Yes. Only the destination’s starting angle changed; the path and travel time stayed the same.' : 'Look again at the shared craft and clock. The path and travel time are held constant; compare the two destination markers at departure.') : null,
+            h('label', { htmlFor: 'transfer-explanation-reason', style: { display: 'block', fontSize: '12px', fontWeight: 700, margin: '10px 0 5px' } }, '3. Explain using your captured gaps'),
+            h('textarea', { id: 'transfer-explanation-reason', rows: 3, maxLength: 2000, value: debrief.explanation || '', style: inputStyle, placeholder: 'The aligned gap was… The test gap was… This happened because…', onChange: function(ev) { patchDebrief({ explanation: ev.target.value }); } }),
+            h('label', { htmlFor: 'transfer-explanation-question', style: { display: 'block', fontSize: '12px', fontWeight: 700, margin: '10px 0 5px' } }, '4. What would you test next?'),
+            h('textarea', { id: 'transfer-explanation-question', rows: 2, maxLength: 1000, value: debrief.question || '', style: inputStyle, placeholder: 'Try another angle, reverse the route, or name a model limitation.', onChange: function(ev) { patchDebrief({ question: ev.target.value }); } }),
+            h('p', { style: { fontSize: '11px', lineHeight: 1.5 } }, 'Use at least 20 characters for your explanation and 10 for your question. Your writing is not automatically graded. This model uses circular, coplanar orbits; a position match does not simulate capture into orbit.'),
+            btn(saved ? 'Explanation saved' : 'Save transfer explanation', false, function() { setLabToolData(function(prev) { var data = prev.solarSystem || {}, next = saveTransferDebrief(data, debriefRoute, Date.now()); return next === data ? prev : Object.assign({}, prev, { solarSystem: next }); }); }, { disabled: !ready || saved, style: buttonStyle }),
+            h('p', { role: 'status', style: { fontSize: '12px', margin: '8px 0 0' } }, saved ? 'Saved to the evidence journal. Revising this explanation updates the same record.' : 'Draft saved in this tool. A new capture keeps your writing; check its numbers before saving.'),
+            saved ? btn('Read saved explanation', false, function() { openLearningJournal('unlinked'); }, { style: Object.assign({}, buttonStyle, { marginTop: '8px' }) }) : null,
+            saved && snapshot.followUp && snapshot.missionStartedAt === marsMission.startedAt ? btn('Review follow-up outcome', false, function() { marsMissionFocusRef.current = { selector: '#mars-follow-up-result-title', reveal: '[data-mars-follow-up]' }; patchMarsMission({ active: true }); }, { style: Object.assign({}, buttonStyle, { margin: '8px 0 0 8px' }) }) : null
+          ) : h('p', { style: { fontSize: '11px' } }, 'No captured comparison yet. Use Arrival in the playback controls above.')
+        )
+      );
+    }
+    function buildTransferHistory() {
+      var history = transferExperimentHistory(d.journalEntries, debriefRoute);
+      if (!history.length) return null;
+      var recent = history.slice(0, 6), selected = recent.find(function(entry) { return entry.transferComparisonId === selectedHistoryId; }) || recent[0];
+      var snapshot = selected.transferComparison;
+      var referenceEntry = history.find(function(entry) { return entry.transferComparisonId === referenceHistoryId; });
+      var pair = compareTransferExperiments(referenceEntry, selected);
+      function buildPairComparison() {
+        if (!referenceEntry) return null;
+        if (!pair) return h('p', { role: 'status', style: { padding: '10px', fontSize: '12px', lineHeight: 1.5, border: '1px solid ' + border, borderRadius: '9px' } }, 'Reference A pinned at ' + offsetLabel(referenceEntry.transferComparison.offset) + '. Select another saved experiment above to compare it as B.');
+        var interpretation = !pair.sameTime || !pair.sameReference ? 'These records differ in flight time or aligned gap. Check those conditions before attributing the gap difference to starting angle alone.' : pair.sameOffset ? 'These are repeated trials at the same starting angle. Compare their results to check repeatability.' : pair.oppositeOffsets ? 'These offsets have equal size and opposite signs. Do their recorded gaps support your prediction about symmetry?' : 'The starting angle changed while the recorded flight time and aligned gap stayed the same. Use both gaps to describe the result.';
+        return h('section', { 'data-transfer-pair': true, 'aria-label': 'Compare two saved experiments', style: { padding: '12px', marginTop: '12px', border: '1px solid ' + border, borderRadius: '12px', background: isDark ? '#0e2531' : '#ecf8f3', color: fg, minWidth: 0 } },
+          h('h4', { style: { fontSize: '14px', fontWeight: 800, margin: '0 0 8px' } }, 'A → B · What changed?'),
+          h('p', { style: { fontSize: '12px', lineHeight: 1.5 } }, 'A stays pinned while you choose B. Both recorded arrival gaps share a 0–' + pair.ruler + ' AU ruler.'),
+          [{label:'A · reference',shot:pair.a,color:'#6aa9df'},{label:'B · selected',shot:pair.b,color:'#e77a24'}].map(function(row) {
+            return h('div', { key: row.label, style: { margin: '12px 0', fontSize: '12px' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '5px' } }, h('strong', null, row.label + ' · ' + offsetLabel(row.shot.offset)), h('strong', null, fmt(row.shot.testGap, 3) + ' AU')),
+              h('div', { 'aria-hidden': true, style: { height: '10px', marginTop: '6px', background: isDark ? '#41566a' : '#cbdce7', borderRadius: '6px' } }, h('div', { style: { height: '100%', width: row.shot.testGap / pair.ruler * 100 + '%', background: row.color, borderRadius: '6px' } }))
+            );
+          }),
+          h('div', { role: 'status', 'data-transfer-pair-difference': true, style: { fontSize: '15px', fontWeight: 800, padding: '10px', borderRadius: '8px', background: isDark ? '#213d4b' : '#fff' } }, pair.sameGap ? 'Same recorded gap · change below 0.000001 AU' : 'Gap ' + (pair.gapChange > 0 ? 'increased' : 'decreased') + ' by ' + (Math.abs(pair.gapChange) < 0.001 ? '<0.001' : fmt(Math.abs(pair.gapChange), 3)) + ' AU from A to B'),
+          h('dl', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: '5px', fontSize: '12px', margin: '12px 0', lineHeight: 1.5 } },
+            h('dt', { style: { fontWeight: 700 } }, 'Flight time'), h('dd', { style: { margin: '0 0 5px' } }, fmt(pair.a.days, 1) + ' → ' + fmt(pair.b.days, 1) + ' days · ' + (pair.sameTime ? 'held constant' : 'different')),
+            h('dt', { style: { fontWeight: 700 } }, 'Aligned gap'), h('dd', { style: { margin: 0 } }, fmt(pair.a.referenceGap, 3) + ' → ' + fmt(pair.b.referenceGap, 3) + ' AU · ' + (pair.sameReference ? 'held constant' : 'different'))
+          ),
+          h('p', { 'data-transfer-pair-prompt': true, style: { fontSize: '12px', lineHeight: 1.6, margin: '8px 0' } }, interpretation),
+          h('p', { style: { fontSize: '11px', lineHeight: 1.5, margin: '8px 0 0' } }, 'Compare recorded values before generalizing. This view does not grade your explanation or change either experiment.')
+        );
+      }
+      var ruler = Math.max(1, Math.ceil(Math.max.apply(null, recent.map(function(entry) { return entry.transferComparison.testGap; }))));
+      function offsetLabel(value) { return (value > 0 ? '+' : '') + value + '°'; }
+      function replayOffset(value) {
+        changeFlight({ compare: true, offset: value, progress: 0, playing: false });
+        var target = document.querySelector('[data-transfer-flight] canvas');
+        if (target) { if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1'); target.scrollIntoView({ block: 'center' }); target.focus({ preventScroll: true }); }
+      }
+      return h('details', { 'data-transfer-history': true, style: { margin: '12px 0', padding: '11px', border: '1px solid ' + border, borderRadius: '12px', background: isDark ? '#132538' : '#edf5ff', color: fg } },
+        h('summary', { style: { minHeight: '44px', paddingTop: '10px', boxSizing: 'border-box', cursor: 'pointer', fontWeight: 800, fontSize: '13px' } }, 'Saved experiment shelf · ' + history.length + ' results'),
+        h('section', { 'aria-label': 'Saved transfer experiments' },
+          h('p', { style: { fontSize: '12px', lineHeight: 1.5, margin: '6px 0 12px' } }, from.name + ' → ' + to.name + ' · Compare your latest ' + recent.length + ' saved arrivals. Each bar uses the same 0–' + ruler + ' AU scale. Only experiments on this route appear here.'),
+          h('div', { role: 'group', 'aria-label': 'Select a saved experiment', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: '8px' } }, recent.map(function(entry, i) {
+            var shot = entry.transferComparison, chosen = entry.transferComparisonId === selected.transferComparisonId;
+            return h('button', { key: entry.transferComparisonId, type: 'button', 'data-transfer-history-id': entry.transferComparisonId, 'aria-pressed': chosen, onClick: function() { selectHistory(entry.transferComparisonId); }, style: Object.assign({}, buttonStyle, { minWidth: 0, textAlign: 'left', padding: '11px', border: (chosen ? '2px solid ' : '1px solid ') + (chosen ? isDark ? '#7dd3fc' : '#245987' : border), background: chosen ? isDark ? '#214260' : '#fff' : cardBg }) },
+              h('span', { style: { display: 'block', fontSize: '12px' } }, 'Experiment ' + (history.length - i) + ' · ' + offsetLabel(shot.offset)),
+              h('span', { style: { display: 'block', margin: '6px 0', fontSize: '13px', fontWeight: 800 } }, fmt(shot.testGap, 3) + ' AU gap'),
+              h('span', { 'aria-hidden': true, style: { display: 'block', height: '7px', borderRadius: '5px', background: isDark ? '#435a73' : '#cad9ea' } }, h('span', { style: { display: 'block', height: '100%', width: (shot.testGap / ruler * 100) + '%', borderRadius: '5px', background: shot.offset < 0 ? '#7c83ee' : '#e77a24' } })),
+              h('span', { style: { display: 'block', marginTop: '7px', fontSize: '11px', fontWeight: 400 } }, fmt(shot.days, 1) + ' days · aligned gap ' + fmt(shot.referenceGap, 3) + ' AU')
+            );
+          })),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' } },
+            btn(referenceHistoryId === selected.transferComparisonId ? 'Selected experiment pinned as A' : 'Pin selected as reference A', false, function() { setHistoryReference(selected.transferComparisonId); }, { disabled: referenceHistoryId === selected.transferComparisonId, style: buttonStyle }),
+            referenceEntry ? btn('Clear reference', false, function() { setHistoryReference(null); }, { style: buttonStyle }) : null
+          ),
+          buildPairComparison(),
+          h('article', { 'aria-label': 'Selected experiment details', style: { marginTop: '12px', borderRadius: '9px', padding: '12px', background: cardBg, overflowWrap: 'anywhere' } },
+            h('h4', { style: { fontSize: '14px', fontWeight: 800, margin: '0 0 8px' } }, 'Your ' + offsetLabel(snapshot.offset) + ' experiment'),
+            h('p', { style: { fontSize: '12px', lineHeight: 1.6 } }, 'Recorded: ' + fmt(snapshot.testGap, 3) + ' AU test gap versus ' + fmt(snapshot.referenceGap, 3) + ' AU aligned gap at arrival.'),
+            h('strong', { style: { fontSize: '12px' } }, 'Your explanation'),
+            h('p', { 'data-transfer-history-explanation': true, style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: '5px 0 12px' } }, selected.reasoning || selected.surprise || 'No explanation recorded.'),
+            h('strong', { style: { fontSize: '12px' } }, 'Your next question'),
+            h('p', { style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: '5px 0 12px' } }, selected.question || 'What would you test next?'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+              btn('Replay selected experiment', false, function() { replayOffset(snapshot.offset); }, { style: buttonStyle }),
+              btn('Try opposite offset', false, function() { replayOffset(-snapshot.offset); }, { style: buttonStyle })
+            ),
+            h('p', { style: { fontSize: '11px', lineHeight: 1.5, margin: '10px 0 0' } }, 'Replay reconstructs the ideal model at departure. It leaves your captured evidence and writing draft unchanged. Predict the opposite-offset result before inspecting Arrival.')
+          ),
+          history.length > 6 ? h('p', { style: { fontSize: '11px' } }, 'Showing the six most recent captures. Earlier records remain in the evidence journal.') : null,
+          btn('Open experiment journal', false, function() { openLearningJournal('unlinked'); }, { style: Object.assign({}, buttonStyle, { marginTop: '10px' }) })
+        )
+      );
+    }
+    function comparisonReading(model) {
+      var reference = transferRendezvous(from.a, to.a, flight.progress, 0);
+      return 'Same flight time · aligned 0° gap: ' + fmt(reference.separation, 3) + ' AU · test ' + (flight.offset > 0 ? '+' : '') + flight.offset + '° gap: ' + fmt(model.separation, 3) + ' AU';
     }
     function flightReading(model) {
       if (model.same) return "Choose two different planets to plan a transfer.";
@@ -11460,7 +12069,21 @@ const d = labToolData.solarSystem || {};
           ctx.beginPath(); ctx.arc(px, py, 6, 0, TAU); ctx.fill(); ctx.shadowBlur = 0;
           ctx.fillStyle = "#e2e8f0"; ctx.font = "700 11px sans-serif"; ctx.fillText(letter, px + 9, py - 9);
         }
-        drawPlanet(model.origin, "#a5b4fc", "A"); drawPlanet(model.destination, "#7dd3fc", "B");
+        drawPlanet(model.origin, "#a5b4fc", "A");
+        if (flight.compare && !model.same) {
+          var reference = transferRendezvous(from.a, to.a, flight.progress, 0);
+          // A hollow ring distinguishes the reference even when both destinations overlap.
+          ctx.strokeStyle = '#6ee7b7'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(sx(reference.destination), sy(reference.destination), 11, 0, TAU); ctx.stroke();
+          ctx.fillStyle = '#a7f3d0'; ctx.font = '700 11px sans-serif'; ctx.fillText('R', sx(reference.destination) - 19, sy(reference.destination) - 13);
+          if (flight.progress >= 1) { ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(sx(model.ship), sy(model.ship)); ctx.lineTo(sx(reference.destination), sy(reference.destination)); ctx.stroke(); ctx.setLineDash([]); }
+          // A short angular arc shows the changed starting phase; it is not a second spacecraft path.
+          if (flight.progress === 0 && Math.abs(flight.offset) > 0.001) {
+            var startAngle = -reference.departurePhase, endAngle = -model.departurePhase;
+            ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, to.a * scale * 0.8, startAngle, endAngle, flight.offset > 0); ctx.stroke();
+          }
+        }
+        drawPlanet(model.destination, flight.compare ? '#fb923c' : '#7dd3fc', 'B');
         if (flight.progress >= 1 && Math.abs(flight.offset) > 0.001 && !model.same) {
           ctx.beginPath(); ctx.moveTo(sx(model.ship), sy(model.ship)); ctx.lineTo(sx(model.destination), sy(model.destination));
           ctx.strokeStyle = "#fb7185"; ctx.lineWidth = 2; ctx.setLineDash([3, 4]); ctx.stroke(); ctx.setLineDash([]);
@@ -11483,10 +12106,14 @@ const d = labToolData.solarSystem || {};
         cv.dataset.transferProgress = flight.progress.toFixed(5);
         cv.dataset.transferSeparation = model.separation.toFixed(8);
         cv.dataset.transferPlaying = String(flight.playing);
+        cv.dataset.transferComparison = String(flight.compare);
+        cv.dataset.transferReferenceSeparation = transferRendezvous(from.a, to.a, flight.progress, 0).separation.toFixed(8);
         if (flight.uiAt === null || timestamp - flight.uiAt >= 180) {
           flight.uiAt = timestamp;
           var reading = document.getElementById("orrery-transfer-flight-reading");
           if (reading) reading.textContent = flightReading(model);
+          var comparison = document.getElementById('orrery-transfer-comparison-reading');
+          if (comparison) comparison.textContent = comparisonReading(model);
           var progressInput = document.getElementById("orrery-transfer-progress");
           if (progressInput) { progressInput.value = String(flight.progress * 100); progressInput.setAttribute("aria-valuetext", fmt(flight.progress * 100, 0) + "% of flight; day " + fmt(model.elapsedDays, 1)); }
         }
@@ -11494,13 +12121,31 @@ const d = labToolData.solarSystem || {};
     });
     return h("section", { "data-transfer-flight": from.id + "-" + to.id, "aria-label": "Transfer rendezvous experiment", style: { flex: "1 1 480px", minWidth: 0, maxWidth: "100%", padding: "10px", borderRadius: "14px", border: "1px solid " + border, background: cardBg, boxSizing: "border-box" } },
       canvas,
+      marsMission.active && from.id === 'earth' && to.id === 'mars' ? h('div', { 'data-mars-transfer-task': true, style: { padding: '10px', marginTop: '10px', borderRadius: '9px', background: isDark ? '#283149' : '#e8f3ff', color: fg } },
+        h('strong', { style: { fontSize: '12px' } }, 'Earth-to-Mars mission · test 0° and +30°'),
+        h('p', { style: { fontSize: '12px', margin: '6px 0' } }, !marsProgress.predicted ? 'Choose your launch prediction in the mission card first.' : 'Inspect arrival at each launch offset, then record the result. The two trials remain available in your mission card.'),
+        h('button', { type: 'button', disabled: !marsProgress.predicted || flight.playing || flight.progress < 1 || (Math.abs(flight.offset) > 0.001 && Math.abs(flight.offset - 30) > 0.001) || marsProgress.complete,
+          style: buttonStyle, onClick: function() { var result = transferRendezvous(from.a, to.a, flight.progress, flight.offset); saveMarsArrival({ from: from.id, to: to.id, progress: flight.progress, offset: flight.offset, separation: result.separation, days: result.transitDays, timestamp: Date.now() }); } }, 'Record arrival for Mars mission'),
+        h('span', { role: 'status', style: { display: 'block', fontSize: '11px', marginTop: '6px' } }, ((marsMission.trials && marsMission.trials.aligned ? 1 : 0) + (marsMission.trials && marsMission.trials.offset ? 1 : 0)) + '/2 mission trials recorded')
+      ) : null,
       h("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", margin: "9px 0", fontSize: "12px", color: fg } },
-        h("span", null, "A · " + from.name), h("span", null, "B · " + to.name), h("span", null, "White craft · amber trail"), h("span", null, "1 · departure burn; 2 · arrival burn")),
+        h("span", null, "A · " + from.name), h("span", null, "B · " + to.name + (flight.compare ? ' · test / filled orange' : '')), flight.compare ? h('span', { style: { color: isDark ? '#a7f3d0' : '#126348' } }, 'R · ' + to.name + ' · aligned / hollow ring') : null, h("span", null, "White craft · amber trail"), h("span", null, "1 · departure burn; 2 · arrival burn")),
       h("p", { id: "orrery-transfer-flight-reading", role: "status", "aria-live": flight.playing ? "off" : "polite", style: { fontSize: "12px", lineHeight: 1.5, color: fg, minHeight: "36px" } }, flightReading(current)),
       h("div", { role: "group", "aria-label": "Transfer flight playback", style: { display: "flex", flexWrap: "wrap", gap: "7px", marginBottom: "10px" } },
         btn(flight.playing ? "Pause flight" : flight.progress >= 1 ? "Replay flight" : "Play flight", false, function() { changeFlight({ playing: !flight.playing, progress: flight.progress >= 1 ? 0 : flight.progress }); }, { "aria-pressed": flight.playing, disabled: current.same || reduceMotion, style: Object.assign({}, buttonStyle, { opacity: current.same || reduceMotion ? 0.5 : 1 }) }),
         [0, 0.5, 1].map(function(value, index) { return btn(["Departure", "Midflight", "Arrival"][index], false, function() { changeFlight({ progress: value, playing: false }); }, { key: "flight-stage-" + index, disabled: current.same, "aria-label": "Show transfer " + ["departure", "midflight", "arrival"][index], style: buttonStyle }); })
       ),
+      h('div', { 'data-transfer-comparison-controls': true, style: { padding: '11px', margin: '10px 0', borderRadius: '10px', border: '1px solid ' + border, background: isDark ? '#152e34' : '#eaf7f2', color: fg } },
+        h('strong', { style: { fontSize: '13px' } }, 'One route, two launch alignments'),
+        h('p', { style: { fontSize: '12px', lineHeight: 1.5, margin: '6px 0' } }, 'Hold the spacecraft path and flight time constant. Change only where the destination starts. The two destination markers represent separate experiments.'),
+        btn(flight.compare ? 'Hide alignment comparison' : 'Compare launch alignments', flight.compare, function() { changeFlight({ compare: !flight.compare, offset: !flight.compare && Math.abs(flight.offset) < 0.001 ? 30 : flight.offset, playing: false }); }, { 'aria-pressed': flight.compare, disabled: current.same, style: buttonStyle }),
+        flight.compare ? h(React.Fragment, null,
+          h('p', { id: 'orrery-transfer-comparison-reading', role: 'status', 'aria-live': flight.playing ? 'off' : 'polite', style: { fontSize: '12px', fontWeight: 700, lineHeight: 1.6, margin: '8px 0' } }, comparisonReading(current)),
+          h('p', { style: { fontSize: '11px', lineHeight: 1.5, margin: '6px 0 0' } }, 'Before arrival, a gap is expected. Compare both gaps at Arrival. Why does changing the destination’s starting position change the outcome when the craft follows the same route?'),
+          buildTransferDebrief()
+        ) : null
+      ),
+      buildTransferHistory(),
       h("label", { htmlFor: "orrery-transfer-progress", style: { display: "block", fontSize: "12px", color: fg } }, "Flight progress"),
       h("input", { id: "orrery-transfer-progress", type: "range", min: 0, max: 100, step: 0.1, value: flight.progress * 100, disabled: current.same, "aria-valuetext": fmt(flight.progress * 100, 0) + "% of flight; day " + fmt(current.elapsedDays, 1), onChange: function(ev) { changeFlight({ progress: Number(ev.target.value) / 100, playing: false }); }, style: { width: "100%", minHeight: "32px", accentColor: accent } }),
       h("div", { style: { padding: "10px", marginTop: "9px", borderRadius: "9px", background: isDark ? "#111c30" : "#edf4ff", color: fg } },
@@ -11537,7 +12182,7 @@ const d = labToolData.solarSystem || {};
     });
 
     var transferCanvas = h(stableType('TransferFlight', TransferFlight), {
-      key: "transfer-flight-" + fromBody.id + "-" + toBody.id, fromBody: fromBody, toBody: toBody
+      key: "transfer-flight-" + fromBody.id + "-" + toBody.id, fromBody: fromBody, toBody: toBody, replayToken: d.orr_marsReplay, replayOffset: d.orr_marsReplayOffset
     });
 
     // Swap button
@@ -19647,6 +20292,7 @@ const d = labToolData.solarSystem || {};
                               '<div><span style="color:#38bdf8;font-weight:800">Claim</span> ' + droneEscapeHtml(entry.claim || '') + '</div>' +
                               '<div><span style="color:#fbbf24;font-weight:800">Evidence</span> ' + droneEscapeHtml(entry.evidence || '') + '</div>' +
                               '<div><span style="color:#a78bfa;font-weight:800">Reasoning</span> ' + droneEscapeHtml(entry.reasoning || '') + '</div>' +
+                              (entry.review ? '<div style="margin-top:6px;border-top:1px solid #34516a;padding-top:6px"><strong style="color:#a7f3d0">My observation</strong> ' + droneEscapeHtml(entry.review.observation) + '<br><strong style="color:#a7f3d0">Next question</strong> ' + droneEscapeHtml(entry.review.question) + '</div>' : '') +
                               '</div>' +
                               '</div>';
                           }).join('') : '<div style="text-align:center;color:#64748b;padding:20px;border:1px dashed rgba(52,211,153,0.24);border-radius:12px">No field notes yet. Discover a landmark, press G to scan, take a photo, or collect a sample.</div>';
@@ -19677,6 +20323,7 @@ const d = labToolData.solarSystem || {};
                               '<div><strong style="color:#38bdf8">Claim</strong> ' + droneEscapeHtml(entry.claim || '') + '</div>' +
                               '<div><strong style="color:#fbbf24">Evidence</strong> ' + droneEscapeHtml(entry.evidence || '') + '</div>' +
                               '<div><strong style="color:#a78bfa">Reasoning</strong> ' + droneEscapeHtml(entry.reasoning || '') + '</div>' +
+                              (entry.review ? '<div style="margin-top:6px;border-top:1px solid #34516a;padding-top:6px"><strong style="color:#a7f3d0">My observation</strong> ' + droneEscapeHtml(entry.review.observation) + '<br><strong style="color:#a7f3d0">Next question</strong> ' + droneEscapeHtml(entry.review.question) + '</div>' : '') +
                               '</div></article>';
                           }).join('');
                           var docHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
@@ -19705,7 +20352,7 @@ const d = labToolData.solarSystem || {};
                           }
                         }
 
-                        function recordDroneJournal(kind, title, observation, cer, silent, photoThumb, photoContext) {
+                        function recordDroneJournal(kind, title, observation, cer, silent, photoThumb, photoContext, specimen) {
                           cer = cer || buildDroneCER(kind, title, observation, observation);
                           var entry = {
                             planet: sel.name,
@@ -19721,22 +20368,28 @@ const d = labToolData.solarSystem || {};
                             time: new Date().toLocaleTimeString()
                           };
                           if (photoContext) entry.photoContext = Object.assign({}, photoContext);
+                          if (specimen) entry.specimen = Object.assign({}, specimen);
                           // Photo thumbnails stay on the session-local copy only — the
                           // persisted journal entry keeps its small text-only footprint.
                           droneJournalEntries.unshift(photoThumb ? Object.assign({ photoThumb: photoThumb }, entry) : entry);
                           if (droneJournalEntries.length > 8) droneJournalEntries = droneJournalEntries.slice(0, 8);
                           var updatedJournal = (journalEntries || []).concat([entry]);
                           journalEntries = updatedJournal;
-                          upd('journalEntries', updatedJournal);
+                          setLabToolData(function(prev) {
+                            var data = prev.solarSystem || {};
+                            return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { journalEntries: (data.journalEntries || []).concat([entry]) }) });
+                          });
                           markMissionStat('journaled');
                           refreshJournalPanel();
                           if (!silent && addToast) addToast('\uD83D\uDCD3 Field journal note saved: ' + title, 'success');
+                          return entry;
                         }
 
-                        function recordSampleEvidence(name, type, fact, context) {
+                        function recordSampleEvidence(name, type, fact, context, sampleData) {
                           markMissionStat('sampled');
                           var procedure = sampleLastContext || '';
-                          recordDroneJournal('Sample', name, fact + (procedure ? ' Collection method: ' + procedure : ''), buildDroneCER('sample', name, (type ? type + ': ' : '') + fact, (context || fact) + (procedure ? ' ' + procedure : '')), true);
+                          var entry = recordDroneJournal('Sample', name, fact + (procedure ? ' Collection method: ' + procedure : ''), buildDroneCER('sample', name, (type ? type + ': ' : '') + fact, (context || fact) + (procedure ? ' ' + procedure : '')), true, null, null, { mode: isOcean ? 'ocean' : isGas ? 'gas' : 'surface', color: sampleData && sampleData.color, type: type });
+                          registerDroneSpecimen(entry);
                           refreshMissionPanel();
                         }
 
@@ -20767,6 +21420,76 @@ const d = labToolData.solarSystem || {};
                         sampleHalo.rotation.x = -Math.PI/2; sampleRig.add(sampleHalo);
                         var sampleMount = new THREE.Vector3(), sampleElbow = new THREE.Vector3(), sampleTip = new THREE.Vector3(), sampleTarget = new THREE.Vector3();
                         var sampleUp = new THREE.Vector3(0,1,0), sampleDirection = new THREE.Vector3();
+                        // The review bench is a teaching illustration, not a new sensor reading.
+                        var specimenEntries = (journalEntries || []).filter(function(entry) { return entry && entry.source === 'drone' && entry.kind === 'Sample' && entry.planet === sel.name; }).slice(-6).reverse();
+                        var specimenSelected = null, specimenReveal = 1, specimenAngle = 0;
+                        var specimenDrafts = new Map();
+                        var specimenBench = document.createElement('section'); specimenBench.setAttribute('aria-label','Specimen review'); specimenBench.setAttribute('data-drone-specimen-bench','true');
+                        specimenBench.style.cssText='display:none;grid-column:1/-1;min-width:0;padding:12px;border:1px solid #4c8298;border-radius:12px;background:linear-gradient(125deg,#102b3b,#102133);color:#e2e8f0;font:12px/1.5 system-ui';
+                        var specimenHeading=document.createElement('h3');specimenHeading.textContent='Specimen review';specimenHeading.tabIndex=-1;specimenHeading.style.cssText='font:800 15px system-ui;color:#a7f3d0;margin:0 0 8px';specimenBench.appendChild(specimenHeading);
+                        var specimenSummary=document.createElement('div');specimenSummary.setAttribute('role','status');specimenSummary.style.cssText='margin-bottom:8px;color:#bae6fd';specimenBench.appendChild(specimenSummary);
+                        var specimenBody=document.createElement('div');specimenBody.style.cssText='display:flex;gap:12px;flex-wrap:wrap;min-width:0';specimenBench.appendChild(specimenBody);
+                        var specimenArt=document.createElement('div');specimenArt.style.cssText='flex:1 1 240px;min-width:0;max-width:480px';
+                        var specimenCanvas=document.createElement('canvas');specimenCanvas.width=720;specimenCanvas.height=360;specimenCanvas.setAttribute('role','img');specimenCanvas.style.cssText='display:block;width:100%;height:auto;border-radius:10px;border:1px solid #365f76;box-sizing:border-box';specimenArt.appendChild(specimenCanvas);
+                        var specimenCaption=document.createElement('p');specimenCaption.textContent='Specimen illustration, not a microscope image. Colors and particles do not establish composition.';specimenCaption.style.cssText='font:11px/1.4 system-ui;color:#bdd0df;margin:6px 0';specimenArt.appendChild(specimenCaption);
+                        var specimenTurnLabel=document.createElement('label');specimenTurnLabel.textContent='Turn specimen illustration';specimenTurnLabel.htmlFor='drone-specimen-angle';specimenArt.appendChild(specimenTurnLabel);
+                        var specimenTurn=document.createElement('input');specimenTurn.id='drone-specimen-angle';specimenTurn.type='range';specimenTurn.min='0';specimenTurn.max='360';specimenTurn.step='15';specimenTurn.value='0';specimenTurn.style.cssText='width:100%;min-height:44px;accent-color:#5eead4';specimenArt.appendChild(specimenTurn);specimenBody.appendChild(specimenArt);
+                        var specimenForm=document.createElement('div');specimenForm.style.cssText='flex:1 1 250px;min-width:0;display:grid;gap:7px';specimenBody.appendChild(specimenForm);
+                        var specimenChoiceLabel=document.createElement('label');specimenChoiceLabel.textContent='Recent collected specimen';specimenChoiceLabel.htmlFor='drone-specimen-choice';specimenForm.appendChild(specimenChoiceLabel);
+                        var specimenChoice=document.createElement('select');specimenChoice.id='drone-specimen-choice';
+                        var specimenInputStyle='width:100%;min-height:44px;box-sizing:border-box;border:1px solid #6891a6;border-radius:8px;padding:8px;background:#071827;color:#e2e8f0;font:12px/1.5 system-ui';specimenChoice.style.cssText=specimenInputStyle;specimenForm.appendChild(specimenChoice);
+                        var specimenFacts=document.createElement('p');specimenFacts.style.cssText='margin:0;padding:9px;border-left:3px solid #67e8f9;background:#102c40;overflow-wrap:anywhere';specimenForm.appendChild(specimenFacts);
+                        function specimenField(id,label,rows,max) {var l=document.createElement('label');l.htmlFor=id;l.textContent=label;specimenForm.appendChild(l);var field=document.createElement('textarea');field.id=id;field.rows=rows;field.maxLength=max;field.style.cssText=specimenInputStyle;specimenForm.appendChild(field);return field;}
+                        var specimenObservation=specimenField('drone-specimen-observation','Your observation: what did you notice?',2,1000);
+                        var specimenQuestion=specimenField('drone-specimen-question','What would you test or compare next?',2,500);
+                        var specimenButtons=document.createElement('div');specimenButtons.style.cssText='display:flex;gap:7px;flex-wrap:wrap';specimenForm.appendChild(specimenButtons);
+                        var specimenSave=document.createElement('button');specimenSave.type='button';specimenSave.textContent='Save specimen review';specimenSave.style.cssText=sampleStartButton.style.cssText;specimenButtons.appendChild(specimenSave);
+                        var specimenContinue=document.createElement('button');specimenContinue.type='button';specimenContinue.textContent='Continue exploring';specimenContinue.style.cssText=sampleCancelButton.style.cssText;specimenButtons.appendChild(specimenContinue);
+                        var specimenFeedback=document.createElement('div');specimenFeedback.setAttribute('role','status');specimenFeedback.style.cssText='color:#a7f3d0';specimenForm.appendChild(specimenFeedback);
+                        var specimenReviewButton=document.createElement('button');specimenReviewButton.type='button';specimenReviewButton.textContent='Review specimen';specimenReviewButton.setAttribute('data-drone-review-launch','');specimenReviewButton.disabled=true;specimenReviewButton.style.cssText=sampleCancelButton.style.cssText;sampleControls.appendChild(specimenReviewButton);
+                        roverCameraBar.appendChild(specimenBench);
+                        var specimenContext=specimenCanvas.getContext('2d');
+                        var specimenRack=new THREE.Group();specimenRack.name='drone-specimen-rack';specimenRack.position.set(0,isGas?0.32:isOcean?0.62:0.65,isGas?0.3:0.4);roverGroup.add(specimenRack);
+                        var specimenRackGeo=new THREE.BoxGeometry(0.74,0.07,0.25),specimenJarGeo=new THREE.CylinderGeometry(0.085,0.085,0.25,10),specimenCapGeo=new THREE.CylinderGeometry(0.098,0.098,0.045,10);
+                        var specimenRackMetal=new THREE.MeshStandardMaterial({color:0x29495d,metalness:0.6,roughness:0.4});
+                        var specimenRackBase=new THREE.Mesh(specimenRackGeo,specimenRackMetal);specimenRack.add(specimenRackBase);var specimenJars=[];
+                        for(var jarIndex=0;jarIndex<3;jarIndex++){var jarGroup=new THREE.Group();jarGroup.position.set((jarIndex-1)*0.24,0.18,0);var jarMaterial=new THREE.MeshStandardMaterial({color:0x67e8f9,metalness:0.25,roughness:0.3,emissive:0x164e63,emissiveIntensity:0.25});var jar=new THREE.Mesh(specimenJarGeo,jarMaterial);jarGroup.add(jar);[-1,1].forEach(function(side){var cap=new THREE.Mesh(specimenCapGeo,specimenRackMetal);cap.position.y=side*0.13;jarGroup.add(cap);});specimenRack.add(jarGroup);specimenJars.push({group:jarGroup,material:jarMaterial});}
+                        [-1,1].forEach(function(side){var foot=new THREE.Mesh(specimenJarGeo,specimenRackMetal);foot.scale.set(0.38,1,0.38);foot.position.set(side*0.18,-0.14,0);specimenRack.add(foot);});
+                        function drawSpecimenBench() {if(specimenSelected&&specimenContext)drawDroneSpecimen(specimenContext,specimenSelected.specimen||{mode:isOcean?'ocean':isGas?'gas':'surface'},specimenAngle,specimenReveal);}
+                        function updateSpecimenRack(){specimenRack.visible=specimenEntries.length>0;specimenRack.userData.specimenCount=Math.min(3,specimenEntries.length);specimenJars.forEach(function(jar,index){jar.group.visible=index<specimenEntries.length;var entry=specimenEntries[index];if(entry)jar.material.color.setHex(entry.specimen&&Number.isFinite(entry.specimen.color)?entry.specimen.color:0xe7b778);});}
+                        function stashSpecimenDraft(){if(specimenSelected)specimenDrafts.set(specimenSelected.timestamp+'|'+specimenSelected.title,{observation:specimenObservation.value,question:specimenQuestion.value});}
+                        function updateSpecimenSave(){specimenSave.disabled=!specimenObservation.value.trim()||!specimenQuestion.value.trim();specimenSave.style.opacity=specimenSave.disabled?'0.5':'1';}
+                        function selectSpecimen(index){
+                          stashSpecimenDraft();specimenSelected=specimenEntries[index];if(!specimenSelected)return;
+                          var draft=specimenDrafts.get(specimenSelected.timestamp+'|'+specimenSelected.title)||specimenSelected.review||{};
+                          specimenChoice.value=String(index);specimenObservation.value=draft.observation||'';specimenQuestion.value=draft.question||'';
+                          specimenFacts.textContent='Preset teaching data: '+specimenSelected.observation;
+                          specimenSummary.textContent=specimenSelected.title+' · '+specimenEntries.length+' recent specimen'+(specimenEntries.length===1?'':'s')+' available';
+                          specimenFeedback.textContent=specimenSelected.review?'Review saved with this sample in your journal.':'Add an observation and a next question. Your writing is not automatically graded.';
+                          specimenCanvas.setAttribute('aria-label','Sealed '+specimenSelected.title+' specimen illustration. Preset teaching data appears alongside.');
+                          specimenAngle=0;specimenTurn.value='0';specimenReveal=1;updateSpecimenSave();drawSpecimenBench();specimenBench.dataset.reviewState=specimenSelected.review?'saved':'ready';
+                        }
+                        function refreshSpecimenChoices(){specimenChoice.replaceChildren();specimenEntries.forEach(function(entry,index){var option=document.createElement('option');option.value=String(index);option.textContent='Recent '+(specimenEntries.length-index)+': '+entry.title;specimenChoice.appendChild(option);});specimenReviewButton.disabled=!specimenEntries.length;updateSpecimenRack();}
+                        function registerDroneSpecimen(entry){specimenEntries.unshift(entry);specimenEntries=specimenEntries.slice(0,6);refreshSpecimenChoices();selectSpecimen(0);specimenBench.style.display='block';specimenBody.style.display='flex';specimenReveal=droneReduceMotion?1:0;drawSpecimenBench();}
+                        function openSpecimenBench(){if(!specimenSelected)return;specimenBench.style.display='block';specimenBody.style.display='flex';specimenReveal=1;drawSpecimenBench();specimenBench.scrollIntoView({block:'nearest'});specimenHeading.focus({preventScroll:true});}
+                        function continueSpecimenExploration(){stashSpecimenDraft();specimenBody.style.display='none';if(!isOcean&&sampleSurveyTargets.some(function(orb){return !orb._collected;}))selectNextSurveySample();canvasEl.scrollIntoView({block:'center'});canvasEl.focus({preventScroll:true});}
+                        function changeSpecimenChoice(){selectSpecimen(Number(specimenChoice.value));}
+                        function turnSpecimen(){specimenAngle=Number(specimenTurn.value)*Math.PI/180;specimenReveal=1;drawSpecimenBench();}
+                        function saveSpecimenReview(){
+                          if(!specimenSelected||specimenSave.disabled)return;
+                          var target=specimenSelected,observation=specimenObservation.value,question=specimenQuestion.value,now=Date.now();
+                          setLabToolData(function(prev){var data=prev.solarSystem||{},entries=data.journalEntries||[],next=saveDroneSpecimenReview(entries,target,observation,question,now);return next===entries?prev:Object.assign({},prev,{solarSystem:Object.assign({},data,{journalEntries:next})});});
+                          specimenEntries=saveDroneSpecimenReview(specimenEntries,target,observation,question,now);specimenSelected=specimenEntries.find(function(entry){return sameDroneSpecimen(entry,target);});
+                          droneJournalEntries=saveDroneSpecimenReview(droneJournalEntries,target,observation,question,now);journalEntries=saveDroneSpecimenReview(journalEntries,target,observation,question,now);
+                          stashSpecimenDraft();specimenFeedback.textContent='Review saved with this sample in your journal. Continue exploring to compare another site.';specimenBench.dataset.reviewState='saved';refreshJournalPanel();
+                        }
+                        specimenReviewButton.addEventListener('click',openSpecimenBench);specimenContinue.addEventListener('click',continueSpecimenExploration);specimenChoice.addEventListener('change',changeSpecimenChoice);specimenTurn.addEventListener('input',turnSpecimen);specimenSave.addEventListener('click',saveSpecimenReview);specimenObservation.addEventListener('input',updateSpecimenSave);specimenQuestion.addEventListener('input',updateSpecimenSave);
+                        refreshSpecimenChoices();if(specimenEntries.length){selectSpecimen(0);specimenBench.style.display='block';specimenBody.style.display='none';}
+                        function updateSpecimenReveal(){if(specimenReveal>=1){specimenJars[0].group.position.y=0.18;return;}specimenReveal=droneReduceMotion?1:Math.min(1,specimenReveal+droneFrameDt/1.2);specimenJars[0].group.position.y=0.18+(1-specimenReveal)*0.15;if(specimenBody.style.display!=='none')drawSpecimenBench();}
+                        function disposeSpecimenBench(){
+                          specimenReviewButton.removeEventListener('click',openSpecimenBench);specimenContinue.removeEventListener('click',continueSpecimenExploration);specimenChoice.removeEventListener('change',changeSpecimenChoice);specimenTurn.removeEventListener('input',turnSpecimen);specimenSave.removeEventListener('click',saveSpecimenReview);specimenObservation.removeEventListener('input',updateSpecimenSave);specimenQuestion.removeEventListener('input',updateSpecimenSave);
+                          specimenBench.remove();specimenDrafts.clear();roverGroup.remove(specimenRack);specimenRackGeo.dispose();specimenJarGeo.dispose();specimenCapGeo.dispose();specimenRackMetal.dispose();specimenJars.forEach(function(jar){jar.material.dispose();});specimenEntries=[];specimenSelected=null;
+                        }
                         function poseSampleArm(mesh, from, to) {
                           sampleDirection.subVectors(to,from); mesh.position.copy(from).add(to).multiplyScalar(0.5);
                           mesh.scale.y = Math.max(0.001,sampleDirection.length()); mesh.quaternion.setFromUnitVectors(sampleUp,sampleDirection.normalize());
@@ -20811,10 +21534,11 @@ const d = labToolData.solarSystem || {};
                           if (playerPos.distanceTo(orb.position) > 3) { cancelDroneSampling(); return false; }
                           sampleReadyOrb = null; orb.scale.setScalar(1);
                           sampleCancelButton.disabled = true; sampleMethod.disabled = false; sampleStartButton.disabled = false;
-                          setSampleStatus('sealed','Sample sealed: '+orb._sampleData.name+'. Saved to your evidence journal.');
+                          setSampleStatus('sealed','Sample sealed: '+orb._sampleData.name+'. Saved to your evidence journal. Choose Review specimen to add your observation.');
                           return true;
                         }
                         function updateDroneSampling() {
+                          updateSpecimenReveal();
                           // A held key cannot harvest multiple specimens. Touch/click starts
                           // the same operation without needing to hold a button throughout.
                           if (moveState.sample && !sampleInputHeld) startDroneSampling();
@@ -23001,7 +23725,7 @@ const d = labToolData.solarSystem || {};
                                   if (addToast) addToast(sd.icon + ' Collected: ' + sd.name + ' (' + sd.gas + ') \u2014 ' + sd.fact, 'success');
                                   if (typeof awardStemXP === 'function') awardStemXP('solarSystem', sd.xp);
                                   playBeep();
-                                  recordSampleEvidence(sd.name, sd.gas, sd.fact, zone.name);
+                                  recordSampleEvidence(sd.name, sd.gas, sd.fact, zone.name, sd);
 
                                   // Update inventory panel
                                   var sampleListEl = document.getElementById('gas-sample-list');
@@ -23090,7 +23814,7 @@ const d = labToolData.solarSystem || {};
                                 if (typeof addToast === 'function') addToast(sd.icon + ' Collected: ' + sd.name + ' (' + sd.type + ') \u2014 ' + sd.fact, 'success');
                                 if (typeof awardStemXP === 'function') awardStemXP('solarSystem', sd.xp);
                                 if (typeof playBeep === 'function') playBeep();
-                                recordSampleEvidence(sd.name, sd.type, sd.fact, oZone.name);
+                                recordSampleEvidence(sd.name, sd.type, sd.fact, oZone.name, sd);
                                 var sListEl = document.getElementById('ocean-sample-list');
                                 var sEmptyEl = document.getElementById('ocean-sample-empty');
                                 if (sEmptyEl) sEmptyEl.style.display = 'none';
@@ -23502,7 +24226,7 @@ const d = labToolData.solarSystem || {};
                                   if (typeof addToast === 'function') addToast(gsd.icon + ' Collected: ' + gsd.name + ' (' + gsd.type + ') \u2014 ' + gsd.fact, 'success');
                                   if (typeof awardStemXP === 'function') awardStemXP('solarSystem', gsd.xp);
                                   if (typeof playBeep === 'function') playBeep();
-                                  recordSampleEvidence(gsd.name, gsd.type, gsd.fact, sel.name + ' surface');
+                                  recordSampleEvidence(gsd.name, gsd.type, gsd.fact, sel.name + ' surface', gsd);
                                 }
                                 // Proximity hint
                                 if (gDist < 3.5 && !orb._collected && tick3d % 30 === 0) {
@@ -24280,6 +25004,8 @@ const d = labToolData.solarSystem || {};
                           canvasEl._droneFullscreenContainer = null;
 
                           if (document.pointerLockElement === canvasEl) document.exitPointerLock();
+
+                          disposeSpecimenBench();
 
                           // Composer passes own render targets, which renderer.dispose() does
                           // not reach. Left alone they survive every planet change.
@@ -32361,11 +33087,12 @@ const d = labToolData.solarSystem || {};
                         { key: 'reflection', label: entry.synthesis ? 'Reasoning' : __alloT('stem.solarsystem.journal_reflection_short', 'Reflection'), value: entry.surprise, tone: isDark ? 'text-amber-200' : 'text-amber-800' },
                         { key: 'question', label: entry.synthesis ? 'Model boundary' : __alloT('stem.solarsystem.journal_question_short', 'Question'), value: entry.question, tone: isDark ? 'text-violet-200' : 'text-violet-800' }
                       ].filter(function(field) { return !!field.value; });
-                      return React.createElement("article", { key: String(entry.timestamp || 0) + '-' + entryIndex, "data-solar-journal-entry": "true", "data-journal-index": entryIndex, "aria-label": entry.planet + " journal entry from " + entryDate, className: "rounded-xl border p-3 text-xs shadow-sm " + (isDark ? 'border-slate-700 bg-slate-800/90' : 'border-slate-200 bg-white') },
+                      return React.createElement("article", { key: String(entry.timestamp || 0) + '-' + entryIndex, "data-solar-journal-entry": "true", "data-mars-mission-report": entry.missionId === "earth-mars" ? "true" : undefined, "data-journal-index": entryIndex, "aria-label": entry.planet + " journal entry from " + entryDate, className: "rounded-xl border p-3 text-xs shadow-sm " + (isDark ? 'border-slate-700 bg-slate-800/90' : 'border-slate-200 bg-white') },
                         React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2 border-b pb-2 " + (isDark ? 'border-slate-700' : 'border-slate-100') },
                           React.createElement("span", { className: "min-w-0 break-words font-black " + (isDark ? 'text-slate-100' : 'text-slate-800') }, "\uD83C\uDF0D " + entry.planet),
                           React.createElement("time", { dateTime: entryHasValidDate ? entryMoment.toISOString() : undefined, className: "flex-none text-[0.625rem] font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, entryDate)
                         ),
+                        entry.missionId === "earth-mars" ? React.createElement("h3", { className: "mb-2 font-black" }, entry.title) : null,
                         React.createElement("dl", { className: "space-y-2" }, journalFields.map(function(field) {
                           return React.createElement("div", { key: field.key, "data-journal-field": field.key, className: "border-l-2 border-current pl-2 " + field.tone },
                             React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide" }, field.label),

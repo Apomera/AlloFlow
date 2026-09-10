@@ -1,0 +1,104 @@
+{
+  "ok": true,
+  "fictionalOnly": true,
+  "realMicrophoneUsed": false,
+  "surfaces": [
+    {
+      "width": 1280,
+      "height": 900,
+      "passed": true,
+      "screenshots": [
+        "start-1280.png",
+        "example-1280.png",
+        "review-1280.png",
+        "student-1280.png",
+        "checkout-review-1280.png",
+        "checkout-1280.png",
+        "email-preview-1280.png",
+        "reset-1280.png"
+      ],
+      "pageErrors": [],
+      "externalRequests": [],
+      "unexpectedDialogs": [],
+      "existingDraftPreserved": true,
+      "lateResponseDraftPreserved": true,
+      "lateResponseReleasesBusyState": true,
+      "award": {
+        "cancelledBalance": 60,
+        "confirmedBalance": 65,
+        "requests": 1,
+        "amount": 5
+      },
+      "checkout": {
+        "balance": 55,
+        "notebookStock": 4,
+        "orders": 1
+      },
+      "emailPreview": {
+        "exactReceipt": true,
+        "balance": 55,
+        "sent": false,
+        "sandboxed": true,
+        "ledgerUnchanged": true
+      },
+      "reset": {
+        "balance": 60,
+        "notebookStock": 5,
+        "reviewedLinks": 3,
+        "freshGeneration": true,
+        "unrelatedStoragePreserved": true,
+        "staleRetryCleared": true
+      },
+      "noAutomaticSpeechOrMicrophone": true
+    },
+    {
+      "width": 390,
+      "height": 900,
+      "passed": true,
+      "screenshots": [
+        "start-390.png",
+        "example-390.png",
+        "review-390.png",
+        "student-390.png",
+        "checkout-review-390.png",
+        "checkout-390.png",
+        "email-preview-390.png",
+        "reset-390.png"
+      ],
+      "pageErrors": [],
+      "externalRequests": [],
+      "unexpectedDialogs": [],
+      "existingDraftPreserved": true,
+      "lateResponseDraftPreserved": true,
+      "lateResponseReleasesBusyState": true,
+      "award": {
+        "cancelledBalance": 60,
+        "confirmedBalance": 65,
+        "requests": 1,
+        "amount": 5
+      },
+      "checkout": {
+        "balance": 55,
+        "notebookStock": 4,
+        "orders": 1
+      },
+      "emailPreview": {
+        "exactReceipt": true,
+        "balance": 55,
+        "sent": false,
+        "sandboxed": true,
+        "ledgerUnchanged": true
+      },
+      "reset": {
+        "balance": 60,
+        "notebookStock": 5,
+        "reviewedLinks": 3,
+        "freshGeneration": true,
+        "unrelatedStoragePreserved": true,
+        "staleRetryCleared": true
+      },
+      "noAutomaticSpeechOrMicrophone": true
+    }
+  ],
+  "errors": []
+}

@@ -88,7 +88,7 @@ describe('Catalog geometry and simulation-sized aquarium',()=>{
     expect(body('pike').x/body('pike').y).toBeGreaterThan(body('oscar').x/body('oscar').y*2);
     expect(body('molly').x/body('molly').y).toBeGreaterThan(body('platy').x/body('platy').y);
     expect(byId.goby.userData.dorsalFinCount).toBe(2);expect(byId.mudskip.userData.dorsalFinCount).toBe(2);
-    expect(byId.puffer.children.filter(node=>node.userData.dorsalOcellus)).toHaveLength(3);
+    expect(byId.puffer.userData.dorsalOcellusCount).toBe(3);
   });
   it('changes vessel volume and shape without stretching or replacing resident and plant bodies',()=>{
     const fish={...resident('guppy'),targetX:3,targetY:2,targetZ:1};
@@ -119,25 +119,11 @@ describe('Catalog geometry and simulation-sized aquarium',()=>{
       });}
     }
   });
-  it('shows diagnostic caudal bars from both faces and keeps dorsal loops above the puffer body',()=>{
-    const h=harness({paused:true,fish:['rummy','puffer','clown','slider'].map(resident)});
-    const byId=Object.fromEntries(h.root('residents').children.map(group=>[group.userData.profileId,group]));
-    const tail=byId.rummy.userData.tail,barMeshes=tail.children.filter(node=>node.userData.caudalBarFace);
-    expect(barMeshes).toHaveLength(6);
-    h.renderer.scene.updateMatrixWorld(true);
-    for(const face of [-1,1]){
-      const origin=tail.localToWorld(new realThree.Vector3(-.266,.12,face)),target=tail.localToWorld(new realThree.Vector3(-.266,.12,0));
-      const ray=new realThree.Raycaster(origin,target.sub(origin).normalize()),hit=ray.intersectObject(tail,true)[0];
-      expect(hit.object.userData.caudalBarFace).toBe(face);expect(hit.object.material.side).toBe(realThree.DoubleSide);
-    }
-    const pigment=byId.clown.children.find(node=>node.userData.anatomyPart==='body').material.color;
-    expect(pigment.equals(new realThree.Color(0xef8b2e).convertSRGBToLinear())).toBe(true);
-    const loops=byId.puffer.children.filter(node=>node.userData.dorsalOcellus);
-    expect(loops).toHaveLength(3);
-    loops.forEach(loop=>{const points=loop.geometry.attributes.position;for(let index=0;index<points.count;index++){
-      const x=points.getX(index),y=points.getY(index),z=points.getZ(index);
-      expect(x*x/(.44*.44)+y*y/(.24*.24)+z*z/(.23*.23)).toBeGreaterThan(1);
-    }});
+  it('uses two-sided pigment maps for fish markings while retaining slider ear anatomy',()=>{
+    const h=harness({paused:true,fish:['rummy','puffer','clown','slider'].map(resident)}),byId=Object.fromEntries(h.root('residents').children.map(group=>[group.userData.profileId,group]));
+    const tail=byId.rummy.userData.tail;expect(tail.children).toHaveLength(1);expect(tail.children[0].material.side).toBe(realThree.DoubleSide);expect(tail.children[0].material.map.userData.role).toBe('caudal-membrane');
+    expect(byId.rummy.userData.tailPattern).toBe('black-white-bars');expect(byId.puffer.userData.dorsalOcellusCount).toBe(3);
+    const body=byId.clown.children.find(node=>node.userData.anatomyPart==='body');expect(body.userData.surfaceModel).toBe('continuous-pigment');expect(body.material.map.encoding).toBe(realThree.sRGBEncoding);
     const ears=byId.slider.children.filter(node=>node.userData.anatomyPart==='red-ear-patch');expect(ears).toHaveLength(2);ears.forEach(ear=>expect(ear.position.x).toBeGreaterThan(.44));
   });
   it('fits all physical vessel corners in every preset across long, tall and large tanks',()=>{

@@ -26,3 +26,24 @@ Reference preparation and location are cancellable: changing the selection, clos
 
 This is a foundation for precise navigation and future incremental analysis. It does not implement incremental region audits or a complete canonical document model.
 
+
+## Source-preserving repair
+
+Automatic repairs and section re-fixes retain the original fragment when a proposal changes table values or cell spans, source numbers or signs, link destinations, or an image's relationship to surrounding content. Detected wording/order changes and unsupported added content are also rejected in strict repair. Rejected suggestions remain visible in Preservation review even when no proposed HTML is adopted; acknowledgment still only records that the item was read.
+
+Descriptive link wording can improve while the destination remains fixed. Header promotion, language spans, explicit list-marker cleanup, and equivalent decimal/thousands formatting remain supported. Accessibility metadata has a separate bounded allowance, so a useful alt description on a small document is not rejected merely because it more than doubles the HTML size. These checks preserve source content; they do not determine whether an image description is accurate.
+
+Intentional recovery of supplied missing source passages retains its separate recovery policy. Strict repair does not approve arbitrary table merges, new link destinations, or figure relocation. Those changes need targeted review rather than a general automatic accessibility fix.
+## Semantic fidelity and review locations
+
+The strict repair path now protects static content visibility, existing table header semantics, form state and label associations, and MathML structure. Selected rejections include a bounded position in the input for that attempt, such as a table/row/cell or form-control index. The position appears in preservation review and prepared Workbench instructions; it is not an automatic match to a later document revision.
+
+See [the fidelity validation handoff](document-remediation-fidelity-validation.md) for regression scope, a human session matrix, and performance measurement boundaries.
+
+## Inline mathematics and option groups
+
+Strict repair preserves HTML superscripts and subscripts as well as MathML, including their kind, content, and attachment in the source reading order. Linked expressions and existing captions retain this protection. Existing caption text uses Unicode canonical normalization so an exponent such as `m²` cannot collapse into `m2`. Descriptive footnote links, newly supplied captions, and equivalent formatting remain supported within the existing source-preservation policy.
+
+Select choices preserve their group membership, nonempty group labels, and effective disabled state, including inherited optgroup disabling. Missing group labels may be supplied, and equivalent disabled representations remain supported. These additions advance the acceptance policy to `20260909-4`.
+
+The [post-export checks](document-export-at-acceptance.md) also report incomplete encoding or rendering dependencies, and [rendered comparison batches](rendered-document-fidelity.md) retain results when an individual pair or browser inspection fails. See the [implementation and validation record](../reports/document-remediation-resilience-2026-09-09/README.md).

@@ -1,0 +1,26 @@
+[
+  {
+    "variant": "material overlay",
+    "violations": []
+  },
+  {
+    "variant": "partially shared ranges",
+    "violations": []
+  },
+  {
+    "variant": "logarithmic overlay",
+    "violations": []
+  },
+  {
+    "variant": "missing output overlay",
+    "violations": []
+  },
+  {
+    "variant": "solar changed conditions mobile",
+    "violations": []
+  },
+  {
+    "variant": "incompatible quantities",
+    "violations": []
+  }
+]

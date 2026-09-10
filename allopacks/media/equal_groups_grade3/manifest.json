@@ -1,0 +1,710 @@
+{
+  "slug": "equal_groups_grade3",
+  "prefix": "eq",
+  "groups": [
+    "Equal groups have meaning",
+    "Arrays reveal structure",
+    "Use known facts",
+    "Check before multiplying"
+  ],
+  "lessonTitles": [
+    "Four groups of three",
+    "Equal and unequal",
+    "Rows and columns",
+    "Turn the array",
+    "Ten groups to nine",
+    "Four empty groups",
+    "Count the total",
+    "Find a near-miss"
+  ],
+  "note": "Each enclosed set or row is one group. Count actual objects, not their decorative parts. For this introductory model, use one group count times one common group size only when group sizes match. Unequal collections can still be totaled by addition, regrouping, or combining multiplication and addition. Captions provide mathematical notation; artwork contains no text.",
+  "status": "complete",
+  "provider": "Deterministic SVG diagrams",
+  "style": "Concept-focused text-free diagrams and simple object illustrations",
+  "assets": [
+    {
+      "id": "eq-term-1",
+      "kind": "term",
+      "index": 0,
+      "caption": "Four equal groups of three contain twelve objects.",
+      "alt": "Four enclosed groups each contain three teal counters.",
+      "prompt": "Exact diagram specification: Four groups of three",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "file": "eq-term-1-diagram.png",
+      "vectorFile": "eq-term-1.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-term-2",
+      "kind": "term",
+      "index": 1,
+      "caption": "Three rows of four give a product of twelve.",
+      "alt": "Twelve teal counters form three rows of four.",
+      "prompt": "Exact diagram specification: Product shown as a complete array",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          4,
+          4,
+          4
+        ]
+      },
+      "file": "eq-term-2-diagram.png",
+      "vectorFile": "eq-term-2.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-term-3",
+      "kind": "term",
+      "index": 2,
+      "caption": "The row count and the number in each row are factors.",
+      "alt": "An array has one horizontal row highlighted and one vertical column outlined.",
+      "prompt": "Exact diagram specification: Array dimensions as factors",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          4,
+          4,
+          4
+        ]
+      },
+      "file": "eq-term-3-diagram.png",
+      "vectorFile": "eq-term-3.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-term-4",
+      "kind": "term",
+      "index": 3,
+      "caption": "An array keeps equal rows and columns.",
+      "alt": "Twenty counters form four straight rows of five.",
+      "prompt": "Exact diagram specification: Four-by-five array",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          5,
+          5,
+          5,
+          5
+        ]
+      },
+      "file": "eq-term-4-diagram.png",
+      "vectorFile": "eq-term-4.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-term-5",
+      "kind": "term",
+      "index": 4,
+      "caption": "A row goes across.",
+      "alt": "The top horizontal line of four counters is highlighted in a three-row array.",
+      "prompt": "Exact diagram specification: Highlighted horizontal row",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          4,
+          4,
+          4
+        ]
+      },
+      "file": "eq-term-5-diagram.png",
+      "vectorFile": "eq-term-5.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-term-6",
+      "kind": "term",
+      "index": 5,
+      "caption": "A column goes up and down.",
+      "alt": "The left vertical line of three counters is highlighted in an array.",
+      "prompt": "Exact diagram specification: Highlighted vertical column",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          4,
+          4,
+          4
+        ]
+      },
+      "file": "eq-term-6-diagram.png",
+      "vectorFile": "eq-term-6.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-term-7",
+      "kind": "term",
+      "index": 6,
+      "caption": "These five objects are counted as one set.",
+      "alt": "Five counters sit together inside one enclosing outline.",
+      "prompt": "Exact diagram specification: One group of five",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          5
+        ]
+      },
+      "file": "eq-term-7-diagram.png",
+      "vectorFile": "eq-term-7.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-term-8",
+      "kind": "term",
+      "index": 7,
+      "caption": "Both groups contain the same number of objects.",
+      "alt": "Two enclosed groups each contain four counters.",
+      "prompt": "Exact diagram specification: Equal counts",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          4,
+          4
+        ]
+      },
+      "file": "eq-term-8-diagram.png",
+      "vectorFile": "eq-term-8.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-term-9",
+      "kind": "term",
+      "index": 8,
+      "caption": "Count all the groups together: two plus five plus one is eight.",
+      "alt": "Three enclosed groups hold two, five and one counters.",
+      "prompt": "Exact diagram specification: Unequal groups and their total",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          2,
+          5,
+          1
+        ]
+      },
+      "file": "eq-term-9-diagram.png",
+      "vectorFile": "eq-term-9.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-term-10",
+      "kind": "term",
+      "index": 9,
+      "caption": "The same pair appears in each group.",
+      "alt": "Four enclosed groups each repeat a pair of counters.",
+      "prompt": "Exact diagram specification: Repeated equal pairs",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "file": "eq-term-10-diagram.png",
+      "vectorFile": "eq-term-10.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-anchor-1",
+      "kind": "anchor",
+      "index": 0,
+      "caption": "Four groups, three in each group.",
+      "alt": "Four outlined sets each contain three counters.",
+      "prompt": "Exact diagram specification: Four groups of three",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "file": "eq-anchor-1-diagram.png",
+      "vectorFile": "eq-anchor-1.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-anchor-2",
+      "kind": "anchor",
+      "index": 1,
+      "caption": "Compare equal group sizes with sizes that differ.",
+      "alt": "Three groups of three crackers appear above groups containing two, five and one cracker.",
+      "prompt": "Exact diagram specification: Equal versus unequal crackers",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          3,
+          3,
+          3,
+          2,
+          5,
+          1
+        ]
+      },
+      "file": "eq-anchor-2-diagram.png",
+      "vectorFile": "eq-anchor-2.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-anchor-3",
+      "kind": "anchor",
+      "index": 2,
+      "caption": "Three rows of four and four rows of three both contain twelve.",
+      "alt": "Two arrays show twelve counters each, arranged as three-by-four and four-by-three.",
+      "prompt": "Exact diagram specification: Transposed arrays",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          4,
+          4,
+          4,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "file": "eq-anchor-3-diagram.png",
+      "vectorFile": "eq-anchor-3.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-anchor-4",
+      "kind": "anchor",
+      "index": 3,
+      "caption": "Take one full group of six away from ten groups to leave nine groups.",
+      "alt": "Ten rows of six counters appear, with the last row enclosed by a dashed gold outline.",
+      "prompt": "Exact diagram specification: Ten groups of six with one group identified",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "file": "eq-anchor-4-diagram.png",
+      "vectorFile": "eq-anchor-4.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-sort-1",
+      "kind": "sort",
+      "index": 0,
+      "caption": "4 plates with 3 crackers on every plate",
+      "alt": "Four oval plates each hold three crackers.",
+      "prompt": "Exact diagram specification: Exact objects for: 4 plates with 3 crackers on every plate",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          3,
+          3,
+          3,
+          3
+        ],
+        "type": "cracker"
+      },
+      "file": "eq-sort-1-diagram.png",
+      "vectorFile": "eq-sort-1.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-sort-2",
+      "kind": "sort",
+      "index": 1,
+      "caption": "6 vases with 5 flowers in every vase",
+      "alt": "Six vases each hold five flowers, with one bloom per stem.",
+      "prompt": "Exact diagram specification: Exact objects for: 6 vases with 5 flowers in every vase",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "type": "flower"
+      },
+      "file": "eq-sort-2-diagram.png",
+      "vectorFile": "eq-sort-2.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-sort-3",
+      "kind": "sort",
+      "index": 2,
+      "caption": "3 rows of 8 chairs, all rows the same",
+      "alt": "Three straight rows each contain eight chairs.",
+      "prompt": "Exact diagram specification: Exact objects for: 3 rows of 8 chairs, all rows the same",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          8,
+          8,
+          8
+        ],
+        "type": "chair"
+      },
+      "file": "eq-sort-3-diagram.png",
+      "vectorFile": "eq-sort-3.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-sort-4",
+      "kind": "sort",
+      "index": 3,
+      "caption": "5 bags with 2 apples in every bag",
+      "alt": "Five outlined bags each contain two apples.",
+      "prompt": "Exact diagram specification: Exact objects for: 5 bags with 2 apples in every bag",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "type": "apple"
+      },
+      "file": "eq-sort-4-diagram.png",
+      "vectorFile": "eq-sort-4.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-sort-5",
+      "kind": "sort",
+      "index": 4,
+      "caption": "A carton of eggs, 2 rows of 6",
+      "alt": "A rectangular carton contains two rows of six eggs.",
+      "prompt": "Exact diagram specification: Exact objects for: A carton of eggs, 2 rows of 6",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          6,
+          6
+        ],
+        "type": "egg"
+      },
+      "file": "eq-sort-5-diagram.png",
+      "vectorFile": "eq-sort-5.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-sort-6",
+      "kind": "sort",
+      "index": 5,
+      "caption": "3 plates: one with 2 crackers, one with 5, one with 1",
+      "alt": "Three oval plates hold two, five and one cracker.",
+      "prompt": "Exact diagram specification: Exact objects for: 3 plates: one with 2 crackers, one with 5, one with 1",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          2,
+          5,
+          1
+        ],
+        "type": "cracker"
+      },
+      "file": "eq-sort-6-diagram.png",
+      "vectorFile": "eq-sort-6.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-sort-7",
+      "kind": "sort",
+      "index": 6,
+      "caption": "One shelf with 4 books and one shelf with 7 books",
+      "alt": "Two shelves hold four books and seven books.",
+      "prompt": "Exact diagram specification: Exact objects for: One shelf with 4 books and one shelf with 7 books",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          4,
+          7
+        ],
+        "type": "book"
+      },
+      "file": "eq-sort-7-diagram.png",
+      "vectorFile": "eq-sort-7.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-sort-8",
+      "kind": "sort",
+      "index": 7,
+      "caption": "Rows of chairs: 4, then 4, then 6",
+      "alt": "Three rows contain four, four and six chairs.",
+      "prompt": "Exact diagram specification: Exact objects for: Rows of chairs: 4, then 4, then 6",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          4,
+          4,
+          6
+        ],
+        "type": "chair"
+      },
+      "file": "eq-sort-8-diagram.png",
+      "vectorFile": "eq-sort-8.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-sort-9",
+      "kind": "sort",
+      "index": 8,
+      "caption": "2 bags: one with 6 marbles, one with 3",
+      "alt": "Two outlined bags contain six marbles and three marbles.",
+      "prompt": "Exact diagram specification: Exact objects for: 2 bags: one with 6 marbles, one with 3",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          6,
+          3
+        ],
+        "type": "marble"
+      },
+      "file": "eq-sort-9-diagram.png",
+      "vectorFile": "eq-sort-9.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-sort-10",
+      "kind": "sort",
+      "index": 9,
+      "caption": "4 boxes that each hold 10 crayons, and one box holding 7",
+      "alt": "Five boxes contain ten, ten, ten, ten and seven crayons.",
+      "prompt": "Exact diagram specification: Exact objects for: 4 boxes that each hold 10 crayons, and one box holding 7",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          10,
+          10,
+          10,
+          10,
+          7
+        ],
+        "type": "crayon"
+      },
+      "file": "eq-sort-10-diagram.png",
+      "vectorFile": "eq-sort-10.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-lesson-1",
+      "kind": "lesson",
+      "index": 0,
+      "caption": "Four groups of three crackers contain twelve crackers.",
+      "alt": "Four enclosed groups each hold three crackers.",
+      "prompt": "Exact diagram specification: Four equal cracker groups",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "file": "eq-lesson-1-diagram.png",
+      "vectorFile": "eq-lesson-1.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-lesson-2",
+      "kind": "lesson",
+      "index": 1,
+      "caption": "The groups differ. Add 2 + 5 + 1 to find eight crackers.",
+      "alt": "Three outlined groups contain two, five and one cracker.",
+      "prompt": "Exact diagram specification: Unequal cracker groups",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          2,
+          5,
+          1
+        ]
+      },
+      "file": "eq-lesson-2-diagram.png",
+      "vectorFile": "eq-lesson-2.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-lesson-3",
+      "kind": "lesson",
+      "index": 2,
+      "caption": "Three rows of eight chairs contain twenty-four chairs.",
+      "alt": "Twenty-four chairs form three straight rows of eight.",
+      "prompt": "Exact diagram specification: Three rows of eight chairs",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          8,
+          8,
+          8
+        ]
+      },
+      "file": "eq-lesson-3-diagram.png",
+      "vectorFile": "eq-lesson-3.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-lesson-4",
+      "kind": "lesson",
+      "index": 3,
+      "caption": "Turning an array swaps rows and columns without changing the total.",
+      "alt": "Two arrangements each contain twelve counters: three rows of four and four rows of three.",
+      "prompt": "Exact diagram specification: Transposed equal totals",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          4,
+          4,
+          4,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "file": "eq-lesson-4-diagram.png",
+      "vectorFile": "eq-lesson-4.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-lesson-5",
+      "kind": "lesson",
+      "index": 4,
+      "caption": "10 x 6 is 60. Remove the highlighted group of six: 9 x 6 is 54.",
+      "alt": "Ten rows of six counters are visible, with the final six enclosed by a dashed gold outline.",
+      "prompt": "Exact diagram specification: Ten groups minus one group",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "file": "eq-lesson-5-diagram.png",
+      "vectorFile": "eq-lesson-5.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-lesson-6",
+      "kind": "lesson",
+      "index": 5,
+      "caption": "Four empty groups contain zero objects altogether.",
+      "alt": "Four enclosed group spaces are empty.",
+      "prompt": "Exact diagram specification: Four empty groups",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "file": "eq-lesson-6-diagram.png",
+      "vectorFile": "eq-lesson-6.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-lesson-7",
+      "kind": "lesson",
+      "index": 6,
+      "caption": "Four groups of six contain twenty-four objects.",
+      "alt": "Four outlined groups each contain six crayons.",
+      "prompt": "Exact diagram specification: Four groups of six crayons",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "file": "eq-lesson-7-diagram.png",
+      "vectorFile": "eq-lesson-7.svg",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "eq-lesson-8",
+      "kind": "lesson",
+      "index": 7,
+      "caption": "These rows do not share one group size. Add them, or combine equal rows and the remaining row.",
+      "alt": "Three rows of chairs contain four, four and six chairs.",
+      "prompt": "Exact diagram specification: Unequal chair rows",
+      "method": "deterministic-svg",
+      "status": "visual-review-passed",
+      "math": {
+        "counts": [
+          4,
+          4,
+          6
+        ]
+      },
+      "file": "eq-lesson-8-diagram.png",
+      "vectorFile": "eq-lesson-8.svg",
+      "reviewedAt": "2026-09-09"
+    }
+  ]
+}

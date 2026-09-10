@@ -1556,7 +1556,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
   };
 
   const rosterStudents = (rosterKey && rosterKey.students) || {};
-  const rosterStudentNames = Object.keys(rosterStudents);
+
   // Normalize a name for fuzzy comparison: lowercase, strip punctuation
   // + collapse internal whitespace. Handles capitalization, "Test Kid"
   // vs "TestKid", "test-kid", trailing whitespace, etc.
@@ -1569,8 +1569,13 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
   // normalized forms are identical. Levenshtein/typo tolerance is out of
   // scope for v1 (too easy to silently mis-attribute).
   const rosterMatch = React.useMemo(() => {
+    const rosterStudentNames = Object.keys(rosterStudents);
+    const caseInsensitiveRoster = new Map();
     const normalizedRoster = {};
     rosterStudentNames.forEach(n => {
+      const lowerName = n.toLowerCase();
+      // Preserve the first case-insensitive match in roster enumeration order.
+      if (!caseInsensitiveRoster.has(lowerName)) caseInsensitiveRoster.set(lowerName, n);
       const normalized = _normalizeNickname(n);
       if (!normalized) return;
       if (Object.prototype.hasOwnProperty.call(normalizedRoster, normalized) && normalizedRoster[normalized] !== n) normalizedRoster[normalized] = null;
@@ -1580,7 +1585,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
       if (!nickname || nickname === '?') return { kind: 'unknown' };
       const raw = String(nickname);
       if (rosterStudents[raw]) return { kind: 'exact', name: raw };
-      const exactCi = rosterStudentNames.find(n => n.toLowerCase() === raw.toLowerCase());
+      const exactCi = caseInsensitiveRoster.get(raw.toLowerCase());
       if (exactCi) return { kind: 'exact', name: exactCi };
       const norm = _normalizeNickname(raw);
       if (norm && normalizedRoster[norm]) return { kind: 'fuzzy', name: normalizedRoster[norm] };

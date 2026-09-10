@@ -201,6 +201,8 @@
     "triage:post-review-drift": "node dev-tools/track_post_review_source_drift.cjs",
     "verify:sel-a11y": "node dev-tools/check_sel_a11y.cjs",
     "verify:sel-wcag": "node dev-tools/check_sel_hub_wcag.cjs",
+    "demo:alloflow": "node dev-tools/build_print_review_css.cjs && node dev-tools/school_rewards_admin_demo.mjs",
+    "verify:alloflow-demo": "node dev-tools/build_print_review_css.cjs && vitest run tests/school_store_unified_demo_seed.test.js tests/school_store_unified_demo_server.test.js tests/school_store_unified_demo_ui.test.js tests/school_store_demo_mail.test.js tests/school_store_demo_mail_ui.test.js tests/school_rewards_class_links_portal.test.js --maxWorkers=1 --testTimeout=30000 && node dev-tools/check_school_store_unified_demo.mjs",
     "demo:school-store": "node dev-tools/build_print_review_css.cjs && node dev-tools/school_rewards_admin_demo.mjs",
     "verify:school-rewards": "vitest run tests/school_rewards tests/admin_hub_rewards_card.test.js tests/allohaven_classroom_reward_bridge.test.js tests/print_lab_tool.test.js tests/geometry_world_printlab_bridge.test.js --maxWorkers=1 --testTimeout=60000",
     "build:directions": "node dev-tools/build_directions.cjs"

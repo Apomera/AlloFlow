@@ -1,0 +1,192 @@
+{
+  "elapsedMs": 2108.0847000000003,
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0000239547733878,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "top": [
+    {
+      "name": "_update",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/nodes/NodeList-impl.js",
+      "line": 27,
+      "selfMs": 282.239
+    },
+    {
+      "name": "query",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/helpers/form-controls.js",
+      "line": 150,
+      "selfMs": 241.132
+    },
+    {
+      "name": "_update",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/nodes/NodeList-impl.js",
+      "line": 27,
+      "selfMs": 184.197
+    },
+    {
+      "name": "query",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/helpers/form-controls.js",
+      "line": 150,
+      "selfMs": 147.72
+    },
+    {
+      "name": "(garbage collector)",
+      "url": "",
+      "line": 0,
+      "selfMs": 129.595
+    },
+    {
+      "name": "post",
+      "url": "node:inspector",
+      "line": 115,
+      "selfMs": 85.707
+    },
+    {
+      "name": "query",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/node.js",
+      "line": 147,
+      "selfMs": 20.236
+    },
+    {
+      "name": "get control",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/nodes/HTMLLabelElement-impl.js",
+      "line": 33,
+      "selfMs": 17.142
+    },
+    {
+      "name": "following",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/symbol-tree/lib/SymbolTree.js",
+      "line": 220,
+      "selfMs": 17.12
+    },
+    {
+      "name": "_tokens",
+      "url": "",
+      "line": 525,
+      "selfMs": 14.654
+    },
+    {
+      "name": "query",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/node.js",
+      "line": 147,
+      "selfMs": 13.908
+    },
+    {
+      "name": "byTag",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@asamuzakjp/nwsapi/src/nwsapi.js",
+      "line": 457,
+      "selfMs": 12.192
+    },
+    {
+      "name": "_matchLeaves",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@asamuzakjp/dom-selector/src/js/finder.js",
+      "line": 1971,
+      "selfMs": 12.036
+    },
+    {
+      "name": "withoutMetadata",
+      "url": "",
+      "line": 91,
+      "selfMs": 11.442
+    },
+    {
+      "name": "get control",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/nodes/HTMLLabelElement-impl.js",
+      "line": 33,
+      "selfMs": 10.642
+    },
+    {
+      "name": "_matchLeaves",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@asamuzakjp/dom-selector/src/js/finder.js",
+      "line": 1971,
+      "selfMs": 10.063
+    },
+    {
+      "name": "namedItem",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/nodes/HTMLCollection-impl.js",
+      "line": 25,
+      "selfMs": 9.102
+    },
+    {
+      "name": "filter",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/node.js",
+      "line": 148,
+      "selfMs": 8.853
+    },
+    {
+      "name": "acceptFixedHtmlDetailed",
+      "url": "",
+      "line": 70,
+      "selfMs": 8.636
+    },
+    {
+      "name": "checkReadingOrderPreserved",
+      "url": "",
+      "line": 523,
+      "selfMs": 8.435
+    },
+    {
+      "name": "normalizeTextNodes",
+      "url": "",
+      "line": 333,
+      "selfMs": 8.428
+    },
+    {
+      "name": "nextNode",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/traversal/TreeWalker-impl.js",
+      "line": 98,
+      "selfMs": 7.314
+    },
+    {
+      "name": "_matchLeaves",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@asamuzakjp/dom-selector/src/js/finder.js",
+      "line": 1971,
+      "selfMs": 7.271
+    },
+    {
+      "name": "normalizeTextNodes",
+      "url": "",
+      "line": 333,
+      "selfMs": 6.797
+    },
+    {
+      "name": "walk",
+      "url": "",
+      "line": 183,
+      "selfMs": 6.616
+    },
+    {
+      "name": "next",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/symbol-tree/lib/TreeIterator.js",
+      "line": 16,
+      "selfMs": 6.54
+    },
+    {
+      "name": "",
+      "url": "",
+      "line": 218,
+      "selfMs": 6.123
+    },
+    {
+      "name": "exports.is",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/generated/idl/NodeList.js",
+      "line": 11,
+      "selfMs": 6.018
+    },
+    {
+      "name": "query",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/jsdom/lib/jsdom/living/node.js",
+      "line": 147,
+      "selfMs": 5.97
+    },
+    {
+      "name": "following",
+      "url": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/symbol-tree/lib/SymbolTree.js",
+      "line": 220,
+      "selfMs": 5.889
+    }
+  ]
+}

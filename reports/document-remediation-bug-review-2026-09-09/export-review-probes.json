@@ -1,0 +1,990 @@
+{
+  "kind": "read-only-export-bug-probes",
+  "implementationSha256": "d950d70600f7af18432520377b555f602ab91604df0f4f7b3c539b12b544643c",
+  "reports": [
+    {
+      "id": "valid-table-control",
+      "html": "<!doctype html><html lang=\"en\"><head><title>Export probe</title></head><body><main><table ><caption>Field study</caption><tr><th scope=\"col\">Area</th><th scope=\"col\">Score</th></tr><tr><td>Sunlight</td><td>95</td></tr></table></main></body></html>",
+      "expected": {
+        "title": "Export probe",
+        "language": "en",
+        "headings": [],
+        "readingOrder": [
+          "Field study",
+          "Area",
+          "Score",
+          "Sunlight",
+          "95"
+        ],
+        "tables": [
+          {
+            "caption": "Field study",
+            "headers": [
+              "Area",
+              "Score"
+            ],
+            "rows": [
+              [
+                "Sunlight",
+                "95"
+              ]
+            ]
+          }
+        ]
+      },
+      "allChecksPassed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Field study",
+              "Area",
+              "Score",
+              "Sunlight",
+              "95"
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-1",
+            "status": "passed",
+            "observed": {
+              "caption": "Field study",
+              "rows": [
+                [
+                  {
+                    "text": "Area",
+                    "role": "TH",
+                    "scope": "col"
+                  },
+                  {
+                    "text": "Score",
+                    "role": "TH",
+                    "scope": "col"
+                  }
+                ],
+                [
+                  {
+                    "text": "Sunlight",
+                    "role": "TD",
+                    "scope": null
+                  },
+                  {
+                    "text": "95",
+                    "role": "TD",
+                    "scope": null
+                  }
+                ]
+              ]
+            },
+            "expected": {
+              "caption": "Field study",
+              "headers": [
+                "Area",
+                "Score"
+              ],
+              "rows": [
+                [
+                  "Sunlight",
+                  "95"
+                ]
+              ]
+            }
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "passed",
+            "observed": {
+              "reasons": [],
+              "resources": {
+                "blocked": 0,
+                "scripts": 0,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      },
+      "independentBrowser": {
+        "tableRoles": 1,
+        "columnHeaderRoles": 2,
+        "blocked": 0,
+        "dom": {
+          "bodyText": "Field study\nArea\tScore\nSunlight\t95",
+          "inertScriptExecuted": false,
+          "background": null
+        }
+      }
+    },
+    {
+      "id": "presentational-table",
+      "html": "<!doctype html><html lang=\"en\"><head><title>Export probe</title></head><body><main><table role=\"presentation\"><caption>Field study</caption><tr><th scope=\"col\">Area</th><th scope=\"col\">Score</th></tr><tr><td>Sunlight</td><td>95</td></tr></table></main></body></html>",
+      "expected": {
+        "title": "Export probe",
+        "language": "en",
+        "headings": [],
+        "readingOrder": [
+          "Field study",
+          "Area",
+          "Score",
+          "Sunlight",
+          "95"
+        ],
+        "tables": [
+          {
+            "caption": "Field study",
+            "headers": [
+              "Area",
+              "Score"
+            ],
+            "rows": [
+              [
+                "Sunlight",
+                "95"
+              ]
+            ]
+          }
+        ]
+      },
+      "allChecksPassed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Field study",
+              "Area",
+              "Score",
+              "Sunlight",
+              "95"
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-1",
+            "status": "passed",
+            "observed": {
+              "caption": "Field study",
+              "rows": [
+                [
+                  {
+                    "text": "Area",
+                    "role": "TH",
+                    "scope": "col"
+                  },
+                  {
+                    "text": "Score",
+                    "role": "TH",
+                    "scope": "col"
+                  }
+                ],
+                [
+                  {
+                    "text": "Sunlight",
+                    "role": "TD",
+                    "scope": null
+                  },
+                  {
+                    "text": "95",
+                    "role": "TD",
+                    "scope": null
+                  }
+                ]
+              ]
+            },
+            "expected": {
+              "caption": "Field study",
+              "headers": [
+                "Area",
+                "Score"
+              ],
+              "rows": [
+                [
+                  "Sunlight",
+                  "95"
+                ]
+              ]
+            }
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "passed",
+            "observed": {
+              "reasons": [],
+              "resources": {
+                "blocked": 0,
+                "scripts": 0,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      },
+      "independentBrowser": {
+        "tableRoles": 0,
+        "columnHeaderRoles": 0,
+        "blocked": 0,
+        "dom": {
+          "bodyText": "Field study\nArea\tScore\nSunlight\t95",
+          "inertScriptExecuted": false,
+          "background": null
+        }
+      }
+    },
+    {
+      "id": "aria-hidden-table",
+      "html": "<!doctype html><html lang=\"en\"><head><title>Export probe</title></head><body><main><table aria-hidden=\"true\"><caption>Field study</caption><tr><th scope=\"col\">Area</th><th scope=\"col\">Score</th></tr><tr><td>Sunlight</td><td>95</td></tr></table></main></body></html>",
+      "expected": {
+        "title": "Export probe",
+        "language": "en",
+        "headings": [],
+        "readingOrder": [
+          "Field study",
+          "Area",
+          "Score",
+          "Sunlight",
+          "95"
+        ],
+        "tables": [
+          {
+            "caption": "Field study",
+            "headers": [
+              "Area",
+              "Score"
+            ],
+            "rows": [
+              [
+                "Sunlight",
+                "95"
+              ]
+            ]
+          }
+        ]
+      },
+      "allChecksPassed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Field study",
+              "Area",
+              "Score",
+              "Sunlight",
+              "95"
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-1",
+            "status": "passed",
+            "observed": {
+              "caption": "Field study",
+              "rows": [
+                [
+                  {
+                    "text": "Area",
+                    "role": "TH",
+                    "scope": "col"
+                  },
+                  {
+                    "text": "Score",
+                    "role": "TH",
+                    "scope": "col"
+                  }
+                ],
+                [
+                  {
+                    "text": "Sunlight",
+                    "role": "TD",
+                    "scope": null
+                  },
+                  {
+                    "text": "95",
+                    "role": "TD",
+                    "scope": null
+                  }
+                ]
+              ]
+            },
+            "expected": {
+              "caption": "Field study",
+              "headers": [
+                "Area",
+                "Score"
+              ],
+              "rows": [
+                [
+                  "Sunlight",
+                  "95"
+                ]
+              ]
+            }
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "passed",
+            "observed": {
+              "reasons": [],
+              "resources": {
+                "blocked": 0,
+                "scripts": 0,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      },
+      "independentBrowser": {
+        "tableRoles": 0,
+        "columnHeaderRoles": 0,
+        "blocked": 0,
+        "dom": {
+          "bodyText": "Field study\nArea\tScore\nSunlight\t95",
+          "inertScriptExecuted": false,
+          "background": null
+        }
+      }
+    },
+    {
+      "id": "canonical-table-false-rejection",
+      "html": "<!doctype html><html lang=\"en\"><head><title>Export probe</title></head><body><main><table ><caption>Field study</caption><tr><th scope=\"col\">Area</th><th scope=\"col\">Score</th></tr><tr><td>Café</td><td>95</td></tr></table></main></body></html>",
+      "expected": {
+        "title": "Export probe",
+        "language": "en",
+        "headings": [],
+        "readingOrder": [
+          "Field study",
+          "Area",
+          "Score",
+          "Café",
+          "95"
+        ],
+        "tables": [
+          {
+            "caption": "Field study",
+            "headers": [
+              "Area",
+              "Score"
+            ],
+            "rows": [
+              [
+                "Café",
+                "95"
+              ]
+            ]
+          }
+        ]
+      },
+      "allChecksPassed": false,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Field study",
+              "Area",
+              "Score",
+              "Café",
+              "95"
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-1",
+            "status": "failed",
+            "observed": {
+              "caption": "Field study",
+              "rows": [
+                [
+                  {
+                    "text": "Area",
+                    "role": "TH",
+                    "scope": "col"
+                  },
+                  {
+                    "text": "Score",
+                    "role": "TH",
+                    "scope": "col"
+                  }
+                ],
+                [
+                  {
+                    "text": "Café",
+                    "role": "TD",
+                    "scope": null
+                  },
+                  {
+                    "text": "95",
+                    "role": "TD",
+                    "scope": null
+                  }
+                ]
+              ]
+            },
+            "expected": {
+              "caption": "Field study",
+              "headers": [
+                "Area",
+                "Score"
+              ],
+              "rows": [
+                [
+                  "Café",
+                  "95"
+                ]
+              ]
+            }
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "passed",
+            "observed": {
+              "reasons": [],
+              "resources": {
+                "blocked": 0,
+                "scripts": 0,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      },
+      "independentBrowser": {
+        "tableRoles": 1,
+        "columnHeaderRoles": 2,
+        "blocked": 0,
+        "dom": {
+          "bodyText": "Field study\nArea\tScore\nCafé\t95",
+          "inertScriptExecuted": false,
+          "background": null
+        }
+      }
+    },
+    {
+      "id": "relative-css-background",
+      "html": "<!doctype html><html lang=\"en\"><head><title>Export probe</title></head><body><main><p>Read this.</p><div id=\"chart\" style=\"width:200px;height:100px;background-image:url(required-chart.png)\"></div></main></body></html>",
+      "expected": {
+        "title": "Export probe",
+        "language": "en",
+        "headings": [],
+        "readingOrder": [
+          "Read this."
+        ],
+        "tables": []
+      },
+      "allChecksPassed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Read this."
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "passed",
+            "observed": {
+              "reasons": [],
+              "resources": {
+                "blocked": 0,
+                "scripts": 0,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      },
+      "independentBrowser": {
+        "tableRoles": 0,
+        "columnHeaderRoles": 0,
+        "blocked": 0,
+        "dom": {
+          "bodyText": "Read this.",
+          "inertScriptExecuted": false,
+          "background": "url(\"required-chart.png\")"
+        }
+      }
+    },
+    {
+      "id": "inert-xml-data-block",
+      "html": "<!doctype html><html lang=\"en\"><head><title>Export probe</title></head><body><main><p>Read this.</p><script type=\"application/xml\">window.__inertScriptExecuted = true;</script></main></body></html>",
+      "expected": {
+        "title": "Export probe",
+        "language": "en",
+        "headings": [],
+        "readingOrder": [
+          "Read this."
+        ],
+        "tables": []
+      },
+      "allChecksPassed": false,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Read this."
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "unavailable",
+            "observed": {
+              "reasons": [
+                "script-dependent-content"
+              ],
+              "resources": {
+                "blocked": 0,
+                "scripts": 1,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": false,
+          "wholeDocument": false,
+          "reasons": [
+            "script-dependent-content"
+          ]
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 1,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      },
+      "independentBrowser": {
+        "tableRoles": 0,
+        "columnHeaderRoles": 0,
+        "blocked": 0,
+        "dom": {
+          "bodyText": "Read this.",
+          "inertScriptExecuted": false,
+          "background": null
+        }
+      }
+    }
+  ]
+}

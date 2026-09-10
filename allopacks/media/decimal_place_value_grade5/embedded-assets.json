@@ -1,0 +1,236 @@
+[
+  {
+    "id": "dpv-term-1",
+    "kind": "term",
+    "file": "dpv-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bar is divided into ten equal sections, with six shaded teal.",
+    "altHash": "img-45f-c1d293f7"
+  },
+  {
+    "id": "dpv-term-2",
+    "kind": "term",
+    "file": "dpv-term-2.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A cartoon student studies a blank square tile while classmates sit behind them.",
+    "altHash": "img-fmf-ccedf9e3"
+  },
+  {
+    "id": "dpv-term-3",
+    "kind": "term",
+    "file": "dpv-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four blank boxes appear in a row, with a dark dot between the first and second boxes.",
+    "altHash": "img-3sv-e2b7a5b3"
+  },
+  {
+    "id": "dpv-term-4",
+    "kind": "term",
+    "file": "dpv-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One of ten equal sections in a long bar is shaded teal.",
+    "altHash": "img-423-e63037c7"
+  },
+  {
+    "id": "dpv-term-5",
+    "kind": "term",
+    "file": "dpv-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A square contains one hundred equal cells; only the upper-left cell is shaded teal.",
+    "altHash": "img-9u7-0cb0c2fe"
+  },
+  {
+    "id": "dpv-term-6",
+    "kind": "term",
+    "file": "dpv-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten small hundred-cell grids share one enclosing frame. A single cell in the first grid is shaded teal.",
+    "altHash": "img-12b3-a0d2554a"
+  },
+  {
+    "id": "dpv-term-7",
+    "kind": "term",
+    "file": "dpv-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two same-length bars are half shaded; the upper bar has ten sections and the lower has twenty.",
+    "altHash": "img-62n-5742f68a"
+  },
+  {
+    "id": "dpv-term-8",
+    "kind": "term",
+    "file": "dpv-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equal outlined bars share a starting edge; teal shading extends farther in the upper bar.",
+    "altHash": "img-6xn-38f11b7f"
+  },
+  {
+    "id": "dpv-term-9",
+    "kind": "term",
+    "file": "dpv-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three same-sized bars appear; the top is fully shaded, the middle half shaded, and the bottom unshaded.",
+    "altHash": "img-4mf-994b3888"
+  },
+  {
+    "id": "dpv-anchor-1",
+    "kind": "anchor",
+    "file": "dpv-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equal squares show equal shaded areas: one vertical strip out of ten on the left and one row of ten small cells on the right.",
+    "altHash": "img-90v-a4aeaaef"
+  },
+  {
+    "id": "dpv-anchor-2",
+    "kind": "anchor",
+    "file": "dpv-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Aligned whole bars have teal shading covering six tenths above and forty-five hundredths below.",
+    "altHash": "img-9l7-d56577ce"
+  },
+  {
+    "id": "dpv-anchor-3",
+    "kind": "anchor",
+    "file": "dpv-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equal hundred-cell grids have sixty shaded cells on the left and six on the right.",
+    "altHash": "img-cmv-d40eba54"
+  },
+  {
+    "id": "dpv-sort-1",
+    "kind": "sort",
+    "file": "dpv-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten hundred-cell grids form one whole; 500 cells are shaded teal and 500 remain white.",
+    "altHash": "img-10kr-08fbe7a0"
+  },
+  {
+    "id": "dpv-sort-2",
+    "kind": "sort",
+    "file": "dpv-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten hundred-cell grids form one whole; 500 cells are shaded teal and 500 remain white.",
+    "altHash": "img-10kr-08fbe7a0"
+  },
+  {
+    "id": "dpv-sort-3",
+    "kind": "sort",
+    "file": "dpv-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten hundred-cell grids form one whole; 50 cells are shaded teal and 950 remain white.",
+    "altHash": "img-12kn-1261fdbf"
+  },
+  {
+    "id": "dpv-sort-4",
+    "kind": "sort",
+    "file": "dpv-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten hundred-cell grids form one whole; 499 cells are shaded teal and 501 remain white.",
+    "altHash": "img-10mr-e7133dbe"
+  },
+  {
+    "id": "dpv-sort-5",
+    "kind": "sort",
+    "file": "dpv-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten hundred-cell grids form one whole; 510 cells are shaded teal and 490 remain white.",
+    "altHash": "img-10k7-47e3dbd6"
+  },
+  {
+    "id": "dpv-sort-6",
+    "kind": "sort",
+    "file": "dpv-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten hundred-cell grids form one whole; 605 cells are shaded teal and 395 remain white.",
+    "altHash": "img-zy7-1e06721e"
+  },
+  {
+    "id": "dpv-lesson-1",
+    "kind": "lesson",
+    "file": "dpv-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Two cartoon students align a longer red ribbon and a shorter blue ribbon on a green craft mat.",
+    "altHash": "img-wkv-014e9816"
+  },
+  {
+    "id": "dpv-lesson-2",
+    "kind": "lesson",
+    "file": "dpv-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equal whole squares show six shaded columns out of ten on the left and sixty shaded cells out of one hundred on the right.",
+    "altHash": "img-903-34fbaf50"
+  },
+  {
+    "id": "dpv-lesson-3",
+    "kind": "lesson",
+    "file": "dpv-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equal hundred-cell squares are each shaded halfway, despite separate positions on the page.",
+    "altHash": "img-cjj-486867d4"
+  },
+  {
+    "id": "dpv-lesson-4",
+    "kind": "lesson",
+    "file": "dpv-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Equal hundred-cell squares show sixty teal cells on the left and six blue cells on the right.",
+    "altHash": "img-cj3-84b54e66"
+  },
+  {
+    "id": "dpv-lesson-5",
+    "kind": "lesson",
+    "file": "dpv-lesson-5.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A cartoon child using a wheelchair and a brown-skinned classmate point to matching blue mats at an accessible table.",
+    "altHash": "img-117f-bde74aec"
+  },
+  {
+    "id": "dpv-lesson-6",
+    "kind": "lesson",
+    "file": "dpv-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One teal cell stands out among ten hundred-cell grids enclosed in one frame.",
+    "altHash": "img-12b3-a0d2554a"
+  },
+  {
+    "id": "dpv-lesson-7",
+    "kind": "lesson",
+    "file": "dpv-lesson-7.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A brown-skinned cartoon student examines a red ribbon with a magnifying glass beside a blank notebook.",
+    "altHash": "img-137z-e558eb29"
+  },
+  {
+    "id": "dpv-lesson-8",
+    "kind": "lesson",
+    "file": "dpv-lesson-8.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Two cartoon students, one wearing a teal headscarf, discuss red and yellow ribbons beside blank paper and pencils.",
+    "altHash": "img-161r-025e8088"
+  }
+]

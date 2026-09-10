@@ -1,0 +1,819 @@
+{
+  "schemaVersion": 2,
+  "corpusStatus": "synthetic-only",
+  "coverage": {
+    "total": 13,
+    "synthetic": 13,
+    "independentlyReviewed": 0,
+    "unreviewed": 0,
+    "invalidObservations": 0
+  },
+  "syntheticMetrics": {
+    "evaluated": 13,
+    "mismatched": 0
+  },
+  "humanMetrics": null,
+  "rows": [
+    {
+      "id": "worksheet-clean",
+      "documentKind": "worksheet",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "ready",
+        "governingLayerScore": 100,
+        "reportedScore": 100,
+        "verificationState": "complete",
+        "verificationReasons": [],
+        "distributionLevel": "ready",
+        "distributionReasons": [],
+        "delivery": {
+          "verificationState": "complete",
+          "reviewRequired": false,
+          "distributionLevel": "ready",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "complete-for-tested-scope"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "not-applicable",
+            "evidence": null
+          }
+        },
+        "scores": {
+          "ai": 100,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "reading-equal-access-barrier",
+      "documentKind": "reading",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "review-required",
+        "governingLayerScore": 60,
+        "reportedScore": 60,
+        "verificationState": "review-required",
+        "verificationReasons": [
+          "equal-access-confirmed-failures:1"
+        ],
+        "distributionLevel": "review",
+        "distributionReasons": [
+          "WCAG verification is review-required; review the engine coverage and unresolved evidence before distribution",
+          "the score (60) is below your target of 95",
+          "the second checker (Equal Access) still reports 1 rule failure"
+        ],
+        "delivery": {
+          "verificationState": "review-required",
+          "reviewRequired": true,
+          "distributionLevel": "review",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "review-required"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "failed",
+            "findings": 1,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "not-applicable",
+            "evidence": null
+          }
+        },
+        "scores": {
+          "ai": 100,
+          "axe": 100,
+          "equalAccess": 60
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "table-value-conflict",
+      "documentKind": "table",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "reportedScore": 100,
+        "verificationState": "complete",
+        "verificationReasons": [],
+        "distributionLevel": "review",
+        "distributionReasons": [
+          "content fidelity needs a human check (possible loss or changed values)",
+          "numbers may have changed between source and output — verify scores, dates, and percentages before anyone reads this"
+        ],
+        "delivery": {
+          "verificationState": "complete",
+          "reviewRequired": true,
+          "distributionLevel": "review",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "review-required"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "review-required",
+            "coverage": 100,
+            "noteKinds": [
+              "numeric"
+            ]
+          },
+          "export": {
+            "status": "not-applicable",
+            "evidence": null
+          }
+        },
+        "scores": {
+          "ai": 100,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "scan-ocr-review",
+      "documentKind": "scan",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "reportedScore": 100,
+        "verificationState": "complete",
+        "verificationReasons": [],
+        "distributionLevel": "review",
+        "distributionReasons": [
+          "content fidelity needs a human check (possible loss or changed values)",
+          "this is a scan and parts of the OCR read are low-confidence — skim the output against the original"
+        ],
+        "delivery": {
+          "verificationState": "complete",
+          "reviewRequired": true,
+          "distributionLevel": "review",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "review-required"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "review-required",
+            "coverage": 100,
+            "noteKinds": [
+              "lowOcrConfidence"
+            ]
+          },
+          "export": {
+            "status": "not-applicable",
+            "evidence": null
+          }
+        },
+        "scores": {
+          "ai": 100,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "form-manual-review",
+      "documentKind": "form",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "reportedScore": 100,
+        "verificationState": "review-required",
+        "verificationReasons": [
+          "equal-access-manual:1"
+        ],
+        "distributionLevel": "review",
+        "distributionReasons": [
+          "WCAG verification is review-required; review the engine coverage and unresolved evidence before distribution"
+        ],
+        "delivery": {
+          "verificationState": "review-required",
+          "reviewRequired": true,
+          "distributionLevel": "review",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "review-required"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "review-required",
+            "findings": 0,
+            "reviewFindings": 1
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "not-applicable",
+            "evidence": null
+          }
+        },
+        "scores": {
+          "ai": 100,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "figure-validator-unavailable",
+      "documentKind": "figure",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "reportedScore": 100,
+        "verificationState": "complete",
+        "verificationReasons": [],
+        "distributionLevel": "ready",
+        "distributionReasons": [],
+        "delivery": {
+          "verificationState": "review-required",
+          "reviewRequired": true,
+          "distributionLevel": "review",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "review-required"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "unavailable",
+            "evidence": {
+              "status": "unavailable",
+              "reason": "validator_not_available"
+            }
+          }
+        },
+        "scores": {
+          "ai": 100,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "reading-below-target",
+      "documentKind": "reading",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "caution",
+        "governingLayerScore": 90,
+        "reportedScore": 90,
+        "verificationState": "complete",
+        "verificationReasons": [],
+        "distributionLevel": "caution",
+        "distributionReasons": [
+          "the score (90) is below your target of 95 — automated checks are clean; the remaining gap is AI-rubric judgment"
+        ],
+        "delivery": {
+          "verificationState": "complete",
+          "reviewRequired": false,
+          "distributionLevel": "caution",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "complete-for-tested-scope"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "not-applicable",
+            "evidence": null
+          }
+        },
+        "scores": {
+          "ai": 90,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "worksheet-ai-partial",
+      "documentKind": "worksheet",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "reportedScore": 100,
+        "verificationState": "partial",
+        "verificationReasons": [
+          "ai-verification-incomplete",
+          "ai-partial-audit"
+        ],
+        "distributionLevel": "caution",
+        "distributionReasons": [
+          "the AI verification could not fully complete (service throttling) — the score leans on the automated checkers"
+        ],
+        "delivery": {
+          "verificationState": "partial",
+          "reviewRequired": true,
+          "distributionLevel": "review",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "review-required"
+        },
+        "layers": {
+          "ai": {
+            "status": "partial",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "not-applicable",
+            "evidence": null
+          }
+        },
+        "scores": {
+          "ai": null,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "table-validator-failed",
+      "documentKind": "table",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "reportedScore": 100,
+        "verificationState": "complete",
+        "verificationReasons": [],
+        "distributionLevel": "ready",
+        "distributionReasons": [],
+        "delivery": {
+          "verificationState": "review-required",
+          "reviewRequired": true,
+          "distributionLevel": "review",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "review-required"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "failed",
+            "evidence": {
+              "status": "noncompliant",
+              "validator": "veraPDF",
+              "profile": "ua1",
+              "validatorVersion": "synthetic-test",
+              "failedRules": 1,
+              "failedChecks": 1,
+              "passedRules": 1,
+              "passedChecks": 1,
+              "inputSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "inputBytes": 1024,
+              "validatedAt": "2026-09-07T12:00:00.000Z",
+              "validationDurationMs": 1
+            }
+          }
+        },
+        "scores": {
+          "ai": 100,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "figure-validator-unbound",
+      "documentKind": "figure",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "reportedScore": 100,
+        "verificationState": "complete",
+        "verificationReasons": [],
+        "distributionLevel": "ready",
+        "distributionReasons": [],
+        "delivery": {
+          "verificationState": "review-required",
+          "reviewRequired": true,
+          "distributionLevel": "review",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "review-required"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "unavailable",
+            "evidence": {
+              "status": "unavailable",
+              "reason": "invalid-or-unbound-validator-evidence"
+            }
+          }
+        },
+        "scores": {
+          "ai": 100,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "scan-all-engines-unavailable",
+      "documentKind": "scan",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "unavailable",
+        "governingLayerScore": null,
+        "reportedScore": null,
+        "verificationState": "unavailable",
+        "verificationReasons": [
+          "ai-unavailable",
+          "axe-unavailable",
+          "equal-access-unavailable"
+        ],
+        "distributionLevel": "review",
+        "distributionReasons": [
+          "WCAG verification is unavailable; review the engine coverage and unresolved evidence before distribution",
+          "no final verified score is available for this pass"
+        ],
+        "delivery": {
+          "verificationState": "unavailable",
+          "reviewRequired": true,
+          "distributionLevel": "review",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "review-required"
+        },
+        "layers": {
+          "ai": {
+            "status": "unavailable",
+            "findings": null,
+            "reviewFindings": null
+          },
+          "axe": {
+            "status": "unavailable",
+            "findings": null,
+            "reviewFindings": null
+          },
+          "equalAccess": {
+            "status": "unavailable",
+            "findings": null,
+            "reviewFindings": null
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "not-applicable",
+            "evidence": null
+          }
+        },
+        "scores": {
+          "ai": null,
+          "axe": null,
+          "equalAccess": null
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "worksheet-in-progress",
+      "documentKind": "worksheet",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "caution",
+        "governingLayerScore": 100,
+        "reportedScore": 100,
+        "verificationState": "complete",
+        "verificationReasons": [],
+        "distributionLevel": "caution",
+        "distributionReasons": [
+          "a remediation round is still running, so this verdict is provisional and will update when the run finishes"
+        ],
+        "delivery": {
+          "verificationState": "complete",
+          "reviewRequired": false,
+          "distributionLevel": "caution",
+          "taggedPdfDelivery": "review-required",
+          "deliveryStatus": "complete-for-tested-scope"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "not-applicable",
+            "evidence": null
+          }
+        },
+        "scores": {
+          "ai": 100,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    },
+    {
+      "id": "figure-validated-export",
+      "documentKind": "figure",
+      "evidenceClass": "synthetic",
+      "prediction": {
+        "readiness": "ready",
+        "governingLayerScore": 100,
+        "reportedScore": 100,
+        "verificationState": "complete",
+        "verificationReasons": [],
+        "distributionLevel": "ready",
+        "distributionReasons": [],
+        "delivery": {
+          "verificationState": "complete",
+          "reviewRequired": false,
+          "distributionLevel": "ready",
+          "taggedPdfDelivery": "verified",
+          "deliveryStatus": "complete-for-tested-scope"
+        },
+        "layers": {
+          "ai": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "axe": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "equalAccess": {
+            "status": "passed",
+            "findings": 0,
+            "reviewFindings": 0
+          },
+          "fidelity": {
+            "status": "passed",
+            "coverage": 100,
+            "noteKinds": []
+          },
+          "export": {
+            "status": "passed",
+            "evidence": {
+              "status": "compliant",
+              "validator": "veraPDF",
+              "profile": "ua1",
+              "validatorVersion": "synthetic-test",
+              "failedRules": 0,
+              "failedChecks": 0,
+              "passedRules": 1,
+              "passedChecks": 1,
+              "inputSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "inputBytes": 1024,
+              "validatedAt": "2026-09-07T12:00:00.000Z",
+              "validationDurationMs": 1
+            }
+          }
+        },
+        "scores": {
+          "ai": 100,
+          "axe": 100,
+          "equalAccess": 100
+        },
+        "policyFingerprint": "83b5711741d823290671b30558424d4608c6171bf674191f08da0ba248d986dc"
+      },
+      "error": null,
+      "expectationMismatches": [],
+      "reviewProblems": []
+    }
+  ],
+  "limitations": [
+    "Synthetic cases measure policy behavior, not remediation quality or human usability.",
+    "Human review provenance is declared by the importer; reviewer identity and judgments are not authenticated.",
+    "Missing layers and findings are not inferred to pass. Counts describe reviewed findings, not all possible issues."
+  ]
+}

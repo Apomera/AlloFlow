@@ -1,0 +1,74 @@
+{
+  "passed": 307,
+  "failed": 1,
+  "files": [
+    {
+      "file": "class_mailbox.test.js",
+      "passed": 35,
+      "failures": [
+        {
+          "name": "ANTI wiring pins keeps the shared Word Cloud poll loop stable while students type and renders safe ASCII fallbacks",
+          "message": [
+            "AssertionError: expected 'const AlloQuestionBoardPanel = React.…' to contain '[activityId, activityScope, admin, ap…'\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/class_mailbox.test.js:744:38\n    at file"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "concept_quest_engine.test.js",
+      "passed": 14,
+      "failures": []
+    },
+    {
+      "file": "concept_quest_review_runtime.test.js",
+      "passed": 27,
+      "failures": []
+    },
+    {
+      "file": "connected_escape_mailbox.test.js",
+      "passed": 25,
+      "failures": []
+    },
+    {
+      "file": "connected_escape_room_engine.test.js",
+      "passed": 43,
+      "failures": []
+    },
+    {
+      "file": "connected_escape_room_runtime.test.js",
+      "passed": 11,
+      "failures": []
+    },
+    {
+      "file": "lesson_board_engine.test.js",
+      "passed": 62,
+      "failures": []
+    },
+    {
+      "file": "lesson_board_mailbox.test.js",
+      "passed": 27,
+      "failures": []
+    },
+    {
+      "file": "lesson_board_runtime.test.js",
+      "passed": 14,
+      "failures": []
+    },
+    {
+      "file": "mailbox_script_source_module.test.js",
+      "passed": 8,
+      "failures": []
+    },
+    {
+      "file": "mailbox_session_bridge.test.js",
+      "passed": 37,
+      "failures": []
+    },
+    {
+      "file": "share_session_surfaces_a11y.test.js",
+      "passed": 4,
+      "failures": []
+    }
+  ],
+  "limitation": "One existing Word Cloud source-text assertion expects a dependency list without scopeToken; shared_activity_source.jsx was not changed by this feature."
+}

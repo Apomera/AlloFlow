@@ -1,0 +1,14 @@
+const fs=require('node:fs'),path=require('node:path');
+const file=path.join(__dirname,'verify-import-recovery-browser.cjs');let text=fs.readFileSync(file,'utf8');
+const anchor="    await page.evaluate(()=>{const e=__geoWorldEngine;window.__nativePlace=e.placeBlock;let placed=0;e.placeBlock=function(...args){if(args[3]!=='grass'&&++placed>=2)return null;return __nativePlace.apply(this,args);};});await choose(file);";
+if(!text.includes(anchor))throw Error('Persistent recovery anchor missing');
+const extra=`    const beforeShowcase=await snapshot();
+    await page.getByRole('button',{name:'Showcase creation',exact:true}).click();await page.getByRole('dialog',{name:'Showcase creation',exact:true}).waitFor();await page.getByRole('button',{name:'Use & export',exact:true}).click();
+    await page.evaluate(()=>{const e=__geoWorldEngine;window.__nativePlace=e.placeBlock;let placed=0;e.placeBlock=function(...args){if(args[3]!=='grass'&&++placed===2)return null;return __nativePlace.apply(this,args);};});
+    await choose(file);await page.getByRole('button',{name:'Replace current sandbox',exact:true}).click();await frames();
+    const afterShowcase=await snapshot();result.showcaseFailure={before:beforeShowcase,after:afterShowcase,state:await page.evaluate(()=>({active:__ctx.toolData.geometryWorld.showcaseActive,session:!!__geoWorldEngine._showcase,collapsed:__ctx.toolData.geometryWorld.sandboxDockCollapsed})),error:await page.locator('.gwe-recovery[data-state="error"]').innerText()};
+    check(JSON.stringify(beforeShowcase)===JSON.stringify(afterShowcase),'Failed import from Showcase restores the previous building world and camera');check(!result.showcaseFailure.state.active&&!result.showcaseFailure.state.session&&!result.showcaseFailure.state.collapsed,'Failed Showcase import returns to a usable expanded building dock');check(/restor/i.test(result.showcaseFailure.error),'Showcase teardown keeps the import failure explanation');
+    await page.evaluate(()=>{__geoWorldEngine.placeBlock=__nativePlace;delete window.__nativePlace;});
+    await page.locator('.gwe-recovery[data-state="error"]').scrollIntoViewIfNeeded();result.showcaseScreenshot='after-showcase-import-restored-1200x900.png';await page.screenshot({path:path.join(out,result.showcaseScreenshot)});
+`;
+text=text.replace(anchor,extra+anchor);const fd=fs.openSync(file,'r+');fs.writeFileSync(fd,text);fs.ftruncateSync(fd,Buffer.byteLength(text));fs.closeSync(fd);

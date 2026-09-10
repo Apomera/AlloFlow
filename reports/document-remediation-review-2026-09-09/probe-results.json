@@ -1,0 +1,272 @@
+{
+  "createdAt": "2026-09-09T01:27:44.711Z",
+  "sourceSha256": "7261335b96fd8da8b629b149c8dfafdf016083cd74144fbdcbda91833e1fdcd3",
+  "scope": "Current source acceptance and aiFixChunked only; jsdom; mocked model; no full pipeline or live provider",
+  "rows": [
+    {
+      "id": "legitimate-long-alt-rejected",
+      "candidateAccepted": false,
+      "decision": {
+        "accepted": false,
+        "reason": "size-growth-unexpected",
+        "sizeRatio": 2.3333333333333335,
+        "sizeGained": 148
+      },
+      "changedCandidateReturned": false,
+      "originalReturned": true,
+      "passEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "size-growth-unexpected"
+            }
+          ]
+        }
+      ],
+      "calls": 1
+    },
+    {
+      "id": "link-destination-changed",
+      "candidateAccepted": true,
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "changedCandidateReturned": true,
+      "originalReturned": false,
+      "passEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "calls": 1
+    },
+    {
+      "id": "table-value-substituted",
+      "candidateAccepted": true,
+      "decision": {
+        "accepted": true,
+        "fabrication": {
+          "suspected": true,
+          "fabricatedNumbers": [
+            "96"
+          ],
+          "fabricatedDates": [],
+          "fabricatedUrls": [],
+          "tokenRecall": 1,
+          "wordCountRatio": 1,
+          "lowGrounding": false
+        },
+        "readingOrderWarn": {
+          "droppedToken": "95",
+          "beforeCount": 116,
+          "afterCount": 116
+        },
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "changedCandidateReturned": true,
+      "originalReturned": false,
+      "passEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "calls": 1
+    },
+    {
+      "id": "table-semantics-removed",
+      "candidateAccepted": true,
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0385375494071147,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "changedCandidateReturned": true,
+      "originalReturned": false,
+      "passEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "calls": 1
+    },
+    {
+      "id": "single-digit-changed",
+      "candidateAccepted": true,
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": {
+          "droppedToken": "3",
+          "beforeCount": 116,
+          "afterCount": 116
+        },
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "changedCandidateReturned": true,
+      "originalReturned": false,
+      "passEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "calls": 1
+    },
+    {
+      "id": "figure-moved-to-other-section",
+      "candidateAccepted": true,
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "changedCandidateReturned": true,
+      "originalReturned": false,
+      "passEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "calls": 1
+    },
+    {
+      "id": "added-number-warning",
+      "candidateAccepted": true,
+      "decision": {
+        "accepted": true,
+        "fabrication": {
+          "suspected": true,
+          "fabricatedNumbers": [
+            "8742"
+          ],
+          "fabricatedDates": [],
+          "fabricatedUrls": [],
+          "tokenRecall": 0.93,
+          "wordCountRatio": 1.01,
+          "lowGrounding": false
+        },
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0052910052910053,
+        "textRatio": 1.0057670126874279,
+        "textLost": 0
+      },
+      "changedCandidateReturned": true,
+      "originalReturned": false,
+      "passEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "calls": 1
+    },
+    {
+      "id": "header-promotion-positive-control",
+      "candidateAccepted": true,
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.023715415019763,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "changedCandidateReturned": true,
+      "originalReturned": false,
+      "passEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "calls": 1
+    },
+    {
+      "id": "transposition-negative-control",
+      "candidateAccepted": false,
+      "decision": {
+        "accepted": false,
+        "reason": "table-cell-transposition",
+        "cellDrift": {
+          "checked": 1,
+          "moved": [
+            {
+              "table": 0,
+              "value": "95",
+              "from": [
+                1,
+                1
+              ],
+              "to": [
+                2,
+                1
+              ]
+            },
+            {
+              "table": 0,
+              "value": "102",
+              "from": [
+                2,
+                1
+              ],
+              "to": [
+                1,
+                1
+              ]
+            }
+          ]
+        }
+      },
+      "changedCandidateReturned": false,
+      "originalReturned": true,
+      "passEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "table-cell-transposition"
+            }
+          ]
+        }
+      ],
+      "calls": 1
+    }
+  ]
+}

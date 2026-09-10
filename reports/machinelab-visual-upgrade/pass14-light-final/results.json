@@ -1,0 +1,30 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "windlass-50",
+    "windlass-100",
+    "screw-50",
+    "screw-100",
+    "windlass-quarter-0.05",
+    "windlass-quarter-0.5",
+    "screw-quarter-0.05",
+    "screw-quarter-0.5"
+  ],
+  "checks": [
+    "Keyboard and held camera pose: windlass 390",
+    "Keyboard and held camera pose: screw 390",
+    "Keyboard and held camera pose: windlass 320",
+    "Keyboard and held camera pose: screw 320",
+    "Reduced motion holds half stroke",
+    "Old timer cannot interrupt newer run",
+    "Next station starts at rest"
+  ]
+}

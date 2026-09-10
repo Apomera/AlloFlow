@@ -1,0 +1,217 @@
+{
+  "pass": true,
+  "sources": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "sha256": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+      "parsed": true,
+      "mirrorMatches": true,
+      "browserMatches": true
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "sha256": "21a65c2cb1e9e111a76ebcc1fdb90ce8d448778c78b3c172eed00406522e8dcb",
+      "parsed": true,
+      "mirrorMatches": true,
+      "browserMatches": true
+    },
+    {
+      "name": "stem_tool_printlab.js",
+      "sha256": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742",
+      "parsed": true,
+      "mirrorMatches": true,
+      "browserMatches": true
+    }
+  ],
+  "tests": {
+    "total": 115,
+    "passed": 115,
+    "failed": 0,
+    "suites": 8,
+    "failures": [],
+    "evidence": [
+      "composition-regression-tests.json",
+      "composition-final-regression-tests.json",
+      "composition-missing-suites-tests.json",
+      "showcase-composition-final-tests.json",
+      "showcase-pop-contacts-tests.json"
+    ]
+  },
+  "browser": {
+    "before": true,
+    "after": true,
+    "errors": [],
+    "consoleErrors": [],
+    "shaderErrors": [],
+    "failures": [],
+    "delayedEncodingFitApplied": true,
+    "modelPreserved": true,
+    "buildingCameraRestored": true,
+    "comparisons": [
+      {
+        "view": "perspective",
+        "width": 1200,
+        "height": 820,
+        "beforeHeight": 340.61540661789536,
+        "afterHeight": 391.0683986734816,
+        "heightRatio": 1.1481230475055544,
+        "beforeOverlap": [],
+        "afterOverlap": [],
+        "minimumButtonHeight": 44,
+        "renderCountsMatch": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "before": "before-perspective-1200x820.png",
+        "after": "after-perspective-1200x820.png"
+      },
+      {
+        "view": "perspective",
+        "width": 390,
+        "height": 844,
+        "beforeHeight": 188.90617945810158,
+        "afterHeight": 195.29422738545378,
+        "heightRatio": 1.0338159818047088,
+        "beforeOverlap": [],
+        "afterOverlap": [],
+        "minimumButtonHeight": 44,
+        "renderCountsMatch": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "before": "before-perspective-390x844.png",
+        "after": "after-perspective-390x844.png"
+      },
+      {
+        "view": "perspective",
+        "width": 320,
+        "height": 700,
+        "beforeHeight": 136.07126704977645,
+        "afterHeight": 140.6536602224635,
+        "heightRatio": 1.033676420246831,
+        "beforeOverlap": [],
+        "afterOverlap": [],
+        "minimumButtonHeight": 44,
+        "renderCountsMatch": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "before": "before-perspective-320x700.png",
+        "after": "after-perspective-320x700.png"
+      },
+      {
+        "view": "perspective",
+        "width": 844,
+        "height": 390,
+        "beforeHeight": 67.93327547471972,
+        "afterHeight": 182.74248809691608,
+        "heightRatio": 2.6900291031148758,
+        "beforeOverlap": [
+          "gwe-showcase-tools"
+        ],
+        "afterOverlap": [],
+        "minimumButtonHeight": 44,
+        "renderCountsMatch": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "before": "before-perspective-844x390.png",
+        "after": "after-perspective-844x390.png"
+      },
+      {
+        "view": "front",
+        "width": 844,
+        "height": 390,
+        "beforeHeight": 72.45881754605557,
+        "afterHeight": 202.6886707093202,
+        "heightRatio": 2.7972947609928798,
+        "beforeOverlap": [
+          "gwe-showcase-tools"
+        ],
+        "afterOverlap": [],
+        "minimumButtonHeight": 44,
+        "renderCountsMatch": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "before": "before-front-844x390.png",
+        "after": "after-front-844x390.png"
+      },
+      {
+        "view": "side",
+        "width": 844,
+        "height": 390,
+        "beforeHeight": 72.11918628414193,
+        "afterHeight": 193.1595055283928,
+        "heightRatio": 2.67833728416409,
+        "beforeOverlap": [
+          "gwe-showcase-tools"
+        ],
+        "afterOverlap": [],
+        "minimumButtonHeight": 44,
+        "renderCountsMatch": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "before": "before-side-844x390.png",
+        "after": "after-side-844x390.png"
+      },
+      {
+        "view": "top",
+        "width": 844,
+        "height": 390,
+        "beforeHeight": 72.33816624206779,
+        "afterHeight": 199.20804961037928,
+        "heightRatio": 2.75384433915234,
+        "beforeOverlap": [
+          "gwe-showcase-tools"
+        ],
+        "afterOverlap": [],
+        "minimumButtonHeight": 44,
+        "renderCountsMatch": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "before": "before-top-844x390.png",
+        "after": "after-top-844x390.png"
+      },
+      {
+        "view": "perspective",
+        "width": 667,
+        "height": 375,
+        "beforeHeight": 66.42364713083708,
+        "afterHeight": 137.24738302775827,
+        "heightRatio": 2.066242805930501,
+        "beforeOverlap": [
+          "gwe-showcase-tools"
+        ],
+        "afterOverlap": [],
+        "minimumButtonHeight": 44,
+        "renderCountsMatch": true,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "before": "before-perspective-667x375.png",
+        "after": "after-perspective-667x375.png"
+      }
+    ]
+  },
+  "scope": {
+    "changed": [
+      "stem_lab/stem_tool_geometryworld_builder.js",
+      "desktop/web-app/public/stem_lab/stem_tool_geometryworld_builder.js"
+    ],
+    "newSceneObjects": 0,
+    "newTextures": 0,
+    "coreRenderingUnchanged": true,
+    "printLabUnchanged": true
+  }
+}

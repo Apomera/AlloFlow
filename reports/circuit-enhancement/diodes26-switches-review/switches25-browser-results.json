@@ -1,0 +1,23 @@
+{
+  "scenarios": [
+    "Simultaneous change, physical before/after readouts, keyboard traversal, continuity evidence, actual board state, and initial-state undo",
+    "Stable event identities during sorting, duplicate-time recovery, eight-action limit, remove focus, undo/redo, fit window, enable/disable, and DC/time semantics",
+    "Inductor flyback, current/energy continuity, waveform export, impossible opening diagnosis, and undo recovery",
+    "Readable scope coordinates after invalid-state recovery, desktop and 390/320 px layouts, axe accessibility, workspace persistence, and playback clearing event-side selection"
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

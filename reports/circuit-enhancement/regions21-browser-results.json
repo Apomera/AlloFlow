@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": [
+    "all regions selectable",
+    "keyboard and focus",
+    "electrical undo and redo",
+    "frozen reference and observations",
+    "shared graph, meter, board and notebook",
+    "prediction invalidation",
+    "component-dependent reachability",
+    "reversed sensor ordering",
+    "workspace persistence",
+    "whole-range saturation",
+    "narrow active interval and precise graph knee",
+    "390/320 px layouts",
+    "44 px targets"
+  ],
+  "axeViolations": 0
+}

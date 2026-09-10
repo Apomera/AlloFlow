@@ -40,6 +40,13 @@ const handleInitializeMap = async (deps) => {
       try {
           if (!generatedContent?.data) return;
           const { main, branches, structureType } = generatedContent?.data;
+          if (Array.isArray(generatedContent.data.nodes)) {
+              setConceptMapNodes(generatedContent.data.nodes);
+              setConceptMapEdges(generatedContent.data.challenge ? [] : (generatedContent.data.edges || []));
+              hasAutoLayoutRunRef.current = true;
+              setIsConceptMapReady(true);
+              return true;
+          }
           if (structureType === 'Venn Diagram') {
               const newNodes = [];
               // Shared visual-organizer accent palette — keep in sync with
@@ -359,9 +366,39 @@ const handleInitializeMap = async (deps) => {
           }
           setConceptMapNodes(newNodes);
           setConceptMapEdges(newEdges);
-          await handleAutoLayout(newNodes, newEdges, deps);
-          setIsConceptMapReady(true);
+          const applied = await handleAutoLayout(newNodes, newEdges, deps);
+          if (applied !== false) setIsConceptMapReady(true);
       } catch (e) { warnLog("Unhandled error in handleInitializeMap:", e); }
+};
+
+
+const beginMapLayoutRequest = (deps, nodes, edges) => {
+  const ref = deps.mapLayoutScopeRef;
+  const initial = ref && ref.current ? { ...ref.current } : null;
+  if (initial?.request?.isCurrent()) return null;
+  if (initial?.request) initial.request.cancelled = true;
+  const graphKey = JSON.stringify([nodes, edges]);
+  const request = { cancelled: false, nodesKey: JSON.stringify(nodes) };
+  request.scopeMatches = () => {
+    const current = ref && ref.current;
+    return !request.cancelled && (!ref || !!current && current.alive
+      && current.resourceId === initial.resourceId && current.dataKey === initial.dataKey
+      && current.activeView === initial.activeView && current.teacher === initial.teacher
+      && current.profile === initial.profile);
+  };
+  request.isCurrent = () => {
+    const current = ref && ref.current;
+    return request.scopeMatches() && (!ref || current.request === request
+      && (current.graphKey === graphKey || current.nodes === initial.nodes && current.edges === initial.edges));
+  };
+  request.finish = () => {
+    if (!ref || ref.current?.request === request) {
+      if (ref) ref.current.request = null;
+      deps.setIsProcessing(false);
+    }
+  };
+  if (ref && ref.current) ref.current.request = request;
+  return request;
 };
 
 const handleAutoLayout = async (nodesInput, edgesInput, deps) => {
@@ -388,6 +425,8 @@ const handleAutoLayout = async (nodesInput, edgesInput, deps) => {
           addToast(t('concept_map.auto_layout.toast_flow_applied'), "success");
           return;
       }
+      const request = beginMapLayoutRequest(deps, currentNodes, currentEdges);
+      if (!request) return false;
       setIsProcessing(true);
       setGenerationStep(t('concept_map.auto_layout.analyzing'));
       addToast(t('concept_map.auto_layout.toast_organizing'), "info");
@@ -418,6 +457,7 @@ const handleAutoLayout = async (nodesInput, edgesInput, deps) => {
             }
           `;
           const result = await callGemini(prompt, true);
+          if (!request.isCurrent()) return false;
           let layoutMap = safeJsonParse(result);
           if (!layoutMap) {
              warnLog("Auto-layout JSON parse failed. Attempting AI repair...");
@@ -426,28 +466,42 @@ const handleAutoLayout = async (nodesInput, edgesInput, deps) => {
                 ${result}
              `;
              const repairResult = await callGemini(repairPrompt, true);
+             if (!request.isCurrent()) return false;
              layoutMap = safeJsonParse(repairResult);
           }
-          if (!layoutMap) {
+          // A parseable response may still contain nulls, strings, missing coordinates,
+          // or unrelated IDs. Never turn those into NaN positions on the canvas.
+          if (!layoutMap || typeof layoutMap !== 'object' || Array.isArray(layoutMap)) {
               throw new Error("Could not parse layout coordinates.");
           }
-          setConceptMapNodes(prev => prev.map(node => {
-              if (layoutMap[node.id]) {
-                  return {
-                      ...node,
-                      x: Math.max(50, Math.min(width - 50, layoutMap[node.id].x)),
-                      y: Math.max(50, Math.min(height - 50, layoutMap[node.id].y))
-                  };
+          const usableCoordinates = new Map();
+          currentNodes.forEach(node => {
+              const point = Object.prototype.hasOwnProperty.call(layoutMap, node.id) ? layoutMap[node.id] : null;
+              if (point && Number.isFinite(point.x) && Number.isFinite(point.y)) {
+                  usableCoordinates.set(node.id, {
+                      x: Math.max(50, Math.min(width - 50, point.x)),
+                      y: Math.max(50, Math.min(height - 50, point.y))
+                  });
               }
-              return node;
-          }));
+          });
+          if (usableCoordinates.size === 0) throw new Error("No usable layout coordinates were returned.");
+          setConceptMapNodes(prev => {
+              if (!request.scopeMatches() || JSON.stringify(prev) !== request.nodesKey) return prev;
+              return prev.map(node => {
+              const point = usableCoordinates.get(node.id);
+              return point ? { ...node, x: point.x, y: point.y } : node;
+              });
+          });
           addToast(t('concept_map.auto_layout.toast_optimized'), "success");
           if (playSound) playSound('reveal');
+          return true;
       } catch (e) {
+          if (!request.isCurrent()) return false;
           warnLog("Auto-layout failed", e);
           addToast(t('concept_map.auto_layout.toast_failed'), "error");
+          return false;
       } finally {
-          setIsProcessing(false);
+          request.finish();
       }
 };
 
@@ -555,8 +609,9 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
         else if (isParentMode) startToastKey = 'lesson_plan.toast_drafting_family';
         addToast(t(startToastKey), "info");
         try {
-            const context = getLessonContext();
-            const assetManifest = getAssetManifest(history);
+            const contextTrace = [], inventoryTrace = [];
+            const context = getLessonContext(history, { trace: segment => contextTrace.push(segment) });
+            const assetManifest = getAssetManifest(history, { trace: item => inventoryTrace.push(item) });
             let prompt;
             // 2026-08-16 (L4): these three passed currentUiLanguage — the app
             // INTERFACE language — while the dispatcher's lesson-plan branch
@@ -574,6 +629,11 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
             } else {
                 prompt = buildLessonPlanPrompt(context, assetManifest, planLanguage, lessonCustomAdditions);
             }
+            const captureInputs = window.AlloModules?.UtilsPure?.capturePlanningInputs;
+            const generationInputs = typeof captureInputs === "function" ? captureInputs({
+              context, segments:contextTrace, mode:isIndependentMode ? 'study' : isParentMode ? 'family' : 'teacher', route:'sidebar',
+              inventoryText:assetManifest, inventory:inventoryTrace, inventorySupplied:!isIndependentMode && !isParentMode
+            }) : { version:0 };
             const result = await callGemini(prompt, true);
             let content;
             try {
@@ -601,10 +661,10 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
                 meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : t('common.udl_aligned'))}`,
                 title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : t('common.udl_lesson_plan')),
                 timestamp: new Date(),
-                config: {}
+                config: { language: planLanguage, generationInputs }
             };
             if (switchView) {
-                setGeneratedContent({ type: 'lesson-plan', data: content, id: newItem.id });
+                setGeneratedContent(newItem);
                 setActiveView('lesson-plan');
             }
             setHistory(prev => [...prev, newItem]);

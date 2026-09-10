@@ -37,3 +37,8 @@ The floor remains **two triangles**. Only its decorative geometry size/scale cha
 Verification via `verify-studio-floor.cjs` passed on the existing **150-block pitched pavilion** at 1440 × 900 and 390 × 844, in Perspective and Top. All full-fog frustum corners remained **140.5–244.3 world units inside** the floor perimeter. The exact 634-triangle STL hash stayed `4320e16c857d3aa501d4035ce761621748cd45e75d65d9417947f9263cb2fb1a`; blocks, selection history, camera position/quaternion/up/FOV/far and fog restored exactly. No page, console or shader errors occurred. The focused **40 builder / Print Lab tests passed** again.
 
 Both actual-render screenshots were visually inspected and show a continuous ivory backdrop with no floor edge: `studio-seamless-desktop.png` and `studio-seamless-phone.png`. Machine-readable results are in `studio-floor-results.json`; focused tests are in `studio-floor-tests.json`.
+
+
+## High-resolution image export
+
+Save image now performs a native 2048-pixel-long-edge scene render with immediate renderer/composer restoration and guarded asynchronous PNG encoding. Desktop and phone exports, real composer rendering, failure recovery, unchanged STL/camera/history, and51 focused tests passed. See `SHOWCASE-HIGHRES-EXPORT.md`, `highres-export-results.json`, and the sharp Studio artifact `showcase-hires-phone.png` (991 ×2048).

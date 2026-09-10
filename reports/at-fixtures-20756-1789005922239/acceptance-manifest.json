@@ -1,0 +1,349 @@
+{
+  "schema": 1,
+  "fixtureScope": "Synthetic education reading/table sources and native HTML form; not real learner AT results.",
+  "artifacts": [
+    {
+      "id": "education-reading-html",
+      "documentKind": "reading",
+      "kind": "html",
+      "path": "multi-column-reading-order\\export\\multi-column-scrambled-accessible.html",
+      "provenance": {
+        "fixtureId": "multi-column-reading-order",
+        "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-assets\\multi-column-scrambled.pdf",
+        "planPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\fixtures\\alloflow-portable-plan.json",
+        "exportPath": "portable remediate with required tagged PDF; independent validator intentionally not rerun"
+      },
+      "expected": {
+        "title": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+        "language": "en",
+        "headings": [
+          {
+            "level": 1,
+            "name": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)"
+          },
+          {
+            "level": 2,
+            "name": "Remediation notes"
+          }
+        ],
+        "readingOrder": [
+          "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+          "Evaporation: the sun heats water into invisible vapor.",
+          "Condensation: rising vapor cools into clouds and fog.",
+          "Precipitation: heavy droplets fall as rain or snow.",
+          "Collection: water gathers in oceans and the cycle repeats.",
+          "Groundwater: water seeps down and is stored underground.",
+          "Transpiration: plants release water vapor from leaves.",
+          "Runoff: surface water flows downhill into rivers.",
+          "Human impact: cities and dams change how water moves."
+        ],
+        "tables": [],
+        "links": [
+          {
+            "name": "Skip to main content",
+            "href": "#main-content"
+          }
+        ],
+        "keyboard": [
+          {
+            "role": "link",
+            "name": "Skip to main content"
+          }
+        ]
+      }
+    },
+    {
+      "id": "education-reading-pdf",
+      "documentKind": "reading",
+      "kind": "pdf",
+      "path": "multi-column-reading-order\\export\\multi-column-scrambled-alloflow-accessible.pdf",
+      "provenance": {
+        "fixtureId": "multi-column-reading-order",
+        "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-assets\\multi-column-scrambled.pdf",
+        "planPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\fixtures\\alloflow-portable-plan.json",
+        "exportPath": "portable remediate with required tagged PDF; independent validator intentionally not rerun"
+      },
+      "expected": {
+        "title": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+        "language": "en",
+        "headings": [
+          {
+            "level": 1,
+            "name": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)"
+          },
+          {
+            "level": 2,
+            "name": "Remediation notes"
+          }
+        ],
+        "readingOrder": [
+          "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+          "Evaporation: the sun heats water into invisible vapor.",
+          "Condensation: rising vapor cools into clouds and fog.",
+          "Precipitation: heavy droplets fall as rain or snow.",
+          "Collection: water gathers in oceans and the cycle repeats.",
+          "Groundwater: water seeps down and is stored underground.",
+          "Transpiration: plants release water vapor from leaves.",
+          "Runoff: surface water flows downhill into rivers.",
+          "Human impact: cities and dams change how water moves."
+        ],
+        "tables": [],
+        "links": [
+          {
+            "name": "Skip to main content",
+            "href": "#main-content"
+          }
+        ],
+        "keyboard": [
+          {
+            "role": "link",
+            "name": "Skip to main content"
+          }
+        ]
+      }
+    },
+    {
+      "id": "education-table-html",
+      "documentKind": "table",
+      "kind": "html",
+      "path": "complex-table\\export\\complex-table-accessible.html",
+      "provenance": {
+        "fixtureId": "complex-table",
+        "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-20756-1789005922239\\complex-table\\source\\complex-table.pdf",
+        "planPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-20756-1789005922239\\complex-table\\source\\repair-plan.json",
+        "exportPath": "portable remediate with required tagged PDF; independent validator intentionally not rerun"
+      },
+      "expected": {
+        "title": "Course support schedule",
+        "language": "en",
+        "headings": [
+          {
+            "level": 1,
+            "name": "Course support schedule"
+          }
+        ],
+        "readingOrder": [
+          "Course support schedule",
+          "Weekly support services",
+          "Day",
+          "Service",
+          "Location",
+          "Monday",
+          "Tutoring",
+          "Library",
+          "Tuesday",
+          "Captioning",
+          "Room 204"
+        ],
+        "tables": [
+          {
+            "caption": "Weekly support services",
+            "headers": [
+              "Day",
+              "Service",
+              "Location"
+            ],
+            "rows": [
+              [
+                "Monday",
+                "Tutoring",
+                "Library"
+              ],
+              [
+                "Tuesday",
+                "Captioning",
+                "Room 204"
+              ]
+            ],
+            "rowHeaders": true
+          }
+        ],
+        "links": [
+          {
+            "name": "Skip to main content",
+            "href": "#main-content"
+          }
+        ],
+        "keyboard": [
+          {
+            "role": "link",
+            "name": "Skip to main content"
+          }
+        ]
+      }
+    },
+    {
+      "id": "education-table-pdf",
+      "documentKind": "table",
+      "kind": "pdf",
+      "path": "complex-table\\export\\complex-table-alloflow-accessible.pdf",
+      "provenance": {
+        "fixtureId": "complex-table",
+        "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-20756-1789005922239\\complex-table\\source\\complex-table.pdf",
+        "planPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-20756-1789005922239\\complex-table\\source\\repair-plan.json",
+        "exportPath": "portable remediate with required tagged PDF; independent validator intentionally not rerun"
+      },
+      "expected": {
+        "title": "Course support schedule",
+        "language": "en",
+        "headings": [
+          {
+            "level": 1,
+            "name": "Course support schedule"
+          }
+        ],
+        "readingOrder": [
+          "Course support schedule",
+          "Weekly support services",
+          "Day",
+          "Service",
+          "Location",
+          "Monday",
+          "Tutoring",
+          "Library",
+          "Tuesday",
+          "Captioning",
+          "Room 204"
+        ],
+        "tables": [
+          {
+            "caption": "Weekly support services",
+            "headers": [
+              "Day",
+              "Service",
+              "Location"
+            ],
+            "rows": [
+              [
+                "Monday",
+                "Tutoring",
+                "Library"
+              ],
+              [
+                "Tuesday",
+                "Captioning",
+                "Room 204"
+              ]
+            ],
+            "rowHeaders": true
+          }
+        ],
+        "links": [
+          {
+            "name": "Skip to main content",
+            "href": "#main-content"
+          }
+        ],
+        "keyboard": [
+          {
+            "role": "link",
+            "name": "Skip to main content"
+          }
+        ]
+      }
+    },
+    {
+      "id": "education-form-html",
+      "documentKind": "form",
+      "kind": "html",
+      "path": "education-form.html",
+      "provenance": {
+        "fixtureId": "worksheet-native-controls",
+        "exportPath": "hand-authored HTML acceptance fixture; not a portable PDF rebuild"
+      },
+      "expected": {
+        "title": "Water-cycle check-in",
+        "language": "en",
+        "headings": [
+          {
+            "level": 1,
+            "name": "Water-cycle check-in"
+          },
+          {
+            "level": 2,
+            "name": "Your response"
+          },
+          {
+            "level": 2,
+            "name": "Reference"
+          }
+        ],
+        "readingOrder": [
+          "Water-cycle check-in",
+          "Your response",
+          "Name",
+          "Observation",
+          "Reference",
+          "Clouds form when water vapor cools."
+        ],
+        "tables": [],
+        "links": [
+          {
+            "name": "Skip to worksheet",
+            "href": "#worksheet"
+          },
+          {
+            "name": "Water-cycle reference",
+            "href": "#reference"
+          }
+        ],
+        "keyboard": [
+          {
+            "role": "link",
+            "name": "Skip to worksheet",
+            "press": "Enter",
+            "hash": "#worksheet",
+            "focusId": "worksheet"
+          },
+          {
+            "role": "textbox",
+            "name": "Name",
+            "type": "Ada",
+            "value": "Ada"
+          },
+          {
+            "role": "combobox",
+            "name": "Observation",
+            "press": "ArrowDown",
+            "value": "clouds"
+          },
+          {
+            "role": "checkbox",
+            "name": "I recorded my observation",
+            "press": "Space",
+            "checked": true
+          },
+          {
+            "role": "button",
+            "name": "Clear response",
+            "press": "Enter"
+          },
+          {
+            "role": "link",
+            "name": "Water-cycle reference",
+            "press": "Enter",
+            "hash": "#reference",
+            "focusId": "reference"
+          }
+        ],
+        "finalControls": [
+          {
+            "role": "textbox",
+            "name": "Name",
+            "value": ""
+          },
+          {
+            "role": "combobox",
+            "name": "Observation",
+            "value": ""
+          },
+          {
+            "role": "checkbox",
+            "name": "I recorded my observation",
+            "checked": false
+          }
+        ]
+      }
+    }
+  ]
+}

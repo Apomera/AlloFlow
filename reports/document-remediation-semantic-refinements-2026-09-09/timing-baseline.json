@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "synthetic-local-acceptance-cost",
+  "measuredAt": "2026-09-09T03:50:03.820Z",
+  "node": "v24.11.1",
+  "sourceSha256": "38b706d093f4c4c224aa4ad84c5069bceb2b7b8c03252421b18491f3e6a7b34a",
+  "warmupPerSize": 1,
+  "trialsPerSize": 3,
+  "limitations": [
+    "Synthetic repeated content in jsdom; not production documents or rendered browser timing.",
+    "Concurrent host work affects these timings; no latency threshold or speedup claim.",
+    "Model latency, retry cost, end-to-end memory, and human review burden are not measured."
+  ],
+  "results": [
+    {
+      "blocks": 10,
+      "inputBytes": 3166,
+      "samplesMs": [
+        1278.6561000000002,
+        2058.2157000000007,
+        801.1929999999993
+      ],
+      "medianMs": 1278.6561000000002
+    },
+    {
+      "blocks": 100,
+      "inputBytes": 31336,
+      "samplesMs": [
+        1183.9103000000032,
+        2272.2401000000027,
+        2415.7886
+      ],
+      "medianMs": 2272.2401000000027
+    },
+    {
+      "blocks": 400,
+      "inputBytes": 125236,
+      "samplesMs": [
+        44625.46430000001,
+        49302.507900000026,
+        23023.682700000005
+      ],
+      "medianMs": 44625.46430000001
+    }
+  ]
+}

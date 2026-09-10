@@ -1,0 +1,117 @@
+{
+  "passed": true,
+  "transport": "Real AlloFlow session adapter + real Apps Script handlers with local service substitutes",
+  "ai": "Deterministic provider fixture through production generation and validation flow",
+  "independentBrowsers": 4,
+  "completedReceiptCount": 3,
+  "completedDocumentChars": 7658,
+  "permissionCheckedWrites": 33,
+  "scenarios": [
+    "AI repair",
+    "keyboard focus trap",
+    "setup accessibility",
+    "bounded acknowledgement history",
+    "AI failure preserves preview",
+    "preview reset",
+    "imported room launch",
+    "launch failure and retry",
+    "concurrent discoveries",
+    "newly opened investigation navigation",
+    "functional tool",
+    "wrong settings preserve draft",
+    "pause/resume",
+    "shared hints",
+    "relevant collected clues",
+    "unsent device draft reload",
+    "sequence draft reload",
+    "read-only teammate navigation",
+    "teacher retry overview",
+    "failed action retry identity",
+    "student reload with pending action",
+    "host reconnection drains queue",
+    "late join",
+    "sequence device",
+    "shared final exit",
+    "restart",
+    "teacher rescue reason",
+    "previewed hint protected from concurrent learner hints",
+    "expanded shared completion review",
+    "read-only revisit and debrief focus",
+    "rescue cancellation and failure retry",
+    "prepare a second puzzle during a delayed send",
+    "pending request and prepared draft survive reload",
+    "submitted settings stay fixed",
+    "no second submission before confirmation",
+    "confirmation preserves focus on another puzzle",
+    "end room"
+  ],
+  "audits": [
+    {
+      "state": "expanded completion review",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "expanded completion review",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "pending action with editable second puzzle",
+      "width": 320,
+      "dark": false,
+      "large": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "pending action with editable second puzzle",
+      "width": 390,
+      "dark": true,
+      "large": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "pending action with editable second puzzle",
+      "width": 320,
+      "dark": false,
+      "large": true,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "pending action with editable second puzzle",
+      "width": 390,
+      "dark": false,
+      "large": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1280,
+      "dark": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "dark": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "dark": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "dark": true,
+      "overflow": false,
+      "violations": []
+    }
+  ],
+  "errors": []
+}

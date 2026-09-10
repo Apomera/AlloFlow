@@ -1,0 +1,24 @@
+{
+  "scope": "Read-only production-builder flow reproductions in local DOM; no browser or production edits",
+  "noNavigationExport": {
+    "requestedMmPerBlock": 5,
+    "advertisedEnvelope": "5 × 5 × 5 mm",
+    "downloadedStlCoordinateExtents": [
+      1,
+      1,
+      1
+    ],
+    "toast": {
+      "message": "Print Lab navigation is unavailable here, so the selected STL was downloaded instead.",
+      "kind": "info"
+    }
+  },
+  "deletedOpenSelection": {
+    "engineSelection": null,
+    "displayedMeasurementCount": 1,
+    "summary": "0Placed1Selected1×1×1Block bounds",
+    "showcaseStillPresent": true,
+    "exploreStillPresent": true,
+    "incorrectGroundMessage": true
+  }
+}

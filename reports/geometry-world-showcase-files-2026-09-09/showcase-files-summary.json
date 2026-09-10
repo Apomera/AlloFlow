@@ -1,0 +1,124 @@
+{
+  "pass": true,
+  "sources": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "sha256": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+      "syntaxValid": true,
+      "desktopMirrorMatches": true,
+      "browserSnapshotMatches": true
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "sha256": "2e9da8a622d64279f455939d70b28b0975ed5e2dc0c33422ae6a8326fb12355b",
+      "syntaxValid": true,
+      "desktopMirrorMatches": true,
+      "browserSnapshotMatches": true
+    },
+    {
+      "name": "stem_tool_printlab.js",
+      "sha256": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742",
+      "syntaxValid": true,
+      "desktopMirrorMatches": true,
+      "browserSnapshotMatches": true
+    }
+  ],
+  "tests": {
+    "unique": 197,
+    "passed": 197,
+    "failed": 0,
+    "suites": 11,
+    "failures": [],
+    "evidence": [
+      "showcase-ui-tests.json",
+      "showcase-regression-tests.json",
+      "selected-files-tests.json",
+      "selected-files-retry-tests.json",
+      "showcase-ui-focus-tests.json"
+    ]
+  },
+  "browser": {
+    "pass": true,
+    "failures": [],
+    "errors": [],
+    "consoleErrors": [],
+    "shaderErrors": [],
+    "viewports": [
+      {
+        "size": {
+          "width": 1440,
+          "height": 900
+        },
+        "inBounds": true,
+        "horizontalOverflow": false,
+        "minimumButtonHeight": 44
+      },
+      {
+        "size": {
+          "width": 390,
+          "height": 844
+        },
+        "inBounds": true,
+        "horizontalOverflow": false,
+        "minimumButtonHeight": 44
+      },
+      {
+        "size": {
+          "width": 320,
+          "height": 700
+        },
+        "inBounds": true,
+        "horizontalOverflow": false,
+        "minimumButtonHeight": 44
+      },
+      {
+        "size": {
+          "width": 844,
+          "height": 390
+        },
+        "inBounds": true,
+        "horizontalOverflow": false,
+        "minimumButtonHeight": 44
+      }
+    ],
+    "selectedBlocks": 42,
+    "totalBlocks": 43,
+    "editableJson": {
+      "schema": "alloflow-geometry-world/2",
+      "blocks": 42,
+      "types": [
+        "stone",
+        "brick",
+        "wood"
+      ],
+      "minY": 1
+    },
+    "stl": {
+      "maxVertexError": 0,
+      "normalsMatch": true,
+      "triangles": 320,
+      "expectedTriangles": 320,
+      "header": "Geometry World; coordinates in mm; 12.5 mm per block\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+    },
+    "printLabUnitMm": 12.5
+  },
+  "scope": {
+    "productionFiles": [
+      "stem_lab/stem_tool_geometryworld_builder.js",
+      "desktop/web-app/public/stem_lab/stem_tool_geometryworld_builder.js"
+    ],
+    "editableImport": "Validated AlloFlow Geometry World JSON; explicit replacement confirmation",
+    "stl": "Selected blocks, Z-up geometry, millimeters at the current print scale",
+    "printLab": "Existing local handoff and full-workspace Revise flow"
+  },
+  "review": {
+    "cancelFocusFixed": true,
+    "visualsInspected": [
+      "1440x900",
+      "390x844",
+      "320x700",
+      "844x390",
+      "import-preview-390x844"
+    ]
+  }
+}

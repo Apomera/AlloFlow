@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "checks": [
+    "RC exact cursor values",
+    "shared scope/probe/3D frame",
+    "play/pause",
+    "time outside undo",
+    "edit resets time",
+    "schematic persistence",
+    "RLC AC resonance",
+    "CSV numeric samples",
+    "negative-current arrows",
+    "snapshot time metadata",
+    "unresolved-window guard",
+    "mobile overflow",
+    "keyboard chart scrolling",
+    "release energy",
+    "inductance editing",
+    "DC return",
+    "unsupported LED guard"
+  ],
+  "axeViolations": 0
+}

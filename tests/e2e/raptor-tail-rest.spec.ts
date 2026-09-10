@@ -1,0 +1,68 @@
+import {test,expect} from '@playwright/test';
+import {writeFileSync} from 'node:fs';
+import {GlHarness} from './helpers/stem_gl_harness';
+test.use({video:'off'});
+const probes=`window.AlloPostFXEnabled=false;(()=>{const Original=THREE.WebGLRenderer;THREE.WebGLRenderer=function(options){const renderer=new Original({...options,preserveDrawingBuffer:true}),render=renderer.render.bind(renderer);renderer.render=function(scene,camera){window.tailScene=scene;window.tailRenderer=renderer;return render(scene,camera);};return renderer;};})();`;
+test.describe('Raptor resting tail',()=>{
+  test.describe.configure({mode:'serial',timeout:300000});
+  const harness=new GlHarness({toolFile:'stem_lab/stem_tool_raptorhunt.js',toolId:'raptorHunt',width:1000,height:720,appStyles:true,probes});
+  test.beforeAll(async()=>{await harness.start();});test.afterAll(async()=>{await harness.stop();});test.afterEach(async({page})=>{await harness.destroy(page);});
+  for(const species of ['redTail','greatHorned'])test('settles the fan and reopens smoothly: '+species,async({page})=>{
+    await page.setViewportSize({width:species==='greatHorned'?440:1100,height:1200});
+    await page.addInitScript(()=>{let time=1000,id=1,seed=731;const callbacks=new Map<number,FrameRequestCallback>();Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};performance.now=()=>time;window.requestAnimationFrame=cb=>{const next=id++;callbacks.set(next,cb);return next;};window.cancelAnimationFrame=key=>{callbacks.delete(key);};(window as any).stepTail=(ms:number)=>{time+=ms;const pending=Array.from(callbacks.values());callbacks.clear();pending.forEach(cb=>cb(time));};});
+    const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+    await harness.mount(page,{raptorHunt:{activeSection:'hunt',selectedSpecies:species,activeMission:'open',flightSession:{speciesId:species,missionId:'open'},huntTutorialDismissed:true,graphicsQuality:species==='redTail'?'high':'low'}},"document.querySelector('[data-raptor-canvas]')?._rhSnapshot");
+    if(species==='greatHorned')await page.addStyleTag({content:'#wrap{width:420px}'});
+    const result=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{
+      const w=window as any,step=w.stepTail;c._rhCommand('environment',{windSpeed:0,dayPhase:0.4,cloudCover:0.15});step(25);const flying=c._rhSnapshot();
+      c._rhCommand('perchPractice');step(25);const entering=c._rhSnapshot();for(let i=0;i<35;i++)step(25);const resting=c._rhSnapshot();
+      c._rhCommand('hold',{key:'d',pressed:true});for(let i=0;i<12;i++)step(25);c._rhCommand('hold',{key:'d',pressed:false});const turning=c._rhSnapshot();
+      c._rhCommand('pause');step(60000);const paused=c._rhSnapshot();c._rhCommand('pause');
+      return {flying,entering,resting,turning,paused};
+    });
+    if(species==='greatHorned')expect(result.resting.tailBandsCompiled).toBe(true);
+    expect(result.flying.tailClosure).toBe(0);expect(result.entering.tailClosure).toBeGreaterThan(0);expect(result.entering.tailClosure).toBeLessThan(0.3);
+    expect(result.resting.footToeCount).toBe(4);expect(result.resting.footForwardToes).toBe(species==='greatHorned'?2:3);
+    expect(result.resting.footExtension).toBeGreaterThan(0.999);expect(result.flying.footExtension).toBe(0);
+    expect(result.resting.footSurfaceClearance).toBeGreaterThanOrEqual(0);expect(result.resting.footSurfaceClearance).toBeLessThan(0.012);
+    expect(result.resting.footPositionVersion).toBe(result.flying.footPositionVersion);
+    expect(result.resting.wingMorphCount).toBeGreaterThanOrEqual(8);
+    expect(result.resting.wingRestSpan).toBeLessThan(0.32);
+    expect(result.flying.wingRestSpan).toBeGreaterThan(0.95);
+    expect(result.entering.wingRestSpan).toBeGreaterThan(result.resting.wingRestSpan);
+    expect(result.resting.wingSurfacePositionVersion).toBe(result.flying.wingSurfacePositionVersion);
+    expect(result.resting.wingSurfaceMorphVersion).toBe(result.flying.wingSurfaceMorphVersion);
+    expect(result.resting.tailClosure).toBeGreaterThan(0.999);expect(result.resting.tailLift).toBeCloseTo(-0.08,3);expect(Math.abs(result.turning.tailYaw)).toBeLessThan(0.001);
+    expect(result.paused.tailClosure).toBe(result.turning.tailClosure);expect(result.paused.tailLift).toBe(result.turning.tailLift);expect(result.resting.tailPositionVersion).toBe(result.flying.tailPositionVersion);expect(result.resting.tailMorphVersion).toBe(result.flying.tailMorphVersion);expect(result.resting.drawCalls).toBeLessThan(170);
+    await page.screenshot({clip:(await page.locator('[data-raptor-flight-stage]').boundingBox())!,path:'scratch/raptor-flight-review/perch-feet-'+species+'.png',timeout:90000});
+    const portrait=await page.evaluate(()=>{
+      const w=window as any,T=w.THREE,renderer=w.tailRenderer,scene=w.tailScene,bird=scene.getObjectByName('raptor-head-rig').parent;
+      const study=new T.Scene();study.background=new T.Color(0x182f3b);study.add(new T.HemisphereLight(0xe2f2ff,0x5c5743,1.05));const light=new T.DirectionalLight(0xffe5bb,1.35);light.position.set(2,5,5);study.add(light);
+      const copy=bird.clone(true);copy.position.set(0,0,0);copy.rotation.set(0,0,0);copy.scale.setScalar(1);study.add(copy);
+      const camera=new T.PerspectiveCamera(35,renderer.domElement.clientWidth/renderer.domElement.clientHeight,0.01,100);camera.position.set(1.9,0.3,2.5).multiplyScalar(Math.max(1,0.9/camera.aspect));camera.lookAt(0,-0.10,0.10);renderer.render(study,camera);return renderer.domElement.toDataURL('image/png');
+    });
+    writeFileSync('scratch/raptor-flight-review/contour-rest-'+species+'.png',Buffer.from(portrait.split(',')[1],'base64'));
+    const launch=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{const step=(window as any).stepTail;c._rhCommand('hold',{key:' ',pressed:true});step(25);const first=c._rhSnapshot();for(let i=0;i<30;i++)step(25);c._rhCommand('hold',{key:' ',pressed:false});return {first,last:c._rhSnapshot()};});
+    expect(launch.first.footExtension).toBeLessThan(result.resting.footExtension);expect(launch.first.footExtension).toBeGreaterThan(0.7);
+    expect(launch.last.footExtension).toBeLessThan(0.003);expect(launch.last.footPositionVersion).toBe(result.flying.footPositionVersion);
+    expect(launch.first.wingRestSpan).toBeGreaterThan(result.resting.wingRestSpan);
+    expect(launch.last.wingRestSpan).toBeGreaterThan(0.95);
+    expect(launch.last.wingSurfacePositionVersion).toBe(result.flying.wingSurfacePositionVersion);
+    expect(launch.last.wingSurfaceMorphVersion).toBe(result.flying.wingSurfaceMorphVersion);
+    expect(launch.first.landed).toBe(false);expect(launch.first.tailClosure).toBeLessThan(result.resting.tailClosure);expect(launch.first.tailClosure).toBeGreaterThan(0.7);expect(launch.last.tailClosure).toBeLessThan(0.003);
+    expect(launch.last.tailPositionVersion).toBe(result.flying.tailPositionVersion);expect(launch.last.tailMorphVersion).toBe(result.flying.tailMorphVersion);
+    const flightStudy=await page.evaluate(()=>{
+      const w=window as any,T=w.THREE,renderer=w.tailRenderer,scene=w.tailScene,bird=scene.getObjectByName('raptor-head-rig').parent;
+      const study=new T.Scene();study.background=new T.Color(0x182f3b);study.add(new T.HemisphereLight(0xe2f2ff,0x5c5743,1.05));const light=new T.DirectionalLight(0xffe5bb,1.35);light.position.set(2,5,5);study.add(light);
+      const copy=bird.clone(true);copy.position.set(0,0,0);copy.rotation.set(0,0,0);copy.scale.setScalar(1);study.add(copy);
+      const size=renderer.getSize(new T.Vector2());renderer.setSize(960,640,false);const camera=new T.PerspectiveCamera(35,1.5,0.01,100);camera.position.set(0,5,6);camera.lookAt(0,0,-0.1);renderer.render(study,camera);const image=renderer.domElement.toDataURL('image/png');renderer.setSize(size.x,size.y,false);return image;
+    });
+    writeFileSync('scratch/raptor-flight-review/contour-flight-'+species+'.png',Buffer.from(flightStudy.split(',')[1],'base64'));
+    const strikeFoot=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{c._rhCommand('strike');(window as any).stepTail(16);const s=c._rhSnapshot();c._rhCommand('pause');return s;});
+    expect(strikeFoot.footExtension).toBeGreaterThan(0.02);expect(strikeFoot.footExtension).toBeLessThan(0.4);
+    await page.emulateMedia({reducedMotion:'reduce'});await expect.poll(()=>page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().reducedMotion)).toBe(true);
+    await expect.poll(()=>page.locator('[data-raptor-canvas]').evaluate((c:any)=>{const s=c._rhSnapshot();return Math.abs(s.footExtension-s.wingFold);})).toBeLessThan(0.000001);
+    const reduced=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{c._rhCommand('pause');c._rhCommand('perchPractice');for(let i=0;i<40;i++)(window as any).stepTail(25);return c._rhSnapshot();});
+    expect(reduced.wingRestSpan).toBeLessThan(0.32);expect(reduced.tailClosure).toBeGreaterThan(0.999);expect(reduced.tailYaw).toBe(0);expect(errors).toEqual([]);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+  });
+});

@@ -1,0 +1,11684 @@
+/**
+ * stem_tool_geometryworld.js — Geometry World: 3D Block-Based Math Explorer
+ *
+ * AI-powered voxel geometry lessons. Students explore rectangular prisms,
+ * measure volume, answer NPC questions, and build structures in a 3D world.
+ * Supports WebXR VR. Worlds defined in JSON — Gemini can generate them.
+ *
+ * Inspired by Aaron Pomeranz's doctoral dissertation on block-based 3D environments
+ * for teaching geometric measurement of volume (USM, 2024).
+ *
+ * Registered tool ID: "geometryWorld"
+ * Registry: window.StemLab.registerTool()
+ */
+(function () {
+  'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  (function() {
+    if (document.getElementById('allo-geometryworld-ui-css')) return;
+    var uiStyle = document.createElement('style');
+    uiStyle.id = 'allo-geometryworld-ui-css';
+    uiStyle.textContent = [
+      '.gw-root{--gw-glass:rgba(15,23,42,0.78);--gw-line:rgba(148,163,184,0.18);--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-deeper:#020617;--allo-stem-text:#f8fafc;--allo-stem-text-soft:#cbd5e1;--allo-stem-border:#475569;--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#f8fafc;--allo-stem-button-border:#475569;color:#f8fafc;color-scheme:dark;}',
+      '.theme-contrast .gw-root,[data-stem-theme="contrast"] .gw-root{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-deeper:#000;--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;--allo-stem-button-bg:#000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00;color:#ffff00;color-scheme:dark;}',
+      '.gw-toolbar{position:relative;z-index:40;box-shadow:0 10px 32px rgba(2,6,23,0.2);}',
+      '.gw-view-presets{flex:0 1 auto;max-width:100%;}.gw-view-preset{touch-action:manipulation;}@media(max-width:420px){.gw-view-presets-label{display:none}.gw-view-preset{min-width:32px!important;padding:3px!important}}',
+      '.gw-brand-mark{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,rgba(124,58,237,0.36),rgba(34,211,238,0.2));border:1px solid rgba(167,139,250,0.35);box-shadow:inset 0 1px 0 rgba(255,255,255,0.12);}',
+      '.gw-title{letter-spacing:-0.015em;text-shadow:0 1px 12px rgba(124,58,237,0.2);}',
+      '.gw-lesson-title{min-width:0;max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+      '.gw-stat-chip{display:inline-flex!important;align-items:center;min-height:26px;padding:3px 9px!important;border:1px solid var(--gw-line);border-radius:999px!important;background:rgba(30,41,59,0.72)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);}',
+      '.gw-toolbar>button,.gw-toolbar>select{min-height:30px;border-radius:8px!important;border-color:rgba(148,163,184,0.2)!important;}',
+      '.gw-badge-strip{display:inline-flex;align-items:center;min-height:28px;padding:3px 8px!important;border:1px solid rgba(251,191,36,0.18);border-radius:999px!important;background:rgba(69,26,3,0.28)!important;}',
+      '.gw-shape-tray,.gw-hotbar,.gw-action-bar{background:linear-gradient(160deg,rgba(15,23,42,0.88),rgba(2,6,23,0.82))!important;border:1px solid rgba(148,163,184,0.18)!important;box-shadow:0 12px 30px rgba(2,6,23,0.38),inset 0 1px 0 rgba(255,255,255,0.05);backdrop-filter:blur(12px) saturate(120%)!important;}',
+      '.gw-hotbar{gap:4px!important;padding:6px!important;}',
+      '.gw-material-swatch{display:block;width:30px;height:30px;pointer-events:none;filter:drop-shadow(0 2px 2px #02151d33)}.gw-root .gw-hotbar-item{border-color:#bdd7cc22!important;background:#102a3244!important;border-radius:10px!important}.gw-root .gw-hotbar-item[data-active="true"]{border-color:#c6e9d6!important;background:#37706466!important;box-shadow:0 5px 16px #06252755,inset 0 0 0 1px #ddf2de22!important}.gw-hotbar-item[data-active="true"]>span{color:#e1f4e6!important}@media(max-width:720px){.gw-material-swatch{width:26px;height:26px}}',
+      '.gw-hotbar-item{flex:0 0 auto;transition:transform 150ms ease,filter 150ms ease,box-shadow 150ms ease!important;}',
+      '.gw-hotbar-item:hover{filter:brightness(1.12);transform:translateY(-2px);}',
+      '.gw-hotbar-item[data-active="true"]{transform:translateY(-4px) scale(1.06);box-shadow:0 10px 22px rgba(76,29,149,0.5),0 0 0 1px rgba(196,181,253,0.28)!important;}',
+      '.gw-action-bar{bottom:98px!important;justify-content:center;}',
+      '.gw-dialog:not(.gw-dialog--intro){box-sizing:border-box;max-width:calc(100% - 20px)!important;max-height:calc(100% - 20px)!important;border-radius:16px!important;background:linear-gradient(155deg,rgba(15,23,42,0.97),rgba(30,27,75,0.94))!important;scrollbar-color:#64748b rgba(15,23,42,0.45);scrollbar-width:thin;}',
+      '.gw-dialog input,.gw-dialog select,.gw-dialog textarea{border-radius:8px!important;border-color:rgba(148,163,184,0.34)!important;background-color:rgba(2,6,23,0.62)!important;}',
+      '.gw-dialog-close{display:inline-flex!important;align-items:center;justify-content:center;min-width:30px;min-height:30px;border:1px solid rgba(148,163,184,0.2)!important;border-radius:8px!important;background:rgba(15,23,42,0.56)!important;color:#cbd5e1!important;}',
+      '.gw-intro-card{padding:28px;border:1px solid rgba(167,139,250,0.28);border-radius:24px;background:linear-gradient(155deg,rgba(30,27,75,0.72),rgba(15,23,42,0.82));box-shadow:0 30px 90px rgba(2,6,23,0.55),inset 0 1px 0 rgba(255,255,255,0.07);backdrop-filter:blur(18px) saturate(120%);}',
+      '.gw-primary-cta{min-height:48px;border:1px solid rgba(196,181,253,0.28)!important;box-shadow:0 12px 30px rgba(76,29,149,0.42),inset 0 1px 0 rgba(255,255,255,0.16)!important;}',
+      '.gw-text-action{min-height:30px;padding:5px 10px!important;border-radius:8px!important;}',
+      '.gw-prediction-bar{order:20;flex:1 1 460px;max-width:none!important;padding:7px 9px!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);}',
+      '.gw-prediction-bar input,.gw-prediction-bar select{min-height:28px;}',
+      '.gw-measure-card{position:absolute!important;top:calc(100% + 8px);right:10px;z-index:45;width:min(430px,calc(100vw - 32px));max-height:min(620px,calc(100vh - 150px));overflow:auto;padding:12px!important;border:1px solid rgba(103,232,249,0.28);border-radius:14px!important;background:linear-gradient(160deg,rgba(8,47,73,0.97),rgba(15,23,42,0.98))!important;box-shadow:0 24px 70px rgba(2,6,23,0.62),0 0 0 1px rgba(103,232,249,0.06);}',
+      '.gw-measure-heading{position:sticky;top:-12px;z-index:2;margin:-12px -12px 8px;padding:10px 12px;background:linear-gradient(180deg,rgba(8,47,73,0.99),rgba(8,47,73,0.94));border-bottom:1px solid rgba(103,232,249,0.2);}',
+      '.gw-measure-close{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid rgba(148,163,184,0.26);border-radius:8px;background:rgba(15,23,42,0.6);color:#cbd5e1;font-size:18px;cursor:pointer;}',
+      '@keyframes gw-float-in{from{opacity:0;transform:translate(-50%,8px) scale(0.98);}to{opacity:1;transform:translate(-50%,0) scale(1);}}',
+      '.gw-achievement-toast{top:64px!important;z-index:60!important;min-width:min(320px,calc(100vw - 24px));animation:gw-float-in 220ms ease-out!important;}',
+      '.gw-return-dock{width:min(440px,calc(100vw - 24px));filter:drop-shadow(0 16px 28px rgba(2,6,23,0.42));}',
+      '.gw-return-status{max-width:100%!important;border-color:rgba(167,139,250,0.34)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);}',
+      '.gw-return-button{min-height:44px;border:1px solid rgba(196,181,253,0.34)!important;box-shadow:0 10px 28px rgba(91,33,182,0.42),inset 0 1px 0 rgba(255,255,255,0.18)!important;}',
+      '.gw-tutorial-shell{width:min(380px,calc(100vw - 24px));max-width:none!important;}',
+      '.gw-tutorial-card{border:1px solid rgba(167,139,250,0.42)!important;background:linear-gradient(160deg,rgba(30,27,75,0.95),rgba(15,23,42,0.96))!important;box-shadow:0 22px 60px rgba(2,6,23,0.52),0 0 0 1px rgba(255,255,255,0.05)!important;}',
+      '.gw-target-hint{padding:3px 7px;border:1px solid rgba(251,191,36,0.34);border-radius:999px;background:rgba(15,23,42,0.82);backdrop-filter:blur(6px);box-shadow:0 5px 14px rgba(2,6,23,0.35);}',
+      '.gw-viewport{margin:8px 10px 10px;border:1px solid rgba(148,163,184,0.2);border-radius:16px;box-shadow:0 18px 54px rgba(2,6,23,0.38),inset 0 1px 0 rgba(255,255,255,0.06);isolation:isolate;}',
+      '.gw-viewport-control{position:absolute!important;top:10px!important;z-index:100!important;display:inline-flex!important;min-width:36px;min-height:36px;align-items:center!important;justify-content:center!important;gap:6px!important;border:1px solid rgba(196,181,253,.38)!important;border-radius:10px!important;background:linear-gradient(155deg,rgba(30,27,75,.9),rgba(15,23,42,.9))!important;color:#e9d5ff!important;box-shadow:0 10px 28px rgba(2,6,23,.45),inset 0 1px 0 rgba(255,255,255,.08)!important;backdrop-filter:blur(10px) saturate(120%)!important}.gw-viewport-control--fullscreen{right:10px!important}.gw-viewport-control--touch{right:48px!important}.gw-viewport-control--vr{left:10px!important;border-color:rgba(129,140,248,.48)!important;background:linear-gradient(135deg,rgba(79,70,229,.94),rgba(91,33,182,.92))!important;color:#fff!important}',
+      '.gw-touch-controls button{min-width:56px!important;min-height:56px!important;touch-action:manipulation!important}.gw-touch-toggle-label{font-size:10px;font-weight:850;letter-spacing:.02em}.gw-touch-look-zone{opacity:.62}.gw-touch-look-reticle{transition:transform 80ms ease-out;will-change:transform}.gw-touch-look-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(221,214,254,.62);font-size:9px;font-weight:850;letter-spacing:.12em;pointer-events:none}.gw-touch-look-panel{bottom:auto!important;box-sizing:border-box;padding:7px 9px;border:1px solid rgba(196,181,253,.24);border-radius:10px;background:rgba(15,23,42,.74);box-shadow:0 8px 20px rgba(2,6,23,.26);backdrop-filter:blur(8px)}.gw-touch-look-panel > .gw-touch-look-label{position:static;display:flex;align-items:center;justify-content:space-between;gap:8px;transform:none;color:#ddd6fe;font-size:10px;font-weight:800;letter-spacing:.02em}.gw-touch-look-panel output{color:#a7f3d0;font-size:10px;font-weight:850}.gw-touch-look-panel input{display:block;width:100%;margin:6px 0 0;accent-color:#a78bfa}.gw-touch-joystick-thumb{transition:transform 80ms ease-out;will-change:transform}.gw-touch-mode-hint{position:absolute;top:50px;left:50%;z-index:2;transform:translateX(-50%);padding:5px 10px;border:1px solid rgba(167,139,250,.3);border-radius:999px;background:rgba(15,23,42,.72);color:#ddd6fe;font-size:10px;font-weight:800;letter-spacing:.02em;white-space:nowrap;pointer-events:none;backdrop-filter:blur(7px)}.gw-touch-controls{padding-bottom:env(safe-area-inset-bottom);overscroll-behavior:contain}.gw-touch-controls > [role="img"]{bottom:calc(80px + env(safe-area-inset-bottom))!important}.gw-touch-controls>.gw-touch-actions{bottom:calc(80px + env(safe-area-inset-bottom))!important}.gw-touch-mode-hint{top:calc(50px + env(safe-area-inset-top))}.gw-action-feedback{border-color:rgba(167,139,250,.38)!important;border-radius:12px!important;background:linear-gradient(155deg,rgba(30,27,75,.94),rgba(15,23,42,.94))!important;box-shadow:0 14px 38px rgba(2,6,23,.48),inset 0 1px 0 rgba(255,255,255,.06)!important}.gw-crosshair{filter:drop-shadow(0 2px 3px rgba(2,6,23,.7));transition:transform 150ms ease,filter 150ms ease!important}.gw-crosshair[data-target="npc"],.gw-crosshair[data-target="npc_question"]{transform:translate(-50%,-50%) scale(1.12)!important}.gw-crosshair[data-target="npc_question"]{filter:drop-shadow(0 0 6px rgba(251,191,36,.65))}.gw-crosshair[data-target="block"]{filter:drop-shadow(0 0 4px rgba(255,255,255,.35))}',
+      '@media(max-width:420px){.gw-touch-toggle-label{display:none}}@media(max-width:520px){.gw-viewport-control{top:8px!important;min-width:34px;min-height:34px}.gw-viewport-control--fullscreen{right:8px!important}.gw-viewport-control--touch{right:46px!important}.gw-viewport-control--vr{left:8px!important}.gw-action-feedback{bottom:142px!important;max-width:calc(100vw - 150px)!important}}@media(max-height:520px) and (orientation:landscape){.gw-touch-controls>.gw-touch-actions{bottom:calc(14px + env(safe-area-inset-bottom))!important;max-width:calc(100% - 140px);flex-direction:row!important;flex-wrap:wrap;justify-content:flex-end;align-content:flex-end;gap:6px!important}.gw-touch-controls > [role="img"]{bottom:calc(14px + env(safe-area-inset-bottom))!important;left:14px}.gw-touch-controls .gw-touch-mode-hint{top:calc(42px + env(safe-area-inset-top))}.gw-touch-controls button{min-width:52px!important;min-height:52px!important}}@media(prefers-reduced-motion:reduce){.gw-touch-look-reticle{transition:none!important}.gw-touch-joystick-thumb{transition:none!important}.gw-crosshair{transition:none!important}.gw-crosshair[data-target]{transform:translate(-50%,-50%)!important}}',
+      '.gw-minimap{position:absolute!important;right:10px!important;bottom:150px!important;z-index:24!important;border:1px solid rgba(167,139,250,.32)!important;border-radius:12px!important;box-shadow:0 14px 34px rgba(2,6,23,.48),0 0 0 3px rgba(15,23,42,.36);opacity:.92;transition:opacity 150ms ease,transform 150ms ease}.gw-minimap:hover{opacity:1;transform:translateY(-2px)}',
+      '.gw-collab-roster{position:absolute;top:50px;left:10px;z-index:24;box-sizing:border-box;display:flex;max-height:calc(100% - 190px);overflow:auto;max-width:210px;flex-direction:column;gap:5px;padding:9px;border:1px solid rgba(52,211,153,.23);border-radius:12px;background:linear-gradient(155deg,rgba(6,78,59,.76),rgba(15,23,42,.88));box-shadow:0 14px 34px rgba(2,6,23,.38);backdrop-filter:blur(10px)}.gw-collab-title{margin-bottom:2px;color:#6ee7b7;font-size:10px;font-weight:800;letter-spacing:.04em}.gw-collab-player{display:flex;min-height:24px;align-items:center;gap:6px;padding:3px 7px;border:1px solid rgba(148,163,184,.18);border-radius:8px;background:rgba(15,23,42,.62);color:#cbd5e1;font-size:11px}.gw-collab-player[data-self="true"]{border-color:rgba(52,211,153,.5);background:rgba(5,150,105,.22);color:#6ee7b7}.gw-collab-dot{width:8px;height:8px;flex:0 0 auto;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.12)}',
+      '.gw-transform-panel{position:absolute;top:52px;right:10px;z-index:30;box-sizing:border-box;width:min(260px,calc(100% - 20px));padding:12px;border:1px solid rgba(167,139,250,.34);border-radius:14px;background:linear-gradient(155deg,rgba(30,27,75,.94),rgba(15,23,42,.95));box-shadow:0 18px 48px rgba(2,6,23,.5),inset 0 1px 0 rgba(255,255,255,.06);color:#e2e8f0;backdrop-filter:blur(12px)}.gw-transform-heading{margin:0 0 8px;color:#c4b5fd;font-size:12px;font-weight:800;letter-spacing:-.01em}.gw-transform-state{margin-bottom:10px;padding:7px;border-radius:8px;text-align:center;font-size:11px;font-weight:850}.gw-transform-control{margin-bottom:8px}.gw-transform-control label{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;color:#cbd5e1;font-size:10px;font-weight:700}.gw-transform-control input{width:100%;accent-color:#8b5cf6}.gw-transform-actions{display:flex;gap:6px;margin-top:10px}.gw-transform-action{min-height:32px;padding:4px 9px;border:1px solid rgba(148,163,184,.28);border-radius:8px;background:rgba(15,23,42,.64);color:#dbeafe;font-size:10px;font-weight:700;cursor:pointer}@media(max-width:520px){.gw-minimap{right:8px!important;bottom:146px!important;width:84px;height:84px}.gw-collab-roster{left:8px;max-width:118px;padding:7px}.gw-collab-player{overflow:hidden;padding:3px 5px;white-space:nowrap;text-overflow:ellipsis}.gw-collab-player span:last-child{display:none}.gw-transform-panel{right:8px;width:min(214px,calc(100% - 134px));max-height:calc(100% - 166px);overflow:auto}}@media(prefers-reduced-motion:reduce){.gw-minimap{transition:none!important}.gw-minimap:hover{transform:none}}',
+      '.gw-collab-roster{top:auto;bottom:150px}',
+      '.gw-objective-panel{position:absolute;top:50px;left:10px;z-index:24;box-sizing:border-box;width:min(240px,calc(100% - 20px));max-height:calc(100% - 210px);overflow:auto;padding:12px;border:1px solid rgba(167,139,250,.26);border-radius:14px;background:linear-gradient(155deg,rgba(30,27,75,.88),rgba(15,23,42,.93));box-shadow:0 18px 48px rgba(2,6,23,.46),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(12px);scrollbar-width:thin;scrollbar-color:#64748b rgba(15,23,42,.45)}.gw-objective-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.gw-objective-title{color:#c4b5fd;font-size:11px;font-weight:850;letter-spacing:.02em}.gw-objective-count{padding:2px 7px;border:1px solid rgba(167,139,250,.24);border-radius:999px;background:rgba(124,58,237,.15);color:#ddd6fe;font-size:9px;font-weight:800}.gw-objective-progress{height:5px;margin-bottom:10px;overflow:hidden;border:1px solid rgba(148,163,184,.12);border-radius:999px;background:rgba(2,6,23,.55)}.gw-objective-progress-fill{height:100%;border-radius:inherit;box-shadow:0 0 12px rgba(167,139,250,.42);transition:width .5s ease}.gw-objective-list{display:flex;flex-direction:column;gap:5px}.gw-objective-item{box-sizing:border-box;display:flex;width:100%;min-height:34px;align-items:flex-start;gap:7px;padding:7px 8px;border:1px solid rgba(148,163,184,.16);border-radius:9px;background:rgba(15,23,42,.5);color:#dbeafe;text-align:left;font:inherit;cursor:pointer}.gw-objective-item:hover:not(:disabled){border-color:rgba(167,139,250,.42);background:rgba(76,29,149,.28)}.gw-objective-item[data-complete="true"]{border-color:rgba(52,211,153,.2);background:rgba(5,150,105,.1);color:#86efac;cursor:default;opacity:.74}.gw-objective-marker{flex:0 0 auto;margin-top:1px;font-size:11px}.gw-objective-copy{font-size:10px;line-height:1.45}.gw-reset-button{width:100%;min-height:34px;margin-top:10px;border:1px solid rgba(148,163,184,.22);border-radius:9px;background:rgba(15,23,42,.58);color:#cbd5e1;font-size:10px;font-weight:700;cursor:pointer}@media(max-width:520px){.gw-objective-panel{left:8px;width:118px;max-height:calc(100% - 206px);padding:7px}.gw-objective-header{align-items:flex-start;flex-direction:column;gap:3px}.gw-objective-item{padding:6px}.gw-objective-copy{font-size:9px}.gw-collab-roster{bottom:146px}}@media(prefers-reduced-motion:reduce){.gw-objective-progress-fill{transition:none!important}}',
+      '.gw-history-panel{position:absolute!important;left:230px!important;bottom:150px!important;z-index:23!important;box-sizing:border-box;width:280px!important;max-width:calc(100% - 470px)!important;max-height:44%;overflow:auto;padding:10px!important;border:1px solid rgba(103,232,249,.22)!important;border-radius:13px!important;background:linear-gradient(155deg,rgba(8,47,73,.88),rgba(15,23,42,.93))!important;box-shadow:0 16px 42px rgba(2,6,23,.46),inset 0 1px 0 rgba(255,255,255,.05)!important;backdrop-filter:blur(11px);scrollbar-width:thin}.gw-history-title{margin-bottom:7px;color:#a5f3fc;font-size:9px;font-weight:850;letter-spacing:.08em}.gw-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;min-height:25px;padding:4px 6px;border-radius:7px;color:#94a3b8;font-size:9px}.gw-history-row[data-current="true"]{background:rgba(8,145,178,.14);color:#e2e8f0;font-weight:700}.gw-history-row[data-incomplete="true"]{color:#fecaca}.gw-history-comparison,.gw-retrieval-card{margin-top:8px;padding:8px;border-top:1px solid rgba(103,232,249,.24);border-radius:0 0 8px 8px;background:rgba(2,6,23,.18)}.gw-retrieval-title{margin-bottom:3px;color:#67e8f9;font-size:8px;font-weight:850;letter-spacing:.08em}.gw-retrieval-controls{display:flex;align-items:center;gap:6px;margin-top:6px}.gw-retrieval-input{box-sizing:border-box;width:76px!important;min-height:30px;padding:4px 6px!important;border:1px solid rgba(103,232,249,.34)!important;border-radius:7px!important;background:rgba(2,6,23,.66)!important;color:#fff!important}.gw-retrieval-button{min-height:30px;padding:4px 10px!important;border:1px solid rgba(103,232,249,.22)!important;border-radius:7px!important;background:#0e7490!important;color:#fff!important;font-size:9px!important;font-weight:800!important}',
+      '.gw-inventory-panel{position:absolute!important;top:52px!important;right:280px!important;z-index:23!important;box-sizing:border-box;width:166px;padding:10px!important;border:1px solid rgba(251,191,36,.22)!important;border-radius:13px!important;background:linear-gradient(155deg,rgba(69,26,3,.78),rgba(15,23,42,.92))!important;box-shadow:0 16px 42px rgba(2,6,23,.42),inset 0 1px 0 rgba(255,255,255,.05)!important;backdrop-filter:blur(11px)}.gw-inventory-title{margin-bottom:6px;color:#fde68a;font-size:9px;font-weight:850;letter-spacing:.08em}.gw-inventory-volume{margin-bottom:7px;padding:6px;border:1px solid rgba(251,191,36,.16);border-radius:8px;background:rgba(120,53,15,.18);color:#fbbf24;font-size:13px;font-weight:850;text-align:center}.gw-inventory-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:23px;padding:3px 5px;border-radius:6px;color:#dbeafe;font-size:9px}.gw-inventory-row:nth-child(even){background:rgba(15,23,42,.34)}.gw-inventory-count{color:#d8b4fe;font-family:monospace;font-weight:800}@media(max-width:720px){.gw-history-panel{left:8px!important;bottom:238px!important;width:calc(50% - 12px)!important;max-width:none!important;max-height:34vh}.gw-inventory-panel{top:auto!important;right:8px!important;bottom:238px!important;width:calc(50% - 12px)}.gw-history-row{grid-template-columns:minmax(0,1fr) auto}.gw-history-row span:nth-child(3){grid-column:1/-1}}@media(max-width:420px){.gw-history-panel,.gw-inventory-panel{padding:7px!important}.gw-history-title,.gw-inventory-title{letter-spacing:.04em}.gw-inventory-row{padding-left:2px;padding-right:2px}}',
+      '.gw-environment-tint{position:absolute;inset:0;z-index:5;pointer-events:none;transition:background .3s ease}.gw-environment-tint--water{background:linear-gradient(180deg,rgba(14,116,144,.12),rgba(30,64,175,.24))}.gw-environment-tint--lava{background:radial-gradient(circle at 50% 70%,rgba(251,146,60,.34),rgba(220,38,38,.18) 52%,rgba(69,10,10,.3))}.gw-environment-warning{position:absolute;left:50%;bottom:50%;display:flex;align-items:center;gap:8px;transform:translate(-50%,50%);max-width:calc(100% - 32px);padding:10px 14px;border:1px solid rgba(253,186,116,.62);border-radius:12px;background:rgba(67,20,7,.9);box-shadow:0 12px 32px rgba(69,10,10,.46),inset 0 1px 0 rgba(255,255,255,.08);color:#ffedd5;font-size:13px;font-weight:850;line-height:1.3;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.75);backdrop-filter:blur(8px)}@media(prefers-reduced-motion:reduce){.gw-environment-tint{transition:none!important}}',
+      '.gw-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;column-gap:14px!important;row-gap:8px!important}.gw-brand-lockup{display:flex;min-width:0;align-items:center;gap:10px}.gw-brand-copy{min-width:0}.gw-title{margin:0;color:#f8fafc;font-size:15px;font-weight:850;line-height:1.15}.gw-lesson-title{display:block;margin-top:2px!important;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px!important;line-height:1.3}.gw-status-cluster{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:6px}.gw-quality-control{display:inline-flex;min-height:32px;align-items:center;gap:5px;padding:2px 5px 2px 8px;border:1px solid rgba(148,163,184,.24);border-radius:9px;background:rgba(15,23,42,.62);color:#cbd5e1}.gw-quality-label{font-size:9px;font-weight:800;white-space:nowrap}.gw-quality-control select{min-height:28px;border:1px solid rgba(167,139,250,.34);border-radius:7px;background:#111827;color:#f8fafc;font-size:10px;font-weight:700}.gw-quality-control select:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.gw-quality-resolved{max-width:72px;overflow:hidden;color:#a7f3d0;font-size:9px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}.gw-quality-help{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.gw-prediction-bar{grid-column:1/-1;display:grid!important;grid-template-columns:auto 62px auto auto minmax(116px,150px) minmax(150px,1fr);align-items:center;gap:6px!important;width:100%;box-sizing:border-box}.gw-prediction-bar>[data-geometry-prediction-scaffold]{grid-column:1/-1}.gw-badge-strip{max-width:190px;overflow:hidden}.gw-badge-strip [role="listitem"]{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px}@media(max-width:720px){.gw-toolbar{grid-template-columns:minmax(0,1fr)!important}.gw-status-cluster{grid-row:2;width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}.gw-prediction-bar{grid-row:3;display:flex!important;width:100%;flex-wrap:wrap!important}.gw-lesson-title{max-width:none!important;padding-left:0!important;margin-top:2px!important}.gw-badge-strip{flex:0 0 auto}}@media(max-width:420px){.gw-brand-mark{width:29px;height:29px}.gw-title{font-size:14px}.gw-stat-chip{min-height:24px;padding:2px 7px!important}.gw-prediction-bar{padding:7px!important}.gw-prediction-bar input[aria-label="Brief reason for estimate"]{flex:1 1 150px;width:auto!important}}',
+      '.gw-tutorial-shell{bottom:150px!important;box-sizing:border-box;max-height:calc(100% - 170px);overflow:auto;scrollbar-width:thin}.gw-tutorial-card{padding:16px 18px!important;text-align:left!important}.gw-tutorial-kicker{margin-bottom:4px;color:#c4b5fd;font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}.gw-tutorial-title{margin:0;color:#f8fafc;font-size:16px;font-weight:850;letter-spacing:-.01em;line-height:1.25}.gw-tutorial-instruction{margin:7px 0 12px;color:#cbd5e1;font-size:12px;font-weight:600;line-height:1.5}.gw-tutorial-progress{display:flex;align-items:center;gap:6px;margin-bottom:12px}.gw-tutorial-track{display:flex;flex:1;gap:5px}.gw-tutorial-dot{height:4px;flex:1;border-radius:999px;background:rgba(100,116,139,.38);transition:background 180ms ease,box-shadow 180ms ease}.gw-tutorial-dot[data-complete="true"]{background:#22c55e}.gw-tutorial-dot[data-current="true"]{background:#a78bfa;box-shadow:0 0 10px rgba(167,139,250,.55)}.gw-tutorial-count{color:#a8b3c7;font-size:9px;font-weight:750;white-space:nowrap}.gw-tutorial-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}.gw-tutorial-skip,.gw-tutorial-next{min-height:38px;padding:7px 13px!important;border-radius:9px!important;font-size:11px!important;font-weight:750!important;cursor:pointer}.gw-tutorial-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.54)!important;color:#cbd5e1!important}.gw-tutorial-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}@media(max-width:520px){.gw-tutorial-shell{bottom:150px!important;width:calc(100vw - 16px)!important;max-height:calc(100% - 166px)}.gw-tutorial-card{padding:14px!important}.gw-tutorial-actions{align-items:stretch}.gw-tutorial-skip,.gw-tutorial-next{min-height:44px;flex:1}}@media(prefers-reduced-motion:reduce){.gw-tutorial-dot{transition:none!important}}',
+      '.gw-intro-card{box-sizing:border-box;width:min(520px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px);overflow:auto;text-align:left!important;scrollbar-width:thin}.gw-intro-heading{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:14px;margin-bottom:16px}.gw-intro-icon{display:flex;width:52px;height:52px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.28);border-radius:16px;background:linear-gradient(145deg,rgba(124,58,237,.26),rgba(34,211,238,.1));font-size:28px}.gw-intro-title{margin:0;color:#f8fafc;font-size:22px;font-weight:850;letter-spacing:-.02em;line-height:1.18}.gw-intro-description{margin:5px 0 0;color:#a8b3c7;font-size:12px;line-height:1.55}.gw-intro-objectives{margin-bottom:12px;padding:12px 14px;border:1px solid rgba(167,139,250,.24);border-radius:12px;background:rgba(124,58,237,.09)}.gw-intro-section-title{margin:0 0 7px;color:#c4b5fd;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.gw-intro-objectives ol{display:grid;gap:5px;margin:0;padding-left:20px;color:#dbeafe}.gw-intro-objectives li{padding-left:2px;font-size:11px;line-height:1.45}.gw-intro-objectives li::marker{color:#a78bfa;font-weight:800}.gw-intro-formula{margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.22);border-radius:10px;background:rgba(120,53,15,.16);color:#fde68a;font-family:monospace;font-size:12px;font-weight:750;text-align:center}.gw-intro-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:18px}.gw-intro-meta span{padding:4px 8px;border:1px solid rgba(148,163,184,.18);border-radius:999px;background:rgba(15,23,42,.46);color:#a8b3c7;font-size:10px;font-weight:700}.gw-intro-actions{display:flex;align-items:stretch;gap:8px}.gw-intro-start,.gw-intro-secondary{min-height:46px;flex:1;border-radius:11px!important;font-size:12px!important;font-weight:800!important;cursor:pointer}.gw-intro-secondary{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.58)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-intro-heading{grid-template-columns:42px minmax(0,1fr);gap:10px}.gw-intro-icon{width:42px;height:42px;border-radius:13px;font-size:23px}.gw-intro-title{font-size:18px}.gw-intro-actions{flex-direction:column}.gw-intro-start,.gw-intro-secondary{width:100%;min-height:48px}}',
+      '.gw-reflection-dialog{box-sizing:border-box;width:min(430px,calc(100% - 24px))!important;max-width:none!important;padding:22px!important;text-align:left!important}.gw-reflection-heading{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:11px;margin-bottom:13px}.gw-reflection-icon{display:flex;width:42px;height:42px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.26);border-radius:13px;background:rgba(124,58,237,.14);font-size:22px}.gw-reflection-title{margin:0;color:#f8fafc;font-size:17px;font-weight:850;line-height:1.2}.gw-reflection-description{margin:3px 0 0;color:#a8b3c7;font-size:11px;line-height:1.45}.gw-reflection-prompt{margin-bottom:10px;padding:9px 10px;border:1px solid rgba(34,211,238,.24);border-radius:9px;background:rgba(14,116,144,.14);color:#cffafe;font-size:11px;line-height:1.5}.gw-reflection-label{display:block;margin-bottom:5px;color:#ddd6fe;font-size:10px;font-weight:800}.gw-reflection-textarea{box-sizing:border-box;width:100%!important;min-height:92px;padding:9px!important;border:1px solid rgba(148,163,184,.34)!important;border-radius:9px!important;background:rgba(2,6,23,.66)!important;color:#f8fafc!important;font:12px/1.5 inherit!important;resize:vertical}.gw-reflection-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;color:#94a3b8;font-size:9px}.gw-reflection-readiness[data-ready="true"]{color:#86efac;font-weight:750}.gw-reflection-actions{display:flex;align-items:stretch;justify-content:flex-end;gap:8px;margin-top:14px}.gw-reflection-save,.gw-reflection-skip{min-height:42px;padding:8px 14px!important;border-radius:9px!important;font-size:11px!important;font-weight:800!important}.gw-reflection-save{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important}.gw-reflection-save:disabled{cursor:not-allowed;filter:saturate(.55);opacity:.55}.gw-reflection-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.52)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-reflection-dialog{padding:16px!important}.gw-reflection-actions{flex-direction:column}.gw-reflection-save,.gw-reflection-skip{width:100%;min-height:48px}}',
+      '.gw-completion-dialog{box-sizing:border-box;width:min(460px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px)!important;overflow:auto;padding:24px!important;border-color:rgba(251,191,36,.46)!important;background:linear-gradient(155deg,rgba(69,26,3,.9),rgba(15,23,42,.97))!important;text-align:center!important;scrollbar-width:thin}.gw-completion-icon{display:flex;width:68px;height:68px;align-items:center;justify-content:center;margin:0 auto 12px;border:1px solid rgba(251,191,36,.32);border-radius:21px;background:linear-gradient(145deg,rgba(245,158,11,.24),rgba(124,58,237,.12));box-shadow:0 14px 34px rgba(2,6,23,.3);font-size:35px}.gw-completion-title{margin:0;color:#fde68a;font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1.15}.gw-completion-description{margin:6px 0 13px;color:#cbd5e1;font-size:12px;line-height:1.5}.gw-completion-metrics{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:16px}.gw-completion-metric{padding:5px 9px;border:1px solid rgba(251,191,36,.18);border-radius:999px;background:rgba(120,53,15,.18);color:#fde68a;font-size:10px;font-weight:750}.gw-completion-actions{display:flex;align-items:stretch;justify-content:center;gap:8px;flex-wrap:wrap}.gw-completion-next,.gw-completion-replay{min-height:44px;padding:9px 16px!important;border-radius:10px!important;font-size:11px!important;font-weight:800!important;cursor:pointer}.gw-completion-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#4f46e5)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}.gw-completion-replay{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.56)!important;color:#cbd5e1!important}.gw-completion-journey{flex-basis:100%;margin-top:8px;padding-top:14px;border-top:1px solid rgba(251,191,36,.18)}.gw-journey-icon{font-size:28px}.gw-journey-title{margin:5px 0;color:#fde68a;font-size:16px;font-weight:850}.gw-journey-description{margin:0 0 10px;color:#a8b3c7;font-size:11px;line-height:1.5}.gw-journey-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gw-journey-stat{padding:8px;border:1px solid rgba(148,163,184,.16);border-radius:9px;background:rgba(15,23,42,.42);color:#cbd5e1;font-size:9px}.gw-journey-value{display:block;margin-bottom:2px;color:#f8fafc;font-size:18px;font-weight:850}.gw-journey-quote{margin:10px 0 0;color:#c4b5fd;font-size:10px;font-style:italic;line-height:1.45}@media(max-width:520px){.gw-completion-dialog{padding:18px!important}.gw-completion-icon{width:56px;height:56px;border-radius:18px;font-size:29px}.gw-completion-actions{flex-direction:column}.gw-completion-next,.gw-completion-replay{width:100%;min-height:48px}.gw-journey-stats{gap:5px}}',
+      '@keyframes gw-state-drift{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}@keyframes gw-loading-sweep{0%{transform:translateX(-130%)}100%{transform:translateX(310%)}}',
+      '.gw-state-screen{position:relative;box-sizing:border-box;display:flex;flex:1;min-height:0;align-items:center;justify-content:center;overflow:auto;padding:clamp(18px,4vw,48px);color:var(--allo-stem-text,#e2e8f0);background:radial-gradient(circle at 50% 14%,rgba(124,58,237,.24),transparent 34%),linear-gradient(160deg,var(--allo-stem-canvas,#0f172a),#171433 60%,#090b18)}.gw-state-screen--inline{margin:8px 10px 10px;border:1px solid rgba(148,163,184,.18);border-radius:16px}.gw-state-card{box-sizing:border-box;width:min(520px,100%);padding:clamp(24px,5vw,38px);text-align:center;border:1px solid rgba(167,139,250,.28);border-radius:24px;background:linear-gradient(155deg,rgba(30,27,75,.78),rgba(15,23,42,.9));box-shadow:0 30px 90px rgba(2,6,23,.56),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(18px) saturate(125%)}.gw-state-kicker{margin-bottom:9px;color:#c4b5fd;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.gw-state-icon{display:inline-flex;align-items:center;justify-content:center;width:76px;height:76px;margin-bottom:18px;border:1px solid rgba(167,139,250,.3);border-radius:24px;background:linear-gradient(145deg,rgba(124,58,237,.3),rgba(34,211,238,.12));box-shadow:0 16px 40px rgba(2,6,23,.34);font-size:38px;animation:gw-state-drift 3.4s ease-in-out infinite}.gw-state-icon--error{background:linear-gradient(145deg,rgba(244,63,94,.2),rgba(124,58,237,.2));border-color:rgba(251,113,133,.32)}.gw-state-title{margin:0;color:var(--allo-stem-text,#f8fafc);font-size:clamp(21px,4vw,28px);font-weight:850;letter-spacing:-.025em;line-height:1.15}.gw-state-copy{max-width:430px;margin:12px auto 0;color:var(--allo-stem-text-soft,#a8b3c7);font-size:13px;line-height:1.65}.gw-state-note{margin-top:14px;padding:10px 12px;border:1px solid rgba(103,232,249,.16);border-radius:12px;background:rgba(8,47,73,.2);color:#cbd5e1;font-size:11px;line-height:1.55}.gw-state-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin-top:22px}.gw-state-primary,.gw-state-secondary{min-height:44px;padding:9px 18px;border-radius:11px;font-size:13px;font-weight:750;cursor:pointer}.gw-state-primary{border:1px solid rgba(196,181,253,.34);background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff}.gw-state-secondary{border:1px solid rgba(148,163,184,.3);background:rgba(15,23,42,.62);color:#dbeafe}',
+      '.gw-loading-mark{display:flex;justify-content:center;gap:8px;margin-bottom:18px;animation:gw-state-drift 3.4s ease-in-out infinite}.gw-loading-mark span{font-size:30px;filter:drop-shadow(0 8px 12px rgba(2,6,23,.35))}.gw-loading-track{height:6px;margin:22px auto 0;overflow:hidden;border:1px solid rgba(167,139,250,.15);border-radius:999px;background:rgba(2,6,23,.55)}.gw-loading-sweep{width:38%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#7c3aed,#a78bfa,#22d3ee);box-shadow:0 0 18px rgba(167,139,250,.7);animation:gw-loading-sweep 1.45s cubic-bezier(.4,0,.2,1) infinite}.gw-state-tip{margin-top:18px;padding-top:16px;border-top:1px solid rgba(148,163,184,.14);color:#a8b3c7;font-size:11px;line-height:1.55}.gw-recovery-details{margin-top:18px;padding:10px 12px;text-align:left;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(2,6,23,.34);color:#a8b3c7;font-size:11px}.gw-recovery-details summary{cursor:pointer;text-align:center;font-weight:700;color:#cbd5e1}.gw-recovery-details code{display:block;max-height:120px;margin-top:10px;padding:10px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border-radius:8px;background:rgba(2,6,23,.7);color:#fecdd3}.gw-recovery-summary{margin-top:14px;padding:10px 12px;border:1px solid rgba(167,139,250,.2);border-radius:10px;background:rgba(76,29,149,.14);color:#ddd6fe;font-size:11px;line-height:1.45}.gw-recovery-checklist{display:flex;flex-direction:column;gap:6px;margin:12px 0 0;padding:0;list-style:none;text-align:left}.gw-recovery-check{position:relative;padding:7px 8px 7px 24px;border:1px solid rgba(148,163,184,.14);border-radius:8px;background:rgba(15,23,42,.4);color:#cbd5e1;font-size:10px;line-height:1.4}.gw-recovery-check::before{content:"";position:absolute;left:9px;top:11px;width:7px;height:7px;border:1px solid rgba(167,139,250,.6);border-radius:50%;background:rgba(124,58,237,.45)}.gw-recovery-retry-status{margin-top:12px;color:#a7f3d0;font-size:11px;font-weight:800}.gw-recovery-actions{flex-wrap:wrap}.gw-recovery-actions button:disabled{cursor:wait;opacity:.62}#gw-webgl-recovery:focus-visible{outline:3px solid #f8fafc;outline-offset:3px}',
+      '@media(max-width:520px){.gw-state-screen{align-items:flex-start;padding:12px}.gw-state-screen--inline{margin:6px}.gw-state-card{padding:24px 18px;border-radius:18px}.gw-state-actions{align-items:stretch;flex-direction:column}.gw-state-actions button{width:100%}.gw-state-icon{width:64px;height:64px;border-radius:20px;font-size:32px}}@media(prefers-reduced-motion:reduce){.gw-state-icon,.gw-loading-mark,.gw-loading-sweep{animation:none!important}.gw-loading-sweep{width:64%;transform:none}}',
+      '.gw-root [role="dialog"]{box-shadow:0 24px 70px rgba(2,6,23,0.58),0 0 0 1px rgba(255,255,255,0.05)!important;backdrop-filter:blur(18px) saturate(120%)!important;}',
+      '.gw-root [role="dialog"]{z-index:80!important;}',
+      '.gw-root button{transition:transform 150ms ease,filter 150ms ease,box-shadow 150ms ease;}',
+      '.gw-root button:hover:not(:disabled){filter:brightness(1.08);}',
+      '.gw-root button:active:not(:disabled){transform:translateY(1px);}',
+      '.gw-root button:focus-visible,.gw-root input:focus-visible,.gw-root select:focus-visible,.gw-root textarea:focus-visible,.gw-root a[href]:focus-visible,.gw-root [tabindex]:focus-visible,.gw-focusable:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px!important;box-shadow:0 0 0 5px rgba(124,58,237,0.65)!important;}',
+      '#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{margin:0!important;border:0!important;border-radius:0!important;}',
+      '@media(max-width:720px){.gw-toolbar{padding:8px 10px!important;gap:7px!important;}.gw-toolbar>select{max-width:150px;}.gw-lesson-title{order:3;flex-basis:100%;max-width:none;padding-left:42px;margin-top:-6px;}.gw-prediction-bar{flex-basis:100%;}.gw-measure-card{top:calc(100% + 6px);right:6px;width:calc(100vw - 12px);max-height:calc(100vh - 170px);}.gw-return-dock{bottom:12px!important;}.gw-tutorial-shell{bottom:112px!important;}.gw-action-bar{left:8px!important;right:8px!important;bottom:94px!important;}.gw-hotbar{max-width:calc(100vw - 12px)!important;justify-content:flex-start!important;flex-wrap:nowrap!important;overflow-x:auto;}.gw-viewport{margin:6px;border-radius:12px;}}',
+      '@media(max-width:520px){.gw-intro-card{padding:20px 16px;max-height:calc(100vh - 24px);overflow:auto;border-radius:18px;}.gw-primary-cta{width:100%;padding-left:20px!important;padding-right:20px!important;}}',
+      '.gw-toolbar{box-sizing:border-box;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;min-height:52px;max-height:64px;overflow:visible!important;padding:7px 10px!important;gap:8px!important}.gw-status-cluster{grid-row:auto!important;width:auto!important;overflow:visible!important;padding:0!important}.gw-compact-action{display:inline-flex;min-height:34px;align-items:center;justify-content:center;gap:5px;padding:5px 10px;border:1px solid rgba(167,139,250,.38);border-radius:9px;background:rgba(76,29,149,.34);color:#f5f3ff;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}.gw-compact-action:hover{background:rgba(91,33,182,.52)}.gw-compact-action[aria-expanded="true"]{border-color:#c4b5fd;background:rgba(124,58,237,.58);color:#fff}.gw-toolbar-collapse{width:34px;padding:5px}.gw-toolbar-reveal,.gw-fullscreen-quickbar{position:absolute;top:8px;left:50%;z-index:115;transform:translateX(-50%)}.gw-toolbar-reveal{display:inline-flex;min-height:36px;align-items:center;gap:6px;padding:6px 11px;border:1px solid rgba(196,181,253,.52);border-radius:10px;background:rgba(15,23,42,.92);box-shadow:0 10px 28px rgba(2,6,23,.48);color:#f5f3ff;font-size:10px;font-weight:850;cursor:pointer;backdrop-filter:blur(10px)}.gw-fullscreen-quickbar{display:none;align-items:center;gap:6px}.gw-fullscreen-quickbar .gw-compact-action{min-height:36px;background:rgba(15,23,42,.9);box-shadow:0 8px 24px rgba(2,6,23,.42);backdrop-filter:blur(9px)}',
+      '.gw-prediction-panel{position:absolute!important;top:64px;left:50%;z-index:46;box-sizing:border-box;width:min(680px,calc(100% - 24px))!important;max-width:none!important;transform:translateX(-50%);border:1px solid rgba(196,181,253,.38)!important;background:linear-gradient(155deg,rgba(30,27,75,.98),rgba(15,23,42,.98))!important;box-shadow:0 22px 64px rgba(2,6,23,.62),inset 0 1px 0 rgba(255,255,255,.06)!important}.gw-prediction-heading{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:6px;border-bottom:1px solid rgba(167,139,250,.2)}.gw-prediction-title{color:#f5f3ff;font-size:11px;font-weight:850}.gw-prediction-close{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border:1px solid rgba(196,181,253,.3);border-radius:8px;background:rgba(15,23,42,.62);color:#f8fafc;font-size:17px;cursor:pointer}',
+      '.gw-measure-card{top:64px!important}.gw-settings-backdrop{position:absolute;inset:0;z-index:150;display:flex;box-sizing:border-box;align-items:center;justify-content:center;padding:12px;background:rgba(2,6,23,.74);backdrop-filter:blur(8px)}.gw-settings-dialog{display:flex;box-sizing:border-box;width:min(920px,100%);max-height:min(760px,calc(100% - 8px));flex-direction:column;overflow:hidden;border:1px solid rgba(167,139,250,.48);border-radius:18px;background:linear-gradient(155deg,#111827,#1e1b4b);box-shadow:0 28px 90px rgba(2,6,23,.78);color:#f8fafc}.gw-settings-header{display:flex;flex:0 0 auto;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 18px 13px;border-bottom:1px solid rgba(167,139,250,.22);background:rgba(15,23,42,.82)}.gw-settings-title{margin:0;color:#f8fafc;font-size:18px;font-weight:900}.gw-settings-description{margin:4px 0 0;color:#cbd5e1;font-size:11px;line-height:1.45}.gw-settings-controls{display:flex;align-content:flex-start;align-items:center;gap:8px;overflow:auto;padding:14px 18px 20px;flex-wrap:wrap;scrollbar-color:#64748b #0f172a}.gw-settings-controls>button,.gw-settings-controls>select{min-height:40px!important;padding:7px 11px!important}.gw-settings-controls input,.gw-settings-controls select,.gw-settings-controls textarea{color:#f8fafc!important}.gw-settings-section-title{flex:1 0 100%;margin:10px 0 0;padding:9px 0 5px;border-bottom:1px solid rgba(148,163,184,.18);color:#c4b5fd;font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}.gw-settings-section-title:first-child{margin-top:0}.gw-settings-close{flex:0 0 auto}.gw-settings-controls .gw-view-presets{min-height:40px!important;padding:5px 7px!important}.gw-settings-controls .gw-quality-control{min-height:40px;padding:3px 7px 3px 10px}.gw-settings-controls>div[style*="display: flex"]{max-width:100%}',
+      '#geoworld-fs-workspace[data-toolbar-collapsed="true"]>.gw-toolbar{display:none!important}#geoworld-fs-workspace[data-fullscreen="true"]>.gw-toolbar{display:none!important}#geoworld-fs-workspace[data-fullscreen="true"]>.gw-fullscreen-quickbar{display:flex}#geoworld-fs-workspace[data-fullscreen="true"]>.gw-toolbar-reveal{display:none}#geoworld-fs-workspace[data-fullscreen="true"]>.gw-prediction-panel,#geoworld-fs-workspace[data-fullscreen="true"]>.gw-measure-card{top:56px!important}',
+      '.gw-compass-label,.gw-touch-key-label{color:#cbd5e1!important;font-size:11px!important;opacity:1!important}',
+      '@media(max-width:800px){.gw-toolbar{grid-template-columns:minmax(0,1fr) auto!important;min-height:48px;max-height:58px;padding:6px 8px!important}.gw-status-cluster{justify-content:flex-end!important}.gw-status-cluster .gw-stat-chip:first-child,.gw-status-cluster .gw-badge-strip{display:none!important}.gw-compact-action{padding:5px 8px}.gw-compact-action-label{display:none}.gw-settings-backdrop{padding:6px}.gw-settings-dialog{max-height:calc(100% - 4px);border-radius:14px}.gw-settings-header{padding:13px}.gw-settings-controls{padding:10px 12px 16px}.gw-settings-controls>button,.gw-settings-controls>select,.gw-settings-controls>label,.gw-settings-controls>div{box-sizing:border-box;max-width:100%}.gw-prediction-panel{top:58px;width:calc(100% - 12px)!important}.gw-measure-card{top:58px!important;right:6px!important;width:calc(100% - 12px)!important;max-height:calc(100% - 130px)!important}}@media(max-width:420px){.gw-title{font-size:13px}.gw-lesson-title{max-width:150px!important}.gw-status-cluster .gw-stat-chip{display:none!important}.gw-settings-title{font-size:16px}.gw-fullscreen-quickbar .gw-compact-action-label{display:inline}.gw-prediction-panel{display:flex!important;max-height:calc(100% - 132px);overflow:auto;flex-wrap:wrap!important}.gw-prediction-heading{flex:1 0 100%}}',
+      '.gw-touch-look-zone{opacity:1!important}.gw-touch-look-label{padding:3px 7px!important;border:1px solid rgba(196,181,253,.44)!important;border-radius:999px!important;background:rgba(15,23,42,.94)!important;color:#f8fafc!important;font-size:11px!important}.gw-touch-look-panel>.gw-touch-look-label{padding:0!important;border:0!important;background:transparent!important;color:#f8fafc!important;font-size:11px!important}.gw-touch-mode-hint{background:rgba(15,23,42,.92)!important;color:#f8fafc!important;font-size:11px!important}',
+      '.gw-minimap-shell{position:absolute;right:10px;bottom:150px;z-index:24;display:flex;flex-direction:column;align-items:flex-end;gap:4px}.gw-minimap-shell .gw-minimap{position:static!important;right:auto!important;bottom:auto!important;z-index:auto!important;opacity:.96}.gw-hud-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.gw-hud-panel-close{display:inline-flex;min-width:28px;min-height:28px;align-items:center;justify-content:center;padding:3px 7px;border:1px solid rgba(196,181,253,.4);border-radius:8px;background:rgba(15,23,42,.94);color:#f8fafc;font-size:10px;font-weight:850;cursor:pointer}.gw-hud-toggle[aria-pressed="true"]{border-color:#c4b5fd;background:rgba(124,58,237,.62);color:#fff}.gw-hud-toggle:disabled{cursor:not-allowed;opacity:.56}',
+      '.gw-hud-preset-fieldset{box-sizing:border-box;flex:1 0 100%;min-width:0;margin:10px 0 0;padding:0;border:0}.gw-hud-preset-fieldset>.gw-settings-section-title{box-sizing:border-box;width:100%;margin:0 0 8px}.gw-hud-preset-help{margin:0 0 8px;color:#cbd5e1;font-size:10px;line-height:1.45}.gw-hud-presets{display:grid;width:100%;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.gw-hud-preset-card{display:flex;min-height:76px!important;align-items:flex-start!important;gap:9px!important;padding:10px!important;text-align:left!important;border:1px solid rgba(148,163,184,.32)!important;border-radius:12px!important;background:rgba(15,23,42,.62)!important;color:#f8fafc!important;cursor:pointer}.gw-hud-preset-card[aria-pressed="true"]{border-color:#c4b5fd!important;background:rgba(91,33,182,.46)!important;box-shadow:inset 0 0 0 1px rgba(196,181,253,.2)}.gw-hud-preset-icon{font-size:19px;line-height:1}.gw-hud-preset-copy{display:flex;min-width:0;flex-direction:column;gap:3px}.gw-hud-preset-name{font-size:11px;font-weight:900}.gw-hud-preset-description{color:#cbd5e1;font-size:9px;line-height:1.35}',
+      '@media(max-width:800px){#geoworld-fs-workspace[data-touch-active="true"] .gw-minimap-shell{top:54px;left:8px;right:auto;bottom:auto;align-items:flex-start}#geoworld-fs-workspace[data-touch-active="true"] .gw-inventory-panel{top:54px!important;left:8px!important;right:auto!important;bottom:auto!important;width:132px}#geoworld-fs-workspace[data-touch-active="true"] .gw-transform-panel{top:54px;left:8px;right:auto;width:min(214px,calc(100% - 174px))}#geoworld-fs-workspace[data-touch-active="true"] .gw-tutorial-shell{left:8px!important;width:min(300px,calc(100% - 92px))!important;transform:none!important}}@media(max-width:520px){.gw-minimap-shell{right:8px;bottom:146px}.gw-minimap-shell .gw-minimap{width:84px;height:84px}}@media(max-width:420px){.gw-fullscreen-quickbar .gw-compact-action-label{display:none!important}}',
+      '@media(max-width:620px){.gw-hud-presets{grid-template-columns:1fr}.gw-hud-preset-card{min-height:58px!important}}@media(max-height:520px) and (orientation:landscape){.gw-prediction-panel{max-height:calc(100% - 72px)!important;overflow:auto!important}}',
+      ".gw-root{--gw-glass:#112d2bef;--gw-line:#b7cfb82e;--allo-stem-canvas:#112422;--allo-stem-panel:#173b35;--allo-stem-deeper:#0a1f1d;--allo-stem-text:#f5f0e5;--allo-stem-text-soft:#c7d7cd;--allo-stem-border:#49645b;--allo-stem-button-bg:#173b35;--allo-stem-button-text:#f5f0e5;--allo-stem-button-border:#49645b;font-family:ui-sans-serif,system-ui,sans-serif}",
+      ".gw-root .gw-toolbar{background:#112d2b!important;border-bottom-color:#b7cfb826!important;box-shadow:0 5px 20px #061c1922}.gw-brand-mark{background:#d4e8ca!important;border-color:#eaf3df!important;box-shadow:none}.gw-brand-mark svg{width:25px;height:25px;filter:none}.gw-title{color:#f5f0e5;text-shadow:none;font-weight:750!important;letter-spacing:-.035em}.gw-lesson-title{color:#bdcec4!important}.gw-root .gw-stat-chip{background:#ffffff08!important;color:#d8e4db!important;border-color:#c6d9c324!important}",
+      ".gw-root .gw-compact-action,.gw-root .gw-toolbar-reveal,.gw-root .gw-viewport-control{border-color:#a7c9b43b!important;background:#1d4139ed!important;color:#f5f0e5!important}.gw-root .gw-compact-action{min-width:40px;min-height:40px;font-size:11px;font-weight:650}.gw-root .gw-compact-action[aria-expanded=\"true\"]{background:#d4e8ca!important;color:#163b32!important;border-color:#d4e8ca!important}.gw-root .gw-toolbar-collapse{width:40px}.gw-root .gw-viewport{border-color:#b7cfb82e;box-shadow:0 12px 38px #071b192e}",
+      ".gw-root .gw-hotbar,.gw-root .gw-shape-tray,.gw-root .gw-action-bar{background:#112d2bf2!important;border-color:#b7cfb83d!important;box-shadow:0 10px 28px #061d1940,inset 0 1px 0 #f5f0e50c}.gw-root .gw-hotbar{box-sizing:border-box;width:max-content;max-width:calc(100% - 20px)!important;height:58px;flex-wrap:nowrap!important;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#7b9c87 #112d2b;gap:4px!important;padding:6px!important;border-radius:16px!important;scroll-padding:6px;overscroll-behavior-x:contain}.gw-root .gw-hotbar-item{box-sizing:border-box;width:44px!important;height:44px!important;min-width:44px;min-height:44px;gap:1px;border-width:1px!important;transform:none!important;box-shadow:none!important}.gw-root .gw-hotbar-item:hover{background:#335a4d!important}.gw-root .gw-hotbar-item[data-active=\"true\"]{background:#d4e8ca!important;border-color:#f2f7e8!important;box-shadow:inset 0 -3px 0 #6b9875!important}.gw-root .gw-hotbar-item .gw-material-swatch{width:25px;height:25px}.gw-material-name{display:block;max-width:42px;font-size:10px;font-weight:650;line-height:11px;color:#d8e4db!important}.gw-root .gw-hotbar-item[data-active=\"true\"]>.gw-material-name{color:#12382e!important}.gw-material-key{position:absolute;top:2px;right:3px;color:#c6d9cc;font-size:8px;line-height:9px;font-weight:700}.gw-root .gw-hotbar-item[data-active=\"true\"]>.gw-material-key{color:#214d3c!important}",
+      ".gw-root .gw-shape-tray{box-sizing:border-box;bottom:74px!important;max-width:calc(100% - 16px);height:50px;gap:3px!important;padding:2px 5px!important;border-radius:13px!important}.gw-shape-heading{font-size:11px;color:#c7d7cd;font-weight:650;padding:0 6px}.gw-root .gw-shape-item,.gw-root .gw-shape-rotate{box-sizing:border-box;flex:0 0 auto;width:44px!important;height:44px!important;min-width:44px;min-height:44px;border-radius:9px!important;border:1px solid transparent!important;background:transparent!important;color:#e6efdf;touch-action:manipulation}.gw-root .gw-shape-item[aria-pressed=\"true\"]{border-color:#d4e8ca!important;background:#335a4d!important}.gw-shape-swatch{width:24px;height:24px;display:block;pointer-events:none}.gw-root .gw-shape-item>.gw-shape-fraction{font-size:11px;line-height:13px;color:#d4e8ca;font-weight:700}.gw-root .gw-shape-rotate{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;font-size:11px;font-weight:700;padding:0!important;cursor:pointer;border-left-color:#b7cfb82e!important}.gw-shape-rotate-icon{font-size:20px;line-height:20px}",
+      ".gw-root .gw-action-bar{bottom:132px!important;padding:3px;border-radius:11px;gap:3px!important}.gw-root .gw-action-bar button{min-height:34px;min-width:38px;font-size:11px!important;padding:5px 9px!important;border-radius:8px!important;border-color:#b7cfb82e!important;background:#1c4036!important;color:#e0e8da!important}.gw-root .gw-action-bar button[aria-label=\"Clear my placed blocks\"]{color:#ffc8b9!important}.gw-root .gw-coordinate-hud{background:#112d2bed!important;border-color:#b7cfb82e!important;color:#d0ddd0!important}.gw-root .gw-coordinate-hud summary{color:#d0ddd0!important}",
+      ".gw-root .gw-settings-dialog,.gw-root .gw-dialog:not(.gw-dialog--intro){background:#112d2bf7!important;border-color:#aec9b647!important}.gw-root .gw-settings-header,.gw-root .gw-measure-heading{background:#173b35!important;border-color:#aec9b62e!important}.gw-root .gw-settings-section-title{color:#d4e8ca;border-color:#aec9b62e}.gw-root .gw-settings-controls>button,.gw-root .gw-settings-controls>select{background:#1c4036!important;border-color:#aec9b647!important;color:#f5f0e5!important}.gw-root .gw-measure-card{background:#112d2bf7!important;border-color:#aec9b647!important}.gw-root .gw-settings-controls input{accent-color:#b1d3a6}.gw-root .gw-settings-controls::-webkit-scrollbar,.gw-root .gw-hotbar::-webkit-scrollbar{height:3px;width:5px}.gw-root .gw-hotbar::-webkit-scrollbar-thumb{background:#7b9c87;border-radius:6px}",
+      "@media(max-width:800px){.gw-root .gw-toolbar{padding:6px!important;gap:4px!important}.gw-root .gw-brand-lockup{gap:7px}.gw-root .gw-compact-action{min-width:36px;min-height:40px;padding:4px 7px}.gw-root .gw-toolbar-collapse{width:36px}.gw-root .gw-action-bar{bottom:132px!important}.gw-root .gw-touch-controls > [role=\"img\"],.gw-root .gw-touch-controls>.gw-touch-actions{bottom:calc(132px + env(safe-area-inset-bottom))!important}.gw-root .gw-touch-look-panel{top:128px!important;background:#112d2bf2;border-color:#aec9b647}.gw-root .gw-touch-look-panel input{accent-color:#b1d3a6}.gw-root .gw-touch-look-panel>.gw-touch-look-label{color:#e1eddc!important}}@media(max-width:360px){.gw-root .gw-title{font-size:12px}.gw-root .gw-brand-mark{width:26px;height:30px}.gw-root .gw-brand-mark svg{width:22px;height:22px}.gw-root .gw-lesson-title{font-size:8px!important}.gw-root .gw-shape-heading{padding:0 2px;font-size:10px}.gw-root .gw-shape-tray{gap:2px!important}}",
+      ".gw-root button:focus-visible,.gw-root [tabindex]:focus-visible{box-shadow:0 0 0 5px #173b35!important}.gw-root .gw-hotbar-item:focus-visible{outline:2px solid #fff!important;outline-offset:-3px!important;box-shadow:inset 0 0 0 4px #173b35!important}.gw-root .gw-hotbar-item[data-active=\"true\"]:focus-visible{outline-color:#173b35!important}",
+      ".theme-contrast .gw-root,[data-stem-theme=\"contrast\"] .gw-root{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-deeper:#000;--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;--allo-stem-button-bg:#000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00}.theme-contrast .gw-root :is(.gw-toolbar,.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-settings-dialog,.gw-settings-header,.gw-measure-card,.gw-coordinate-hud),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-toolbar,.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-settings-dialog,.gw-settings-header,.gw-measure-card,.gw-coordinate-hud){background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-root :is(.gw-hotbar-item,.gw-shape-item,.gw-shape-rotate,.gw-compact-action,.gw-action-bar button),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-hotbar-item,.gw-shape-item,.gw-shape-rotate,.gw-compact-action,.gw-action-bar button){border-color:#00ff00!important;background:#000!important;color:#00ff00!important}.theme-contrast .gw-root :is(.gw-hotbar-item[data-active=\"true\"],.gw-shape-item[aria-pressed=\"true\"]),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-hotbar-item[data-active=\"true\"],.gw-shape-item[aria-pressed=\"true\"]){background:#ffff00!important;border-color:#fff!important;box-shadow:none!important}.theme-contrast .gw-root .gw-hotbar-item[data-active=\"true\"]>span,[data-stem-theme=\"contrast\"] .gw-root .gw-hotbar-item[data-active=\"true\"]>span{color:#000!important}.theme-contrast .gw-root .gw-shape-item[aria-pressed=\"true\"]>span,[data-stem-theme=\"contrast\"] .gw-root .gw-shape-item[aria-pressed=\"true\"]>span{color:#000!important}.theme-contrast .gw-root :is(.gw-material-name,.gw-material-key,.gw-shape-heading,.gw-shape-fraction),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-material-name,.gw-material-key,.gw-shape-heading,.gw-shape-fraction){color:#ffff00!important}",
+      ".gw-root .gw-touch-actions{gap:6px!important;right:12px!important}.gw-root .gw-touch-actions button{box-sizing:border-box;width:64px!important;height:48px!important;min-width:64px!important;min-height:48px!important;padding:3px!important;border:1px solid #afc7b677!important;border-radius:13px!important;background:#153d34f2!important;color:#f5f0e5!important;box-shadow:0 4px 14px #06251e3d,inset 0 1px 0 #edf3dc12;touch-action:manipulation!important}.gw-root .gw-touch-actions button[data-gw-touch-action=\"place\"]{background:#d4e8ca!important;border-color:#edf5e4!important;color:#173b35!important}.gw-root .gw-touch-actions button[data-gw-touch-action=\"break\"]{color:#ffd3bd!important;border-color:#edc5ae66!important}.gw-root .gw-touch-actions button:disabled{opacity:.44;box-shadow:none;cursor:default}.gw-touch-action-content{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;pointer-events:none}.gw-touch-action-content svg{width:20px;height:20px;display:block}.gw-touch-action-name{font-size:11px;font-weight:650;line-height:13px;letter-spacing:.01em}",
+      ".gw-root .gw-touch-joystick{background:#112d2b66!important;border:1px solid #e1ecd67d!important;box-shadow:inset 0 0 0 5px #e1ecd60a,0 4px 16px #092b252e}.gw-root .gw-touch-joystick-thumb{background:#d4e8cad9!important;border:1px solid #eff5e7;box-shadow:0 3px 10px #092b2566}.gw-root .gw-touch-look-zone{border:none!important;background:transparent!important;opacity:.45!important;width:42px!important;height:42px!important;right:86px!important;top:46%!important}.gw-root .gw-touch-look-zone>.gw-touch-look-label{display:none}.gw-root .gw-touch-look-reticle{border-color:#e1ecd680!important;background:#153d3422!important}.gw-root .gw-touch-mode-hint{background:#153d34ef!important;border-color:#afc7b644!important;color:#e7efdf!important;box-shadow:none;font-weight:600}",
+      ".gw-root .gw-action-feedback[data-feedback-kind=\"shape\"]{bottom:194px!important}@media(max-width:800px) and (min-height:620px) and (orientation:portrait){.gw-root .gw-action-feedback[data-feedback-kind=\"shape\"]{top:calc(50% - 112px);bottom:auto!important;left:12px!important;transform:none!important;max-width:calc(100% - 108px)!important}}",
+      ".gw-placement-hint{position:absolute;top:calc(50% + 28px);left:50%;transform:translateX(-50%);z-index:25;box-sizing:border-box;display:flex;align-items:center;gap:7px;width:max-content;max-width:min(300px,calc(100% - 36px));padding:7px 11px;border:1px solid #c4dfc770;border-radius:10px;background:#113b30f2;color:#e8f2e0;font-size:12px;font-weight:600;line-height:1.4;pointer-events:none;box-shadow:0 5px 18px #092b2533}.gw-placement-hint[data-allowed=\"false\"]{background:#502f29f2;border-color:#ecc3a3aa;color:#ffe3cc}.gw-placement-hint-mark{display:grid;flex:0 0 auto;place-items:center;width:18px;height:18px;border:1px solid currentColor;border-radius:50%;font-size:12px;font-weight:800}.gw-root .gw-action-feedback{background:#112d2bf2!important;border-color:#c4dfc766!important;color:#f5f0e5!important}",
+      "@media(max-width:800px){.gw-placement-hint{top:128px;bottom:auto;left:12px;transform:none;max-width:calc(100% - 174px);padding:7px 8px;font-size:11px;align-items:flex-start}.gw-root:has(.gwe-builder-dock[data-collapsed=\"false\"]) .gw-placement-hint{display:none}}@media(max-height:520px) and (orientation:landscape){.gw-root .gw-touch-actions{width:calc(100% - 170px);max-width:calc(100% - 170px);flex-direction:row!important;flex-wrap:wrap;justify-content:flex-end;bottom:132px!important}.gw-root .gw-touch-actions button{width:58px!important;min-width:58px!important}.gw-placement-hint{top:64px;max-width:190px}}",
+      /* Short touch landscapes */
+      "@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-panel{top:82px!important;left:12px!important;right:auto!important;background:#112d2bf2!important;border-color:#aec9b647!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-panel input{accent-color:#b1d3a6}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-panel>.gw-touch-look-label{color:#e1eddc!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-mode-hint{display:none}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-zone{display:none}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-coordinate-hud{display:none!important}#geoworld-fs-workspace[data-touch-active=\"true\"][data-geometry-mode] .gw-action-bar.gw-action-bar{left:12px!important;right:auto!important;bottom:132px!important;width:max-content!important;max-width:calc(100% - 420px)!important;transform:none!important;flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto;gap:3px!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-action-bar button{min-height:44px;flex-shrink:0}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-joystick{bottom:16px!important;left:12px!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-hotbar{left:auto!important;right:12px!important;max-width:calc(100% - 150px)!important;transform:none!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-placement-hint{left:50%;transform:translateX(-50%);top:64px;max-width:190px}}",
+      ".theme-contrast .gw-root .gw-touch-actions button,[data-stem-theme=\"contrast\"] .gw-root .gw-touch-actions button{background:#000!important;border-color:#00ff00!important;color:#00ff00!important;box-shadow:none}.theme-contrast .gw-root .gw-touch-actions button[data-gw-touch-action=\"place\"],[data-stem-theme=\"contrast\"] .gw-root .gw-touch-actions button[data-gw-touch-action=\"place\"]{background:#ffff00!important;color:#000!important;border-color:#fff!important}.theme-contrast .gw-root .gw-touch-joystick,[data-stem-theme=\"contrast\"] .gw-root .gw-touch-joystick{background:#000!important;border-color:#fff!important}.theme-contrast .gw-root .gw-placement-hint,[data-stem-theme=\"contrast\"] .gw-root .gw-placement-hint{background:#000!important;border-color:#ffff00!important;color:#ffff00!important}.theme-contrast .gw-root .gw-placement-hint[data-allowed=\"false\"],[data-stem-theme=\"contrast\"] .gw-root .gw-placement-hint[data-allowed=\"false\"]{border-style:dashed}",
+      ".gw-workspace-icon{display:block;width:18px;height:18px;flex:0 0 auto}.gw-utility-content{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.gw-utility-label{font-weight:600}.gw-utility-count{min-width:16px;padding:1px 4px;border-radius:5px;background:#d4e8ca16;color:#bacfb9;font-size:10px;font-variant-numeric:tabular-nums}.gw-root .gw-action-bar button{min-height:44px;padding:6px 9px!important}.gw-root .gw-action-bar button[aria-pressed=\"true\"]{background:#d4e8ca!important;color:#173b35!important;border-color:#f1f7e8!important}.gw-root .gw-action-bar button[aria-label=\"Clear my placed blocks\"]{color:#e8c5ae!important}.gw-root .gw-achievement-toast{box-sizing:border-box;min-width:0;max-width:min(360px,calc(100% - 32px));padding:12px 15px!important;gap:12px!important;border:1px solid #a4bb9e!important;border-radius:17px!important;background:#f4f0e4fa!important;box-shadow:0 12px 32px #102f2940!important;pointer-events:none}.gw-achievement-medal{display:grid;width:40px;height:48px;flex:0 0 auto;place-items:center;color:#4d7050}.gw-achievement-medal .gw-workspace-icon{width:34px;height:34px}.gw-achievement-copy{min-width:0}.gw-achievement-kicker{color:#60715b;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.gw-achievement-name{margin-top:3px;color:#173b35;font-size:15px;font-weight:750;line-height:1.25}.gw-achievement-description{margin-top:3px;color:#516454;font-size:11px;line-height:1.45}@media(max-width:800px){.gw-root[data-touch-active=\"true\"] .gw-action-bar [data-gw-utility=\"undo\"] .gw-utility-label,.gw-root[data-touch-active=\"true\"] .gw-action-bar [data-gw-utility=\"redo\"] .gw-utility-label{display:none}.gw-root[data-touch-active=\"true\"] .gw-action-bar button{padding:6px!important}.gw-root .gw-achievement-toast{top:188px!important;left:12px!important;transform:none!important;max-width:calc(100% - 100px);padding:10px 12px!important}}@media(max-height:520px) and (orientation:landscape){.gw-root .gw-achievement-toast{display:none!important}}.theme-contrast .gw-root .gw-achievement-toast,[data-stem-theme=\"contrast\"] .gw-root .gw-achievement-toast{background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-achievement-toast *,[data-stem-theme=\"contrast\"] .gw-achievement-toast *{color:#ffff00!important}.theme-contrast .gw-root .gw-action-bar button[aria-pressed=\"true\"],[data-stem-theme=\"contrast\"] .gw-root .gw-action-bar button[aria-pressed=\"true\"]{background:#ffff00!important;color:#000!important}",
+      ".gw-root .gw-measure-card{box-sizing:border-box;color:#edf2e3!important;scrollbar-color:#839c86 #173b35}.gw-root .gw-measure-heading{min-height:44px;box-sizing:border-box;padding:6px 8px 6px 12px;gap:6px!important}.gw-root .gw-measure-heading>[role=\"status\"]{color:#edf2e3!important;font-size:12px;line-height:1.3}.gw-root .gw-measure-close{width:44px;height:44px;min-width:44px;min-height:44px;flex:0 0 auto;box-sizing:border-box;background:#224a3e;color:#edf2e3;border-color:#afc7b64d}.gw-measure-dimensions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 5px}.gw-measure-dimension{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:7px 8px;border:1px solid #aec9b633;border-radius:7px;background:#e4edda09;color:#bacfb9;font-size:10px;min-width:0}.gw-measure-dimension strong{color:#f5f0e5;font-size:13px;font-variant-numeric:tabular-nums}.gw-measure-volume{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:5px 1px 7px;color:#c8dcc1;font-size:11px}.gw-measure-volume-value{white-space:nowrap;color:#c8dcc1;font-size:10px}.gw-measure-volume-value strong{font-size:17px;color:#f5f0e5;font-variant-numeric:tabular-nums}.gw-measure-details{flex-shrink:0;min-width:0;border-top:1px solid #aec9b62e}.gw-measure-details-toggle{display:flex;align-items:center;justify-content:space-between;min-height:44px;box-sizing:border-box;padding:8px 2px;color:#e4edd8;font-size:12px;font-weight:650;cursor:pointer;list-style:none}.gw-measure-details-toggle::-webkit-details-marker{display:none}.gw-measure-details-toggle::after{content:\"+\";font-size:20px;line-height:1;color:#b9d4ad}.gw-measure-details[open]>.gw-measure-details-toggle::after{content:\"−\"}.gw-measure-details-toggle:focus-visible{outline:2px solid #f5f0e5;outline-offset:-2px;border-radius:5px}.gw-measure-details-content{display:flex;flex-direction:column;gap:5px;padding:3px 0 4px}.gw-measure-card[data-measurement-compact=\"false\"]>.gw-measure-details>summary{display:none}.gw-measure-card[data-measurement-compact=\"false\"]>.gw-measure-details{padding-top:6px}.gw-measure-card[data-measurement-compact=\"true\"] .gw-measure-details-content button{min-height:44px}.gw-measure-card[data-measurement-compact=\"true\"] .gw-measure-details-content input[type=\"range\"]{min-height:32px}",
+      "#geoworld-fs-workspace.gw-root .gw-measure-card[data-measurement-compact=\"true\"][data-details-open=\"false\"]{max-height:min(240px,calc(100% - 140px))!important}#geoworld-fs-workspace.gw-root .gw-measure-card[data-measurement-compact=\"true\"][data-details-open=\"true\"]{max-height:calc(100% - 136px)!important}",
+      ".theme-contrast .gw-root :is(.gw-measure-heading,.gw-measure-dimension,.gw-measure-close,.gw-measure-details),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-measure-heading,.gw-measure-dimension,.gw-measure-close,.gw-measure-details){background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-root :is(.gw-measure-dimension,.gw-measure-volume,.gw-measure-details-toggle,.gw-measure-volume-value,.gw-measure-close,.gw-measure-heading>[role=\"status\"]),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-measure-dimension,.gw-measure-volume,.gw-measure-details-toggle,.gw-measure-volume-value,.gw-measure-close,.gw-measure-heading>[role=\"status\"]){color:#ffff00!important}.theme-contrast .gw-root .gw-measure-card strong,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card strong{color:#ffff00!important}.theme-contrast .gw-root .gw-measure-details-toggle::after,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-details-toggle::after{color:#00ff00}.theme-contrast .gw-root .gw-measure-details-toggle:focus-visible,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-details-toggle:focus-visible{outline-color:#00ff00}",
+      ".gw-root .gw-measure-card .gw-measure-check-revision{border:1px solid #d6b97266!important;background:#554528!important;color:#f6e8c5!important}.theme-contrast .gw-root .gw-measure-card .gw-measure-check-revision,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card .gw-measure-check-revision{background:#000!important;color:#00ff00!important;border-color:#00ff00!important}.theme-contrast .gw-root .gw-measure-card [data-geometry-representation-progress][data-complete] .gw-measure-view-progress-caption,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card [data-geometry-representation-progress][data-complete] .gw-measure-view-progress-caption{color:#ffff00!important}.theme-contrast .gw-root .gw-measure-card [data-geometry-representation-progress][data-complete] .gw-measure-view-progress-fill,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card [data-geometry-representation-progress][data-complete] .gw-measure-view-progress-fill{background:#00ff00!important}",
+      ".gw-root .gw-measure-details-content{gap:7px;line-height:1.5}.gw-root .gw-measure-card .gw-measure-equation{font-size:12px!important;line-height:1.5;overflow-wrap:anywhere}.gw-root .gw-measure-card :is(.gw-measure-equation-note,[data-geometry-surface-area],.gw-measure-block-count,[data-geometry-material-breakdown]){font-size:11px!important;line-height:1.5}.gw-root .gw-measure-card :is(.gw-measure-block-count,[data-geometry-material-breakdown]){color:#bacfb9!important}.gw-root .gw-measure-card :is(.gw-layer-explorer,[data-geometry-volume-representation]){box-sizing:border-box;max-width:100%!important;padding:9px!important;border:1px solid #aec9b642!important;border-radius:10px!important;background:#1b3b32!important}.gw-root .gw-measure-card .gw-layer-explorer :is(label,output,span){color:#dce8d3!important;font-size:11px!important;line-height:1.45}.gw-root .gw-measure-card .gw-layer-explorer>div:last-of-type{color:#adc6b1!important;font-size:10px!important}.gw-root .gw-measure-card .gw-layer-explorer input[type=\"range\"]{min-height:44px;accent-color:#b6d2a6!important}.gw-root .gw-measure-card .gw-layer-explorer button{min-height:44px;border-color:#aac5b25e!important;background:#173b35!important;color:#e4edd9!important;font-size:11px!important;font-weight:650!important;border-radius:8px!important}",
+      ".gw-root .gw-measure-card .gw-measure-view-picker{display:grid!important;grid-template-columns:minmax(0,1fr);gap:5px!important}.gw-root .gw-measure-card .gw-measure-view-picker>label,.gw-root .gw-measure-card [data-geometry-representation-connection]>label{font-size:11px!important;color:#d4e3ca!important;font-weight:650!important;line-height:1.45}.gw-root .gw-measure-card .gw-measure-view-progress-caption{gap:8px;flex-wrap:wrap;color:#c6d8bc!important;font-size:11px!important;font-weight:600!important;line-height:1.5}.gw-root .gw-measure-card .gw-measure-view-progress-fill{background:#9db890!important}.gw-root .gw-measure-card [data-geometry-representation-progress][data-complete=\"true\"] .gw-measure-view-progress-caption{color:#cce8b8!important}.gw-root .gw-measure-card [data-geometry-representation-progress][data-complete=\"true\"] .gw-measure-view-progress-fill{background:#b8d8a2!important}.gw-root .gw-measure-card :is(.gw-measure-prompt,#gw-representation-connect-prompt){font-size:11px!important;line-height:1.55;color:#c1d4bf!important}.gw-root .gw-measure-card #gw-representation-sentence-starter{background:#e1edd80b!important;border-left:2px solid #a9c29b66;padding:7px 8px!important;color:#d8e4ce!important;font-size:11px!important;line-height:1.5!important}.gw-root .gw-measure-card .gw-measure-self-check{gap:3px!important;color:#d4e3ca!important;font-size:11px!important;line-height:1.45}.gw-root .gw-measure-card .gw-measure-self-check>label{box-sizing:border-box;min-height:44px;gap:8px!important;align-items:center!important}.gw-root .gw-measure-card .gw-measure-self-check input{flex:0 0 auto;width:18px;height:18px;accent-color:#b6d2a6}",
+      ".gw-root .gw-measure-card :is([data-geometry-volume-representation],[data-geometry-prediction-result]) :is(select,textarea,input:not([type=\"checkbox\"])){box-sizing:border-box;min-width:0!important;max-width:100%;min-height:44px;padding:8px!important;border:1px solid #b2c9b566!important;border-radius:8px!important;background:#102f28!important;color:#f1f2e5!important;font-family:inherit;font-size:12px!important;line-height:1.45!important;color-scheme:dark}.gw-root .gw-measure-card [data-geometry-volume-representation] select{width:100%;flex:initial!important}.gw-root .gw-measure-card [data-geometry-volume-representation] textarea{width:100%;min-height:74px!important}.gw-root .gw-measure-card :is([data-geometry-volume-representation],[data-geometry-prediction-result]) :is(input,textarea)::placeholder{color:#a6bdaa;opacity:1}.gw-root .gw-measure-card [data-geometry-volume-representation] button,.gw-root .gw-measure-card [data-geometry-prediction-result] button{min-height:44px;padding:7px 10px!important;font-size:11px!important;line-height:1.4;border-radius:8px!important}.gw-root .gw-measure-card [data-geometry-prediction-result] label{color:#f0dfb8!important;font-size:11px!important}.gw-root .gw-measure-card :is([data-geometry-representation-recommendation],[data-geometry-revision-result]){font-size:11px!important;line-height:1.5!important}.gw-root .gw-measure-card .gw-measure-save-connection[data-state=\"draft\"]{background:#294239!important;color:#d5dfcf!important;border:1px solid #a9c2a73b!important}.gw-root .gw-measure-card .gw-measure-save-connection[data-state=\"ready\"]{background:#d4e8ca!important;color:#173b35!important;border:1px solid #d4e8ca!important}.gw-root .gw-measure-card .gw-measure-save-connection[data-state=\"saved\"]{background:#28513a!important;color:#d7efc6!important;border:1px solid #91b57b66!important}.gw-root .gw-measure-card .gw-measure-build-card{min-height:44px;padding:9px 12px!important;border:1px solid #b4cda575!important;border-radius:9px!important;background:#264b39!important;color:#edf2e2!important;font-size:12px!important;font-weight:650!important;box-shadow:inset 0 1px #e5efdc0a}.gw-root .gw-measure-card .gw-measure-build-card:hover{background:#345c44!important;border-color:#d2e4c5!important}.gw-root .gw-measure-card :is(button,select,textarea,input):focus-visible{outline:2px solid #f5f0e5!important;outline-offset:2px!important;box-shadow:0 0 0 4px #173b35!important}",
+      ".theme-contrast .gw-root .gw-measure-card :is(.gw-layer-explorer,[data-geometry-volume-representation],#gw-representation-sentence-starter),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(.gw-layer-explorer,[data-geometry-volume-representation],#gw-representation-sentence-starter){background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-root .gw-measure-card :is(.gw-layer-explorer label,.gw-layer-explorer output,.gw-layer-explorer span,.gw-measure-view-picker>label,[data-geometry-representation-connection]>label,.gw-measure-view-progress-caption,.gw-measure-prompt,#gw-representation-connect-prompt,#gw-representation-sentence-starter,.gw-measure-self-check,.gw-measure-block-count,[data-geometry-material-breakdown]),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(.gw-layer-explorer label,.gw-layer-explorer output,.gw-layer-explorer span,.gw-measure-view-picker>label,[data-geometry-representation-connection]>label,.gw-measure-view-progress-caption,.gw-measure-prompt,#gw-representation-connect-prompt,#gw-representation-sentence-starter,.gw-measure-self-check,.gw-measure-block-count,[data-geometry-material-breakdown]){color:#ffff00!important}.theme-contrast .gw-root .gw-measure-card :is(.gw-layer-explorer button,.gw-measure-save-connection,.gw-measure-build-card),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(.gw-layer-explorer button,.gw-measure-save-connection,.gw-measure-build-card){background:#000!important;color:#00ff00!important;border:1px solid #00ff00!important}.theme-contrast .gw-root .gw-measure-card :is([data-geometry-volume-representation],[data-geometry-prediction-result]) :is(select,textarea,input:not([type=\"checkbox\"])),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is([data-geometry-volume-representation],[data-geometry-prediction-result]) :is(select,textarea,input:not([type=\"checkbox\"])){background:#000!important;color:#ffff00!important;border-color:#00ff00!important}.theme-contrast .gw-root .gw-measure-card .gw-measure-view-progress-fill,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card .gw-measure-view-progress-fill{background:#00ff00!important}.theme-contrast .gw-root .gw-measure-card :is(button,select,textarea,input):focus-visible,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(button,select,textarea,input):focus-visible{outline-color:#00ff00!important}.theme-contrast .gw-root .gw-measure-card :is(input[type=\"range\"],input[type=\"checkbox\"]),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(input[type=\"range\"],input[type=\"checkbox\"]){accent-color:#ffff00!important}",
+      '@media(prefers-reduced-motion:reduce){.gw-root button{transition:none!important;}.gw-achievement-toast{animation:none!important;}.gw-root *{scroll-behavior:auto!important;}}'
+    ].join('');
+    document.head.appendChild(uiStyle);
+  })();
+
+
+  (function() {
+    if (document.getElementById('allo-live-geometryworld')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-geometryworld'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
+  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+
+  // ── Sound Effects ──
+  var _ac = null;
+  function getAC() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _ac; }
+  function tone(f, d, t, v) { var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.1, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.15)); } catch(e) {} }
+  // Noise burst helper — for footsteps, impacts
+  function noiseBurst(duration, volume, filterFreq) {
+    var ac = getAC(); if (!ac) return;
+    try {
+      var bufSize = Math.floor(ac.sampleRate * (duration || 0.04));
+      var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+      var src = ac.createBufferSource(); src.buffer = buf;
+      var g = ac.createGain(); g.gain.setValueAtTime(volume || 0.03, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (duration || 0.04));
+      var filt = ac.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = filterFreq || 800;
+      src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start(); src.stop(ac.currentTime + (duration || 0.04));
+    } catch(e) {}
+  }
+  // Block-type-aware place/break sounds
+  var _sfxProfiles = {
+    stone:   { placeF: 400, breakF: 220, placeW: 'square',   breakW: 'sawtooth', noiseHz: 500 },
+    grass:   { placeF: 350, breakF: 180, placeW: 'sine',     breakW: 'sine',     noiseHz: 400 },
+    wood:    { placeF: 480, breakF: 260, placeW: 'square',   breakW: 'sawtooth', noiseHz: 700 },
+    diamond: { placeF: 800, breakF: 600, placeW: 'sine',     breakW: 'sine',     noiseHz: 900 },
+    gold:    { placeF: 700, breakF: 500, placeW: 'sine',     breakW: 'sine',     noiseHz: 800 },
+    sand:    { placeF: 300, breakF: 150, placeW: 'sine',     breakW: 'sine',     noiseHz: 300 },
+    glass:   { placeF: 1200,breakF: 900, placeW: 'sine',     breakW: 'sine',     noiseHz: 1200 },
+    water:   { placeF: 350, breakF: 200, placeW: 'sine',     breakW: 'sine',     noiseHz: 350 },
+    brick:   { placeF: 380, breakF: 200, placeW: 'square',   breakW: 'sawtooth', noiseHz: 450 },
+    ice:     { placeF: 1000,breakF: 800, placeW: 'sine',     breakW: 'sine',     noiseHz: 1000 },
+    lava:    { placeF: 200, breakF: 120, placeW: 'sawtooth', breakW: 'sawtooth', noiseHz: 250 },
+    torch:   { placeF: 600, breakF: 400, placeW: 'sine',     breakW: 'sine',     noiseHz: 600 },
+  };
+  function sfxPlace(blockType) {
+    var p = _sfxProfiles[blockType] || _sfxProfiles.stone;
+    var pitchVar = 0.95 + Math.random() * 0.1; // ±5% pitch variation per placement
+    tone(p.placeF * pitchVar, 0.04, p.placeW, 0.05);
+    tone(p.placeF * 1.26 * pitchVar, 0.04, p.placeW, 0.04);
+    setTimeout(function() { tone(p.placeF * 1.5 * pitchVar, 0.06, 'sine', 0.06); }, 20 + Math.random() * 15);
+  }
+  function sfxBreak(blockType) {
+    var p = _sfxProfiles[blockType] || _sfxProfiles.stone;
+    var pitchVar = 0.92 + Math.random() * 0.16; // ±8% pitch variation
+    noiseBurst(0.06, 0.05, p.noiseHz * pitchVar);
+    tone(p.breakF * pitchVar, 0.06, p.breakW, 0.04);
+    setTimeout(function() { noiseBurst(0.04, 0.03, p.noiseHz * 0.7 * pitchVar); tone(p.breakF * 0.72 * pitchVar, 0.08, p.breakW, 0.03); }, 30 + Math.random() * 20);
+  }
+  function sfxCorrect() { tone(523, 0.08, 'sine', 0.07); setTimeout(function() { tone(659, 0.08, 'sine', 0.07); }, 80); setTimeout(function() { tone(784, 0.12, 'sine', 0.08); }, 160); }
+  function sfxWrong() { tone(300, 0.15, 'sawtooth', 0.06); setTimeout(function() { tone(250, 0.2, 'sawtooth', 0.05); }, 100); }
+  function sfxComplete() { tone(523, 0.1, 'sine', 0.08); setTimeout(function() { tone(659, 0.1, 'sine', 0.08); }, 100); setTimeout(function() { tone(784, 0.1, 'sine', 0.08); }, 200); setTimeout(function() { tone(1047, 0.2, 'sine', 0.1); }, 300); }
+  function sfxFootstep() { noiseBurst(0.035, 0.02, 500 + Math.random() * 300); }
+  function sfxJump() { tone(280, 0.06, 'sine', 0.04); setTimeout(function() { tone(420, 0.04, 'sine', 0.03); }, 20); }
+  function sfxLand() { noiseBurst(0.05, 0.04, 350); }
+  function sfxNpcChime() { tone(880, 0.06, 'sine', 0.04); setTimeout(function() { tone(1100, 0.08, 'sine', 0.05); }, 60); }
+  function sfxMeasure() { tone(660, 0.05, 'sine', 0.04); setTimeout(function() { tone(880, 0.07, 'sine', 0.05); }, 50); }
+
+  // Ambient wind — continuous filtered noise, started once on first interaction
+  var _ambientStarted = false;
+  function startAmbientWind() {
+    if (_ambientStarted) return;
+    var ac = getAC(); if (!ac) return;
+    _ambientStarted = true;
+    try {
+      // White noise buffer (2 seconds looped)
+      var bufSize = ac.sampleRate * 2;
+      var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      var d = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) d[i] = (Math.random() * 2 - 1);
+      var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+      // Bandpass filter for wind character
+      var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 250; bp.Q.value = 0.5;
+      // Low-frequency modulation via another oscillator controlling gain
+      var lfo = ac.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.15;
+      var lfoGain = ac.createGain(); lfoGain.gain.value = 0.004;
+      lfo.connect(lfoGain);
+      // Master gain (very quiet)
+      var master = ac.createGain(); master.gain.value = 0.008;
+      lfoGain.connect(master.gain);
+      src.connect(bp); bp.connect(master); master.connect(ac.destination);
+      src.start(); lfo.start();
+    } catch(e) {}
+  }
+
+  // ── Environment Presets ──
+  var ENV_PRESETS = {
+    // sun: light colour (sRGB floats). hemi: hemisphere light intensity, the
+    // sky-from-above fill that keeps a voxel world from going flat at low sun.
+    day:     { sky: [0.31, 0.66, 0.98], fog: [0.55, 0.79, 0.98], sun: [1.0, 0.96, 0.88], sunIntensity: 1.0, ambientIntensity: 0.20, hemi: 0.32, sunEl: 48, sunAz: 45, fogNear: 55, fogFar: 145, cloudOpacity: 0.5, label: '\u2600\uFE0F Day' },
+    sunrise: { sky: [1.0, 0.55, 0.32],  fog: [0.95, 0.62, 0.45], sun: [1.0, 0.72, 0.45], sunIntensity: 0.85, ambientIntensity: 0.34, hemi: 0.3, sunEl: 10, sunAz: 100, fogNear: 45, fogFar: 120, cloudOpacity: 0.6, label: '\uD83C\uDF05 Sunrise' },
+    sunset:  { sky: [0.94, 0.31, 0.16], fog: [0.86, 0.38, 0.26], sun: [1.0, 0.58, 0.32], sunIntensity: 0.8, ambientIntensity: 0.3, hemi: 0.26, sunEl: 9, sunAz: -105, fogNear: 42, fogFar: 112, cloudOpacity: 0.55, label: '\uD83C\uDF07 Sunset' },
+    night:   { sky: [0.07, 0.09, 0.28], fog: [0.08, 0.10, 0.26], sun: [0.55, 0.65, 1.0], sunIntensity: 0.22, ambientIntensity: 0.1, hemi: 0.12, sunEl: 44, sunAz: -150, fogNear: 32, fogFar: 95, cloudOpacity: 0.15, label: '\uD83C\uDF19 Night' },
+    golden:  { sky: [1.0, 0.82, 0.38],  fog: [0.98, 0.84, 0.52], sun: [1.0, 0.85, 0.5], sunIntensity: 1.0, ambientIntensity: 0.22, hemi: 0.28, sunEl: 20, sunAz: 62, fogNear: 50, fogFar: 130, cloudOpacity: 0.45, label: '\uD83C\uDF1F Golden' },
+  };
+
+  // Centralized display profiles keep the WebGL workload predictable and make
+  // the same quality choices reusable by future Geometry World surfaces.
+  function resolveGeometryRenderProfile(preference, runtime) {
+    var requested = ['auto', 'saver', 'balanced', 'detail'].indexOf(preference) >= 0 ? preference : 'auto';
+    var env = runtime || {};
+    var reducedMotion = !!env.reducedMotion;
+    var lowPower = !!env.isMobile || reducedMotion || (env.hardwareConcurrency > 0 && env.hardwareConcurrency <= 4);
+    var tier = requested === 'auto' ? (lowPower ? 'saver' : 'detail') : requested;
+    var profiles = {
+      saver: { label: 'Battery saver', maxPixelRatio: 1, shadows: false, postFx: false, ambientMotion: false },
+      balanced: { label: 'Balanced', maxPixelRatio: 1.5, shadows: true, postFx: false, ambientMotion: true },
+      detail: { label: 'Detailed', maxPixelRatio: 2, shadows: true, postFx: true, ambientMotion: true }
+    };
+    var reason = requested === 'auto' ? (lowPower ? 'Auto selected Battery saver for this device or motion preference.' : 'Auto selected Detailed for this device.') : 'Manual graphics-quality selection.';
+    if (reducedMotion) reason += ' Reduced motion keeps optional scene animation still.';
+    return Object.assign({ preference: requested, tier: tier, reason: reason }, profiles[tier], { ambientMotion: profiles[tier].ambientMotion && !reducedMotion });
+  }
+  window.StemLab.GeometryWorldRenderProfile = resolveGeometryRenderProfile;
+
+  function applyEnvPreset(engine, presetKey) {
+    var p = ENV_PRESETS[presetKey];
+    if (!p || !engine) return;
+    // Store target values for smooth transition
+    engine._envTarget = {
+      sky: p.sky.slice(), fog: p.fog.slice(),
+      fogNear: p.fogNear, fogFar: p.fogFar,
+      sunIntensity: p.sunIntensity, ambientIntensity: p.ambientIntensity,
+      cloudOpacity: p.cloudOpacity,
+      sun: (p.sun || [1.0, 0.96, 0.88]).slice(), hemi: p.hemi != null ? p.hemi : 0.4,
+      sunEl: p.sunEl != null ? p.sunEl : 58, sunAz: p.sunAz != null ? p.sunAz : 45
+    };
+    // Snapshot where the fade starts, so each frame can set the eased position
+    // exactly. The old update moved every value 10% of the remaining distance
+    // per frame and stopped when its 1.4 s timer ran out, so a preset never
+    // arrived: 'night' measured pinkish-grey, and at a low frame rate the sky
+    // barely left 'day'.
+    var scene = engine.scene, bg = scene && scene.background, fog = scene && scene.fog, ambient = null;
+    if (scene) scene.children.forEach(function(c) { if (c.isAmbientLight) ambient = c; });
+    engine._envStart = {
+      sky: bg && bg.isColor ? [bg.r, bg.g, bg.b] : p.sky.slice(),
+      fog: fog ? [fog.color.r, fog.color.g, fog.color.b] : p.fog.slice(),
+      fogNear: fog ? fog.near : p.fogNear, fogFar: fog ? fog.far : p.fogFar,
+      sunIntensity: engine.sun ? engine.sun.intensity : p.sunIntensity,
+      ambientIntensity: ambient ? ambient.intensity : p.ambientIntensity,
+      cloudOpacity: engine._cloudPlane ? engine._cloudPlane.material.opacity : p.cloudOpacity,
+      sun: engine.sun && engine.sun.color ? [engine.sun.color.r, engine.sun.color.g, engine.sun.color.b] : (p.sun || [1.0, 0.96, 0.88]).slice(),
+      hemi: engine._hemi ? engine._hemi.intensity : (p.hemi != null ? p.hemi : 0.4),
+      sunEl: engine._sunAngles ? engine._sunAngles.el : 58, sunAz: engine._sunAngles ? engine._sunAngles.az : 45
+    };
+    engine._envTransition = 0; // 0 to 1 over ~1.4 seconds
+    engine._envDone = false;
+    engine._currentEnv = presetKey;
+    // Stars: create on night/sunset, remove on day/sunrise
+    var isNightime = presetKey === 'night' || presetKey === 'sunset';
+    if (isNightime && !engine._manualStars && window.THREE) {
+      var THREE = window.THREE;
+      var sg = new THREE.BufferGeometry();
+      var sv = [];
+      for (var si = 0; si < 400; si++) sv.push((Math.random() - 0.5) * 200, 25 + Math.random() * 55, (Math.random() - 0.5) * 200);
+      sg.setAttribute('position', new THREE.Float32BufferAttribute(sv, 3));
+      engine._manualStars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xdbeafe, size: 0.22, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+      engine.scene.add(engine._manualStars);
+      // A second, sparser layer of larger warm stars, carried as a CHILD so the
+      // parent's slow rotation, fade and disposal all reach it. PointsMaterial has
+      // one size for every point, so depth in a star field costs a second layer
+      // rather than a custom shader.
+      var bg = new THREE.BufferGeometry(), bv = [];
+      for (var bi = 0; bi < 70; bi++) bv.push((Math.random() - 0.5) * 200, 25 + Math.random() * 55, (Math.random() - 0.5) * 200);
+      bg.setAttribute('position', new THREE.Float32BufferAttribute(bv, 3));
+      var bright = new THREE.Points(bg, new THREE.PointsMaterial({ color: 0xfff7e0, size: 0.46, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+      bright.userData.isBrightStars = true;
+      engine._manualStars.add(bright);
+      engine._manualStarsTarget = 0.8;
+    } else if (!isNightime && engine._manualStars) {
+      engine._manualStarsTarget = 0; // fade out
+    }
+  }
+  // Called in animate() to smoothly interpolate environment
+  function updateEnvTransition(engine, dt) {
+    // Stars fade and drift on their own clock, outside the preset fade: they used
+    // to sit inside it, so a fade-out froze the moment the 1.4 s timer expired.
+    if (engine._manualStars) {
+      var stTarget = engine._manualStarsTarget || 0;
+      var starStep = 1 - Math.pow(0.001, dt);   // frame-rate independent approach
+      engine._manualStars.material.opacity += (stTarget - engine._manualStars.material.opacity) * Math.min(1, starStep);
+      if (engine._ambientMotionEnabled !== false) engine._manualStars.rotation.y += dt * 0.015;
+      // Twinkle: the bright layer breathes around the faint layer's level. Slow
+      // enough to read as air, not as a flicker, and steady under reduced motion.
+      engine._starPhase = (engine._starPhase || 0) + dt;
+      engine._manualStars.children.forEach(function(layer) {
+        if (!layer.material) return;
+        var twinkle = engine._ambientMotionEnabled === false ? 1 : (0.82 + Math.sin(engine._starPhase * 1.6) * 0.18);
+        layer.material.opacity = engine._manualStars.material.opacity * twinkle;
+      });
+      if (stTarget === 0 && engine._manualStars.material.opacity < 0.01) {
+        engine.scene.remove(engine._manualStars);
+        engine._manualStars.traverse(function(part) {
+          if (part.geometry && part.geometry.dispose) part.geometry.dispose();
+          if (part.material && part.material.dispose) part.material.dispose();
+        });
+        engine._manualStars = null;
+      }
+    }
+    if (!engine._envTarget || engine._envDone) return;
+    var start = engine._envStart, tgt = engine._envTarget;
+    // Battery saver and reduced motion get the preset at once rather than a
+    // 1.4 s colour animation.
+    engine._envTransition = engine._ambientMotionEnabled === false ? 1 : Math.min(1, engine._envTransition + dt * 0.7);
+    var t = engine._envTransition;
+    var ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // ease-in-out
+    function mix(a, b) { return a + (b - a) * ease; }
+    if (start) {
+      engine.scene.background.setRGB(mix(start.sky[0], tgt.sky[0]), mix(start.sky[1], tgt.sky[1]), mix(start.sky[2], tgt.sky[2]));
+      engine.scene.fog.color.setRGB(mix(start.fog[0], tgt.fog[0]), mix(start.fog[1], tgt.fog[1]), mix(start.fog[2], tgt.fog[2]));
+      engine.scene.fog.near = mix(start.fogNear, tgt.fogNear);
+      engine.scene.fog.far = mix(start.fogFar, tgt.fogFar);
+      if (engine.sun) {
+        engine.sun.intensity = mix(start.sunIntensity, tgt.sunIntensity);
+        if (engine.sun.color && start.sun && tgt.sun) engine.sun.color.setRGB(mix(start.sun[0], tgt.sun[0]), mix(start.sun[1], tgt.sun[1]), mix(start.sun[2], tgt.sun[2]));
+      }
+      if (engine._sunAngles && start.sunEl != null && tgt.sunEl != null) {
+        engine._sunAngles.el = mix(start.sunEl, tgt.sunEl);
+        engine._sunAngles.az = geometryWorldLerpAngle(start.sunAz, tgt.sunAz, ease);
+      }
+      if (engine._hemi) {
+        if (start.hemi != null && tgt.hemi != null) engine._hemi.intensity = mix(start.hemi, tgt.hemi);
+        // Sky-from-above fill takes the sky colour it is standing under.
+        if (engine._hemi.color && engine.scene.background && engine.scene.background.isColor) engine._hemi.color.copy(engine.scene.background).lerp(engine._skyWhite || engine.scene.background, 0.35);
+      }
+      engine.scene.children.forEach(function(c) {
+        if (c.isAmbientLight) c.intensity = mix(start.ambientIntensity, tgt.ambientIntensity);
+      });
+      if (engine._cloudPlane) {
+        var cloudOp = mix(start.cloudOpacity, tgt.cloudOpacity);
+        engine._cloudPlane.material.opacity = cloudOp;
+        if (engine._cloudPlaneHigh) engine._cloudPlaneHigh.material.opacity = cloudOp * 0.6;
+      }
+    }
+    if (t >= 1) { engine._envDone = true; if (typeof engine.refreshEnvironment === 'function') engine.refreshEnvironment(); }
+  }
+
+  // Deterministic per-cell tint for grass so the ground reads as turf rather
+  // than one flat sheet: a tiny integer hash of (x, z) -> [0.965, 1.035]. Pure,
+  // stable across reloads (a lesson floor looks the same every visit), and small
+  // enough that the measurement checkerboard (x8%) still reads on top of it.
+  function geometryWorldGroundTint(x, z) {
+    var h = (Math.imul((x | 0) * 73856093, 1) ^ Math.imul((z | 0) * 19349663, 1)) >>> 0;
+    h = Math.imul(h ^ (h >>> 13), 0x5bd1e995) >>> 0;
+    h = (h ^ (h >>> 15)) >>> 0;
+    return 0.965 + (h % 1000) / 1000 * 0.07;
+  }
+  // sRGB hex -> linear-light Color. The renderer encodes its output as sRGB, so a
+  // hex fed in raw is gamma-encoded twice and reaches the display lighter and
+  // greyer than the palette swatch. Converting once here makes the world colour
+  // match the swatch the student picked.
+  function geometryWorldSrgbColor(THREE, hex) {
+    var c = new THREE.Color(hex);
+    if (typeof c.convertSRGBToLinear === 'function') c.convertSRGBToLinear();
+    return c;
+  }
+  window.StemLab.GeometryWorldGroundTint = geometryWorldGroundTint;
+
+  // Per-vertex ambient occlusion for one vertex of a block, the classic voxel
+  // rule: look at the three cells that touch this corner on the far side of the
+  // face (two edge neighbours and the diagonal) and darken by how many are
+  // filled. Corners where two edge neighbours meet count as fully occluded.
+  // (cx, cy, cz) is the vertex in cell-local 0..1 space, (nx, ny, nz) its face
+  // normal in the same frame, cell the block's grid position, occupied(x, y, z)
+  // the world query. Pure so the rule can be pinned without WebGL.
+  var GEOMETRY_WORLD_AO_LEVELS = [1.0, 0.82, 0.68, 0.55];
+  function geometryWorldVertexAo(cx, cy, cz, nx, ny, nz, cell, occupied) {
+    var ax = Math.abs(nx) > 0.3 ? (nx > 0 ? 1 : -1) : 0;
+    var ay = Math.abs(ny) > 0.3 ? (ny > 0 ? 1 : -1) : 0;
+    var az = Math.abs(nz) > 0.3 ? (nz > 0 ? 1 : -1) : 0;
+    if (!ax && !ay && !az) return 1;
+    var bx = cell.x + ax, by = cell.y + ay, bz = cell.z + az;
+    var offs = [];
+    if (!ax) { var tx = cx > 0.75 ? 1 : cx < 0.25 ? -1 : 0; if (tx) offs.push([tx, 0, 0]); }
+    if (!ay) { var ty = cy > 0.75 ? 1 : cy < 0.25 ? -1 : 0; if (ty) offs.push([0, ty, 0]); }
+    if (!az) { var tz = cz > 0.75 ? 1 : cz < 0.25 ? -1 : 0; if (tz) offs.push([0, 0, tz]); }
+    if (!offs.length) return 1;
+    var s1 = occupied(bx + offs[0][0], by + offs[0][1], bz + offs[0][2]) ? 1 : 0;
+    var s2 = 0, corner = 0;
+    if (offs[1]) {
+      s2 = occupied(bx + offs[1][0], by + offs[1][1], bz + offs[1][2]) ? 1 : 0;
+      corner = occupied(bx + offs[0][0] + offs[1][0], by + offs[0][1] + offs[1][1], bz + offs[0][2] + offs[1][2]) ? 1 : 0;
+    }
+    var occ = (s1 && s2) ? 3 : s1 + s2 + corner;
+    return GEOMETRY_WORLD_AO_LEVELS[occ];
+  }
+  window.StemLab.GeometryWorldVertexAo = geometryWorldVertexAo;
+
+  // Unit vector pointing at the sun. Elevation is degrees above the horizon,
+  // azimuth degrees clockwise from +z (so 0 looks along +z, 90 along +x). The
+  // light, the visible disc and the shadow direction all read from this one
+  // function, so they cannot drift apart. Pure, pinned without WebGL.
+  function geometryWorldSunVector(elevationDeg, azimuthDeg) {
+    var el = (elevationDeg || 0) * Math.PI / 180, az = (azimuthDeg || 0) * Math.PI / 180;
+    var ce = Math.cos(el);
+    return { x: ce * Math.sin(az), y: Math.sin(el), z: ce * Math.cos(az) };
+  }
+  // Interpolate two bearings the short way round, so a dawn-to-dusk fade swings
+  // the sun across the sky it is nearest to instead of spinning the long way.
+  function geometryWorldLerpAngle(a, b, t) {
+    var d = ((((b - a) % 360) + 540) % 360) - 180;
+    return a + d * t;
+  }
+  // How open a character's eyes are at time t: 1 open, ~0.1 at the closed point of
+  // a blink. Each character gets its own period and offset from its seed, so a room
+  // full of them never blinks in unison. Pure, so the rhythm is pinned without WebGL.
+  function geometryWorldBlinkScale(t, seed) {
+    var h = Math.abs(Math.sin((seed || 0) * 12.9898) * 43758.5453);
+    var frac = h - Math.floor(h);
+    var period = 3.4 + frac * 2.6;
+    var phase = (t + frac * period) % period;
+    var BLINK = 0.14;
+    if (phase >= BLINK) return 1;
+    return 1 - Math.sin(Math.PI * (phase / BLINK)) * 0.9;
+  }
+  window.StemLab.GeometryWorldBlinkScale = geometryWorldBlinkScale;
+  window.StemLab.GeometryWorldSunVector = geometryWorldSunVector;
+  window.StemLab.GeometryWorldLerpAngle = geometryWorldLerpAngle;
+
+  // ── Block Types ──
+  var BLOCK_TYPES = [
+    { id: 'stone', name: 'Stone', color: 0x808080, emoji: '\uD83E\uDEA8' },
+    { id: 'grass', name: 'Grass', color: 0x4CAF50, emoji: '\uD83C\uDF3F' },
+    { id: 'wood', name: 'Wood', color: 0x8D6E63, emoji: '\uD83E\uDEB5' },
+    { id: 'diamond', name: 'Diamond', color: 0x00BCD4, emoji: '\uD83D\uDC8E' },
+    { id: 'gold', name: 'Gold', color: 0xFFD700, emoji: '\uD83E\uDD47' },
+    { id: 'sand', name: 'Sand', color: 0xF5DEB3, emoji: '\uD83C\uDFD6\uFE0F' },
+    { id: 'glass', name: 'Glass', color: 0xE3F2FD, emoji: '\uD83D\uDD32' },
+    { id: 'water', name: 'Water', color: 0x2196F3, emoji: '\uD83D\uDCA7' },
+    { id: 'brick', name: 'Brick', color: 0xB71C1C, emoji: '\uD83E\uDDF1' },
+    { id: 'ice', name: 'Ice', color: 0xB3E5FC, emoji: '\u2744\uFE0F' },
+    { id: 'lava', name: 'Lava', color: 0xFF5722, emoji: '\uD83C\uDF0B' },
+    { id: 'torch', name: 'Torch', color: 0xFFA726, emoji: '\uD83D\uDD25' },
+  ];
+
+
+  // Small, code-native material samples match the blocks across devices. The
+  // parent button supplies the accessible name and keyboard shortcut.
+  function renderBlockSwatch(el, type) {
+    var colors = {
+      stone:['#c0c9c3','#9fa6a4','#7d8c86'], grass:['#87a875','#836448','#654b37'],
+      wood:['#d2aa76','#b58650','#906839'], diamond:['#8ae2e5','#24baca','#1291ab'],
+      gold:['#ffe2a0','#efb647','#b5842c'], sand:['#f0dfb7','#dbc69d','#baa77f'],
+      glass:['#e4f4f7','#b5d5df','#8baec2'], water:['#80cef0','#409cdb','#2b71b5'],
+      brick:['#ce8d73','#b86950','#8f503f'], ice:['#e7fbfa','#b5e2e4','#85becd'],
+      lava:['#ffd17b','#f87835','#c54827'], torch:['#ffdb86','#dd9150','#9b623b']
+    }[type] || ['#b4bec5','#909da6','#6e7e89'];
+    var path = function(key,d,stroke,opacity,width){return el('path',{key:key,d:d,fill:'none',stroke:stroke||'#263b43',strokeWidth:width||0.75,opacity:opacity==null?0.3:opacity,strokeLinecap:'round',strokeLinejoin:'round'});};
+    var details=[];
+    if(type==='wood') details.push(path('grain','M5 13L14 18M5 18L14 23M18 18L27 13M18 23L27 18','#65452b',0.4));
+    if(type==='brick') details.push(path('mortar','M3 15L16 22L29 15M3 20L16 27L29 20M9 12L9 18M22 12L22 18M7 17L7 22M24 17L24 22','#f3d5bc',0.55,0.8));
+    if(type==='stone') [[7,16],[11,22],[20,20],[25,16],[14,7]].forEach(function(v,i){details.push(el('circle',{key:'mineral'+i,cx:v[0],cy:v[1],r:0.6,fill:i%2?'#657b71':'#e5ede5',opacity:0.5}));});
+    if(type==='grass') details.push(path('turf','M4 10L16 16.5L28 10','#acc793',0.9,2));
+    if(type==='sand') [[7,17],[11,23],[22,17],[25,21],[14,8]].forEach(function(v,i){details.push(el('circle',{key:'grain'+i,cx:v[0],cy:v[1],r:0.65,fill:'#927d59',opacity:0.4}));});
+    if(type==='diamond') details.push(path('facets','M3 9L16 5L29 9M16 5L16 16L10 26M16 16L23 26','#e0ffff',0.55));
+    if(type==='glass'||type==='ice') details.push(path('shine','M5 13L13 17M20 18L26 14M6 21L11 24','#ffffff',0.85,1.2));
+    if(type==='water') details.push(path('ripples','M6 8Q9 6 12 8T18 8T25 8M19 18Q22 17 26 15','#e0f7ff',0.75,1));
+    if(type==='gold') details.push(path('glint','M23 13L23 18M20.5 15.5L25.5 15.5','#fff6d1',0.95,1.2));
+    if(type==='lava') details.push(path('flow','M5 12L10 18L8 21L14 26M23 13L20 18L25 21','#ffe59a',0.9,1.4));
+    if(type==='torch') details.push(el('path',{key:'flame',d:'M17 3C18 7 22 8 21 12C21 16 14 18 12 13C10 9 15 7 17 3Z',fill:'#ffe49b',stroke:'#ffb74d',strokeWidth:0.8}));
+    return el('svg',{className:'gw-material-swatch',viewBox:'0 0 32 32','aria-hidden':'true',focusable:'false'},
+      el('ellipse',{cx:16,cy:28,rx:12,ry:3,fill:'#071c27',opacity:0.3}),
+      el('path',{d:'M16 2L29 9L16 16L3 9Z',fill:colors[0]}),
+      el('path',{d:'M3 9L16 16L16 30L3 23Z',fill:colors[1]}),
+      el('path',{d:'M16 16L29 9L29 23L16 30Z',fill:colors[2]}),
+      path('edges','M3 9L16 2L29 9L29 23L16 30L3 23ZM3 9L16 16L29 9M16 16L16 30','#ecf7f1',0.2,0.65),details);
+  }
+
+  function getBlockColor(type) {
+    var bt = BLOCK_TYPES.find(function(b) { return b.id === type; });
+    return bt ? bt.color : 0x808080;
+  }
+
+  // ── Block Shapes (fractional geometry) ──
+  // Each shape has an exact fractional relationship to the unit cube
+  var BLOCK_SHAPES = [
+    { id: 'cube', name: 'Cube', volume: 1, emoji: '\u2B1C', fraction: '1', desc: '1 cubic unit' },
+    { id: 'halfA', name: 'Half (diagonal)', volume: 0.5, emoji: '\u25E2', fraction: '\u00BD', desc: 'Cut diagonally = \u00BD cubic unit' },
+    { id: 'halfB', name: 'Half (horizontal)', volume: 0.5, emoji: '\u25AD', fraction: '\u00BD', desc: 'Cut horizontally = \u00BD cubic unit' },
+    { id: 'quarter', name: 'Quarter wedge', volume: 0.25, emoji: '\u25E3', fraction: '\u00BC', desc: 'Cut into quarters = \u00BC cubic unit' },
+  ];
+
+  function renderShapeSwatch(el, shape) {
+    var h = shape === 'halfB' ? 0.5 : 1;
+    var faces = shape === 'halfA' ? [
+      [[0,0,0],[1,1,0],[1,1,1],[0,0,1]], [[1,0,0],[1,0,1],[1,1,1],[1,1,0]], [[0,0,1],[1,0,1],[1,1,1]]
+    ] : shape === 'quarter' ? [
+      [[0,0,0],[0.5,0.5,0],[0.5,0.5,1],[0,0,1]], [[0.5,0.5,0],[1,0,0],[1,0,1],[0.5,0.5,1]], [[0,0,1],[1,0,1],[0.5,0.5,1]]
+    ] : [
+      [[0,h,0],[1,h,0],[1,h,1],[0,h,1]], [[1,0,0],[1,0,1],[1,h,1],[1,h,0]], [[0,0,1],[1,0,1],[1,h,1],[0,h,1]]
+    ];
+    return el('svg', {className:'gw-shape-swatch',viewBox:'0 0 32 34','aria-hidden':'true',focusable:'false'}, faces.map(function(face, i) {
+      return el('polygon',{key:i,points:face.map(function(v){return (16+(v[0]-v[2])*12)+','+(20+(v[0]+v[2])*6-v[1]*16);}).join(' '),fill:['#dfecd4','#84ad91','#a9c6a5'][i],stroke:'#294e3e',strokeWidth:0.8,strokeLinejoin:'round'});
+    }));
+  }
+
+  var WORKSPACE_ICON_PATHS={
+      up:'M12 20V4M5 11l7-7 7 7', down:'M12 4v16M5 13l7 7 7-7',
+      place:'M3 7l9-5 9 5v10l-9 5-9-5ZM3 7l9 5 9-5M12 12v10',
+      break:'M4 20L16 8M3 6c7-5 13-1 18 4l-3 3C13 8 8 5 3 6Z',
+      measure:'M3 16L16 3l5 5L8 21ZM13 6l3 3M9 10l3 3M5 14l3 3',
+      talk:'M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6 4V6a2 2 0 0 1 2-2ZM7 9h10M7 13h6',
+      undo:'M8 4L3 9l5 5M3 9h10a7 7 0 0 1 0 14',
+      redo:'M16 4l5 5-5 5M21 9H11a7 7 0 0 0 0 14',
+      fly:'M12 3v18M6 9l6-6 6 6M4 14l8 7 8-7',
+      home:'M3 11l9-8 9 8M5 9v12h5v-7h4v7h5V9',
+      clear:'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',
+      award:'M8 15l-2 7 6-3 6 3-2-7M19 9a7 7 0 1 1-14 0 7 7 0 0 1 14 0ZM12 5l1.2 2.4 2.6.4-1.9 1.9.4 2.6-2.3-1.2-2.3 1.2.4-2.6-1.9-1.9 2.6-.4Z'
+    };
+  function renderWorkspaceIcon(el, icon) {
+    return el('svg',{className:'gw-workspace-icon',viewBox:'0 0 24 24','aria-hidden':'true',focusable:'false',fill:'none',stroke:'currentColor',strokeWidth:1.6,strokeLinecap:'round',strokeLinejoin:'round'},el('path',{d:WORKSPACE_ICON_PATHS[icon] || WORKSPACE_ICON_PATHS.place}));
+  }
+  function renderWorkspaceAction(el, icon, label, count) {
+    return el('span',{className:'gw-utility-content'},renderWorkspaceIcon(el,icon),el('span',{className:'gw-utility-label'},label),typeof count==='number' && el('span',{className:'gw-utility-count','aria-hidden':'true'},count));
+  }
+  function renderTouchAction(el, icon, label) {
+    return el('span',{className:'gw-touch-action-content'},
+      renderWorkspaceIcon(el,icon),
+      el('span',{className:'gw-touch-action-name'},label));
+  }
+
+  // Create Three.js geometry for each shape
+  function createShapeGeometry(shapeId) {
+    var THREE = window.THREE;
+    if (!THREE) return null;
+    function textureWedge(geometry) {
+      var positions = geometry.getAttribute('position'), normals = geometry.getAttribute('normal');
+      var values = new Float32Array(positions.count * 2);
+      for (var i = 0; i < positions.count; i++) {
+        var x = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
+        var nx = normals.getX(i), ny = normals.getY(i), nz = normals.getZ(i);
+        // Project each planar face using unit-length tangents. Slopes retain
+        // their true surface distance, so wood grain does not stretch at the cut.
+        values[i * 2] = Math.abs(nz) > 0.8 ? x + 0.5 : z + 0.5;
+        values[i * 2 + 1] = Math.abs(nz) > 0.8 ? y : ny * x - nx * y;
+      }
+      geometry.setAttribute('uv', new THREE.BufferAttribute(values, 2));
+      return geometry;
+    }
+    switch (shapeId) {
+      case 'halfA': {
+        // Triangular prism: diagonal cut of unit cube (right triangle cross-section)
+        // Vertices: bottom-left-front, bottom-right-front, top-right-front (triangle)
+        // extruded 1 unit in Z
+        var geo = new THREE.BufferGeometry();
+        var verts = new Float32Array([
+          // Front triangle
+          0,0,0,  1,0,0,  1,1,0,
+          // Back triangle
+          0,0,1,  1,1,1,  1,0,1,
+          // Bottom face
+          0,0,0,  1,0,1,  1,0,0,
+          0,0,0,  0,0,1,  1,0,1,
+          // Diagonal face (hypotenuse)
+          0,0,0,  1,1,0,  1,1,1,
+          0,0,0,  1,1,1,  0,0,1,
+          // Right face
+          1,0,0,  1,0,1,  1,1,1,
+          1,0,0,  1,1,1,  1,1,0
+        ]);
+        geo.setAttribute('position', new THREE.BufferAttribute(windOutward(verts), 3));
+        // Centre in X/Z. These vertices are authored 0..1, unlike the BoxGeometry the
+        // cube and halfB use (already origin-centred) — so sharing the placement
+        // position of (x+0.5, y, z+0.5) put the shape in [x+0.5, x+1.5]: half a block
+        // off-grid diagonally, with Y-rotation pivoting about a corner instead of the
+        // cell centre. Y stays 0-based so it still sits on the cell floor.
+        geo.translate(-0.5, 0, -0.5);
+        geo.computeVertexNormals();
+        return textureWedge(geo);
+      }
+      case 'halfB': {
+        // Half-slab: bottom half of cube (half height)
+        return new THREE.BoxGeometry(1, 0.5, 1);
+      }
+      case 'quarter': {
+        // Quarter wedge: cut the halfA in half again along the other diagonal
+        var geo = new THREE.BufferGeometry();
+        var verts = new Float32Array([
+          // Front triangle (right triangle, half the halfA)
+          0,0,0,  1,0,0,  0.5,0.5,0,
+          // Back triangle
+          0,0,1,  0.5,0.5,1,  1,0,1,
+          // Bottom
+          0,0,0,  1,0,1,  1,0,0,
+          0,0,0,  0,0,1,  1,0,1,
+          // Left slope
+          0,0,0,  0.5,0.5,0,  0.5,0.5,1,
+          0,0,0,  0.5,0.5,1,  0,0,1,
+          // Right slope
+          1,0,0,  0.5,0.5,1,  0.5,0.5,0,
+          1,0,0,  1,0,1,  0.5,0.5,1
+        ]);
+        geo.setAttribute('position', new THREE.BufferAttribute(windOutward(verts), 3));
+        geo.translate(-0.5, 0, -0.5); // same off-grid fix as halfA
+        geo.computeVertexNormals();
+        return textureWedge(geo);
+      }
+      default:
+        return new THREE.BoxGeometry(1, 1, 1);
+    }
+  }
+
+  // ── STL geometry, taken from what is actually on screen ──
+  // The exporter used to emit a unit cube per block and ignore userData.shape, so a
+  // build made of half-slabs (½ unit) and wedges (¼ unit) printed as solid cubes —
+  // the physical manipulative would have contradicted the volume lesson it exists to
+  // teach. Rather than maintain a second copy of each shape's geometry, read the real
+  // mesh: then the print and the screen cannot drift apart, and any shape added later
+  // is handled for free.
+  //
+  // Pure and module-scope (matrix passed in as a plain 16-element array) so the
+  // transform maths is unit-testable without a WebGL context.
+  function applyMatrix4(e, v) {
+    var x = v[0], y = v[1], z = v[2];
+    var w = e[3] * x + e[7] * y + e[11] * z + e[15];
+    var iw = w ? 1 / w : 1;
+    return [
+      (e[0] * x + e[4] * y + e[8] * z + e[12]) * iw,
+      (e[1] * x + e[5] * y + e[9] * z + e[13]) * iw,
+      (e[2] * x + e[6] * y + e[10] * z + e[14]) * iw
+    ];
+  }
+
+  // The diagonal half and the quarter wedge are the two shapes authored by hand
+  // above, and both were wound clockwise seen from outside, so every face normal
+  // pointed INTO the solid. On screen the renderer culled the near faces and lit
+  // the far ones, so a wedge read as a dark hollow; in the STL the signed volume
+  // came out negative (a 12-block build summed to 8.25 units instead of 9.75),
+  // which a slicer reports as flipped normals and Print Lab's preflight flags as
+  // winding inconsistencies. Swapping the second and third vertex of each
+  // triangle reverses the winding without retyping a coordinate. Pure and
+  // module-scope so the STL test can prove the shapes are outward-wound.
+  function windOutward(verts) {
+    for (var i = 0; i + 8 < verts.length; i += 9) {
+      for (var k = 0; k < 3; k++) {
+        var swap = verts[i + 3 + k];
+        verts[i + 3 + k] = verts[i + 6 + k];
+        verts[i + 6 + k] = swap;
+      }
+    }
+    return verts;
+  }
+
+  function triangleNormal(a, b, c) {
+    var ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+    var vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+    var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    var len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    if (!len) return [0, 0, 0]; // degenerate triangle — STL allows a zero normal
+    return [nx / len, ny / len, nz / len];
+  }
+
+  // World-space triangles for one mesh. Handles indexed (BoxGeometry) and
+  // non-indexed (the hand-authored wedges) buffers alike.
+  function stlTrianglesFromMesh(mesh) {
+    var geo = mesh && mesh.geometry;
+    var pos = geo && geo.attributes && geo.attributes.position;
+    if (!pos || !mesh.matrixWorld) return [];
+    var e = mesh.matrixWorld.elements;
+    var index = geo.index ? geo.index.array : null;
+    var count = index ? index.length : pos.count;
+    var tris = [];
+    for (var i = 0; i + 2 < count; i += 3) {
+      var i0 = index ? index[i] : i, i1 = index ? index[i + 1] : i + 1, i2 = index ? index[i + 2] : i + 2;
+      var a = applyMatrix4(e, [pos.getX(i0), pos.getY(i0), pos.getZ(i0)]);
+      var b = applyMatrix4(e, [pos.getX(i1), pos.getY(i1), pos.getZ(i1)]);
+      var c = applyMatrix4(e, [pos.getX(i2), pos.getY(i2), pos.getZ(i2)]);
+      tris.push({ n: triangleNormal(a, b, c), v: [a, b, c] });
+    }
+    return tris;
+  }
+
+  // A cube face may only be culled when the neighbour actually COVERS it, i.e. is
+  // itself a full cube. The old test culled against any non-grass neighbour, so a
+  // slab or wedge next door punched a hole in the printed model.
+  function coversFullFace(neighbor) {
+    if (!neighbor || !neighbor.userData) return false;
+    if (neighbor.userData.blockType === 'grass') return false;
+    return (neighbor.userData.shape || 'cube') === 'cube';
+  }
+
+  // Format fractional volume for display
+  function formatVolume(vol) {
+    if (vol === Math.floor(vol)) return vol.toString();
+    // Try common fractions
+    var frac = vol * 4;
+    if (frac === Math.floor(frac)) {
+      var num = Math.round(frac);
+      var den = 4;
+      // Simplify
+      if (num % 2 === 0) { num /= 2; den /= 2; }
+      if (num % 2 === 0) { num /= 2; den /= 2; }
+      var whole = Math.floor(num / den);
+      var rem = num % den;
+      if (rem === 0) return whole.toString();
+      return (whole > 0 ? whole + ' ' : '') + rem + '/' + den;
+    }
+    return vol.toFixed(2);
+  }
+
+  // A bounding box only equals a structure's volume when every unit of the box is filled.
+  // Keep this reasoning shared so every surface reports composite structures accurately.
+  function measuredVolume(m) {
+    return m && typeof m.totalVolume === 'number' ? m.totalVolume : (m ? m.boundingVolume : 0);
+  }
+
+  function enrichMeasurement(m) {
+    if (!m) return m;
+    var occupied = measuredVolume(m);
+    var bounding = m.boundingVolume || 0;
+    m.occupiedVolume = occupied;
+    m.missingVolume = Math.max(0, bounding - occupied);
+    m.fillPercent = bounding > 0 ? Math.round((occupied / bounding) * 100) : 0;
+    var hasPartialShapes = Object.keys(m.shapeCounts || {}).some(function(shapeId) { return shapeId !== 'cube'; });
+    if (hasPartialShapes) m.hasFractions = true;
+    m.isSolidPrism = !m.hasFractions && m.missingVolume === 0 && m.count === bounding;
+    m.formattedOccupiedVolume = formatVolume(occupied);
+    if (Array.isArray(m.blocks)) {
+      var exposedFaces = countExposedCubeFaces(m.blocks);
+      m.surfaceAreaExact = !m.hasFractions;
+      m.exposedSurfaceArea = m.surfaceAreaExact ? exposedFaces.surfaceArea : null;
+      m.exposedFaces = m.surfaceAreaExact ? exposedFaces : null;
+    }
+    if (m.isComplete === false) {
+      m.isSolidPrism = false;
+      m.surfaceAreaExact = false;
+      m.exposedSurfaceArea = null;
+      m.exposedFaces = null;
+    }
+    return m;
+  }
+
+  function parseVolumePrediction(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!text) return null;
+    var mixed = text.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+    var number;
+    if (mixed && Number(mixed[3]) !== 0) {
+      number = Number(mixed[1]) + Number(mixed[2]) / Number(mixed[3]);
+    } else if (/^\d+\/\d+$/.test(text)) {
+      var fraction = text.split('/').map(Number);
+      number = fraction[1] ? fraction[0] / fraction[1] : NaN;
+    } else {
+      number = Number(text);
+    }
+    return Number.isFinite(number) && number > 0 ? number : null;
+  }
+
+  function compareVolumePrediction(value, actualVolume) {
+    var predicted = parseVolumePrediction(value);
+    if (predicted === null || !Number.isFinite(actualVolume) || actualVolume <= 0) return null;
+    var difference = predicted - actualVolume;
+    var absoluteDifference = Math.abs(difference);
+    var percentError = Math.round((absoluteDifference / actualVolume) * 100);
+    var relation = difference === 0 ? 'exact' : (difference > 0 ? 'over' : 'under');
+    var accuracyLabel;
+    if (relation === 'exact') accuracyLabel = 'Estimate matched the measured volume';
+    else if (percentError <= 10) accuracyLabel = 'Estimate and measurement are within 10%';
+    else if (percentError <= 25) accuracyLabel = 'Estimate and measurement differ by up to 25%';
+    else accuracyLabel = 'Estimate and measurement differ; use the dimensions to revise';
+    return {
+      prediction: predicted,
+      actual: actualVolume,
+      difference: difference,
+      absoluteDifference: absoluteDifference,
+      percentError: percentError,
+      relation: relation,
+      accuracyLabel: accuracyLabel
+    };
+  }
+
+  function diagnoseVolumePrediction(measurement, comparison, strategy) {
+    if (!measurement || !comparison) return null;
+    var strategyLabel = strategy || 'your strategy';
+    if (comparison.percentError <= 10) {
+      return {
+        code: comparison.relation === 'exact' ? 'exact' : 'close',
+        prompt: comparison.relation === 'exact'
+          ? 'Your ' + strategyLabel + ' reasoning matched the measured volume. Explain why it worked.'
+          : 'Your ' + strategyLabel + ' reasoning was close. Use the measured dimensions to refine it.'
+      };
+    }
+    var predicted = comparison.prediction;
+    var layerProducts = [measurement.L * measurement.W, measurement.L * measurement.H, measurement.W * measurement.H];
+    var usedOneLayer = measurement.isSolidPrism && layerProducts.some(function(value) { return value > 0 && Math.abs(predicted - value) < 0.0001; });
+    if (usedOneLayer) {
+      return { code: 'one_layer', prompt: 'You may have found the area of one layer. How many equal layers make the whole prism?' };
+    }
+    if (measurement.hasFractions && Math.abs(predicted - measurement.count) < 0.0001 && Math.abs(measurement.count - measurement.occupiedVolume) > 0.0001) {
+      return { code: 'fraction_count', prompt: 'You counted pieces, but some pieces are fractional cubes. Combine their fractional volumes.' };
+    }
+    if (!measurement.isSolidPrism && Math.abs(predicted - measurement.boundingVolume) < 0.0001 && measurement.missingVolume > 0) {
+      return { code: 'bounding_box', prompt: 'Your estimate matches the full bounding box. Which spaces inside that box are empty?' };
+    }
+    return {
+      code: comparison.relation === 'over' ? 'overestimate' : 'underestimate',
+      prompt: comparison.relation === 'over'
+        ? 'Your estimate is high. Look for empty space or cubes that may have been counted twice.'
+        : 'Your estimate is low. Check every layer and every part of the structure.'
+    };
+  }
+
+  function comparePredictionRevision(originalComparison, revisedValue) {
+    if (!originalComparison) return null;
+    var revised = compareVolumePrediction(revisedValue, originalComparison.actual);
+    if (!revised) return null;
+    var improvement = originalComparison.percentError - revised.percentError;
+    return {
+      prediction: revised.prediction,
+      actual: revised.actual,
+      percentError: revised.percentError,
+      relation: revised.relation,
+      improvement: improvement,
+      feedback: revised.percentError === 0
+        ? 'Revision matches the measured volume exactly.'
+        : improvement > 0
+          ? 'Your revision improved by ' + improvement + ' percentage point' + (improvement === 1 ? '' : 's') + '.'
+          : improvement === 0
+            ? 'Your revision is equally close. Try a different representation or strategy.'
+            : 'This revision moved farther away. Recheck the dimensions and occupied spaces.'
+    };
+  }
+
+  function evaluateVolumePrediction(measurement, predictionState) {
+    var state = predictionState || {};
+    var comparison = compareVolumePrediction(state.input, measurement && measurement.occupiedVolume);
+    if (!comparison) return null;
+    var diagnosis = diagnoseVolumePrediction(measurement, comparison, state.strategy);
+    comparison.strategy = state.strategy || '';
+    comparison.reason = String(state.reason || '').trim();
+    comparison.diagnosisCode = diagnosis ? diagnosis.code : '';
+    comparison.learningPrompt = diagnosis ? diagnosis.prompt : '';
+    return comparison;
+  }
+
+  // A committed estimate belongs to one connected structure, not merely to the
+  // next press of M. The signature is stable regardless of which cube in that
+  // structure the learner aims at because measureStructure returns the complete
+  // connected component. Including a compact hash of its occupied coordinates
+  // also distinguishes composite structures that share the same bounding box.
+  function geometryMeasurementTargetKey(measurement) {
+    if (!measurement || measurement.isComplete === false) return '';
+    var fields = [measurement.minX, measurement.minY, measurement.minZ, measurement.L, measurement.W, measurement.H, measurement.count, measurement.occupiedVolume];
+    if (fields.some(function(value) { return !Number.isFinite(Number(value)); })) return '';
+    var cells = Array.isArray(measurement.blocks) ? measurement.blocks.map(function(block) {
+      return [Number(block.x), Number(block.y), Number(block.z)].join(',');
+    }).sort().join(';') : '';
+    var hash = 2166136261;
+    for (var i = 0; i < cells.length; i++) {
+      hash ^= cells.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    var normalized = fields.map(function(value) { return String(Math.round(Number(value) * 1000000) / 1000000); });
+    return 'gw-structure:' + normalized.join(':') + ':' + (hash >>> 0).toString(36);
+  }
+
+  function normalizeVolumeEstimateTargetKeys(keys) {
+    var seen = {};
+    return (Array.isArray(keys) ? keys : []).map(function(key) { return String(key || ''); }).filter(function(key) {
+      if (!key || seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+  }
+
+  // Snapshot the draft so later edits cannot change the value that will be
+  // compared. Structures whose evidence has already been revealed are ineligible
+  // for a new accuracy attempt; revision after evidence remains a separate step.
+  function commitVolumeEstimateDraft(draft, targetKey, observedTargetKeys) {
+    var data = draft || {};
+    var parsed = parseVolumePrediction(data.input);
+    if (parsed === null) return { ok: false, code: 'invalid_estimate', commitment: null };
+    var key = String(targetKey || '');
+    if (!key) return { ok: false, code: 'no_target', commitment: null };
+    var observed = normalizeVolumeEstimateTargetKeys(observedTargetKeys);
+    if (observed.indexOf(key) >= 0) return { ok: false, code: 'already_observed', commitment: null };
+    return {
+      ok: true,
+      code: 'committed',
+      commitment: {
+        version: 1,
+        targetKey: key,
+        input: String(data.input == null ? '' : data.input).trim(),
+        prediction: parsed,
+        strategy: String(data.strategy || '').trim(),
+        reason: String(data.reason || '').trim()
+      }
+    };
+  }
+
+  // Resolve a measurement only against a previously committed estimate for the
+  // same structure. Every complete reveal is remembered, whether it was scored or
+  // observation-only, so its exact answer cannot become a retroactive estimate.
+  function resolveVolumeEstimateMeasurement(measurement, commitment, observedTargetKeys) {
+    var targetKey = geometryMeasurementTargetKey(measurement);
+    var observed = normalizeVolumeEstimateTargetKeys(observedTargetKeys);
+    if (!targetKey) {
+      return { status: 'incomplete', targetKey: '', comparison: null, nextCommitment: commitment || null, observedTargetKeys: observed, consumed: false };
+    }
+    var wasObserved = observed.indexOf(targetKey) >= 0;
+    var nextObserved = wasObserved ? observed : observed.concat([targetKey]);
+    if (wasObserved) {
+      return { status: 'already_observed', targetKey: targetKey, comparison: null, nextCommitment: commitment || null, observedTargetKeys: nextObserved, consumed: false };
+    }
+    if (!commitment) {
+      return { status: 'observation', targetKey: targetKey, comparison: null, nextCommitment: null, observedTargetKeys: nextObserved, consumed: false };
+    }
+    if (String(commitment.targetKey || '') !== targetKey) {
+      return { status: 'target_mismatch', targetKey: targetKey, comparison: null, nextCommitment: commitment, observedTargetKeys: nextObserved, consumed: false };
+    }
+    var comparison = evaluateVolumePrediction(measurement, {
+      input: commitment.input,
+      strategy: commitment.strategy,
+      reason: commitment.reason
+    });
+    return {
+      status: comparison ? 'compared' : 'invalid_commitment',
+      targetKey: targetKey,
+      comparison: comparison,
+      nextCommitment: comparison ? null : commitment,
+      observedTargetKeys: nextObserved,
+      consumed: !!comparison
+    };
+  }
+
+  function objectiveEvidenceFor(text, context) {
+    var objective = String(text || '');
+    var ctx = context || {};
+    var measurements = completeMeasurementRecords(ctx.measurements || []);
+    var answered = Number(ctx.answered || 0);
+    var totalQuestions = Number(ctx.totalQuestions || 0);
+    var blocksPlaced = Number(ctx.blocksPlaced || 0);
+    var structureCount = Number(ctx.structureCount || 0);
+    var representationConnections = Math.max(0, Number(ctx.representationConnections || 0));
+    var reflectionsCompleted = Math.max(0, Number(ctx.reflectionsCompleted || 0));
+    var explainedPredictions = measurements.filter(function(record) {
+      var data = record && record.data ? record.data : (record || {});
+      return typeof data.prediction === 'number' && !!String(data.predictionReason || data.reason || data.predictionStrategy || data.strategy || '').trim();
+    }).length;
+    var result = { done: false, evidence: 'No matching evidence yet' };
+
+    if (/(equivalent|representation|two ways|multiple ways|different ways)/i.test(objective) && /(explain|connect|compare|represent|show)/i.test(objective)) {
+      result = { done: representationConnections > 0, evidence: representationConnections + ' saved representation connection' + (representationConnections === 1 ? '' : 's') };
+    } else if (/answer|talk|ask|speak/i.test(objective) && totalQuestions > 0) {
+      result = { done: answered >= totalQuestions, evidence: answered + '/' + totalQuestions + ' questions completed' };
+    } else if (/compare/i.test(objective)) {
+      result = { done: measurements.length >= 2, evidence: Math.min(measurements.length, 2) + '/2 complete measurements' };
+    } else if (/revise/i.test(objective) && /reflect/i.test(objective)) {
+      result = { done: !!ctx.revisionCompleted && reflectionsCompleted > 0, evidence: 'Revision: ' + (ctx.revisionCompleted ? 'saved' : 'not yet') + '; reflection: ' + reflectionsCompleted + ' saved' };
+    } else if (/revise/i.test(objective)) {
+      result = { done: !!ctx.revisionCompleted, evidence: ctx.revisionCompleted ? 'Estimate revised from evidence' : 'Saved estimate revision needed' };
+    } else if (/reflect/i.test(objective)) {
+      result = { done: reflectionsCompleted > 0, evidence: reflectionsCompleted + ' saved reflection' + (reflectionsCompleted === 1 ? '' : 's') };
+    } else if (/predict|estimate|strategy|explain|reason/i.test(objective)) {
+      result = { done: explainedPredictions > 0, evidence: explainedPredictions + ' explained prediction' + (explainedPredictions === 1 ? '' : 's') };
+    } else if (/build|place|construct|create|make|stack/i.test(objective)) {
+      var buildTarget = Number(ctx.buildTarget || 5);
+      result = { done: blocksPlaced >= buildTarget, evidence: Math.min(blocksPlaced, buildTarget) + '/' + buildTarget + ' blocks placed' };
+    } else if (/explore|find|locate|visit/i.test(objective)) {
+      var exploreTarget = structureCount > 1 ? 2 : 1;
+      var explored = Math.max(measurements.length, totalQuestions > 0 ? answered : 0);
+      result = { done: explored >= exploreTarget, evidence: Math.min(explored, exploreTarget) + '/' + exploreTarget + ' structures investigated' };
+    } else if (/measure|ruler|volume|surface|dimension/i.test(objective)) {
+      result = { done: measurements.length > 0, evidence: measurements.length + ' complete measurement' + (measurements.length === 1 ? '' : 's') };
+    }
+    return result;
+  }
+
+  function buildEvidenceReflectionPrompt(measurement, prediction, revision) {
+    var data = measurement && measurement.data ? measurement.data : (measurement || {});
+    var actual = typeof data.occupiedVolume === 'number' ? data.occupiedVolume : (typeof data.volume === 'number' ? data.volume : null);
+    if (actual === null) return 'Describe one strategy you tried, what evidence you noticed, and what you would do next.';
+    var comparison = prediction || {};
+    var predicted = typeof comparison.prediction === 'number' ? comparison.prediction : (typeof data.prediction === 'number' ? data.prediction : null);
+    var strategy = comparison.strategy || data.predictionStrategy || data.strategy || '';
+    var revised = revision && typeof revision.prediction === 'number' ? revision.prediction : null;
+    var prompt = predicted === null
+      ? 'You measured ' + formatVolume(actual) + ' cubic units.'
+      : 'You predicted ' + formatVolume(predicted) + ' cubic units' + (strategy ? ' using ' + strategy : '') + ', then measured ' + formatVolume(actual) + '.';
+    if (revised !== null) prompt += ' You revised your prediction to ' + formatVolume(revised) + '.';
+    return prompt + ' Complete: "I first thought... I noticed... Next time I will..."';
+  }
+
+  function buildVolumeRepresentations(measurement) {
+    if (!measurement || measurement.isComplete === false) return [];
+    var actual = typeof measurement.occupiedVolume === 'number' ? measurement.occupiedVolume : measuredVolume(measurement);
+    if (!Number.isFinite(actual)) return [];
+    var views = [];
+    var shapeCounts = measurement.shapeCounts || {};
+
+    if (measurement.hasFractions) {
+      var fractionValues = { cube: 1, halfA: 0.5, halfB: 0.5, quarter: 0.25 };
+      var fractionLabels = { cube: '1', halfA: '1/2', halfB: '1/2', quarter: '1/4' };
+      var pieces = ['cube', 'halfA', 'halfB', 'quarter'].filter(function(shape) { return shapeCounts[shape] > 0; }).map(function(shape) {
+        return shapeCounts[shape] + '\u00d7' + fractionLabels[shape];
+      });
+      if (pieces.length) {
+        views.push({
+          key: 'fraction_composition',
+          label: 'Compose fractional pieces',
+          expression: pieces.join(' + ') + ' = ' + formatVolume(actual),
+          question: 'Which fractional pieces could combine to make another whole cubic unit?'
+        });
+      }
+      var wholeEquivalent = Object.keys(shapeCounts).reduce(function(sum, shape) {
+        return sum + (shapeCounts[shape] || 0) * (fractionValues[shape] || 0);
+      }, 0);
+      views.push({
+        key: 'whole_equivalent',
+        label: 'Whole-cube equivalent',
+        expression: 'Fractional pieces occupy ' + formatVolume(wholeEquivalent) + ' whole cubic units',
+        question: 'How is piece count different from occupied volume?'
+      });
+    } else if (measurement.isSolidPrism && [measurement.L, measurement.W, measurement.H].every(function(value) { return typeof value === 'number'; })) {
+      var baseArea = measurement.L * measurement.W;
+      views.push({
+        key: 'layers',
+        label: 'Base layers',
+        expression: '(' + formatVolume(measurement.L) + '\u00d7' + formatVolume(measurement.W) + ') \u00d7 ' + formatVolume(measurement.H) + ' layers = ' + formatVolume(baseArea) + '\u00d7' + formatVolume(measurement.H) + ' = ' + formatVolume(actual),
+        question: 'What does each factor represent in the structure?'
+      });
+      views.push({
+        key: 'rotated_layers',
+        label: 'Reoriented layers',
+        expression: '(' + formatVolume(measurement.W) + '\u00d7' + formatVolume(measurement.H) + ') \u00d7 ' + formatVolume(measurement.L) + ' layers = ' + formatVolume(actual),
+        question: 'Why does changing the layer direction keep the volume equal?'
+      });
+    } else if (typeof measurement.boundingVolume === 'number') {
+      views.push({
+        key: 'bounding_subtraction',
+        label: 'Bounding box minus empty',
+        expression: formatVolume(measurement.boundingVolume) + ' \u2212 ' + formatVolume(measurement.missingVolume || 0) + ' = ' + formatVolume(actual),
+        question: 'Where do you see the empty cubic units in the 3D structure?'
+      });
+      views.push({
+        key: 'decomposition',
+        label: 'Decompose and add',
+        expression: 'Non-overlapping prism parts must add to ' + formatVolume(actual),
+        question: 'Where could you split this structure into rectangular prisms without overlap?'
+      });
+    }
+
+    views.push({
+      key: 'occupied_units',
+      label: 'Occupied unit cubes',
+      expression: formatVolume(actual) + ' cubic units of space are occupied',
+      question: measurement.hasFractions ? 'How can fractional pieces be regrouped into whole units?' : 'How does counting occupied units connect to multiplication?'
+    });
+    return views;
+  }
+
+  function buildRepresentationExploration(views, visitedKeys, activeKey) {
+    var available = (views || []).map(function(view) { return view && view.key; }).filter(Boolean);
+    var availableLookup = {};
+    available.forEach(function(key) { availableLookup[key] = true; });
+    var seen = {};
+    (visitedKeys || []).concat(activeKey ? [activeKey] : []).forEach(function(key) {
+      if (availableLookup[key]) seen[key] = true;
+    });
+    var visited = available.filter(function(key) { return seen[key]; });
+    var target = Math.min(2, available.length);
+    var visitedTowardTarget = Math.min(visited.length, target);
+    return {
+      visitedKeys: visited,
+      remainingKeys: available.filter(function(key) { return !seen[key]; }),
+      visitedCount: visited.length,
+      total: available.length,
+      target: target,
+      progressValue: visitedTowardTarget,
+      percent: target ? Math.round((visitedTowardTarget / target) * 100) : 0,
+      complete: target > 0 && visited.length >= target,
+      prompt: visited.length >= target ? 'You compared multiple views. Explain what stays equal.' : 'Explore one more view, then explain how the representations match.'
+    };
+  }
+
+  function recommendVolumeRepresentation(measurement, prediction, views) {
+    if (!measurement || measurement.isComplete === false || !prediction || !prediction.diagnosisCode) return null;
+    var code = prediction.diagnosisCode;
+    if (code === 'exact' || code === 'close') return null;
+    var recommendations = {
+      one_layer: {
+        key: 'layers',
+        reason: 'Use the layer view to connect the area of one layer to the number of equal layers.'
+      },
+      bounding_box: {
+        key: 'bounding_subtraction',
+        reason: 'Use bounding-box subtraction to separate occupied cubes from empty space.'
+      },
+      fraction_count: {
+        key: 'fraction_composition',
+        reason: 'Compose the fractional pieces to see their whole-cube equivalent.'
+      },
+      overestimate: {
+        key: measurement.isSolidPrism ? 'occupied_units' : 'bounding_subtraction',
+        reason: measurement.isSolidPrism ? 'Check the occupied units against your multiplication.' : 'Check whether empty bounding-box space was included.'
+      },
+      underestimate: {
+        key: measurement.isSolidPrism ? 'layers' : 'decomposition',
+        reason: measurement.isSolidPrism ? 'Use equal layers to check whether every layer was counted.' : 'Decompose the structure to check that every occupied part was included.'
+      }
+    };
+    var recommendation = recommendations[code];
+    if (!recommendation) return null;
+    var matchingView = (views || []).find(function(view) { return view && view.key === recommendation.key; });
+    if (!matchingView) matchingView = (views || []).find(function(view) { return view && view.key === 'occupied_units'; });
+    if (!matchingView) return null;
+    return { key: matchingView.key, label: matchingView.label, reason: recommendation.reason, diagnosisCode: code };
+  }
+
+  function buildRepresentationConnectionReadiness(text, invariantChecked, evidenceChecked) {
+    var missing = [];
+    if (String(text || '').trim().length < 8) missing.push('a fuller explanation');
+    if (!invariantChecked) missing.push('what stays the same');
+    if (!evidenceChecked) missing.push('evidence from the structure or equation');
+    var message = '';
+    if (missing.length === 1) {
+      message = 'Add ' + missing[0] + ' before saving.';
+    } else if (missing.length === 2) {
+      message = 'Add ' + missing[0] + ' and ' + missing[1] + ' before saving.';
+    } else if (missing.length > 2) {
+      message = 'Write a fuller explanation, then confirm what stays the same and the evidence you used.';
+    }
+    return {
+      ready: missing.length === 0,
+      missing: missing,
+      hasExplanation: String(text || '').trim().length >= 8,
+      invariantChecked: !!invariantChecked,
+      evidenceChecked: !!evidenceChecked,
+      message: message
+    };
+  }
+
+  function hasUnsavedRepresentationConnection(text, saved) {
+    return !!String(text || '').trim() && !saved;
+  }
+
+  function buildRepresentationSentenceStarter(view, measurement, scaffoldLevel) {
+    if (!view || !measurement || measurement.isComplete === false || scaffoldLevel === 'independent') return '';
+    var actual = typeof measurement.occupiedVolume === 'number' ? measurement.occupiedVolume : measuredVolume(measurement);
+    if (!Number.isFinite(actual)) return '';
+    if (scaffoldLevel === 'supported') {
+      return 'Both views show ' + formatVolume(actual) + ' cubic units because one shows ___ while the other shows ___.';
+    }
+    var key = view.key;
+    if (key === 'layers' && [measurement.L, measurement.W, measurement.H].every(function(value) { return typeof value === 'number'; })) {
+      return 'One layer has ' + formatVolume(measurement.L * measurement.W) + ' cubic units. ' + formatVolume(measurement.H) + ' equal layers make ' + formatVolume(actual) + ', so both views show the same volume because ___.';
+    }
+    if (key === 'rotated_layers') {
+      return 'The layer direction changed, but both expressions equal ' + formatVolume(actual) + ' cubic units because ___.';
+    }
+    if (key === 'bounding_subtraction') {
+      return 'The box has ' + formatVolume(measurement.boundingVolume) + ' cubic units. Subtracting ' + formatVolume(measurement.missingVolume || 0) + ' empty units leaves ' + formatVolume(actual) + ', so ___.';
+    }
+    if (key === 'decomposition') {
+      return 'I can split the structure into non-overlapping parts. Their volumes add to ' + formatVolume(actual) + ' cubic units because ___.';
+    }
+    if (key === 'fraction_composition' || key === 'whole_equivalent') {
+      return 'The fractional pieces combine to occupy ' + formatVolume(actual) + ' cubic units; this matches the other view because ___.';
+    }
+    return 'Counting the occupied units gives ' + formatVolume(actual) + ' cubic units, which matches the other view because ___.';
+  }
+
+  function determinePredictionScaffold(history) {
+    var complete = completeMeasurementRecords(history || []);
+    var explained = complete.filter(function(record) {
+      return typeof record.prediction === 'number' && !!String(record.reason || record.strategy || '').trim();
+    }).length;
+    var close = complete.filter(function(record) {
+      return typeof record.percentError === 'number' && record.percentError <= 10;
+    }).length;
+    if (complete.length < 2 || explained < 1) {
+      return {
+        level: 'guided',
+        label: 'Guided support',
+        cue: 'Start with one layer: find its base area, then count or estimate the layers.',
+        strategyPrompt: 'Choose a strategy',
+        reasonPrompt: 'How does your strategy count every cubic unit?'
+      };
+    }
+    if (complete.length < 4 || close < 2) {
+      return {
+        level: 'supported',
+        label: 'Light support',
+        cue: 'Choose a representation, estimate, and justify how it matches the structure.',
+        strategyPrompt: 'Choose a representation',
+        reasonPrompt: 'Why does this representation fit?'
+      };
+    }
+    return {
+      level: 'independent',
+      label: 'Independent transfer',
+      cue: 'Plan, estimate, and justify independently. Use the strategy menu only if it helps.',
+      strategyPrompt: 'Strategy if helpful',
+      reasonPrompt: 'Defend or challenge your estimate.'
+    };
+  }
+
+  function buildRetrievalCheckpoint(history) {
+    var complete = completeMeasurementRecords(history || []);
+    if (complete.length < 2) return null;
+    var latest = complete[complete.length - 1] || {};
+    var volume = typeof latest.occupiedVolume === 'number' ? latest.occupiedVolume : parseVolumePrediction(latest.vol);
+    if (!Number.isFinite(volume) || volume <= 0) return null;
+    var checkpoint = { id: '', concept: '', prompt: '', expected: null, hint: '' };
+
+    if (latest.hasFractions && typeof latest.blocks === 'number' && latest.blocks > volume) {
+      checkpoint.concept = 'fractional_volume';
+      checkpoint.expected = latest.blocks - volume;
+      checkpoint.prompt = 'This structure uses ' + latest.blocks + ' pieces but occupies ' + formatVolume(volume) + ' cubic units. How much less is that than ' + latest.blocks + ' whole cubes?';
+      checkpoint.hint = 'Subtract the occupied volume from the number of whole-cube spaces.';
+    } else if (latest.isSolidPrism === false && typeof latest.boundingVolume === 'number' && latest.boundingVolume > volume) {
+      checkpoint.concept = 'empty_space';
+      checkpoint.expected = latest.boundingVolume - volume;
+      checkpoint.prompt = 'A bounding box is ' + formatVolume(latest.boundingVolume) + ' cubic units and the structure occupies ' + formatVolume(volume) + '. How much space is empty?';
+      checkpoint.hint = 'Subtract occupied volume from bounding-box volume.';
+    } else if ([latest.L, latest.W, latest.H].every(function(value) { return typeof value === 'number' && value > 0; })) {
+      if (complete.length % 2 === 0) {
+        checkpoint.concept = 'scale_height';
+        checkpoint.expected = latest.H * 2;
+        checkpoint.prompt = 'A new prism keeps the same ' + formatVolume(latest.L) + ' by ' + formatVolume(latest.W) + ' base but doubles the volume to ' + formatVolume(volume * 2) + '. What height will it need?';
+        checkpoint.hint = 'With the same base area, doubling volume doubles the number of layers.';
+      } else {
+        checkpoint.concept = 'layer_area';
+        checkpoint.expected = latest.L * latest.W;
+        checkpoint.prompt = 'For the latest prism, what is the area of one ' + formatVolume(latest.L) + ' by ' + formatVolume(latest.W) + ' layer?';
+        checkpoint.hint = 'Multiply the two dimensions of the base.';
+      }
+    } else {
+      var previous = complete[complete.length - 2] || {};
+      var previousVolume = typeof previous.occupiedVolume === 'number' ? previous.occupiedVolume : parseVolumePrediction(previous.vol);
+      if (!Number.isFinite(previousVolume)) return null;
+      checkpoint.concept = 'volume_difference';
+      checkpoint.expected = Math.abs(volume - previousVolume);
+      checkpoint.prompt = 'What is the absolute volume difference between the previous structure (' + formatVolume(previousVolume) + ') and the latest (' + formatVolume(volume) + ')?';
+      checkpoint.hint = 'Subtract the smaller volume from the larger volume.';
+    }
+    checkpoint.id = 'retrieval-' + (latest.t || complete.length) + '-' + checkpoint.concept;
+    return checkpoint;
+  }
+
+  // A retrieval answer may legitimately be ZERO. The 'volume_difference' checkpoint
+  // sets expected = Math.abs(volume - previousVolume), which is exactly 0 whenever a
+  // student builds two structures of the same volume — a common and pedagogically
+  // interesting case. parseVolumePrediction() rejects 0 because a predicted VOLUME of
+  // zero is meaningless, and that guard is correct for its other callers (they parse
+  // stored structure volumes), so this is a separate parser rather than a loosened
+  // shared one. Before this, the student typed the right answer and was told
+  // "Enter a positive number or fraction." — refused as invalid input, not even
+  // marked wrong.
+  function parseRetrievalAnswer(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!text) return null;
+    var mixed = text.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+    var number;
+    if (mixed && Number(mixed[3]) !== 0) {
+      number = Number(mixed[1]) + Number(mixed[2]) / Number(mixed[3]);
+    } else if (/^\d+\/\d+$/.test(text)) {
+      var fraction = text.split('/').map(Number);
+      number = fraction[1] ? fraction[0] / fraction[1] : NaN;
+    } else {
+      number = Number(text);
+    }
+    return Number.isFinite(number) && number >= 0 ? number : null;
+  }
+
+  function checkRetrievalAnswer(checkpoint, value, attemptNumber) {
+    if (!checkpoint || !Number.isFinite(checkpoint.expected)) return null;
+    var answer = parseRetrievalAnswer(value);
+    if (answer === null) return { correct: false, valid: false, feedback: 'Enter a number or fraction (0 is allowed).' };
+    var correct = Math.abs(answer - checkpoint.expected) < 0.0001;
+    return {
+      correct: correct,
+      valid: true,
+      answer: answer,
+      expected: checkpoint.expected,
+      feedback: correct ? 'Correct - you retrieved the relationship from earlier evidence.' : (Number(attemptNumber || 1) <= 1 ? 'Pause before calculating: name what stays the same, what changes, and which operation connects them.' : checkpoint.hint)
+    };
+  }
+
+  function escapeReportHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function misconceptionGuidance(code) {
+    var guidance = {
+      one_layer: { label: 'Used one layer as total volume', nextStep: 'Reconnect base area to the number of equal layers.' },
+      bounding_box: { label: 'Counted empty bounding-box space', nextStep: 'Use bounding-box volume minus empty space with a composite model.' },
+      fraction_count: { label: 'Counted fractional pieces as whole cubes', nextStep: 'Compose fractional pieces into whole cubic units.' },
+      overestimate: { label: 'General overestimate', nextStep: 'Check for empty space and overlapping parts.' },
+      underestimate: { label: 'General underestimate', nextStep: 'Check every layer and each decomposed part.' }
+    };
+    return guidance[code] || { label: 'Unclassified pattern', nextStep: 'Ask the student to model and explain their strategy.' };
+  }
+
+  function summarizeLearningEvidence(log) {
+    var events = log || [];
+    var measurements = events.filter(function(event) { return event && event.type === 'measurement' && (!event.data || event.data.isComplete !== false); });
+    var revisions = events.filter(function(event) { return event && event.type === 'prediction_revision'; });
+    var retrievalChecks = events.filter(function(event) { return event && event.type === 'retrieval_check'; });
+    var representationViews = events.filter(function(event) { return event && event.type === 'representation_view'; });
+    var strategyCounts = {};
+    var targetedRepresentationViews = representationViews.filter(function(event) { return event.data && event.data.source === 'misconception_recommendation'; });
+    var targetedSupportCounts = {};
+    var representationConnections = events.filter(function(event) { return event && event.type === 'representation_connection' && event.data && String(event.data.text || '').trim(); });
+    var representationCounts = {};
+    var misconceptionCounts = {};
+    var explainedPredictions = 0;
+    measurements.forEach(function(event) {
+      var data = event.data || {};
+      var strategy = String(data.predictionStrategy || data.strategy || '').trim();
+      var reason = String(data.predictionReason || data.reason || '').trim();
+      var misconception = String(data.misconception || data.diagnosisCode || '').trim();
+      if (strategy) strategyCounts[strategy] = (strategyCounts[strategy] || 0) + 1;
+      if (typeof data.prediction === 'number' && (strategy || reason)) explainedPredictions += 1;
+      if (misconception && misconception !== 'exact' && misconception !== 'close') {
+        misconceptionCounts[misconception] = (misconceptionCounts[misconception] || 0) + 1;
+      }
+    });
+    targetedRepresentationViews.forEach(function(event) {
+      var misconception = String(event.data && event.data.misconception || '').trim() || 'unknown';
+      targetedSupportCounts[misconception] = (targetedSupportCounts[misconception] || 0) + 1;
+    });
+    var revisionImprovements = revisions.map(function(event) {
+      return Number(event.data && event.data.improvement);
+    }).filter(function(value) { return Number.isFinite(value); });
+    representationViews.forEach(function(event) {
+      var representation = String(event.data && event.data.representation || '').trim();
+      if (representation) representationCounts[representation] = (representationCounts[representation] || 0) + 1;
+    });
+    var representations = Object.keys(representationCounts).sort().map(function(representation) {
+      return { representation: representation, count: representationCounts[representation] };
+    });
+    var targetedRepresentationSupports = Object.keys(targetedSupportCounts).sort().map(function(code) {
+      return { code: code, label: misconceptionGuidance(code).label, count: targetedSupportCounts[code] };
+    });
+    var strategies = Object.keys(strategyCounts).sort().map(function(strategy) {
+      return { strategy: strategy, count: strategyCounts[strategy] };
+    });
+    var misconceptions = Object.keys(misconceptionCounts).map(function(code) {
+      var detail = misconceptionGuidance(code);
+      return { code: code, label: detail.label, count: misconceptionCounts[code], nextStep: detail.nextStep };
+    }).sort(function(a, b) { return b.count - a.count || a.code.localeCompare(b.code); });
+    var retrievalByCheckpoint = {};
+    retrievalChecks.forEach(function(event, index) {
+      var data = event.data || {};
+      var key = data.checkpointId || ('event-' + index);
+      if (!retrievalByCheckpoint[key]) retrievalByCheckpoint[key] = { attempts: 0, correct: false, firstTryCorrect: false };
+      var checkpoint = retrievalByCheckpoint[key];
+      checkpoint.attempts += 1;
+      var attempt = Number(data.attempt || checkpoint.attempts);
+      if (data.correct === true) {
+        checkpoint.correct = true;
+        if (attempt === 1) checkpoint.firstTryCorrect = true;
+      }
+    });
+    var retrievalCheckpointValues = Object.keys(retrievalByCheckpoint).map(function(key) { return retrievalByCheckpoint[key]; });
+    return {
+      explainedPredictions: explainedPredictions,
+      revisionsMade: revisions.length,
+      revisionsImproved: revisionImprovements.filter(function(value) { return value > 0; }).length,
+      averageRevisionImprovement: revisionImprovements.length ? Math.round(revisionImprovements.reduce(function(sum, value) { return sum + value; }, 0) / revisionImprovements.length) : null,
+      reflectionsCompleted: events.filter(function(event) { return event && event.type === 'reflection' && event.data && String(event.data.text || '').trim(); }).length,
+      retrievalAttempts: retrievalChecks.length,
+      retrievalCorrect: retrievalChecks.filter(function(event) { return event.data && event.data.correct === true; }).length,
+      retrievalCheckpoints: retrievalCheckpointValues.length,
+      retrievalCheckpointsCorrect: retrievalCheckpointValues.filter(function(item) { return item.correct; }).length,
+      representationConnections: representationConnections.length,
+      representationConnectionExamples: representationConnections.slice(-3).map(function(event) {
+        return { from: String(event.data.from || ''), to: String(event.data.to || ''), text: String(event.data.text || '').trim() };
+      }),
+      retrievalFirstTryCorrect: retrievalCheckpointValues.filter(function(item) { return item.firstTryCorrect; }).length,
+      strategies: strategies,
+      representationViews: representationViews.length,
+      representations: representations,
+      misconceptions: misconceptions,
+      targetedRepresentationViews: targetedRepresentationViews.length,
+      targetedRepresentationSupports: targetedRepresentationSupports,
+      mostCommonMisconception: misconceptions.length ? misconceptions[0] : null
+    };
+  }
+
+  // ── Achievement Badges ──
+
+  // Counts exposed unit faces for a connected structure made entirely from full cubes.
+  function countExposedCubeFaces(blocks) {
+    var occupied = {};
+    (blocks || []).forEach(function(block) {
+      occupied[block.x + ',' + block.y + ',' + block.z] = true;
+    });
+    var directions = [{ x: 1, y: 0, z: 0, axis: 'x' }, { x: -1, y: 0, z: 0, axis: 'x' }, { x: 0, y: 1, z: 0, axis: 'y' }, { x: 0, y: -1, z: 0, axis: 'y' }, { x: 0, y: 0, z: 1, axis: 'z' }, { x: 0, y: 0, z: -1, axis: 'z' }];
+    var byAxis = { x: 0, y: 0, z: 0 };
+    (blocks || []).forEach(function(block) {
+      directions.forEach(function(direction) {
+        var neighbor = (block.x + direction.x) + ',' + (block.y + direction.y) + ',' + (block.z + direction.z);
+        if (!occupied[neighbor]) byAxis[direction.axis] += 1;
+      });
+    });
+    return {
+      xFaces: byAxis.x, yFaces: byAxis.y, zFaces: byAxis.z,
+      surfaceArea: byAxis.x + byAxis.y + byAxis.z
+    };
+  }
+
+  function completeMeasurementRecords(history) {
+    return (history || []).filter(function(record) { return record && record.isComplete !== false; });
+  }
+
+  function summarizePredictionAccuracy(measurements) {
+    var errors = [];
+    (measurements || []).forEach(function(record) {
+      var data = record && record.data ? record.data : record;
+      if (!data) return;
+      var error = typeof data.predictionPercentError === 'number' ? data.predictionPercentError : data.percentError;
+      if (typeof error === 'number' && Number.isFinite(error) && error >= 0) errors.push(error);
+    });
+    var totalError = errors.reduce(function(sum, error) { return sum + error; }, 0);
+    return {
+      predictionsMade: errors.length,
+      exactPredictions: errors.filter(function(error) { return error === 0; }).length,
+      predictionsWithin10Percent: errors.filter(function(error) { return error <= 10; }).length,
+      averagePredictionPercentError: errors.length ? Math.round(totalError / errors.length) : null,
+      measurementsWithoutPrediction: Math.max(0, (measurements || []).length - errors.length)
+    };
+  }
+  function serializeEventDetailValue(value) {
+    if (value == null) return '';
+    if (typeof value === 'object') {
+      try { return JSON.stringify(value); }
+      catch (err) { return String(value); }
+    }
+    return String(value);
+  }
+
+  function formatSessionEventDetails(data) {
+    return Object.keys(data || {}).sort().map(function(key) { return key + '=' + serializeEventDetailValue(data[key]); }).join('; ');
+  }
+  function measurementDetailsForReport(measurements) {
+    return (measurements || []).map(function(record, index) {
+      var data = record && record.data ? record.data : (record || {});
+      var dimensions = [data.L, data.W, data.H].every(function(value) { return typeof value === 'number'; }) ? data.L + '\u00d7' + data.W + '\u00d7' + data.H : '';
+      var materialNames = Object.keys(data.materialCounts || {}).sort();
+      return {
+        sequence: index + 1,
+        elapsed: record && record.elapsed ? record.elapsed : '',
+        dimensions: dimensions,
+        shape: data.isSolidPrism ? 'Rectangular prism' : 'Composite structure',
+        occupiedVolume: typeof data.volume === 'number' ? data.volume : null,
+        prediction: typeof data.prediction === 'number' ? data.prediction : null,
+        predictionPercentError: typeof data.predictionPercentError === 'number' ? data.predictionPercentError : null,
+        surfaceArea: typeof data.surfaceArea === 'number' ? data.surfaceArea : null,
+        blocks: typeof data.blocks === 'number' ? data.blocks : null,
+        materials: materialNames
+      };
+    });
+  }
+  function elapsedSecondsForEvent(event) {
+    if (event && typeof event.timestamp === 'number' && Number.isFinite(event.timestamp)) return Math.round(event.timestamp / 1000);
+    var parsed = event && event.elapsed ? parseFloat(event.elapsed) : NaN;
+    return Number.isFinite(parsed) ? Math.round(parsed) : null;
+  }
+
+  function questionDetailsForReport(log) {
+    return (log || []).filter(function(event) {
+      return event && (event.type === 'answer_correct' || event.type === 'answer_wrong');
+    }).map(function(event, index) {
+      var data = event.data || {};
+      return {
+        sequence: index + 1,
+        timestamp: event.elapsed || '',
+        elapsedSeconds: elapsedSecondsForEvent(event),
+        npc: data.npc || '',
+        question: data.question || '',
+        correct: event.type === 'answer_correct',
+        answer: data.choice || data.chosenAnswer || ''
+      };
+    });
+  }
+
+
+
+
+  function compareMeasurementRecords(previous, latest) {
+    if (!previous || !latest || previous.isComplete === false || latest.isComplete === false) return null;
+    var previousVolume = typeof previous.occupiedVolume === 'number' ? previous.occupiedVolume : parseVolumePrediction(previous.vol);
+    var latestVolume = typeof latest.occupiedVolume === 'number' ? latest.occupiedVolume : parseVolumePrediction(latest.vol);
+    if (previousVolume === null || latestVolume === null) return null;
+    var previousSurface = typeof previous.surfaceArea === 'number' ? previous.surfaceArea : null;
+    var latestSurface = typeof latest.surfaceArea === 'number' ? latest.surfaceArea : null;
+    var surfaceComparable = previousSurface !== null && latestSurface !== null;
+    var sameVolume = Math.abs(latestVolume - previousVolume) < 0.000001;
+    var surfaceDifference = surfaceComparable ? latestSurface - previousSurface : null;
+    var moreEfficient = sameVolume && surfaceComparable && surfaceDifference !== 0
+      ? (surfaceDifference < 0 ? 'latest' : 'previous') : null;
+    return {
+      previousVolume: previousVolume,
+      latestVolume: latestVolume,
+      volumeDifference: latestVolume - previousVolume,
+      sameVolume: sameVolume,
+      previousSurfaceArea: previousSurface,
+      latestSurfaceArea: latestSurface,
+      surfaceAreaDifference: surfaceDifference,
+      moreSurfaceEfficient: moreEfficient
+    };
+  }
+
+  function measurementLayerFor(blockData) {
+    if (blockData && blockData._measurementLayer) return blockData._measurementLayer;
+    return blockData && blockData._lessonBlock ? 'lesson' : 'student';
+  }
+
+  function belongsToMeasuredComponent(seedData, candidateData) {
+    return !!candidateData && measurementLayerFor(candidateData) === measurementLayerFor(seedData);
+  }
+  var ACHIEVEMENTS = [
+    { id: 'first_measure', name: 'First Measurement', icon: '\uD83D\uDCCF', desc: 'Measured your first structure', check: function(log) { return log.some(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }); } },
+    { id: 'first_correct', name: 'Right Answer!', icon: '\u2705', desc: 'Answered your first NPC question correctly', check: function(log) { return log.some(function(e) { return e.type === 'answer_correct'; }); } },
+    { id: 'lesson_complete', name: 'Lesson Master', icon: '\uD83C\uDFC6', desc: 'Completed an entire lesson', check: function(log) { return log.some(function(e) { return e.type === 'lesson_complete'; }); } },
+    { id: 'builder_10', name: 'Builder', icon: '\uD83E\uDDF1', desc: 'Placed 10 blocks', check: function(log) { return log.filter(function(e) { return e.type === 'block_place'; }).length >= 10; } },
+    { id: 'builder_100', name: 'Master Builder', icon: '\uD83C\uDFD7\uFE0F', desc: 'Placed 100 blocks', check: function(log) { return log.filter(function(e) { return e.type === 'block_place'; }).length >= 100; } },
+    { id: 'perfect_lesson', name: 'Perfect Score', icon: '\uD83C\uDF1F', desc: 'Answered every question correctly with no mistakes', check: function(log) { var correct = log.filter(function(e) { return e.type === 'answer_correct'; }).length; var wrong = log.filter(function(e) { return e.type === 'answer_wrong'; }).length; return correct >= 3 && wrong === 0; } },
+    { id: 'npc_chatter', name: 'Curious Mind', icon: '\uD83D\uDCAC', desc: 'Had a conversation with an NPC', check: function(log) { return log.some(function(e) { return e.type === 'npc_chat'; }); } },
+    { id: 'world_creator', name: 'World Creator', icon: '\uD83C\uDFA8', desc: 'Created an NPC in Creator Mode', check: function(log) { return log.some(function(e) { return e.type === 'npc_created'; }); } },
+    { id: 'printer_3d', name: '3D Printer', icon: '\uD83E\uDE78', desc: 'Exported a structure for 3D printing', check: function(log) { return log.some(function(e) { return e.type === 'stl_export'; }); } },
+    { id: 'world_sharer', name: 'Teacher at Heart', icon: '\uD83C\uDF0D', desc: 'Shared a world with classmates', check: function(log) { return log.some(function(e) { return e.type === 'world_shared'; }); } },
+    { id: 'peer_learner', name: 'Peer Learner', icon: '\uD83D\uDCDA', desc: 'Loaded a classmate\'s world', check: function(log) { return log.some(function(e) { return e.type === 'peer_world_loaded'; }); } },
+    { id: 'persistence', name: 'Growth Mindset', icon: '\uD83E\uDDE0', desc: 'Got an answer wrong 3+ times and kept trying', check: function(log) { var streak = 0, maxStreak = 0; log.forEach(function(e) { if (e.type === 'answer_wrong') { streak++; maxStreak = Math.max(maxStreak, streak); } else if (e.type === 'answer_correct') { streak = 0; } }); return maxStreak >= 3 && log.some(function(e) { return e.type === 'answer_correct'; }); } },
+    { id: 'five_lessons', name: 'Explorer', icon: '\uD83E\uDDED', desc: 'Tried 5 different lessons', check: function(log) { var lessons = {}; log.forEach(function(e) { if (e.type === 'lesson_load') lessons[e.data.title || 'unknown'] = true; }); return Object.keys(lessons).length >= 5; } },
+  ];
+
+  function checkAchievements(sessionLog, previousBadges) {
+    var prev = previousBadges || {};
+    var newBadges = [];
+    ACHIEVEMENTS.forEach(function(a) {
+      if (!prev[a.id] && a.check(sessionLog)) {
+        prev[a.id] = { earned: new Date().toISOString() };
+        newBadges.push(a);
+      }
+    });
+    return { badges: prev, newBadges: newBadges };
+  }
+
+  // ── Sample Volume Lesson ──
+  var SAMPLE_LESSONS = {
+    volumeExplorer: {
+      title: 'Volume Explorer \u2014 Rectangular Prisms',
+      description: 'Measure and calculate the volume of 3D shapes by exploring, building, and counting blocks.',
+      spawnPoint: [2, 3, 2],
+      objectives: [
+        'Find the volume of the blue rectangular prism (5\u00d73\u00d74)',
+        'Fill the empty pool with blocks and count them',
+        'Calculate the volume of the L-block'
+      ],
+      ground: { xMin: -4, xMax: 24, zMin: -4, zMax: 24, y: 0, type: 'grass' },
+      structures: [
+        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 8, y2: 0, z2: 8, block: 'stone' },
+        { type: 'fill', x1: 10, y1: 1, z1: 2, x2: 14, y2: 4, z2: 4, block: 'diamond' },
+        { type: 'fill', x1: 2, y1: 1, z1: 12, x2: 6, y2: 1, z2: 15, block: 'stone' },
+        { type: 'fill', x1: 2, y1: 2, z1: 12, x2: 2, y2: 3, z2: 15, block: 'stone' },
+        { type: 'fill', x1: 6, y1: 2, z1: 12, x2: 6, y2: 3, z2: 15, block: 'stone' },
+        { type: 'fill', x1: 2, y1: 2, z1: 12, x2: 6, y2: 3, z2: 12, block: 'stone' },
+        { type: 'fill', x1: 2, y1: 2, z1: 15, x2: 6, y2: 3, z2: 15, block: 'stone' },
+        // L-block, part A (5x3x3). Part B below is a DIFFERENT block so the two
+        // rectangular prisms read as two parts — the NPC asks the student to measure
+        // each and add, and a single-colour L-block hides exactly the decomposition
+        // being taught. Gold/cyan is a yellow-blue pair, which stays distinguishable
+        // under red-green colour vision deficiency; two similar hues would not.
+        { type: 'fill', x1: 16, y1: 1, z1: 10, x2: 20, y2: 3, z2: 12, block: 'gold' },
+        // L-block, part B (3x3x3).
+        { type: 'fill', x1: 16, y1: 1, z1: 13, x2: 18, y2: 3, z2: 15, block: 'diamond' },
+      ],
+      npcs: [
+        { position: [4, 1, 4], name: 'Professor Block', color: 0x7c3aed,
+          dialogue: 'Welcome! Volume = Length \u00d7 Width \u00d7 Height. Explore the structures and solve problems!', question: null },
+        { position: [12, 5, 3], name: 'Quiz Master', color: 0x2563eb,
+          dialogue: 'The blue prism is 5 long, 3 wide, 4 tall. Let\u2019s measure step by step!',
+          question: { text: 'How many blocks LONG is this prism?', choices: ['5 blocks', '3 blocks', '4 blocks'], correct: 0,
+            followUp: [
+              { text: 'Good! How many blocks WIDE?', choices: ['3 blocks', '5 blocks', '2 blocks'], correct: 0 },
+              { text: 'And how many blocks TALL?', choices: ['4 blocks', '3 blocks', '5 blocks'], correct: 0 },
+              { text: 'Now multiply: 5 \u00d7 3 \u00d7 4 = ?', choices: ['60 cubic units', '12 cubic units', '35 cubic units'], correct: 0 }
+            ] } },
+        { position: [4, 1, 11], name: 'Builder Bot', color: 0x16a34a,
+          dialogue: 'Fill the pool! The inside measures 3 long, 3 wide, 2 tall.',
+          question: { text: 'What is the area of the pool floor? (3\u00d73)', choices: ['9 square units', '6 square units', '12 square units'], correct: 0,
+            followUp: [
+              { text: 'Now stack 2 layers of 9. How many total blocks?', choices: ['18 blocks', '11 blocks', '27 blocks'], correct: 0 }
+            ] } },
+        { position: [18, 4, 12], name: 'L-Block Sage', color: 0xf59e0b,
+          dialogue: 'This L-block has two rectangular parts. Measure each, then add!',
+          question: { text: 'Part A is 5\u00d73\u00d73. What is its volume?', choices: ['45 cubic units', '15 cubic units', '30 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Part B is 3\u00d73\u00d73. What is its volume?', choices: ['27 cubic units', '18 cubic units', '9 cubic units'], correct: 0 },
+              { text: 'Total volume = 45 + 27 = ?', choices: ['72 cubic units', '45 cubic units', '54 cubic units'], correct: 0 }
+            ] } }
+      ]
+    },
+    areaSurface: {
+      title: 'Area & Surface Area',
+      description: 'Explore how area relates to volume by examining layers of rectangular prisms.',
+      spawnPoint: [2, 3, 2],
+      objectives: [
+        'Find the area of the base layer (blue prism)',
+        'Count the layers to find the height',
+        'Calculate the volume using Area \u00d7 Height',
+        'Compare two prisms with the same volume but different shapes'
+      ],
+      ground: { xMin: -4, xMax: 20, zMin: -4, zMax: 20, y: 0, type: 'grass' },
+      structures: [
+        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 8, y2: 0, z2: 8, block: 'stone' },
+        // Prism A: 6x4x3 = 72 (flat and wide)
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 7, y2: 3, z2: 5, block: 'diamond' },
+        // Prism B: 3x3x8 = 72 (tall and narrow) — same volume!
+        { type: 'fill', x1: 12, y1: 1, z1: 2, x2: 14, y2: 8, z2: 4, block: 'gold' },
+        // Layered prism with visible layers (alternating colors)
+        { type: 'fill', x1: 2, y1: 1, z1: 10, x2: 6, y2: 1, z2: 14, block: 'sand' },
+        { type: 'fill', x1: 2, y1: 2, z1: 10, x2: 6, y2: 2, z2: 14, block: 'wood' },
+        { type: 'fill', x1: 2, y1: 3, z1: 10, x2: 6, y2: 3, z2: 14, block: 'sand' },
+        { type: 'fill', x1: 2, y1: 4, z1: 10, x2: 6, y2: 4, z2: 14, block: 'wood' },
+      ],
+      npcs: [
+        { position: [4, 1, 0], name: 'Area Guide', color: 0x7c3aed,
+          dialogue: 'Area = Length \u00d7 Width. It tells you how many blocks make ONE layer. Volume = Area \u00d7 Height (number of layers)!', question: null },
+        { position: [5, 4, 3], name: 'Flat Prism Quiz', color: 0x2563eb,
+          dialogue: 'This blue prism is 6 long, 4 wide, 3 tall. Let\u2019s find its volume step by step!',
+          question: { text: 'What is the base area? (6 \u00d7 4)', choices: ['24 square units', '10 square units', '18 square units'], correct: 0,
+            followUp: [
+              { text: 'Base area = 24. How many layers tall?', choices: ['3 layers', '4 layers', '6 layers'], correct: 0 },
+              { text: '24 \u00d7 3 = ?', choices: ['72 cubic units', '48 cubic units', '27 cubic units'], correct: 0 }
+            ] } },
+        { position: [13, 9, 3], name: 'Tall Prism Quiz', color: 0xf59e0b,
+          dialogue: 'This gold prism is 3\u00d73\u00d78. Different shape from the blue one!',
+          question: { text: 'What is 3 \u00d7 3 \u00d7 8?', choices: ['72 cubic units', '64 cubic units', '48 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Blue = 72, Gold = 72. Same or different volume?', choices: ['Same volume! Different shape.', 'Gold is bigger', 'Blue is bigger'], correct: 0 }
+            ] } },
+        { position: [4, 5, 12], name: 'Layer Counter', color: 0x16a34a,
+          dialogue: 'Count the alternating layers! Each layer is 5\u00d75 blocks.',
+          question: { text: 'Area of one layer? (5 \u00d7 5)', choices: ['25 square units', '10 square units', '20 square units'], correct: 0,
+            followUp: [
+              { text: 'How many layers are stacked?', choices: ['4 layers', '5 layers', '3 layers'], correct: 0 },
+              { text: '25 \u00d7 4 = ?', choices: ['100 cubic units', '125 cubic units', '80 cubic units'], correct: 0 }
+            ] } }
+      ]
+    },
+    buildChallenge: {
+      title: 'Build Challenge \u2014 Design Your Dream Room',
+      description: 'Use your geometry knowledge to design and measure rooms. Apply volume to real-world architecture!',
+      spawnPoint: [5, 2, 5],
+      objectives: [
+        'Build a room with walls 4 blocks high',
+        'Calculate the interior volume of your room',
+        'Add a second room connected to the first',
+        'Find the total volume of both rooms combined'
+      ],
+      ground: { xMin: -2, xMax: 22, zMin: -2, zMax: 22, y: 0, type: 'grass' },
+      structures: [
+        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 20, y2: 0, z2: 20, block: 'stone' },
+        // Example room for reference
+        { type: 'fill', x1: 14, y1: 1, z1: 14, x2: 19, y2: 4, z2: 14, block: 'wood' },
+        { type: 'fill', x1: 14, y1: 1, z1: 19, x2: 19, y2: 4, z2: 19, block: 'wood' },
+        { type: 'fill', x1: 14, y1: 1, z1: 14, x2: 14, y2: 4, z2: 19, block: 'wood' },
+        { type: 'fill', x1: 19, y1: 1, z1: 14, x2: 19, y2: 4, z2: 19, block: 'wood' },
+        { type: 'fill', x1: 14, y1: 5, z1: 14, x2: 19, y2: 5, z2: 19, block: 'wood' },
+      ],
+      npcs: [
+        { position: [5, 1, 1], name: 'Architect', color: 0x7c3aed,
+          dialogue: 'Welcome to Build Challenge! Use blocks to build rooms, then measure their volume. The example room in the corner shows a 6\u00d76\u00d74 structure. Start building!', question: null },
+        { position: [16, 1, 13], name: 'Room Inspector', color: 0x2563eb,
+          dialogue: 'This example room has walls 1 block thick. The outside is 6\u00d76\u00d75. Let\u2019s find the INSIDE.',
+          question: { text: 'Walls are 1 block thick. Outside L = 6. What is inside L?', choices: ['4 blocks (6 - 1 - 1)', '5 blocks', '6 blocks'], correct: 0,
+            followUp: [
+              { text: 'Inside is 4\u00d74\u00d74. Volume?', choices: ['64 cubic units', '48 cubic units', '32 cubic units'], correct: 0 }
+            ] } },
+        { position: [10, 1, 10], name: 'Volume Coach', color: 0x16a34a,
+          dialogue: 'Interior volume is always LESS than exterior because walls take up space!',
+          question: { text: 'Room is 8\u00d76\u00d74 outside, 1-block walls. Interior length?', choices: ['6 blocks', '8 blocks', '7 blocks'], correct: 0,
+            followUp: [
+              { text: 'Interior width? (6 outside - 2 for walls)', choices: ['4 blocks', '5 blocks', '6 blocks'], correct: 0 },
+              { text: 'Interior is 6\u00d74\u00d74. Volume?', choices: ['96 cubic units', '64 cubic units', '72 cubic units'], correct: 0 }
+            ] } }
+      ]
+    },
+    realWorld: {
+      title: 'Real-World Volume \u2014 Packing & Shipping',
+      description: 'Apply volume skills to real-world problems: packing boxes, filling containers, and calculating shipping costs!',
+      spawnPoint: [4, 2, 4],
+      objectives: [
+        'Find how many small boxes fit in the shipping container',
+        'Calculate the wasted space in a partially filled crate',
+        'Design a package that holds exactly 36 cubic units'
+      ],
+      ground: { xMin: -2, xMax: 22, zMin: -2, zMax: 22, y: 0, type: 'stone' },
+      structures: [
+        // Warehouse floor
+        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 20, y2: 0, z2: 20, block: 'stone' },
+        // Large shipping container (outer: 8x4x4)
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 9, y2: 1, z2: 5, block: 'wood' },
+        { type: 'fill', x1: 2, y1: 4, z1: 2, x2: 9, y2: 4, z2: 5, block: 'wood' },
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 2, y2: 4, z2: 5, block: 'wood' },
+        { type: 'fill', x1: 9, y1: 1, z1: 2, x2: 9, y2: 4, z2: 5, block: 'wood' },
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 9, y2: 4, z2: 2, block: 'wood' },
+        // Small boxes inside (2x2x2 each, placed in a row)
+        { type: 'fill', x1: 3, y1: 2, z1: 3, x2: 4, y2: 3, z2: 4, block: 'gold' },
+        { type: 'fill', x1: 5, y1: 2, z1: 3, x2: 6, y2: 3, z2: 4, block: 'diamond' },
+        { type: 'fill', x1: 7, y1: 2, z1: 3, x2: 8, y2: 3, z2: 4, block: 'gold' },
+        // Partially filled crate (6x6x3 outer, some blocks inside)
+        { type: 'fill', x1: 12, y1: 1, z1: 2, x2: 17, y2: 1, z2: 7, block: 'wood' },
+        { type: 'fill', x1: 12, y1: 2, z1: 2, x2: 12, y2: 3, z2: 7, block: 'wood' },
+        { type: 'fill', x1: 17, y1: 2, z1: 2, x2: 17, y2: 3, z2: 7, block: 'wood' },
+        { type: 'fill', x1: 12, y1: 2, z1: 2, x2: 17, y2: 3, z2: 2, block: 'wood' },
+        { type: 'fill', x1: 12, y1: 2, z1: 7, x2: 17, y2: 3, z2: 7, block: 'wood' },
+        // Partial fill inside
+        { type: 'fill', x1: 13, y1: 2, z1: 3, x2: 16, y2: 2, z2: 6, block: 'sand' },
+        // Open building area with sign
+        { type: 'fill', x1: 2, y1: 1, z1: 14, x2: 7, y2: 1, z2: 19, block: 'glass' },
+      ],
+      npcs: [
+        { position: [5, 1, 1], name: 'Warehouse Manager', color: 0x7c3aed,
+          dialogue: 'Welcome to the warehouse! We need to figure out how many boxes fit in our containers. The shipping container is open on one side \u2014 look inside!', question: null },
+        { position: [5, 5, 3], name: 'Packing Expert', color: 0x2563eb,
+          dialogue: 'The container interior is 6\u00d72\u00d73. Each small box is 2\u00d72\u00d72. Let\u2019s figure out how many fit!',
+          question: { text: 'Container interior volume? (6\u00d72\u00d73)', choices: ['36 cubic units', '24 cubic units', '48 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Each box = 2\u00d72\u00d72 = 8 cubic units. 36 \u00f7 8 = ?', choices: ['4 boxes with 4 units wasted', '3 boxes exactly', '6 boxes'], correct: 0 }
+            ] } },
+        { position: [14, 1, 1], name: 'Inventory Checker', color: 0xf59e0b,
+          dialogue: 'The crate interior is 4\u00d74\u00d72. The bottom layer has sand.',
+          question: { text: 'Crate total capacity? (4\u00d74\u00d72)', choices: ['32 cubic units', '16 cubic units', '24 cubic units'], correct: 0,
+            followUp: [
+              { text: '16 blocks of sand inside. Empty space = 32 - 16 = ?', choices: ['16 cubic units', '8 cubic units', '32 cubic units'], correct: 0 }
+            ] } },
+        { position: [4, 2, 16], name: 'Design Challenge', color: 0x16a34a,
+          dialogue: 'Build a box on the glass platform that holds EXACTLY 36 cubic units!',
+          question: { text: 'Which equals 36? (check each)', choices: ['6\u00d73\u00d72 = 36 \u2713', '5\u00d74\u00d72 = 40', '3\u00d73\u00d73 = 27'], correct: 0,
+            followUp: [
+              { text: 'Which is another way to make 36?', choices: ['4\u00d73\u00d73 = 36', '6\u00d76\u00d71 = 36', 'Both!'], correct: 2 }
+            ] } }
+      ]
+    },
+    geometryGarden: {
+      title: 'The Geometry Garden \u2014 A Place to Discover',
+      description: 'No questions. No score. Just beautiful structures to explore and measure. Walk the path. Notice things. The world is the lesson.',
+      spawnPoint: [0, 2, 0],
+      objectives: [
+        'Walk the path through the garden',
+        'Use M to measure anything that interests you',
+        'Notice: which structures have the same volume but different shapes?',
+        'Find the hidden structure at the end of the path'
+      ],
+      ground: { xMin: -6, xMax: 50, zMin: -10, zMax: 20, y: 0, type: 'grass' },
+      structures: [
+        // ── The Path (stone walkway winding through the garden) ──
+        { type: 'fill', x1: -2, y1: 0, z1: 4, x2: 48, y2: 0, z2: 6, block: 'stone' },
+
+        // ── Station 1: The Unit Cube (simplest form) ──
+        { type: 'fill', x1: 3, y1: 1, z1: 2, x2: 3, y2: 1, z2: 2, block: 'diamond' },
+        // Sign post
+        { type: 'fill', x1: 3, y1: 1, z1: 0, x2: 3, y2: 2, z2: 0, block: 'wood' },
+
+        // ── Station 2: A Row (1D — length) ──
+        { type: 'fill', x1: 8, y1: 1, z1: 2, x2: 12, y2: 1, z2: 2, block: 'diamond' },
+
+        // ── Station 3: A Flat Rectangle (2D — area emerges) ──
+        { type: 'fill', x1: 16, y1: 1, z1: 1, x2: 20, y2: 1, z2: 3, block: 'gold' },
+
+        // ── Station 4: A Rectangular Prism (3D — volume!) ──
+        { type: 'fill', x1: 24, y1: 1, z1: 1, x2: 28, y2: 3, z2: 3, block: 'diamond' },
+
+        // ── Station 5: Three shapes, one volume — CONVERGENCE ──
+        // All three = 24 cubic units. Different paths to the same truth.
+        // Prism A: 12x1x2 = 24 (flat slab)
+        { type: 'fill', x1: 32, y1: 1, z1: 0, x2: 43, y2: 2, z2: 0, block: 'gold' },
+        // Prism B: 4x3x2 = 24 (compact block)
+        { type: 'fill', x1: 32, y1: 1, z1: 8, x2: 35, y2: 2, z2: 10, block: 'gold' },
+        // Prism C: 2x2x6 = 24 (tall tower)
+        { type: 'fill', x1: 38, y1: 1, z1: 8, x2: 39, y2: 6, z2: 9, block: 'gold' },
+        // Glass convergence paths connecting all three (the student walks the convergence)
+        { type: 'fill', x1: 33, y1: 0, z1: 1, x2: 33, y2: 0, z2: 7, block: 'glass' },
+        { type: 'fill', x1: 34, y1: 0, z1: 7, x2: 38, y2: 0, z2: 7, block: 'glass' },
+        // Center marker where paths meet — one diamond block at the crossing point
+        { type: 'fill', x1: 35, y1: 1, z1: 4, x2: 35, y2: 1, z2: 4, block: 'diamond' },
+
+        // ── Station 6: The L-Block (composition) ──
+        // Two-tone for the same reason as the volumeExplorer L-block: the composition
+        // is the lesson, so the parts must be separable at a glance.
+        { type: 'fill', x1: 32, y1: 1, z1: -6, x2: 36, y2: 3, z2: -4, block: 'diamond' },
+        { type: 'fill', x1: 32, y1: 1, z1: -3, x2: 34, y2: 3, z2: -1, block: 'gold' },
+
+        // ── Station 7: Nested cubes (volume displacement) ──
+        // Outer shell: 5x5x5 hollow
+        { type: 'fill', x1: 42, y1: 1, z1: -8, x2: 46, y2: 5, z2: -4, block: 'glass' },
+        // Inner cube: 3x3x3 solid
+        { type: 'fill', x1: 43, y1: 2, z1: -7, x2: 45, y2: 4, z2: -5, block: 'gold' },
+
+        // ── The Hidden Garden (behind a wall, accessed by going around) ──
+        { type: 'fill', x1: 46, y1: 1, z1: 2, x2: 46, y2: 4, z2: 8, block: 'wood' },
+        // Secret structure behind the wall: a pyramid approximation
+        { type: 'fill', x1: 48, y1: 1, z1: 1, x2: 52, y2: 1, z2: 9, block: 'sand' },
+        { type: 'fill', x1: 49, y1: 2, z1: 2, x2: 51, y2: 2, z2: 8, block: 'sand' },
+        { type: 'fill', x1: 49, y1: 3, z1: 3, x2: 51, y2: 3, z2: 7, block: 'gold' },
+        { type: 'fill', x1: 50, y1: 4, z1: 4, x2: 50, y2: 4, z2: 6, block: 'gold' },
+        { type: 'fill', x1: 50, y1: 5, z1: 5, x2: 50, y2: 5, z2: 5, block: 'diamond' },
+
+        // ── Decorative garden elements ──
+        // Flower beds (colored blocks along the path)
+        { type: 'fill', x1: 5, y1: 1, z1: 7, x2: 7, y2: 1, z2: 7, block: 'sand' },
+        { type: 'fill', x1: 14, y1: 1, z1: 7, x2: 15, y2: 1, z2: 8, block: 'sand' },
+        { type: 'fill', x1: 22, y1: 1, z1: 7, x2: 23, y2: 1, z2: 7, block: 'sand' },
+        { type: 'fill', x1: 30, y1: 1, z1: 7, x2: 31, y2: 1, z2: 8, block: 'sand' },
+        // Benches (places to pause)
+        { type: 'fill', x1: 10, y1: 1, z1: 7, x2: 12, y2: 1, z2: 7, block: 'wood' },
+        { type: 'fill', x1: 28, y1: 1, z1: 7, x2: 30, y2: 1, z2: 7, block: 'wood' },
+      ],
+      npcs: [
+        { position: [0, 1, 3], name: 'Garden Keeper', color: 0x16a34a,
+          dialogue: 'Welcome to the Geometry Garden. No tests. No score. Walk the path. Measure anything. Notice patterns. Take your time.', question: null },
+        { position: [3, 2, 0], name: 'Station 1 Guide', color: 0x2563eb,
+          dialogue: 'This is a single unit cube \u2014 the building block of everything. Volume = 1 cubic unit. Press M to measure it!', question: null },
+        { position: [10, 2, 0], name: 'Station 2 Guide', color: 0x2563eb,
+          dialogue: 'A row of 5 blocks. This is 1-dimensional \u2014 just LENGTH. Press M: you\'ll see L=5, W=1, H=1. Volume = 5.', question: null },
+        { position: [18, 2, 0], name: 'Station 3 Guide', color: 0xf59e0b,
+          dialogue: 'Now a flat rectangle: 5\u00d73. This is 2-dimensional \u2014 LENGTH and WIDTH. Area = 15 square units. But volume? Measure it!', question: null },
+        { position: [26, 4, 0], name: 'Station 4 Guide', color: 0xf59e0b,
+          dialogue: 'A full 3D rectangular prism: 5\u00d73\u00d73. Three dimensions! Volume = L\u00d7W\u00d7H = 45. The jump from flat to solid is where volume lives.', question: null },
+        { position: [35, 1, 4], name: 'Convergence Guide', color: 0x7c3aed,
+          dialogue: 'Three shapes. All have volume = 24. A flat slab (12\u00d71\u00d72), a compact block (4\u00d73\u00d72), and a tall tower (2\u00d72\u00d76). Same volume \u2014 completely different shapes. Measure each one!', question: null },
+        { position: [48, 6, 5], name: 'Hidden Garden Sage', color: 0xdc2626,
+          dialogue: 'You found the hidden garden! This pyramid approximation uses layers of decreasing size. Each layer is a rectangular prism. The total volume is the sum of all layers. Real pyramids use calculus \u2014 but this is a start!', question: null }
+      ]
+    },
+    compositeVolume: {
+      title: 'Composite Volume \u2014 Breaking Apart & Combining',
+      description: 'Real objects aren\u2019t simple rectangles. Learn to decompose complex shapes into rectangular parts and add their volumes.',
+      spawnPoint: [3, 2, 3],
+      objectives: [
+        'Decompose the T-shape into 2 rectangular prisms',
+        'Calculate each part\u2019s volume and find the total',
+        'Solve the step pyramid by counting layer volumes',
+        'Design your own composite shape with exactly 50 cubic units'
+      ],
+      ground: { xMin: -2, xMax: 28, zMin: -2, zMax: 22, y: 0, type: 'grass' },
+      structures: [
+        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 26, y2: 0, z2: 20, block: 'stone' },
+        // T-shape: horizontal bar (8x2x3) + vertical stem (2x2x5)
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 9, y2: 3, z2: 3, block: 'diamond' },
+        { type: 'fill', x1: 5, y1: 1, z1: 4, x2: 6, y2: 3, z2: 8, block: 'diamond' },
+        // Step pyramid: layer 1 (6x6x1=36), layer 2 (4x4x1=16), layer 3 (2x2x1=4)
+        { type: 'fill', x1: 14, y1: 1, z1: 2, x2: 19, y2: 1, z2: 7, block: 'gold' },
+        { type: 'fill', x1: 15, y1: 2, z1: 3, x2: 18, y2: 2, z2: 6, block: 'gold' },
+        { type: 'fill', x1: 16, y1: 3, z1: 4, x2: 17, y2: 3, z2: 5, block: 'gold' },
+        // U-shape: left wall + bottom + right wall
+        { type: 'fill', x1: 2, y1: 1, z1: 12, x2: 2, y2: 4, z2: 17, block: 'wood' },
+        { type: 'fill', x1: 2, y1: 1, z1: 17, x2: 7, y2: 4, z2: 17, block: 'wood' },
+        { type: 'fill', x1: 7, y1: 1, z1: 12, x2: 7, y2: 4, z2: 17, block: 'wood' },
+        // Open space for student building challenge (50 cu units)
+        { type: 'fill', x1: 14, y1: 0, z1: 12, x2: 24, y2: 0, z2: 18, block: 'sand' },
+      ],
+      npcs: [
+        { position: [5, 1, 1], name: 'Decomposer', color: 0x7c3aed,
+          dialogue: 'Complex shapes can be split into rectangles! The T-shape has a top bar (8\u00d72\u00d73) and a stem (2\u00d72\u00d75).', question: null },
+        { position: [5, 4, 5], name: 'T-Shape Quiz', color: 0x2563eb,
+          dialogue: 'This T-shape has a top bar and a stem. Let\u2019s measure each part!',
+          question: { text: 'Top bar is 8\u00d72\u00d73. Volume?', choices: ['48 cubic units', '24 cubic units', '36 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Stem is 2\u00d72\u00d75. Volume?', choices: ['20 cubic units', '10 cubic units', '30 cubic units'], correct: 0 },
+              { text: 'Total T-shape = 48 + 20 = ?', choices: ['68 cubic units', '48 cubic units', '96 cubic units'], correct: 0 }
+            ] } },
+        { position: [17, 4, 4], name: 'Pyramid Guide', color: 0xf59e0b,
+          dialogue: 'This step pyramid has 3 layers. Count each layer separately!',
+          question: { text: 'Bottom layer: 6\u00d76\u00d71. Volume?', choices: ['36 cubic units', '24 cubic units', '12 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Middle layer: 4\u00d74\u00d71 = ?', choices: ['16 cubic units', '12 cubic units', '8 cubic units'], correct: 0 },
+              { text: 'Top layer: 2\u00d72\u00d71 = ?', choices: ['4 cubic units', '2 cubic units', '8 cubic units'], correct: 0 },
+              { text: 'Total pyramid: 36 + 16 + 4 = ?', choices: ['56 cubic units', '36 cubic units', '64 cubic units'], correct: 0 }
+            ] } },
+        { position: [4, 5, 14], name: 'U-Shape Sage', color: 0x16a34a,
+          dialogue: 'The U-shape is hollow. It has 3 rectangular parts: left wall, bottom, right wall.',
+          question: { text: 'Is a U-shape\u2019s volume more or less than the bounding box?', choices: ['Less \u2014 the hollow part is empty', 'Same \u2014 the box counts all space', 'More \u2014 the U has extra corners'], correct: 0,
+            followUp: [
+              { text: 'To find U-shape volume: bounding box minus hollow. Which is correct?', choices: ['V = outer - inner', 'V = outer + inner', 'V = outer \u00d7 inner'], correct: 0 }
+            ] } },
+        { position: [19, 1, 15], name: 'Design Challenge', color: 0xdc2626,
+          dialogue: 'Build a composite shape with EXACTLY 50 cubic units! Hint: 5\u00d75\u00d72 = 50.',
+          question: { text: 'Which does NOT equal 50?', choices: ['6\u00d74\u00d72 = 48 \u2717', '5\u00d75\u00d72 = 50 \u2713', '10\u00d75\u00d71 = 50 \u2713'], correct: 0 } }
+      ]
+    },
+    fractionVolume: {
+      title: 'Fractional Dimensions \u2014 Beyond Whole Numbers',
+      description: 'What happens when dimensions aren\u2019t whole numbers? Explore how half-blocks change volume calculations.',
+      spawnPoint: [3, 2, 3],
+      objectives: [
+        'Compare a 4\u00d73\u00d72 prism to a 4\u00d73\u00d72.5 prism',
+        'Calculate volume when one dimension is a fraction',
+        'Understand that volume can be a non-whole number',
+        'Estimate the volume of a partially filled container'
+      ],
+      ground: { xMin: -2, xMax: 22, zMin: -2, zMax: 18, y: 0, type: 'grass' },
+      structures: [
+        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 20, y2: 0, z2: 16, block: 'stone' },
+        // Whole-number prism: 4x3x2 = 24
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 5, y2: 2, z2: 4, block: 'diamond' },
+        // Same base but taller: 4x3x4 = 48 (the "2.5" is between these)
+        { type: 'fill', x1: 10, y1: 1, z1: 2, x2: 13, y2: 4, z2: 4, block: 'gold' },
+        // Half-filled container: 6x4 base, walls 3 high, filled 2 high with sand
+        { type: 'fill', x1: 2, y1: 1, z1: 10, x2: 7, y2: 3, z2: 10, block: 'glass' },
+        { type: 'fill', x1: 2, y1: 1, z1: 14, x2: 7, y2: 3, z2: 14, block: 'glass' },
+        { type: 'fill', x1: 2, y1: 1, z1: 10, x2: 2, y2: 3, z2: 14, block: 'glass' },
+        { type: 'fill', x1: 7, y1: 1, z1: 10, x2: 7, y2: 3, z2: 14, block: 'glass' },
+        { type: 'fill', x1: 3, y1: 1, z1: 11, x2: 6, y2: 2, z2: 13, block: 'sand' },
+        // Comparison towers (same base, different heights)
+        { type: 'fill', x1: 14, y1: 1, z1: 10, x2: 16, y2: 3, z2: 12, block: 'diamond' },
+        { type: 'fill', x1: 18, y1: 1, z1: 10, x2: 20, y2: 5, z2: 12, block: 'diamond' },
+      ],
+      npcs: [
+        { position: [3, 3, 3], name: 'Fraction Prof', color: 0x7c3aed,
+          dialogue: 'In real life, dimensions aren\u2019t always whole numbers! A box might be 4 \u00d7 3 \u00d7 2.5 feet. Volume = 4 \u00d7 3 \u00d7 2.5 = 30 cubic feet. The formula still works!', question: null },
+        { position: [12, 5, 3], name: 'Between Quiz', color: 0x2563eb,
+          dialogue: 'The blue prism = 24. The gold = 48. What about a height halfway between (2.5)?',
+          question: { text: 'Blue is 4\u00d73\u00d72 = 24. Gold is 4\u00d73\u00d74 = 48. Halfway height is?', choices: ['2.5 (halfway between 2 and 4-1=3)', '3', '3.5'], correct: 0,
+            followUp: [
+              { text: 'Volume of 4 \u00d7 3 \u00d7 2.5?', choices: ['30 cubic units', '24 cubic units', '36 cubic units'], correct: 0 },
+              { text: 'Is 30 between 24 and 48?', choices: ['Yes! Fractional height gives in-between volume', 'No', 'Only sometimes'], correct: 0 }
+            ] } },
+        { position: [4, 1, 9], name: 'Container Challenge', color: 0xf59e0b,
+          dialogue: 'This glass container is 4 wide, 3 deep, 3 tall. Sand fills the bottom 2 blocks.',
+          question: { text: 'Sand volume? (4\u00d73\u00d72)', choices: ['24 cubic units', '12 cubic units', '36 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Total container = 4\u00d73\u00d73 = 36. Empty space = 36 - 24 = ?', choices: ['12 more cubic units', '24 more', '6 more'], correct: 0 }
+            ] } },
+        { position: [17, 1, 9], name: 'Height Detective', color: 0x16a34a,
+          dialogue: 'Two towers, same 3\u00d73 base. Short = 3 tall, Tall = 5 tall.',
+          question: { text: 'Short tower volume? (3\u00d73\u00d73)', choices: ['27 cubic units', '18 cubic units', '9 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Tall tower? (3\u00d73\u00d75)', choices: ['45 cubic units', '27 cubic units', '30 cubic units'], correct: 0 },
+              { text: '45 \u00f7 27 \u2248 ? (how many times bigger?)', choices: ['About 1.67\u00d7 (5/3)', 'Exactly 2\u00d7', 'About 1.5\u00d7'], correct: 0 }
+            ] } }
+      ]
+    },
+    volumeEstimation: {
+      title: 'Volume Estimation \u2014 Think Before You Count',
+      description: 'Develop estimation skills! Guess the volume before measuring. Good estimators are strong mathematicians.',
+      spawnPoint: [3, 2, 3],
+      objectives: [
+        'Estimate each structure\u2019s volume BEFORE measuring',
+        'Use the reference cube (1 block) to calibrate your estimates',
+        'See how close your estimates are to the actual volumes',
+        'Estimation is a skill \u2014 it gets better with practice!'
+      ],
+      ground: { xMin: -2, xMax: 30, zMin: -2, zMax: 18, y: 0, type: 'grass' },
+      structures: [
+        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 28, y2: 0, z2: 16, block: 'stone' },
+        // Reference: single block (V=1)
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 2, y2: 1, z2: 2, block: 'gold' },
+        // Small: 3x2x2 = 12
+        { type: 'fill', x1: 6, y1: 1, z1: 2, x2: 8, y2: 2, z2: 3, block: 'diamond' },
+        // Medium: 5x3x3 = 45
+        { type: 'fill', x1: 12, y1: 1, z1: 2, x2: 16, y2: 3, z2: 4, block: 'diamond' },
+        // Large: 7x4x3 = 84
+        { type: 'fill', x1: 20, y1: 1, z1: 2, x2: 26, y2: 3, z2: 5, block: 'diamond' },
+        // Tricky: thin and tall 2x2x8 = 32
+        { type: 'fill', x1: 4, y1: 1, z1: 10, x2: 5, y2: 8, z2: 11, block: 'gold' },
+        // Tricky: flat and wide 10x5x1 = 50
+        { type: 'fill', x1: 10, y1: 1, z1: 10, x2: 19, y2: 1, z2: 14, block: 'gold' },
+        // Hidden: behind a wall, only partial view
+        { type: 'fill', x1: 24, y1: 1, z1: 9, x2: 24, y2: 5, z2: 15, block: 'wood' },
+        { type: 'fill', x1: 25, y1: 1, z1: 10, x2: 28, y2: 3, z2: 13, block: 'diamond' },
+      ],
+      npcs: [
+        { position: [2, 2, 4], name: 'Estimator', color: 0x7c3aed,
+          dialogue: 'Welcome! This gold block is your reference: 1 cubic unit. Use it to estimate the others BEFORE you measure (M key). Good estimation is a superpower in math!', question: null },
+        { position: [7, 3, 2], name: 'Small Quiz', color: 0x2563eb,
+          dialogue: 'Look at this small structure. Estimate its dimensions before measuring!',
+          question: { text: 'How many blocks LONG does it look?', choices: ['3 blocks', '4 blocks', '2 blocks'], correct: 0,
+            followUp: [
+              { text: 'And how wide and tall? (Look carefully!)', choices: ['2 wide, 2 tall', '3 wide, 2 tall', '2 wide, 3 tall'], correct: 0 },
+              { text: 'So 3\u00d72\u00d72 = ?', choices: ['12 cubic units', '24 cubic units', '6 cubic units'], correct: 0 }
+            ] } },
+        { position: [14, 4, 3], name: 'Medium Quiz', color: 0xf59e0b,
+          dialogue: 'This one is bigger. Count edges if you can see them.',
+          question: { text: 'Estimate: how long? (count the blocks along one edge)', choices: ['5 blocks', '4 blocks', '6 blocks'], correct: 0,
+            followUp: [
+              { text: 'It\u2019s 5\u00d73\u00d73. Volume?', choices: ['45 cubic units', '30 cubic units', '60 cubic units'], correct: 0 }
+            ] } },
+        { position: [23, 4, 3], name: 'Large Quiz', color: 0x16a34a,
+          dialogue: 'The big one! Use L\u00d7W\u00d7H \u2014 don\u2019t count every block.',
+          question: { text: 'Estimate the length (blocks along the longest edge)?', choices: ['7 blocks', '6 blocks', '8 blocks'], correct: 0,
+            followUp: [
+              { text: 'It\u2019s 7\u00d74\u00d73. Volume?', choices: ['84 cubic units', '72 cubic units', '96 cubic units'], correct: 0 }
+            ] } },
+        { position: [4, 9, 10], name: 'Shape Illusion', color: 0xdc2626,
+          dialogue: 'Which has more volume: this tall tower or the flat slab?',
+          question: { text: 'Tower = 2\u00d72\u00d78. Volume?', choices: ['32 cubic units', '16 cubic units', '64 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Slab = 10\u00d75\u00d71. Volume?', choices: ['50 cubic units', '15 cubic units', '100 cubic units'], correct: 0 },
+              { text: 'Which is bigger: tower (32) or slab (50)?', choices: ['The flat slab \u2014 shape can fool you!', 'The tall tower', 'Same'], correct: 0 }
+            ] } }
+      ]
+    },
+    fractionBuilder: {
+      title: 'Fraction Builder \u2014 Parts of a Whole',
+      description: 'Use half-blocks and quarter-wedges to explore fractions through building! Every shape has an exact fractional relationship to the unit cube.',
+      spawnPoint: [3, 2, 3],
+      objectives: [
+        'Place two half-blocks side by side \u2014 do they equal one whole cube?',
+        'Build a structure using only half-blocks. What\u2019s its volume?',
+        'Combine cubes and half-blocks to make exactly 3\u00BD cubic units',
+        'Use the \u25E2 shape selector to switch between cube, half, and quarter shapes'
+      ],
+      ground: { xMin: -2, xMax: 22, zMin: -2, zMax: 18, y: 0, type: 'grass' },
+      structures: [
+        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 20, y2: 0, z2: 16, block: 'stone' },
+        // Reference: single cube (V = 1)
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 2, y2: 1, z2: 2, block: 'diamond' },
+        // Two cubes = 2 whole units (for comparison)
+        { type: 'fill', x1: 6, y1: 1, z1: 2, x2: 7, y2: 1, z2: 2, block: 'gold' },
+        // Build platforms for student experiments
+        { type: 'fill', x1: 2, y1: 0, z1: 8, x2: 8, y2: 0, z2: 14, block: 'sand' },
+        { type: 'fill', x1: 12, y1: 0, z1: 8, x2: 18, y2: 0, z2: 14, block: 'sand' },
+        // A 2x2x2 cube for reference (V = 8)
+        { type: 'fill', x1: 12, y1: 1, z1: 2, x2: 13, y2: 2, z2: 3, block: 'diamond' },
+      ],
+      npcs: [
+        { position: [2, 2, 4], name: 'Fraction Guide', color: 0x7c3aed,
+          dialogue: 'Welcome to Fraction Builder! Look at the shape selector above the block bar \u2014 you can place cubes (1), halves (\u00BD), or quarters (\u00BC). Try placing two halves next to each other. Do they fill the same space as one cube?', question: null },
+        { position: [6, 2, 4], name: 'Half Quiz', color: 0x2563eb,
+          dialogue: 'A half-block has volume = \u00BD cubic unit. Let\u2019s count with fractions!',
+          question: { text: 'Volume of 1 half-block?', choices: ['\u00BD cubic unit', '1 cubic unit', '\u00BC cubic unit'], correct: 0,
+            followUp: [
+              { text: '2 half-blocks = ?', choices: ['1 cubic unit (2 \u00d7 \u00BD = 1)', '2 cubic units', '\u00BD cubic unit'], correct: 0 },
+              { text: '6 half-blocks = ?', choices: ['3 cubic units', '6 cubic units', '2 cubic units'], correct: 0 }
+            ] } },
+        { position: [12, 3, 2], name: 'Whole Quiz', color: 0xf59e0b,
+          dialogue: 'This 2\u00d72\u00d72 cube has 8 blocks = 8 cubic units. What if we swap some for halves?',
+          question: { text: '8 cubes = 8 cubic units. If we replace 4 with half-blocks, how many \u201cwhole\u201d cubes remain?', choices: ['4 whole cubes', '8 cubes', '2 cubes'], correct: 0,
+            followUp: [
+              { text: '4 cubes + 4 half-blocks. Volume = 4\u00d71 + 4\u00d7\u00BD = ?', choices: ['6 cubic units', '8 cubic units', '4 cubic units'], correct: 0 }
+            ] } },
+        { position: [5, 1, 11], name: 'Challenge Master', color: 0x16a34a,
+          dialogue: 'Build EXACTLY 3\u00BD cubic units on the sand platform! Use the shape selector (Q key).',
+          question: { text: 'How many quarter-wedges equal \u00BD?', choices: ['2 quarters', '4 quarters', '1 quarter'], correct: 0,
+            followUp: [
+              { text: 'How many quarter-wedges equal 1 whole cube?', choices: ['4 quarters', '2 quarters', '8 quarters'], correct: 0 }
+            ] } },
+        { position: [15, 1, 11], name: 'Pizza Professor', color: 0xdc2626,
+          dialogue: 'Think pizza! Whole cube = whole pizza. Half-block = half pizza. Quarter-wedge = one slice of 4.',
+          question: { text: 'You eat 3 whole pizzas. How many cubic units is that?', choices: ['3 cubic units', '3\u00BD', '6'], correct: 0,
+            followUp: [
+              { text: 'Now add 2 quarter-slices (\u00BC each). Total = 3 + \u00BD = ?', choices: ['3\u00BD pizzas', '3\u00BC pizzas', '5 pizzas'], correct: 0 }
+            ] } }
+      ]
+    },
+    base10Blocks: {
+      title: 'Base 10 Place Value \u2014 Building Numbers in 3D',
+      description: 'Understand place value by building numbers with unit cubes (1s), ten-rods (10s), and hundred-flats (100s). Each block represents a different place value \u2014 see how numbers are constructed!',
+      spawnPoint: [5, 2, 5],
+      objectives: [
+        'Identify units (1), tens (10), and hundreds (100) blocks',
+        'Build the number 234 using base-10 blocks',
+        'Compare two numbers by counting their blocks',
+        'Understand that 10 ones = 1 ten, 10 tens = 1 hundred'
+      ],
+      ground: { xMin: -4, xMax: 30, zMin: -4, zMax: 24, y: 0, type: 'grass' },
+      structures: [
+        // Floor
+        { type: 'fill', x1: -2, y1: 0, z1: -2, x2: 28, y2: 0, z2: 22, block: 'stone' },
+        // ── Station 1: The Unit Cube (ONES place) ──
+        // Single gold cube = 1 unit
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 2, y2: 1, z2: 2, block: 'gold' },
+        // Label platform
+        { type: 'fill', x1: 2, y1: 0, z1: 0, x2: 2, y2: 0, z2: 0, block: 'diamond' },
+        // ── Station 2: The Ten-Rod (TENS place) ──
+        // Row of 10 gold cubes = 10 units
+        { type: 'fill', x1: 8, y1: 1, z1: 2, x2: 17, y2: 1, z2: 2, block: 'gold' },
+        // Label platform
+        { type: 'fill', x1: 12, y1: 0, z1: 0, x2: 12, y2: 0, z2: 0, block: 'diamond' },
+        // ── Station 3: The Hundred-Flat (HUNDREDS place) ──
+        // 10\u00d710 flat of gold cubes = 100 units
+        { type: 'fill', x1: 2, y1: 1, z1: 8, x2: 11, y2: 1, z2: 17, block: 'gold' },
+        // Label
+        { type: 'fill', x1: 6, y1: 0, z1: 6, x2: 6, y2: 0, z2: 6, block: 'diamond' },
+        // ── Example: The number 234 ──
+        // 2 hundred-flats (stacked)
+        { type: 'fill', x1: 16, y1: 1, z1: 8, x2: 25, y2: 1, z2: 17, block: 'diamond' },
+        { type: 'fill', x1: 16, y1: 2, z1: 8, x2: 25, y2: 2, z2: 17, block: 'diamond' },
+        // 3 ten-rods (beside the flats)
+        { type: 'fill', x1: 16, y1: 1, z1: 19, x2: 25, y2: 1, z2: 19, block: 'brick' },
+        { type: 'fill', x1: 16, y1: 1, z1: 20, x2: 25, y2: 1, z2: 20, block: 'brick' },
+        { type: 'fill', x1: 16, y1: 1, z1: 21, x2: 25, y2: 1, z2: 21, block: 'brick' },
+        // 4 unit cubes
+        { type: 'fill', x1: 16, y1: 1, z1: 23, x2: 19, y2: 1, z2: 23, block: 'sand' },
+        // ── Build Platform (for student experiments) ──
+        { type: 'fill', x1: 2, y1: 0, z1: 20, x2: 12, y2: 0, z2: 24, block: 'sand' }
+      ],
+      npcs: [
+        { position: [0, 1, 2], name: 'Place Value Guide', color: 0x7c3aed,
+          dialogue: 'Welcome! In our number system, position matters. Each place is 10\u00d7 bigger than the one before. Let\u2019s explore with blocks!', question: null },
+        { position: [2, 2, 0], name: 'Ones Expert', color: 0xf59e0b,
+          dialogue: 'This single gold cube represents ONE unit. It\u2019s the building block of all numbers!',
+          question: { text: 'How many unit cubes = 1 unit?', choices: ['1 cube', '10 cubes', '100 cubes'], correct: 0,
+            followUp: [
+              { text: 'If you have 7 unit cubes, what number do they represent?', choices: ['7', '70', '700'], correct: 0 }
+            ] } },
+        { position: [12, 2, 0], name: 'Tens Teacher', color: 0x2563eb,
+          dialogue: 'This row of 10 cubes is a TEN-ROD. Count them \u2014 10 ones make 1 ten!',
+          question: { text: 'How many unit cubes are in this ten-rod?', choices: ['10 cubes', '1 cube', '100 cubes'], correct: 0,
+            followUp: [
+              { text: 'If you have 5 ten-rods, what number is that?', choices: ['50', '5', '500'], correct: 0 },
+              { text: 'How many unit cubes = 5 ten-rods?', choices: ['50 cubes', '5 cubes', '15 cubes'], correct: 0 }
+            ] } },
+        { position: [6, 2, 6], name: 'Hundreds Hero', color: 0x16a34a,
+          dialogue: 'This 10\u00d710 flat is a HUNDRED-FLAT. It has 10 ten-rods, or 100 unit cubes! Use M to measure it.',
+          question: { text: 'How many unit cubes in this 10\u00d710 flat?', choices: ['100 cubes', '10 cubes', '20 cubes'], correct: 0,
+            followUp: [
+              { text: '10 ten-rods = 1 hundred-flat. What is 10 \u00d7 10?', choices: ['100', '20', '1000'], correct: 0 }
+            ] } },
+        { position: [20, 3, 15], name: 'Number Builder', color: 0xdc2626,
+          dialogue: 'This structure represents the number 234: 2 hundred-flats (blue) + 3 ten-rods (red) + 4 unit cubes (beige). 200 + 30 + 4 = 234!',
+          question: { text: '2 hundreds + 3 tens + 4 ones = ?', choices: ['234', '2034', '432'], correct: 0,
+            followUp: [
+              { text: 'What is the value of the digit 3 in 234?', choices: ['30 (3 tens)', '3 (3 ones)', '300 (3 hundreds)'], correct: 0 },
+              { text: 'How many total unit cubes would you need to build 234?', choices: ['234 cubes', '9 cubes (2+3+4)', '23 cubes'], correct: 0 }
+            ] } },
+        { position: [7, 1, 22], name: 'Build Challenge', color: 0x7c3aed,
+          dialogue: 'Your turn! Use the sand platform to build the number 156. That\u2019s 1 hundred-flat + 5 ten-rods + 6 unit cubes. Measure with M to check!',
+          question: { text: 'In the number 156, what does the 5 represent?', choices: ['5 tens (50)', '5 ones (5)', '5 hundreds (500)'], correct: 0,
+            followUp: [
+              { text: '1 hundred + 5 tens + 6 ones = ?', choices: ['156', '516', '165'], correct: 0 }
+            ] } }
+      ]
+    },
+    fluencyMaze: {
+      title: 'Volume Fluency Maze \u2014 Measure to Navigate',
+      description: 'Race through a 3D maze where every junction has structures you must MEASURE to find the correct path! Wrong turns lead to dead ends. Use the M key to measure quickly and accurately.',
+      spawnPoint: [2, 2, 2],
+      objectives: [
+        'Measure each structure at a junction to find its volume',
+        'Choose the path labeled with the correct answer',
+        'Reach the golden finish platform at the end',
+        'Complete the maze as fast as you can!'
+      ],
+      ground: { xMin: -2, xMax: 40, zMin: -2, zMax: 30, y: 0, type: 'stone' },
+      structures: [
+        // ── Maze walls (brick, 3 blocks high) ──
+        // Start corridor
+        { type: 'fill', x1: 0, y1: 1, z1: 0, x2: 0, y2: 3, z2: 8, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 0, x2: 4, y2: 3, z2: 8, block: 'brick' },
+        // ── Junction 1: Measure 3\u00d72\u00d72 = 12 ──
+        // Structure to measure (diamond)
+        { type: 'fill', x1: 1, y1: 1, z1: 5, x2: 3, y2: 2, z2: 6, block: 'diamond' },
+        // Fork: LEFT path (correct = 12) and RIGHT path (dead end)
+        { type: 'fill', x1: 0, y1: 1, z1: 8, x2: 0, y2: 3, z2: 14, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 8, x2: 4, y2: 3, z2: 10, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 10, x2: 8, y2: 3, z2: 10, block: 'brick' },
+        // Dead end wall (right path)
+        { type: 'fill', x1: 8, y1: 1, z1: 8, x2: 8, y2: 3, z2: 10, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 8, x2: 8, y2: 3, z2: 8, block: 'brick' },
+        // Correct path continues north
+        { type: 'fill', x1: 0, y1: 1, z1: 14, x2: 8, y2: 3, z2: 14, block: 'brick' },
+        // ── Junction 2: Measure 4\u00d73\u00d72 = 24 ──
+        { type: 'fill', x1: 1, y1: 1, z1: 11, x2: 3, y2: 2, z2: 13, block: 'gold' },
+        // Corridor continues east
+        { type: 'fill', x1: 0, y1: 1, z1: 14, x2: 0, y2: 3, z2: 20, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 14, x2: 4, y2: 3, z2: 20, block: 'brick' },
+        // ── Junction 3: Measure 5\u00d72\u00d73 = 30 ──
+        { type: 'fill', x1: 1, y1: 1, z1: 17, x2: 3, y2: 3, z2: 18, block: 'diamond' },
+        // Fork north vs east
+        { type: 'fill', x1: 0, y1: 1, z1: 20, x2: 0, y2: 3, z2: 26, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 20, x2: 12, y2: 3, z2: 20, block: 'brick' },
+        // Dead end (east)
+        { type: 'fill', x1: 12, y1: 1, z1: 20, x2: 12, y2: 3, z2: 24, block: 'brick' },
+        { type: 'fill', x1: 8, y1: 1, z1: 24, x2: 12, y2: 3, z2: 24, block: 'brick' },
+        { type: 'fill', x1: 8, y1: 1, z1: 20, x2: 8, y2: 3, z2: 24, block: 'brick' },
+        // Correct path continues north to finish
+        { type: 'fill', x1: 0, y1: 1, z1: 26, x2: 8, y2: 3, z2: 26, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 20, x2: 4, y2: 3, z2: 26, block: 'brick' },
+        // ── FINISH PLATFORM ──
+        { type: 'fill', x1: 1, y1: 1, z1: 23, x2: 3, y2: 1, z2: 25, block: 'gold' },
+        { type: 'fill', x1: 2, y1: 2, z1: 24, x2: 2, y2: 2, z2: 24, block: 'diamond' }
+      ],
+      npcs: [
+        { position: [2, 1, 1], name: 'Maze Guide', color: 0x7c3aed,
+          dialogue: 'Welcome to the Volume Fluency Maze! At each junction, MEASURE the structure (M key) to find its volume. The correct volume tells you which path to take! Speed and accuracy both matter. Go!', question: null },
+        { position: [2, 3, 6], name: 'Junction 1', color: 0x2563eb,
+          dialogue: 'Measure the blue structure below (M key). It\u2019s 3 long, 2 wide, 2 tall. Take the path matching the correct volume!',
+          question: { text: 'Volume of this 3\u00d72\u00d72 structure?', choices: ['12 \u2014 go LEFT (north)', '8 \u2014 go RIGHT (east)', '6 \u2014 go RIGHT (east)'], correct: 0,
+            followUp: [
+              { text: 'Double check: 3 \u00d7 2 = 6, then 6 \u00d7 2 = ?', choices: ['12 \u2713 (go left!)', '8', '10'], correct: 0 }
+            ] } },
+        { position: [2, 3, 12], name: 'Junction 2', color: 0xf59e0b,
+          dialogue: 'Nice! Now measure the gold structure. Be quick \u2014 fluency means speed + accuracy!',
+          question: { text: 'Volume of this gold prism?', choices: ['24 cubic units', '18 cubic units', '36 cubic units'], correct: 0 } },
+        { position: [2, 4, 18], name: 'Junction 3', color: 0x16a34a,
+          dialogue: 'Last junction! This one is taller. Measure carefully \u2014 the finish is close!',
+          question: { text: 'Volume of 5\u00d72\u00d73?', choices: ['30 \u2014 go NORTH to finish!', '25 \u2014 go EAST', '20 \u2014 go EAST'], correct: 0,
+            followUp: [
+              { text: '5 \u00d7 2 = 10, then 10 \u00d7 3 = ?', choices: ['30 \u2713 (north to gold platform!)', '15', '60'], correct: 0 }
+            ] } },
+        { position: [2, 2, 24], name: 'Finish!', color: 0xdc2626,
+          dialogue: '\uD83C\uDFC6 You made it! You navigated the maze using volume measurement fluency. Every junction tested your speed and accuracy with L\u00d7W\u00d7H. That\u2019s fluency \u2014 doing math automatically so you can focus on the problem!',
+          question: { text: 'Why is math fluency important?', choices: ['It frees your brain for harder problems', 'It only matters for tests', 'It\u2019s not important'], correct: 0 } }
+      ]
+    }
+  };
+  // The authored lessons put the correct choice first in 82 of 83 questions,
+  // so a student could clear a lesson by always tapping the top button.
+  // Rotate each question by a per-question offset.
+  //
+  // Questions form a TREE: npcs[].question plus a recursive followUp chain,
+  // so every node is walked and counted, giving neighbouring steps different
+  // shifts. Deterministic and applied once at module scope, because a step is
+  // re-read by index on every render (a Math.random() there would re-deal the
+  // choices under the student mid-question).
+  //
+  // Grading is `ci === curQ.correct` (INDEX) and there is no per-option
+  // feedback array, so only choices + correct move. validateLesson() is NOT a
+  // hook point: it sanitises AI-generated lessons, not this authored data.
+  function gwRotateQuestionTree(node, counter) {
+    if (!node || !Array.isArray(node.choices) || typeof node.correct !== "number") return node;
+    var n = node.choices.length;
+    var out = Object.assign({}, node);
+    var shift = ((counter.i++ * 7) + 3) % n;
+    if (n > 1 && shift !== 0) {
+      var moved = new Array(n);
+      for (var i = 0; i < n; i++) moved[(i + shift) % n] = node.choices[i];
+      out.choices = moved;
+      out.correct = (node.correct + shift) % n;
+    }
+    if (Array.isArray(node.followUp)) {
+      out.followUp = node.followUp.map(function (fu) { return gwRotateQuestionTree(fu, counter); });
+    }
+    return out;
+  }
+  (function rotateAuthoredLessonQuestions() {
+    var counter = { i: 0 };
+    Object.keys(SAMPLE_LESSONS).forEach(function (key) {
+      var lesson = SAMPLE_LESSONS[key];
+      if (!lesson || !Array.isArray(lesson.npcs)) return;
+      lesson.npcs = lesson.npcs.map(function (npc) {
+        if (!npc || !npc.question) return npc;
+        return Object.assign({}, npc, { question: gwRotateQuestionTree(npc.question, counter) });
+      });
+    });
+  })();
+
+
+  var LESSON_ORDER =['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
+  var MAX_BLOCKS = 1500; // Performance safety limit
+  // Radians/second for arrow-key look. ~100°/s: fast enough to sweep a structure
+  // without hunting, slow enough to land the crosshair on an NPC.
+  var KEY_LOOK_SPEED = 1.75;
+  // Straight up / straight down, minus a hair. Going all the way to PI/2 flips the
+  // YXZ euler and the world snaps 180°.
+  var PITCH_LIMIT = Math.PI * 0.49;
+
+  // Integrate one frame of arrow-key look into `euler`. Standalone (rather than
+  // inline in the animate loop) so the direction signs and the pitch clamp are
+  // unit-testable without standing up a WebGL context. Returns whether anything
+  // moved, so the caller can skip the quaternion write on idle frames.
+  function applyKeyLook(euler, lookState, dt) {
+    if (!euler || !lookState) return false;
+    var rate = KEY_LOOK_SPEED * dt;
+    var moved = false;
+    if (lookState.left) { euler.y += rate; moved = true; }
+    if (lookState.right) { euler.y -= rate; moved = true; }
+    if (lookState.up) { euler.x += rate; moved = true; }
+    if (lookState.down) { euler.x -= rate; moved = true; }
+    if (moved) euler.x = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, euler.x));
+    return moved;
+  }
+  var MEASUREMENT_BLOCK_LIMIT = MAX_BLOCKS;
+
+  // ── Non-visual wayfinding ──
+  // The compass strip and the minimap are the only way to tell where the characters
+  // are and which ones still owe you a question, and both are canvases — invisible
+  // to a screen reader. The student who most needs "who have I missed, and which way
+  // is it" is exactly the one who cannot see the pips. These two turn the same data
+  // into a sentence; L speaks it on demand (a live region would be unbearable at
+  // frame rate).
+  //
+  // Kept pure and at module scope so the left/right convention is unit-tested —
+  // telling a blind student "left" when the character is on their right is worse
+  // than saying nothing.
+  //
+  // bearingDeg is measured against the player's own facing: 0 = straight ahead,
+  // positive = toward the player's RIGHT.
+  function describeBearing(deg) {
+    var a = ((deg % 360) + 540) % 360 - 180;
+    var abs = Math.abs(a);
+    if (abs <= 22.5) return 'straight ahead';
+    if (abs >= 157.5) return 'behind you';
+    var side = a > 0 ? 'right' : 'left';
+    if (abs <= 67.5) return 'ahead and to your ' + side;
+    if (abs <= 112.5) return 'to your ' + side;
+    return 'behind you to the ' + side;
+  }
+
+  function summarizeNearbyNpcs(entries, maxCount) {
+    var list = (entries || []).filter(Boolean).slice().sort(function (a, b) { return a.distance - b.distance; });
+    if (!list.length) return 'There are no characters in this world.';
+    var pending = list.filter(function (e) { return e.hasQuestion && !e.answered; });
+    var head = pending.length
+      ? pending.length + ' character' + (pending.length === 1 ? '' : 's') + ' still ' + (pending.length === 1 ? 'has' : 'have') + ' a question. '
+      : 'Every question here is answered. ';
+    var spoken = list.slice(0, maxCount || 4).map(function (e) {
+      var steps = Math.max(1, Math.round(e.distance));
+      return e.name + ' is ' + steps + ' step' + (steps === 1 ? '' : 's') + ' ' + describeBearing(e.bearingDeg)
+        + (e.hasQuestion ? (e.answered ? ', already answered' : ', still has a question') : '');
+    });
+    var more = list.length > (maxCount || 4) ? ' And ' + (list.length - (maxCount || 4)) + ' further away.' : '';
+    return head + spoken.join('. ') + '.' + more;
+  }
+
+  // Stable chat-key derivation — used by both the read site in engine.loadLesson
+  // and the write site in the NPC chat callback. Returning the same key from both
+  // is what makes chat history actually persist across loadLesson cycles.
+  // For sample lessons, identity-lookup returns the SAMPLE_LESSONS key (matches
+  // activeLesson). For non-sample (AI-generated) lessons, falls back to 'ai_generated'.
+  function gwChatKey(lesson) {
+    if (!lesson) return 'unknown';
+    if (lesson._id) return lesson._id;
+    var k = Object.keys(SAMPLE_LESSONS).find(function(key) { return SAMPLE_LESSONS[key] === lesson; });
+    return k || 'ai_generated';
+  }
+
+  // ── Worksheet Generator ──
+  // Creates a printable companion worksheet for any lesson
+  function generateWorksheetHTML(lesson) {
+    var npcsWithQ = (lesson.npcs || []).filter(function(n) { return n.question; });
+    var allNpcs = lesson.npcs || [];
+    var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + escapeReportHtml(lesson.title || 'Geometry World') + ' — Worksheet</title>'
+      + '<style>'
+      + 'body{font-family:Arial,sans-serif;max-width:750px;margin:0 auto;padding:24px;color:#1a1a1a;font-size:13px;line-height:1.6}'
+      + 'h1{font-size:20px;border-bottom:2px solid #7c3aed;padding-bottom:6px;color:#4c1d95}'
+      + 'h2{font-size:15px;color:#7c3aed;margin-top:20px;margin-bottom:6px}'
+      + '.header{display:flex;justify-content:space-between;border:1px solid #d1d5db;border-radius:8px;padding:10px 14px;margin-bottom:16px;background:#f9fafb}'
+      + '.header label{font-weight:700;font-size:12px;color:#6b7280}'
+      + '.header input{border:none;border-bottom:1px solid #d1d5db;font-size:13px;width:140px;padding:2px 4px;font-family:inherit}'
+      + '.formula-box{background:#ede9fe;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin:10px 0;font-family:monospace;font-size:14px}'
+      + '.problem{border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin:10px 0;page-break-inside:avoid}'
+      + '.problem-title{font-weight:700;color:#1e293b;margin-bottom:6px;font-size:14px}'
+      + '.work-box{border:1px dashed #d1d5db;border-radius:6px;min-height:60px;margin:8px 0;padding:6px;background:#fafafa}'
+      + '.work-label{font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase}'
+      + '.dim-line{display:flex;gap:16px;margin:6px 0}'
+      + '.dim-line label{font-weight:600;font-size:12px}'
+      + '.dim-line .blank{border-bottom:1px solid #374151;width:50px;display:inline-block;text-align:center}'
+      + '.eq-line{font-family:monospace;font-size:14px;margin:8px 0;padding:8px;background:#f0fdf4;border-radius:6px;border:1px solid #86efac}'
+      + '.objectives{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin:10px 0}'
+      + '.objectives li{margin:4px 0}'
+      + '.tip{background:#fef3c7;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 6px 6px 0;margin:10px 0;font-size:12px}'
+      + '.footer{margin-top:20px;font-size:10px;color:#6b7280;text-align:center;border-top:1px solid #e5e7eb;padding-top:8px}'
+      + '@media print{body{padding:12px}}'
+      + '</style></head><body>';
+
+    // Header
+    h += '<h1>\uD83E\uDDF1 ' + escapeReportHtml(lesson.title || 'Geometry World Worksheet') + '</h1>';
+    h += '<div class="header">';
+    h += '<div><label for="gw-ws-name">Name:</label> <input id="gw-ws-name" type="text" placeholder="" aria-label="Name"></div>';
+    h += '<div><label for="gw-ws-date">Date:</label> <input id="gw-ws-date" type="text" placeholder="" aria-label="Date"></div>';
+    h += '<div><label for="gw-ws-player">Player #:</label> <input id="gw-ws-player" type="text" placeholder="" style="width:50px" aria-label="Player number"></div>';
+    h += '</div>';
+
+    // Description
+    if (lesson.description) {
+      h += '<p><b>Introduction:</b> ' + escapeReportHtml(lesson.description) + '</p>';
+    }
+
+    // Formula reference
+    h += '<div class="formula-box">';
+    h += '<b>Key Formulas:</b><br>';
+    h += 'Volume = Length \u00d7 Width \u00d7 Height &nbsp;&nbsp; (V = L \u00d7 W \u00d7 H)<br>';
+    h += 'Volume = Base Area \u00d7 Height &nbsp;&nbsp; (V = A \u00d7 H)<br>';
+    h += 'L-Block Volume = V\u2081 + V\u2082';
+    h += '</div>';
+
+    // Objectives
+    if (lesson.objectives && lesson.objectives.length) {
+      h += '<div class="objectives"><b>\uD83D\uDCCB Objectives:</b><ul>';
+      lesson.objectives.forEach(function(obj) { h += '<li>\u2610 ' + escapeReportHtml(obj) + '</li>'; });
+      h += '</ul></div>';
+    }
+
+    // Detect if this is the Geometry Garden (exploration mode) or a standard lesson.
+    //
+    // This used to also treat ANY question-less lesson as the Garden. The Garden branch
+    // emits eight hardcoded stations ("The Single Cube", "the gold structures", "The
+    // Hidden Garden"), so a teacher-authored or AI-generated exploration lesson — the
+    // AI prompt explicitly allows question: null — printed a worksheet about a
+    // completely different world. The standard branch already handles question-less
+    // NPCs with a Notes / Observations box, so let those fall through to it.
+    var isGarden = !!(lesson.title && lesson.title.indexOf('Garden') >= 0);
+
+    if (isGarden) {
+      // ── Field Journal for the Geometry Garden ──
+      h += '<div class="tip" style="background:#ecfdf5;border-color:#16a34a">\uD83C\uDF3F <b>This is a Field Journal.</b> There are no right or wrong answers. Walk through the garden, observe the structures, and record what you notice. Take your time.</div>';
+
+      var stations = [
+        { name: 'Station 1: The Single Cube', prompt: 'Describe what you see. How many blocks? What are its dimensions?', sketch: true },
+        { name: 'Station 2: The Row', prompt: 'How is this different from Station 1? How many blocks long is it? What dimension did we add?', sketch: true },
+        { name: 'Station 3: The Flat Rectangle', prompt: 'Now we have two dimensions. Measure the length and width. What is the area (L \u00d7 W)?', sketch: true, measure: true },
+        { name: 'Station 4: The Rectangular Prism', prompt: 'Three dimensions! Measure all three. How does this relate to the flat rectangle at Station 3?', sketch: true, measure: true, volume: true },
+        { name: 'Station 5: Three Shapes, One Volume', prompt: 'Measure all three gold structures. What do you notice about their volumes? How can different shapes have the same volume?', sketch: true, measure: true, volume: true, wonder: 'What surprised you about these three structures?' },
+        { name: 'Station 6: The L-Block', prompt: 'This shape is made of two rectangular prisms joined together. Can you find where one ends and the other begins?', sketch: true, measure: true, volume: true },
+        { name: 'Station 7: Nested Cubes', prompt: 'The outer cube is glass (transparent). There is a smaller cube inside. What is the volume of JUST the glass shell?', sketch: true, measure: true, volume: true, wonder: 'How would you calculate the volume of a hollow shape?' },
+        { name: 'The Hidden Garden', prompt: 'Find the structure behind the wall at the end of the path. This shape is NOT a rectangular prism. Can you still figure out its volume? How?', sketch: true, wonder: 'What new questions does this shape raise for you?' }
+      ];
+
+      stations.forEach(function(st, i) {
+        h += '<div class="problem" style="border-color:#86efac">';
+        h += '<div class="problem-title" style="color:#16a34a">\uD83C\uDF3F ' + st.name + '</div>';
+        h += '<p>' + st.prompt + '</p>';
+        if (st.measure) {
+          h += '<div class="dim-line">';
+          h += '<label>Length: <span class="blank">&nbsp;</span></label>';
+          h += '<label>Width: <span class="blank">&nbsp;</span></label>';
+          h += '<label>Height: <span class="blank">&nbsp;</span></label>';
+          h += '</div>';
+        }
+        if (st.volume) {
+          h += '<div class="eq-line">Volume = ___ \u00d7 ___ \u00d7 ___ = ___ cubic units</div>';
+        }
+        if (st.sketch) {
+          h += '<div class="work-label">\u270D\uFE0F Sketch what you see (or describe it in words)</div>';
+          h += '<div class="work-box" style="min-height:70px"></div>';
+        }
+        if (st.wonder) {
+          h += '<div style="background:#fef3c7;border-radius:6px;padding:8px 10px;margin-top:6px;font-size:12px;border-left:3px solid #f59e0b">';
+          h += '<b>\uD83E\uDD14 Wonder Question:</b> ' + st.wonder;
+          h += '</div>';
+        }
+        h += '</div>';
+      });
+
+      // Garden reflection — deeper than standard
+      h += '<div class="problem" style="border-color:#a78bfa">';
+      h += '<div class="problem-title" style="color:#7c3aed">\uD83C\uDF1F Final Reflection</div>';
+      h += '<p><b>1.</b> Which station was most interesting to you? Why?</p>';
+      h += '<div class="work-box" style="min-height:50px"></div>';
+      h += '<p><b>2.</b> At Station 5, three shapes all had the same volume. In your own words, explain how that is possible.</p>';
+      h += '<div class="work-box" style="min-height:50px"></div>';
+      h += '<p><b>3.</b> The hidden structure at the end is not a rectangular prism. What new math would you need to find its volume?</p>';
+      h += '<div class="work-box" style="min-height:50px"></div>';
+      h += '<p><b>4.</b> If you could add one more structure to the garden, what would it be and why?</p>';
+      h += '<div class="work-box" style="min-height:50px"></div>';
+      h += '</div>';
+
+      h += '<div class="tip" style="background:#f5f3ff;border-color:#7c3aed">\uD83C\uDF31 <b>Growth Note:</b> There are no wrong answers in a field journal. Every observation you made today built new connections in your brain. The structures in the garden will still be there tomorrow \u2014 but the person looking at them will know more than they did today.</div>';
+
+    } else {
+      // ── Standard lesson worksheet ──
+      // A lesson with no NPCs at all would otherwise print nothing but the
+      // reflection box, so give it something to observe.
+      if (!allNpcs.length) {
+        h += '<div class="problem">';
+        h += '<div class="problem-title">Explore the World</div>';
+        h += '<p>Walk through the structures. Measure each one and record its dimensions.</p>';
+        h += '<div class="dim-line">';
+        h += '<label>Length: <span class="blank">&nbsp;</span> blocks</label>';
+        h += '<label>Width: <span class="blank">&nbsp;</span> blocks</label>';
+        h += '<label>Height: <span class="blank">&nbsp;</span> blocks</label>';
+        h += '</div>';
+        h += '<div class="eq-line">___ × ___ × ___ = ___ cubic units</div>';
+        h += '<div class="work-label">Notes / Observations</div>';
+        h += '<div class="work-box"></div>';
+        h += '</div>';
+      }
+      var problemNum = 1;
+      allNpcs.forEach(function(npc, idx) {
+        h += '<div class="problem">';
+        h += '<div class="problem-title">Activity #' + problemNum + ': ' + escapeReportHtml(npc.name) + '</div>';
+        h += '<p>' + escapeReportHtml(npc.dialogue) + '</p>';
+
+        if (npc.question) {
+          h += '<p><b>Question:</b> ' + escapeReportHtml(npc.question.text) + '</p>';
+          h += '<div class="dim-line">';
+          h += '<label>Length: <span class="blank">&nbsp;</span> blocks</label>';
+          h += '<label>Width: <span class="blank">&nbsp;</span> blocks</label>';
+          h += '<label>Height: <span class="blank">&nbsp;</span> blocks</label>';
+          h += '</div>';
+          h += '<div class="eq-line">___ \u00d7 ___ \u00d7 ___ = ___ cubic units</div>';
+          h += '<div class="work-label">Show Your Work</div>';
+          h += '<div class="work-box"></div>';
+          h += '<p><b>My Answer:</b> <span class="blank" style="width:120px">&nbsp;</span></p>';
+        } else {
+          h += '<div class="work-label">Notes / Observations</div>';
+          h += '<div class="work-box" style="min-height:40px"></div>';
+        }
+        h += '</div>';
+        problemNum++;
+      });
+
+      // Reflection section
+      h += '<div class="problem">';
+      h += '<div class="problem-title">\uD83C\uDF31 Reflection</div>';
+      h += '<p>What did you learn about volume today? What strategy helped you the most?</p>';
+      h += '<div class="work-box" style="min-height:80px"></div>';
+      h += '</div>';
+    }
+
+    h += '<div class="tip">\uD83D\uDCA1 <b>Remember:</b> Every block in Geometry World is 1 unit cube. To find the volume of a rectangular prism, count the blocks OR multiply Length \u00d7 Width \u00d7 Height!</div>';
+
+    h += '<div class="footer">AlloFlow Geometry World \u2022 Companion Worksheet \u2022 \u00a9 ' + new Date().getFullYear() + '</div>';
+    h += '</body></html>';
+    return h;
+  }
+
+  // ── Physical Manipulative Bridge Card ──
+  // Generates a printable "Build This in Your Classroom" card from a measurement
+  function generateManipulativeCard(measurement, lessonTitle) {
+    var m = enrichMeasurement(measurement);
+    var physicalPieces = m.hasFractions ? m.formattedOccupiedVolume + ' cubic units of pieces' : m.count + ' unit cubes';
+    var materialPieces = Object.keys(m.materialCounts || {}).map(function(type) { return m.materialCounts[type] + ' ' + type; }).join(', ');
+    var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Build This! \u2014 Physical Manipulative Card</title>'
+      + '<style>'
+      + 'body{font-family:Arial,sans-serif;max-width:500px;margin:24px auto;color:#1a1a1a}'
+      + '.card{border:3px solid #7c3aed;border-radius:16px;padding:24px;background:linear-gradient(135deg,#faf5ff,#ede9fe)}'
+      + 'h1{font-size:22px;color:#4c1d95;text-align:center;margin:0 0 4px}'
+      + '.subtitle{text-align:center;color:#7c3aed;font-size:13px;margin-bottom:16px}'
+      + '.diagram{background:#fff;border:2px dashed #c4b5fd;border-radius:12px;padding:20px;text-align:center;margin:12px 0}'
+      + '.dim{font-size:28px;font-weight:800;color:#4c1d95;font-family:monospace}'
+      + '.label{font-size:11px;color:#7c3aed;text-transform:uppercase;font-weight:700;letter-spacing:1px}'
+      + '.steps{background:#fff;border-radius:10px;padding:14px 18px;margin:12px 0}'
+      + '.steps ol{margin:0;padding-left:20px;font-size:13px;line-height:2}'
+      + '.steps li strong{color:#4c1d95}'
+      + '.answer-box{border:2px solid #c4b5fd;border-radius:10px;padding:12px;margin:12px 0;text-align:center}'
+      + '.answer-box .prompt{font-size:13px;font-weight:700;color:#4c1d95}'
+      + '.answer-box .line{border-bottom:2px solid #d1d5db;width:150px;display:inline-block;margin:8px 10px}'
+      + '.check{background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:10px;margin:12px 0;font-size:12px;color:#166534}'
+      + '.footer{text-align:center;font-size:9px;color:#94a3b8;margin-top:16px}'
+      + '@media print{body{margin:0}.card{border:2px solid #000;box-shadow:none}}'
+      + '</style></head><body><div class="card">';
+    h += '<h1>\uD83E\uDDF1 Build This!</h1>';
+    h += '<div class="subtitle">Physical Manipulative Challenge \u2014 ' + escapeReportHtml(lessonTitle || 'Geometry World') + '</div>';
+
+    // Isometric-style ASCII diagram showing dimensions
+    h += '<div class="diagram">';
+    h += '<div class="dim">' + m.L + ' \u00d7 ' + m.W + ' \u00d7 ' + m.H + '</div>';
+    h += '<div style="display:flex;justify-content:space-around;margin-top:12px">';
+    h += '<div><div class="label">Length</div><div style="font-size:20px;font-weight:700;color:#4c1d95">' + m.L + ' blocks</div></div>';
+    h += '<div><div class="label">Width</div><div style="font-size:20px;font-weight:700;color:#4c1d95">' + m.W + ' blocks</div></div>';
+    h += '<div><div class="label">Height</div><div style="font-size:20px;font-weight:700;color:#4c1d95">' + m.H + ' blocks</div></div>';
+    h += '</div></div>';
+
+    h += '<div class="steps"><strong>\uD83D\uDCD0 Build Steps:</strong><ol>';
+    h += '<li>Get <strong>' + physicalPieces + '</strong> (or snap cubes)</li>';
+    if (Object.keys(m.materialCounts || {}).length > 1) h += '<li>Match the digital color key: <strong>' + materialPieces + '</strong></li>';
+    if (m.isSolidPrism) {
+      h += '<li>Build the <strong>bottom layer</strong>: ' + m.L + ' blocks long \u00d7 ' + m.W + ' blocks wide = <strong>' + (m.L * m.W) + ' cubes</strong></li>';
+      h += '<li>Stack <strong>' + m.H + ' complete layers</strong> on top of each other</li>';
+    } else {
+      h += '<li>Recreate the structure <strong>one layer at a time</strong>, leaving its gaps or cut-away parts empty</li>';
+      h += '<li>Compare its <strong>' + m.formattedOccupiedVolume + ' occupied cubic units</strong> with its ' + m.boundingVolume + '-unit bounding box</li>';
+    }
+    h += '<li><strong>Count all the cubes</strong> in your finished structure</li>';
+    h += '</ol></div>';
+
+    h += '<div class="answer-box">';
+    h += '<div class="prompt">How many cubes did you use? <span class="line"></span></div>';
+    h += '<div style="margin-top:8px;font-size:12px;color:#6b7280">' + (m.isSolidPrism
+      ? 'Does this match ' + m.L + ' \u00d7 ' + m.W + ' \u00d7 ' + m.H + ' = <span class="line" style="width:60px"></span> ?'
+      : 'Bounding box: ' + m.boundingVolume + ' \u2212 empty space: ' + formatVolume(m.missingVolume) + ' = <span class="line" style="width:60px"></span>')
+      + '</div>';
+    h += '</div>';
+
+    h += '<div class="check">';
+    h += '\u2705 <strong>Check:</strong> Your physical structure should have the same volume as the digital one. ';
+    h += 'The digital measurement showed <strong>' + m.formattedOccupiedVolume + ' cubic units</strong>. ';
+    h += 'Did your count match?';
+    h += '</div>';
+
+    h += '<div class="footer">AlloFlow Geometry World \u2022 Physical Manipulative Bridge Card \u2022 Virtual \u2194 Physical Validation<br>';
+    h += '"The most effective geometry instruction combines virtual and physical" \u2014 Pomeranz (2024)</div>';
+    h += '</div></body></html>';
+    return h;
+  }
+
+  // ── AI World Generation Prompts (multi-pass) ──
+  var AI_WORLD_PROMPT_BASE = 'You are a geometry lesson designer for a 3D block-based math world. '
+    + 'Target grade level: {GRADE}. Topic: "{TOPIC}"\n\n'
+    + 'Generate a JSON object with this EXACT structure:\n'
+    + '{\n'
+    + '  "title": "Lesson Title",\n'
+    + '  "description": "Brief description for grade {GRADE} students",\n'
+    + '  "spawnPoint": [2, 3, 2],\n'
+    + '  "objectives": ["objective 1", "objective 2", "objective 3"],\n'
+    + '  "ground": { "xMin": -4, "xMax": 24, "zMin": -4, "zMax": 24, "y": 0, "type": "grass" },\n'
+    + '  "structures": [\n'
+    + '    { "type": "fill", "x1": 0, "y1": 0, "z1": 0, "x2": 8, "y2": 0, "z2": 8, "block": "stone" },\n'
+    + '    { "type": "fill", "x1": 2, "y1": 1, "z1": 2, "x2": 6, "y2": 3, "z2": 4, "block": "diamond" }\n'
+    + '  ],\n'
+    + '  "npcs": [\n'
+    + '    { "position": [x, y, z], "name": "Name", "color": 8048861,\n'
+    + '      "dialogue": "What the NPC says — explain the concept first!",\n'
+    + '      "question": null }\n'
+    + '  ]\n'
+    + '}\n\n'
+    + 'RULES:\n'
+    + '- Block types: stone, grass, wood, diamond, gold, sand, glass, brick, ice, water\n'
+    + '- NPC colors: 8048861 (purple), 2461147 (blue), 1484836 (green), 16096015 (amber), 14427142 (red)\n'
+    + '- Create 3-5 structures demonstrating the topic concept\n'
+    + '- Create 3-5 NPCs: first NPC is a guide (question: null), others have questions\n'
+    + '- Questions MUST have exactly 3 choices with "correct" as a 0-based index\n'
+    + '- All coordinates between -4 and 24. Ground is y=0. Build structures starting at y=1.\n'
+    + '- Place NPCs at y = highest_block + 1 so they float above structures\n'
+    + '- ALWAYS include a ground/floor structure first (y1=0, y2=0)\n'
+    + '- Make dimensions appropriate for grade {GRADE} (grades 3-4: single digits, 5-6: double digits, 7+: fractions/composites)\n'
+    + '- Return ONLY valid JSON, no markdown fences, no explanation.\n';
+
+  var AI_REFINE_PROMPT = 'You are improving an existing 3D geometry lesson. Here is the current lesson JSON:\n\n'
+    + '{LESSON_JSON}\n\n'
+    + 'The teacher wants you to: {REFINEMENT}\n\n'
+    + 'Return the COMPLETE improved JSON (same structure), not a diff. Fix any issues:\n'
+    + '- Ensure all coordinates are valid (between -4 and 24)\n'
+    + '- Ensure NPCs are positioned above their structures\n'
+    + '- Ensure questions have exactly 3 choices\n'
+    + '- Add more detail to NPC dialogues (explain concepts, give hints)\n'
+    + '- Make structures more interesting and varied\n'
+    + 'Return ONLY the valid JSON.';
+
+  // Module scope, not inside the builder view where it used to live. It takes
+  // the engine as an argument and touches nothing but window.THREE, so it never
+  // needed that closure — and one caller (the NPC celebration confetti) sits
+  // outside it and was throwing. That call is inside a try/catch, so the effect
+  // simply never appeared rather than erroring visibly.
+  function spawnPlaceParticles(eng, px, py, pz) {
+    var THREE = window.THREE;
+    if (!THREE) return;
+    // Mix of gold sparks + white-hot flashes for a more reactive place feel.
+    for (var i = 0; i < 8; i++) {
+      var size = 0.03 + Math.random() * 0.06;
+      var geo = new THREE.BoxGeometry(size, size, size);
+      var sparkColor = Math.random() < 0.35 ? 0xffffff : 0xfbbf24;
+      var mat = new THREE.MeshBasicMaterial({ color: sparkColor, transparent: true });
+      var sp = new THREE.Mesh(geo, mat);
+      sp.position.set(px + (Math.random() - 0.5) * 0.6, py + (Math.random() - 0.5) * 0.6, pz + (Math.random() - 0.5) * 0.6);
+      sp.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 2.2, 0.6 + Math.random() * 2.2, (Math.random() - 0.5) * 2.2);
+      sp.userData._life = 0.3 + Math.random() * 0.25;
+      sp.userData._age = 0;
+      eng.scene.add(sp);
+      eng._particles.push(sp);
+    }
+  }
+
+  var AI_FOLLOWUP_PROMPT = 'You are adding scaffolded follow-up questions to a geometry lesson. '
+    + 'Each NPC with a question should get a "followUp" array that breaks the concept into steps.\n\n'
+    + 'Current lesson JSON:\n{LESSON_JSON}\n\n'
+    + 'For each NPC that has a "question" object, add a "followUp" array inside the question:\n'
+    + '"question": { "text": "...", "choices": [...], "correct": 0,\n'
+    + '  "followUp": [\n'
+    + '    { "text": "Step 2 question", "choices": ["A","B","C"], "correct": 0 },\n'
+    + '    { "text": "Final step", "choices": ["A","B","C"], "correct": 0 }\n'
+    + '  ]\n'
+    + '}\n\n'
+    + 'RULES for follow-ups:\n'
+    + '- Decompose the main question into 2-3 scaffolded steps\n'
+    + '- Step 1: identify ONE dimension (e.g., "How many blocks long?")\n'
+    + '- Step 2: identify another dimension or calculate a partial result\n'
+    + '- Final step: combine to get the answer (e.g., "5 x 3 x 4 = ?")\n'
+    + '- Each step has exactly 3 choices with "correct" as 0-based index\n'
+    + '- Do NOT change the existing question text or structure — ONLY add followUp arrays\n'
+    + '- NPCs with question: null should stay null\n'
+    + 'Return the COMPLETE lesson JSON with follow-ups added. ONLY valid JSON.';
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Tool Registration ──
+  // ══════════════════════════════════════════════════════════════
+
+  window.StemLab.registerTool('geometryWorld', {
+    name: 'Geometry World',
+    icon: '\uD83E\uDDF1',
+    desc: 'Explore a 3D geometry world where shape questions unlock areas, NPC conversations, and construction puzzles.',
+    category: 'math',
+    aliases: ['geometry', '3D shapes', 'spatial reasoning', 'shape puzzles'],
+    questHooks: [
+      { id: 'score_5', label: 'Score 5 points in Geometry World', icon: '\uD83C\uDFAF', check: function(d) { return (d.score || 0) >= 5; }, progress: function(d) { return (d.score || 0) + '/5 pts'; } },
+      { id: 'complete_tutorial', label: 'Complete the Geometry World tutorial', icon: '\uD83C\uDF93', check: function(d) { return d.tutorialDismissed || (d.tutorialStep || 0) >= 4; }, progress: function(d) { return (d.tutorialStep || 0) >= 4 ? 'Done!' : 'Step ' + ((d.tutorialStep || 0) + 1) + '/4'; } },
+      { id: 'measure_structure', label: 'Measure a 3D structure', icon: '\uD83D\uDCCF', check: function(d) { return !!d.measureResult; }, progress: function(d) { return d.measureResult ? 'Measured!' : 'Press M on blocks'; } },
+      { id: 'build_10', label: 'Place 10 blocks in the world', icon: '\uD83E\uDDF1', check: function(d) { return (d.blocksPlaced || 0) >= 10; }, progress: function(d) { return Math.min(d.blocksPlaced || 0, 10) + '/10 blocks'; } }
+    ],
+    render: function (ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
+      var React = ctx.React;
+      var el = React.createElement;
+      var d = (ctx.toolData && ctx.toolData.geometryWorld) || {};
+      var webglErrState = React.useState(false);
+      var webglError = webglErrState[0];
+      var setWebglError = webglErrState[1];
+      var webglRetryState = React.useState(false);
+      var webglRetrying = webglRetryState[0];
+      var setWebglRetrying = webglRetryState[1];
+      var webglRecoveryRef = React.useRef(null);
+      React.useEffect(function() {
+        if (!webglError) return;
+        var focusTimer = setTimeout(function() {
+          if (webglRecoveryRef.current && typeof webglRecoveryRef.current.focus === 'function') webglRecoveryRef.current.focus();
+        }, 0);
+        return function() { clearTimeout(focusTimer); };
+      }, [webglError]);
+      var fullscreenState = React.useState(false);
+      var isWorkspaceFullscreen = fullscreenState[0];
+      var setWorkspaceFullscreen = fullscreenState[1];
+      // WebXR: "Enter VR" shows ONLY while a headset is present (reactive to
+      // connect/unplug via devicechange) — no clutter for the 2D majority.
+      var _xrSup = React.useState(false); var xrSupported = _xrSup[0]; var setXrSupported = _xrSup[1];
+      React.useEffect(function() {
+        var alive = true;
+        var check = function() { try { if (navigator.xr && navigator.xr.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then(function(ok){ if (alive) setXrSupported(!!ok); }).catch(function(){}); } catch(e){} };
+        check();
+        var dc = function() { check(); };
+        try { if (navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', dc); } catch(e){}
+        return function() { alive = false; try { if (navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', dc); } catch(e){} };
+      }, []);
+      // ── Stable container ref for the 3D engine ──
+      React.useEffect(function() {
+        function syncGeometryFullscreen() {
+          var active = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+          setWorkspaceFullscreen(!!(active && active.id === 'geoworld-fs-workspace'));
+        }
+        var events = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'];
+        events.forEach(function(eventName) { document.addEventListener(eventName, syncGeometryFullscreen); });
+        syncGeometryFullscreen();
+        return function() { events.forEach(function(eventName) { document.removeEventListener(eventName, syncGeometryFullscreen); }); };
+      }, []);
+      // The world container used to take an INLINE callback ref. React hands a new
+      // function identity to every commit, so each re-render fired ref(null) →
+      // destroyEngine() then ref(node) → initEngine(). Clicking "Start Lesson" calls
+      // upd(), so the freshly-loaded lesson was torn down on the very next render and
+      // rebuilt with the default world — and because the dead canvas was never removed
+      // from the container, the new canvas stacked below the fold and the viewport
+      // looked blank. Keeping the callback identity stable (useCallback with no deps,
+      // reading live values off gwRuntimeRef) means it only fires on real mount/unmount.
+      var gwRuntimeRef = React.useRef({});
+      var gwContainerRef = React.useCallback(function (node) {
+        var rt = gwRuntimeRef.current || {};
+        if (node) {
+          if (!window[engineKey] && rt.threeReady && typeof rt.initEngine === 'function') {
+            setTimeout(function () { if (!window[engineKey]) gwRuntimeRef.current.initEngine(node); }, 100);
+          }
+        } else if (window[engineKey] && typeof rt.destroyEngine === 'function') {
+          rt.destroyEngine();
+        }
+      }, []);
+      var upd = function (key, val) {
+        // Older ruler/measurement timers must not dismiss a newer shape cue.
+        // Its own expiry and cleanup release ownership before clearing it.
+        if (key === 'actionFeedback' && val === '' && shapeActionRef && shapeActionRef.current.timer &&
+          shapeActionRef.current.feedback === shapeActionRef.current.shapeFeedback) return;
+        if (typeof key === 'object') { ctx.updateMulti('geometryWorld', key); }
+        else { ctx.update('geometryWorld', key, val); }
+      };
+      var callGemini = ctx.callGemini || null;
+      var addToast = ctx.addToast;
+      // Wrap awardXP so the session-XP total is tracked on the engine for the HUD display.
+      // Persists across React renders via engine._sessionXP (not reset until lesson load).
+      var _rawAwardXP = ctx.awardXP;
+      var awardXP = _rawAwardXP ? function(toolId, amount, reason) {
+        var engine2 = window[engineKey];
+        if (engine2 && typeof amount === 'number' && amount > 0) {
+          engine2._sessionXP = (engine2._sessionXP || 0) + amount;
+        }
+        return _rawAwardXP(toolId, amount, reason);
+      } : null;
+
+      // Screen-reader announcement helper. Writes to the shared live region so announcements
+      // are read by assistive tech even when the visual game UI changes. Previously the tool
+      // referenced `announceToSR` without defining it — the `typeof === 'function'` guards
+      // silently skipped announcements, which meant no SR support.
+      // Standard modal wiring, applied with Object.assign so each overlay keeps its
+      // own styles. Every panel in this tool was an anonymous div: no role, no
+      // accessible name, and no focus — a screen reader got no signal that one had
+      // opened, and a keyboard student had to tab through the whole HUD to reach it.
+      //
+      // The ref is guarded on the NODE rather than being identity-stable. React
+      // re-invokes an inline ref on every commit, so an unguarded one would drag
+      // focus back to the panel each time the student typed a character into it.
+      function trapDialogTabKey(ev) {
+        if (!ev || ev.key !== 'Tab') return;
+        var dialog = ev.currentTarget;
+        if (!dialog) return;
+        var candidates = dialog.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+        );
+        var focusable = Array.prototype.filter.call(candidates, function(node) {
+          return node.getAttribute('aria-hidden') !== 'true' && node.tabIndex >= 0;
+        });
+        if (focusable.length === 0) {
+          ev.preventDefault();
+          dialog.focus();
+          return;
+        }
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (ev.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+          ev.preventDefault();
+          last.focus();
+        } else if (!ev.shiftKey && document.activeElement === last) {
+          ev.preventDefault();
+          first.focus();
+        }
+      }
+
+      function gwDialogRef(node) {
+        if (node && !node._gwDialogFocused) {
+          node._gwDialogFocused = true;
+          node.addEventListener('keydown', trapDialogTabKey);
+          try { node.focus({ preventScroll: true }); } catch (e) { try { node.focus(); } catch (e2) {} }
+        }
+      }
+
+      // Send focus back to the 3D world. Closing a dialog with focus inside it drops
+      // the caret to the top of the document, so a keyboard student had to tab all the
+      // way back in before WASD meant anything again.
+      function focusWorldSurface() {
+        try {
+          var wrap = document.getElementById('geoworld-fs-wrap');
+          if (wrap) wrap.focus({ preventScroll: true });
+        } catch (e) {}
+      }
+
+      function focusGameSettingsTrigger() {
+        setTimeout(function() {
+          try {
+            var triggers = document.querySelectorAll('[data-geometry-settings-trigger="true"]');
+            var target = Array.prototype.filter.call(triggers, function(node) { return node.offsetParent !== null; })[0] || triggers[0];
+            if (target) target.focus({ preventScroll: true });
+            else focusWorldSurface();
+          } catch (e) { focusWorldSurface(); }
+        }, 0);
+      }
+
+      function closeGameSettings() {
+        upd('showGameSettings', false);
+        focusGameSettingsTrigger();
+      }
+
+      function openGameSettings() {
+        try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
+        upd({ showGameSettings: true, showPredictionPanel: false, objectivesOpen: false });
+        announceToSR(__alloT('stem.geometryworld.sr_game_settings_and_tools_opened', 'Game settings and tools opened.'));
+      }
+
+      var GW_HUD_PRESET_KEY = 'allo.geometryworld.hud.v1';
+      var GW_HUD_PRESETS = {
+        minimal: { hudPanel: '', label: 'Minimal', announcement: 'Optional HUD panels are hidden.' },
+        learning: { hudPanel: 'progress', label: 'Learning', announcement: 'Lesson progress is displayed.' },
+        builder: { hudPanel: 'inventory', label: 'Builder', announcement: 'Block inventory is displayed.' }
+      };
+      var GW_HUD_PANEL_IDS = ['', 'progress', 'map', 'history', 'inventory', 'transform'];
+
+      function gwHasOwn(value, key) {
+        return !!value && Object.prototype.hasOwnProperty.call(value, key);
+      }
+
+      function isGeometryHudPreset(value) {
+        return typeof value === 'string' && Object.prototype.hasOwnProperty.call(GW_HUD_PRESETS, value);
+      }
+
+      function normalizeGeometryHudPanel(value) {
+        return typeof value === 'string' && GW_HUD_PANEL_IDS.indexOf(value) >= 0 ? value : '';
+      }
+
+      function loadGeometryHudPreferences() {
+        try {
+          if (typeof localStorage === 'undefined') return {};
+          var raw = localStorage.getItem(GW_HUD_PRESET_KEY);
+          if (!raw) return {};
+          var parsed = JSON.parse(raw);
+          if (!parsed || parsed.version !== 1) return {};
+          return {
+            preset: isGeometryHudPreset(parsed.preset) ? parsed.preset : '',
+            toolbarCollapsed: parsed.toolbarCollapsed === true
+          };
+        } catch (e) { return {}; }
+      }
+
+      function saveGeometryHudPreferences(patch) {
+        try {
+          if (typeof localStorage === 'undefined') return false;
+          patch = patch || {};
+          var current = loadGeometryHudPreferences();
+          var nextPreset = gwHasOwn(patch, 'preset') && isGeometryHudPreset(patch.preset)
+            ? patch.preset
+            : (isGeometryHudPreset(current.preset) ? current.preset : 'minimal');
+          var nextCollapsed = gwHasOwn(patch, 'toolbarCollapsed')
+            ? !!patch.toolbarCollapsed
+            : current.toolbarCollapsed === true;
+          localStorage.setItem(GW_HUD_PRESET_KEY, JSON.stringify({ version: 1, preset: nextPreset, toolbarCollapsed: nextCollapsed }));
+          return true;
+        } catch (e) { return false; }
+      }
+
+      function applyHudPreset(preset) {
+        var selected = GW_HUD_PRESETS[preset];
+        if (!selected) return;
+        var saved = saveGeometryHudPreferences({ preset: preset });
+        setSceneMapOpen(false);
+        upd({ hudPreset: preset, hudPanel: selected.hudPanel, showGameSettings: false, showPredictionPanel: false, objectivesOpen: false });
+        announceToSR(selected.label + ' HUD selected. ' + selected.announcement + (saved ? ' Preference saved on this device.' : ' Preference applies for this session.'));
+        setTimeout(focusWorldSurface, 0);
+      }
+
+      function setHudPanel(panel, label) {
+        var next = hudPanel === panel ? '' : normalizeGeometryHudPanel(panel);
+        setSceneMapOpen(false);
+        upd({ hudPanel: next, showGameSettings: false, showPredictionPanel: false, objectivesOpen: false });
+        announceToSR(next ? label + ' HUD opened. Only one optional HUD panel is shown at a time.' : label + ' HUD hidden.');
+        setTimeout(focusWorldSurface, 0);
+      }
+
+      function closeHudPanel(label) {
+        upd('hudPanel', '');
+        announceToSR((label || 'Optional') + ' HUD hidden.');
+        focusWorldSurface();
+      }
+      function announceToSR(message) {
+        try {
+          var lr = document.getElementById('allo-live-geometryworld');
+          if (!lr) return;
+          // Swapping text in two ticks ensures the SR re-announces even if the message repeats
+          lr.textContent = '';
+          setTimeout(function() { lr.textContent = String(message || ''); }, 30);
+        } catch (e) {}
+      }
+      var threeReady = ctx.toolData && ctx.toolData._threeLoaded;
+      // Refresh the bridge the stable container ref reads from. initEngine /
+      // destroyEngine are hoisted function declarations, so they are already bound here.
+      gwRuntimeRef.current.threeReady = threeReady;
+      gwRuntimeRef.current.initEngine = initEngine;
+      gwRuntimeRef.current.destroyEngine = destroyEngine;
+
+      // ── State from toolData ──
+      var worldActive = d.worldActive || false;
+      var selectedBlock = d.selectedBlock || 0;
+      React.useEffect(function() {
+        var palette = document.querySelector('#geoworld-fs-workspace .gw-hotbar');
+        var active = palette && palette.querySelector('[data-active="true"]');
+        if (!active) return;
+        // Move only the palette's scroll position; never scroll the world or page.
+        var left = active.offsetLeft, right = left + active.offsetWidth;
+        if (left < palette.scrollLeft + 6) palette.scrollLeft = Math.max(0, left - 6);
+        else if (right > palette.scrollLeft + palette.clientWidth - 6) palette.scrollLeft = right - palette.clientWidth + 6;
+      }, [selectedBlock, worldActive, threeReady]);
+      var score = d.score || 0;
+      var totalQ = d.totalQ || 0;
+      var showNpcDialog = d.showNpcDialog || false;
+      var dialogNpcIdx = d.dialogNpcIdx || 0;
+      var answeredNpcs = d.answeredNpcs || {};
+      var aiPrompt = d.aiPrompt || '';
+      var aiGenerating = d.aiGenerating || false;
+      var aiPassCount = d.aiPassCount || 2; // 1=quick, 2=refine, 3=refine+followups
+      var aiGradeLevel = d.aiGradeLevel || '4';
+      var aiCurrentPass = d.aiCurrentPass || 0;
+      var showMyLessons = d.showMyLessons || false;
+      var showLessonEditor = d.showLessonEditor || false;
+      var showLessonIntro = d.showLessonIntro || false;
+      var soundMuted = d.soundMuted || false;
+      var renderQuality = d.renderQuality || 'auto';
+      // Touch mode is an explicit, persisted preference on touch devices. It
+      // defaults on so the first mobile visit has clear, discoverable controls;
+      // desktop users keep the familiar keyboard/mouse path unchanged.
+      var touchMode = d.touchMode !== false;
+      var touchLookSensitivity = typeof d.touchLookSensitivity === 'number' && isFinite(d.touchLookSensitivity) ? Math.max(0.002, Math.min(0.008, d.touchLookSensitivity)) : 0.004;
+      var guidedTourState = React.useState(false);
+      var guidedTourActive = guidedTourState[0];
+      var setGuidedTourActive = guidedTourState[1];
+      var guidedTourStepState = React.useState(0);
+      var guidedTourStep = guidedTourStepState[0];
+      var setGuidedTourStep = guidedTourStepState[1];
+      var guidedTourSteps = ['Survey the world', 'Read the structure', 'Plan your measurement'];
+      var viewPresetState = React.useState('free');
+      var viewPreset = viewPresetState[0];
+      var setViewPreset = viewPresetState[1];
+      var viewPresetLabels = { free: 'Free', front: 'Front', side: 'Side', top: 'Top' };
+      var sceneMapState = React.useState(false);
+      var sceneMapOpen = sceneMapState[0];
+      var setSceneMapOpen = sceneMapState[1];
+      var showGameSettings = !!d.showGameSettings;
+      var showPredictionPanel = !!d.showPredictionPanel;
+      var hudPreferences = loadGeometryHudPreferences();
+      var hudPreset = isGeometryHudPreset(d.hudPreset)
+        ? d.hudPreset
+        : (isGeometryHudPreset(hudPreferences.preset) ? hudPreferences.preset : 'minimal');
+      var toolbarCollapsed = gwHasOwn(d, 'toolbarCollapsed') ? !!d.toolbarCollapsed : hudPreferences.toolbarCollapsed === true;
+      var objectivesOpen = !!d.objectivesOpen;
+      var hudPanel = gwHasOwn(d, 'hudPanel') ? normalizeGeometryHudPanel(d.hudPanel) : GW_HUD_PRESETS[hudPreset].hudPanel;
+      var showReflection = d.showReflection || false;
+      var reflectionText = d.reflectionText || '';
+      var lessonEditorJson = d.lessonEditorJson || '';
+      var aiRefinePrompt = d.aiRefinePrompt || '';
+      var lastGeneratedLesson = d.lastGeneratedLesson || null;
+      var activeLesson = d.activeLesson || 'volumeExplorer';
+      var measureResult = d.measureResult ? enrichMeasurement(d.measureResult) : null;
+      var layerFocusState = React.useState(0);
+      var layerFocus = layerFocusState[0];
+      var setLayerFocus = layerFocusState[1];
+      var layerExplorerHeight = measureResult && measureResult.isComplete !== false ? Math.max(1, Math.ceil(Number(measureResult.H) || 1)) : 0;
+      var volumePrediction = d.volumePrediction || '';
+      var volumeEstimateCommitment = d.volumeEstimateCommitment || null;
+      var volumeEstimateObservedTargets = normalizeVolumeEstimateTargetKeys(d.volumeEstimateObservedTargets);
+      var volumeEstimateCommitError = d.volumeEstimateCommitError || '';
+      var volumeEstimateDraftValid = parseVolumePrediction(volumePrediction) !== null;
+      var volumeRepresentationFromKey = d.volumeRepresentationFromKey || '';
+      var volumeRepresentationReason = d.volumeRepresentationReason || '';
+      var volumeRepresentationInvariantChecked = !!d.volumeRepresentationInvariantChecked;
+      var volumeRepresentationEvidenceChecked = !!d.volumeRepresentationEvidenceChecked;
+      var volumeRepresentationConnectionSaved = d.volumeRepresentationConnectionSaved || false;
+      var representationConnectionReadiness = buildRepresentationConnectionReadiness(volumeRepresentationReason, volumeRepresentationInvariantChecked, volumeRepresentationEvidenceChecked);
+      var hasUnsavedRepresentationDraft = hasUnsavedRepresentationConnection(volumeRepresentationReason, volumeRepresentationConnectionSaved);
+      var predictionResult = d.predictionResult || null;
+      var volumeRepresentationKey = d.volumeRepresentationKey || '';
+      var volumeRepresentations = buildVolumeRepresentations(measureResult);
+      var activeVolumeRepresentation = volumeRepresentations.find(function(view) { return view.key === volumeRepresentationKey; }) || volumeRepresentations[0] || null;
+      var predictionStrategy = d.predictionStrategy || '';
+      var volumeRepresentationVisitedKeys = d.volumeRepresentationVisitedKeys || [];
+      var representationExploration = buildRepresentationExploration(volumeRepresentations, volumeRepresentationVisitedKeys, activeVolumeRepresentation && activeVolumeRepresentation.key);
+      var recommendedVolumeRepresentation = recommendVolumeRepresentation(measureResult, predictionResult, volumeRepresentations);
+      var predictionReason = d.predictionReason || '';
+      var predictionRevision = d.predictionRevision || '';
+      var predictionRevisionResult = d.predictionRevisionResult || null;
+      var predictionReflection = d.predictionReflection || '';
+      var retrievalAnswer = d.retrievalAnswer || '';
+      var retrievalResult = d.retrievalResult || null;
+      var retrievalAttemptCount = d.retrievalAttemptCount || 0;
+      var npcChatInput = d.npcChatInput || '';
+      var npcChatHistory = d.npcChatHistory || {};
+      var npcChatLoading = d.npcChatLoading || false;
+      var npcTypewriterPos = d.npcTypewriterPos || 0;
+      var npcTypewriterNpc = d.npcTypewriterNpc || -1; // which NPC the typewriter is for
+      var showHelp = d.showHelp || false;
+      var creatorMode = d.creatorMode || false;
+      var creatorNpcName = d.creatorNpcName || '';
+      var creatorNpcDialogue = d.creatorNpcDialogue || '';
+      var creatorNpcQuestion = d.creatorNpcQuestion || '';
+      var creatorNpcChoices = d.creatorNpcChoices || '';
+      var creatorNpcCorrect = d.creatorNpcCorrect || 0;
+      var showCreatorPanel = d.showCreatorPanel || false;
+      var selectedShape = d.selectedShape || 0; // index into BLOCK_SHAPES
+      var blockRotation = d.blockRotation || 0; // 0-3 = 0°, 90°, 180°, 270° around Y axis
+      var measureHistory = d.measureHistory || []; // past measurements
+      var measurementDetailsState = React.useState(false);
+      var measurementDetailsOpen = measurementDetailsState[0];
+      var setMeasurementDetailsOpen = measurementDetailsState[1];
+      // Explicit measurements append a timestamp. Connected-build polling may
+      // replace the result or change its bounds, but must keep this disclosure open.
+      var latestMeasurementStamp = measureHistory.length ? measureHistory[measureHistory.length - 1].t : null;
+      var hasMeasurement = !!measureResult;
+      React.useEffect(function() {
+        setMeasurementDetailsOpen(false);
+      }, [activeLesson, hasMeasurement, latestMeasurementStamp]);
+      var completedMeasurements = completeMeasurementRecords(measureHistory);
+      var predictionScaffold = determinePredictionScaffold(measureHistory);
+      var latestCompleteMeasurement = completedMeasurements.length ? completedMeasurements[completedMeasurements.length - 1] : null;
+      var reflectionEvidencePrompt = buildEvidenceReflectionPrompt(latestCompleteMeasurement, predictionResult, predictionRevisionResult);
+      var measurementComparison = completedMeasurements.length >= 2 ? compareMeasurementRecords(completedMeasurements[completedMeasurements.length - 2], completedMeasurements[completedMeasurements.length - 1]) : null;
+      var activeRetrievalCheckpoint = buildRetrievalCheckpoint(measureHistory);
+      var actionFeedback = d.actionFeedback || ''; // brief action text
+      var shapeActionRef = React.useRef({ timer: null, feedback: '' });
+      shapeActionRef.current.feedback = actionFeedback;
+      React.useEffect(function() {
+        return function() {
+          var ownedCue = shapeActionRef.current;
+          if (ownedCue.timer) {
+            clearTimeout(ownedCue.timer); ownedCue.timer = null;
+            if (ownedCue.feedback === ownedCue.shapeFeedback) upd('actionFeedback', '');
+          }
+        };
+      }, []);
+
+      // Every input uses the live placement state, including rapid commands that
+      // arrive before React renders. Choosing a shape starts at zero degrees.
+      function setBuildShape(action, index) {
+        var liveEngine = window[engineKey];
+        var state = (liveEngine && liveEngine._placeState) || { selectedShape: selectedShape, blockRotation: blockRotation };
+        var currentShape = state.selectedShape || 0;
+        var nextShape = action === 'cycle' ? (currentShape + 1) % BLOCK_SHAPES.length : action === 'rotate' ? currentShape : index;
+        if (!BLOCK_SHAPES[nextShape] || (action === 'rotate' && BLOCK_SHAPES[nextShape].id === 'cube')) return;
+        var nextRotation = action === 'rotate' ? ((state.blockRotation || 0) + 1) % 4 : 0;
+        var feedback = BLOCK_SHAPES[nextShape].name + (BLOCK_SHAPES[nextShape].id === 'cube' ? '' : ' \u00b7 ' + (nextRotation * 90) + '\u00b0');
+        if (liveEngine) liveEngine._placeState = Object.assign({}, state, { selectedShape: nextShape, blockRotation: nextRotation });
+        if (shapeActionRef.current.timer) clearTimeout(shapeActionRef.current.timer);
+        shapeActionRef.current.shapeFeedback = feedback;
+        upd({ selectedShape: nextShape, blockRotation: nextRotation, actionFeedback: feedback });
+        shapeActionRef.current.timer = setTimeout(function() {
+          shapeActionRef.current.timer = null;
+          if (shapeActionRef.current.feedback === feedback) upd('actionFeedback', '');
+        }, 1800);
+      }
+      var homeLang = d.homeLang || 'en';
+      var npcTranslations = d.npcTranslations || {};
+      var consecutiveWrong = d.consecutiveWrong || 0;
+      var showGrowthNudge = d.showGrowthNudge || false;
+      var representationSentenceStarter = buildRepresentationSentenceStarter(activeVolumeRepresentation, measureResult, predictionScaffold.level);
+      var growthNudgeMsg = d.growthNudgeMsg || '';
+      var growthNudgeDismissed = d.growthNudgeDismissed || 0;
+      // ── Tutorial state ──
+      var tutorialStep = d.tutorialStep || 0; // 0-4 (0=not started, 4=done)
+      var tutorialDismissed = d.tutorialDismissed || false;
+      // ── Follow-up question state ──
+      var npcFollowUpStep = d.npcFollowUpStep || {}; // { npcIdx: currentStep }
+      // ── Teacher Command Center state ──
+      var showTeacherView = d.showTeacherView || false;
+      var studentProgressMap = d.studentProgressMap || {};
+      var teacherUnsub = d.teacherUnsub || null;
+
+      // Keep the live engine in sync when a learner switches between touch
+      // controls and the desktop-style viewport. The engine may not exist yet
+      // during the loading render, so the init path also applies the preference.
+      React.useEffect(function() {
+        var liveEngine = window[engineKey];
+        if (liveEngine && typeof liveEngine.setTouchControlsEnabled === 'function') {
+          liveEngine.setTouchControlsEnabled(touchMode);
+        }
+      }, [touchMode]);
+
+      function toggleTeacherView() {
+        if (showTeacherView) {
+          // Turn off
+          if (teacherUnsub) teacherUnsub();
+          upd({ showTeacherView: false, teacherUnsub: null });
+          return;
+        }
+        // Turn on — listen to student progress subcollection
+        if (!fbDb || !fbAppId || !sessionCode || !fb.collection || !fb.onSnapshot) {
+          if (addToast) addToast('Start a live session first!', 'error');
+          return;
+        }
+        var progressRef = fb.collection(fbDb, 'artifacts', fbAppId, 'public', 'data', 'sessions', sessionCode, 'studentProgress');
+        var unsub = fb.onSnapshot(progressRef, function(snapshot) {
+          var data = {};
+          snapshot.forEach(function(docSnap) { data[docSnap.id] = docSnap.data(); });
+          upd('studentProgressMap', data);
+        });
+        upd({ showTeacherView: true, teacherUnsub: unsub });
+        if (addToast) addToast('\uD83D\uDCCA Teacher view active \u2014 monitoring student progress', 'success');
+      }
+
+      // ── Achievement Badges state ──
+      var earnedBadges = d.earnedBadges || {};
+      var lastBadgeNotification = d.lastBadgeNotification || null;
+
+      // Check achievements after key events (called from answer handlers, etc.)
+      // Reads earnedBadges from engine._badgesRef (fresh) rather than closure (stale when
+      // called via setTimeout from long-lived document/canvas handlers).
+      function runAchievementCheck() {
+        var eng = window[engineKey];
+        if (!eng || !eng.sessionLog) return;
+        var currentBadges = (eng._badgesRef) || earnedBadges;
+        var result = checkAchievements(eng.sessionLog, Object.assign({}, currentBadges));
+        if (result.newBadges.length > 0) {
+          var latest = result.newBadges[result.newBadges.length - 1];
+          upd({ earnedBadges: result.badges, lastBadgeNotification: latest });
+          // Several badges genuinely land at once \u2014 finishing a lesson can trip
+          // lesson_complete, perfect_lesson and first_correct on the same check. Only
+          // the last one used to be toasted and paid for, so the student silently
+          // acquired badges they were never told about and lost the XP for them.
+          result.newBadges.forEach(function(badge, i) {
+            if (typeof awardXP === 'function') awardXP('geometryWorld', 10, 'Badge: ' + badge.name);
+            // Staggered so simultaneous toasts don't overwrite each other.
+            var showIt = function() {
+              if (addToast) addToast(badge.icon + ' Achievement: ' + badge.name + ' \u2014 ' + badge.desc, 'success');
+              announceToSR(__alloFill(__alloT('stem.geometryworld.sr_achievement_unlocked', 'Achievement unlocked! {value1}. {value2}'), { value1: badge.name, value2: badge.desc }));
+            };
+            if (i === 0) showIt(); else setTimeout(showIt, i * 900);
+          });
+          // Auto-dismiss the badge banner. Tracked on the engine so a second batch
+          // can't be cleared early by the previous batch's timer.
+          var engB = window[engineKey];
+          if (engB) {
+            if (engB._badgeDismissTimer) clearTimeout(engB._badgeDismissTimer);
+            engB._badgeDismissTimer = setTimeout(function() { upd('lastBadgeNotification', null); },
+              4000 + (result.newBadges.length - 1) * 900);
+          } else {
+            setTimeout(function() { upd('lastBadgeNotification', null); }, 4000);
+          }
+        }
+      }
+
+      // ── Collaborative / Peer Worlds state ──
+      var showPeerWorlds = d.showPeerWorlds || false;
+      var peerWorldsList = d.peerWorldsList || [];
+      var collabMode = d.collabMode || false;
+      var collabPlayers = d.collabPlayers || {};
+      var collabUnsubscribe = d.collabUnsubscribe || null;
+
+      // ── Firebase helpers (for Peer Worlds + Collaborative Mode) ──
+      var sessionCode = ctx.activeSessionCode || null;
+      var playerName = ctx.studentNickname || 'Builder';
+      var isTeacher = ctx.isTeacherMode || false;
+      var fb = window.__alloFirebase || {};
+      var shared = window.__alloShared || {};
+      var fbDb = shared.db || null;
+      var fbAppId = shared.appId || null;
+
+      // Get session document reference (if in a live session)
+      function getSessionRef() {
+        if (!fbDb || !fbAppId || !sessionCode || !fb.doc) return null;
+        return fb.doc(fbDb, 'artifacts', fbAppId, 'public', 'data', 'sessions', sessionCode);
+      }
+
+      // ── Peer Worlds: Share a world to the class library ──
+      function shareWorldToClass(worldData) {
+        var ref = getSessionRef();
+        if (!ref || !fb.updateDoc) {
+          if (addToast) addToast('Join a live session first to share worlds!', 'error');
+          return;
+        }
+        var entry = {
+          title: worldData.title || 'Untitled World',
+          author: playerName,
+          timestamp: new Date().toISOString(),
+          data: JSON.stringify(worldData)
+        };
+        // Read current array, append, write back (arrayUnion not available)
+        fb.getDoc(ref).then(function(snap) {
+          var existing = snap.exists() ? (snap.data().sharedGeometryWorlds || []) : [];
+          existing.push(entry);
+          return fb.updateDoc(ref, { sharedGeometryWorlds: existing });
+        }).then(function() {
+          if (addToast) addToast('\uD83C\uDF0D World shared to class library!', 'success');
+          var eng = window[engineKey];
+          if (eng && eng.logEvent) eng.logEvent('world_shared', { title: entry.title, author: entry.author });
+        }).catch(function(err) {
+          if (addToast) addToast('Share failed: ' + err.message, 'error');
+        });
+      }
+
+      // ── Peer Worlds: Load class library ──
+      function loadPeerWorlds() {
+        var ref = getSessionRef();
+        if (!ref || !fb.getDoc) {
+          if (addToast) addToast('Join a live session first to browse class worlds!', 'error');
+          return;
+        }
+        fb.getDoc(ref).then(function(snap) {
+          if (snap.exists()) {
+            var data = snap.data();
+            var worlds = (data.sharedGeometryWorlds || []).map(function(w) {
+              try { return { title: w.title, author: w.author, timestamp: w.timestamp, data: JSON.parse(w.data) }; }
+              catch(e) { return null; }
+            }).filter(Boolean);
+            upd({ peerWorldsList: worlds, showPeerWorlds: true });
+          } else {
+            upd({ peerWorldsList: [], showPeerWorlds: true });
+          }
+        });
+      }
+
+      // ── Collaborative Mode: Start real-time sync ──
+      function startCollabMode() {
+        var ref = getSessionRef();
+        if (!ref || !fb.onSnapshot || !fb.updateDoc) {
+          if (addToast) addToast('Join a live session to collaborate!', 'error');
+          return;
+        }
+        upd('collabMode', true);
+        if (addToast) addToast('\uD83D\uDC65 Collaborative mode ON \u2014 building together!', 'success');
+
+        // Register this player
+        var playerPath = 'geometryWorldPlayers.' + playerName.replace(/[^a-zA-Z0-9_]/g, '_');
+        var eng = window[engineKey];
+        fb.updateDoc(ref, {
+          [playerPath]: {
+            name: playerName,
+            joinedAt: new Date().toISOString(),
+            position: eng ? [eng.camera.position.x, eng.camera.position.y, eng.camera.position.z] : [2, 3, 2],
+            color: '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')
+          }
+        });
+
+        // Listen for block changes and player updates
+        var unsub = fb.onSnapshot(ref, function(snap) {
+          if (!snap.exists()) return;
+          var sData = snap.data();
+
+          // Sync peer players
+          var players = sData.geometryWorldPlayers || {};
+          upd('collabPlayers', players);
+
+          // Sync shared blocks
+          var sharedBlocks = sData.geometryWorldBlocks || null;
+          if (sharedBlocks && eng) {
+            try {
+              var blockData = typeof sharedBlocks === 'string' ? JSON.parse(sharedBlocks) : sharedBlocks;
+              // Only apply if this is a remote update (not our own)
+              if (blockData._lastAuthor && blockData._lastAuthor !== playerName) {
+                // Apply remote block changes
+                (blockData.blocks || []).forEach(function(b) {
+                  var key = b.x + ',' + b.y + ',' + b.z;
+                  if (!eng.blocks[key]) {
+                    eng.placeBlock(b.x, b.y, b.z, b.type || 'stone', b.shape, b.rotation);
+                  }
+                });
+                // Remove student blocks that are no longer in the shared state.
+                // This used to sweep every non-grass block, so it called removeBlock on
+                // the lesson structure too — which is protected, so nothing was deleted,
+                // but each protected block flashed red and fired a haptic bump on every
+                // single peer update.
+                var sharedKeys = {};
+                (blockData.blocks || []).forEach(function(b) { sharedKeys[b.x + ',' + b.y + ',' + b.z] = true; });
+                Object.keys(eng.blocks).forEach(function(key) {
+                  var m = eng.blocks[key];
+                  if (m && m.userData && !m.userData._lessonBlock && !sharedKeys[key]) {
+                    var p = key.split(',');
+                    eng.removeBlock(parseInt(p[0]), parseInt(p[1]), parseInt(p[2]));
+                  }
+                });
+              }
+            } catch(e) { /* ignore parse errors */ }
+          }
+        });
+        upd('collabUnsubscribe', unsub);
+
+        // Sync player position every 2 seconds
+        var posInterval = setInterval(function() {
+          var eng2 = window[engineKey];
+          var ref2 = getSessionRef();
+          if (!eng2 || !ref2 || !fb.updateDoc) { clearInterval(posInterval); return; }
+          var pPath = 'geometryWorldPlayers.' + playerName.replace(/[^a-zA-Z0-9_]/g, '_') + '.position';
+          fb.updateDoc(ref2, {
+            [pPath]: [
+              Math.round(eng2.camera.position.x * 10) / 10,
+              Math.round(eng2.camera.position.y * 10) / 10,
+              Math.round(eng2.camera.position.z * 10) / 10
+            ]
+          }).catch(function() {});
+        }, 2000);
+
+        // Store interval ref for cleanup
+        if (eng) eng._collabPosInterval = posInterval;
+      }
+
+      // ── Collaborative Mode: Push block changes to Firestore ──
+      function syncBlocksToFirestore() {
+        // Read collab flag from engine bridge — closure's collabMode is stale because this
+        // function is captured in a long-lived setTimeout scheduled from the canvas mousedown
+        // handler (which itself was attached during one-shot initEngine).
+        var eng = window[engineKey];
+        var isCollab = eng && eng._placeState && eng._placeState.collabMode;
+        if (!isCollab) return;
+        var ref = getSessionRef();
+        if (!ref || !eng || !fb.updateDoc) return;
+        var blocks = [];
+        Object.keys(eng.blocks).forEach(function(key) {
+          var m = eng.blocks[key];
+          // Only STUDENT blocks travel. Lesson structures used to be included (the
+          // filter excluded just 'grass'), which shipped hundreds of blocks both peers
+          // already have and made the peer's removal sweep act on protected blocks.
+          // shape + rotation now ride along, or a partner's wedges and slabs arrived
+          // as plain cubes.
+          if (m && m.userData && m.userData.gridPos && !m.userData._lessonBlock) {
+            blocks.push({
+              x: m.userData.gridPos.x, y: m.userData.gridPos.y, z: m.userData.gridPos.z,
+              type: m.userData.blockType,
+              shape: m.userData.shape || 'cube',
+              rotation: m.userData.rotation || 0
+            });
+          }
+        });
+        fb.updateDoc(ref, {
+          geometryWorldBlocks: JSON.stringify({ blocks: blocks, _lastAuthor: playerName, _ts: Date.now() })
+        }).catch(function() {});
+      }
+
+      // ── Growth Mindset Micro-Interventions (SEL + Academic Integration) ──
+      var GROWTH_NUDGES = [
+        { threshold: 2, msg: "Two tries and counting \u2014 that\u2019s not failure, that\u2019s learning! Your brain grows stronger every time you try a new strategy.", icon: '\uD83E\uDDE0' },
+        { threshold: 3, msg: "Three attempts means you\u2019re in the \u201Cyet\u201D zone \u2014 you don\u2019t know this YET, but your brain is building new connections right now.", icon: '\uD83C\uDF31' },
+        { threshold: 4, msg: "Scientists and mathematicians get things wrong all the time \u2014 that\u2019s how discoveries happen. Try measuring the structure again \u2014 count the blocks in each direction.", icon: '\uD83D\uDD2C' },
+        { threshold: 5, msg: "You\u2019re showing real persistence! That\u2019s one of the most important skills in math. Want to try a different NPC\u2019s question first and come back to this one?", icon: '\uD83D\uDCAA' }
+      ];
+
+      function checkFrustration(wrongCount) {
+        var nudge = null;
+        for (var i = GROWTH_NUDGES.length - 1; i >= 0; i--) {
+          if (wrongCount >= GROWTH_NUDGES[i].threshold && wrongCount <= GROWTH_NUDGES[i].threshold + 1) {
+            nudge = GROWTH_NUDGES[i];
+            break;
+          }
+        }
+        if (nudge && wrongCount > growthNudgeDismissed) {
+          upd({ showGrowthNudge: true, growthNudgeMsg: nudge.icon + ' ' + nudge.msg, growthNudgeDismissed: wrongCount });
+        }
+      }
+
+      // Check for rapid block break cycles (behavioral frustration signal)
+      function checkBreakFrustration() {
+        var eng = window[engineKey];
+        if (!eng || !eng.sessionLog) return;
+        var now = Date.now() - (eng.sessionStart || Date.now());
+        var recentBreaks = eng.sessionLog.filter(function(e) {
+          return e.type === 'block_remove' && (now - e.timestamp) < 10000; // last 10 seconds
+        });
+        if (recentBreaks.length >= 8 && (now / 1000) > 30) {
+          // 8+ breaks in 10 seconds after 30s of play = likely frustration
+          var msg = '\uD83D\uDE0C It looks like you\u2019re tearing things down. That\u2019s okay \u2014 sometimes we need to start fresh! Try pressing M to measure a structure before breaking it. You might discover something cool.';
+          if (!showGrowthNudge) {
+            upd({ showGrowthNudge: true, growthNudgeMsg: msg });
+          }
+        }
+      }
+
+      // ── Engine refs (stored on window to persist across renders) ──
+      var engineKey = '__geoWorldEngine';
+
+      // Lazy-load the shared AlloVR layer from this tool's CDN base (only when a
+      // headset is present, so non-VR users never download it).
+      function ensureAlloVR(cb) {
+        if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+        var base = 'https://alloflow-cdn.pages.dev/', q = '';
+        try {
+          var scr = document.querySelectorAll('script[src]');
+          for (var i = 0; i < scr.length; i++) {
+            var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+            if (m) { base = m[1]; q = m[2] || ''; break; }
+          }
+        } catch (e) {}
+        try {
+          var s = document.createElement('script'); s.src = base + 'allo_vr_module.js' + q; s.async = true;
+          s.onload = function(){ cb(window.AlloModules && window.AlloModules.AlloVR); };
+          s.onerror = function(){ cb(null); };
+          document.head.appendChild(s);
+        } catch (e) { cb(null); }
+      }
+
+      // ── Initialize 3D engine ──
+      function initEngine(container) {
+        if (!window.THREE || !container || window[engineKey] || window[engineKey + '_failed']) return;
+        try {
+        var THREE = window.THREE;
+
+        var engine = {};
+        engine.blocks = {};
+        engine.npcs = [];
+        engine.scene = new THREE.Scene();
+        engine.scene.background = new THREE.Color(0x4FA8FA);
+        engine.scene.fog = new THREE.Fog(0x8CC9FA, 55, 145);
+
+        engine.camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 200);
+        engine.camera.position.set(2, 3, 2);
+
+        var cnv = document.createElement('canvas');
+        // The named, focusable viewport owns the text alternative and keyboard contract.
+        cnv.setAttribute('aria-hidden', 'true');
+        cnv.style.width = '100%';
+        cnv.style.height = '100%';
+        // A canvas is display:inline by default, so it sits on the text baseline and
+        // leaves ~4px of descender space beneath it. That gap made the container's
+        // content 4px taller than the canvas, the ResizeObserver fed the container's
+        // height back into renderer.setSize, and the canvas grew by that gap on every
+        // tick — measured climbing 8px per 220ms, unbounded, reallocating the
+        // renderer's buffers each time. display:block removes the gap.
+        cnv.style.display = 'block';
+        container.appendChild(cnv);
+        engine.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true, powerPreference: 'high-performance' });
+        // CSS already owns the canvas size; avoid writing pixels back into layout.
+        engine.renderer.setSize(container.clientWidth, container.clientHeight, false);
+        engine.applyRenderQuality = function(preference) {
+          var profile = resolveGeometryRenderProfile(preference, {
+            isMobile: isMobile,
+            reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+            hardwareConcurrency: Number(navigator.hardwareConcurrency) || 0
+          });
+          var previousTier = engine._renderProfile && engine._renderProfile.tier;
+          engine._renderProfile = profile;
+          engine._postFxEnabled = profile.postFx;
+          engine._ambientMotionEnabled = profile.ambientMotion;
+          engine.renderer.setPixelRatio(Math.min(Number(window.devicePixelRatio) || 1, profile.maxPixelRatio));
+          engine.renderer.shadowMap.enabled = profile.shadows;
+          function updateSurfaceDetail(material) {
+            if(material && material._gwBlockFinish)material._gwBlockFinish.gwBlockBevelStrength.value=profile.tier === 'saver' ? 0:0.45;
+            var key = material && material.userData && material.userData.gwSurfaceKey;
+            if (!key || !engine._procTexCache) return;
+            var next = profile.tier === 'saver' ? null : engine._procTexCache[key + 'SurfaceNormal'];
+            if (material.normalMap !== next) { material.normalMap = next; material.needsUpdate = true; }
+            var roughness = profile.tier === 'saver' ? null : engine._procTexCache[key + 'SurfaceRoughness'];
+            if (material.roughnessMap !== roughness) { material.roughnessMap = roughness; material.needsUpdate = true; }
+          }
+          if (previousTier !== profile.tier) Object.keys(engine._matCache || {}).forEach(function(key){updateSurfaceDetail(engine._matCache[key]);});
+          if (previousTier !== profile.tier) Object.keys(engine.blocks || {}).forEach(function(key){
+            var mesh=engine.blocks[key];updateSurfaceDetail(mesh.material);
+            if(mesh.userData && mesh.userData._measurementLayer==='ground') (mesh.children || []).forEach(function(child){
+              if(child.isLineSegments && child.material && child.material.userData.gwSharedBlockEdge) child.visible=profile.tier!=='saver';
+            });
+          });
+          if (engine.composer && container.clientWidth && container.clientHeight) {
+            try { if(engine.composer.setPixelRatio)engine.composer.setPixelRatio(engine.renderer.getPixelRatio()); engine.composer.setSize(container.clientWidth, container.clientHeight); } catch (e) {}
+          }
+          if (previousTier !== profile.tier && engine.refreshLandscape && engine._currentLesson) engine.refreshLandscape(engine._currentLesson.ground);
+          return profile;
+        };
+        engine.applyRenderQuality(d.renderQuality || 'auto');
+        engine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // Colour management. This used to read:
+        //   renderer.outputColorSpace = THREE.SRGBColorSpace || renderer.outputEncoding
+        // which did NOTHING on the three r128 this tool vendors: SRGBColorSpace does
+        // not exist there (r152+), so it fell back to outputEncoding's current value
+        // and assigned it to outputColorSpace, a property r128 ignores. The renderer
+        // stayed on LinearEncoding and every colour reached the display without gamma
+        // correction. Set the property the running revision actually reads.
+        if (typeof THREE.sRGBEncoding !== 'undefined') engine.renderer.outputEncoding = THREE.sRGBEncoding;
+        else if (THREE.SRGBColorSpace) engine.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        // ACES Filmic is an HDR photographic curve that rolls off and DESATURATES
+        // bright colours by design. On a flat-shaded voxel world with an already
+        // low-dynamic-range palette it only mutes the hues, which is what made the
+        // scene look drab. No tone mapping keeps the authored block colours intact.
+        engine.renderer.toneMapping = THREE.NoToneMapping;
+        engine.renderer.toneMappingExposure = 1.0;
+
+        // ── Bloom post-processing: glow on the sun + golden-hour / night highlights ──
+        // Same guarded, graceful-upgrade pattern as solarsystem: renders plain until the
+        // Three r128 post-processing addons load, then a bloom composer; any failure falls
+        // back to engine.renderer.render so it can never break the tool. Honors
+        // window.AlloPostFXEnabled + a low-power/reduced-motion tier. Gentle bloom so the
+        // golden-hour scene + geometry stay readable.
+        engine.composer = null;
+        (function setupBloom() {
+          if (window.AlloPostFXEnabled === false) return;
+          var ensure = function (cb) {
+            if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            var urls = [
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+            ];
+            var i = 0;
+            (function nextScript() {
+              if (i >= urls.length) { cb(); return; }
+              var s = document.createElement('script');
+              s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+              document.head.appendChild(s);
+            })();
+          };
+          ensure(function () {
+            try {
+              var T = window.THREE;
+              if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass || !T.ShaderPass) return;
+              var renderProfile = engine._renderProfile || resolveGeometryRenderProfile('auto', { isMobile: isMobile, hardwareConcurrency: Number(navigator.hardwareConcurrency) || 0 });
+              var lowPower = renderProfile.tier !== 'detail';
+              var res = lowPower ? 0.5 : 1;
+              var cw = container.clientWidth, ch = container.clientHeight;
+              var c = new T.EffectComposer(engine.renderer);
+              if(c.setPixelRatio)c.setPixelRatio(engine.renderer.getPixelRatio());
+              c.setSize(cw, ch);
+              c.addPass(new T.RenderPass(engine.scene, engine.camera));
+              // high threshold + gentle strength: only the sun / bright highlights glow,
+              // keeping the geometry legible (it's a math tool).
+              c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(cw * res)), Math.max(1, Math.round(ch * res))), lowPower ? 0.3 : 0.45, 0.35, 0.975));
+              // Composite bloom in linear space, then encode exactly once for the screen.
+              var outputPass = new T.ShaderPass({
+                uniforms:{tDiffuse:{value:null}},
+                vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+                fragmentShader:'uniform sampler2D tDiffuse; varying vec2 vUv; void main(){gl_FragColor=texture2D(tDiffuse,vUv);\n#include <encodings_fragment>\n}'
+              });
+              outputPass.material.toneMapped=false;c.addPass(outputPass);engine._outputPass=outputPass;
+              engine.composer = c;
+            } catch (e) { engine.composer = null; }
+          });
+        })();
+
+        // Lighting — warm, balanced, voxel-world style
+        engine.scene.add(new THREE.AmbientLight(0xffffff, 0.20));
+        var sun = new THREE.DirectionalLight(0xfff4e0, 1.0);
+        // Where the sun stands is now a function of the time of day (engine._sunAngles,
+        // driven by the preset cross-fade and applied every frame), so shadows rake at
+        // sunrise and shorten at noon instead of pointing the same way all day.
+        engine._sunAngles = { el: 48, az: 45 };
+        engine._sunDistance = 120;
+        var sun0 = geometryWorldSunVector(48, 45);
+        sun.position.set(sun0.x * 120, sun0.y * 120, sun0.z * 120);
+        sun.castShadow = true;
+        // The shadow volume rides with the player. It used to be a fixed 60x60 box
+        // around the origin, so in the larger lessons (ground out to x = 50) every
+        // block past x = 30 cast no shadow at all. The target must be IN the scene
+        // for three to pick up its world matrix.
+        engine._sunTarget = new THREE.Object3D();
+        engine.scene.add(engine._sunTarget);
+        sun.target = engine._sunTarget;
+        var shadowRes = isMobile ? 1024 : 2048; // Lower shadow quality on mobile
+        sun.shadow.mapSize.set(shadowRes, shadowRes);
+        // Far enough that a 9-degree sun, 120 units out and only 19 units up, still
+        // has the whole world in front of its near plane.
+        sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 260;
+        sun.shadow.camera.left = -30; sun.shadow.camera.right = 30;
+        sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30;
+        sun.shadow.bias = -0.00012;
+        sun.shadow.normalBias = 0.012;
+        engine.sun = sun;
+        engine.scene.add(sun);
+        var hemi = new THREE.HemisphereLight(0xb5d4ed, 0x485c48, 0.32);
+        engine.scene.add(hemi);
+        engine._hemi = hemi;
+
+        // ── Horizon ground ──
+        // The lesson floor is a finite slab of grass blocks; past its edge the world
+        // dropped straight into fog, so every lesson looked like a floating island.
+        // A single plane just under the floor, in a slightly deeper green, carries
+        // the ground to the horizon. Visual only: it is not in engine.blocks, so
+        // building, measuring and the crosshair never see it, and it rides with the
+        // camera so its edge is never reached.
+        (function initHorizon() {
+          var hg = new THREE.PlaneGeometry(600, 600);
+          var hm = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0x496d46), roughness: 0.95, metalness: 0 });
+          var horizon = new THREE.Mesh(hg, hm);
+          horizon.rotation.x = -Math.PI / 2;
+          horizon.position.y = -0.03;
+          horizon.receiveShadow = true;
+          horizon.name = 'gw-horizon';
+          horizon.userData.gwHorizon = true;
+          engine.scene.add(horizon);
+          engine._horizon = horizon;
+        })();
+        // Layered alpine meadow: decorative only, merged and budgeted by quality.
+        (function initLandscape() {
+          var landscapeKey = '';
+          function finite(value, fallback) { var n = Number(value); return isFinite(n) ? n : fallback; }
+          function smooth(value) { var v = Math.max(0, Math.min(1, value)); return v * v * (3 - 2 * v); }
+          function color(hex) { return geometryWorldSrgbColor(THREE, hex); }
+          function buffer() { return { positions: [], colors: [] }; }
+          function triangle(out, a, b, c, tint) {
+            var points = [a, b, c];
+            for (var i = 0; i < 3; i++) {
+              var p = points[i];
+              out.positions.push(p[0], p[1], p[2]);
+              out.colors.push(p.length > 3 ? p[3] : tint.r, p.length > 3 ? p[4] : tint.g, p.length > 3 ? p[5] : tint.b);
+            }
+          }
+          function meshFrom(out, name, terrain, doubleSide) {
+            var geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(out.positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(out.colors, 3));
+            geometry.computeVertexNormals();
+            if (terrain) {
+              // Preserve a trace of the facets without making a patchwork of the slopes.
+              var p = geometry.attributes.position.array, n = geometry.attributes.normal.array, sums = {};
+              function keyAt(k) { return Math.round(p[k] * 10000) + ',' + Math.round(p[k + 1] * 10000) + ',' + Math.round(p[k + 2] * 10000); }
+              for (var k = 0; k < p.length; k += 3) {
+                var key = keyAt(k), sum = sums[key] || (sums[key] = [0, 0, 0]);
+                sum[0] += n[k]; sum[1] += n[k + 1]; sum[2] += n[k + 2];
+              }
+              for (var j = 0; j < p.length; j += 3) {
+                var avg = sums[keyAt(j)], length = Math.hypot(avg[0], avg[1], avg[2]) || 1;
+                var nx = avg[0] / length * 0.97 + n[j] * 0.03;
+                var ny = avg[1] / length * 0.97 + n[j + 1] * 0.03;
+                var nz = avg[2] / length * 0.97 + n[j + 2] * 0.03;
+                var norm = Math.hypot(nx, ny, nz) || 1;
+                n[j] = nx / norm; n[j + 1] = ny / norm; n[j + 2] = nz / norm;
+              }
+            }
+            geometry.computeBoundingSphere();
+            var material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, flatShading: !terrain, side: doubleSide ? THREE.DoubleSide : THREE.FrontSide });
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.name = name; mesh.userData.gwLandscape = true;
+            mesh.castShadow = false; mesh.receiveShadow = false;
+            mesh.raycast = function() {};
+            return mesh;
+          }
+          function disposeLandscape() {
+            var group = engine._landscape;
+            if (group) {
+              var studio = engine._showcase && engine._showcase.studio;
+              if (studio) studio.hidden = studio.hidden.filter(function(entry) { return entry[0] !== group; });
+              if (group.parent) group.parent.remove(group);
+              group.children.forEach(function(mesh) { mesh.geometry.dispose(); mesh.material.dispose(); });
+            }
+            engine._landscape = null; landscapeKey = '';
+          }
+          function noise(x, z) {
+            return 0.5 + (Math.sin(x * 0.043 + z * 0.029 + 0.4) + Math.sin(x * 0.024 - z * 0.057 + 1.1) * 0.53 + Math.sin(x * 0.107 + z * 0.081 + 2.8) * 0.24) / 3.54;
+          }
+          function peak(t, center, width) {
+            var d = Math.atan2(Math.sin(t - center), Math.cos(t - center));
+            return Math.exp(-Math.pow(Math.abs(d) / width, 1.5));
+          }
+          function crown(out, x, y, z, radius, height, tint, twist, seed) {
+            for (var k = 0; k < 6; k++) {
+              var a = twist + k * Math.PI / 3, b = twist + (k + 1) * Math.PI / 3;
+              var ra = radius * (1 + Math.sin(k * 2.7 + seed) * 0.07), rb = radius * (1 + Math.sin((k + 1) % 6 * 2.7 + seed) * 0.07);
+              var va = [x + Math.cos(a) * ra, y + Math.sin(k * 1.7 + seed) * height * 0.025, z + Math.sin(a) * ra];
+              var vb = [x + Math.cos(b) * rb, y + Math.sin((k + 1) % 6 * 1.7 + seed) * height * 0.025, z + Math.sin(b) * rb];
+              triangle(out, va, [x + Math.sin(seed) * height * 0.035, y + height, z], vb, tint);
+              triangle(out, [x, y, z], va, vb, tint);
+            }
+          }
+          function trunk(out, x, y, z, radius, height, tint, twist) {
+            for (var k = 0; k < 5; k++) {
+              var a = twist + k * Math.PI * 2 / 5, b = twist + (k + 1) * Math.PI * 2 / 5;
+              var p = [x + Math.cos(a) * radius, y, z + Math.sin(a) * radius], q = [x + Math.cos(b) * radius, y, z + Math.sin(b) * radius];
+              var r = [x + Math.cos(a) * radius * 0.55, y + height, z + Math.sin(a) * radius * 0.55], s = [x + Math.cos(b) * radius * 0.55, y + height, z + Math.sin(b) * radius * 0.55];
+              triangle(out, p, r, q, tint); triangle(out, q, r, s, tint);
+            }
+          }
+          engine.disposeLandscape = disposeLandscape;
+          engine.refreshLandscape = function(ground) {
+            if (engine._destroyed || !engine.scene) return;
+            ground = ground || {};
+            var x0 = finite(ground.xMin, -8), x1 = finite(ground.xMax, 24), z0 = finite(ground.zMin, -8), z1 = finite(ground.zMax, 24);
+            if (x0 > x1) { var sx = x0; x0 = x1; x1 = sx; }
+            if (z0 > z1) { var sz = z0; z0 = z1; z1 = sz; }
+            var baseY = finite(ground.y, 0) - 0.12, saver = engine._renderProfile && engine._renderProfile.tier === 'saver';
+            var nextKey = [x0, x1, z0, z1, baseY, saver ? 'saver' : 'detail'].join(':');
+            if (landscapeKey === nextKey && engine._landscape) return;
+            var previousVisibility = engine._landscape ? engine._landscape.visible : true;
+            var studio = engine._showcase && engine._showcase.studio;
+            if (studio) studio.hidden.forEach(function(entry) { if (entry[0] === engine._landscape) previousVisibility = entry[1]; });
+            disposeLandscape(); landscapeKey = nextKey;
+            var centerX = (x0 + x1) / 2, centerZ = (z0 + z1) / 2;
+            var halfX = (x1 - x0) / 2 + 0.5, halfZ = (z1 - z0) / 2 + 0.5, outline = [], segments = saver ? 8 : 12;
+            // Offset the full lesson rectangle, not a fixed-radius circle. The first
+            // contour is at 32 units: even its corner chords stay over 31 units clear.
+            for (var side = 0; side < 4; side++) {
+              for (var s = 0; s < segments; s++) {
+                var f = s / segments;
+                if (side === 0) outline.push({ x: halfX, z: -halfZ + 2 * halfZ * f, nx: 1, nz: 0 });
+                if (side === 1) outline.push({ x: halfX - 2 * halfX * f, z: halfZ, nx: 0, nz: 1 });
+                if (side === 2) outline.push({ x: -halfX, z: halfZ - 2 * halfZ * f, nx: -1, nz: 0 });
+                if (side === 3) outline.push({ x: -halfX + 2 * halfX * f, z: -halfZ, nx: 0, nz: -1 });
+              }
+              for (var arc = 0; arc < segments; arc++) {
+                var angle = side * Math.PI / 2 + arc / segments * Math.PI / 2;
+                outline.push({ x: side === 0 || side === 3 ? halfX : -halfX, z: side < 2 ? halfZ : -halfZ, nx: Math.cos(angle), nz: Math.sin(angle) });
+              }
+            }
+            var low = engine._horizon && engine._horizon.material && engine._horizon.material.color ? engine._horizon.material.color.clone() : color(0x496d46);
+            var moss = color(0x738255), ridgeGreen = color(0x607c6d), ridgeStone = color(0x89988d), farBlue = color(0x869da3), farCrest = color(0xacb8b9);
+            var layers = [
+              { name: 'gw-rolling-hills', bands: [32, 37, 44, 52, 61, 71, 82, 94, 107], kind: 0 },
+              { name: 'gw-mountain-ridges', bands: [61, 70, 80, 91, 103, 117, 132], kind: 1 },
+              { name: 'gw-distant-ridges', bands: [82, 91, 101, 113, 126, 142, 158], kind: 2 }
+            ];
+            function point(i, ring, layer) {
+              var d = outline[i], bands = layer.bands, kind = layer.kind, t = i / outline.length * Math.PI * 2;
+              var interior = ring > 0 && ring < bands.length - 1;
+              var distance = bands[ring] + (interior ? Math.sin(t * 5 + ring * 1.93 + kind) * 1.5 + Math.sin(t * 9 - ring * 0.71) * 0.7 : 0);
+              var lx = d.x + d.nx * distance, lz = d.z + d.nz * distance, n = noise(lx + kind * 29, lz - kind * 17);
+              var crest, elevation, width;
+              if (!kind) {
+                crest = 57 + Math.sin(t * 3 + 0.3) * 8 + Math.sin(t * 7 + 1.2) * 3;
+                elevation = 2.1 + peak(t, 0.55, 0.5) * 7 + peak(t, 2.65, 0.55) * 8 + peak(t, 4.75, 0.65) * 6 + n * 1.4;
+                width = 18;
+              } else if (kind === 1) {
+                crest = 91 + Math.sin(t * 3 + 2.1) * 9 + Math.sin(t * 7) * 3;
+                elevation = 7 + peak(t, 0.16, 0.35) * 23 + peak(t, 1.85, 0.39) * 28 + peak(t, 3.55, 0.3) * 22 + peak(t, 5.1, 0.38) * 31 + n * 3;
+                width = 19;
+              } else {
+                crest = 113 + Math.sin(t * 3 + 0.7) * 7 + Math.sin(t * 5 + 2) * 4;
+                elevation = 20 + peak(t, 0.9, 0.32) * 29 + peak(t, 2.35, 0.27) * 25 + peak(t, 4.15, 0.33) * 32 + peak(t, 5.65, 0.28) * 23;
+                width = 24;
+              }
+              var fade = smooth((distance - bands[0]) / 11) * smooth((bands[bands.length - 1] - distance) / 14);
+              var profile = Math.exp(-Math.pow(Math.abs(distance - crest) / width, kind ? 1.55 : 2));
+              var y = elevation * profile * fade;
+              var tint;
+              if (!kind) tint = low.clone().lerp(moss, smooth((y - 0.12) / 10) * (0.74 + n * 0.12));
+              else if (kind === 1) tint = low.clone().lerp(ridgeGreen, smooth(y / 5)).lerp(ridgeStone, smooth((y - 14) / 20) * (0.72 + n * 0.12));
+              else tint = low.clone().lerp(farBlue, smooth(y / 6)).lerp(farCrest, smooth((y - 26) / 25) * 0.56);
+              return [centerX + lx, baseY + y, centerZ + lz, tint.r, tint.g, tint.b];
+            }
+            var group = new THREE.Group(); group.name = 'gw-landscape'; group.userData.gwLandscape = true;
+            var nearGrid;
+            layers.forEach(function(layer) {
+              var terrain = buffer(), grid = layer.bands.map(function(_, ring) { return outline.map(function(_, i) { return point(i, ring, layer); }); });
+              if (!layer.kind) nearGrid = grid;
+              for (var r = 0; r < grid.length - 1; r++) {
+                for (var i = 0; i < outline.length; i++) {
+                  var next = (i + 1) % outline.length, a = grid[r][i], b = grid[r][next], c = grid[r + 1][i], d = grid[r + 1][next];
+                  if ((r + i) % 2) { triangle(terrain, a, b, d); triangle(terrain, a, d, c); }
+                  else { triangle(terrain, a, b, c); triangle(terrain, b, d, c); }
+                }
+              }
+              group.add(meshFrom(terrain, layer.name, true, false));
+            });
+            var trunks = buffer(), foliage = buffer(), accents = buffer();
+            var bark = color(0x685744), leaves = [color(0x365d4b), color(0x456b52), color(0x52765c)], tips = color(0x6c8768);
+            var groves = [{ u: 0.04, count: 4 }, { u: 0.22, count: 5 }, { u: 0.37, count: 3 }, { u: 0.58, count: 5 }, { u: 0.73, count: 4 }, { u: 0.90, count: 5 }], treeCount = 0;
+            groves.forEach(function(grove, cluster) {
+              var count = saver ? 2 : grove.count;
+              for (var t = 0; t < count; t++) {
+                var seed = cluster * 13 + t * 7, u = grove.u + (t - (count - 1) / 2) * 0.012;
+                var index = Math.floor((u + 1) % 1 * outline.length), ring = 2 + (t + cluster) % 3, p = nearGrid[ring][index];
+                var h = 4.4 + (Math.sin(seed * 1.13 + 0.6) * 0.5 + 0.5) * 3.7, radius = h * (0.24 + (t % 3) * 0.02), twist = seed * 0.73;
+                var leaf = leaves[(cluster + t) % 3];
+                trunk(trunks, p[0], p[1] - 0.25, p[2], h * 0.035, h * 0.77, bark, twist);
+                crown(foliage, p[0], p[1] + h * 0.14, p[2], radius, h * 0.55, leaf, twist, seed);
+                crown(foliage, p[0], p[1] + h * 0.40, p[2], radius * 0.74, h * 0.47, leaf.clone().lerp(tips, 0.09), twist + 0.24, seed + 2);
+                crown(foliage, p[0], p[1] + h * 0.65, p[2], radius * 0.45, h * 0.39, leaf.clone().lerp(tips, 0.2), twist - 0.13, seed + 4);
+                treeCount++;
+              }
+            });
+            var rockLow = color(0x677060), rockTop = color(0x929586), rockCount = saver ? 6 : 12;
+            for (var rock = 0; rock < rockCount; rock++) {
+              var ri = Math.floor(((0.115 + rock * 0.173) % 1) * outline.length), rp = nearGrid[2 + rock % 2][ri];
+              var size = 0.85 + (rock * 7 % 9) * 0.15, twist = rock * 0.71, bottom = [], shoulder = [];
+              for (var corner = 0; corner < 6; corner++) {
+                var a = twist + corner * Math.PI / 3, rad = size * (1 + Math.sin(corner * 2.1 + rock) * 0.18);
+                bottom.push([rp[0] + Math.cos(a) * rad, rp[1] - size * 0.35, rp[2] + Math.sin(a) * rad * 0.72]);
+                shoulder.push([rp[0] + Math.cos(a) * rad * 0.78, rp[1] + size * (0.36 + Math.sin(corner + rock) * 0.1), rp[2] + Math.sin(a) * rad * 0.62]);
+              }
+              var top = [rp[0] + size * 0.15, rp[1] + size * 0.72, rp[2] - size * 0.1];
+              for (var edge = 0; edge < 6; edge++) {
+                var next = (edge + 1) % 6;
+                triangle(accents, bottom[edge], shoulder[edge], bottom[next], rockLow);
+                triangle(accents, bottom[next], shoulder[edge], shoulder[next], rockLow);
+                triangle(accents, shoulder[edge], top, shoulder[next], rockTop);
+              }
+            }
+            var grassCount = saver ? 12 : 36, grassLow = color(0x576e46), grassTip = color(0x8b9560);
+            for (var tuft = 0; tuft < grassCount; tuft++) {
+              var gi = Math.floor(((0.067 + tuft * 0.137) % 1) * outline.length), gp = nearGrid[1 + tuft % 3][gi];
+              for (var blade = 0; blade < 3; blade++) {
+                var a = tuft * 1.7 + blade * Math.PI / 3, h = 0.7 + (tuft * 3 + blade * 5) % 7 * 0.12, w = 0.11 + blade * 0.025;
+                var dx = Math.cos(a), dz = Math.sin(a);
+                var p = [gp[0] - dx * w, gp[1] - 0.1, gp[2] - dz * w], q = [gp[0] + dx * w, gp[1] - 0.1, gp[2] + dz * w];
+                var bend = [gp[0] + dx * h * 0.13, gp[1] + h * 0.54, gp[2] + dz * h * 0.13], tip = [gp[0] + dx * h * 0.38, gp[1] + h, gp[2] + dz * h * 0.38];
+                triangle(accents, p, bend, q, grassLow); triangle(accents, q, bend, tip, grassTip);
+              }
+            }
+            group.add(meshFrom(trunks, 'gw-distant-tree-trunks', false, false));
+            group.add(meshFrom(foliage, 'gw-distant-tree-canopies', false, false));
+            group.add(meshFrom(accents, 'gw-natural-accents', false, true));
+            group.userData.gwLandscapeDetail = { tier: saver ? 'saver' : 'detail', trees: treeCount, rocks: rockCount, grassTufts: grassCount };
+            group.visible = previousVisibility;
+            if (studio) { studio.hidden.push([group, previousVisibility]); group.visible = false; }
+            engine._landscape = group; engine.scene.add(group);
+          };
+        })();
+        // Soft rim light from behind for depth
+        var rim = new THREE.DirectionalLight(0xc0d8ff, 0.16);
+        rim.position.set(-15, 20, -15);
+        engine.scene.add(rim);
+
+        // ── Image-based lighting ──
+        // Gold and diamond are metals (metalness 0.7 / 0.6) and a metal with
+        // nothing to reflect renders as a dark, dull slab, which is how they looked.
+        // Build a tiny six-face sky/horizon/ground cubemap from the scene's own
+        // colours, prefilter it (PMREM) and hand it to every Standard/Physical
+        // material through scene.environment. Refreshed whenever a time-of-day
+        // preset lands, so a sunset gilds the metals and night dims them.
+        engine.refreshEnvironment = function() {
+          try {
+            var T = window.THREE;
+            if (!T || !T.PMREMGenerator || !T.CubeTexture || !engine.renderer || engine._destroyed) return;
+            var bgC = engine.scene.background && engine.scene.background.isColor ? engine.scene.background : new T.Color(0x4FA8FA);
+            var fogC = engine.scene.fog ? engine.scene.fog.color : bgC;
+            var groundC = new T.Color(0x4a7a3c).lerp(fogC, 0.35);
+            var zenith = '#' + bgC.getHexString(), horizon = '#' + fogC.getHexString(), ground = '#' + groundC.getHexString();
+            var groundHz = '#' + groundC.clone().lerp(fogC, 0.5).getHexString();
+            var faces = [];
+            var environmentSun=geometryWorldSunVector(engine._sunAngles.el,engine._sunAngles.az);
+            for (var fi = 0; fi < 6; fi++) {
+              var fc = document.createElement('canvas'); fc.width = 32; fc.height = 32;
+              var g2 = fc.getContext('2d');
+              if (fi === 2) { g2.fillStyle = zenith; g2.fillRect(0, 0, 32, 32); }
+              else if (fi === 3) { g2.fillStyle = ground; g2.fillRect(0, 0, 32, 32); }
+              else {
+                var gr = g2.createLinearGradient(0, 0, 0, 32);
+                gr.addColorStop(0, zenith); gr.addColorStop(0.48, horizon); gr.addColorStop(0.53, groundHz); gr.addColorStop(1, ground);
+                g2.fillStyle = gr; g2.fillRect(0, 0, 32, 32);
+                // A soft sun highlight follows the current environment bearing,
+                // so metals carry one bright lobe instead of a uniform sheen.
+                var faceFacing=fi===0 ? environmentSun.x : fi===1 ? -environmentSun.x : fi===4 ? environmentSun.z : -environmentSun.z;
+                if (faceFacing > 0.1) {
+                  var sg = g2.createRadialGradient(20, 9, 0, 20, 9, 12);
+                  sg.addColorStop(0, 'rgba(255,244,218,'+(Math.min(0.9,engine.sun.intensity*0.8)*faceFacing)+')'); sg.addColorStop(1, 'rgba(255,250,235,0)');
+                  g2.fillStyle = sg; g2.fillRect(0, 0, 32, 32);
+                }
+              }
+              faces.push(fc);
+            }
+            var cube = new T.CubeTexture(faces);
+            if (typeof T.sRGBEncoding !== 'undefined') cube.encoding = T.sRGBEncoding;
+            cube.needsUpdate = true;
+            var pmrem = new T.PMREMGenerator(engine.renderer);
+            var rt = pmrem.fromCubemap(cube);
+            var old = engine._envRT;
+            engine._envRT = rt;
+            engine.applyEnvironmentMap();
+            if (old) { try { old.dispose(); } catch (e) {} }
+            pmrem.dispose(); cube.dispose();
+          } catch (e) {}
+        };
+        // Only the materials flagged reflective (gold, diamond, glass, water, ice)
+        // take the map. Feeding it to every material through scene.environment
+        // lit the whole world a second time from the sky and blew the grass and the
+        // characters' faces out to white (measured, round 1 of this pass).
+        engine.applyEnvironmentMap = function() {
+          var tex = engine._envRT ? engine._envRT.texture : null;
+          var assign = function(m) { if (m && m.userData && m.userData.gwReflective && m.envMap !== tex) { m.envMap = tex; m.needsUpdate = true; } };
+          try { Object.keys(engine._matCache || {}).forEach(function(k) { assign(engine._matCache[k]); }); } catch (e) {}
+          try { Object.keys(engine.blocks || {}).forEach(function(k) { var mesh = engine.blocks[k]; if (mesh) (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).forEach(assign); }); } catch (e) {}
+        };
+        engine.refreshEnvironment();
+
+        // ── Sky dome ──
+        // The background was one flat colour, so the horizon had no haze band and
+        // the world read as a paper cut-out against a card. The dome blends from
+        // the fog colour at the horizon up to the background colour overhead, and
+        // reads both from the scene every frame (see the animate loop), so the five
+        // time-of-day presets and their 1.4 s cross-fade drive it with no second
+        // palette to keep in step. One sphere, no per-frame cost worth measuring;
+        // it rides with the camera so the player can never reach its edge.
+        (function initSkyDome() {
+          var skyGeo = new THREE.SphereGeometry(180, 24, 12);
+          var skyMat = new THREE.ShaderMaterial({
+            uniforms: {
+              topColor: { value: new THREE.Color(0x4FA8FA) },
+              bottomColor: { value: new THREE.Color(0x8CC9FA) },
+              offset: { value: 14.0 },
+              exponent: { value: 0.55 },
+              // Sun sits at camera + (40, 45, 40); the dome brightens toward it so the
+              // sky has a light source, not just a gradient. Colour and strength follow
+              // the fog colour and sun intensity each frame (animate loop).
+              sunDir: { value: new THREE.Vector3(40, 45, 40).normalize() },
+              sunColor: { value: new THREE.Color(0xfff4e0) },
+              sunGlow: { value: 1.0 }
+            },
+            vertexShader: [
+              'varying vec3 vWorldPosition;',
+              'void main() {',
+              '  vec4 worldPosition = modelMatrix * vec4(position, 1.0);',
+              '  vWorldPosition = worldPosition.xyz - modelMatrix[3].xyz;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform vec3 topColor;',
+              'uniform vec3 bottomColor;',
+              'uniform float offset;',
+              'uniform float exponent;',
+              'uniform vec3 sunDir;',
+              'uniform vec3 sunColor;',
+              'uniform float sunGlow;',
+              'varying vec3 vWorldPosition;',
+              'void main() {',
+              '  vec3 dir = normalize(vWorldPosition + vec3(0.0, offset, 0.0));',
+              '  float h = dir.y;',
+              '  float t = pow(max(h, 0.0), exponent);',
+              '  vec3 col = mix(bottomColor, topColor, t);',
+              '  float s = max(dot(normalize(vWorldPosition), sunDir), 0.0);',
+              '  col += sunColor * (pow(s, 64.0) * 0.55 + pow(s, 7.0) * 0.16) * sunGlow;',
+              '  gl_FragColor = vec4(col, 1.0);',
+              '  #include <encodings_fragment>',
+              '}'
+            ].join('\n'),
+            side: THREE.BackSide,
+            depthWrite: false
+          });
+          var skyDome = new THREE.Mesh(skyGeo, skyMat);
+          skyDome.renderOrder = -1;
+          skyDome.frustumCulled = false;
+          engine.scene.add(skyDome);
+          engine._skyDome = skyDome;
+          engine._skyWhite = new THREE.Color(1, 1, 1);
+        })();
+
+        // ── Sky atmosphere: sun disc + drifting clouds ──
+        (function initSky() {
+          // Sun disc — bright sprite in the sky
+          var sunCanvas = document.createElement('canvas'); sunCanvas.width = 128; sunCanvas.height = 128;
+          var sctx = sunCanvas.getContext('2d');
+          var grad = sctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+          grad.addColorStop(0, 'rgba(255,250,220,1)');
+          grad.addColorStop(0.3, 'rgba(255,240,180,0.8)');
+          grad.addColorStop(0.7, 'rgba(255,220,100,0.2)');
+          grad.addColorStop(1, 'rgba(255,200,50,0)');
+          sctx.fillStyle = grad; sctx.fillRect(0, 0, 128, 128);
+          var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(sunCanvas), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+          sunSprite.scale.set(12, 12, 1);
+          sunSprite.position.set(20, 45, 20);
+          engine.scene.add(sunSprite);
+          engine._sunSprite = sunSprite;
+          // Moon: opposite the sun, pale, three soft craters; fades in as the sun
+          // intensity drops (night, late sunset), so the sky has a light at night.
+          var moonCanvas = document.createElement('canvas'); moonCanvas.width = 128; moonCanvas.height = 128;
+          var mctx = moonCanvas.getContext('2d');
+          var mg = mctx.createRadialGradient(64, 64, 30, 64, 64, 64);
+          mg.addColorStop(0, 'rgba(235,240,248,1)'); mg.addColorStop(0.62, 'rgba(226,232,240,1)'); mg.addColorStop(0.72, 'rgba(226,232,240,0.35)'); mg.addColorStop(1, 'rgba(226,232,240,0)');
+          mctx.fillStyle = mg; mctx.fillRect(0, 0, 128, 128);
+          mctx.fillStyle = 'rgba(160,170,190,0.55)';
+          [[50, 52, 8], [76, 70, 6], [60, 80, 4]].forEach(function(cr) { mctx.beginPath(); mctx.arc(cr[0], cr[1], cr[2], 0, Math.PI * 2); mctx.fill(); });
+          var moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(moonCanvas), transparent: true, depthWrite: false, opacity: 0 }));
+          moonSprite.scale.set(7, 7, 1);
+          moonSprite.position.set(-38, 40, -34);
+          engine.scene.add(moonSprite);
+          engine._moonSprite = moonSprite;
+
+          // Cloud plane — a large flat plane with procedural cloud texture, slowly drifting
+          // Clouds were one sheet of evenly scattered fog blobs, which reads as haze
+          // rather than weather. Each cloud is now a CLUSTER of overlapping puffs,
+          // wider than it is deep and denser along its base, so it carries a cumulus
+          // silhouette; and there are two sheets at different heights drifting at
+          // different speeds, so the sky has depth instead of a single flat ceiling.
+          function paintCloudSheet(px, count, scale, alpha) {
+            for (var ci = 0; ci < count; ci++) {
+              var cxc = Math.random() * 512, cyc = Math.random() * 512;
+              var puffs = 5 + Math.floor(Math.random() * 4);
+              var spread = (34 + Math.random() * 30) * scale;
+              for (var pi = 0; pi < puffs; pi++) {
+                var t = (pi / (puffs - 1)) - 0.5;                       // -0.5 .. 0.5 across the cloud
+                var pr = (18 + Math.random() * 16) * scale * (1 - Math.abs(t) * 0.45);
+                var px2 = cxc + t * spread * 2;
+                var py2 = cyc - Math.pow(1 - Math.abs(t) * 2, 2) * spread * 0.32 + (Math.random() - 0.5) * spread * 0.18;
+                var pg = px.createRadialGradient(px2, py2, 0, px2, py2, pr);
+                pg.addColorStop(0, 'rgba(255,255,255,' + (alpha + Math.random() * alpha * 0.5).toFixed(3) + ')');
+                pg.addColorStop(0.55, 'rgba(255,255,255,' + (alpha * 0.5).toFixed(3) + ')');
+                pg.addColorStop(1, 'rgba(255,255,255,0)');
+                px.fillStyle = pg;
+                px.fillRect(px2 - pr, py2 - pr, pr * 2, pr * 2);
+              }
+            }
+          }
+          function makeCloudSheet(count, scale, alpha, size, height, opacity) {
+            var cnv = document.createElement('canvas'); cnv.width = 512; cnv.height = 512;
+            var pxc = cnv.getContext('2d');
+            pxc.clearRect(0, 0, 512, 512);
+            paintCloudSheet(pxc, count, scale, alpha);
+            var tex = new THREE.CanvasTexture(cnv);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            if (typeof THREE.sRGBEncoding !== 'undefined') tex.encoding = THREE.sRGBEncoding;
+            var mesh = new THREE.Mesh(new THREE.PlaneGeometry(size, size),
+              new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: opacity, depthWrite: false, side: THREE.DoubleSide }));
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.position.y = height;
+            engine.scene.add(mesh);
+            return mesh;
+          }
+          var cloudPlane = makeCloudSheet(13, 1, 0.16, 200, 40, 0.5);
+          engine._cloudPlane = cloudPlane;
+          engine._cloudTex = cloudPlane.material.map;
+          // The high sheet is bigger, fainter and slower: parallax against the low
+          // one is what sells the depth.
+          var cloudPlaneHigh = makeCloudSheet(9, 1.7, 0.1, 320, 62, 0.3);
+          engine._cloudPlaneHigh = cloudPlaneHigh;
+          engine._cloudTexHigh = cloudPlaneHigh.material.map;
+          engine._cloudWhite = new THREE.Color(1, 1, 1);
+        })();
+
+        engine.raycaster = new THREE.Raycaster();
+        // Raycast face normals are local to the hit mesh. Placement and its
+        // preview share a world-space cell so rotated wedge faces agree visually.
+        engine.placementCellForHit = function(hit) {
+          var object = hit && hit.object;
+          var position = object && object.userData && object.userData.gridPos;
+          var normal = hit && hit.face && hit.face.normal;
+          if (!position || !normal) return null;
+          var nx = normal.x, ny = normal.y, nz = normal.z;
+          if (object.matrixWorld && object.matrixWorld.elements && object.matrixWorld.elements.length === 16 && THREE.Vector3 && THREE.Matrix3) {
+            var worldNormal = new THREE.Vector3(nx, ny, nz);
+            worldNormal.applyMatrix3(new THREE.Matrix3().getNormalMatrix(object.matrixWorld));
+            if (worldNormal.lengthSq() > 1e-12 && isFinite(worldNormal.x) && isFinite(worldNormal.y) && isFinite(worldNormal.z)) {
+              worldNormal.normalize(); nx = worldNormal.x; ny = worldNormal.y; nz = worldNormal.z;
+            }
+          }
+          // Lightweight hit fixtures without a transform retain local-normal
+          // behavior; valid world meshes always use the transformed normal above.
+          return { x:position.x + Math.round(nx), y:position.y + Math.round(ny), z:position.z + Math.round(nz) };
+        };
+
+        // The preview, direct creation, and crosshair action share the same rules.
+        // Sandbox coordinates match editable-world bounds; authored lessons keep
+        // their existing coordinate scope, including their own ground level.
+        engine.getPlacementEligibility = function(x, y, z) {
+          var cell = { x:x, y:y, z:z }, code = 'ready', reason = 'Ready to build';
+          var lesson = engine._currentLesson || {}, ground = lesson.ground || {};
+          var floor = typeof ground.y === 'number' && isFinite(ground.y) ? ground.y : 0;
+          if (![x,y,z].every(function(v) { return typeof v === 'number' && isFinite(v) && Math.floor(v) === v; })) {
+            code = 'out_of_bounds'; reason = 'Choose a whole-number grid cell';
+          } else if (!engine._placingLessonBlocks && y < floor) {
+            code = 'below_floor'; reason = 'Cannot build below the floor';
+          } else if (!engine._placingLessonBlocks && lesson.sandbox && (Math.abs(x) > 64 || Math.abs(z) > 64 || y > 128)) {
+            code = 'out_of_bounds'; reason = 'World edge: X and Z must be between -64 and 64, Y at most 128';
+          } else if (engine.blocks[x + ',' + y + ',' + z]) {
+            code = 'occupied'; reason = 'This cell already has a block';
+          } else if ((engine.getBlocksArr ? engine.getBlocksArr().length : Object.keys(engine.blocks).length) >= MAX_BLOCKS) {
+            code = 'block_limit'; reason = 'Block limit reached (' + MAX_BLOCKS + '). Remove a block first';
+          }
+          return { allowed:code === 'ready', code:code, reason:reason, cell:cell };
+        };
+        engine.placementForHit = function(hit) {
+          var cell = engine.placementCellForHit(hit);
+          return cell ? engine.getPlacementEligibility(cell.x,cell.y,cell.z) : { allowed:false, code:'no_target', reason:'Aim at a block face to build', cell:null };
+        };
+        engine.publishPlacementPreview = function(preview) {
+          preview = preview || engine.placementForHit(null);
+          engine._placementPreview = preview;
+          var hint = preview.code !== 'no_target' && !engine._showcase ? { allowed:preview.allowed, code:preview.code, reason:preview.reason } : null;
+          var signature = hint ? hint.allowed + '|' + hint.code + '|' + hint.reason : '';
+          if (signature !== engine._placementHintSignature) {
+            engine._placementHintSignature = signature;
+            upd('placementHint', hint);
+          }
+          return preview;
+        };
+        engine.publishPlacementPreview(null);
+
+        engine.raycaster.far = 8;
+        engine.clock = new THREE.Clock();
+        engine.euler = new THREE.Euler(0, 0, 0, 'YXZ');
+        engine.moveState = { forward: false, backward: false, left: false, right: false, sprint: false };
+        engine.lookState = { left: false, right: false, up: false, down: false };
+        engine.velocity = new THREE.Vector3();
+        engine.onGround = false;
+        engine.isLocked = false;
+        // Is the world accepting movement / aim input right now?
+        //
+        // Everything used to key off engine.isLocked alone, which is only ever true
+        // after a MOUSE click grabs pointer lock. So WASD set moveState and the
+        // animate loop ignored it, and the crosshair never highlighted a target: a
+        // keyboard-only student could not walk or see what they were aiming at, even
+        // though the key handlers were all wired. Caught by the WebGL e2e, not by any
+        // jsdom test — there is no animate loop without a GL context.
+        engine.isInputActive = function() {
+          if(engine._showcase)return false;
+          if (engine.isLocked || engine._touchActive) return true;
+          var wrap = document.getElementById('geoworld-fs-wrap');
+          return !!(wrap && document.activeElement === wrap);
+        };
+        engine._wasOnGround = true; // for land detection
+        engine._footstepTimer = 0;
+        engine.flyMode = false; // toggled with F key
+
+        // ── Procedural textures ──
+        var _procTexCache = {};
+        engine._procTexCache = _procTexCache;
+        // Painted textures are authored in sRGB; tell three so they are not
+        // gamma-encoded a second time on output (which read as washed-out pastel).
+        function finishBlockTexture(tex) {
+          if (typeof THREE.sRGBEncoding !== 'undefined') tex.encoding = THREE.sRGBEncoding;
+          try { var cap = engine.renderer && engine.renderer.capabilities; if (cap && cap.getMaxAnisotropy) tex.anisotropy = Math.min(8, cap.getMaxAnisotropy()); } catch (e) {}
+          return tex;
+        }
+        function surfaceRandom(seed) {
+          return function() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+        }
+        function makeStoneTexture() {
+          if (_procTexCache.stone) return _procTexCache.stone;
+          var random = surfaceRandom(341), size = 256;
+          var c = document.createElement('canvas'); c.width = c.height = size;
+          var ctx = c.getContext('2d'), image = ctx.createImageData(size, size), pixels = image.data;
+          // A honed mineral surface: restrained broad variation with finer grains.
+          // Periodic fields tile on every face without painted border seams, and
+          // keep their character when mipmaps simplify the texture at a distance.
+          var fields = [4, 16, 64].map(function(count) {
+            var values = new Float32Array(count * count);
+            for (var i = 0; i < values.length; i++) values[i] = random() * 2 - 1;
+            return { count:count, values:values };
+          });
+          function mineral(field, x, y) {
+            var count = field.count, u = x * count / size, v = y * count / size;
+            var ix = Math.floor(u), iy = Math.floor(v), tx = u - ix, ty = v - iy;
+            tx = tx * tx * (3 - 2 * tx); ty = ty * ty * (3 - 2 * ty);
+            var a = field.values[iy * count + ix], b = field.values[iy * count + (ix + 1) % count];
+            var d = field.values[((iy + 1) % count) * count + ix], e = field.values[((iy + 1) % count) * count + (ix + 1) % count];
+            return (a + (b - a) * tx) * (1 - ty) + (d + (e - d) * tx) * ty;
+          }
+          for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+            var broad = mineral(fields[0], x, y), grain = mineral(fields[1], x, y), fine = mineral(fields[2], x, y);
+            var fleck = random(), variation = broad * 3 + grain * 4 + fine * 2 + (random() - 0.5) * 3;
+            // Sparse pale quartz and darker mineral pinpoints, never large stains.
+            variation += fleck > 0.987 ? 11 : fleck < 0.013 ? -9 : 0;
+            var offset = (y * size + x) * 4;
+            pixels[offset] = Math.round(159 + variation + broad);
+            pixels[offset + 1] = Math.round(166 + variation);
+            pixels[offset + 2] = Math.round(164 + variation - broad);
+            pixels[offset + 3] = 255;
+          }
+          ctx.putImageData(image, 0, 0);
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
+          _procTexCache.stone = tex;
+          return tex;
+        }
+        function makeGrassTexture() {
+          var random = surfaceRandom(587);
+          if (_procTexCache.grass) return _procTexCache.grass;
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var ctx = c.getContext('2d');
+          ctx.fillStyle = '#63875b'; ctx.fillRect(0, 0, 64, 64);
+          // Add noise dots for organic feel
+          for (var i = 0; i < 200; i++) {
+            var gx = random() * 64, gy = random() * 64;
+            var shade = random() > 0.5 ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
+            ctx.fillStyle = shade;
+            ctx.fillRect(gx, gy, 1 + random() * 2, 1 + random() * 2);
+          }
+          // Add a few darker "grass blade" strokes
+          ctx.strokeStyle = 'rgba(46,72,38,0.22)'; ctx.lineWidth = 1;
+          for (var j = 0; j < 15; j++) {
+            var sx = random() * 64, sy = random() * 64;
+            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + (random() - 0.5) * 6, sy - 2 - random() * 4); ctx.stroke();
+          }
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
+          _procTexCache.grass = tex;
+          return tex;
+        }
+        // Grass cube atlas: grass on the top half of the image (UV v 0.5..1, which
+        // the cube's top face is remapped to), dirt with a grass fringe on the lower
+        // half for the four sides and the underside. Only the cube shape gets the
+        // atlas; slabs and wedges keep the plain grass so their unmapped faces
+        // never show a seam.
+        function makeGrassAtlasTexture() {
+          var random = surfaceRandom(811);
+          if (_procTexCache.grassAtlas) return _procTexCache.grassAtlas;
+          var c = document.createElement('canvas'); c.width = 64; c.height = 128;
+          var ctx = c.getContext('2d');
+          try { ctx.drawImage(makeGrassTexture().image, 0, 0); } catch (e) { ctx.fillStyle = '#63875b'; ctx.fillRect(0, 0, 64, 64); }
+          ctx.fillStyle = '#7a5537'; ctx.fillRect(0, 64, 64, 64);
+          for (var i = 0; i < 160; i++) {
+            ctx.fillStyle = random() > 0.5 ? 'rgba(40,24,12,0.16)' : 'rgba(180,140,100,0.12)';
+            ctx.fillRect(random() * 64, 64 + random() * 64, 1 + random() * 3, 1 + random() * 2);
+          }
+          for (var k = 0; k < 14; k++) {
+            var px = random() * 64, py = 74 + random() * 50, pr = 2 + random() * 3;
+            ctx.fillStyle = 'rgba(96,70,48,0.55)'; ctx.beginPath(); ctx.ellipse(px, py, pr, pr * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+          }
+          // grass fringe hanging over the top edge of the side faces
+          ctx.fillStyle = '#63875b'; ctx.fillRect(0, 64, 64, 5);
+          ctx.fillStyle = '#506e48';
+          for (var f = 0; f < 64; f += 3) { var h = 4 + Math.round(random() * 5); ctx.fillRect(f, 64, 2, h); }
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
+          _procTexCache.grassAtlas = tex;
+          return tex;
+        }
+        // Tangent-space normal map from a painted height field (finite differences),
+        // so water can carry an animated ripple and ice a crackle without any
+        // extra geometry. Linear data: deliberately NOT tagged sRGB.
+        function makeBumpNormalTexture(kind) {
+          var key = kind + 'Normal';
+          if (_procTexCache[key]) return _procTexCache[key];
+          var N = 64, hc = document.createElement('canvas'); hc.width = N; hc.height = N;
+          var hx = hc.getContext('2d');
+          hx.fillStyle = '#808080'; hx.fillRect(0, 0, N, N);
+          if (kind === 'water') {
+            for (var i = 0; i < 26; i++) {
+              var cx2 = Math.random() * N, cy2 = Math.random() * N, r = 6 + Math.random() * 14;
+              var g = hx.createRadialGradient(cx2, cy2, 0, cx2, cy2, r);
+              var up = Math.random() > 0.5;
+              g.addColorStop(0, up ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'); g.addColorStop(1, 'rgba(128,128,128,0)');
+              hx.fillStyle = g; hx.fillRect(0, 0, N, N);
+            }
+          } else {
+            hx.strokeStyle = 'rgba(0,0,0,0.5)'; hx.lineWidth = 1.2;
+            for (var j = 0; j < 9; j++) {
+              var sx = Math.random() * N, sy = Math.random() * N;
+              hx.beginPath(); hx.moveTo(sx, sy);
+              for (var seg = 0; seg < 4; seg++) { sx += (Math.random() - 0.5) * 22; sy += (Math.random() - 0.5) * 22; hx.lineTo(sx, sy); }
+              hx.stroke();
+            }
+          }
+          var hd = hx.getImageData(0, 0, N, N).data;
+          var H = function(x, y) { x = (x + N) % N; y = (y + N) % N; return hd[(y * N + x) * 4] / 255; };
+          var nc = document.createElement('canvas'); nc.width = N; nc.height = N;
+          var nx2 = nc.getContext('2d'), out = nx2.createImageData(N, N), od = out.data;
+          var strength = kind === 'water' ? 2.2 : 3.0;
+          for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+            var dx = (H(x + 1, y) - H(x - 1, y)) * strength, dy = (H(x, y + 1) - H(x, y - 1)) * strength;
+            var len = Math.sqrt(dx * dx + dy * dy + 1);
+            var o = (y * N + x) * 4;
+            od[o] = Math.round((-dx / len * 0.5 + 0.5) * 255); od[o + 1] = Math.round((dy / len * 0.5 + 0.5) * 255); od[o + 2] = Math.round((1 / len * 0.5 + 0.5) * 255); od[o + 3] = 255;
+          }
+          nx2.putImageData(out, 0, 0);
+          var tex = new THREE.CanvasTexture(nc);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          _procTexCache[key] = tex;
+          return tex;
+        }
+        // Warm halo for a torch: one shared additive sprite texture, scaled and
+        // faded per torch by the same flicker that drives its light.
+        function makeTorchGlowTexture() {
+          if (_procTexCache.torchGlow) return _procTexCache.torchGlow;
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var g2 = c.getContext('2d');
+          var gr = g2.createRadialGradient(32, 32, 0, 32, 32, 32);
+          gr.addColorStop(0, 'rgba(255,220,150,0.85)');
+          gr.addColorStop(0.35, 'rgba(255,170,60,0.35)');
+          gr.addColorStop(1, 'rgba(255,140,20,0)');
+          g2.fillStyle = gr; g2.fillRect(0, 0, 64, 64);
+          var tex = new THREE.CanvasTexture(c);
+          _procTexCache.torchGlow = tex;
+          return tex;
+        }
+
+        function makeBrickTexture() {
+          if (_procTexCache.brick) return _procTexCache.brick;
+          var random = surfaceRandom(1237);
+          var c = document.createElement('canvas'); c.width = c.height = 256;
+          var ctx = c.getContext('2d'); ctx.scale(4, 4);
+          // Fine warm mortar separates individually fired clay faces. The slim
+          // raised lip belongs to the painted material, never the printable mesh.
+          ctx.fillStyle = '#867d6b'; ctx.fillRect(0, 0, 64, 64);
+          for (var row = 0; row < 4; row++) {
+            for (var brick = -1; brick < 3; brick++) {
+              var x = brick * 32 + (row % 2 ? 16 : 0), y = row * 16;
+              var warmth = random(), light = 46 + random() * 8;
+              ctx.fillStyle = 'hsl(' + (14 + warmth * 5) + ', ' + (39 + warmth * 8) + '%, ' + light + '%)';
+              ctx.fillRect(x + 0.65, y + 0.65, 30.7, 14.7);
+              var wash = ctx.createLinearGradient(x, y, x + 12, y + 16);
+              wash.addColorStop(0, 'rgba(255,224,181,0.13)');
+              wash.addColorStop(0.42, 'rgba(255,224,181,0)');
+              wash.addColorStop(1, 'rgba(68,38,27,0.13)');
+              ctx.fillStyle = wash; ctx.fillRect(x + 0.65, y + 0.65, 30.7, 14.7);
+              ctx.fillStyle = 'rgba(249,211,171,0.28)'; ctx.fillRect(x + 1, y + 1, 30, 0.5);
+              ctx.fillStyle = 'rgba(64,43,31,0.19)'; ctx.fillRect(x + 1, y + 14.75, 30, 0.55);
+              for (var pore = 0; pore < 38; pore++) {
+                ctx.fillStyle = random() > 0.55 ? 'rgba(66,36,24,0.12)' : 'rgba(255,226,184,0.12)';
+                ctx.fillRect(x + 1.2 + random() * 29, y + 1.5 + random() * 12.8, 0.25 + random() * 0.65, 0.2 + random() * 0.45);
+              }
+            }
+          }
+          var tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex); _procTexCache.brick = tex; return tex;
+        }
+
+
+        function makeWoodTexture() {
+          if (_procTexCache.wood) return _procTexCache.wood;
+          var random = surfaceRandom(1879);
+          var c = document.createElement('canvas'); c.width = c.height = 256;
+          var ctx = c.getContext('2d'); ctx.scale(4, 4);
+          ctx.fillStyle = '#b88d59'; ctx.fillRect(0, 0, 64, 64);
+          // Broad growth bands remain visible at a distance; finer fibres resolve
+          // as the camera approaches. Periodic paths join at the texture edge.
+          for (var band = -2; band < 18; band++) {
+            var base = band * 4.6, bend = 0.6 + random() * 1.5, phase = random() * Math.PI * 2;
+            ctx.strokeStyle = band % 3 === 0 ? 'rgba(90,52,27,0.13)' : 'rgba(236,194,132,0.12)';
+            ctx.lineWidth = 1.1 + random() * 1.4; ctx.beginPath();
+            for (var x = 0; x <= 64; x += 2) {
+              var y = base + Math.sin(x / 64 * Math.PI * 2 + phase) * bend;
+              if (!x) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+          }
+          for (var grain = -3; grain < 70; grain++) {
+            var gy = grain * 1.02, phase2 = random() * Math.PI * 2;
+            ctx.strokeStyle = grain % 4 === 0 ? 'rgba(255,215,155,0.20)' : 'rgba(94,54,28,0.16)';
+            ctx.lineWidth = 0.13 + random() * 0.25; ctx.beginPath();
+            for (var xx = 0; xx <= 64; xx += 2) {
+              var yy = gy + Math.sin(xx / 64 * Math.PI * 2 + phase2) * 0.8 + Math.sin(xx / 64 * Math.PI * 4) * 0.25;
+              if (!xx) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+            }
+            ctx.stroke();
+          }
+          // A quiet spindle knot with growth rings reads as timber, not a stamp.
+          for (var ring = 4; ring > 0; ring--) {
+            ctx.strokeStyle = 'rgba(100,60,31,' + (0.045 + (4 - ring) * 0.014) + ')'; ctx.lineWidth = 0.3;
+            ctx.beginPath(); ctx.ellipse(42, 27, ring * 1.8, ring * 0.48, 0, 0, Math.PI * 2); ctx.stroke();
+          }
+          for (var n = 0; n < 220; n++) {
+            ctx.fillStyle = random() > 0.5 ? 'rgba(60,38,22,0.055)' : 'rgba(255,220,160,0.06)';
+            ctx.fillRect(random() * 64, random() * 64, 0.3 + random() * 1.4, 0.15 + random() * 0.3);
+          }
+          var tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex); _procTexCache.wood = tex; return tex;
+        }
+
+        function makeSandTexture() {
+          var random = surfaceRandom(2371);
+          if (_procTexCache.sand) return _procTexCache.sand;
+          var c = document.createElement('canvas'); c.width = 128; c.height = 128;
+          var ctx = c.getContext('2d'); ctx.scale(2, 2);
+          ctx.fillStyle = '#dbc69d'; ctx.fillRect(0, 0, 64, 64);
+          // Sand ripple lines (gentle curves)
+          ctx.strokeStyle = 'rgba(180,150,100,0.25)'; ctx.lineWidth = 1;
+          for (var r = 0; r < 8; r++) {
+            var ry = r * 8 + random() * 3;
+            ctx.beginPath(); ctx.moveTo(0, ry);
+            ctx.quadraticCurveTo(32, ry + 2 + random() * 3, 64, ry + random() * 2);
+            ctx.stroke();
+          }
+          // Sand grains (scattered dots)
+          for (var n = 0; n < 120; n++) {
+            var brightness = 0.7 + random() * 0.3;
+            ctx.fillStyle = 'rgba(' + Math.round(200 * brightness) + ',' + Math.round(170 * brightness) + ',' + Math.round(120 * brightness) + ',0.3)';
+            ctx.fillRect(random() * 64, random() * 64, 1 + random(), 1 + random());
+          }
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
+          _procTexCache.sand = tex;
+          return tex;
+        }
+
+        // Small, shared normal maps add material relief without extra faces or
+        // altering the printable mesh. Normal data stays in linear color space.
+        function makeSurfaceNormalTexture(kind, texture) {
+          var key = kind + 'SurfaceNormal';
+          if (_procTexCache[key]) return _procTexCache[key];
+          var size = 128, canvas = document.createElement('canvas');
+          canvas.width = canvas.height = size;
+          var context = canvas.getContext('2d');
+          context.drawImage(texture.image, 0, 0, size, size);
+          var pixels = context.getImageData(0, 0, size, size).data;
+          var heights = new Float32Array(size * size);
+          for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+            var offset = (y * size + x) * 4;
+            heights[y * size + x] = (pixels[offset] * 0.2126 + pixels[offset + 1] * 0.7152 + pixels[offset + 2] * 0.0722) / 255;
+          }
+          var output = context.createImageData(size, size), data = output.data;
+          function height(x, y) { return heights[((y + size) % size) * size + (x + size) % size]; }
+          var strength = kind === 'brick' ? 2.2 : kind === 'wood' ? 1.4 : 1.1;
+          for (var yy = 0; yy < size; yy++) for (var xx = 0; xx < size; xx++) {
+            var dx = (height(xx + 1, yy) - height(xx - 1, yy)) * strength;
+            var dy = (height(xx, yy + 1) - height(xx, yy - 1)) * strength;
+            var length = Math.sqrt(dx * dx + dy * dy + 1), i = (yy * size + xx) * 4;
+            data[i] = Math.round((0.5 - dx / length * 0.5) * 255);
+            data[i + 1] = Math.round((0.5 + dy / length * 0.5) * 255);
+            data[i + 2] = Math.round((0.5 + 0.5 / length) * 255); data[i + 3] = 255;
+          }
+          context.putImageData(output, 0, 0);
+          var result = new THREE.CanvasTexture(canvas);
+          result.wrapS = result.wrapT = THREE.RepeatWrapping;
+          _procTexCache[key] = result;
+          return result;
+        }
+
+        // Roughness is linear data, shared by every block of that material.
+        // Slight grain variation catches the sun without adding any geometry.
+        function makeSurfaceRoughnessTexture(kind, texture) {
+          var key = kind + 'SurfaceRoughness';
+          if (_procTexCache[key]) return _procTexCache[key];
+          var size = 128, canvas = document.createElement('canvas'); canvas.width = canvas.height = size;
+          var context = canvas.getContext('2d'); context.drawImage(texture.image, 0, 0, size, size);
+          var image = context.getImageData(0, 0, size, size), pixels = image.data;
+          var base = kind === 'wood' ? 0.79 : kind === 'stone' ? 0.87 : 0.91;
+          for (var i = 0; i < pixels.length; i += 4) {
+            var luminance = (pixels[i] * 0.2126 + pixels[i + 1] * 0.7152 + pixels[i + 2] * 0.0722) / 255;
+            var value = Math.round(255 * Math.min(1, base + (1 - luminance) * (1 - base)));
+            pixels[i] = pixels[i + 1] = pixels[i + 2] = value; pixels[i + 3] = 255;
+          }
+          context.putImageData(image, 0, 0);
+          var result = new THREE.CanvasTexture(canvas); result.wrapS = result.wrapT = THREE.RepeatWrapping;
+          _procTexCache[key] = result; return result;
+        }
+
+        // Block material cache — avoids creating duplicate materials per type
+        engine._matCache = {};
+        function getBlockMaterial(type) {
+          if (engine._matCache[type]) return engine._matCache[type].clone();
+          var color = geometryWorldSrgbColor(THREE, getBlockColor(type));
+          var mat;
+          if (type === 'glass') {
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.0, transmission: 0.8, thickness: 0.2, side: THREE.DoubleSide, envMapIntensity: 1.2 });
+          } else if (type === 'diamond') {
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.14, metalness: 0.5, envMapIntensity: 1.2 });
+          } else if (type === 'gold') {
+            mat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0xffc04d), roughness: 0.23, metalness: 0.45, envMapIntensity: 0.75 });
+          } else if (type === 'wood') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeWoodTexture(), roughness: 0.85, metalness: 0.0 });
+          } else if (type === 'sand') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeSandTexture(), roughness: 0.95, metalness: 0.0 });
+          } else if (type === 'water') {
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.5, roughness: 0.02, metalness: 0.1, transmission: 0.6, thickness: 0.5, side: THREE.DoubleSide, envMapIntensity: 1.3, normalMap: makeBumpNormalTexture('water'), normalScale: new THREE.Vector2(0.35, 0.35) });
+          } else if (type === 'ice') {
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.62, roughness: 0.06, metalness: 0.05, transmission: 0.5, thickness: 0.3, envMapIntensity: 1.2, normalMap: makeBumpNormalTexture('ice'), normalScale: new THREE.Vector2(0.25, 0.25) });
+          } else if (type === 'stone') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeStoneTexture(), roughness: 0.9, metalness: 0.0 });
+          } else if (type === 'brick') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeBrickTexture(), roughness: 0.85, metalness: 0.0 });
+          } else if (type === 'lava') {
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4, metalness: 0.1, emissive: 0xFF3D00, emissiveIntensity: 0.6 });
+          } else if (type === 'torch') {
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.0, emissive: 0xFFAB00, emissiveIntensity: 0.9 });
+          } else if (type === 'grass_cube') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeGrassAtlasTexture(), roughness: 0.8, metalness: 0.0 });
+          } else if (type === 'grass') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeGrassTexture(), roughness: 0.8, metalness: 0.0 });
+          } else {
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.7, metalness: 0.05 });
+          }
+          if (['stone','wood','brick','sand'].indexOf(type) >= 0 && mat.map) {
+            var surfaceNormal = makeSurfaceNormalTexture(type, mat.map);
+            var surfaceRoughness = makeSurfaceRoughnessTexture(type, mat.map);
+            mat.userData.gwSurfaceKey = type;
+            mat.normalScale = new THREE.Vector2(0.55, 0.55);
+            mat.normalMap = engine._renderProfile && engine._renderProfile.tier === 'saver' ? null : surfaceNormal;
+            mat.roughnessMap = engine._renderProfile && engine._renderProfile.tier === 'saver' ? null : surfaceRoughness;
+          }
+          if (type === 'glass' || type === 'diamond' || type === 'gold' || type === 'water' || type === 'ice') {
+            mat.userData.gwReflective = true;
+            if (engine._envRT) mat.envMap = engine._envRT.texture;
+          }
+          engine._matCache[type] = mat;
+          return mat.clone();
+        }
+
+
+        // A narrow highlight rounds the lighting at box edges, not their geometry.
+        // Measurements, silhouettes and exported triangles remain exact unit cells.
+        // Attach after Material.clone(): three r128 does not clone shader hooks.
+        engine.configureBlockFinish = function(material, type, shape, isGround) {
+          if (isGround || (shape !== 'cube' && shape !== 'halfB') || !/^(stone|wood|brick|sand|gold|diamond)$/.test(type)) return;
+          var finish = {
+            gwBlockHalfSize: {value:new THREE.Vector3(0.5, shape === 'halfB' ? 0.25:0.5, 0.5)},
+            gwBlockBevelWidth: {value:0.018},
+            gwBlockBevelStrength: {value:engine._renderProfile && engine._renderProfile.tier === 'saver' ? 0:0.45}
+          };
+          material._gwBlockFinish = finish;
+          material.userData.gwBlockFinish = true;
+          material.extensions = material.extensions || {};
+          material.extensions.derivatives = true;
+          material.onBeforeCompile = function(shader) {
+            Object.keys(finish).forEach(function(key){shader.uniforms[key]=finish[key];});
+            shader.vertexShader = 'varying vec3 vGwBlockPosition;\n' + shader.vertexShader;
+            shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvGwBlockPosition=position;');
+            shader.fragmentShader = [
+              'varying vec3 vGwBlockPosition;',
+              'uniform vec3 gwBlockHalfSize;',
+              'uniform float gwBlockBevelWidth;',
+              'uniform float gwBlockBevelStrength;',
+              '#ifndef OBJECTSPACE_NORMALMAP',
+              'uniform mat3 normalMatrix;',
+              '#endif',
+              shader.fragmentShader
+            ].join('\n');
+            shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_begin>', [
+              '#include <normal_fragment_begin>',
+              'if(gwBlockBevelStrength > 0.0){',
+              '  float gwPixelSpan=max(length(dFdx(vGwBlockPosition)),length(dFdy(vGwBlockPosition)));',
+              '  float gwFade=1.0-smoothstep(gwBlockBevelWidth*1.2,gwBlockBevelWidth*4.0,gwPixelSpan);',
+              '  vec3 gwInset=gwBlockHalfSize-vec3(gwBlockBevelWidth);',
+              '  vec3 gwOffset=vGwBlockPosition-clamp(vGwBlockPosition,-gwInset,gwInset);',
+              '  vec3 gwRoundedNormal=normalize(normalMatrix*normalize(gwOffset));',
+              '  normal=normalize(mix(normal,gwRoundedNormal,gwBlockBevelStrength*gwFade));',
+              '}'
+            ].join('\n'));
+          };
+          material.customProgramCacheKey = function(){return 'gw-block-finish-v1';};
+        };
+
+        // Block edge wireframe overlay for visual crispness
+        var _edgeMatCache = engine._edgeMatCache = {};
+        function addBlockEdges(mesh, shapeId, isGround) {
+          shapeId += isGround ? "-ground" : "-build";
+          if (!_edgeMatCache[shapeId]) _edgeMatCache[shapeId] = new THREE.LineBasicMaterial({ color: 0x223044, transparent: true, opacity: isGround ? 0.045 : 0.20, depthWrite: false, linewidth: 1 });
+          _edgeMatCache[shapeId].userData.gwSharedBlockEdge = true;
+          var edges = new THREE.EdgesGeometry(mesh.geometry, 30);
+          var line = new THREE.LineSegments(edges, _edgeMatCache[shapeId]);
+          line.visible = !isGround || !engine._renderProfile || engine._renderProfile.tier !== 'saver';
+          mesh.add(line);
+        }
+
+        // Block geometry belongs to that block, including its edge child. Edge
+        // materials belong to the engine cache and stay live while any block uses
+        // them; releasing one block must not dispose a neighbour's material.
+        engine._disposeBlockMesh = function(mesh) {
+          if (!mesh) return;
+          mesh.traverse(function(part) {
+            if (part.geometry && part.geometry.dispose) part.geometry.dispose();
+            var materials = Array.isArray(part.material) ? part.material : [part.material];
+            materials.forEach(function(material) {
+              if (material && material.dispose && !(material.userData && material.userData.gwSharedBlockEdge)) material.dispose();
+            });
+          });
+        };
+
+        // ── Undo / Redo system ──
+        engine._undoStack = []; // { action: 'place'|'remove', x, y, z, type, shape }
+        engine._redoStack = [];
+
+        // ── Return to Spawn: teleport player back to lesson spawn point ──
+        engine.returnToSpawn = function() {
+          if(engine.disposeCreationFocus)engine.disposeCreationFocus();
+          var sp = (engine._currentLesson && engine._currentLesson.spawnPoint) || [0, 2, 0];
+          engine.camera.position.set(sp[0], sp[1] + 1.7, sp[2]);
+          engine.velocity.set(0, 0, 0);
+          engine.yaw = 0; engine.pitch = 0;
+        };
+
+        // ── Clear My Blocks: remove only student-placed blocks (preserves lesson structures) ──
+        engine.clearPlayerBlocks = function() {
+          var cleared = 0;
+          Object.keys(engine.blocks).forEach(function(key) {
+            var mesh = engine.blocks[key];
+            if (mesh && mesh.userData && !mesh.userData._lessonBlock) {
+              var p = key.split(',').map(Number);
+              engine.removeBlock(p[0], p[1], p[2], true);
+              cleared++;
+            }
+          });
+          // Reset counter + clear undo history (confusing after bulk clear)
+          engine.blocksPlaced = 0;
+          engine._undoStack = [];
+          engine._redoStack = [];
+          return cleared;
+        };
+        var MAX_UNDO = 200;
+        function pushUndo(action) {
+          if (engine._replayingHistory) return;
+          engine._undoStack.push(action);
+          if (engine._undoStack.length > MAX_UNDO) engine._undoStack.shift();
+          engine._redoStack = []; // clear redo on new action
+        }
+        function publishHistoryChange() {
+          engine._historyRevision = (engine._historyRevision || 0) + 1;
+          upd('historyRevision', engine._historyRevision);
+        }
+        engine.undo = function() {
+          if (engine._undoStack.length === 0) return false;
+          var a = engine._undoStack[engine._undoStack.length - 1];
+          if (a.action === 'place') {
+            // Undo a placement = remove the block (no particles).
+            var key = a.x + ',' + a.y + ',' + a.z;
+            var mesh = engine.blocks[key];
+            if (!mesh) return false;
+            engine.scene.remove(mesh);
+            engine._disposeBlockMesh(mesh);
+            delete engine.blocks[key];
+            engine._blocksDirty = true;
+            engine.refreshAONeighbourhood(a.x, a.y, a.z);
+          } else if (a.action === 'remove') {
+            var restored;
+            engine._replayingHistory = true;
+            try { restored = engine.placeBlock(a.x, a.y, a.z, a.type, a.shape, a.rotation); }
+            finally { engine._replayingHistory = false; }
+            if (!restored) return false;
+          } else return false;
+          engine._undoStack.pop();
+          engine._redoStack.push(a);
+          publishHistoryChange();
+          return true;
+        };
+        engine.redo = function() {
+          if (engine._redoStack.length === 0) return false;
+          var a = engine._redoStack[engine._redoStack.length - 1];
+          if (a.action === 'place') {
+            var replayed;
+            engine._replayingHistory = true;
+            try { replayed = engine.placeBlock(a.x, a.y, a.z, a.type, a.shape, a.rotation); }
+            finally { engine._replayingHistory = false; }
+            if (!replayed) return false;
+          } else if (a.action === 'remove') {
+            var key = a.x + ',' + a.y + ',' + a.z;
+            var mesh = engine.blocks[key];
+            if (!mesh) return false;
+            engine.scene.remove(mesh);
+            engine._disposeBlockMesh(mesh);
+            delete engine.blocks[key];
+            engine._blocksDirty = true;
+            engine.refreshAONeighbourhood(a.x, a.y, a.z);
+          } else return false;
+          engine._redoStack.pop();
+          engine._undoStack.push(a);
+          publishHistoryChange();
+          return true;
+        };
+
+        // ── Ambient occlusion ──
+        // Corners and the foot of every wall darken a little, which is what makes a
+        // voxel world read as solid mass instead of coloured paper. Computed per
+        // vertex from neighbouring cells and written as a vertex colour, so it costs
+        // nothing per frame; refreshed for the 3x3x3 neighbourhood on each change,
+        // or once for the whole world after a lesson fill.
+        var _aoSeeThrough = { glass: 1, water: 1, ice: 1 };
+        function aoOccupied(x, y, z) {
+          var m = engine.blocks[x + ',' + y + ',' + z];
+          return !!(m && !_aoSeeThrough[m.userData && m.userData.blockType]);
+        }
+        engine.refreshBlockAO = function(mesh) {
+          if (!mesh || !mesh.geometry || !mesh.userData || !mesh.userData.gridPos) return;
+          var type = mesh.userData.blockType;
+          if (type === 'lava' || type === 'torch' || _aoSeeThrough[type]) return;
+          var geo = mesh.geometry, pos = geo.getAttribute('position'), nrm = geo.getAttribute('normal');
+          if (!pos || !nrm || !pos.count) return;
+          var gp = mesh.userData.gridPos, count = pos.count;
+          var col = geo.getAttribute('color');
+          if (!col || col.count !== count) { col = new THREE.Float32BufferAttribute(new Float32Array(count * 3), 3); geo.setAttribute('color', col); }
+          var rot = mesh.rotation.y || 0, c = Math.cos(rot), sn = Math.sin(rot);
+          var oy = mesh.position.y - gp.y;
+          for (var i = 0; i < count; i++) {
+            var lx = pos.getX(i), ly = pos.getY(i), lz = pos.getZ(i);
+            var nx = nrm.getX(i), ny = nrm.getY(i), nz = nrm.getZ(i);
+            var rx = lx * c + lz * sn, rz = -lx * sn + lz * c;
+            var rnx = nx * c + nz * sn, rnz = -nx * sn + nz * c;
+            var f = geometryWorldVertexAo(rx + 0.5, ly + oy, rz + 0.5, rnx, ny, rnz, gp, aoOccupied);
+            col.setXYZ(i, f, f, f);
+          }
+          col.needsUpdate = true;
+          var mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          mats.forEach(function(m) { if (m && !m.vertexColors) { m.vertexColors = true; m.needsUpdate = true; } });
+        };
+        engine.refreshAONeighbourhood = function(x, y, z) {
+          for (var dx = -1; dx <= 1; dx++) for (var dy = -1; dy <= 1; dy++) for (var dz = -1; dz <= 1; dz++) {
+            var m = engine.blocks[(x + dx) + ',' + (y + dy) + ',' + (z + dz)];
+            if (m) engine.refreshBlockAO(m);
+          }
+        };
+        engine.refreshAllAO = function() {
+          engine._aoDirty = false;
+          Object.keys(engine.blocks).forEach(function(k) { engine.refreshBlockAO(engine.blocks[k]); });
+        };
+
+        // Block operations
+        engine.placeBlock = function(x, y, z, type, shape, rotation) {
+          var eligibility = engine.getPlacementEligibility(x, y, z);
+          if (!eligibility.allowed) return null;
+          var key = x + ',' + y + ',' + z;
+          var shapeId = shape || 'cube';
+          var rot = rotation || 0; // 0-3 = 0°, 90°, 180°, 270°
+          var geo = createShapeGeometry(shapeId);
+          var grassCube = type === 'grass' && shapeId === 'cube';
+          if (grassCube) {
+            // BoxGeometry vertex order: px, nx, py (top), ny, pz, nz; four each.
+            var uv = geo.getAttribute('uv');
+            if (uv && uv.count === 24) { for (var ui = 0; ui < 24; ui++) uv.setY(ui, (ui >= 8 && ui < 12) ? 0.5 + uv.getY(ui) * 0.5 : uv.getY(ui) * 0.5); uv.needsUpdate = true; }
+            else grassCube = false;
+          }
+          var mat = getBlockMaterial(grassCube ? 'grass_cube' : type);
+          engine.configureBlockFinish(mat,type,shapeId,engine._measurementLayer === 'ground');
+          // Lesson ground only: alternate cells by a hair so the floor reads as unit
+          // squares a student can count for V = L x W x H, without a line grid. The
+          // material is this block's own clone, and a student's grass block keeps
+          // the palette colour.
+          if (engine._measurementLayer === 'ground' && mat.color && ((x + z) & 1)) mat.color.multiplyScalar(0.92);
+          if (type === 'grass' && mat.color) mat.color.multiplyScalar(geometryWorldGroundTint(x, z));
+          if (/^(stone|wood|brick|sand)$/.test(type) && mat.color) mat.color.multiplyScalar(geometryWorldGroundTint(x + type.length * 31, z - y * 17));
+          var mesh = new THREE.Mesh(geo, mat);
+          // Position: cubes center at +0.5, half-slabs sit on the ground
+          if (shapeId === 'halfB') {
+            mesh.position.set(x + 0.5, y + 0.25, z + 0.5);
+          } else if (shapeId === 'halfA' || shapeId === 'quarter') {
+            mesh.position.set(x + 0.5, y, z + 0.5); // center for rotation
+          } else {
+            mesh.position.set(x + 0.5, y + 0.5, z + 0.5);
+          }
+          // Apply rotation (Y-axis, 90° increments) for non-cube shapes
+          if (rot > 0 && shapeId !== 'cube') {
+            mesh.rotation.y = rot * Math.PI / 2;
+          }
+          mesh.castShadow = true; mesh.receiveShadow = true;
+          addBlockEdges(mesh, shapeId, engine._measurementLayer === 'ground');
+          var shapeDef = BLOCK_SHAPES.find(function(s) { return s.id === shapeId; }) || BLOCK_SHAPES[0];
+          mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot, _lessonBlock: !!engine._placingLessonBlocks, _measurementLayer: engine._measurementLayer || (engine._placingLessonBlocks ? 'lesson' : 'student') };
+          engine.scene.add(mesh);
+          engine.blocks[key] = mesh;
+          if (engine._placingLessonBlocks) engine._aoDirty = true; else engine.refreshAONeighbourhood(x, y, z);
+          engine._blocksDirty = true; // invalidate cached blocks array so raycasters rebuild
+          pushUndo({ action: 'place', x: x, y: y, z: z, type: type, shape: shapeId, rotation: rot });
+          // Torch blocks emit a point light
+          if (type === 'torch') {
+            var tLight = new THREE.PointLight(0xFFAB00, 1.2, 8, 1.5);
+            tLight.position.set(x + 0.5, y + 1.0, z + 0.5);
+            tLight.castShadow = false; // perf: no shadow from torch lights
+            engine.scene.add(tLight);
+            mesh.userData._torchLight = tLight;
+            var tGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeTorchGlowTexture(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.75 }));
+            tGlow.scale.set(2.2, 2.2, 1);
+            tGlow.position.set(x + 0.5, y + 0.72, z + 0.5);
+            engine.scene.add(tGlow);
+            mesh.userData._torchGlow = tGlow;
+          }
+          return mesh;
+        };
+
+        engine.removeBlock = function(x, y, z, forceRemove) {
+          var key = x + ',' + y + ',' + z;
+          var mesh = engine.blocks[key];
+          if (mesh) {
+            // Lesson blocks (ground + structures) are indestructible unless force-removed (reset)
+            if (mesh.userData._lessonBlock && !forceRemove) {
+              // Visual feedback: flash the block red briefly
+              if (mesh.material && mesh.material.emissive) {
+                mesh.material.emissive.setHex(0xff0000);
+                setTimeout(function() { try { mesh.material.emissive.setHex(0x000000); } catch(e) {} }, 200);
+              }
+              if (window._alloHaptic) window._alloHaptic('bump');
+              return; // Block is protected
+            }
+            // Record type/shape for undo before destroying
+            var removedType = mesh.userData.blockType || 'stone';
+            var removedShape = mesh.userData.shape || 'cube';
+            // Rotation was not captured, so undoing a break restored a rotated wedge
+            // at its default orientation.
+            var removedRotation = mesh.userData.rotation || 0;
+            // Clean up torch light
+            if (mesh.userData._torchLight) { engine.scene.remove(mesh.userData._torchLight); mesh.userData._torchLight.dispose(); }
+            if (mesh.userData._torchGlow) { engine.scene.remove(mesh.userData._torchGlow); try { mesh.userData._torchGlow.material.dispose(); } catch (e) {} mesh.userData._torchGlow = null; }
+            // Spawn break particles
+            var bColor = mesh.material.color ? mesh.material.color.getHex() : 0x808080;
+            spawnBreakParticles(engine, x + 0.5, y + 0.5, z + 0.5, bColor);
+            engine.scene.remove(mesh);
+            engine._disposeBlockMesh(mesh);
+            delete engine.blocks[key];
+            engine._blocksDirty = true; // invalidate cached blocks array
+            engine.refreshAONeighbourhood(x, y, z);
+            pushUndo({ action: 'remove', x: x, y: y, z: z, type: removedType, shape: removedShape, rotation: removedRotation });
+          }
+        };
+
+        // Break particle system — small cubes scatter on block break
+        engine._particles = [];
+        // The ghost owns an outline child, so both call sites dispose by traversing.
+        function disposeGhost(mesh) {
+          if (!mesh) return;
+          mesh.traverse(function(part) {
+            if (part.geometry && part.geometry.dispose) part.geometry.dispose();
+            if (part.material && part.material.dispose) part.material.dispose();
+          });
+        }
+        engine._disposeGhost = disposeGhost;
+
+        function spawnBreakParticles(eng, px, py, pz, color) {
+          var THREE = window.THREE;
+          if (!THREE) return;
+          // Chunkier shatter: more shards, wider size range, a bit more vertical lift.
+          var count = 10;
+          for (var i = 0; i < count; i++) {
+            var size = 0.06 + Math.random() * 0.14;
+            var geo = new THREE.BoxGeometry(size, size, size);
+            var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true });
+            var p = new THREE.Mesh(geo, mat);
+            p.position.set(px + (Math.random() - 0.5) * 0.6, py + (Math.random() - 0.5) * 0.6, pz + (Math.random() - 0.5) * 0.6);
+            p.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 4, 2 + Math.random() * 3.5, (Math.random() - 0.5) * 4);
+            // A shard that keeps its axes while it flies reads as a floating sprite;
+            // tumbling it reads as debris. Radians per second, per axis.
+            p.userData._spin = new THREE.Vector3((Math.random() - 0.5) * 9, (Math.random() - 0.5) * 9, (Math.random() - 0.5) * 9);
+            p.userData._life = 0.55 + Math.random() * 0.4;
+            p.userData._age = 0;
+            eng.scene.add(p);
+            eng._particles.push(p);
+          }
+        }
+
+        // Place sparkle — small bright particles burst outward on block place
+        // spawnPlaceParticles moved to module scope — see above the render fn.
+
+        // MAX_BLOCKS was enforced only on student placement, never here — yet this is
+        // the path lesson loading uses. validateLesson's own coordinate clamps still
+        // permit a single fill of 35 x 21 x 35 = 25,725 meshes (17x the limit), which a
+        // generated or hand-pasted lesson could hit and lock up the tab. Cap it, and
+        // flag the truncation so loadLesson can say so rather than silently drop
+        // geometry the student is then asked to measure.
+        engine.fillBlocks = function(x1, y1, z1, x2, y2, z2, type) {
+          // Counted incrementally: Object.keys().length inside the triple loop would
+          // make a large fill quadratic.
+          var count = Object.keys(engine.blocks).length;
+          for (var x = Math.min(x1,x2); x <= Math.max(x1,x2); x++) {
+            for (var y = Math.min(y1,y2); y <= Math.max(y1,y2); y++) {
+              for (var z = Math.min(z1,z2); z <= Math.max(z1,z2); z++) {
+                if (count >= MAX_BLOCKS) { engine._fillTruncated = true; return; }
+                var k = x + ',' + y + ',' + z;
+                if (engine.blocks[k]) continue;
+                engine.placeBlock(x, y, z, type);
+                if (engine.blocks[k]) count++;
+              }
+            }
+          }
+        };
+
+        engine.clearWorld = function() {
+          if(engine.disposeCreationFocus)engine.disposeCreationFocus();
+          if(engine.clearDimensionAnnotations)engine.clearDimensionAnnotations();
+          if(engine.clearSelectionAnnotations)engine.clearSelectionAnnotations();
+          if (engine.publishPlacementPreview) engine.publishPlacementPreview(null);
+          if (engine.clearLayerGhosts) engine.clearLayerGhosts();
+          if (engine.disposeLandscape) engine.disposeLandscape();
+          Object.keys(engine.blocks).forEach(function(k) {
+            var m = engine.blocks[k]; engine.scene.remove(m); engine._disposeBlockMesh(m);
+          });
+          engine.blocks = {};
+          engine._blocksDirty = true; // invalidate cache
+          engine.npcs.forEach(function(n) {
+            // Every object an NPC owns. The question mark and the speech bubble were
+            // missing here, so switching lessons left a '?' and an invisible bubble
+            // hanging over every old character's spot, in the sandbox included.
+            // Each sprite also owns a CanvasTexture; dispose it or the GPU copy
+            // outlives the character on every lesson change.
+            [n.body, n.head, n.label, n.prompt, n.qMark, n._speechBubble, n._ring].forEach(function(obj) {
+              if (!obj) return;
+              engine.scene.remove(obj);
+              // Traverse, not just the object itself: eyes, mouth and arms are
+              // CHILDREN of the head and body, so a flat dispose left their geometry
+              // and materials on the GPU after every lesson change.
+              obj.traverse(function(part) {
+                if (part.material && part.material.map && part.material.map.dispose) part.material.map.dispose();
+                if (part.material && part.material.dispose) part.material.dispose();
+                if (part.geometry && part.geometry.dispose) part.geometry.dispose();
+              });
+            });
+          });
+          engine.npcs = [];
+        };
+
+        engine.createNPC = function(data) {
+          var THREE = window.THREE;
+          var npcColor = data.color || 0x7c3aed;
+
+          // Body — slightly tapered cylinder for character feel
+          var bodyMat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, npcColor), roughness: 0.5, metalness: 0.1 });
+          var body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.32, 1.2, 12), bodyMat);
+          body.position.set(data.position[0] + 0.5, data.position[1] + 0.6, data.position[2] + 0.5);
+          body.castShadow = true;
+          engine.scene.add(body);
+
+          // Arms. Each hangs from an Object3D pivot at the shoulder, so rotating it
+          // swings the arm from the shoulder; rotating the mesh itself would pivot
+          // about the middle of the arm and look like it was floating. They are
+          // children of the body, so the turn-to-face and idle wander carry them for
+          // free.
+          var armColor = geometryWorldSrgbColor(THREE, npcColor).multiplyScalar(0.82);
+          var armMat = new THREE.MeshStandardMaterial({ color: armColor, roughness: 0.55, metalness: 0.1 });
+          var arms = [];
+          [-1, 1].forEach(function(side) {
+            var pivot = new THREE.Object3D();
+            // The body is a cone: its radius at this height is about 0.266, so an arm
+            // at 0.28 was almost flush with the surface and read as a bump.
+            pivot.position.set(side * 0.31, 0.34, 0);
+            pivot.userData.armSide = side;
+            var arm = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.07, 0.46, 8), armMat);
+            arm.position.y = -0.23;
+            arm.castShadow = true;
+            pivot.add(arm);
+            body.add(pivot);
+            arms.push(pivot);
+          });
+
+          // Head — slightly larger with bevel feel
+          var headMat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0xFFDBB4), roughness: 0.6, metalness: 0.0 });
+          var head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 12), headMat);
+          head.position.set(data.position[0] + 0.5, data.position[1] + 1.5, data.position[2] + 0.5);
+          head.castShadow = true;
+          engine.scene.add(head);
+
+          // Eyes — classic white ring with a pupil in front of it.
+          // Getting this right is pure arithmetic, and it was wrong twice. First the
+          // white sat BEHIND the pupil (z 0.22 vs 0.24) and hid inside the head. The
+          // fix moved the white forward to 0.255 but left the pupil at 0.27: centres
+          // 0.015 apart, and 0.015 + 0.032 < 0.055, so the pupil was swallowed WHOLE
+          // by the white sphere and every character stared out of two blank discs.
+          // The white's front surface is at 0.255 + 0.055 = 0.310, so the pupil centre
+          // must clear 0.310 - 0.032 = 0.278 before any of it is visible. 0.30 leaves
+          // it standing 0.022 proud of the white. Pinned in
+          // tests/geometry_world_visual_pipeline.test.js.
+          var eyeMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
+          var eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 8), eyeMat);
+          eyeL.position.set(-0.1, 0.04, 0.30);
+          head.add(eyeL);
+          var eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 8), eyeMat);
+          eyeR.position.set(0.1, 0.04, 0.30);
+          head.add(eyeR);
+
+          // Name label — cleaner with rounded background
+          // Drawn at 2x so the name stays crisp when the student walks up to it.
+          var canvas2 = document.createElement('canvas'); canvas2.width = 512; canvas2.height = 128;
+          var cx = canvas2.getContext('2d');
+          cx.clearRect(0, 0, 512, 128);
+          cx.fillStyle = 'rgba(15,23,42,0.82)';
+          if (cx.roundRect) { cx.beginPath(); cx.roundRect(16, 8, 480, 112, 24); cx.fill(); } else { cx.fillRect(16, 8, 480, 112); }
+          cx.strokeStyle = 'rgba(255,255,255,0.22)'; cx.lineWidth = 3;
+          if (cx.roundRect) { cx.beginPath(); cx.roundRect(16, 8, 480, 112, 24); cx.stroke(); }
+          cx.fillStyle = '#f1f5f9'; cx.font = 'bold 44px sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(data.name, 256, 66);
+          var labelTex = new THREE.CanvasTexture(canvas2);
+          if (typeof THREE.sRGBEncoding !== 'undefined') labelTex.encoding = THREE.sRGBEncoding;
+          var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthTest: false }));
+          sprite.scale.set(2.2, 0.55, 1);
+          sprite.position.set(data.position[0] + 0.5, data.position[1] + 2.1, data.position[2] + 0.5);
+          engine.scene.add(sprite);
+
+          // "Press E" interaction prompt (hidden until player is near — managed in animate loop)
+          // Drawn at 2x and tagged sRGB: at 128 px the prompt was soft at any
+          // distance and, untagged, its violet read as lilac.
+          var promptCanvas = document.createElement('canvas'); promptCanvas.width = 256; promptCanvas.height = 96;
+          var pcx = promptCanvas.getContext('2d');
+          pcx.clearRect(0, 0, 256, 96);
+          pcx.fillStyle = 'rgba(109,40,217,0.92)';
+          if (pcx.roundRect) { pcx.beginPath(); pcx.roundRect(8, 8, 240, 80, 16); pcx.fill(); } else { pcx.fillRect(8, 8, 240, 80); }
+          if (pcx.roundRect) { pcx.strokeStyle = 'rgba(255,255,255,0.35)'; pcx.lineWidth = 3; pcx.beginPath(); pcx.roundRect(8, 8, 240, 80, 16); pcx.stroke(); }
+          pcx.fillStyle = '#fff'; pcx.font = 'bold 34px sans-serif'; pcx.textAlign = 'center'; pcx.textBaseline = 'middle'; pcx.fillText('Press E', 128, 50);
+          var promptTex = new THREE.CanvasTexture(promptCanvas);
+          if (typeof THREE.sRGBEncoding !== 'undefined') promptTex.encoding = THREE.sRGBEncoding;
+          var promptSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: promptTex, transparent: true, depthTest: false, opacity: 0 }));
+          promptSprite.scale.set(1.2, 0.45, 1);
+          promptSprite.position.set(data.position[0] + 0.5, data.position[1] + 2.5, data.position[2] + 0.5);
+          engine.scene.add(promptSprite);
+
+          // Floating question mark indicator (for NPCs with questions)
+          var qMarkSprite = null;
+          if (data.question) {
+            var qCanvas = document.createElement('canvas'); qCanvas.width = 128; qCanvas.height = 128;
+            var qcx = qCanvas.getContext('2d');
+            // Glowing circle background, drawn at 2x so the mark stays sharp up close
+            var grd = qcx.createRadialGradient(64, 64, 16, 64, 64, 56);
+            grd.addColorStop(0, 'rgba(251,191,36,0.95)'); grd.addColorStop(0.55, 'rgba(251,191,36,0.55)'); grd.addColorStop(1, 'rgba(251,191,36,0)');
+            qcx.fillStyle = grd; qcx.fillRect(0, 0, 128, 128);
+            // Question mark, outlined so it holds against a bright sky
+            qcx.font = 'bold 72px sans-serif'; qcx.textAlign = 'center'; qcx.textBaseline = 'middle';
+            qcx.lineWidth = 6; qcx.strokeStyle = 'rgba(120,53,15,0.8)'; qcx.strokeText('?', 64, 68);
+            qcx.fillStyle = '#fff'; qcx.fillText('?', 64, 68);
+            var qTex = new THREE.CanvasTexture(qCanvas);
+            if (typeof THREE.sRGBEncoding !== 'undefined') qTex.encoding = THREE.sRGBEncoding;
+            qMarkSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: qTex, transparent: true, depthTest: false }));
+            qMarkSprite.scale.set(0.6, 0.6, 1);
+            qMarkSprite.position.set(data.position[0] + 0.5, data.position[1] + 2.7, data.position[2] + 0.5);
+            engine.scene.add(qMarkSprite);
+          }
+
+          // Eye whites — positioned at the head surface so pupils (z=0.27) sit nicely in front.
+          // Slight inset gives the pupil a visible ring of white around it.
+          // Off-white (0.89 displayed) so the whites of the eyes stay under the bloom
+          // threshold; pure white lit up like two headlamps.
+          var eyeWhiteL = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xe2e8f0 }));
+          eyeWhiteL.position.set(-0.1, 0.04, 0.255); head.add(eyeWhiteL);
+          var eyeWhiteR = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xe2e8f0 }));
+          eyeWhiteR.position.set(0.1, 0.04, 0.255); head.add(eyeWhiteR);
+
+          // Mouth — a flattened dark oval under the eyes. Enough to read as a face
+          // from across a lesson without giving the character an expression the
+          // dialogue has not earned.
+          var mouth = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 6), new THREE.MeshBasicMaterial({ color: 0x40323a }));
+          mouth.position.set(0, -0.1, 0.255);
+          mouth.scale.set(1.5, 0.45, 0.5);
+          head.add(mouth);
+
+          body.userData.isNPC = true; body.userData.npcIndex = engine.npcs.length;
+          head.userData.isNPC = true; head.userData.npcIndex = engine.npcs.length;
+          engine.npcs.push({ body: body, head: head, label: sprite, prompt: promptSprite, qMark: qMarkSprite, eyeL: eyeL, eyeR: eyeR,
+            _arms: arms, _mouth: mouth, _eyeParts: [eyeL, eyeR, eyeWhiteL, eyeWhiteR], _blinkSeed: engine.npcs.length + 1, data: data });
+        };
+
+        engine.loadLesson = function(lesson) {
+          if(engine.endShowcase)engine.endShowcase();
+          engine._builderSelection = null;
+          if (engine.logEvent) engine.logEvent('lesson_load', { title: lesson.title || 'unknown', npcCount: (lesson.npcs || []).length, questionCount: (lesson.npcs || []).filter(function(n) { return n.question; }).length });
+          engine._currentLesson = lesson; // remember for returnToSpawn
+          if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
+          engine._viewPresetAnim = null;
+          engine._viewPresetReturn = null;
+          engine._viewPreset = 'free';
+          setViewPreset('free');
+          if (engine.clearLayerFocus) engine.clearLayerFocus();
+          setLayerFocus(0);
+          engine.clearWorld();
+          // Initialize the complete environment together, including its light and sun bearing.
+          applyEnvPreset(engine, d.envPreset || 'day');
+          engine._envTransition=1;updateEnvTransition(engine,0);
+          if (typeof engine.refreshEnvironment === 'function') engine.refreshEnvironment();
+          engine.completionTriggered = false;
+          engine.completionProgress = 0;
+          engine.blocksPlaced = 0;
+          engine._sessionXP = 0; // Reset session XP counter when switching lessons
+          engine._blockMilestones = {}; // Re-arm 10/50-block XP awards for the new lesson
+          if (engine.stars) { engine.scene.remove(engine.stars); engine.stars = null; engine.starsCreated = false; }
+          if (engine.congratsSprite) { engine.scene.remove(engine.congratsSprite); engine.congratsSprite = null; engine.congratsCreated = false; }
+          // Place ground and structures as indestructible lesson blocks
+          engine._placingLessonBlocks = true;
+          engine._fillTruncated = false;
+          engine._measurementLayer = 'ground';
+          if (lesson.ground) {
+            var g = lesson.ground;
+            engine.fillBlocks(g.xMin, g.y, g.zMin, g.xMax, g.y, g.zMax, g.type || 'grass');
+          }
+          engine._measurementLayer = 'lesson';
+          if (lesson.structures) lesson.structures.forEach(function(s) {
+            if (s.type === 'fill') engine.fillBlocks(s.x1, s.y1, s.z1, s.x2, s.y2, s.z2, s.block);
+          });
+          engine._placingLessonBlocks = false;
+          engine._measurementLayer = null;
+          engine.refreshAllAO();
+          if (engine.refreshLandscape) engine.refreshLandscape(lesson.ground);
+          if (engine._fillTruncated && addToast) {
+            addToast('⚠️ This world is larger than the ' + MAX_BLOCKS + '-block limit — part of it was not built. Measurements may not match the lesson.', 'error');
+          }
+          if (lesson.npcs) lesson.npcs.forEach(function(n) { engine.createNPC(n); });
+          // Smooth camera entry — start high above spawn, swoop down
+          if (lesson.spawnPoint) {
+            var sp = lesson.spawnPoint;
+            engine.camera.position.set(sp[0], sp[1] + 15, sp[2] - 8);
+            engine.camera.lookAt(sp[0], sp[1], sp[2]);
+            engine._entryAnim = { targetX: sp[0], targetY: sp[1], targetZ: sp[2], progress: 0 };
+          }
+          // Reset undo stacks on lesson load
+          engine._undoStack = [];
+          engine._redoStack = [];
+          var totalQCount = (lesson.npcs || []).filter(function(n) { return n.question; }).length;
+          // Restore saved progress for this lesson (if any)
+          var progressKey = 'gw_progress_' + (lesson.title || 'untitled').replace(/\W+/g, '_').toLowerCase();
+          var savedProgress = null;
+          try { savedProgress = JSON.parse(localStorage.getItem(progressKey)); } catch(e) {}
+          // Restore chat history from localStorage
+          var savedChat = null;
+          try { savedChat = JSON.parse(sessionStorage.getItem('gw_chat_' + gwChatKey(lesson))); } catch(e) {}
+          // engine.blocksPlaced was reset to 0 at the top of loadLesson — mirror to React state
+          // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
+          engine._predictionState = { input: '', strategy: '', reason: '', commitment: null, observedTargetKeys: [], history: [] };
+          if (savedProgress && savedProgress.score > 0) {
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+            if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
+          } else {
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+          }
+          engine._progressKey = progressKey;
+        };
+
+        // Measure all face-connected blocks in the same logical layer, even when
+        // students use multiple materials to color-code one geometric structure.
+        engine.measureStructure = function(startX, startY, startZ, retainedBlocks) {
+          var seedMesh = engine.blocks[startX + ',' + startY + ',' + startZ];
+          if (!seedMesh || !seedMesh.userData) return null;
+          var seedData = seedMesh.userData;
+          var visited = {}; var result = []; var queue = Array.isArray(retainedBlocks) && retainedBlocks.length ? retainedBlocks.slice() : [{ x: startX, y: startY, z: startZ }]; var queueIndex = 0;
+          var totalVolume = 0;
+          var shapeCounts = {};
+          var materialCounts = {};
+          while (queueIndex < queue.length && result.length < MEASUREMENT_BLOCK_LIMIT) {
+            var pos = queue[queueIndex++]; var key = pos.x + ',' + pos.y + ',' + pos.z;
+            if (visited[key]) continue; visited[key] = true;
+            var mesh = engine.blocks[key];
+            if (!mesh || !belongsToMeasuredComponent(seedData, mesh.userData)) continue;
+            result.push(pos);
+            var vol = mesh.userData.volume || 1;
+            totalVolume += vol;
+            var shp = mesh.userData.shape || 'cube';
+            shapeCounts[shp] = (shapeCounts[shp] || 0) + 1;
+            var material = mesh.userData.blockType || 'unknown';
+            materialCounts[material] = (materialCounts[material] || 0) + 1;
+            [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(function(dir) {
+              var nk = (pos.x+dir[0])+','+(pos.y+dir[1])+','+(pos.z+dir[2]);
+              if (!visited[nk]) queue.push({ x: pos.x+dir[0], y: pos.y+dir[1], z: pos.z+dir[2] });
+            });
+          }
+          var measurementTruncated = false;
+          if (result.length >= MEASUREMENT_BLOCK_LIMIT) {
+            for (var remaining = queueIndex; remaining < queue.length; remaining++) {
+              var pending = queue[remaining];
+              var pendingKey = pending.x + ',' + pending.y + ',' + pending.z;
+              if (visited[pendingKey]) continue;
+              var pendingMesh = engine.blocks[pendingKey];
+              if (pendingMesh && belongsToMeasuredComponent(seedData, pendingMesh.userData)) { measurementTruncated = true; break; }
+            }
+          }
+
+          if (result.length === 0) return null;
+          var mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity,mnZ=Infinity,mxZ=-Infinity;
+          result.forEach(function(b) { mnX=Math.min(mnX,b.x);mxX=Math.max(mxX,b.x);mnY=Math.min(mnY,b.y);mxY=Math.max(mxY,b.y);mnZ=Math.min(mnZ,b.z);mxZ=Math.max(mxZ,b.z); });
+          var hasPartialShapes = Object.keys(shapeCounts).some(function(shapeId) { return shapeId !== 'cube'; });
+          var exposedFaces = countExposedCubeFaces(result);
+          return enrichMeasurement({
+            count: result.length,
+            L: mxX-mnX+1, W: mxZ-mnZ+1, H: mxY-mnY+1,
+            minX: mnX, minY: mnY, minZ: mnZ,
+            boundingVolume: (mxX-mnX+1)*(mxZ-mnZ+1)*(mxY-mnY+1),
+            totalVolume: totalVolume,
+            hasFractions: hasPartialShapes,
+            shapeCounts: shapeCounts,
+            formattedVolume: formatVolume(totalVolume),
+            materialCounts: materialCounts,
+            surfaceAreaExact: !hasPartialShapes,
+            exposedSurfaceArea: hasPartialShapes ? null : exposedFaces.surfaceArea,
+            exposedFaces: hasPartialShapes ? null : exposedFaces,
+            isComplete: !measurementTruncated,
+            measurementLimit: MEASUREMENT_BLOCK_LIMIT,
+            blocks: result // list of {x,y,z} for selection glow
+          });
+        };
+
+        // ── 3D Dimension Lines — show L/W/H around measured structure ──
+        engine._dimLines = [];
+        engine._dimBuildTimers = [];
+        engine._dimensionRevision = 0;
+        function clearDimLines() {
+          engine._dimensionRevision++;
+          (engine._dimBuildTimers || []).forEach(clearTimeout);engine._dimBuildTimers=[];
+          if(engine._dimTimer){clearTimeout(engine._dimTimer);engine._dimTimer=null;}
+          engine._dimLines.forEach(function(obj) {
+            engine.scene.remove(obj);
+            if(obj.geometry && !obj.isSprite)obj.geometry.dispose();
+            if(obj.material){if(obj.userData && obj.userData.gwDimensionLabel && obj.material.map)obj.material.map.dispose();obj.material.dispose();}
+          });
+          engine._dimLines=[];
+        }
+        engine.clearDimensionAnnotations=clearDimLines;
+        function hideDimensionDuringShowcase(object) {
+          if(!engine._showcase)return;
+          engine._showcase.hidden.push([object,object.visible]);object.visible=false;
+        }
+        function makeDimLabel(text, color) {
+          var THREE=window.THREE,c=document.createElement('canvas'),cx=c.getContext('2d');
+          var fontSize=34,fontFamily='system-ui, -apple-system, Segoe UI, sans-serif';
+          cx.font='600 '+fontSize+'px '+fontFamily;
+          var measured=cx.measureText(text).width;
+          if(measured>976){fontSize=Math.max(14,Math.floor(fontSize*976/measured));cx.font='600 '+fontSize+'px '+fontFamily;measured=cx.measureText(text).width;}
+          c.width=Math.min(1024,Math.max(144,Math.ceil((measured+48)/4)*4));c.height=80;
+          cx=c.getContext('2d');cx.clearRect(0,0,c.width,c.height);
+          cx.fillStyle='#123a32';cx.strokeStyle=color || '#d4e8ca';cx.lineWidth=2;
+          cx.beginPath();if(cx.roundRect)cx.roundRect(3,3,c.width-6,74,17);else cx.rect(3,3,c.width-6,74);cx.fill();cx.stroke();
+          cx.font='600 '+fontSize+'px '+fontFamily;cx.textAlign='center';cx.textBaseline='middle';
+          cx.fillStyle='#f5f0e5';cx.fillText(text,c.width/2,41,c.width-36);
+          var dimTex=new THREE.CanvasTexture(c);
+          if(typeof THREE.sRGBEncoding !== 'undefined')dimTex.encoding = THREE.sRGBEncoding;
+          dimTex.minFilter=THREE.LinearFilter;dimTex.generateMipmaps=false;
+          var spr=new THREE.Sprite(new THREE.SpriteMaterial({map:dimTex,transparent:true,depthTest:false,depthWrite:false,toneMapped:false}));
+          spr.scale.set(c.width/80*0.55,0.55,1);spr.renderOrder=999;
+          spr.userData.gwDimensionLabel=text;
+          return spr;
+        }
+        function dimensionVolumeCaption(m) {
+          var occupied=typeof m.occupiedVolume==='number'?m.occupiedVolume:typeof m.totalVolume==='number'?m.totalVolume:m.count;
+          if(m.isComplete===false)return 'At least '+formatVolume(occupied)+' cu';
+          if(m.isSolidPrism!==false && Math.abs(occupied-m.boundingVolume)<0.000001)return m.L+' × '+m.W+' × '+m.H+' = '+formatVolume(occupied);
+          return 'Occupied V = '+formatVolume(occupied)+' cu';
+        }
+        function showDimLines(m, startX, startY, startZ) {
+          clearDimLines();
+          var revision=engine._dimensionRevision;
+          var THREE = window.THREE; if (!THREE) return;
+          var x0 = startX, y0 = startY, z0 = startZ;
+          var x1 = x0 + m.L, y1 = y0 + m.H, z1 = z0 + m.W;
+          engine._measureCenter = { x: (x0 + x1) / 2, y: (y0 + y1) / 2, z: (z0 + z1) / 2 };
+
+          function dimLine(ax, ay, az, bx, by, bz, color) {
+            // Axis-aligned by construction (each runs along one of L, W, H), so a
+            // box spanning the segment plus a little thickness is the bar, and the
+            // extra thickness at each end is its cap.
+            var thick = 0.06;
+            var geo = new THREE.BoxGeometry(Math.abs(bx - ax) + thick, Math.abs(by - ay) + thick, Math.abs(bz - az) + thick);
+            var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false });
+            var bar = new THREE.Mesh(geo, mat);
+            bar.position.set((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2);
+            bar.renderOrder = 998;
+            engine.scene.add(bar); engine._dimLines.push(bar); hideDimensionDuringShowcase(bar);
+          }
+
+          // ── Sequential formula buildup (L, then W, then H, then V) ──
+          // Step 1 (immediate): Length line + label
+          dimLine(x0, y0, z0, x1, y0, z0, 0xef4444);
+          var lbl = makeDimLabel('L=' + m.L, '#ef4444');
+          lbl.position.set((x0 + x1) / 2, y0 - 0.4, z0);
+          engine.scene.add(lbl); engine._dimLines.push(lbl); hideDimensionDuringShowcase(lbl);
+
+          // Step 2 (after 0.8s): Width line + label
+          engine._dimBuildTimers.push(setTimeout(function() {
+            if (!engine || engine._destroyed || revision!==engine._dimensionRevision || !engine.scene || !window.THREE) return;
+            dimLine(x0, y0, z0, x0, y0, z1, 0x3b82f6);
+            var wbl = makeDimLabel('W=' + m.W, '#3b82f6');
+            wbl.position.set(x0 - 0.5, y0 - 0.4, (z0 + z1) / 2);
+            engine.scene.add(wbl); engine._dimLines.push(wbl); hideDimensionDuringShowcase(wbl);
+          }, 800));
+
+          // Step 3 (after 1.6s): Height line + label
+          engine._dimBuildTimers.push(setTimeout(function() {
+            if (!engine || engine._destroyed || revision!==engine._dimensionRevision || !engine.scene || !window.THREE) return;
+            dimLine(x0, y0, z0, x0, y1, z0, 0x22c55e);
+            var hbl = makeDimLabel('H=' + m.H, '#22c55e');
+            hbl.position.set(x0 - 0.5, (y0 + y1) / 2, z0);
+            engine.scene.add(hbl); engine._dimLines.push(hbl); hideDimensionDuringShowcase(hbl);
+          }, 1600));
+
+          // Step 4 (after 2.4s): Volume label + bounding box
+          engine._dimBuildTimers.push(setTimeout(function() {
+            if (!engine || engine._destroyed || revision!==engine._dimensionRevision || !engine.scene || !window.THREE) return;
+            var volStr = dimensionVolumeCaption(m);
+            var vbl = makeDimLabel(volStr, '#fbbf24');
+            vbl.position.set((x0 + x1) / 2, y1 + 0.6, (z0 + z1) / 2);
+            vbl.scale.multiplyScalar(1.12);
+            engine.scene.add(vbl); engine._dimLines.push(vbl); hideDimensionDuringShowcase(vbl);
+            // Bounding box wireframe
+            var bbGeo = new THREE.BoxGeometry(m.L, m.H, m.W);
+            var bbEdges = new THREE.EdgesGeometry(bbGeo);bbGeo.dispose();
+            var bbMat = new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.28 });
+            var bbLine = new THREE.LineSegments(bbEdges, bbMat);
+            bbLine.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+            engine.scene.add(bbLine); engine._dimLines.push(bbLine); hideDimensionDuringShowcase(bbLine);
+          }, 2400));
+
+          // Persistent: clear on re-measure, distance >20, or after 30 seconds
+          if (engine._dimTimer) clearTimeout(engine._dimTimer);
+          engine._dimTimer = setTimeout(clearDimLines, 30000);
+        }
+
+        // ── Structure selection glow — briefly highlight all measured blocks ──
+        engine._selectionGlows = [];
+        engine._selectionGlowTimers = [];
+        engine._selectionGlowRevision = 0;
+        engine._selectionGlowFadeInterval = null;
+        function clearSelectionGlow() {
+          engine._selectionGlowRevision++;
+          (engine._selectionGlowTimers || []).forEach(clearTimeout);
+          engine._selectionGlowTimers = [];
+          if (engine._selectionGlowFadeInterval) clearInterval(engine._selectionGlowFadeInterval);
+          engine._selectionGlowFadeInterval = null;
+          var owned = {};
+          engine._selectionGlows.forEach(function(g) {
+            owned[g.id] = true;
+            engine.scene.remove(g); g.geometry.dispose(); g.material.dispose();
+          });
+          var showcase = engine._showcase;
+          if (showcase) {
+            showcase.hidden = showcase.hidden.filter(function(entry) { return !owned[entry[0].id]; });
+            if (showcase.studio) showcase.studio.hidden = showcase.studio.hidden.filter(function(entry) { return !owned[entry[0].id]; });
+          }
+          engine._selectionGlows = [];
+        }
+        engine.clearSelectionAnnotations = clearSelectionGlow;
+        function showSelectionGlow(blocks) {
+          clearSelectionGlow();
+          var THREE = window.THREE;
+          if (!THREE || engine._destroyed || !engine.scene) return;
+          var revision = engine._selectionGlowRevision;
+          var layers = {};
+          blocks.forEach(function(b) { if (!layers[b.y]) layers[b.y] = []; layers[b.y].push(b); });
+          var sortedYs = Object.keys(layers).map(Number).sort(function(a, b) { return a - b; });
+          var colors = [0xef4444, 0xf59e0b, 0x22c55e, 0x3b82f6, 0x7c3aed, 0xec4899];
+          sortedYs.forEach(function(ly, layerIdx) {
+            engine._selectionGlowTimers.push(setTimeout(function() {
+              if (engine._destroyed || revision !== engine._selectionGlowRevision || !engine.scene || !window.THREE) return;
+              var glowMat = new THREE.MeshBasicMaterial({ color: colors[layerIdx % colors.length], transparent: true, opacity: 0.06, side: THREE.FrontSide, depthWrite: false });
+              layers[ly].forEach(function(b) {
+                var gMesh = new THREE.Mesh(new THREE.BoxGeometry(1.02, 1.02, 1.02), glowMat.clone());
+                gMesh.position.set(b.x + 0.5, b.y + 0.5, b.z + 0.5); gMesh.renderOrder = 997;
+                engine.scene.add(gMesh); engine._selectionGlows.push(gMesh);
+                hideDimensionDuringShowcase(gMesh);
+              });
+              glowMat.dispose();
+            }, layerIdx * 400));
+          });
+          engine._selectionGlowTimers.push(setTimeout(function() {
+            if (engine._destroyed || revision !== engine._selectionGlowRevision) return;
+            var fadeHandle = setInterval(function() {
+              if (engine._destroyed || revision !== engine._selectionGlowRevision) { clearInterval(fadeHandle); return; }
+              var allGone = true;
+              engine._selectionGlows.forEach(function(g) {
+                if (g.material.opacity > 0.01) { g.material.opacity -= 0.015; allGone = false; }
+              });
+              if (allGone) clearSelectionGlow();
+            }, 50);
+            engine._selectionGlowFadeInterval = fadeHandle;
+          }, 25000));
+        }
+
+        // Input handlers
+        var canvas = engine.renderer.domElement;
+        if (canvas && canvas.style) {
+          canvas.style.touchAction = 'none';
+          canvas.style.userSelect = 'none';
+          canvas.style.webkitUserSelect = 'none';
+        }
+        // Keep the virtual joystick thumb in sync with the active finger. The
+        // viewport is the shared parent of the canvas and touch overlay, so CSS
+        // custom properties update the visual thumb without querying React DOM.
+        var touchFeedbackTarget = canvas && canvas.parentElement ? canvas.parentElement : canvas;
+        // Memory-leak fix: track every listener so destroyEngine can detach them.
+        // Without this, document-scoped handlers (mousemove, keydown, etc.) keep
+        // firing forever after the user navigates away from Geometry World.
+        var _docH = engine._docHandlers = {};
+        var _cvH = engine._canvasHandlers = {};
+        var _winH = engine._winHandlers = {};
+        canvas.addEventListener('webglcontextlost', _cvH.webglcontextlost = function(ev) {
+          ev.preventDefault();
+          stopAnimationAfterError(new Error('WebGL context lost. The browser may have reset the graphics device or reclaimed GPU memory.'), 'context');
+        });
+
+        // Releasing the keys on blur. Held keys never emit a keyup once the window
+        // loses focus (alt-tab, switching apps), so movement latched on: the student
+        // came back to a player walking into a wall by itself. Arrow-key look would
+        // latch the same way, spinning the camera forever.
+        window.addEventListener('blur', _winH.blur = function() {
+          engine.moveState = { forward: false, backward: false, left: false, right: false, sprint: false };
+          engine.lookState = { left: false, right: false, up: false, down: false };
+          engine._jumpLock = false;
+        });
+        document.addEventListener('visibilitychange', _docH.visibilitychange = function() {
+          if (engine.renderer && engine.renderer.xr && engine.renderer.xr.isPresenting) return;
+          if (document.hidden) {
+            engine._pausedByVisibility = true;
+            if (engine._rafId) cancelAnimationFrame(engine._rafId);
+            engine._rafId = null;
+            engine.moveState = { forward: false, backward: false, left: false, right: false, sprint: false };
+            engine.lookState = { left: false, right: false, up: false, down: false };
+            engine._jumpLock = false;
+          } else if (engine._pausedByVisibility && !engine._destroyed && !engine._runtimeFailed) {
+            engine._pausedByVisibility = false;
+            if (engine.clock) engine.clock.getDelta();
+            if (!engine._pausedByViewport) animate();
+          }
+        });
+        engine._pausedByVisibility = !!document.hidden;
+        engine._pausedByViewport = false;
+        if (typeof IntersectionObserver === 'function') {
+          engine._intersectionObserver = new IntersectionObserver(function(entries) {
+            if (!entries || !entries[0] || engine._destroyed) return;
+            var wasPaused = engine._pausedByViewport;
+            engine._pausedByViewport = entries[0].isIntersecting === false;
+            if (engine._pausedByViewport) {
+              if (engine._rafId) cancelAnimationFrame(engine._rafId);
+              engine._rafId = null;
+            } else if (wasPaused && !engine._pausedByVisibility && !engine._runtimeFailed) {
+              if (engine.clock) engine.clock.getDelta();
+              animate();
+            }
+          }, { rootMargin: '160px' });
+          engine._intersectionObserver.observe(container);
+        }
+        canvas.addEventListener('click', _cvH.click = function(ev) {
+          // Touch has its own movement and look handlers. A released action can
+          // retarget its synthetic click here after a control is unmounted.
+          if (ev && (ev.pointerType === 'touch' || (ev.sourceCapabilities && ev.sourceCapabilities.firesTouchEvents))) return;
+          if (!engine._showcase && !engine.isLocked) canvas.requestPointerLock();
+        });
+        document.addEventListener('pointerlockchange', _docH.pointerlockchange = function() {
+          engine.isLocked = document.pointerLockElement === canvas;
+          if (engine.isLocked) { startAmbientWind(); var ts = engine._tutorialState || {}; if (ts.step === 0 && !ts.dismissed) upd('tutorialStep', 1); }
+        });
+
+        // Smooth mouse look with configurable sensitivity
+        var MOUSE_SENSITIVITY = 0.0018;
+        // Arrow keys steer the camera only when the world is genuinely the target:
+        // pointer-locked (mouse user), or the container has keyboard focus (the
+        // keyboard-only path — the wrapper is tabIndex=0). Anywhere else the arrows
+        // belong to the page: scrolling, and the lesson-picker <select>.
+        function keyLookAllowed() { return engine.isInputActive(); }
+
+        // Speak the compass/minimap contents. The player's RIGHT vector is taken the
+        // same way the movement code takes it (fwd x up, the vector moveState.right
+        // adds), so "your right" here is by construction the direction D walks you —
+        // there is no second convention to get backwards.
+        function announceNearbyNpcs() {
+          var THREE = window.THREE;
+          if (!THREE || !engine.camera || !engine.npcs) return;
+          var fwd = new THREE.Vector3();
+          engine.camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
+          var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+          var answered = engine._answeredRef || {};
+          var cam = engine.camera.position;
+          var entries = engine.npcs.map(function (npc, i) {
+            var p = npc.body.position;
+            var dx = p.x - cam.x, dz = p.z - cam.z;
+            var dist = Math.sqrt(dx * dx + dz * dz) || 0.001;
+            var ux = dx / dist, uz = dz / dist;
+            return {
+              name: (npc.data && npc.data.name) || 'Character',
+              distance: dist,
+              bearingDeg: Math.atan2(ux * right.x + uz * right.z, ux * fwd.x + uz * fwd.z) * 180 / Math.PI,
+              hasQuestion: !!(npc.data && npc.data.question),
+              answered: !!answered[i]
+            };
+          });
+          announceToSR(summarizeNearbyNpcs(entries, 4));
+        }
+        document.addEventListener('mousemove', _docH.mousemove = function(ev) {
+          if (engine._showcase || document.pointerLockElement !== canvas) return;
+          engine.euler.setFromQuaternion(engine.camera.quaternion);
+          engine.euler.y -= ev.movementX * MOUSE_SENSITIVITY;
+          engine.euler.x -= ev.movementY * MOUSE_SENSITIVITY;
+          engine.euler.x = Math.max(-Math.PI * 0.49, Math.min(Math.PI * 0.49, engine.euler.x));
+          engine.camera.quaternion.setFromEuler(engine.euler);
+        });
+
+        document.addEventListener('keydown', _docH.keydown = function(ev) {
+          if(engine._showcase){if(ev.code==='Escape' && engine.endShowcase){ev.preventDefault();engine.endShowcase();}return;}
+          // Let Esc pass through even in inputs (students expect it to close overlays/blur inputs).
+          // But every other shortcut should be ignored when typing in a form field — otherwise
+          // typing "house" into the AI prompt triggers H-teleport, S-movement, E-talk, etc.
+          if (ev.code !== 'Escape' && ev.target && (
+            ev.target.tagName === 'INPUT' ||
+            ev.target.tagName === 'TEXTAREA' ||
+            ev.target.isContentEditable
+          )) return;
+          switch (ev.code) {
+            case 'Escape':
+              // Shift+Esc: close every overlay at once. Unconditional dispatch so it works
+              // regardless of closure staleness (keydown handler was attached once).
+              if (ev.shiftKey) {
+                ev.preventDefault();
+                upd({ showGameSettings: false, showPredictionPanel: false, objectivesOpen: false, showNpcDialog: false, showMyLessons: false, showLessonEditor: false, showLessonIntro: false, showReflection: false, showHelp: false, showCreatorPanel: false, showGrowthNudge: false, showTeacherView: false, showPeerWorlds: false, hudPanel: '' });
+                focusWorldSurface();
+                if (addToast) addToast('🎮 Closed all overlays — back in the game', 'info');
+                break;
+              }
+              // Plain Esc: close the top-priority open dialog/overlay one at a time.
+              // Read from engine._modalState (updated each React render) to avoid stale closure.
+              var ms = (engine && engine._modalState) || {};
+              if (ms.showNpcDialog) { upd('showNpcDialog', false); focusWorldSurface(); break; }
+              if (ms.showGameSettings) { upd('showGameSettings', false); focusGameSettingsTrigger(); break; }
+              if (ms.showPredictionPanel) { upd('showPredictionPanel', false); focusWorldSurface(); break; }
+              if (ms.objectivesOpen) { upd('objectivesOpen', false); focusWorldSurface(); break; }
+              if (ms.hudPanel) { upd('hudPanel', ''); focusWorldSurface(); break; }
+              if (ms.showHelp) { upd('showHelp', false); focusWorldSurface(); break; }
+              if (ms.showGrowthNudge) { upd('showGrowthNudge', false); focusWorldSurface(); break; }
+              if (ms.showPeerWorlds) { upd('showPeerWorlds', false); focusWorldSurface(); break; }
+              if (ms.showTeacherView) { upd('showTeacherView', false); focusWorldSurface(); break; }
+              if (ms.showMyLessons) { upd('showMyLessons', false); focusWorldSurface(); break; }
+              if (ms.showLessonEditor) { upd('showLessonEditor', false); focusWorldSurface(); break; }
+              if (ms.showLessonIntro) { upd('showLessonIntro', false); focusWorldSurface(); break; }
+              if (ms.showReflection) { upd('showReflection', false); focusWorldSurface(); break; }
+              if (ms.showCreatorPanel) { upd('showCreatorPanel', false); focusWorldSurface(); break; }
+              if (ms.creatorMode) { upd('creatorMode', false); focusWorldSurface(); break; }
+              break;
+            // ── Arrow-key look (keyboard equivalent of mouse-look) ──
+            // Only while pointer-locked or while the world surface itself holds
+            // focus, so arrows still scroll the page and still operate the lesson
+            // <select> everywhere else. preventDefault stops the page scrolling
+            // underneath the world when we do consume them.
+            case 'ArrowLeft':  if (!keyLookAllowed()) break; ev.preventDefault(); engine.lookState.left = true; break;
+            case 'ArrowRight': if (!keyLookAllowed()) break; ev.preventDefault(); engine.lookState.right = true; break;
+            case 'ArrowUp':    if (!keyLookAllowed()) break; ev.preventDefault(); engine.lookState.up = true; break;
+            case 'ArrowDown':  if (!keyLookAllowed()) break; ev.preventDefault(); engine.lookState.down = true; break;
+            case 'KeyW': engine.moveState.forward = true; break;
+            case 'KeyS': engine.moveState.backward = true; break;
+            case 'KeyA': engine.moveState.left = true; break;
+            case 'KeyD': engine.moveState.right = true; break;
+            case 'Space':
+              // Space belongs to focused controls; their native click fires on keyup.
+              if (ev.target && ev.target.closest && ev.target.closest('button,select,[role="button"],a[href]')) break;
+              ev.preventDefault();
+              // Ignore OS key-repeat: without this the double-tap-to-fly check fires
+              // ~33ms after the initial press, silently toggling fly mode while the
+              // user just holds Space to jump.
+              if (ev.repeat) {
+                if (engine.flyMode) engine.moveState.flyUp = true;
+                break;
+              }
+              // Double-tap Space = toggle fly mode (like Minecraft creative)
+              var now = Date.now();
+              if (engine._lastSpaceTime && now - engine._lastSpaceTime < 300) {
+                engine.flyMode = !engine.flyMode;
+                if (!engine.flyMode) { engine.moveState.flyUp=false; engine.moveState.flyDown=false; }
+                upd('flyMode', engine.flyMode);
+                engine.velocity.y = 0;
+                if (addToast) addToast(engine.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON (double-tap Space again to land)' : '\uD83D\uDC63 Walk mode', 'info');
+                engine._lastSpaceTime = 0;
+                break;
+              }
+              engine._lastSpaceTime = now;
+              if (engine.flyMode) { engine.moveState.flyUp = true; }
+              else if (engine.onGround && !engine._jumpLock) { engine.velocity.y = 6; sfxJump(); engine._jumpLock = true; }
+              break;
+            case 'KeyF':
+              if (!ev.ctrlKey) {
+                engine.flyMode = !engine.flyMode;
+                if (!engine.flyMode) { engine.moveState.flyUp=false; engine.moveState.flyDown=false; }
+                upd('flyMode', engine.flyMode);
+                engine.velocity.y = 0;
+                if (addToast) addToast(engine.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON' : '\uD83D\uDC63 Walk mode', 'info');
+              }
+              break;
+            case 'KeyG':
+              // Toggle grid floor
+              if (engine._gridHelper) {
+                engine.scene.remove(engine._gridHelper);
+                engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose();
+                engine._gridHelper = null;
+                if (addToast) addToast('Grid OFF', 'info');
+              } else {
+                var THREE2 = window.THREE;
+                if (THREE2) {
+                  engine._gridHelper = new THREE2.GridHelper(60, 60, 0x444466, 0x333355);
+                  engine._gridHelper.position.y = 1.01; // just above ground blocks
+                  engine._gridHelper.material.transparent = true;
+                  engine._gridHelper.material.opacity = 0.35;
+                  engine.scene.add(engine._gridHelper);
+                  if (addToast) addToast('\uD83D\uDCCF Grid ON', 'info');
+                }
+              }
+              break;
+            case 'KeyE':
+              var minD = 4, nearest = -1;
+              engine.npcs.forEach(function(n, i) {
+                var dist = engine.camera.position.distanceTo(n.body.position);
+                if (dist < minD) { minD = dist; nearest = i; }
+              });
+              if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); var ts1 = engine._tutorialState || {}; if (ts1.step === 1 && !ts1.dismissed) upd('tutorialStep', 2); }
+              break;
+            case 'KeyM':
+              engine.performMeasurement('key');
+              break;
+            case 'Digit1': case 'Digit2': case 'Digit3': case 'Digit4': case 'Digit5': case 'Digit6': case 'Digit7': case 'Digit8': case 'Digit9':
+              var bIdx = parseInt(ev.code.charAt(5)) - 1;
+              if (bIdx >= 0 && bIdx < BLOCK_TYPES.length) upd('selectedBlock', bIdx);
+              break;
+            case 'Digit0':
+              if (BLOCK_TYPES.length >= 10) upd('selectedBlock', 9);
+              break;
+            case 'Minus':
+              if (!ev.ctrlKey && !ev.metaKey && !ev.altKey && BLOCK_TYPES.length >= 11) upd('selectedBlock', 10);
+              break;
+            case 'Equal':
+              if (!ev.ctrlKey && !ev.metaKey && !ev.altKey && BLOCK_TYPES.length >= 12) upd('selectedBlock', 11);
+              break;
+            case 'KeyL': // Locate: speak where the characters are
+              ev.preventDefault();
+              announceNearbyNpcs();
+              break;
+            // ── Build without a mouse ──
+            // Breaking and placing were reachable only through mouse buttons under
+            // pointer lock (or the mobile action buttons), so a keyboard-only student
+            // could walk, look, talk and measure but never actually build. Same
+            // crosshair, same rules — including the indestructible-lesson-block
+            // protection and the MAX_BLOCKS check.
+            case 'KeyX':
+              ev.preventDefault();
+              engine.interactAtCrosshair('break');
+              break;
+            case 'KeyB':
+              ev.preventDefault();
+              engine.interactAtCrosshair('place');
+              break;
+            case 'KeyQ': // Cycle through shapes
+              setBuildShape('cycle');
+              break;
+            case 'KeyR': // Rotate block 90° (for half/quarter shapes)
+              setBuildShape('rotate');
+              break;
+            case 'KeyT': // Point-to-point ruler: set point A, then point B
+              var rHit = engine.blockUnderCrosshair();
+              if (rHit && rHit.point) {
+                var rp = rHit.point;
+                if (!engine._rulerA) {
+                  // Set point A
+                  engine._rulerA = rp.clone();
+                  upd('actionFeedback', '\uD83D\uDCCF Ruler: Point A set \u2014 press T on second point');
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+                } else {
+                  // Set point B, draw line, show distance
+                  var rA = engine._rulerA;
+                  var rDist = rA.distanceTo(rp);
+                  // Draw 3D line
+                  if (engine._rulerLine) { engine.scene.remove(engine._rulerLine); engine._rulerLine.geometry.dispose(); engine._rulerLine.material.dispose(); }
+                  if (engine._rulerLabel) { engine.scene.remove(engine._rulerLabel); }
+                  var rGeo = new THREE.BufferGeometry().setFromPoints([rA, rp]);
+                  var rMat = new THREE.LineBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.8, linewidth: 2 });
+                  engine._rulerLine = new THREE.LineSegments(rGeo, rMat);
+                  engine.scene.add(engine._rulerLine);
+                  // Distance label at midpoint
+                  var rLabel = makeDimLabel(rDist.toFixed(1) + ' blocks', '#22d3ee');
+                  rLabel.position.set((rA.x + rp.x) / 2, (rA.y + rp.y) / 2 + 0.5, (rA.z + rp.z) / 2);
+                  rLabel.scale.set(2, 0.6, 1);
+                  engine.scene.add(rLabel);
+                  engine._rulerLabel = rLabel;
+                  upd('actionFeedback', '\uD83D\uDCCF Distance: ' + rDist.toFixed(1) + ' blocks');
+                  setTimeout(function() { upd('actionFeedback', ''); }, 3000);
+                  // Auto-clear after 15s
+                  setTimeout(function() {
+                    if (engine._rulerLine) { engine.scene.remove(engine._rulerLine); engine._rulerLine.geometry.dispose(); engine._rulerLine.material.dispose(); engine._rulerLine = null; }
+                    if (engine._rulerLabel) { engine.scene.remove(engine._rulerLabel); engine._rulerLabel = null; }
+                  }, 15000);
+                  engine._rulerA = null; // Reset for next measurement
+                }
+              } else if (engine._rulerA) {
+                // Cancel ruler if no hit
+                engine._rulerA = null;
+                upd('actionFeedback', '\uD83D\uDCCF Ruler cancelled');
+                setTimeout(function() { upd('actionFeedback', ''); }, 1200);
+              }
+              break;
+            case 'KeyC': // Toggle coordinate announcements for screen-reader users
+              engine._coordAnnounce = !engine._coordAnnounce;
+              announceToSR(engine._coordAnnounce
+                ? 'Coordinate announcements on. Position at X ' + Math.floor(engine.camera.position.x) + ' Y ' + Math.floor(engine.camera.position.y) + ' Z ' + Math.floor(engine.camera.position.z)
+                : 'Coordinate announcements off');
+              upd('actionFeedback', engine._coordAnnounce ? '\uD83D\uDD0A Coord SR ON' : '\uD83D\uDD07 Coord SR OFF');
+              setTimeout(function() { upd('actionFeedback', ''); }, 1500);
+              break;
+            case 'KeyV': // 3-point angle tool: click 3 blocks (A, vertex B, C), get the angle at B
+              var vHit = engine.blockUnderCrosshair();
+              if (vHit && vHit.object.userData.gridPos) {
+                var vp = vHit.object.userData.gridPos;
+                // Use block center as the geometric point for the angle calc.
+                var vPoint = new THREE.Vector3(vp.x + 0.5, vp.y + 0.5, vp.z + 0.5);
+                if (!engine._anglePoints) engine._anglePoints = [];
+                engine._anglePoints.push(vPoint);
+                if (engine._anglePoints.length === 1) {
+                  upd('actionFeedback', '\uD83D\uDCD0 Angle: A set \u2014 press V on the vertex');
+                  announceToSR(__alloT('stem.geometryworld.sr_angle_point_a_set_aim_at_the_vertex_and_press_v', 'Angle point A set. Aim at the vertex and press V.'));
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+                } else if (engine._anglePoints.length === 2) {
+                  upd('actionFeedback', '\uD83D\uDCD0 Angle: Vertex set \u2014 press V on the third point');
+                  announceToSR(__alloT('stem.geometryworld.sr_angle_vertex_set_aim_at_the_third_point_and_press', 'Angle vertex set. Aim at the third point and press V.'));
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+                } else {
+                  // Three points collected: compute angle at the middle point (the vertex).
+                  var aPt = engine._anglePoints[0];
+                  var bPt = engine._anglePoints[1];
+                  var cPt = engine._anglePoints[2];
+                  var ba = new THREE.Vector3().subVectors(aPt, bPt);
+                  var bc = new THREE.Vector3().subVectors(cPt, bPt);
+                  var deg = 0;
+                  if (ba.length() > 0.0001 && bc.length() > 0.0001) {
+                    var cosang = ba.dot(bc) / (ba.length() * bc.length());
+                    cosang = Math.max(-1, Math.min(1, cosang));
+                    deg = Math.acos(cosang) * (180 / Math.PI);
+                  }
+                  var degStr = deg.toFixed(1);
+                  // Clear any prior angle helpers, then draw two lines (A→B, B→C) and a label at B.
+                  if (engine._angleHelpers) {
+                    engine._angleHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                  }
+                  engine._angleHelpers = [];
+                  var aMat = new THREE.LineBasicMaterial({ color: 0xf472b6, transparent: true, opacity: 0.9, linewidth: 2 });
+                  var aGeo1 = new THREE.BufferGeometry().setFromPoints([bPt, aPt]);
+                  var aGeo2 = new THREE.BufferGeometry().setFromPoints([bPt, cPt]);
+                  var aLine1 = new THREE.LineSegments(aGeo1, aMat);
+                  var aLine2 = new THREE.LineSegments(aGeo2, aMat.clone());
+                  engine.scene.add(aLine1); engine.scene.add(aLine2);
+                  engine._angleHelpers.push(aLine1); engine._angleHelpers.push(aLine2);
+                  var aLbl = makeDimLabel(degStr + '\u00b0', '#f472b6');
+                  aLbl.position.set(bPt.x, bPt.y + 0.7, bPt.z);
+                  aLbl.scale.set(1.8, 0.7, 1);
+                  engine.scene.add(aLbl);
+                  engine._angleHelpers.push(aLbl);
+                  var kind = deg < 89.5 ? 'acute' : (deg > 90.5 ? (deg > 179.5 ? 'straight' : 'obtuse') : 'right');
+                  upd('actionFeedback', '\uD83D\uDCD0 Angle: ' + degStr + '\u00b0 (' + kind + ')');
+                  announceToSR(__alloFill(__alloT('stem.geometryworld.sr_angle_measured_degrees_angle', 'Angle measured. {value1} degrees. {value2} angle.'), { value1: degStr, value2: kind }));
+                  if (engine.logEvent) engine.logEvent('angle_measure', { degrees: parseFloat(degStr), kind: kind });
+                  setTimeout(function() { upd('actionFeedback', ''); }, 3500);
+                  // Auto-clear helpers after 20s so the scene stays tidy.
+                  if (engine._angleClearTimer) clearTimeout(engine._angleClearTimer);
+                  engine._angleClearTimer = setTimeout(function() {
+                    if (engine._angleHelpers) {
+                      engine._angleHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      engine._angleHelpers = [];
+                    }
+                  }, 20000);
+                  engine._anglePoints = [];
+                }
+              } else if (engine._anglePoints && engine._anglePoints.length > 0) {
+                // Cancel in-progress angle if no hit.
+                engine._anglePoints = [];
+                upd('actionFeedback', '\uD83D\uDCD0 Angle cancelled');
+                setTimeout(function() { upd('actionFeedback', ''); }, 1200);
+              }
+              break;
+            case 'KeyN': // Net unfolding for prisms; exposed-face analysis for composite structures
+              // N reveals exact dimensions/surface evidence, so it must travel through
+              // the same pre-evidence commitment gate as M. This records the target as
+              // observed and compares a matching estimate that was already committed.
+              var nm = engine.performMeasurement('surface');
+              if (nm) {
+                  if (nm.isComplete === false) {
+                    var incompleteSurfaceMessage = 'Measurement limit reached. Surface area and a net are unavailable until the full structure is measured.';
+                    upd('actionFeedback', '\uD83D\uDCCB ' + incompleteSurfaceMessage);
+                    announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + incompleteSurfaceMessage);
+                    if (engine.logEvent) engine.logEvent('surface_analysis', { shape: 'incomplete', surfaceArea: null, blocks: nm.count, measurementLimit: nm.measurementLimit });
+                    setTimeout(function() { upd('actionFeedback', ''); }, 5500);
+                    break;
+                  }
+                  if (!nm.isSolidPrism) {
+                    if (engine._netHelpers) {
+                      engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      engine._netHelpers = [];
+                    }
+                    var compositeSurfaceMessage = nm.surfaceAreaExact
+                      ? 'Composite shape: no six-rectangle net. Count exposed unit faces for surface area = ' + nm.exposedSurfaceArea + ' square units.'
+                      : 'Partial blocks do not use the six-rectangle prism net. Surface area depends on each partial face shape.';
+                    upd('actionFeedback', '\uD83D\uDCCB ' + compositeSurfaceMessage);
+                    announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + compositeSurfaceMessage);
+                    if (engine.logEvent) engine.logEvent('surface_analysis', { shape: nm.surfaceAreaExact ? 'composite_cubes' : 'partial_blocks', surfaceArea: nm.exposedSurfaceArea, blocks: nm.count });
+                    setTimeout(function() { upd('actionFeedback', ''); }, 5500);
+                    break;
+                  }
+                  // Clear any prior net helpers.
+                  if (engine._netHelpers) {
+                    engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                  }
+                  engine._netHelpers = [];
+                  var L = nm.L, W = nm.W, H = nm.H;
+                  var areaTop = L * W, areaFront = L * H, areaSide = W * H;
+                  var surface = 2 * (areaTop + areaFront + areaSide);
+                  // Lay out the classic cross-shape net on the ground 2 blocks east of the structure.
+                  // Centered vertically on the structure's midline; each face is a flat quad with a label.
+                  var baseX = nm.minX + L + 3;
+                  var baseY = 0.02; // just above ground to avoid z-fighting
+                  var baseZ = nm.minZ;
+                  function addQuad(ox, oz, w, h, color, label) {
+                    // Quad: lying flat on XZ plane, with width = w (X) and depth = h (Z).
+                    var g = new THREE.PlaneGeometry(w, h);
+                    var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false });
+                    var mesh = new THREE.Mesh(g, mat);
+                    mesh.rotation.x = -Math.PI / 2;
+                    mesh.position.set(baseX + ox + w / 2, baseY, baseZ + oz + h / 2);
+                    engine.scene.add(mesh); engine._netHelpers.push(mesh);
+                    var edgeGeo = new THREE.EdgesGeometry(g);
+                    var edgeMat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.9 });
+                    var edges = new THREE.LineSegments(edgeGeo, edgeMat);
+                    edges.rotation.x = -Math.PI / 2;
+                    edges.position.copy(mesh.position);
+                    engine.scene.add(edges); engine._netHelpers.push(edges);
+                    var lbl = makeDimLabel(label, '#f8fafc');
+                    lbl.position.set(mesh.position.x, baseY + 0.8, mesh.position.z);
+                    lbl.scale.set(1.2, 0.5, 1);
+                    engine.scene.add(lbl); engine._netHelpers.push(lbl);
+                  }
+                  // Cross layout: middle row = [left W×H, front L×H, right W×H, back L×H]
+                  // with top L×W above the front, bottom L×W below the front.
+                  // Origin (0,0) is the front face's NW corner.
+                  addQuad(-W, 0, W, H, 0x60a5fa, 'Left ' + W + '\u00d7' + H + '=' + areaSide);
+                  addQuad(0, 0, L, H, 0x22d3ee, 'Front ' + L + '\u00d7' + H + '=' + areaFront);
+                  addQuad(L, 0, W, H, 0x60a5fa, 'Right ' + W + '\u00d7' + H + '=' + areaSide);
+                  addQuad(L + W, 0, L, H, 0x22d3ee, 'Back ' + L + '\u00d7' + H + '=' + areaFront);
+                  addQuad(0, -W, L, W, 0x34d399, 'Top ' + L + '\u00d7' + W + '=' + areaTop);
+                  addQuad(0, H, L, W, 0xfbbf24, 'Bottom ' + L + '\u00d7' + W + '=' + areaTop);
+                  // Total surface area label floating above the net.
+                  var totalLbl = makeDimLabel('SA = ' + surface, '#a78bfa');
+                  totalLbl.position.set(baseX + L / 2, 2.4, baseZ + H / 2 - W);
+                  totalLbl.scale.set(2.4, 0.9, 1);
+                  engine.scene.add(totalLbl); engine._netHelpers.push(totalLbl);
+                  upd('actionFeedback', '\uD83D\uDCCB Net: SA = 2(' + areaTop + '+' + areaFront + '+' + areaSide + ') = ' + surface);
+                  announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + 'Net unfolded. Surface area equals ' + surface + ' square units. Two times top ' + areaTop + ' plus front ' + areaFront + ' plus side ' + areaSide + '.');
+                  if (engine.logEvent) engine.logEvent('net_unfold', { L: L, W: W, H: H, surfaceArea: surface });
+                  setTimeout(function() { upd('actionFeedback', ''); }, 4000);
+                  // Auto-clear after 30s so the scene doesn't get cluttered.
+                  if (engine._netClearTimer) clearTimeout(engine._netClearTimer);
+                  engine._netClearTimer = setTimeout(function() {
+                    if (engine._netHelpers) {
+                      engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      engine._netHelpers = [];
+                    }
+                  }, 30000);
+              }
+              break;
+            case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = true; break;
+            case 'KeyH':
+              // H = return to spawn (home)
+              if (!ev.ctrlKey && !ev.metaKey) {
+                ev.preventDefault();
+                if (engine.returnToSpawn) {
+                  engine.returnToSpawn();
+                  if (addToast) addToast('🏠 Teleported to spawn', 'info');
+                }
+              }
+              break;
+            case 'KeyZ':
+              if (ev.ctrlKey || ev.metaKey) { ev.preventDefault(); engine.undo(); if (addToast) addToast('\u21A9\uFE0F Undo', 'info'); }
+              break;
+            case 'KeyY':
+              if (ev.ctrlKey || ev.metaKey) { ev.preventDefault(); engine.redo(); if (addToast) addToast('\u21AA\uFE0F Redo', 'info'); }
+              break;
+          }
+        });
+        document.addEventListener('keyup', _docH.keyup = function(ev) {
+          switch (ev.code) {
+            // Cleared unconditionally (no keyLookAllowed guard): if focus moves away
+            // while an arrow is held, the keyup must still stop the camera or it
+            // spins forever.
+            case 'ArrowLeft': engine.lookState.left = false; break;
+            case 'ArrowRight': engine.lookState.right = false; break;
+            case 'ArrowUp': engine.lookState.up = false; break;
+            case 'ArrowDown': engine.lookState.down = false; break;
+            case 'KeyW': engine.moveState.forward = false; break;
+            case 'KeyS': engine.moveState.backward = false; break;
+            case 'KeyA': engine.moveState.left = false; break;
+            case 'KeyD': engine.moveState.right = false; break;
+            case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = false; break;
+            case 'Space': engine._jumpLock = false; engine.moveState.flyUp = false; break;
+          }
+        });
+
+        // What block is the crosshair on? Five sites (M, T, V, N and the mobile
+        // measure button) each rebuilt this, and all of them used
+        // Object.values(engine.blocks) — rebuilding an array of up to MAX_BLOCKS
+        // meshes on every keypress, when getBlocksArr() exists precisely to cache it
+        // behind the _blocksDirty flag.
+        engine.blockUnderCrosshair = function() {
+          var THREE = window.THREE;
+          if (!THREE || !engine.raycaster || !engine.camera) return null;
+          engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+          var hits = engine.raycaster.intersectObjects(engine.getBlocksArr());
+          return hits.length > 0 ? hits[0] : null;
+        };
+
+        // One measurement path for every input mode.
+        //
+        // The mobile measure button was a second copy that had drifted badly: it
+        // never called showDimLines / showSelectionGlow, so a student measuring on a
+        // tablet saw NO dimension lines around the structure — the main visual
+        // affordance for reading L x W x H — got no first-measurement XP, and never
+        // advanced past tutorial step 2, because that advance lived only in the
+        // keyboard branch. It also read measureHistory from a React closure instead
+        // of the engine bridge, so its history could be stale.
+        engine.performMeasurement = function(inputMode) {
+          var hit = engine.blockUnderCrosshair();
+          if (!hit || !hit.object.userData.gridPos) return null;
+          var gp = hit.object.userData.gridPos;
+          var m = engine.measureStructure(gp.x, gp.y, gp.z);
+          if (!m) return null;
+          var builderHelpers = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+          if (builderHelpers && builderHelpers.measurementIsStudentBuild(engine,m)) engine._builderSelection = {blocks:m.blocks.slice()};
+          if (engine._currentLesson && engine._currentLesson.sandbox && inputMode !== 'builder_studio') { upd('builderPanel','measure'); upd('sandboxDockCollapsed',true); upd('hudPanel',''); }
+          if (engine.clearLayerFocus) engine.clearLayerFocus(true);
+          engine._layerExplorerBlocks = Array.isArray(m.blocks) ? m.blocks.slice() : null;
+          engine._layerExplorerMinY = Number(m.minY) || 0;
+          setLayerFocus(0);
+          sfxMeasure();
+
+          var predictionState = engine._predictionState || {};
+          var estimateOutcome = resolveVolumeEstimateMeasurement(m, predictionState.commitment, predictionState.observedTargetKeys);
+          var predictionComparison = estimateOutcome.comparison;
+          var mh = (predictionState.history || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, boundingVolume: m.boundingVolume, missingVolume: m.missingVolume, hasFractions: m.hasFractions, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, estimateTargetKey: estimateOutcome.targetKey, estimateStatus: estimateOutcome.status, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, strategy: predictionComparison ? predictionComparison.strategy : '', reason: predictionComparison ? predictionComparison.reason : '', diagnosisCode: predictionComparison ? predictionComparison.diagnosisCode : '', t: Date.now() }]);
+          if (mh.length > 10) mh = mh.slice(-10);
+
+          var measurementFeedback = m.isComplete === false
+            ? 'Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
+            : m.isSolidPrism
+              ? m.L + '×' + m.W + '×' + m.H + ' = ' + m.formattedOccupiedVolume
+              : m.formattedOccupiedVolume + ' cubic units occupied (' + m.fillPercent + '% of ' + m.boundingVolume + '-unit bounding box)';
+          var nextPredictionState = Object.assign({}, predictionState, { commitment: estimateOutcome.nextCommitment, observedTargetKeys: estimateOutcome.observedTargetKeys, history: mh });
+          if (estimateOutcome.consumed) { nextPredictionState.input = ''; nextPredictionState.strategy = ''; nextPredictionState.reason = ''; }
+          engine._predictionState = nextPredictionState;
+          upd({ measureResult: m, measureHistory: mh, volumeEstimateCommitment: estimateOutcome.nextCommitment, volumeEstimateObservedTargets: estimateOutcome.observedTargetKeys, volumeEstimateCommitError: estimateOutcome.status === 'target_mismatch' ? 'That measurement was a different structure. Your original estimate remains locked for its aimed structure.' : '', volumePrediction: estimateOutcome.consumed ? '' : (predictionState.input || ''), predictionStrategy: estimateOutcome.consumed ? '' : (predictionState.strategy || ''), predictionReason: estimateOutcome.consumed ? '' : (predictionState.reason || ''), predictionResult: predictionComparison, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: '📏 Measured: ' + measurementFeedback + (predictionComparison ? ' • ' + predictionComparison.accuracyLabel : ' • Observation only: no eligible committed estimate was compared.') });
+          var measurementAnnouncement = (m.isComplete === false
+            ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete'
+            : m.isSolidPrism
+            ? 'Measured solid rectangular prism: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + m.formattedOccupiedVolume + ' cubic units'
+            : 'Measured composite structure: ' + m.formattedOccupiedVolume + ' cubic units occupied, ' + formatVolume(m.missingVolume) + ' cubic units empty inside a ' + m.boundingVolume + ' cubic unit bounding box') + (predictionComparison ? '. Your committed estimate was ' + formatVolume(predictionComparison.prediction) + '. ' + predictionComparison.accuracyLabel : '. Observation only; no eligible committed estimate was compared.');
+          // Surface/net analysis makes a second announcement. Preserve this complete
+          // measurement message so that second announcement includes the student's
+          // committed estimate comparison instead of replacing it in the live region.
+          m.accessibleMeasurementAnnouncement = measurementAnnouncement;
+          announceToSR(measurementAnnouncement);
+          setTimeout(function() { upd('actionFeedback', ''); }, 2500);
+
+          if (m.isComplete !== false) {
+            if (engine._dimTimer) clearTimeout(engine._dimTimer);
+            showDimLines(m, m.minX, m.minY, m.minZ);
+            if (m.blocks) showSelectionGlow(m.blocks);
+            var mcx = m.minX + m.L / 2, mcy = m.minY + m.H / 2 + 0.5, mcz = m.minZ + m.W / 2;
+            for (var sp = 0; sp < 8; sp++) spawnPlaceParticles(engine, mcx + (Math.random() - 0.5) * m.L, mcy + (Math.random() - 0.5) * m.H, mcz + (Math.random() - 0.5) * m.W);
+          }
+
+          if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, predictionStrategy: predictionComparison ? predictionComparison.strategy : '', predictionReason: predictionComparison ? predictionComparison.reason : '', misconception: predictionComparison ? predictionComparison.diagnosisCode : '', blocks: m.count, input: inputMode || 'key' });
+
+          if (m.isComplete !== false) {
+            var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }).length;
+            if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
+            var ts2 = engine._tutorialState || {}; if (ts2.step === 2 && !ts2.dismissed) upd('tutorialStep', 3);
+            setTimeout(runAchievementCheck, 100);
+          }
+          return m;
+        };
+
+        // Shared crosshair interaction. `action` is 'break' | 'place' | null (null
+        // still resolves an NPC, which is what a click on a character does).
+        //
+        // Extracted from the mousedown handler so the keyboard can reach it: placing
+        // and breaking were bound to mouse buttons under pointer lock, so a
+        // keyboard-only student could walk, look and measure but never BUILD -- the
+        // central activity of a block-based volume tool. X and B call this directly.
+        engine.interactAtCrosshair = function(action) {
+          var THREE = window.THREE;
+          if (!THREE || !engine.raycaster || !engine.camera) return;
+          engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+          var allMeshes = engine.getBlocksArr().concat(engine.npcs.map(function(n) { return n.body; }));
+          var hits = engine.raycaster.intersectObjects(allMeshes);
+          if (hits.length > 0) {
+            var hit = hits[0];
+            if (hit.object.userData.isNPC) {
+              if (document.pointerLockElement) document.exitPointerLock();
+              upd({ showNpcDialog: true, dialogNpcIdx: hit.object.userData.npcIndex, npcTypewriterPos: 0, npcTypewriterNpc: hit.object.userData.npcIndex });
+              sfxNpcChime();
+              return;
+            }
+            if (action === 'break' && hit.object.userData.gridPos) {
+              var p = hit.object.userData.gridPos;
+              var breakType = hit.object.userData.blockType || 'stone';
+              engine.removeBlock(p.x, p.y, p.z);
+              sfxBreak(breakType); if (window._alloHaptic) window._alloHaptic('break');
+              // Camera shake on break (subtle)
+              engine._shakeUntil = engine.clock.getElapsedTime() + 0.15;
+              engine._shakeIntensity = 0.03;
+              engine.blocksPlaced = Math.max(0, (engine.blocksPlaced || 0) - 1);
+              upd('blocksPlaced', engine.blocksPlaced); // keep React state in sync
+              checkBreakFrustration();
+              var ps1 = engine._placeState || {};
+              if (ps1.collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
+            } else if (action === 'place' && hit.object.userData.gridPos && hit.face) {
+              var eligibility = engine.placementForHit(hit);
+              engine.publishPlacementPreview(eligibility);
+              if (!eligibility.allowed) {
+                if (addToast) addToast(eligibility.reason, 'info');
+                announceToSR(eligibility.reason);
+                return null;
+              }
+              var placeX = eligibility.cell.x, placeY = eligibility.cell.y, placeZ = eligibility.cell.z;
+              // Read current placement state from engine bridge (closure vars are stale).
+              var ps = engine._placeState || { selectedBlock: 0, selectedShape: 0, blockRotation: 0 };
+              // Fall back rather than index blindly. Every INPUT path clamps these, but
+              // both indices persist in toolData across sessions — so if the palette or
+              // the shape list ever shrinks, a returning student's saved index throws a
+              // TypeError on their very next placement. A click-time crash, which
+              // check_stem_render (render-only) cannot see.
+              var typeDef = BLOCK_TYPES[ps.selectedBlock] || BLOCK_TYPES[0];
+              var shapeDef2 = BLOCK_SHAPES[ps.selectedShape] || BLOCK_SHAPES[0];
+              var placeType = typeDef.id;
+              var placedMesh = engine.placeBlock(placeX, placeY, placeZ, placeType, shapeDef2.id, ps.blockRotation);
+              // Creation is the transaction boundary: a rejected cell never changes
+              // counters, rewards, history, particles, or an existing block's scale.
+              if (!placedMesh) return null;
+              // A short scale-in so the block feels set down rather than switched on.
+              if (placedMesh && engine._ambientMotionEnabled !== false) { placedMesh.scale.setScalar(0.7); placedMesh.userData._popT = 0; (engine._popBlocks = engine._popBlocks || []).push(placedMesh); }
+              sfxPlace(placeType); if (window._alloHaptic) window._alloHaptic('place');
+              spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
+              engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
+              // Sync to React state so quests + HUD stay current (was never synced — pre-existing bug)
+              upd('blocksPlaced', engine.blocksPlaced);
+              // First block ever — special celebration!
+              if (engine.blocksPlaced === 1) {
+                if (addToast) addToast('\uD83C\uDF89 Your first block! Keep building!', 'success');
+                // Extra confetti burst
+                var confColors = [0xfbbf24, 0x22c55e, 0x3b82f6, 0xa78bfa, 0xf472b6];
+                for (var fi = 0; fi < 12; fi++) {
+                  try {
+                    var fGeo = new THREE.BoxGeometry(0.07, 0.07, 0.07);
+                    var fMat = new THREE.MeshBasicMaterial({ color: confColors[fi % confColors.length], transparent: true, opacity: 1 });
+                    var fMesh = new THREE.Mesh(fGeo, fMat);
+                    fMesh.position.set(placeX + 0.5 + (Math.random() - 0.5), placeY + 1, placeZ + 0.5 + (Math.random() - 0.5));
+                    fMesh.userData._age = 0; fMesh.userData._life = 1.5 + Math.random();
+                    fMesh.userData._vel = { x: (Math.random() - 0.5) * 3, y: 3 + Math.random() * 2, z: (Math.random() - 0.5) * 3 };
+                    engine.scene.add(fMesh); engine._particles.push(fMesh);
+                  } catch(e) {}
+                }
+              }
+              // Award XP once per threshold per session. Undoing past a threshold and redoing
+              // previously caused duplicate awards; engine._blockMilestones tracks claimed flags.
+              if (!engine._blockMilestones) engine._blockMilestones = {};
+              if (engine.blocksPlaced >= 10 && !engine._blockMilestones.ten && typeof awardXP === 'function') { awardXP('geometryWorld', 5, '10 blocks placed'); engine._blockMilestones.ten = true; }
+              if (engine.blocksPlaced >= 50 && !engine._blockMilestones.fifty && typeof awardXP === 'function') { awardXP('geometryWorld', 5, '50 blocks placed'); engine._blockMilestones.fifty = true; }
+              var ts3 = engine._tutorialState || {}; if (ts3.step === 3 && !ts3.dismissed) upd({ tutorialStep: 4, tutorialDismissed: true });
+              if (ps.collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
+              return placedMesh;
+            }
+          } else if (action === 'place') {
+            engine.publishPlacementPreview(null);
+            announceToSR(engine._placementPreview.reason);
+          }
+          return null;
+        };
+
+        canvas.addEventListener('mousedown', _cvH.mousedown = function(ev) {
+          if (!engine.isLocked) return;
+          engine.interactAtCrosshair(ev.button === 0 ? 'break' : ev.button === 2 ? 'place' : null);
+        });
+
+        canvas.addEventListener('contextmenu', _cvH.contextmenu = function(ev) { ev.preventDefault(); });
+
+        // Scroll-wheel to cycle through block types
+        canvas.addEventListener('wheel', _cvH.wheel = function(ev) {
+          if (!engine.isLocked) return;
+          ev.preventDefault();
+          var wdir = ev.deltaY > 0 ? 1 : -1;
+          // Read current selection from engine bridge (closure var is stale)
+          var cur = (engine._placeState && typeof engine._placeState.selectedBlock === 'number') ? engine._placeState.selectedBlock : 0;
+          var newIdx = ((cur + wdir) % BLOCK_TYPES.length + BLOCK_TYPES.length) % BLOCK_TYPES.length;
+          upd('selectedBlock', newIdx);
+        }, { passive: false });
+
+        // ── Touch controls (mobile-friendly Minecraft-style) ──
+        engine._touchActive = false;
+        engine._touchControlsEnabled = d.touchMode !== false;
+        engine._touchLookId = null; // active touch ID for look (right side)
+        engine._touchMoveId = null; // active touch ID for move (left side)
+        engine._touchLookStart = null;
+        engine._touchMoveStart = null;
+        engine._touchMoveVec = { x: 0, z: 0 };
+        engine._touchLookSensitivity = touchLookSensitivity;
+        engine.setTouchLookSensitivity = function(value) {
+          var next = Number(value);
+          if (!isFinite(next)) next = 0.004;
+          engine._touchLookSensitivity = Math.max(0.002, Math.min(0.008, next));
+          return engine._touchLookSensitivity;
+        };
+        function resetTouchLookFeedback() {
+          if (!touchFeedbackTarget || !touchFeedbackTarget.style) return;
+          touchFeedbackTarget.style.setProperty('--gw-touch-look-x', '0px');
+          touchFeedbackTarget.style.setProperty('--gw-touch-look-y', '0px');
+        }
+        function updateTouchLookFeedback(dx, dy) {
+          if (!touchFeedbackTarget || !touchFeedbackTarget.style) return;
+          var lookX = Math.max(-46, Math.min(46, dx * 1.25));
+          var lookY = Math.max(-46, Math.min(46, dy * 1.25));
+          touchFeedbackTarget.style.setProperty('--gw-touch-look-x', lookX + 'px');
+          touchFeedbackTarget.style.setProperty('--gw-touch-look-y', lookY + 'px');
+        }
+        function resetTouchJoystick() {
+          if (!touchFeedbackTarget || !touchFeedbackTarget.style) return;
+          touchFeedbackTarget.style.setProperty('--gw-touch-stick-x', '0px');
+          touchFeedbackTarget.style.setProperty('--gw-touch-stick-y', '0px');
+        }
+        function updateTouchJoystick(mx, mz, mag) {
+          if (!touchFeedbackTarget || !touchFeedbackTarget.style || !mag) return;
+          var stickScale = Math.min(1, mag / 48);
+          var stickRadius = 34 * stickScale;
+          touchFeedbackTarget.style.setProperty('--gw-touch-stick-x', (mx / mag * stickRadius) + 'px');
+          touchFeedbackTarget.style.setProperty('--gw-touch-stick-y', (mz / mag * stickRadius) + 'px');
+        }
+        resetTouchJoystick();
+        resetTouchLookFeedback();
+        // Camera modes take ownership from the previous gesture as a whole.
+        engine.releaseInput = function() {
+          engine.moveState = { forward:false, backward:false, left:false, right:false, sprint:false, flyUp:false, flyDown:false };
+          engine.lookState = { left:false, right:false, up:false, down:false };
+          engine._jumpLock = false;
+          engine._lastSpaceTime = 0;
+          engine._touchActive = false;
+          engine._touchLookId = null; engine._touchMoveId = null;
+          engine._touchLookStart = null; engine._touchMoveStart = null;
+          engine._touchMoveVec = { x:0, z:0 };
+          resetTouchJoystick(); resetTouchLookFeedback();
+        };
+        engine.refreshTouchActivity = function() {
+          var movement = engine.moveState || {};
+          // The action column and canvas can own different fingers. Releasing a
+          // look finger must not interrupt an Up or Down button still held.
+          engine._touchActive = engine._touchControlsEnabled !== false && !!(engine._touchMoveId != null || engine._touchLookId != null || movement.flyUp || movement.flyDown);
+          return engine._touchActive;
+        };
+        engine.setTouchControlsEnabled = function(enabled) {
+          engine._touchControlsEnabled = enabled !== false;
+          resetTouchJoystick(); resetTouchLookFeedback();
+          if (!engine._touchControlsEnabled) {
+            engine.releaseInput();
+            engine.isLocked = document.pointerLockElement === canvas;
+          }
+        };
+
+        function finiteWorldCoordinate(value, fallback) {
+          if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return fallback;
+          var numeric = Number(value);
+          return Number.isFinite(numeric) ? numeric : fallback;
+        }
+
+        function getStructureFocus(structure) {
+          if (!structure) return null;
+          var x1 = finiteWorldCoordinate(structure.x1, 0), x2 = finiteWorldCoordinate(structure.x2, x1);
+          var y1 = finiteWorldCoordinate(structure.y1, 0), y2 = finiteWorldCoordinate(structure.y2, y1);
+          var z1 = finiteWorldCoordinate(structure.z1, 0), z2 = finiteWorldCoordinate(structure.z2, z1);
+          return {
+            x: (Math.min(x1, x2) + Math.max(x1, x2) + 1) / 2,
+            y: Math.max(y1, y2) + 0.5,
+            z: (Math.min(z1, z2) + Math.max(z1, z2) + 1) / 2,
+            radius: Math.max(8, Math.min(14, Math.max(Math.abs(x2 - x1), Math.abs(z2 - z1)) * 1.4 + 6))
+          };
+        }
+        function getGuidedTourFocus(lesson) {
+          var structures = lesson && Array.isArray(lesson.structures) ? lesson.structures : [];
+          var target = null;
+          for (var si = 0; si < structures.length; si++) {
+            var candidate = structures[si];
+            if (candidate && candidate.type === 'fill' && (Number(candidate.y2 || 0) > Number(candidate.y1 || 0) || Number(candidate.y1 || 0) > 0)) {
+              target = candidate;
+              break;
+            }
+          }
+          if (!target && structures.length) target = structures[0];
+          if (target) return getStructureFocus(target);
+          var spawn = lesson && lesson.spawnPoint ? lesson.spawnPoint : [2, 3, 2];
+          return { x: finiteWorldCoordinate(spawn[0], 2), y: finiteWorldCoordinate(spawn[1], 3) + 0.5, z: finiteWorldCoordinate(spawn[2], 2), radius: 9 };
+        }
+        engine.startGuidedTour = function() {
+          if (!engine.camera || !engine._currentLesson || engine._guidedTour) return false;
+          if(engine.disposeCreationFocus)engine.disposeCreationFocus();
+          try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
+          engine.isLocked = false;
+          engine.releaseInput();
+          engine._entryAnim = null;
+          engine._viewPresetAnim = null;
+          engine._viewPresetReturn = null;
+          engine._viewPreset = 'free';
+          setViewPreset('free');
+          var focus = getGuidedTourFocus(engine._currentLesson);
+          var guidedTourReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          engine._guidedTour = { elapsed: 0, duration: 12, focus: focus, step: -1, reducedMotion: guidedTourReducedMotion };
+          engine.camera.position.set(focus.x + focus.radius, focus.y + 4.5, focus.z);
+          engine.camera.lookAt(focus.x, focus.y, focus.z);
+          setGuidedTourStep(0);
+          setGuidedTourActive(true);
+          announceToSR(__alloFill(__alloT('stem.geometryworld.sr_guided_explore_tour_started', 'Guided explore tour started. {value1}.'), { value1: guidedTourSteps[0] }));
+          return true;
+        };
+        engine.stopGuidedTour = function(completed) {
+          var wasActive = !!engine._guidedTour;
+          engine._guidedTour = null;
+          engine._entryAnim = null;
+          engine.releaseInput();
+          setGuidedTourActive(false);
+          setGuidedTourStep(0);
+          if (wasActive) announceToSR(completed ? 'Guided explore tour complete. You can now explore the world.' : 'Guided explore tour stopped.');
+          return wasActive;
+        };
+        // ── Camera view presets: stable front/side/top evidence views ──
+        // These views let learners inspect a structure from a repeatable angle
+        // before measuring it. The return path preserves the learner's free view.
+        function getViewPresetTarget(preset, focus) {
+          var radius = focus.radius || 9;
+          if (preset === 'front') return { x: focus.x + radius * 1.65, y: focus.y + radius * 0.42, z: focus.z };
+          if (preset === 'side') return { x: focus.x, y: focus.y + radius * 0.42, z: focus.z + radius * 1.65 };
+          if (preset === 'top') return { x: focus.x + radius * 0.16, y: focus.y + radius * 1.75, z: focus.z + radius * 0.16 };
+          return { x: focus.x + radius, y: focus.y + 4.5, z: focus.z };
+        }
+        engine.setViewPreset = function(preset, focusOverride) {
+          var allowed = { free: true, front: true, side: true, top: true };
+          var selected = String(preset || 'free');
+          if (!allowed[selected] || !engine.camera || !engine._currentLesson) return false;
+          if(engine.disposeCreationFocus)engine.disposeCreationFocus();
+          if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
+          try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
+          engine.isLocked = false;
+          engine.releaseInput();
+          engine._entryAnim = null;
+          var THREE = window.THREE;
+          var currentPosition = engine.camera.position.clone();
+          var currentTarget;
+          try {
+            var currentDirection = engine.camera.getWorldDirection(new THREE.Vector3());
+            currentTarget = currentPosition.clone().add(currentDirection.multiplyScalar(10));
+          } catch (e2) {
+            currentTarget = currentPosition.clone().add(new THREE.Vector3(0, 0, -10));
+          }
+          var focus = focusOverride || getGuidedTourFocus(engine._currentLesson);
+          var fromPosition = currentPosition;
+          var fromTarget = currentTarget;
+          var toPosition;
+          var toTarget;
+          if (selected === 'free') {
+            var restore = engine._viewPresetReturn;
+            toPosition = restore ? restore.position.clone() : currentPosition.clone();
+            toTarget = restore ? restore.target.clone() : currentTarget.clone();
+            engine._viewPresetReturn = null;
+          } else {
+            if (!engine._viewPresetReturn) engine._viewPresetReturn = { position: currentPosition.clone(), target: currentTarget.clone() };
+            var presetPosition = getViewPresetTarget(selected, focus);
+            toPosition = new THREE.Vector3(presetPosition.x, presetPosition.y, presetPosition.z);
+            toTarget = new THREE.Vector3(focus.x, focus.y, focus.z);
+          }
+          engine._viewPreset = selected;
+          engine._viewPresetAnim = { preset: selected, elapsed: 0, duration: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 0.01 : 0.55, fromPosition: fromPosition, fromTarget: fromTarget, toPosition: toPosition, toTarget: toTarget };
+          setViewPreset(selected);
+          announceToSR('Camera view: ' + (selected === 'free' ? 'free exploration' : selected + ' evidence view') + '.');
+          return true;
+        };
+        // ── Textual Scene Map ──
+        // A semantic companion to the canvas: learners can inspect the same
+        // lesson objects and jump to a structure without relying on color or depth.
+        engine.getSceneOverview = function() {
+          var lesson = engine._currentLesson || {};
+          var structures = Array.isArray(lesson.structures) ? lesson.structures : [];
+          var npcs = Array.isArray(lesson.npcs) ? lesson.npcs : [];
+          return {
+            title: lesson.title || 'Geometry World',
+            structures: structures.map(function(structure, index) {
+              var x1 = finiteWorldCoordinate(structure.x1, 0), x2 = finiteWorldCoordinate(structure.x2, x1);
+              var y1 = finiteWorldCoordinate(structure.y1, 0), y2 = finiteWorldCoordinate(structure.y2, y1);
+              var z1 = finiteWorldCoordinate(structure.z1, 0), z2 = finiteWorldCoordinate(structure.z2, z1);
+              return {
+                index: index,
+                label: structure.label || structure.name || ('Structure ' + (index + 1)),
+                type: structure.type || 'structure',
+                dimensions: { length: Math.abs(x2 - x1) + 1, width: Math.abs(z2 - z1) + 1, height: Math.abs(y2 - y1) + 1 },
+                origin: { x: Math.min(x1, x2), y: Math.min(y1, y2), z: Math.min(z1, z2) }
+              };
+            }),
+            npcs: npcs.map(function(npc, index) { return { index: index, name: npc.name || ('Guide ' + (index + 1)), prompt: npc.question ? 'Question available' : 'Conversation guide' }; }),
+            camera: engine.camera ? { x: Math.round(engine.camera.position.x * 10) / 10, y: Math.round(engine.camera.position.y * 10) / 10, z: Math.round(engine.camera.position.z * 10) / 10 } : null,
+            target: engine._targetGrid ? { x: engine._targetGrid.x, y: engine._targetGrid.y, z: engine._targetGrid.z, type: engine._targetGrid.type || 'block' } : null
+          };
+        };
+        engine.focusStructure = function(index) {
+          var lesson = engine._currentLesson || {};
+          var structures = Array.isArray(lesson.structures) ? lesson.structures : [];
+          var structure = structures[Number(index)];
+          var focus = getStructureFocus(structure);
+          if (!focus || !engine.setViewPreset) return false;
+          engine.setViewPreset('front', focus);
+          announceToSR('Viewing ' + (structure.label || structure.name || ('structure ' + (Number(index) + 1))) + ' from the front evidence view.');
+          return true;
+        };        // ── Layer Explorer ──
+        // Reveal only the measured component one horizontal layer at a time.
+        // The world data stays intact; this is a visual reasoning aid for
+        // connecting base area × height to occupied volume.
+        engine._layerFocus = null;
+        engine._layerExplorerBlocks = null;
+        engine._layerExplorerMinY = null;
+        // Layer outlines. A hidden layer used to vanish outright, so a student
+        // revealing 'through layer 1' of a 3x3x3 lost sight of the other 18 cells
+        // and of the prism's height. Each hidden block now leaves a faint edge
+        // outline at its own cell: the revealed layers read solid, the rest read
+        // as the frame they fill, and every cell is still there to be counted.
+        engine._layerGhosts = [];
+        engine._layerGhostMat = null;
+        engine.clearLayerGhosts = function() {
+          engine._layerGhosts.forEach(function(g) { engine.scene.remove(g); if (g.geometry) g.geometry.dispose(); });
+          engine._layerGhosts = [];
+        };
+        engine.addLayerGhost = function(mesh) {
+          if (!mesh || !mesh.geometry) return;
+          if (!engine._layerGhostMat) engine._layerGhostMat = new THREE.LineBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.42, depthWrite: false });
+          var ghost = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), engine._layerGhostMat);
+          ghost.position.copy(mesh.position); ghost.rotation.copy(mesh.rotation);
+          ghost.renderOrder = 996;
+          engine.scene.add(ghost); engine._layerGhosts.push(ghost);
+        };
+        engine.setLayerFocus = function(level, silent) {
+          var parsed = Number(level);
+          var next = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
+          engine._layerFocus = next;
+          engine.clearLayerGhosts();
+          var targets = Array.isArray(engine._layerExplorerBlocks) && engine._layerExplorerBlocks.length ? engine._layerExplorerBlocks : null;
+          var visibleCount = 0;
+          var layerBase = Number(engine._layerExplorerMinY);
+          if (!Number.isFinite(layerBase)) layerBase = 0;
+          if (targets) {
+            targets.forEach(function(pos) {
+              var mesh = pos && engine.blocks[pos.x + ',' + pos.y + ',' + pos.z];
+              if (!mesh) return;
+              mesh.visible = next === null || (Math.floor(Number(pos.y) || 0) - layerBase) < next;
+              if (mesh.visible) visibleCount++; else engine.addLayerGhost(mesh);
+            });
+          } else {
+            Object.keys(engine.blocks).forEach(function(key) {
+              var mesh = engine.blocks[key];
+              var grid = mesh && mesh.userData && mesh.userData.gridPos;
+              if (!mesh || !grid) return;
+              mesh.visible = next === null || (Math.floor(Number(grid.y) || 0) - layerBase) < next;
+              if (mesh.visible) visibleCount++; else engine.addLayerGhost(mesh);
+            });
+          }
+          try {
+            (engine._selectionGlows || []).forEach(function(g) {
+              var gy = Math.floor(g.position.y) - layerBase;
+              var hidden = next !== null && gy >= next;
+              g.material.opacity = hidden ? 0.015 : 0.06;
+            });
+          } catch (e) {}
+          if (!silent) announceToSR(next === null ? 'Layer explorer reset. Showing all layers.' : 'Showing layers 1 through ' + next + '. ' + visibleCount + ' measured blocks visible.');
+          return next;
+        };
+        engine.clearLayerFocus = function(silent) {
+          engine._layerExplorerBlocks = null;
+          engine._layerExplorerMinY = null;
+          return engine.setLayerFocus(null, !!silent);
+        };
+        canvas.addEventListener('touchstart', _cvH.touchstart = function(ev) {
+          if (engine._touchControlsEnabled === false) return;
+          ev.preventDefault();
+          engine._touchActive = true;
+          for (var ti = 0; ti < ev.changedTouches.length; ti++) {
+            var touch = ev.changedTouches[ti];
+            var isLeftSide = touch.clientX < window.innerWidth / 2;
+            if (isLeftSide && engine._touchMoveId === null) {
+              engine._touchMoveId = touch.identifier;
+              engine._touchMoveStart = { x: touch.clientX, y: touch.clientY };
+              resetTouchJoystick();
+            } else if (!isLeftSide && engine._touchLookId === null) {
+              engine._touchLookId = touch.identifier;
+              engine._touchLookStart = { x: touch.clientX, y: touch.clientY };
+              resetTouchLookFeedback();
+            }
+          }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', _cvH.touchmove = function(ev) {
+          if (engine._showcase || engine._touchControlsEnabled === false) return;
+          ev.preventDefault();
+          for (var ti = 0; ti < ev.changedTouches.length; ti++) {
+            var touch = ev.changedTouches[ti];
+            if (touch.identifier === engine._touchLookId && engine._touchLookStart) {
+              // Look: apply rotation from swipe delta
+              var dx = touch.clientX - engine._touchLookStart.x;
+              var dy = touch.clientY - engine._touchLookStart.y;
+              engine.euler.setFromQuaternion(engine.camera.quaternion);
+              engine.euler.y -= dx * engine._touchLookSensitivity;
+              engine.euler.x -= dy * engine._touchLookSensitivity;
+              updateTouchLookFeedback(dx, dy);
+              engine.euler.x = Math.max(-Math.PI * 0.49, Math.min(Math.PI * 0.49, engine.euler.x));
+              engine.camera.quaternion.setFromEuler(engine.euler);
+              engine._touchLookStart = { x: touch.clientX, y: touch.clientY };
+            } else if (touch.identifier === engine._touchMoveId && engine._touchMoveStart) {
+              // Move: compute joystick vector
+              var mx = touch.clientX - engine._touchMoveStart.x;
+              var mz = touch.clientY - engine._touchMoveStart.y;
+              var mag = Math.sqrt(mx * mx + mz * mz);
+              if (mag > 10) {
+                engine._touchMoveVec = { x: mx / mag, z: mz / mag };
+                updateTouchJoystick(mx, mz, mag);
+                engine.moveState.forward = mz < -15;
+                engine.moveState.backward = mz > 15;
+                engine.moveState.left = mx < -15;
+                engine.moveState.right = mx > 15;
+              } else {
+                engine._touchMoveVec = { x: 0, z: 0 };
+                resetTouchJoystick();
+                engine.moveState.forward = false; engine.moveState.backward = false;
+                engine.moveState.left = false; engine.moveState.right = false;
+              }
+            }
+          }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', _cvH.touchend = function(ev) {
+          if (engine._touchControlsEnabled === false) return;
+          for (var ti = 0; ti < ev.changedTouches.length; ti++) {
+            var touch = ev.changedTouches[ti];
+            if (touch.identifier === engine._touchMoveId) {
+              engine._touchMoveId = null; engine._touchMoveStart = null;
+              engine._touchMoveVec = { x: 0, z: 0 };
+              resetTouchJoystick();
+              engine.moveState.forward = false; engine.moveState.backward = false;
+              engine.moveState.left = false; engine.moveState.right = false;
+            }
+            if (touch.identifier === engine._touchLookId) {
+              engine._touchLookId = null; engine._touchLookStart = null;
+              resetTouchLookFeedback();
+            }
+          }
+          engine.refreshTouchActivity();
+        }, { passive: false });
+
+        canvas.addEventListener('touchcancel', _cvH.touchcancel = function() {
+          if (engine._touchControlsEnabled === false) return;
+          engine._touchActive = false;
+          engine._touchLookId = null; engine._touchMoveId = null;
+          engine._touchLookStart = null; engine._touchMoveStart = null;
+          engine._touchMoveVec = { x: 0, z: 0 };
+          resetTouchJoystick();
+          resetTouchLookFeedback();
+          engine.moveState.forward = false; engine.moveState.backward = false;
+          engine.moveState.left = false; engine.moveState.right = false;
+          engine.refreshTouchActivity();
+        }, { passive: false });
+
+        // ── Cached blocks array (rebuilt only when blocks change). Avoids allocating
+        // a fresh Object.values() array every frame in the ghost-preview raycaster.
+        engine._blocksArr = [];
+        engine._blocksDirty = true;
+        engine.getBlocksArr = function() {
+          if (engine._blocksDirty) {
+            engine._blocksArr = Object.values(engine.blocks);
+            engine._blocksDirty = false;
+          }
+          return engine._blocksArr;
+        };
+
+        // ── Block placement preview ghost + break highlight + crosshair targeting ──
+        engine._ghostMesh = null;
+        engine._highlightMesh = null;
+        engine._hoverGlowMesh = null; // signature FX: translucent fill companion to the wireframe highlight
+        engine._rmHover = (function(){ try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch(e){ return false; } })();
+        engine._crosshairTarget = 'none'; // 'none' | 'block' | 'npc' | 'npc_question'
+        function updateGhostPreview() {
+          var THREE = window.THREE;
+          if (engine._showcase || !engine.isInputActive() || !THREE) {
+            if (engine._ghostMesh) engine._ghostMesh.visible = false;
+            if (engine._highlightMesh) engine._highlightMesh.visible = false;
+            if (engine._hoverGlowMesh) engine._hoverGlowMesh.visible = false;
+            engine._crosshairTarget = 'none';
+            engine.publishPlacementPreview(null);
+            return;
+          }
+          engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+          // Check NPC hits first (for crosshair coloring)
+          var npcBodies = engine.npcs.map(function(n) { return n.body; }).concat(engine.npcs.map(function(n) { return n.head; }));
+          var npcHits = engine.raycaster.intersectObjects(npcBodies);
+          if (npcHits.length > 0 && npcHits[0].distance < 5) {
+            var npcIdx = npcHits[0].object.userData.npcIndex;
+            var npcData = engine.npcs[npcIdx] && engine.npcs[npcIdx].data;
+            var _answered = engine._answeredRef || answeredNpcs;
+            engine._crosshairTarget = (npcData && npcData.question && !_answered[npcIdx]) ? 'npc_question' : 'npc';
+          } else {
+            engine._crosshairTarget = 'none';
+          }
+          var hits = engine.raycaster.intersectObjects(engine.getBlocksArr());
+          if (hits.length > 0) engine._crosshairTarget = engine._crosshairTarget === 'none' ? 'block' : engine._crosshairTarget;
+          // Track targeted block grid position so the HUD and SR-announcer can read it.
+          if (hits.length > 0 && hits[0].object.userData.gridPos) {
+            var tg = hits[0].object.userData.gridPos;
+            var tbt = hits[0].object.userData.blockType || null;
+            engine._targetGrid = { x: tg.x, y: tg.y, z: tg.z, type: tbt };
+          } else {
+            engine._targetGrid = null;
+          }
+          // Periodic coord announcer for low-vision / screen-reader users.
+          // Fires on movement > ~3 blocks OR every 6 seconds idle, while _coordAnnounce is on.
+          if (engine._coordAnnounce) {
+            var nowMs = Date.now();
+            var cp = engine.camera.position;
+            var cx3 = Math.floor(cp.x), cy3 = Math.floor(cp.y), cz3 = Math.floor(cp.z);
+            if (!engine._lastAnnouncePos) engine._lastAnnouncePos = { x: cx3, y: cy3, z: cz3, t: 0 };
+            var lp = engine._lastAnnouncePos;
+            var moved = Math.abs(cx3 - lp.x) + Math.abs(cy3 - lp.y) + Math.abs(cz3 - lp.z);
+            var elapsed = nowMs - lp.t;
+            if ((moved >= 3 && elapsed > 1500) || elapsed > 6000) {
+              var msg = 'X ' + cx3 + ' Y ' + cy3 + ' Z ' + cz3;
+              if (engine._targetGrid) msg += '. Looking at ' + (engine._targetGrid.type || 'block') + ' at X ' + engine._targetGrid.x + ' Y ' + engine._targetGrid.y + ' Z ' + engine._targetGrid.z;
+              announceToSR(msg);
+              engine._lastAnnouncePos = { x: cx3, y: cy3, z: cz3, t: nowMs };
+            }
+          }
+
+          // ── Hover feedback follows the rendered shape, including fractional pieces. ──
+          if (hits.length > 0 && hits[0].object.userData.gridPos && hits[0].object.geometry) {
+            var hoverTarget=hits[0].object, sourceGeometry=hoverTarget.geometry;
+            var hoverPosition=sourceGeometry.getAttribute('position'), hoverIndex=sourceGeometry.getIndex();
+            var hoverState=engine._hoverGeometryState;
+            // Copy buffers only when their geometry or renderable topology changes.
+            // Materials and geometry on the construction mesh remain untouched.
+            if (!engine._highlightMesh || !engine._hoverGlowMesh || !hoverState ||
+              hoverState.geometry!==sourceGeometry || hoverState.position!==hoverPosition || hoverState.positionVersion!==hoverPosition.version ||
+              hoverState.index!==hoverIndex || hoverState.indexVersion!==(hoverIndex && hoverIndex.version)) {
+              var hoverFill=sourceGeometry.clone(), hoverEdges=new THREE.EdgesGeometry(sourceGeometry);
+              if (!engine._highlightMesh) {
+                var hlMat=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.6,depthWrite:false});
+                engine._highlightMesh=new THREE.LineSegments(hoverEdges,hlMat);
+                engine._highlightMesh.renderOrder=998;engine._highlightMesh.matrixAutoUpdate=false;
+                engine._highlightMesh.userData.gwDecorative=true;engine._highlightMesh.raycast=function(){};
+                engine.scene.add(engine._highlightMesh);
+              } else {engine._highlightMesh.geometry.dispose();engine._highlightMesh.geometry=hoverEdges;}
+              if (!engine._hoverGlowMesh) {
+                // Pull the fill slightly forward in depth without expanding its geometry.
+                var hgMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.12,side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+                engine._hoverGlowMesh=new THREE.Mesh(hoverFill,hgMat);
+                engine._hoverGlowMesh.renderOrder=997;engine._hoverGlowMesh.matrixAutoUpdate=false;
+                engine._hoverGlowMesh.userData.gwDecorative=true;engine._hoverGlowMesh.raycast=function(){};
+                engine.scene.add(engine._hoverGlowMesh);
+              } else {engine._hoverGlowMesh.geometry.dispose();engine._hoverGlowMesh.geometry=hoverFill;}
+              engine._hoverGeometryState={geometry:sourceGeometry,position:hoverPosition,positionVersion:hoverPosition.version,index:hoverIndex,indexVersion:hoverIndex && hoverIndex.version};
+            }
+            hoverTarget.updateWorldMatrix(true,false);
+            // Overlays are scene children; compensate for the scene transform so
+            // nested parents, rotations, nonuniform scale and placement pop agree.
+            engine._highlightMesh.matrix.copy(engine.scene.matrixWorld).invert().multiply(hoverTarget.matrixWorld);
+            engine._hoverGlowMesh.matrix.copy(engine._highlightMesh.matrix);
+            engine._highlightMesh.matrixWorldNeedsUpdate=true;engine._hoverGlowMesh.matrixWorldNeedsUpdate=true;
+            engine._highlightMesh.visible=true;engine._hoverGlowMesh.visible=true;
+            var isProtected=hoverTarget.userData._lessonBlock;
+            var pulseT=engine.clock.getElapsedTime(),stillHover=engine._rmHover || engine._ambientMotionEnabled===false;
+            engine._highlightMesh.material.color.setHex(isProtected?0xff4444:0xffffff);
+            engine._highlightMesh.material.opacity=isProtected?0.3:stillHover?0.4:0.4+Math.sin(pulseT*6)*0.2;
+            engine._hoverGlowMesh.material.color.setHex(isProtected?0xff4444:0xffffff);
+            engine._hoverGlowMesh.material.opacity=(isProtected?0.08:stillHover?0.1:0.09+Math.sin(pulseT*6)*0.05)*(engine._dimLines && engine._dimLines.length>0?0.35:1);
+          } else {
+            if (engine._highlightMesh) engine._highlightMesh.visible = false;
+            if (engine._hoverGlowMesh) engine._hoverGlowMesh.visible = false;
+          }
+
+          // ── Placement ghost — soft fill + edge outline of the cell about to be filled ──
+          if (hits.length > 0 && hits[0].object.userData.gridPos && hits[0].face) {
+            var preview = engine.placementForHit(hits[0]);
+            engine.publishPlacementPreview(preview);
+            if (!preview.cell) { if (engine._ghostMesh) engine._ghostMesh.visible = false; return; }
+            var gx = preview.cell.x, gy = preview.cell.y, gz = preview.cell.z;
+            // Read from engine bridge so ghost preview matches the CURRENT selected shape + rotation
+            // (closure vars are stale — handler attached once in initEngine)
+            var _ps = engine._placeState || { selectedShape: 0, blockRotation: 0 };
+            var curShapeId = BLOCK_SHAPES[_ps.selectedShape] ? BLOCK_SHAPES[_ps.selectedShape].id : 'cube';
+            var curRot = _ps.blockRotation || 0;
+            // Recreate ghost if shape or rotation changed
+            if (!engine._ghostMesh || engine._ghostShapeId !== curShapeId || engine._ghostRot !== curRot) {
+              if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); disposeGhost(engine._ghostMesh); }
+              var gGeo = createShapeGeometry(curShapeId);
+              // wireframe:true draws every TRIANGLE edge, so a cube preview came with
+              // a diagonal across each face and read as a triangulated blob rather
+              // than the cell the block is about to fill. A soft fill carries the
+              // volume and an EdgesGeometry outline carries the shape: 12 clean edges
+              // for a cube, and the real silhouette for the slabs and wedges.
+              var gMat = new THREE.MeshBasicMaterial({ color: 0x9dddb5, transparent: true, opacity: 0.15, side: THREE.DoubleSide, depthWrite: false });
+              engine._ghostMesh = new THREE.Mesh(gGeo, gMat);
+              engine._ghostMesh.renderOrder = 999;
+              engine._ghostMesh.userData.gwDecorative=true;engine._ghostMesh.raycast=function(){};
+              var gEdges = new THREE.LineSegments(new THREE.EdgesGeometry(gGeo), new THREE.LineBasicMaterial({ color: 0xd6f4df, transparent: true, opacity: 0.75, depthWrite: false }));
+              gEdges.renderOrder = 1000;
+              gEdges.userData.gwDecorative=true;gEdges.raycast=function(){};
+              engine._ghostMesh.add(gEdges);
+              engine._ghostEdges = gEdges;
+              if (curRot > 0 && curShapeId !== 'cube') engine._ghostMesh.rotation.y = curRot * Math.PI / 2;
+              engine.scene.add(engine._ghostMesh);
+              engine._ghostShapeId = curShapeId;
+              engine._ghostRot = curRot;
+            }
+            // Position based on shape type
+            if (curShapeId === 'halfB') {
+              engine._ghostMesh.position.set(gx + 0.5, gy + 0.25, gz + 0.5);
+            } else if (curShapeId === 'halfA' || curShapeId === 'quarter') {
+              engine._ghostMesh.position.set(gx + 0.5, gy, gz + 0.5);
+            } else {
+              engine._ghostMesh.position.set(gx + 0.5, gy + 0.5, gz + 0.5);
+            }
+            engine._ghostMesh.visible = true;
+            engine._ghostMesh.userData.placementAllowed = preview.allowed;
+            engine._ghostMesh.userData.placementReason = preview.reason;
+            engine._ghostMesh.material.color.setHex(preview.allowed ? 0x9dddb5 : 0xf16c58);
+            if (engine._ghostEdges) {
+              engine._ghostEdges.material.color.setHex(preview.allowed ? 0xd6f4df : 0xffbc9e);
+              engine._ghostEdges.material.depthTest = preview.allowed;
+            }
+            // Animate opacity only: the preview keeps the exact eventual dimensions.
+            var ghostT = engine.clock.getElapsedTime();
+            var ghostPulse = !preview.allowed || engine._rmHover || engine._ambientMotionEnabled === false ? 0.35 : 0.5 + Math.sin(ghostT * 2.5) * 0.5; // 0..1
+            // A measurement on screen owns the student's attention: the preview
+            // keeps a faint outline so the build target is not lost, and no fill.
+            var measuring = engine._dimLines && engine._dimLines.length > 0;
+            engine._ghostMesh.material.opacity = !preview.allowed ? 0.08 : measuring ? 0.03 : 0.10 + ghostPulse * 0.10;
+            if (engine._ghostEdges) engine._ghostEdges.material.opacity = !preview.allowed ? 0.95 : measuring ? 0.22 : 0.65 + ghostPulse * 0.2;
+            engine._ghostMesh.scale.set(1,1,1);
+          } else {
+            if (engine._ghostMesh) engine._ghostMesh.visible = false;
+            engine.publishPlacementPreview(null);
+          }
+        }
+        engine.updateGhostPreview = updateGhostPreview;
+
+        // ── Collision helper: check if a world-space position is inside a solid block ──
+        function isBlockAt(bx, by, bz) {
+          return !!engine.blocks[Math.floor(bx) + ',' + Math.floor(by) + ',' + Math.floor(bz)];
+        }
+        // Fly-mode collision ignores water/lava so you can swim/dive through them like Minecraft creative.
+        function isSolidBlockAt(bx, by, bz) {
+          var b = engine.blocks[Math.floor(bx) + ',' + Math.floor(by) + ',' + Math.floor(bz)];
+          if (!b) return false;
+          var bt = b.userData && b.userData.blockType;
+          return bt !== 'water' && bt !== 'lava';
+        }
+
+        // Player physics constants
+        var MOVE_SPEED = 5.0;
+        var SPRINT_SPEED = 8.0;
+        var MOVE_ACCEL = 25;   // acceleration toward target speed
+        var MOVE_DECEL = 18;   // deceleration (friction) when no input
+        var PLAYER_RADIUS = 0.25; // half-width for XZ collision
+        var EYE_HEIGHT = 1.6;  // camera above feet
+        var PLAYER_HEIGHT = 1.8; // full body height
+        var HEADBOB_AMOUNT = 0.04;  // vertical bob amplitude
+        var HEADBOB_SPEED = 10;     // bob cycle speed
+        var FOOTSTEP_INTERVAL = 0.38; // seconds between footstep sounds
+        var SPRINT_FOOTSTEP_INTERVAL = 0.26;
+        engine._headBobPhase = 0;
+        engine._headBobBase = 0; // will be set to groundY when on ground
+
+        function stopAnimationAfterError(error, failureKind) {
+          if (!engine || engine._destroyed || engine._runtimeFailed) return;
+          engine._runtimeFailed = true;
+          if (engine._rafId) { cancelAnimationFrame(engine._rafId); engine._rafId = null; }
+          var detail = String(error && (error.stack || error.message) || error || 'Unknown animation error').slice(0, 1200);
+          var kind = failureKind || 'runtime';
+          console.error('[GeometryWorld] Animation stopped to protect page responsiveness:', error);
+          window[engineKey + '_failure'] = { kind: kind, message: detail };
+          window[engineKey + '_failed'] = true;
+          setWebglError(true);
+          setWebglRetrying(false);
+        }
+
+        // Animation loop
+        function animate() {
+          if (engine && engine._destroyed) return; // teardown ran — stop rescheduling (the closure engine keeps scene/camera, so the guard below won't catch it)
+          if (engine && engine._runtimeFailed) return;
+          if (engine && (engine._pausedByVisibility || engine._pausedByViewport)) return;
+          // Catch future frame failures and cancel the successor they schedule so one
+          // broken effect cannot create an endless exception loop in the host browser.
+          engine._rafId = requestAnimationFrame(function() {
+            try { animate(); }
+            catch (error) { stopAnimationAfterError(error); }
+          });
+          // Guard: if Three.js isn't on window (CDN failure, teardown), skip frame entirely
+          if (!window.THREE || !engine || !engine.scene || !engine.camera) return;
+          // Capture Three.js before any frame work. Later `var THREE` assignments in
+          // conditional branches are function-scoped and otherwise leave this local
+          // undefined on frames where those branches do not run.
+          var THREE = window.THREE;
+          var dt = Math.min(engine.clock.getDelta(), 0.1);
+
+          // ── Keyboard look (arrow keys) ──
+          // Looking used to be mouse-only (pointer-lock mousemove / touch drag), which
+          // left keyboard-only students able to WALK but never to TURN — and both
+          // "E to talk" and "M to measure" raycast from the crosshair, so they could
+          // never aim at an NPC or a structure. Applied here rather than on keydown so
+          // it is smooth and frame-rate independent instead of following key-repeat.
+          var ls = engine.lookState;
+          if (ls && (ls.left || ls.right || ls.up || ls.down)) {
+            engine.euler.setFromQuaternion(engine.camera.quaternion);
+            if (applyKeyLook(engine.euler, ls, dt)) engine.camera.quaternion.setFromEuler(engine.euler);
+          }
+
+          // ── Smooth environment transitions ──
+          if (!engine._showcase && !(engine._creationFocus && !engine._creationFocus.manual)) updateEnvTransition(engine, dt);
+
+          // ── Update break particles ──
+          for (var pi = engine._particles.length - 1; pi >= 0; pi--) {
+            var part = engine._particles[pi];
+            part.userData._age += dt;
+            if (part.userData._age >= part.userData._life) {
+              engine.scene.remove(part); part.geometry.dispose(); part.material.dispose();
+              engine._particles.splice(pi, 1);
+              continue;
+            }
+            part.userData._vel.y -= 9.8 * dt;
+            part.position.x += part.userData._vel.x * dt;
+            part.position.y += part.userData._vel.y * dt;
+            part.position.z += part.userData._vel.z * dt;
+            if (part.userData._spin) {
+              part.rotation.x += part.userData._spin.x * dt;
+              part.rotation.y += part.userData._spin.y * dt;
+              part.rotation.z += part.userData._spin.z * dt;
+            }
+            part.material.opacity = 1.0 - (part.userData._age / part.userData._life);
+            part.scale.setScalar(1.0 - (part.userData._age / part.userData._life) * 0.5);
+          }
+
+          // ── Auto-clear dimension lines when player walks far away ──
+          if (!engine._showcase && engine._dimLines.length > 0 && engine._measureCenter) {
+            var mc = engine._measureCenter;
+            var dDist = engine.camera.position.distanceTo(new THREE.Vector3(mc.x, mc.y, mc.z));
+            if (dDist > 25) { clearDimLines(); clearSelectionGlow(); engine._measureCenter = null; }
+          }
+
+          // Focus framing owns only the camera; passive keyboard focus keeps
+          // picking available without enabling gravity or FOV drift.
+          if(engine.updateCreationFocus)engine.updateCreationFocus(dt);
+          // ── Camera entry animation (swoop down to spawn) ──
+          // ── Guided explore tour: a predictable, low-motion orbit around the
+          // first meaningful structure gives learners a spatial overview before
+          // keyboard, mouse, or touch input takes over.
+          if (engine._guidedTour) {
+            if (engine.isInputActive()) {
+              engine.stopGuidedTour(false);
+            } else {
+              var tour = engine._guidedTour;
+              tour.elapsed += dt;
+              var tourProgress = Math.min(1, tour.elapsed / tour.duration);
+              var tourStep = Math.min(2, Math.floor(tourProgress * 3));
+              if (tourStep !== tour.step) {
+                tour.step = tourStep;
+                setGuidedTourStep(tourStep);
+                announceToSR(guidedTourSteps[tourStep] + '.');
+              }
+              if (!tour.reducedMotion) {
+                var tourAngle = -0.75 + tourProgress * Math.PI * 2;
+                var tourFocus = tour.focus;
+                var tourLift = 4.5 + Math.sin(tourProgress * Math.PI * 2) * 0.8;
+                engine.camera.position.x = tourFocus.x + Math.cos(tourAngle) * tourFocus.radius;
+                engine.camera.position.y = tourFocus.y + tourLift;
+                engine.camera.position.z = tourFocus.z + Math.sin(tourAngle) * tourFocus.radius;
+                engine.camera.lookAt(tourFocus.x, tourFocus.y, tourFocus.z);
+              }
+              if (tourProgress >= 1) engine.stopGuidedTour(true);
+            }
+          }
+          // ── Preset camera transition ──
+          if (engine._viewPresetAnim && !engine._guidedTour) {
+            if (engine.isInputActive()) {
+              engine._viewPresetAnim = null;
+              engine._viewPresetReturn = null;
+              engine._viewPreset = 'free';
+              setViewPreset('free');
+              announceToSR(__alloT('stem.geometryworld.sr_camera_preset_canceled_free_exploration_restored', 'Camera preset canceled. Free exploration restored.'));
+            } else {
+              var viewAnim = engine._viewPresetAnim;
+              viewAnim.elapsed += dt;
+              var viewProgress = Math.min(1, viewAnim.elapsed / viewAnim.duration);
+              var viewEase = 1 - Math.pow(1 - viewProgress, 3);
+              var viewPosition = viewAnim.fromPosition.clone().lerp(viewAnim.toPosition, viewEase);
+              var viewTarget = viewAnim.fromTarget.clone().lerp(viewAnim.toTarget, viewEase);
+              engine.camera.position.x = viewPosition.x;
+              engine.camera.position.y = viewPosition.y;
+              engine.camera.position.z = viewPosition.z;
+              engine.camera.lookAt(viewTarget.x, viewTarget.y, viewTarget.z);
+              if (viewProgress >= 1) {
+                engine._viewPresetAnim = null;
+                if (viewAnim.preset === 'free') engine._viewPresetReturn = null;
+              }
+            }
+          }
+          if (engine._entryAnim && !engine.isInputActive()) {
+            var ea = engine._entryAnim;
+            ea.progress = Math.min(1, ea.progress + dt * 0.6);
+            var easeP = 1 - Math.pow(1 - ea.progress, 3); // ease-out cubic
+            engine.camera.position.x += (ea.targetX - engine.camera.position.x) * easeP * dt * 2;
+            engine.camera.position.y += (ea.targetY - engine.camera.position.y) * easeP * dt * 2;
+            engine.camera.position.z += (ea.targetZ - engine.camera.position.z) * easeP * dt * 2;
+            engine.camera.lookAt(ea.targetX + 3, ea.targetY - 1, ea.targetZ + 3);
+            if (ea.progress >= 1) engine._entryAnim = null;
+          }
+
+          if (engine.isInputActive() && !(engine._creationFocus && !engine._creationFocus.manual)) {
+            var THREE = window.THREE;
+            // ── Smooth movement with acceleration, deceleration, and proper XZ + Y collision ──
+            var dir = new THREE.Vector3();
+            var fwd = new THREE.Vector3();
+            engine.camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
+            var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+            var wantDir = new THREE.Vector3();
+            if (engine.moveState.forward) wantDir.add(fwd);
+            if (engine.moveState.backward) wantDir.sub(fwd);
+            if (engine.moveState.right) wantDir.add(right);
+            if (engine.moveState.left) wantDir.sub(right);
+            var hasInput = wantDir.length() > 0.01;
+            if (hasInput) wantDir.normalize();
+
+            // Accelerate / decelerate horizontal velocity (sprint-aware)
+            var isSprinting = engine.moveState.sprint && engine.moveState.forward;
+            var curSpeed = isSprinting ? SPRINT_SPEED : MOVE_SPEED;
+            var curH = new THREE.Vector3(engine.velocity.x || 0, 0, engine.velocity.z || 0);
+            if (hasInput) {
+              var target = wantDir.clone().multiplyScalar(curSpeed);
+              curH.lerp(target, 1.0 - Math.exp(-MOVE_ACCEL * dt));
+            } else {
+              curH.multiplyScalar(Math.exp(-MOVE_DECEL * dt));
+              if (curH.length() < 0.01) curH.set(0, 0, 0);
+            }
+            engine.velocity.x = curH.x;
+            engine.velocity.z = curH.z;
+
+            var cam = engine.camera.position;
+
+            if (engine.flyMode) {
+              // ── Fly mode: no gravity, collides with solid blocks but passes through water/lava ──
+              var flySpeed = isSprinting ? 12 : 7;
+              var feetY = cam.y - EYE_HEIGHT;
+
+              // X axis collision — body-column check, no auto-step while flying
+              var newX = cam.x + engine.velocity.x * dt;
+              var blockedFX = false;
+              for (var fcy = 0; fcy < Math.ceil(PLAYER_HEIGHT); fcy++) {
+                if (isSolidBlockAt(newX + PLAYER_RADIUS, feetY + fcy, cam.z) || isSolidBlockAt(newX - PLAYER_RADIUS, feetY + fcy, cam.z)) { blockedFX = true; break; }
+              }
+              if (!blockedFX) cam.x = newX; else engine.velocity.x = 0;
+
+              // Z axis collision
+              var newZ = cam.z + engine.velocity.z * dt;
+              var blockedFZ = false;
+              for (var fcy2 = 0; fcy2 < Math.ceil(PLAYER_HEIGHT); fcy2++) {
+                if (isSolidBlockAt(cam.x, feetY + fcy2, newZ + PLAYER_RADIUS) || isSolidBlockAt(cam.x, feetY + fcy2, newZ - PLAYER_RADIUS)) { blockedFZ = true; break; }
+              }
+              if (!blockedFZ) cam.z = newZ; else engine.velocity.z = 0;
+
+              // Y axis collision — block on ceiling when ascending, on floor when descending
+              var flyVertical = 0;
+              if (engine.moveState.flyUp) flyVertical = flySpeed;
+              if (engine.moveState.flyDown || (engine.moveState.sprint && !engine.moveState.forward)) flyVertical = -flySpeed;
+              var newY = cam.y + flyVertical * dt;
+              if (flyVertical > 0) {
+                var headY = newY + (PLAYER_HEIGHT - EYE_HEIGHT);
+                if (!isSolidBlockAt(cam.x, headY, cam.z)
+                    && !isSolidBlockAt(cam.x + PLAYER_RADIUS, headY, cam.z)
+                    && !isSolidBlockAt(cam.x - PLAYER_RADIUS, headY, cam.z)
+                    && !isSolidBlockAt(cam.x, headY, cam.z + PLAYER_RADIUS)
+                    && !isSolidBlockAt(cam.x, headY, cam.z - PLAYER_RADIUS)) cam.y = newY;
+              } else if (flyVertical < 0) {
+                var newFeetY = newY - EYE_HEIGHT;
+                if (!isSolidBlockAt(cam.x, newFeetY, cam.z)
+                    && !isSolidBlockAt(cam.x + PLAYER_RADIUS, newFeetY, cam.z)
+                    && !isSolidBlockAt(cam.x - PLAYER_RADIUS, newFeetY, cam.z)
+                    && !isSolidBlockAt(cam.x, newFeetY, cam.z + PLAYER_RADIUS)
+                    && !isSolidBlockAt(cam.x, newFeetY, cam.z - PLAYER_RADIUS)) cam.y = newY;
+              } else {
+                cam.y = newY;
+              }
+              engine.onGround = false;
+            } else {
+              // ── Walk mode: full gravity + collision ──
+              // Apply gravity
+              engine.velocity.y += -14.0 * dt;
+
+              var feetY = cam.y - EYE_HEIGHT;
+
+              // X axis collision with auto-step (step up 1-block ledges automatically)
+              var AUTO_STEP_HEIGHT = 1.01; // can step up 1 block
+              var newX = cam.x + engine.velocity.x * dt;
+              var blocked = false;
+              for (var cy = 0; cy < Math.ceil(PLAYER_HEIGHT); cy++) {
+                if (isBlockAt(newX + PLAYER_RADIUS, feetY + cy, cam.z) || isBlockAt(newX - PLAYER_RADIUS, feetY + cy, cam.z)) { blocked = true; break; }
+              }
+              if (blocked && engine.onGround) {
+                // Auto-step: check if stepping up 1 block would clear the obstacle
+                var stepFeetY = feetY + AUTO_STEP_HEIGHT;
+                var canStep = true;
+                for (var scy = 0; scy < Math.ceil(PLAYER_HEIGHT); scy++) {
+                  if (isBlockAt(newX + PLAYER_RADIUS, stepFeetY + scy, cam.z) || isBlockAt(newX - PLAYER_RADIUS, stepFeetY + scy, cam.z)) { canStep = false; break; }
+                }
+                if (canStep) { cam.x = newX; cam.y = stepFeetY + EYE_HEIGHT; blocked = false; }
+              }
+              if (!blocked) cam.x = newX; else engine.velocity.x = 0;
+
+              // Z axis collision with auto-step
+              var newZ = cam.z + engine.velocity.z * dt;
+              blocked = false;
+              for (var cy = 0; cy < Math.ceil(PLAYER_HEIGHT); cy++) {
+                if (isBlockAt(cam.x, feetY + cy, newZ + PLAYER_RADIUS) || isBlockAt(cam.x, feetY + cy, newZ - PLAYER_RADIUS)) { blocked = true; break; }
+              }
+              if (blocked && engine.onGround) {
+                var stepFeetZ = feetY + AUTO_STEP_HEIGHT;
+                var canStepZ = true;
+                for (var scz = 0; scz < Math.ceil(PLAYER_HEIGHT); scz++) {
+                  if (isBlockAt(cam.x, stepFeetZ + scz, newZ + PLAYER_RADIUS) || isBlockAt(cam.x, stepFeetZ + scz, newZ - PLAYER_RADIUS)) { canStepZ = false; break; }
+                }
+                if (canStepZ) { cam.z = newZ; cam.y = stepFeetZ + EYE_HEIGHT; blocked = false; }
+              }
+              if (!blocked) cam.z = newZ; else engine.velocity.z = 0;
+
+              // Y axis — ground detection
+              var newY = cam.y + engine.velocity.y * dt;
+              var newFeetY = newY - EYE_HEIGHT;
+              var groundY = -100;
+              var checkOffsets = [[0,0], [PLAYER_RADIUS, 0], [-PLAYER_RADIUS, 0], [0, PLAYER_RADIUS], [0, -PLAYER_RADIUS]];
+              for (var ci = 0; ci < checkOffsets.length; ci++) {
+                var cx2 = Math.floor(cam.x + checkOffsets[ci][0]);
+                var cz2 = Math.floor(cam.z + checkOffsets[ci][1]);
+                for (var gy = Math.floor(newFeetY) + 5; gy >= Math.floor(newFeetY) - 1; gy--) {
+                  if (engine.blocks[cx2 + ',' + gy + ',' + cz2]) {
+                    var topOfBlock = gy + 1 + EYE_HEIGHT;
+                    if (topOfBlock > groundY) groundY = topOfBlock;
+                    break;
+                  }
+                }
+              }
+              var worldGround = 0 + EYE_HEIGHT;
+              if (groundY < worldGround) groundY = worldGround;
+
+              if (newY < groundY) { cam.y = groundY; engine.velocity.y = 0; engine.onGround = true; }
+              else { cam.y = newY; engine.onGround = false; }
+
+              // Land sound
+              if (engine.onGround && !engine._wasOnGround) sfxLand();
+              engine._wasOnGround = engine.onGround;
+
+              // Check if player is submerged in water (camera inside water block)
+              var camGx = Math.floor(cam.x), camGy = Math.floor(cam.y - EYE_HEIGHT + 0.5), camGz = Math.floor(cam.z);
+              var waterBlock = engine.blocks[camGx + ',' + camGy + ',' + camGz];
+              engine._inWater = waterBlock && waterBlock.userData.blockType === 'water';
+              engine._inLava = waterBlock && waterBlock.userData.blockType === 'lava';
+
+              // Head-bump detection
+              var headY = cam.y + (PLAYER_HEIGHT - EYE_HEIGHT);
+              var headGx = Math.floor(cam.x), headGz = Math.floor(cam.z);
+              if (engine.blocks[headGx + ',' + Math.floor(headY) + ',' + headGz] && engine.velocity.y > 0) {
+                engine.velocity.y = 0;
+              }
+            }
+
+            // ── Footsteps + head-bob while walking on ground ──
+            var hSpeed = Math.sqrt(engine.velocity.x * engine.velocity.x + engine.velocity.z * engine.velocity.z);
+            if (engine.onGround && hSpeed > 1.0) {
+              var stepInterval = isSprinting ? SPRINT_FOOTSTEP_INTERVAL : FOOTSTEP_INTERVAL;
+              engine._footstepTimer += dt;
+              if (engine._footstepTimer >= stepInterval) {
+                engine._footstepTimer -= stepInterval;
+                sfxFootstep();
+              }
+              // Head-bob: gentle sine wave offset
+              var bobSpeed = isSprinting ? HEADBOB_SPEED * 1.4 : HEADBOB_SPEED;
+              var bobAmt = isSprinting ? HEADBOB_AMOUNT * 1.3 : HEADBOB_AMOUNT;
+              engine._headBobPhase += dt * bobSpeed;
+              cam.y += Math.sin(engine._headBobPhase) * bobAmt;
+            } else {
+              engine._footstepTimer = 0;
+              // Smoothly return head-bob to zero
+              engine._headBobPhase *= 0.9;
+            }
+
+            // FOV zoom on sprint (subtle)
+            var targetFov = isSprinting && hSpeed > 3 ? 82 : 75;
+            engine.camera.fov += (targetFov - engine.camera.fov) * Math.min(1, dt * 6);
+            engine.camera.updateProjectionMatrix();
+
+            // ── Camera shake (on block break) ──
+            if (engine._shakeUntil && t < engine._shakeUntil) {
+              var shakeAmt = engine._shakeIntensity || 0.03;
+              cam.x += (Math.random() - 0.5) * shakeAmt;
+              cam.y += (Math.random() - 0.5) * shakeAmt;
+            }
+
+          }
+          // Run even when focus is lost so previews and accessible hints clear.
+          updateGhostPreview();
+
+          // Animate NPCs — bob, rotate, face player when close
+          var t = engine.clock.getElapsedTime();
+          engine.npcs.forEach(function(npc, i) {
+            var THREE = window.THREE, ambientMotion = engine._ambientMotionEnabled !== false;
+            if (!THREE) return;
+            var baseY = npc.data.position[1] + 0.75;
+            var bobY = ambientMotion ? Math.sin(t * 2 + i) * 0.1 : 0;
+            // Celebration bounce (set npc._celebrateUntil on correct answer)
+            if (ambientMotion && npc._celebrateUntil && t < npc._celebrateUntil) {
+              bobY += Math.abs(Math.sin((t - (npc._celebrateUntil - 0.8)) * 12)) * 0.4;
+            }
+            // Shake on wrong answer (set npc._shakeUntil)
+            if (ambientMotion && npc._shakeUntil && t < npc._shakeUntil) {
+              npc.body.position.x = npc.data.position[0] + 0.5 + Math.sin(t * 30) * 0.05;
+            } else if (ambientMotion && engine.camera && engine.camera.position.distanceTo(npc.body.position) > 8) {
+              // Subtle idle patrol when player is far — gentle sinusoidal wander
+              npc.body.position.x = npc.data.position[0] + 0.5 + Math.sin(t * 0.4 + i * 2.1) * 0.3;
+              npc.body.position.z = npc.data.position[2] + 0.5 + Math.cos(t * 0.3 + i * 1.7) * 0.3;
+            } else {
+              npc.body.position.x = npc.data.position[0] + 0.5;
+              npc.body.position.z = npc.data.position[2] + 0.5;
+            }
+            npc.body.position.y = baseY + bobY;
+            // Sync head + floating sprites to body's CURRENT X/Z so the head doesn't drift
+            // when the body sway/shake animations offset the body.
+            npc.head.position.x = npc.body.position.x;
+            npc.head.position.z = npc.body.position.z;
+            npc.head.position.y = npc.data.position[1] + 1.7 + bobY;
+            // Blink, and let the arms swing with the walk. Both stop dead under
+            // reduced motion / battery saver, where the bob is already still.
+            if (ambientMotion) {
+              if (npc._eyeParts) {
+                var open = geometryWorldBlinkScale(t, npc._blinkSeed || (i + 1));
+                for (var ei = 0; ei < npc._eyeParts.length; ei++) npc._eyeParts[ei].scale.y = open;
+              }
+              if (npc._arms) {
+                var celebrating = npc._celebrateUntil && t < npc._celebrateUntil;
+                for (var ai = 0; ai < npc._arms.length; ai++) {
+                  var pv = npc._arms[ai], sideSign = pv.userData.armSide || 1;
+                  // Arms go up when a character celebrates a right answer, and
+                  // otherwise swing gently out of phase with each other.
+                  var wantZ = celebrating ? sideSign * 1.45 : sideSign * 0.22;
+                  var wantX = celebrating ? 0 : Math.sin(t * 2 + i + (sideSign > 0 ? Math.PI : 0)) * 0.2;
+                  pv.rotation.z += (wantZ - pv.rotation.z) * Math.min(1, dt * 6);
+                  pv.rotation.x += (wantX - pv.rotation.x) * Math.min(1, dt * 6);
+                }
+              }
+            }
+            if (!ambientMotion) {
+              (npc._eyeParts || []).forEach(function(eye) { eye.scale.y = 1; });
+              (npc._arms || []).forEach(function(arm) { arm.rotation.x = 0; arm.rotation.z = (arm.userData.armSide || 1) * 0.22; });
+            }
+            if (npc.label)  { npc.label.position.x  = npc.body.position.x; npc.label.position.z  = npc.body.position.z; npc.label.position.y  = npc.data.position[1] + 2.1 + bobY; }
+            if (npc.prompt) { npc.prompt.position.x = npc.body.position.x; npc.prompt.position.z = npc.body.position.z; }
+            if (npc.qMark)  { npc.qMark.position.x  = npc.body.position.x; npc.qMark.position.z  = npc.body.position.z; }
+            // Face toward player when within 6 blocks
+            if (engine.camera) {
+              var dx = engine.camera.position.x - npc.body.position.x;
+              var dz = engine.camera.position.z - npc.body.position.z;
+              var dist = Math.sqrt(dx * dx + dz * dz);
+              if (dist < 6) {
+                var targetRot = Math.atan2(dx, dz);
+                npc.body.rotation.y += (targetRot - npc.body.rotation.y) * (ambientMotion ? Math.min(1, dt * 3) : 1);
+                // Head tilt: look slightly toward player's eye level
+                var lookDy = engine.camera.position.y - npc.head.position.y;
+                var headTilt = Math.max(-0.3, Math.min(0.3, lookDy * 0.15));
+                npc.head.rotation.x += (headTilt - npc.head.rotation.x) * (ambientMotion ? Math.min(1, dt * 4) : 1);
+                npc.head.rotation.y += (targetRot - npc.head.rotation.y) * (ambientMotion ? Math.min(1, dt * 3) : 1);
+              } else {
+                if (ambientMotion) npc.body.rotation.y += dt * 0.5;
+                npc.head.rotation.x = ambientMotion ? npc.head.rotation.x * 0.95 : 0;
+                npc.head.rotation.y = npc.body.rotation.y;
+              }
+            } else if (ambientMotion) {
+              npc.body.rotation.y += dt * 0.5;
+            }
+            // ── Floating question mark: bob + spin, hide when answered ──
+            if (npc.qMark) {
+              // engine._answeredRef is refreshed every React render; the closure copy is
+              // frozen at initEngine time now that the engine outlives re-renders.
+              var isNpcAnswered = (engine._answeredRef || answeredNpcs)[i];
+              if (isNpcAnswered) {
+                // Hide question mark when answered (fade out)
+                if (!ambientMotion) { npc.qMark.material.opacity = 0; npc.qMark.visible = false; }
+                else if (npc.qMark.material.opacity > 0.01) {
+                  npc.qMark.material.opacity -= dt * 2;
+                } else if (npc.qMark.visible) {
+                  npc.qMark.visible = false;
+                }
+              } else {
+                npc.qMark.material.opacity = 1;
+                npc.qMark.visible = true;
+                npc.qMark.position.y = npc.data.position[1] + 2.7 + (ambientMotion ? Math.sin(t * 3 + i * 1.5) * 0.15 : 0);
+                // Subtle scale pulse
+                var qScale = 0.55 + (ambientMotion ? Math.sin(t * 4 + i) * 0.08 : 0);
+                npc.qMark.scale.set(qScale, qScale, 1);
+              }
+            }
+
+            // ── Eye blink animation ──
+            if (npc.eyeL && npc.eyeR) {
+              var blinkCycle = (t * 0.7 + i * 2.3) % 4; // blink every ~4 seconds
+              var eyeScale = ambientMotion && blinkCycle < 0.1 ? 0.2 : 1.0; // squash during blink
+              npc.eyeL.scale.set(1, eyeScale, 1);
+              npc.eyeR.scale.set(1, eyeScale, 1);
+            }
+
+            // ── Answered NPC green tint + checkmark glow ──
+            if ((engine._answeredRef || answeredNpcs)[i] && npc.data.question) {
+              // Green emissive tint on body
+              if (!npc._answeredTinted) {
+                npc._answeredTinted = true;
+                npc.body.material.emissive = new THREE.Color(0x22c55e);
+                npc.body.material.emissiveIntensity = 0.15;
+              }
+              // Pulsing green glow intensity
+              npc.body.material.emissiveIntensity = ambientMotion ? 0.1 + Math.sin(t * 2 + i) * 0.05 : 0.15;
+              // Green checkmark particle (occasional)
+              if (ambientMotion && Math.random() < 0.003) {
+                var cpGeo = new THREE.BoxGeometry(0.05, 0.05, 0.05);
+                var cpMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.8 });
+                var cpMesh = new THREE.Mesh(cpGeo, cpMat);
+                cpMesh.position.set(npc.body.position.x + (Math.random() - 0.5) * 0.5, npc.body.position.y + 0.5 + Math.random(), npc.body.position.z + (Math.random() - 0.5) * 0.5);
+                cpMesh.userData._age = 0; cpMesh.userData._life = 1.5;
+                cpMesh.userData._vel = { x: (Math.random() - 0.5) * 0.3, y: 0.8 + Math.random() * 0.5, z: (Math.random() - 0.5) * 0.3 };
+                engine.scene.add(cpMesh); engine._particles.push(cpMesh);
+              }
+            }
+
+            // Proximity glow ring on ground beneath NPC
+            if (!npc._ring) {
+              if (THREE) {
+                var ringGeo = new THREE.RingGeometry(0.4, 0.55, 24);
+                ringGeo.rotateX(-Math.PI / 2);
+                var ringMat = new THREE.MeshBasicMaterial({ color: npc.data.color || 0x7c3aed, transparent: true, opacity: 0, side: THREE.DoubleSide });
+                npc._ring = new THREE.Mesh(ringGeo, ringMat);
+                npc._ring.position.set(npc.data.position[0] + 0.5, npc.data.position[1] + 0.02, npc.data.position[2] + 0.5);
+                engine.scene.add(npc._ring);
+              }
+            }
+            if (npc._ring && engine.camera) {
+              var dx2 = engine.camera.position.x - npc.body.position.x;
+              var dz2 = engine.camera.position.z - npc.body.position.z;
+              var dist2 = Math.sqrt(dx2 * dx2 + dz2 * dz2);
+              var targetOp = dist2 < 4 ? 0.5 : 0;
+              npc._ring.material.opacity += (targetOp - npc._ring.material.opacity) * (ambientMotion ? Math.min(1, dt * 5) : 1);
+              npc._ring.scale.setScalar(1.0 + (ambientMotion ? Math.sin(t * 3 + i) * 0.08 : 0));
+              // Speech bubble preview — show first ~30 chars of dialogue when medium-close
+              if (!npc._speechBubble && npc.data.dialogue) {
+                var sbCanvas = document.createElement('canvas'); sbCanvas.width = 512; sbCanvas.height = 128;
+                var sbx = sbCanvas.getContext('2d');
+                sbx.clearRect(0, 0, 512, 128);
+                sbx.fillStyle = 'rgba(15,23,42,0.86)';
+                if (sbx.roundRect) { sbx.beginPath(); sbx.roundRect(8, 8, 496, 112, 20); sbx.fill(); } else { sbx.fillRect(8, 8, 496, 112); }
+                sbx.strokeStyle = 'rgba(255,255,255,0.18)'; sbx.lineWidth = 3;
+                if (sbx.roundRect) { sbx.beginPath(); sbx.roundRect(8, 8, 496, 112, 20); sbx.stroke(); }
+                sbx.fillStyle = '#e2e8f0'; sbx.font = '28px sans-serif'; sbx.textAlign = 'center'; sbx.textBaseline = 'middle';
+                var preview = npc.data.dialogue.length > 35 ? npc.data.dialogue.slice(0, 33) + '...' : npc.data.dialogue;
+                sbx.fillText(preview, 256, 66);
+                var sbTex = new THREE.CanvasTexture(sbCanvas);
+                if (typeof THREE.sRGBEncoding !== 'undefined') sbTex.encoding = THREE.sRGBEncoding;
+                npc._speechBubble = new THREE.Sprite(new THREE.SpriteMaterial({ map: sbTex, transparent: true, depthTest: false, opacity: 0 }));
+                npc._speechBubble.scale.set(2.5, 0.6, 1);
+                npc._speechBubble.position.set(npc.data.position[0] + 0.5, npc.data.position[1] + 3.0, npc.data.position[2] + 0.5);
+                engine.scene.add(npc._speechBubble);
+              }
+              if (npc._speechBubble) {
+                // Show when medium distance (3-6 blocks), hide when too close (dialog takes over) or too far
+                var sbTarget = (dist2 > 3 && dist2 < 6) ? 0.7 : 0;
+                npc._speechBubble.material.opacity += (sbTarget - npc._speechBubble.material.opacity) * (ambientMotion ? Math.min(1, dt * 5) : 1);
+                npc._speechBubble.position.y = npc.data.position[1] + 3.0 + (ambientMotion ? Math.sin(t * 1.5 + i * 0.8) * 0.04 : 0);
+              }
+              // "Press E" prompt — fade in when close, bob above head
+              if (npc.prompt) {
+                var promptTarget = dist2 < 3.5 ? 0.9 : 0;
+                npc.prompt.material.opacity += (promptTarget - npc.prompt.material.opacity) * (ambientMotion ? Math.min(1, dt * 6) : 1);
+                npc.prompt.position.y = npc.data.position[1] + 2.5 + (ambientMotion ? Math.sin(t * 2.5 + i * 0.7) * 0.06 : 0);
+              }
+            }
+          });
+
+          // ── NPC proximity chime (soft ping when near unanswered NPC, every 3s) ──
+          if (!engine._npcProxTimer) engine._npcProxTimer = 0;
+          engine._npcProxTimer += dt;
+          if (engine._npcProxTimer > 3.0 && engine.camera) {
+            engine._npcProxTimer = 0;
+            engine.npcs.forEach(function(npc, ni) {
+              if (!npc.data.question || (engine._answeredRef || answeredNpcs)[ni]) return;
+              var pDist = engine.camera.position.distanceTo(npc.body.position);
+              if (pDist < 4.5 && pDist > 1.5) {
+                // Soft proximity chime (quieter than interaction chime)
+                try {
+                  var ac = getAC(); if (!ac) return;
+                  var osc = ac.createOscillator(); osc.type = 'sine'; osc.frequency.value = 660 + ni * 50;
+                  var g = ac.createGain(); g.gain.value = 0.015; // very quiet
+                  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+                  osc.connect(g); g.connect(ac.destination);
+                  osc.start(); osc.stop(ac.currentTime + 0.4);
+                } catch(e) {}
+              }
+            });
+          }
+
+          // ── Collaborative: render peer player avatars ──
+          // Read from engine bridges (closure vars are stale — animate loop captured first render)
+          var _collabActive = engine._placeState && engine._placeState.collabMode;
+          var _collabPlayers = engine._collabPlayersRef || {};
+          var _playerName = engine._playerNameRef || playerName;
+          if (_collabActive && engine._peerAvatars === undefined) engine._peerAvatars = {};
+          if (_collabActive) {
+            var THREE = window.THREE;
+            Object.keys(_collabPlayers).forEach(function(key) {
+              var p = _collabPlayers[key];
+              if (p.name === _playerName || !p.position) return;
+              if (!engine._peerAvatars[key]) {
+                // Create avatar: colored cube head + body
+                var mat = new THREE.MeshLambertMaterial({ color: new THREE.Color(p.color || '#34d399') });
+                var body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.6), mat);
+                var head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), mat);
+                engine.scene.add(body); engine.scene.add(head);
+                engine._peerAvatars[key] = { body: body, head: head };
+              }
+              var av = engine._peerAvatars[key];
+              av.body.position.set(p.position[0], p.position[1] - 0.8, p.position[2]);
+              av.head.position.set(p.position[0], p.position[1] + 0.05, p.position[2]);
+              av.body.rotation.y += dt * 0.3;
+            });
+            // Remove avatars for disconnected players
+            Object.keys(engine._peerAvatars).forEach(function(key) {
+              if (!_collabPlayers[key]) { // was the stale closure copy, unlike the add path above
+                var gone = engine._peerAvatars[key];
+                [gone.body, gone.head].forEach(function(m) {
+                  if (!m) return;
+                  engine.scene.remove(m);
+                  // Removing from the scene doesn't free GPU memory — a long collab
+                  // session with players joining/leaving leaked a Mesh per departure.
+                  if (m.geometry) m.geometry.dispose();
+                  if (m.material && m.material.dispose) m.material.dispose();
+                });
+                delete engine._peerAvatars[key];
+              }
+            });
+          }
+
+          // ── Sky transition on lesson completion ──
+          // When all questions answered, sky transitions: day → golden hour → starry night
+          if (engine.completionTriggered) {
+            engine.completionProgress = Math.min(1, (engine.completionProgress || 0) + dt * 0.15);
+            var p = engine.completionProgress;
+            var THREE = window.THREE;
+            if (p < 0.5) {
+              // Day → golden hour (blue → orange)
+              var t2 = p * 2;
+              var r = 0.53 + t2 * 0.47, g = 0.81 - t2 * 0.41, b = 0.92 - t2 * 0.62;
+              engine.scene.background.setRGB(r, g, b);
+              engine.scene.fog.color.setRGB(r, g, b);
+            } else {
+              // Golden hour → night (orange → dark blue)
+              var t2 = (p - 0.5) * 2;
+              var r = 1.0 - t2 * 0.94, g = 0.4 - t2 * 0.35, b = 0.3 + t2 * 0.05;
+              engine.scene.background.setRGB(r, g, b);
+              engine.scene.fog.color.setRGB(r, g, b);
+            }
+            // Spawn floating stars
+            if (p > 0.6 && !engine.starsCreated) {
+              engine.starsCreated = true;
+              var starGeo = new THREE.BufferGeometry();
+              var starVerts = [];
+              for (var si = 0; si < 500; si++) {
+                starVerts.push((Math.random() - 0.5) * 200, 30 + Math.random() * 50, (Math.random() - 0.5) * 200);
+              }
+              starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVerts, 3));
+              var starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.3, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+              engine.stars = new THREE.Points(starGeo, starMat);
+              engine.scene.add(engine.stars);
+            }
+            // Fade in stars
+            if (engine.stars && p > 0.6) {
+              engine.stars.material.opacity = Math.min(1, (p - 0.6) * 2.5);
+              engine.stars.rotation.y += dt * 0.02; // slow rotation
+            }
+            // Spawn floating congratulations message
+            if (p > 0.8 && !engine.congratsCreated) {
+              engine.congratsCreated = true;
+              // Drawn at 2x on a dark card with an amber border, and tagged sRGB: the
+              // old sprite was bare text on nothing, untagged, and so read as faint
+              // pastel over whatever sky happened to be behind it.
+              var canvas2 = document.createElement('canvas'); canvas2.width = 1024; canvas2.height = 512;
+              var cx2 = canvas2.getContext('2d');
+              cx2.clearRect(0, 0, 1024, 512);
+              cx2.fillStyle = 'rgba(15,23,42,0.9)';
+              if (cx2.roundRect) { cx2.beginPath(); cx2.roundRect(24, 24, 976, 464, 40); cx2.fill(); } else { cx2.fillRect(24, 24, 976, 464); }
+              if (cx2.roundRect) { cx2.strokeStyle = '#fbbf24'; cx2.lineWidth = 6; cx2.beginPath(); cx2.roundRect(24, 24, 976, 464, 40); cx2.stroke(); }
+              cx2.textAlign = 'center'; cx2.textBaseline = 'middle';
+              cx2.fillStyle = '#fbbf24';
+              cx2.font = 'bold 72px sans-serif';
+              cx2.fillText('\uD83C\uDFC6 Lesson Complete!', 512, 130);
+              cx2.fillStyle = '#f1f5f9';
+              cx2.font = '38px sans-serif';
+              cx2.fillText('Every block you placed made', 512, 230);
+              cx2.fillText('your brain stronger.', 512, 282);
+              cx2.fillStyle = '#86efac';
+              cx2.font = 'italic 34px sans-serif';
+              cx2.fillText('You didn\'t just learn volume \u2014', 512, 370);
+              cx2.fillText('you practiced growing.', 512, 420);
+              var congTex = new THREE.CanvasTexture(canvas2);
+              if (typeof THREE.sRGBEncoding !== 'undefined') congTex.encoding = THREE.sRGBEncoding;
+              var congSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: congTex, transparent: true, opacity: 0, depthTest: false }));
+              congSprite.scale.set(8, 4, 1);
+              congSprite.renderOrder = 1001;
+              congSprite.position.copy(engine.camera.position);
+              engine.scene.add(congSprite);
+              engine.congratsSprite = congSprite;
+            }
+            if (engine.congratsSprite) {
+              engine.congratsSprite.material.opacity = Math.min(1, engine.congratsSprite.material.opacity + dt * 0.5);
+              // The card used to sit at a fixed (10, 12, 10) in the world: fine for a
+              // lesson built around the origin, invisible for one laid out at x = 40.
+              // It now hangs seven units ahead of wherever the player looks, a little
+              // above eye level, and bobs gently there.
+              var cfwd = engine.camera.getWorldDirection(new THREE.Vector3());
+              cfwd.y = 0; if (cfwd.lengthSq() < 1e-6) cfwd.set(0, 0, -1); cfwd.normalize();
+              engine.congratsSprite.position.set(
+                engine.camera.position.x + cfwd.x * 7,
+                engine.camera.position.y + 1.3 + Math.sin(t * 0.5) * 0.25,
+                engine.camera.position.z + cfwd.z * 7);
+            }
+          }
+
+          // ── Animate water surfaces — opacity shimmer without moving construction meshes ──
+          if (!engine._waterAnimFrame) engine._waterAnimFrame = 0;
+          engine._waterAnimFrame++;
+          if (engine._ambientMotionEnabled !== false && engine._waterAnimFrame % 3 === 0) { // Every 3rd frame for performance
+            var wt = engine.clock.getElapsedTime();
+            var blockKeys = Object.keys(engine.blocks);
+            for (var wi = 0; wi < blockKeys.length; wi++) {
+              var wm = engine.blocks[blockKeys[wi]];
+              if (wm && wm.userData.blockType === 'water') {
+                var wp = wm.userData.gridPos;
+                // Preserve shape-specific construction placement; animate the material only.
+                wm.material.opacity = 0.35 + Math.sin(wt * 2 + wp.x + wp.z) * 0.08;
+              } else if (wm && wm.userData.blockType === 'lava') {
+                // Lava: pulse emissive intensity
+                var lp = wm.userData.gridPos;
+                wm.material.emissiveIntensity = 0.5 + Math.sin(wt * 1.2 + lp.x * 0.5 + lp.z * 0.3) * 0.25;
+              } else if (wm && wm.userData.blockType === 'diamond') {
+                // Diamond: periodic sparkle particles. Bumped from 0.005 (~1/3s) to 0.015 (~1/s)
+                // and added an occasional white-hot flash for a shinier crystal feel.
+                if (Math.random() < 0.015) {
+                  var dp = wm.userData.gridPos;
+                  var THREE2 = window.THREE;
+                  if (THREE2) {
+                    var sparkSize = 0.05 + Math.random() * 0.04;
+                    var sparkGeo = new THREE2.BoxGeometry(sparkSize, sparkSize, sparkSize);
+                    var sparkColor = Math.random() < 0.2 ? 0xffffff : 0x00ffff;
+                    var sparkMat = new THREE2.MeshBasicMaterial({ color: sparkColor, transparent: true, opacity: 0.9 });
+                    var spark = new THREE2.Mesh(sparkGeo, sparkMat);
+                    spark.position.set(dp.x + Math.random(), dp.y + Math.random(), dp.z + Math.random());
+                    spark.userData._age = 0; spark.userData._life = 0.55 + Math.random() * 0.25;
+                    spark.userData._vel = { x: (Math.random() - 0.5) * 2, y: 1.2 + Math.random() * 1.2, z: (Math.random() - 0.5) * 2 };
+                    engine.scene.add(spark);
+                    engine._particles.push(spark);
+                  }
+                }
+              } else if (wm && wm.userData.blockType === 'torch' && wm.userData._torchLight) {
+                // Torch: flicker the point light intensity
+                var tp = wm.userData.gridPos;
+                wm.userData._torchLight.intensity = 1.0 + Math.sin(wt * 8 + tp.x * 2.3) * 0.3 + Math.sin(wt * 13 + tp.z * 3.1) * 0.15;
+                if (wm.userData._torchGlow) {
+                  var gf = 1 + Math.sin(wt * 8 + tp.x * 2.3) * 0.12 + Math.sin(wt * 13 + tp.z * 3.1) * 0.06;
+                  wm.userData._torchGlow.scale.set(2.2 * gf, 2.2 * gf, 1);
+                  wm.userData._torchGlow.material.opacity = 0.62 + (gf - 1) * 1.1;
+                }
+                wm.material.emissiveIntensity = 0.7 + Math.sin(wt * 6 + tp.x) * 0.25;
+              }
+            }
+          }
+
+          // ── Auto day/night cycle (60-second rotation through presets) ──
+          if (!engine._showcase && !(engine._creationFocus && !engine._creationFocus.manual) && d.autoCycle) {
+            if (!engine._cycleTimer) engine._cycleTimer = 0;
+            engine._cycleTimer += dt;
+            if (engine._cycleTimer > 60) {
+              engine._cycleTimer = 0;
+              var presetKeys = Object.keys(ENV_PRESETS);
+              var curIdx = presetKeys.indexOf(engine._currentEnv || 'day');
+              var nextIdx = (curIdx + 1) % presetKeys.length;
+              applyEnvPreset(engine, presetKeys[nextIdx]);
+              upd('envPreset', presetKeys[nextIdx]);
+            }
+          }
+
+          // ── Ambient dust motes (floating particles near player) ──
+          if (!engine._dustMotes) engine._dustMotes = [];
+          if (!engine._showcase && engine._ambientMotionEnabled !== false && engine._dustMotes.length < 12 && Math.random() < 0.03) {
+            var camPos = engine.camera.position;
+            var dGeo = new THREE.SphereGeometry(0.02, 4, 4);
+            var dMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 });
+            var dust = new THREE.Mesh(dGeo, dMat);
+            dust.position.set(camPos.x + (Math.random() - 0.5) * 8, camPos.y + (Math.random() - 0.5) * 3, camPos.z + (Math.random() - 0.5) * 8);
+            dust._phase = Math.random() * 6.28;
+            dust._speed = 0.2 + Math.random() * 0.3;
+            dust._life = 8 + Math.random() * 6; // 8-14 seconds
+            dust._age = 0;
+            engine.scene.add(dust);
+            engine._dustMotes.push(dust);
+          }
+          for (var di = engine._dustMotes.length - 1; di >= 0; di--) {
+            var dm = engine._dustMotes[di];
+            dm._age += dt;
+            if (engine._ambientMotionEnabled === false || dm._age >= dm._life) {
+              engine.scene.remove(dm); dm.geometry.dispose(); dm.material.dispose();
+              engine._dustMotes.splice(di, 1);
+              continue;
+            }
+            // Gentle floating: sinusoidal drift
+            dm.position.x += Math.sin(t * 0.5 + dm._phase) * 0.003;
+            dm.position.y += Math.sin(t * 0.3 + dm._phase * 2) * 0.002 + dm._speed * dt * 0.05;
+            dm.position.z += Math.cos(t * 0.4 + dm._phase * 1.5) * 0.003;
+            // Fade in/out over life
+            var lifePct = dm._age / dm._life;
+            dm.material.opacity = lifePct < 0.1 ? lifePct * 2.5 : lifePct > 0.8 ? (1 - lifePct) * 5 : 0.25;
+          }
+
+          // ── Animate clouds — slow UV drift ──
+          if (engine._ambientMotionEnabled !== false && engine._cloudTex) {
+            engine._cloudTex.offset.x += dt * 0.005;
+            engine._cloudTex.offset.y += dt * 0.002;
+            if (engine._cloudTexHigh) { engine._cloudTexHigh.offset.x += dt * 0.002; engine._cloudTexHigh.offset.y += dt * 0.0008; }
+          }
+          // Keep cloud plane centered above camera so it always covers the sky
+          if (engine._cloudPlane && engine.camera) {
+            engine._cloudPlane.position.x = engine.camera.position.x;
+            engine._cloudPlane.position.z = engine.camera.position.z;
+            if (engine._cloudPlaneHigh) { engine._cloudPlaneHigh.position.x = engine.camera.position.x; engine._cloudPlaneHigh.position.z = engine.camera.position.z; }
+            // Clouds are lit by the same sky they hang in. White clouds over an
+            // orange sunset read as a compositing mistake; these take most of their
+            // colour from the fog and keep enough white to stay bright.
+            if (engine.scene.fog && engine._cloudWhite) {
+              engine._cloudPlane.material.color.copy(engine.scene.fog.color).lerp(engine._cloudWhite, 0.72);
+              if (engine._cloudPlaneHigh) engine._cloudPlaneHigh.material.color.copy(engine.scene.fog.color).lerp(engine._cloudWhite, 0.8);
+            }
+          }
+          // The sky dome rides with the camera and takes its two colours from the
+          // scene, so the time-of-day cross-fade in updateEnvTransition drives it.
+          if (engine._popBlocks && engine._popBlocks.length) {
+            for (var pi = engine._popBlocks.length - 1; pi >= 0; pi--) {
+              var pm = engine._popBlocks[pi]; pm.userData._popT = (pm.userData._popT || 0) + dt / 0.16;
+              var ptp = Math.min(1, pm.userData._popT), pe = 1 - Math.pow(1 - ptp, 3);
+              pm.scale.setScalar(0.7 + 0.3 * pe);
+              if (ptp >= 1) { pm.scale.setScalar(1); engine._popBlocks.splice(pi, 1); }
+            }
+          }
+          if (engine._aoDirty && !engine._placingLessonBlocks && engine.refreshAllAO) engine.refreshAllAO();
+          if (engine._horizon && engine.camera) { engine._horizon.position.x = engine.camera.position.x; engine._horizon.position.z = engine.camera.position.z; }
+          if (engine._skyDome && engine.camera) {
+            engine._skyDome.position.copy(engine.camera.position);
+            var skyUniforms = engine._skyDome.material.uniforms;
+            // Zenith is a deeper shade of the background rather than the background
+            // itself: loadLesson resets background and fog to one colour, so on a
+            // fresh load the two would match and the dome would be flat again.
+            if (engine.scene.background && engine.scene.background.isColor) skyUniforms.topColor.value.copy(engine.scene.background).multiplyScalar(0.78);
+            if (engine.scene.fog) skyUniforms.bottomColor.value.copy(engine.scene.fog.color);
+            if (skyUniforms.sunColor && engine._skyWhite) {
+              skyUniforms.sunColor.value.copy(engine.scene.fog ? engine.scene.fog.color : skyUniforms.bottomColor.value).lerp(engine._skyWhite, 0.6);
+              skyUniforms.sunGlow.value = engine.sun ? Math.max(0.12, Math.min(1, engine.sun.intensity / 1.2)) : 1;
+            }
+          }
+          // Keep sun sprite at a consistent sky direction relative to camera so it doesn't
+          // "run off" into a strange corner when the player explores a large world.
+          // ── Sun, shadow volume and the two sky discs, from one direction ──
+          if (engine.sun && engine.camera && engine._sunAngles) {
+            var sdir = geometryWorldSunVector(engine._sunAngles.el, engine._sunAngles.az);
+            var sd = engine._sunDistance || 120;
+            // Snap the travelling shadow box to whole shadow-map texels, or the
+            // shadows crawl and shimmer as the player walks.
+            var scam = engine.sun.shadow.camera;
+            var texel = (scam.right - scam.left) / (engine.sun.shadow.mapSize.x || 2048);
+            var stx = Math.round(engine.camera.position.x / texel) * texel;
+            var stz = Math.round(engine.camera.position.z / texel) * texel;
+            if (engine._sunTarget) { engine._sunTarget.position.set(stx, 0, stz); engine._sunTarget.updateMatrixWorld(); }
+            engine.sun.position.set(stx + sdir.x * sd, sdir.y * sd, stz + sdir.z * sd);
+            if(engine._skyDome)engine._skyDome.material.uniforms.sunDir.value.set(sdir.x,sdir.y,sdir.z);
+            var sunI = engine.sun.intensity;
+            // Both discs hang in the sky at the sun's own bearing: the sun where the
+            // light comes from, the moon opposite it and always above the horizon.
+            if (engine._sunSprite) {
+              engine._sunSprite.position.set(engine.camera.position.x + sdir.x * 90, engine.camera.position.y + Math.max(6, sdir.y * 90), engine.camera.position.z + sdir.z * 90);
+              engine._sunSprite.material.opacity = Math.max(0, Math.min(1, (sunI - 0.15) / 0.6));
+            }
+            if (engine._moonSprite) {
+              var mel = Math.max(0.4, Math.abs(sdir.y));
+              var mlen = Math.sqrt(sdir.x * sdir.x + sdir.z * sdir.z) || 1;
+              var mfl = Math.sqrt(Math.max(0, 1 - mel * mel)) / mlen;
+              engine._moonSprite.position.set(engine.camera.position.x - sdir.x * mfl * 90, engine.camera.position.y + mel * 90, engine.camera.position.z - sdir.z * mfl * 90);
+              engine._moonSprite.material.opacity = Math.max(0, Math.min(1, (0.45 - sunI) / 0.25));
+            }
+          }
+          // Water ripple: the shared normal map drifts, every water block shares it.
+          if (engine._ambientMotionEnabled !== false && engine._procTexCache && engine._procTexCache.waterNormal) {
+            engine._procTexCache.waterNormal.offset.x += dt * 0.035; engine._procTexCache.waterNormal.offset.y += dt * 0.02;
+          }
+
+          if (engine.composer && engine._postFxEnabled !== false) { try { engine.composer.render(); } catch (e) { engine.composer = null; engine.renderer.render(engine.scene, engine.camera); } }
+          else { engine.renderer.render(engine.scene, engine.camera); }
+        }
+        animate();
+
+        // Handle resize
+        function applyViewportResize() {
+          engine._resizeRafId = null;
+          if (!container.isConnected || engine._destroyed) return;
+          var cw = container.clientWidth, ch = container.clientHeight;
+          if (!cw || !ch) return;
+          // Only act on a REAL size change. renderer.setSize writes explicit pixel
+          // width/height onto the canvas, which perturbs layout and re-triggers this
+          // observer — an unguarded callback fed itself, reallocating the renderer's
+          // buffers over and over ("ResizeObserver loop completed with undelivered
+          // notifications" fired 28x on a single mount) and leaving the layout never
+          // quite still.
+          var last = engine._lastViewport;
+          if (last && last.w === cw && last.h === ch) return;
+          engine._lastViewport = { w: cw, h: ch };
+          engine.camera.aspect = cw / ch;
+          if(engine.fitShowcase)engine.fitShowcase();
+          if(engine.fitCreationFocus)engine.fitCreationFocus(false);
+          engine.camera.updateProjectionMatrix();
+          engine.renderer.setSize(cw, ch, false);
+          if (engine.composer) { try { engine.composer.setSize(cw, ch); } catch (e) {} }
+        }
+        function scheduleViewportResize() {
+          if (!container.isConnected || engine._destroyed || engine._resizeRafId) return;
+          engine._resizeRafId = requestAnimationFrame(applyViewportResize);
+        }
+
+        var ro = null;
+        if (typeof ResizeObserver === 'function') {
+          ro = new ResizeObserver(function() {
+            if (!container.isConnected) { ro.disconnect(); return; }
+            scheduleViewportResize();
+          });
+          ro.observe(container);
+        // Track it so destroyEngine can disconnect. The self-disconnect above only
+        // runs if the observer FIRES after the container detaches, which may never
+        // happen — and a live observer pins the whole engine closure, so navigating
+        // away and back accumulated one per visit.
+        engine._resizeObserver = ro;
+        } else {
+          // Older embedded browsers can still keep the camera and backing buffer in sync.
+          window.addEventListener('resize', _winH.resize = scheduleViewportResize);
+        }
+
+        // ── Session Analytics (research data collection) ──
+        engine.sessionLog = [];
+        engine.sessionStart = Date.now();
+        engine.logEvent = function(type, data) {
+          engine.sessionLog.push({
+            timestamp: Date.now() - engine.sessionStart,
+            elapsed: ((Date.now() - engine.sessionStart) / 1000).toFixed(1) + 's',
+            type: type,
+            data: data || {}
+          });
+        };
+        engine.logEvent('session_start', { lesson: 'volumeExplorer' });
+
+        // Patch placeBlock and removeBlock to log.
+        //
+        // These wrappers used to redeclare a SHORTER signature — placeBlock(x,y,z,type)
+        // over the real placeBlock(x,y,z,type,shape,rotation), and removeBlock(x,y,z)
+        // over removeBlock(x,y,z,forceRemove) — and forwarded only the arguments they
+        // named. Because they are installed after the originals, they won, and every
+        // caller's extra arguments were silently discarded. That killed the entire
+        // shape system: Q (cycle cube / slab / wedge / quarter) and R (rotate 90°) are
+        // documented in the controls panel, but every block placed as a default cube.
+        // Forward via `arguments` so the wrapper can never drift from the signature
+        // again.
+        //
+        // They also logged unconditionally, so a bounced placement (cell occupied) or a
+        // refused break (indestructible lesson block) still wrote a block_place /
+        // block_remove event. Those feed the session CSV and the MTSS progress report,
+        // so only log when the block map actually changed.
+        var origPlace = engine.placeBlock;
+        engine.placeBlock = function(x, y, z, type, shape, rotation) {
+          var key = x + ',' + y + ',' + z;
+          var had = !!engine.blocks[key];
+          var placed = origPlace.apply(engine, arguments);
+          // Ground and lesson structures arrive through this same function, and a
+          // 25 x 25 floor alone is 625 events. 'Master Builder' (100 blocks) unlocked
+          // the moment any lesson loaded, and the MTSS report and research CSV
+          // counted scenery as student work. Only the student's own placement is
+          // an event; loadLesson raises _placingLessonBlocks around its fills.
+          if (!had && engine.blocks[key] && !engine._placingLessonBlocks) {
+            engine.logEvent('block_place', { x: x, y: y, z: z, type: type, shape: shape || 'cube', rotation: rotation || 0 });
+          }
+          return placed;
+        };
+        var origRemove = engine.removeBlock;
+        engine.removeBlock = function(x, y, z, forceRemove) {
+          var key = x + ',' + y + ',' + z;
+          var had = !!engine.blocks[key];
+          origRemove.apply(engine, arguments);
+          if (had && !engine.blocks[key]) {
+            engine.logEvent('block_remove', { x: x, y: y, z: z });
+          }
+        };
+
+        // Export session data as CSV for research
+        engine.exportSessionCSV = function() {
+          var rows = ['Timestamp_ms,Elapsed,Event_Type,Details'];
+          engine.sessionLog.forEach(function(entry) {
+            var details = formatSessionEventDetails(entry.data);
+            rows.push(entry.timestamp + ',' + entry.elapsed + ',' + entry.type + ',"' + details.replace(/"/g, '""') + '"');
+          });
+          return rows.join('\n');
+        };
+
+        // ── MTSS Progress Monitoring & Longitudinal Data ──
+        // Generates a structured progress report that can accumulate across sessions
+        // and be used for RTI tier classification
+        engine.generateProgressReport = function() {
+          var log = engine.sessionLog;
+          var correct = log.filter(function(e) { return e.type === 'answer_correct'; });
+          var wrong = log.filter(function(e) { return e.type === 'answer_wrong'; });
+          var allMeasurements = log.filter(function(e) { return e.type === 'measurement'; });
+          var measurements = allMeasurements.filter(function(e) { return !e.data || e.data.isComplete !== false; });
+          var blocksPlaced = log.filter(function(e) { return e.type === 'block_place'; });
+          var completions = log.filter(function(e) { return e.type === 'lesson_complete'; });
+          var lessons = log.filter(function(e) { return e.type === 'lesson_load'; });
+
+          // ── Scoring model: main question only, first attempt (Aaron's call) ──
+          // Previously accuracy counted every ANSWER ATTEMPT, and answer_correct fires
+          // once per follow-up STEP. Follow-ups are only reachable AFTER the step
+          // before was answered correctly, and they are by design the gentlest items
+          // in the lesson — so a student who got the main question right banked extra
+          // easy corrects, while a student who kept missing it never reached them.
+          // That widened the gap rather than measuring it, inside a number presented
+          // as an RTI tier. Follow-ups are now treated as instructional scaffolding
+          // and are not scored at all.
+          //
+          // Each NPC's main question (step 0) is scored on the student's FIRST
+          // attempt, which is what makes it probe-like rather than a persistence
+          // measure. Keyed by npc + question text so one NPC re-asked across a
+          // reload is not counted twice.
+          var mainAttempts = log.filter(function(e) {
+            return (e.type === 'answer_correct' || e.type === 'answer_wrong') && e.data && e.data.step === 0;
+          });
+          var firstAttemptByQuestion = {};
+          mainAttempts.forEach(function(e) {
+            var key = String(e.data.npc || '') + '|' + String(e.data.question || '');
+            if (!Object.prototype.hasOwnProperty.call(firstAttemptByQuestion, key)) {
+              firstAttemptByQuestion[key] = (e.type === 'answer_correct');
+            }
+          });
+          var scoredKeys = Object.keys(firstAttemptByQuestion);
+          var questionsScored = scoredKeys.length;
+          var questionsRightFirstTry = scoredKeys.filter(function(k) { return firstAttemptByQuestion[k]; }).length;
+          var accuracy = questionsScored > 0 ? Math.round((questionsRightFirstTry / questionsScored) * 100) : 0;
+
+          // The old attempt-level totals are still reported, under names that say what
+          // they actually count, so nothing is lost and a reviewer can see both.
+          var totalAttempts = correct.length + wrong.length;
+          // Real elapsed time, not the timestamp of the last logged event. A student who
+          // worked for two minutes and then sat idle for ten reported a 2-minute session,
+          // which inflated the questions-per-minute rate below — a rate presented
+          // alongside RTI tiering, so it needs to mean what it says.
+          var sessionDuration = engine.sessionStart ? (Date.now() - engine.sessionStart) / 1000
+            : (log.length > 0 ? log[log.length - 1].timestamp / 1000 : 0);
+
+          // answer_correct fires once per follow-up STEP, so intermediate scaffolding
+          // steps counted as whole questions here. Rate the student against questions
+          // actually completed.
+          var questionsCompleted = correct.filter(function(e) { return e.data && e.data.isFinalStep; }).length;
+          var questionsPerMinute = sessionDuration > 60 ? (questionsCompleted / (sessionDuration / 60)).toFixed(2) : 'N/A (session < 1 min)';
+
+          // Estimate difference is learning evidence, not a performance score.
+          var predictionSummary = summarizePredictionAccuracy(measurements);
+          var learningEvidence = summarizeLearningEvidence(log);
+
+          // RTI Tier suggestion based on accuracy
+          var rtiTier = accuracy >= 80 ? 'Tier 1 (Benchmark)' : accuracy >= 50 ? 'Tier 2 (Strategic)' : 'Tier 3 (Intensive)';
+
+          var report = {
+            // Session metadata
+            sessionDate: new Date().toISOString(),
+            sessionDuration: Math.round(sessionDuration) + 's',
+            lessonsAttempted: lessons.length,
+            lessonsCompleted: completions.length,
+
+            // ── Performance metrics ──
+            // scoringModel stamps the definition into every export. A longitudinal
+            // file whose meaning changed silently is worse than no file: exports
+            // written before 2026-07-27 have no such field, which is exactly how a
+            // reviewer can tell them apart from these. Never change the accuracy
+            // definition without changing this string too.
+            scoringModel: 'main-question-first-attempt',
+            questionsScored: questionsScored,
+            questionsCorrect: questionsRightFirstTry,
+            questionsWrong: questionsScored - questionsRightFirstTry,
+            accuracy: accuracy + '%',
+            questionsPerMinute: questionsPerMinute,
+
+            // Attempt-level totals, kept so nothing is lost and a reviewer can see
+            // both views. These count every answer press, follow-up steps included —
+            // which is what `accuracy` used to be derived from.
+            answerAttemptsCorrect: correct.length,
+            answerAttemptsWrong: wrong.length,
+            totalAttempts: totalAttempts,
+            // Whole questions carried to their final step (scaffolding completed),
+            // as distinct from questionsCorrect, which is first-attempt mastery.
+            questionsCompleted: questionsCompleted,
+
+            // Skill indicators
+            measurementsTaken: measurements.length,
+            incompleteMeasurementAttempts: allMeasurements.length - measurements.length,
+            estimateComparison: {
+              policy: 'descriptive-ungraded',
+              compared: predictionSummary.predictionsMade,
+              averageAbsolutePercentDifference: predictionSummary.averagePredictionPercentError,
+              observationsWithoutCommittedEstimate: predictionSummary.measurementsWithoutPrediction
+            },
+            blocksPlaced: blocksPlaced.length,
+
+            // RTI classification
+            rtiTierSuggestion: rtiTier,
+
+            // Growth indicators
+            npcConversations: log.filter(function(e) { return e.type === 'npc_chat'; }).length,
+            worldsCreated: log.filter(function(e) { return e.type === 'npc_created'; }).length,
+            worksheetsPrinted: log.filter(function(e) { return e.type === 'worksheet_print'; }).length,
+
+            // Detail for longitudinal tracking
+            learningEvidence: learningEvidence,
+            questionDetails: questionDetailsForReport(log),
+            measurementDetails: measurementDetailsForReport(measurements),
+
+            // Standards alignment
+            standardsAddressed: ['5.MD.C.3', '5.MD.C.4', '5.MD.C.5'],
+            tool: 'AlloFlow Geometry World',
+            version: '1.1'
+          };
+
+          return report;
+        };
+
+        // Export progress report as JSON (for longitudinal accumulation)
+        engine.exportProgressReport = function() {
+          var report = engine.generateProgressReport();
+          var json = JSON.stringify(report, null, 2);
+          var blob = new Blob([json], { type: 'application/json' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'geometry_progress_' + new Date().toISOString().slice(0, 10) + '.json';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(a.href);
+
+          // Also open printable MTSS report for teacher's RTI binder
+          var r = report;
+          var tierColor = r.rtiTierSuggestion.indexOf('Tier 1') >= 0 ? '#22c55e' : r.rtiTierSuggestion.indexOf('Tier 2') >= 0 ? '#f59e0b' : '#ef4444';
+          var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>MTSS Progress Report</title>'
+            + '<style>body{font-family:Arial,sans-serif;max-width:700px;margin:24px auto;color:#1e293b;line-height:1.5}'
+            + 'h1{font-size:20px;border-bottom:2px solid #334155;padding-bottom:8px}'
+            + 'h2{font-size:15px;color:#475569;margin:18px 0 6px}'
+            + '.tier{display:inline-block;background:' + tierColor + ';color:#fff;padding:6px 16px;border-radius:8px;font-size:18px;font-weight:700;margin:8px 0}'
+            + 'table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid #cbd5e1;padding:6px 10px;text-align:left;font-size:13px}th{background:#f1f5f9;font-weight:700}'
+            + '.metric{display:inline-block;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;margin:4px;text-align:center;min-width:100px}'
+            + '.metric .val{font-size:22px;font-weight:700;color:#1e293b}.metric .lbl{font-size:10px;color:#64748b;text-transform:uppercase}'
+            + '.footer{margin-top:24px;padding-top:8px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center}'
+            + '@media print{body{margin:12px}}</style></head><body>';
+          h += '<h1>\uD83D\uDCCB MTSS Progress Monitoring Report</h1>';
+          h += '<p><strong>Tool:</strong> ' + r.tool + ' v' + r.version + ' &bull; <strong>Date:</strong> ' + r.sessionDate.slice(0, 10) + ' &bull; <strong>Duration:</strong> ' + r.sessionDuration + '</p>';
+          h += '<div class="tier">' + r.rtiTierSuggestion + '</div>';
+
+          h += '<h2>Performance Metrics</h2><div>';
+          // Numerator and denominator must come from the SAME model. This printed
+          // questionsCorrect over totalAttempts, which after the scoring change would
+          // read like "3/17" — first-attempt corrects over every answer press — and
+          // could exceed 100% against the accuracy beside it.
+          h += '<div class="metric"><div class="val">' + r.accuracy + '</div><div class="lbl">Accuracy<br><span style="font-size:8px;opacity:.7">first attempt, main question</span></div></div>';
+          h += '<div class="metric"><div class="val">' + r.questionsCorrect + '/' + r.questionsScored + '</div><div class="lbl">Questions right</div></div>';
+          h += '<div class="metric"><div class="val">' + r.questionsPerMinute + '</div><div class="lbl">Q/min</div></div>';
+          h += '<div class="metric"><div class="val">' + r.measurementsTaken + '</div><div class="lbl">Measurements</div></div>';
+          if (r.incompleteMeasurementAttempts > 0) h += '<div class="metric"><div class="val">' + r.incompleteMeasurementAttempts + '</div><div class="lbl">Incomplete scans</div></div>';
+          h += '<div class="metric"><div class="val">' + r.blocksPlaced + '</div><div class="lbl">Blocks Placed</div></div>';
+          h += '<div class="metric"><div class="val">' + r.lessonsCompleted + '/' + r.lessonsAttempted + '</div><div class="lbl">Lessons Done</div></div>';
+          h += '</div>';
+
+          h += '<h2>Growth Indicators</h2><div>';
+          h += '<div class="metric"><div class="val">' + r.npcConversations + '</div><div class="lbl">NPC Chats</div></div>';
+          h += '<div class="metric"><div class="val">' + r.worldsCreated + '</div><div class="lbl">Worlds Created</div></div>';
+          h += '<div class="metric"><div class="val">' + r.worksheetsPrinted + '</div><div class="lbl">Worksheets</div></div>';
+          h += '</div>';
+          if (r.learningEvidence && (r.learningEvidence.explainedPredictions || r.learningEvidence.revisionsMade || r.learningEvidence.reflectionsCompleted || r.learningEvidence.retrievalAttempts || r.learningEvidence.representationViews || r.learningEvidence.representationConnections || r.learningEvidence.misconceptions.length || (r.estimateComparison && r.estimateComparison.compared))) {
+            var le = r.learningEvidence;
+            h += '<h2>Learning Evidence</h2><div>';
+            h += '<div class="metric"><div class="val">' + (r.estimateComparison ? r.estimateComparison.compared : 0) + '</div><div class="lbl">Estimates compared<br><span style="font-size:8px;opacity:.7">ungraded</span></div></div>';
+            h += '<div class="metric"><div class="val">' + (!r.estimateComparison || r.estimateComparison.averageAbsolutePercentDifference === null ? '&mdash;' : r.estimateComparison.averageAbsolutePercentDifference + '%') + '</div><div class="lbl">Avg absolute difference<br><span style="font-size:8px;opacity:.7">descriptive, ungraded</span></div></div>';
+            h += '<div class="metric"><div class="val">' + le.explainedPredictions + '</div><div class="lbl">Explained estimates</div></div>';
+            h += '<div class="metric"><div class="val">' + le.revisionsImproved + '/' + le.revisionsMade + '</div><div class="lbl">Revisions improved</div></div>';
+            h += '<div class="metric"><div class="val">' + (le.averageRevisionImprovement === null ? '&mdash;' : le.averageRevisionImprovement + ' pts') + '</div><div class="lbl">Avg revision gain</div></div>';
+            h += '<div class="metric"><div class="val">' + le.reflectionsCompleted + '</div><div class="lbl">Reflections</div></div>';
+            h += '<div class="metric"><div class="val">' + le.retrievalCheckpointsCorrect + '/' + le.retrievalCheckpoints + '</div><div class="lbl">Checkpoints mastered</div></div>';
+            h += '<div class="metric"><div class="val">' + le.retrievalFirstTryCorrect + '</div><div class="lbl">First-try retrieval</div></div>';
+            h += '<div class="metric"><div class="val">' + le.representationViews + '</div><div class="lbl">Representation switches</div></div>';
+            h += '<div class="metric"><div class="val">' + le.targetedRepresentationViews + '</div><div class="lbl">Targeted views opened</div></div>';
+            h += '<div class="metric"><div class="val">' + le.representationConnections + '</div><div class="lbl">Connections explained</div></div></div>';
+            if (le.strategies.length) {
+              h += '<p><strong>Strategies used:</strong> ' + le.strategies.map(function(item) { return escapeReportHtml(item.strategy) + ' (' + item.count + ')'; }).join(' &bull; ') + '</p>';
+            }
+            if (le.representations.length) {
+              h += '<p><strong>Equivalent views explored:</strong> ' + le.representations.map(function(item) { return escapeReportHtml(item.representation.replace(/_/g, ' ')) + ' (' + item.count + ')'; }).join(' &bull; ') + '</p>';
+            }
+            if (le.targetedRepresentationSupports.length) {
+              h += '<p><strong>Targeted representation support used:</strong> ' + le.targetedRepresentationSupports.map(function(item) { return escapeReportHtml(item.label) + ' (' + item.count + ')'; }).join(' &bull; ') + '</p>';
+            }
+            if (le.representationConnectionExamples.length) {
+              h += '<p><strong>Student connections between equivalent views:</strong></p><ul>';
+              le.representationConnectionExamples.forEach(function(item) { h += '<li><strong>' + escapeReportHtml(item.from.replace(/_/g, ' ')) + ' \u2192 ' + escapeReportHtml(item.to.replace(/_/g, ' ')) + ':</strong> ' + escapeReportHtml(item.text) + '</li>'; });
+              h += '</ul>';
+            }
+            if (le.misconceptions.length) {
+              h += '<table><tr><th>Observed pattern</th><th>Count</th><th>Suggested instructional response</th></tr>';
+              le.misconceptions.forEach(function(item) {
+                h += '<tr><td>' + escapeReportHtml(item.label) + '</td><td>' + item.count + '</td><td>' + escapeReportHtml(item.nextStep) + '</td></tr>';
+              });
+              h += '</table>';
+            }
+          }
+
+
+          // Achievement badges earned this session
+          var badgeKeys = Object.keys(earnedBadges);
+          if (badgeKeys.length > 0) {
+            h += '<h2>Achievement Badges (' + badgeKeys.length + '/' + ACHIEVEMENTS.length + ')</h2>';
+            h += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">';
+            ACHIEVEMENTS.forEach(function(a) {
+              var earned = !!earnedBadges[a.id];
+              h += '<div style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:12px;'
+                + (earned ? 'background:#dcfce7;border:1px solid #86efac;color:#166534' : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#94a3b8;opacity:0.5')
+                + '">' + a.icon + ' ' + a.name + '</div>';
+            });
+            h += '</div>';
+          }
+
+          h += '<h2>Standards Addressed</h2><ul>';
+          r.standardsAddressed.forEach(function(s) {
+            var desc = s === '5.MD.C.3' ? 'Recognize volume as an attribute of solid figures' : s === '5.MD.C.4' ? 'Measure volume by counting unit cubes' : s === '5.MD.C.5' ? 'Relate volume to multiplication and addition' : s;
+            h += '<li><strong>' + s + '</strong> \u2014 ' + desc + '</li>';
+          });
+          h += '</ul>';
+          if (r.measurementDetails && r.measurementDetails.length > 0) {
+            h += '<h2>Measurement-Level Evidence</h2><table><tr><th>#</th><th>Time</th><th>Structure</th><th>Measured V</th><th>Committed estimate</th><th>Absolute % difference (descriptive, ungraded)</th><th>Surface</th><th>Blocks</th><th>Materials</th></tr>';
+            r.measurementDetails.forEach(function(m) {
+              h += '<tr><td>' + m.sequence + '</td><td>' + (m.elapsed || '&mdash;') + '</td><td>' + m.shape + (m.dimensions ? '<br><small>' + m.dimensions + '</small>' : '') + '</td>';
+              h += '<td>' + (m.occupiedVolume === null ? '&mdash;' : formatVolume(m.occupiedVolume)) + '</td><td>' + (m.prediction === null ? '&mdash;' : formatVolume(m.prediction)) + '</td><td>' + (m.predictionPercentError === null ? '&mdash;' : m.predictionPercentError + '%') + '</td>';
+              h += '<td>' + (m.surfaceArea === null ? '&mdash;' : m.surfaceArea) + '</td><td>' + (m.blocks === null ? '&mdash;' : m.blocks) + '</td><td>' + (m.materials.length ? m.materials.join(', ') : '&mdash;') + '</td></tr>';
+            });
+            h += '</table>';
+          }
+
+          if (r.questionDetails && r.questionDetails.length > 0) {
+            h += '<h2>Question-Level Detail</h2><table><tr><th>#</th><th>NPC</th><th>Question</th><th>Result</th><th>Time</th></tr>';
+            r.questionDetails.forEach(function(q, i) {
+              h += '<tr><td>' + (i + 1) + '</td><td>' + (q.npc || '\u2014') + '</td><td style="font-size:11px">' + (q.question || '\u2014') + '</td>';
+              h += '<td style="color:' + (q.correct ? '#22c55e' : '#ef4444') + ';font-weight:700">' + (q.correct ? '\u2713 Correct' : '\u2717 Incorrect') + '</td>';
+              h += '<td>' + (q.elapsedSeconds === null ? (q.timestamp || '\u2014') : q.elapsedSeconds + 's') + '</td></tr>';
+            });
+            h += '</table>';
+          }
+
+          h += '<h2>RTI Decision Guide</h2>';
+          h += '<table><tr><th>Tier</th><th>Accuracy</th><th>Recommendation</th></tr>';
+          h += '<tr><td style="color:#22c55e;font-weight:700">Tier 1 (Benchmark)</td><td>\u226580%</td><td>Continue core instruction; enrich with Creator Mode challenges</td></tr>';
+          h += '<tr><td style="color:#f59e0b;font-weight:700">Tier 2 (Strategic)</td><td>50\u201379%</td><td>Small-group re-teaching; scaffold with Volume Explorer before advancing</td></tr>';
+          h += '<tr><td style="color:#ef4444;font-weight:700">Tier 3 (Intensive)</td><td>&lt;50%</td><td>Individual intervention; use physical manipulatives alongside Geometry World</td></tr>';
+          h += '</table>';
+
+          // IEP Goal Auto-Drafting
+          h += '<h2>Draft IEP Goal Suggestions</h2>';
+          h += '<p style="font-size:11px;color:#64748b;margin-bottom:8px"><em>These are auto-generated drafts based on session data. Review and modify before including in any IEP document.</em></p>';
+          var accNum = parseInt(r.accuracy);
+          var targetAcc = accNum < 50 ? '60' : accNum < 80 ? '80' : '90';
+          var goalArea = r.lessonsCompleted > 0 ? 'geometric measurement of volume' : 'identifying and measuring attributes of 3D shapes';
+          h += '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px;margin:8px 0">';
+          h += '<div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px">Mathematics \u2014 Geometry & Measurement (5.MD.C.3\u20135)</div>';
+          h += '<div style="font-size:13px;line-height:1.6">';
+          h += 'Given access to AlloFlow Geometry World with teacher support, [Student] will demonstrate understanding of ' + goalArea;
+          h += ' by correctly calculating the volume of rectangular prisms with <strong>' + targetAcc + '% accuracy</strong>';
+          // An IEP goal has to be operationally defined — "80% accuracy" is not
+          // measurable unless the report says accuracy OF WHAT. Naming the scoring
+          // model here means the goal can still be interpreted years later, and
+          // against exports written under a different model.
+          h += ' across <strong>3 consecutive sessions</strong>, as measured by the Geometry World MTSS Progress Monitoring Report';
+          h += ' (accuracy = main questions answered correctly on the first attempt; scaffolded follow-up prompts are instructional support and are not scored).';
+          h += '</div></div>';
+
+          // Tier-specific goal variant
+          if (accNum < 50) {
+            h += '<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:14px;margin:8px 0">';
+            h += '<div style="font-size:11px;font-weight:700;color:#991b1b;margin-bottom:4px">Intensive Intervention Goal (Tier 3)</div>';
+            h += '<div style="font-size:13px;line-height:1.6">';
+            h += 'Given teacher-led instruction with physical unit cubes and AlloFlow Geometry World, [Student] will use manipulatives to build rectangular prisms and state their volume using the formula L \u00d7 W \u00d7 H with <strong>60% accuracy</strong> across <strong>5 consecutive sessions</strong>, as measured by teacher observation and the Physical Manipulative Bridge Card.';
+            h += '</div></div>';
+          } else if (accNum < 80) {
+            h += '<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:14px;margin:8px 0">';
+            h += '<div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px">Strategic Intervention Goal (Tier 2)</div>';
+            h += '<div style="font-size:13px;line-height:1.6">';
+            h += 'Given small-group instruction with guided practice in AlloFlow Geometry World, [Student] will decompose composite 3D shapes into rectangular prisms, calculate partial volumes, and find total volume with <strong>80% accuracy</strong> across <strong>3 consecutive sessions</strong>.';
+            h += '</div></div>';
+          } else {
+            h += '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px;margin:8px 0">';
+            h += '<div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px">Enrichment Goal (Tier 1)</div>';
+            h += '<div style="font-size:13px;line-height:1.6">';
+            h += 'Given access to AlloFlow Geometry World Creator Mode, [Student] will design and share original geometry lessons for peers, incorporating at least 2 structures with NPC questions that assess volume understanding, as demonstrated through saved world files and peer feedback.';
+            h += '</div></div>';
+          }
+
+          h += '<div class="footer">AlloFlow Geometry World \u2022 MTSS Progress Report \u2022 Generated ' + new Date().toLocaleString() + '<br>For educator use in RTI documentation. IEP goal suggestions are drafts \u2014 professional judgment required.<br>This report exports as JSON for longitudinal accumulation across sessions.</div>';
+          h += '</body></html>';
+
+          var win = window.open('', '_blank');
+          if (win) { win.document.write(h); win.document.close(); }
+
+          return report;
+        };
+
+        window[engineKey] = engine;
+
+        // ── WebXR (optional): walk THROUGH the geometry world at room scale —
+        //    thumbstick glide + teleport + comfort vignette. Loads AlloVR only when
+        //    a headset is present; presenting-only, so the 2D world is untouched.
+        //    (Grabbing/stretching shapes in-VR is the natural Tier-4 follow-up — the
+        //    HandWaver/IMRE angle for Justin Dimmel.) ──
+        try {
+          if (navigator.xr && navigator.xr.isSessionSupported) {
+            navigator.xr.isSessionSupported('immersive-vr').then(function(ok) {
+              if (!ok || engine._destroyed) return;
+              ensureAlloVR(function(V) {
+                if (!V || engine._destroyed || !engine.renderer) return;
+                try {
+                  engine.vr = V.enable({
+                    THREE: THREE, renderer: engine.renderer, scene: engine.scene, camera: engine.camera,
+                    seat: { position: [0, 0, 6], scale: 1 },
+                    bounds: { minX: -35, maxX: 35, minZ: -35, maxZ: 35 },
+                    render: function() { if (engine.composer && engine._postFxEnabled !== false) { try { engine.composer.render(); return; } catch (e) { engine.composer = null; } } engine.renderer.render(engine.scene, engine.camera); },
+                    pauseLoop: function() { if (engine._rafId) { cancelAnimationFrame(engine._rafId); engine._rafId = null; } },
+                    resumeLoop: function() { try { animate(); } catch (e) {} }
+                  });
+                } catch(e){}
+              });
+            }).catch(function(){});
+          }
+        } catch(e){}
+
+        // Auto-load default lesson
+        engine.loadLesson(SAMPLE_LESSONS.volumeExplorer);
+        setWebglRetrying(false);
+        } catch(e) {
+          var initDetail = String(e && (e.stack || e.message) || e || 'Unknown initialization error').slice(0, 1200);
+          console.error('[GeometryWorld] WebGL init failed:', e);
+          window[engineKey + '_failure'] = { kind: 'initialization', message: initDetail };
+          window[engineKey + '_failed'] = true;
+          setWebglError(true);
+          setWebglRetrying(false);
+        }
+      }
+
+      // ── Cleanup on unmount ──
+      function destroyEngine() {
+        var engine = window[engineKey];
+        if (engine) {
+          engine._guidedTour = null;
+          engine._viewPresetAnim = null;
+          engine._viewPresetReturn = null;
+          engine._layerFocus = null;
+          engine._layerExplorerBlocks = null;
+          engine._layerExplorerMinY = null;
+          engine._destroyed = true;
+          try { if (engine.vr && engine.vr.destroy) engine.vr.destroy(); engine.vr = null; } catch(e){}
+          if (engine._rafId) cancelAnimationFrame(engine._rafId); // stop the FPS render loop on teardown
+          // Remove every listener registered during initEngine. Without this
+          // step, document-scoped handlers (mousemove / keydown / keyup /
+          // pointerlockchange) keep firing after navigation and the closure
+          // pins the entire engine in memory. Match each handler by its
+          // exact reference stored in the _docHandlers / _canvasHandlers map.
+          if (engine._docHandlers) {
+            Object.keys(engine._docHandlers).forEach(function(ev) {
+              document.removeEventListener(ev, engine._docHandlers[ev]);
+            });
+            engine._docHandlers = null;
+          }
+          if (engine._winHandlers) {
+            Object.keys(engine._winHandlers).forEach(function (ev) {
+              window.removeEventListener(ev, engine._winHandlers[ev]);
+            });
+            engine._winHandlers = null;
+          }
+          if (engine._canvasHandlers && engine.renderer && engine.renderer.domElement) {
+            var _cv = engine.renderer.domElement;
+            Object.keys(engine._canvasHandlers).forEach(function(ev) {
+              _cv.removeEventListener(ev, engine._canvasHandlers[ev]);
+            });
+            engine._canvasHandlers = null;
+          }
+          engine.clearWorld();
+          // Dispose particles
+          if (engine._particles) engine._particles.forEach(function(p) { engine.scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
+          // Dispose ghost mesh + highlight mesh
+          if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); if (engine._disposeGhost) engine._disposeGhost(engine._ghostMesh); engine._ghostEdges = null; }
+          if (engine._skyDome) { engine.scene.remove(engine._skyDome); engine._skyDome.geometry.dispose(); engine._skyDome.material.dispose(); engine._skyDome = null; }
+          if (engine._envRT) { try { engine._envRT.dispose(); } catch (e) {} engine._envRT = null; }
+          if (engine._horizon) { engine.scene.remove(engine._horizon); engine._horizon.geometry.dispose(); engine._horizon.material.dispose(); engine._horizon = null; }
+          if (engine._sunTarget) { engine.scene.remove(engine._sunTarget); engine._sunTarget = null; }
+          if (engine._moonSprite) { engine.scene.remove(engine._moonSprite); try { engine._moonSprite.material.map.dispose(); engine._moonSprite.material.dispose(); } catch (e) {} engine._moonSprite = null; }
+          if (engine._highlightMesh) { engine.scene.remove(engine._highlightMesh); engine._highlightMesh.geometry.dispose(); engine._highlightMesh.material.dispose(); }
+          if (engine.clearLayerGhosts) { engine.clearLayerGhosts(); if (engine._layerGhostMat) { engine._layerGhostMat.dispose(); engine._layerGhostMat = null; } }
+          if (engine._hoverGlowMesh) { engine.scene.remove(engine._hoverGlowMesh); engine._hoverGlowMesh.geometry.dispose(); engine._hoverGlowMesh.material.dispose(); }
+          engine._hoverGeometryState=null;
+          // Dispose dimension lines + selection glows
+          if (engine.clearDimensionAnnotations) engine.clearDimensionAnnotations();
+          if (engine._selectionGlows) engine._selectionGlows.forEach(function(g) { engine.scene.remove(g); g.geometry.dispose(); g.material.dispose(); });
+          if (engine._gridHelper) { engine.scene.remove(engine._gridHelper); engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose(); }
+          if (engine._badgeDismissTimer) clearTimeout(engine._badgeDismissTimer);
+          if (engine._resizeObserver) { try { engine._resizeObserver.disconnect(); } catch (e) {} engine._resizeObserver = null; }
+          if (engine._intersectionObserver) { try { engine._intersectionObserver.disconnect(); } catch (e) {} engine._intersectionObserver = null; }
+          if (engine._resizeRafId) { cancelAnimationFrame(engine._resizeRafId); engine._resizeRafId = null; }
+          // Collab peer avatars are built inside the animate loop, so teardown never
+          // saw them — each body/head Mesh (plus its material) outlived the engine.
+          if (engine._peerAvatars) {
+            Object.keys(engine._peerAvatars).forEach(function(k) {
+              var av = engine._peerAvatars[k] || {};
+              [av.body, av.head].forEach(function(m) {
+                if (!m) return;
+                if (engine.scene) engine.scene.remove(m);
+                if (m.geometry) m.geometry.dispose();
+                if (m.material && m.material.dispose) m.material.dispose();
+              });
+            });
+            engine._peerAvatars = null;
+          }
+          if (engine._dimTimer) clearTimeout(engine._dimTimer);
+          // Clear the auto-clear measurement timers, the collab position-sync interval + Firestore listener,
+          // and the typewriter timer that teardown previously missed (they kept firing after unmount / mid-collab).
+          if (engine._angleClearTimer) clearTimeout(engine._angleClearTimer);
+          if (engine._netClearTimer) clearTimeout(engine._netClearTimer);
+          if (engine._collabSyncTimer) clearTimeout(engine._collabSyncTimer);
+          if (engine._collabPosInterval) clearInterval(engine._collabPosInterval);
+          if (typeof collabUnsubscribe === 'function') { try { collabUnsubscribe(); } catch (e) {} }
+          if (typeof window !== 'undefined' && window._gwTypewriterTimer) { clearTimeout(window._gwTypewriterTimer); window._gwTypewriterTimer = null; }
+          // Dispose the angle / net / ruler measurement helper meshes (only _dimLines were disposed before)
+          var _dispGeo = function(o) { if (!o) return; if (Array.isArray(o)) { o.forEach(_dispGeo); return; } if (engine.scene) engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } };
+          _dispGeo(engine._angleHelpers); _dispGeo(engine._netHelpers); _dispGeo(engine._rulerLine); _dispGeo(engine._rulerLabel);
+          // Dispose sky elements
+          if (engine._sunSprite) engine.scene.remove(engine._sunSprite);
+          [engine._cloudPlane, engine._cloudPlaneHigh].forEach(function(sheet) {
+            if (!sheet) return;
+            engine.scene.remove(sheet);
+            if (sheet.material && sheet.material.map) sheet.material.map.dispose();
+            if (sheet.material) sheet.material.dispose();
+            if (sheet.geometry) sheet.geometry.dispose();
+          });
+          engine._cloudPlaneHigh = null; engine._cloudTexHigh = null;
+          // Shared block-edge materials live until the engine itself is destroyed.
+          if (engine._edgeMatCache) {
+            Object.values(engine._edgeMatCache).forEach(function(material) { if (material && material.dispose) material.dispose(); });
+            engine._edgeMatCache = null;
+          }
+          // Dispose material cache
+          if (engine._matCache) Object.values(engine._matCache).forEach(function(m) { if (m.dispose) m.dispose(); });
+          if (engine.composer) { try { (engine.composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} engine.composer = null; }
+          if (engine.renderer) {
+            engine.renderer.dispose();
+            // Detach the WebGL canvas. initEngine creates + appends a fresh canvas every
+            // time, so leaving the disposed one behind stacked a blank surface over the
+            // live world (both are 100%-height block elements in the same container).
+            try {
+              var _dead = engine.renderer.domElement;
+              if (_dead && _dead.parentNode) _dead.parentNode.removeChild(_dead);
+            } catch (e) {}
+          }
+          delete window[engineKey];
+        }
+      }
+
+      // ── Auto-show lesson intro on first load ──
+      // Defer via setTimeout(0) so we don't call upd (state update) during render.
+      // _introShownOnce is flipped to true immediately to prevent re-queueing on re-renders
+      // that happen before the deferred upd lands.
+      if (threeReady && !worldActive && !showLessonIntro && !d._introShownOnce) {
+        setTimeout(function() { upd({ showLessonIntro: true, _introShownOnce: true }); }, 0);
+      }
+
+      // ── Typewriter effect: auto-advance character position ──
+      if (showNpcDialog && npcTypewriterNpc === dialogNpcIdx) {
+        var eng = window[engineKey];
+        var npcData = eng && eng.npcs && eng.npcs[dialogNpcIdx] && eng.npcs[dialogNpcIdx].data;
+        var dialogueLen = npcData ? (npcData.dialogue || '').length : 0;
+        if (npcTypewriterPos < dialogueLen) {
+          clearTimeout(window._gwTypewriterTimer);
+          window._gwTypewriterTimer = setTimeout(function() {
+            upd('npcTypewriterPos', Math.min(npcTypewriterPos + 2, dialogueLen)); // 2 chars per tick for speed
+          }, 25); // ~80 chars/sec
+        }
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── Render ──
+      // ══════════════════════════════════════════════════════════
+
+      // Mobile detection — friendly message for touch devices
+      var isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || (window.innerWidth < 768 && 'ontouchstart' in window);
+      var renderQualityProfile = resolveGeometryRenderProfile(renderQuality, {
+        isMobile: isMobile,
+        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        hardwareConcurrency: Number(navigator.hardwareConcurrency) || 0
+      });
+      // A narrower window must never replace an active creation with onboarding.
+      // The viewport ref owns the engine: removing it here would discard blocks
+      // and undo history when a desktop window crosses the mobile breakpoint.
+      if (isMobile && !d._mobileDismissed && !worldActive) {
+        return el('section', {
+          className: 'gw-root gw-state-screen',
+          role: 'region',
+          'aria-labelledby': 'gw-mobile-title'
+        },
+          el('div', { className: 'gw-state-card' },
+            el('div', { className: 'gw-state-icon', 'aria-hidden': 'true' }, '\uD83D\uDCF1'),
+            el('div', { className: 'gw-state-kicker' }, 'Device note'),
+            el('h2', { id: 'gw-mobile-title', className: 'gw-state-title' }, 'Touch-ready Geometry World'),
+            el('p', { className: 'gw-state-copy' },
+              'Geometry World is ready for phones and tablets. Touch mode keeps movement, looking, building, measuring, and conversations within easy reach.'),
+            el('div', { className: 'gw-state-note' },
+              'Touch guide: swipe the right side to look, drag the left joystick to move, and use the large action buttons to build, break, measure, and talk. You can switch modes any time.'),
+            el('div', { className: 'gw-state-actions' },
+              el('button', {
+                type: 'button',
+                className: 'gw-primary-cta gw-state-primary gw-focusable',
+                onClick: function() { upd({ _mobileDismissed: true, touchMode: true }); }
+              }, 'Enter touch mode \u2192'),
+              el('button', {
+                type: 'button',
+                className: 'gw-state-secondary gw-focusable',
+                onClick: function() { upd({ _mobileDismissed: true, touchMode: false }); }
+              }, 'Use desktop-style view')
+            )
+          )
+        );
+      }
+
+      if (!threeReady) {
+        var loadingTips = [
+          '\uD83D\uDCA1 Tip: Use WASD to move and the mouse to look around!',
+          '\uD83D\uDCA1 Tip: Press M while looking at a structure to measure its volume.',
+          '\uD83D\uDCA1 Tip: Walk up to purple characters and press E to talk to them.',
+          '\uD83D\uDCA1 Tip: Right-click on a block face to place a new block.',
+          '\uD83D\uDCA1 Tip: Volume = Length \u00d7 Width \u00d7 Height. Count the blocks!',
+          '\uD83D\uDCA1 Tip: Use the scroll wheel to switch between block types.',
+          '\uD83D\uDCA1 Tip: Press Q to cycle between cube, half-block, and quarter-wedge shapes.',
+          '\uD83D\uDCA1 Tip: Try the Geometry Garden lesson for a relaxing exploration experience!'
+        ];
+        var tipIdx = Math.floor(Date.now() / 4000) % loadingTips.length;
+        return el('section', { className: 'gw-root gw-state-screen', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-busy': 'true' },
+          el('div', { className: 'gw-state-card' },
+            el('div', { className: 'gw-loading-mark', 'aria-hidden': 'true' },
+              ['\uD83E\uDDF1', '\uD83D\uDC8E', '\uD83C\uDFC6'].map(function(em, ei) { return el('span', { key: ei }, em); })
+            ),
+            el('div', { className: 'gw-state-kicker' }, 'Building your world'),
+            el('h2', { className: 'gw-state-title' }, '\uD83C\uDF0D Geometry World'),
+            el('p', { className: 'gw-state-copy' }, 'Loading the 3D engine and preparing interactive geometry...'),
+            el('div', { className: 'gw-loading-track', role: 'progressbar', 'aria-label': __alloT('stem.geometryworld.a11y_loading_3d_engine', 'Loading 3D engine') },
+              el('div', { className: 'gw-loading-sweep', 'aria-hidden': 'true' })
+            ),
+            el('div', { className: 'gw-state-tip' }, loadingTips[tipIdx])
+          )
+        );
+      }
+
+      // ── Helper: parse AI JSON response ──
+      function parseAiJson(result) {
+        var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        // Handle cases where AI wraps in extra text
+        var start = cleaned.indexOf('{');
+        var end = cleaned.lastIndexOf('}');
+        if (start >= 0 && end > start) cleaned = cleaned.substring(start, end + 1);
+        return JSON.parse(cleaned);
+      }
+
+      // ── Helper: save lesson to localStorage library ──
+      function saveToMyLessons(lesson) {
+        try {
+          _myLessonsCache = null; // invalidate since storage is changing
+          var lib = JSON.parse(localStorage.getItem('gw_my_lessons') || '[]');
+          lesson._savedAt = Date.now();
+          lesson._id = 'ai_' + Date.now();
+          lib.unshift(lesson);
+          if (lib.length > 20) lib = lib.slice(0, 20); // Keep last 20
+          localStorage.setItem('gw_my_lessons', JSON.stringify(lib));
+        } catch(e) { console.warn('[GeoWorld] Failed to save lesson:', e); }
+      }
+      // Memoize within this render: render tree calls getMyLessons() ~6× per render
+      // (dropdown, count badges, modal list). Parsing the same JSON 6 times is wasteful.
+      var _myLessonsCache = null;
+      function getMyLessons() {
+        if (_myLessonsCache !== null) return _myLessonsCache;
+        try { _myLessonsCache = JSON.parse(localStorage.getItem('gw_my_lessons') || '[]'); } catch(e) { _myLessonsCache = []; }
+        return _myLessonsCache;
+      }
+      function deleteMyLesson(id) {
+        try {
+          _myLessonsCache = null; // invalidate since storage is changing
+          var lib = JSON.parse(localStorage.getItem('gw_my_lessons') || '[]').filter(function(l) { return l._id !== id; });
+          localStorage.setItem('gw_my_lessons', JSON.stringify(lib));
+        } catch(e) {}
+      }
+
+      // ── Multi-pass AI generation handler ──
+      // ── Load a lesson by key (used from intro screen, dropdown, Next Lesson) ──
+      function loadLessonByKey(lessonKey, _attempt, skipTutorial) {
+        var eng = window[engineKey];
+        // The engine is created ~100ms after the container mounts, so an eager click on
+        // "Start Lesson" can land before it exists. Previously that dismissed the intro
+        // and loaded nothing, leaving the student in an empty default world. Retry
+        // briefly instead, and only dismiss the intro once the lesson is actually in.
+        if (!eng && !window[engineKey + '_failed']) {
+          // Stop if the tool went away mid-retry — otherwise we keep waking up for
+          // 2s and then push state into a world that is no longer mounted.
+          if (_attempt && !document.getElementById('geoworld-fs-wrap')) return;
+          var attempt = _attempt || 0;
+          if (attempt < 20) { // ~2s of retries
+            setTimeout(function() { loadLessonByKey(lessonKey, attempt + 1, skipTutorial); }, 100);
+            return;
+          }
+        }
+        if (eng && SAMPLE_LESSONS[lessonKey]) {
+          eng.loadLesson(SAMPLE_LESSONS[lessonKey]);
+        } else if (lessonKey && lessonKey.indexOf('ai_') === 0) {
+          var myL = getMyLessons();
+          var found = myL.filter(function(l) { return l._id === lessonKey; })[0];
+          if (found && eng) { eng.loadLesson(found); upd({ lastGeneratedLesson: found, lessonEditorJson: JSON.stringify(found, null, 2) }); }
+        }
+        var lessonState = { showLessonIntro: false, showReflection: false, measureHistory: [] };
+        if (skipTutorial) { lessonState.tutorialStep = 4; lessonState.tutorialDismissed = true; }
+        upd(lessonState);
+      }
+
+      var generateWorld = function() {
+        if (!callGemini || !aiPrompt.trim()) return;
+        var passes = aiPassCount;
+        var grade = aiGradeLevel;
+        upd({ aiGenerating: true, aiCurrentPass: 1 });
+
+        // Pass 1: Generate base lesson
+        var p1Prompt = AI_WORLD_PROMPT_BASE.replace(/\{TOPIC\}/g, aiPrompt.trim()).replace(/\{GRADE\}/g, grade);
+        callGemini(p1Prompt, true).then(function(r1) {
+          var lesson;
+          try { lesson = parseAiJson(r1); } catch(e) {
+            if (addToast) addToast('Pass 1 failed: ' + e.message, 'error');
+            upd({ aiGenerating: false, aiCurrentPass: 0 }); return;
+          }
+
+          if (passes <= 1) {
+            // Single pass — load directly
+            finishGeneration(lesson);
+            return;
+          }
+
+          // Pass 2: Refine (improve structures, fix issues, enrich dialogues)
+          upd('aiCurrentPass', 2);
+          var p2Prompt = AI_REFINE_PROMPT
+            .replace('{LESSON_JSON}', JSON.stringify(lesson, null, 2))
+            .replace('{REFINEMENT}', 'Improve and polish the lesson: make structures more visually interesting, ensure NPC dialogues explain concepts clearly before asking questions, add descriptive objectives, and verify all coordinates are valid.');
+          callGemini(p2Prompt, true).then(function(r2) {
+            try { lesson = parseAiJson(r2); } catch(e) { /* keep pass 1 result */ }
+
+            if (passes <= 2) {
+              finishGeneration(lesson);
+              return;
+            }
+
+            // Pass 3: Add scaffolded follow-up questions
+            upd('aiCurrentPass', 3);
+            var p3Prompt = AI_FOLLOWUP_PROMPT.replace('{LESSON_JSON}', JSON.stringify(lesson, null, 2));
+            callGemini(p3Prompt, true).then(function(r3) {
+              try { lesson = parseAiJson(r3); } catch(e) { /* keep pass 2 result */ }
+              finishGeneration(lesson);
+            }).catch(function() { finishGeneration(lesson); });
+          }).catch(function() { finishGeneration(lesson); });
+        }).catch(function(e) {
+          if (addToast) addToast('AI generation failed: ' + (e.message || 'unknown error'), 'error');
+          upd({ aiGenerating: false, aiCurrentPass: 0 });
+        });
+      };
+
+      // ── Validate & sanitize AI-generated lesson JSON ──
+      function validateLesson(lesson) {
+        if (!lesson || typeof lesson !== 'object') return null;
+        // Ensure required fields
+        lesson.title = lesson.title || 'AI Lesson';
+        lesson.description = lesson.description || '';
+        lesson.spawnPoint = Array.isArray(lesson.spawnPoint) && lesson.spawnPoint.length >= 3 ? lesson.spawnPoint : [2, 3, 2];
+        lesson.objectives = Array.isArray(lesson.objectives) ? lesson.objectives : ['Explore the structures', 'Answer NPC questions'];
+        lesson.ground = lesson.ground || { xMin: -4, xMax: 24, zMin: -4, zMax: 24, y: 0, type: 'grass' };
+        if (!Array.isArray(lesson.structures)) lesson.structures = [];
+        if (!Array.isArray(lesson.npcs)) lesson.npcs = [];
+        // Clamp structure coordinates to valid range
+        var validBlocks = ['stone','grass','wood','diamond','gold','sand','glass','brick','ice','water','lava','torch'];
+        lesson.structures = lesson.structures.filter(function(s) {
+          if (!s || s.type !== 'fill') return false;
+          s.x1 = Math.max(-4, Math.min(30, Math.round(s.x1 || 0)));
+          s.y1 = Math.max(0, Math.min(20, Math.round(s.y1 || 0)));
+          s.z1 = Math.max(-4, Math.min(30, Math.round(s.z1 || 0)));
+          s.x2 = Math.max(s.x1, Math.min(30, Math.round(s.x2 || s.x1)));
+          s.y2 = Math.max(s.y1, Math.min(20, Math.round(s.y2 || s.y1)));
+          s.z2 = Math.max(s.z1, Math.min(30, Math.round(s.z2 || s.z1)));
+          if (validBlocks.indexOf(s.block) < 0) s.block = 'stone';
+          return true;
+        });
+        // Budget the total block count. The coordinate clamps above still allow one
+        // structure of 35 x 21 x 35, and nothing bounded how many structures a model
+        // could emit — the engine caps it now, but truncating mid-build leaves a
+        // half-drawn world the NPC questions then ask about. Drop whole structures
+        // that don't fit instead, largest-cost-last, so what remains is complete.
+        var groundCost = (function () {
+          var g = lesson.ground;
+          return (Math.abs(g.xMax - g.xMin) + 1) * (Math.abs(g.zMax - g.zMin) + 1);
+        })();
+        var budget = MAX_BLOCKS - Math.min(groundCost, MAX_BLOCKS);
+        var dropped = 0;
+        lesson.structures = lesson.structures.filter(function (s) {
+          var cost = (s.x2 - s.x1 + 1) * (s.y2 - s.y1 + 1) * (s.z2 - s.z1 + 1);
+          if (cost > budget) { dropped++; return false; }
+          budget -= cost;
+          return true;
+        });
+        if (dropped && addToast) {
+          addToast('⚠️ Dropped ' + dropped + ' structure(s) that exceeded the ' + MAX_BLOCKS + '-block limit', 'info');
+        }
+        // Validate NPCs
+        lesson.npcs = lesson.npcs.filter(function(n) {
+          if (!n || !n.name) return false;
+          n.position = Array.isArray(n.position) && n.position.length >= 3 ? n.position.map(function(v) { return Math.max(-4, Math.min(30, Math.round(v || 0))); }) : [5, 2, 5];
+          n.color = typeof n.color === 'number' ? n.color : 8048861;
+          n.dialogue = n.dialogue || 'Hello!';
+          // Validate question structure
+          if (n.question) {
+            if (!n.question.text || !Array.isArray(n.question.choices) || n.question.choices.length < 2) {
+              n.question = null; // Drop malformed questions
+            } else {
+              // Ensure exactly 3 choices
+              while (n.question.choices.length < 3) n.question.choices.push('(other)');
+              if (n.question.choices.length > 5) n.question.choices = n.question.choices.slice(0, 5);
+              n.question.correct = Math.max(0, Math.min(n.question.choices.length - 1, Math.round(n.question.correct || 0)));
+              // Validate followUp if present
+              if (Array.isArray(n.question.followUp)) {
+                n.question.followUp = n.question.followUp.filter(function(fu) {
+                  return fu && fu.text && Array.isArray(fu.choices) && fu.choices.length >= 2;
+                }).map(function(fu) {
+                  while (fu.choices.length < 3) fu.choices.push('(other)');
+                  fu.correct = Math.max(0, Math.min(fu.choices.length - 1, Math.round(fu.correct || 0)));
+                  return fu;
+                });
+                if (n.question.followUp.length === 0) delete n.question.followUp;
+              }
+            }
+          }
+          return true;
+        });
+        var fixes = 0;
+        if (lesson.structures.length === 0) { lesson.structures.push({ type: 'fill', x1: 0, y1: 0, z1: 0, x2: 8, y2: 0, z2: 8, block: 'stone' }); fixes++; }
+        if (lesson.npcs.length === 0) { lesson.npcs.push({ position: [4, 1, 4], name: __alloT('stem.geometryworld.guide', 'Guide'), color: 8048861, dialogue: 'Welcome! Explore the structures and use M to measure.', question: null }); fixes++; }
+        if (fixes > 0 && addToast) addToast('\u26A0\uFE0F Fixed ' + fixes + ' issue(s) in AI lesson', 'info');
+        return lesson;
+      }
+
+      function finishGeneration(lesson) {
+        lesson = validateLesson(lesson);
+        var eng = window[engineKey];
+        if (eng && lesson && lesson.structures.length > 0) {
+          eng.loadLesson(lesson);
+          saveToMyLessons(lesson);
+          upd({ lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), aiGenerating: false, aiCurrentPass: 0, activeLesson: 'ai_generated' });
+          if (addToast) addToast('\uD83E\uDDF1 AI generated: ' + (lesson.title || 'New World') + ' (' + lesson.npcs.length + ' NPCs, ' + lesson.structures.length + ' structures, saved to My Lessons)', 'success');
+          if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'AI lesson generated');
+        } else {
+          upd({ aiGenerating: false, aiCurrentPass: 0 });
+          if (addToast) addToast('Generated lesson had no valid structures', 'error');
+        }
+      }
+
+      // ── Refine existing lesson with AI ──
+      var refineLesson = function() {
+        if (!callGemini || !aiRefinePrompt.trim() || !lastGeneratedLesson) return;
+        upd('aiGenerating', true);
+        var prompt = AI_REFINE_PROMPT
+          .replace('{LESSON_JSON}', JSON.stringify(lastGeneratedLesson, null, 2))
+          .replace('{REFINEMENT}', aiRefinePrompt.trim());
+        callGemini(prompt, true).then(function(result) {
+          try {
+            var lesson = parseAiJson(result);
+            finishGeneration(lesson);
+            if (addToast) addToast('\u2728 Lesson refined!', 'success');
+          } catch(e) {
+            if (addToast) addToast('Refine failed: ' + e.message, 'error');
+            upd('aiGenerating', false);
+          }
+        }).catch(function() { upd('aiGenerating', false); });
+      };
+
+      var engine = window[engineKey];
+      var sceneOverview = sceneMapOpen && engine && engine.getSceneOverview ? engine.getSceneOverview() : null;
+      function runMobileButtonAction(actionKey, action, ev) {
+        if (!engine || engine._touchControlsEnabled === false || typeof action !== 'function') return;
+        if (ev && ev.type === 'touchstart') {
+          ev.stopPropagation();
+          engine._lastTouchAction = { key: actionKey, at: Date.now() };
+          action();
+          return;
+        }
+        var lastTouch = engine._lastTouchAction;
+        // A touch can reveal Undo and move another button under the finger before
+        // the browser synthesizes click. Suppress that click across action keys.
+        if (lastTouch && (!ev || ev.detail !== 0) && Date.now() - lastTouch.at < 700) return;
+        action();
+      }
+
+      // A long press may synthesize click after the original touchstart guard
+      // expires. Keep the guard anchored to release as well as first contact.
+      function finishMobileButtonTouch() {
+        if (engine && engine._lastTouchAction) engine._lastTouchAction.at = Date.now();
+      }
+
+      function beginMobileJump() {
+        engine._touchActive = true;
+        if (!engine.flyMode && engine.onGround && !engine._jumpLock) {
+          engine.velocity.y = 6;
+          sfxJump();
+          engine._jumpLock = true;
+        } else if (engine.flyMode) {
+          engine.moveState.flyDown = false; engine.moveState.flyUp = true;
+        }
+      }
+
+      function stopMobileJump() {
+        if (!engine || !engine.moveState) return;
+        engine.moveState.flyUp = false; engine._jumpLock = false;
+        if (engine.flyMode && engine.refreshTouchActivity) engine.refreshTouchActivity();
+      }
+
+      function beginMobileDescent() {
+        if (!engine || !engine.flyMode || !engine.moveState) return;
+        engine._touchActive = true;
+        engine.moveState.flyUp = false; engine.moveState.flyDown = true;
+      }
+
+      function stopMobileDescent() {
+        if (engine && engine.moveState) {
+          engine.moveState.flyDown = false;
+          if (engine.refreshTouchActivity) engine.refreshTouchActivity();
+        }
+      }
+
+      function activateMobileDescent() {
+        beginMobileDescent();
+        setTimeout(stopMobileDescent,150);
+      }
+
+      function activateMobileJump() {
+        beginMobileJump();
+        setTimeout(function() {
+          if (!engine) return;
+          stopMobileJump();
+        }, 150);
+      }
+
+      function talkToNearbyNpc() {
+        var minD = 5, nearest = -1;
+        engine.npcs.forEach(function(n, i) {
+          var dist = engine.camera.position.distanceTo(n.body.position);
+          if (dist < minD) { minD = dist; nearest = i; }
+        });
+        if (nearest >= 0) {
+          upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest });
+          sfxNpcChime();
+        } else if (addToast) {
+          addToast('No NPC nearby - walk closer!', 'info');
+        }
+      }
+
+      function placeMobileBlock() {
+        if (engine.interactAtCrosshair) engine.interactAtCrosshair('place');
+      }
+
+      function breakMobileBlock() {
+        if (engine.interactAtCrosshair) engine.interactAtCrosshair('break');
+      }
+
+      function measureMobileStructure() {
+        if (engine.performMeasurement) engine.performMeasurement('touch');
+      }
+
+      function undoMobileBlockAction() {
+        if (engine.undo) engine.undo();
+        if (addToast) addToast('\u21A9\uFE0F Undo', 'info');
+      }
+
+      // AI-generated lessons are keyed 'ai_<timestamp>' (saved to My Lessons) or the
+      // transient 'ai_generated'. Neither is a SAMPLE_LESSONS key, so this used to be a
+      // bare `SAMPLE_LESSONS[activeLesson] || SAMPLE_LESSONS.volumeExplorer` and every
+      // AI world silently resolved to volumeExplorer. currentLesson feeds ~30 sites —
+      // the intro title/description/objectives, the completion overlay, the world's
+      // aria-label, the printable worksheet, and the lesson name recorded on reflection
+      // events — so a student's generated world showed, printed, and logged the wrong
+      // lesson throughout.
+      //
+      // Resolved by KEY rather than from engine._currentLesson because the intro screen
+      // must preview a newly picked lesson that has not been loaded into the engine yet.
+      var currentLesson = (function () {
+        if (SAMPLE_LESSONS[activeLesson]) return SAMPLE_LESSONS[activeLesson];
+        if (activeLesson && activeLesson.indexOf('ai_') === 0) {
+          var saved = getMyLessons().filter(function (l) { return l && l._id === activeLesson; })[0];
+          if (saved) return saved;
+          if (lastGeneratedLesson) return lastGeneratedLesson;
+        }
+        return (engine && engine._currentLesson) || SAMPLE_LESSONS.volumeExplorer;
+      })();
+
+      // Expose current React state to the engine so the compass rAF loop reads live data
+      if (engine) {
+        engine._answeredRef = answeredNpcs;
+        // Modal flags bridge: the keydown handler was attached once during initEngine
+        // and its closure captured these as first-render primitives. Mirror them onto
+        // the engine on every React render so Esc/Shift+Esc always see current state.
+        engine._modalState = {
+          showNpcDialog: showNpcDialog, showHelp: showHelp, showGrowthNudge: showGrowthNudge,
+          showGameSettings: showGameSettings, showPredictionPanel: showPredictionPanel, objectivesOpen: objectivesOpen, hudPanel: hudPanel,
+          showPeerWorlds: showPeerWorlds, showTeacherView: showTeacherView,
+          showMyLessons: showMyLessons, showLessonEditor: showLessonEditor,
+          showLessonIntro: showLessonIntro, showReflection: showReflection,
+          showCreatorPanel: showCreatorPanel, creatorMode: creatorMode
+        };
+        // Tutorial state bridge — same staleness issue; tutorial advancement checks
+        // must read from here or they compare against the first-render value (usually 0).
+        engine._tutorialState = { step: tutorialStep, dismissed: tutorialDismissed };
+        // Placement state bridge — critical: canvas.addEventListener handlers are stale
+        // (attached once in initEngine) so they can't see number-key block switches,
+        // shape cycling (Q), rotation (R), or collab-mode toggling.
+        engine._placeState = { selectedBlock: selectedBlock, selectedShape: selectedShape, blockRotation: blockRotation, collabMode: collabMode };
+        engine._predictionState = { input: volumePrediction, strategy: predictionStrategy, reason: predictionReason, commitment: volumeEstimateCommitment, observedTargetKeys: volumeEstimateObservedTargets, history: measureHistory };
+        // Badges bridge — runAchievementCheck called via setTimeout from stale closures
+        // needs to read the LATEST earned-badges object to avoid re-awarding duplicates.
+        engine._badgesRef = earnedBadges;
+        // Collab bridges — animate loop renders peer avatars per-frame but its closure
+        // captured first-render empty values. Sync live data so avatars appear/update.
+        engine._collabPlayersRef = collabPlayers;
+        engine._playerNameRef = playerName;
+      }
+
+      // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
+      var OPEN_MODALS = [
+        { flag: showGameSettings, key: 'showGameSettings', label: 'Game Settings', emoji: '\u2699\uFE0F' },
+        { flag: showNpcDialog,    key: 'showNpcDialog',    label: __alloT('stem.geometryworld.npc_dialog', 'NPC Dialog'),            emoji: '💬' },
+        { flag: showMyLessons,    key: 'showMyLessons',    label: __alloT('stem.geometryworld.my_lessons', 'My Lessons'),            emoji: '📚' },
+        { flag: showLessonEditor, key: 'showLessonEditor', label: __alloT('stem.geometryworld.lesson_editor', 'Lesson Editor'),         emoji: '✏️' },
+        { flag: showLessonIntro,  key: 'showLessonIntro',  label: __alloT('stem.geometryworld.lesson_intro', 'Lesson Intro'),          emoji: '📖' },
+        { flag: showReflection,   key: 'showReflection',   label: __alloT('stem.geometryworld.reflection', 'Reflection'),            emoji: '🔍' },
+        { flag: showHelp,         key: 'showHelp',         label: __alloT('stem.geometryworld.help', 'Help'),                  emoji: '❓' },
+        { flag: showCreatorPanel, key: 'showCreatorPanel', label: __alloT('stem.geometryworld.creator_panel', 'Creator Panel'),         emoji: '🎨' },
+        { flag: showGrowthNudge,  key: 'showGrowthNudge',  label: __alloT('stem.geometryworld.growth_nudge', 'Growth Nudge'),          emoji: '🌱' },
+        { flag: showTeacherView,  key: 'showTeacherView',  label: __alloT('stem.geometryworld.teacher_dashboard', 'Teacher Dashboard'),     emoji: '📊' },
+        { flag: showPeerWorlds,   key: 'showPeerWorlds',   label: __alloT('stem.geometryworld.class_worlds', 'Class Worlds'),          emoji: '🌐' }
+      ];
+      var openModals = OPEN_MODALS.filter(function(m) { return m.flag; });
+      function closeAllModals() {
+        var patch = {};
+        OPEN_MODALS.forEach(function(m) { if (m.flag) patch[m.key] = false; });
+        if (Object.keys(patch).length > 0) {
+          upd(patch);
+          focusWorldSurface();
+          if (addToast) addToast('🎮 Returned to game — ' + Object.keys(patch).length + ' overlay(s) closed', 'info');
+          try { sfxJump(); } catch(e) {}
+        }
+      }
+
+      // A landmark, NOT an application. This was role="application", which switches a
+      // screen reader out of browse mode for everything inside — and everything inside
+      // is mostly ordinary content: the lesson picker <select>, the reflection
+      // textarea, the help panel, the objectives, the completion summary. Browse mode
+      // is how a blind student reads and navigates that, so the old role took it away
+      // across the whole tool to serve one child that needs raw keystrokes. That child
+      // — the 3D surface — carries its own role="application" and its own
+      // aria-describedby key list, which is where the exception belongs.
+      //
+      // The label is now just the tool's name. It used to recite "WASD to move, mouse
+      // to look, left-click to break, right-click to place", which was both duplicated
+      // and out of date: it predates B/X (build without a mouse), the arrow-key look
+      // and L (speak where characters are), and it implied the tool was mouse-only to
+      // exactly the students who most needed to hear otherwise.
+      var engineFailure = window[engineKey + '_failure'] || null;
+      var runtimeFailure = !!(engineFailure && engineFailure.kind === 'runtime');
+      var contextFailure = !!(engineFailure && engineFailure.kind === 'context');
+      var recoveryFailureLabel = contextFailure ? 'Graphics device reset' : (runtimeFailure ? 'Animation paused' : '3D setup issue');
+      var recoveryGuidance = contextFailure
+        ? 'The browser reported that the graphics device was reset. Close other graphics-heavy tabs, then try again.'
+        : (runtimeFailure
+          ? 'The animation loop was paused after an error to keep this tab responsive. Your lesson data remains safe.'
+          : 'Rendering could not start in this view. A direct Chrome, Firefox, or Edge tab usually provides the best WebGL support.');
+      function copyEngineFailureDetails() {
+        if (!engineFailure || !engineFailure.message) return;
+        var report = 'Geometry World ' + (engineFailure.kind || 'unknown') + ' failure\n' + new Date().toISOString() + '\n' + (navigator.userAgent || 'Unknown browser') + '\n\n' + engineFailure.message;
+        if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+          if (addToast) addToast('Clipboard access is unavailable. Expand Technical details to select the error manually.', 'info');
+          return;
+        }
+        navigator.clipboard.writeText(report)
+          .then(function() { if (addToast) addToast('Geometry World error details copied.', 'success'); })
+          .catch(function() { if (addToast) addToast('Could not copy automatically. Select the technical details manually.', 'error'); });
+      }
+
+      function retryWebglMode(useSaverQuality) {
+        if (webglRetrying) return;
+        setWebglRetrying(true);
+        if (useSaverQuality) upd('renderQuality', 'saver');
+        if (window[engineKey]) destroyEngine();
+        window[engineKey + '_failed'] = false;
+        delete window[engineKey + '_failure'];
+        setWebglError(false);
+      }
+      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-hud-preset': hudPreset, 'data-measurement-expanded': isMobile && !!measureResult && measurementDetailsOpen ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+        el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen>.gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen>.gw-toolbar{display:none!important}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0;margin:0!important;border:0!important;border-radius:0!important}'),
+        // Top bar — glass style
+        el('header', { className: 'gw-toolbar', 'aria-label': __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls'), style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
+          el('div', { className: 'gw-brand-lockup' },
+            el('span', { className: 'gw-brand-mark', 'aria-hidden': 'true' }, renderShapeSwatch(el, 'cube')),
+            el('div', { className: 'gw-brand-copy' },
+              el('h2', { id: 'gw-title', className: 'gw-title' }, 'Geometry World'),
+              el('span', { className: 'gw-lesson-title' }, currentLesson.title || 'Choose a lesson to begin')
+            )
+          ),
+          el('div', { className: 'gw-status-cluster', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_status_and_game_menu', 'Lesson status and game menu') },
+            engine && el('span', { className: 'gw-stat-chip', style: { fontSize: '11px', color: '#cbd5e1' } },
+              '\uD83E\uDDF1 ' + (engine.blocksPlaced || 0) + ' placed'
+            ),
+            el('span', { className: 'gw-stat-chip', role: 'status', 'aria-live': 'polite', 'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_lesson_progress_of_questions_complete', 'Lesson progress: {value1} of {value2} questions complete'), { value1: score, value2: totalQ }), style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 800 } },
+              (score >= totalQ && totalQ > 0 ? '\uD83C\uDFC6 ' : '\u2B50 ') + score + '/' + totalQ
+            ),
+            Object.keys(earnedBadges).length > 0 && el('div', { className: 'gw-badge-strip', role: 'list', 'aria-label': Object.keys(earnedBadges).length + ' achievement badges earned', title: Object.keys(earnedBadges).length + ' badges earned: ' + ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) { return a.name; }).join(', ') },
+              ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) {
+                return el('span', { key: a.id, role: 'listitem', 'aria-label': a.name + ': ' + a.desc, title: a.name + ': ' + a.desc }, a.icon);
+              })
+            ),
+            worldActive && el('button', {
+              type: 'button', className: 'gw-compact-action gw-focusable',
+              'aria-expanded': showPredictionPanel, 'aria-controls': 'gw-prediction-panel',
+              'aria-label': showPredictionPanel ? 'Close volume estimate drawer' : 'Open volume estimate drawer',
+              onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); announceToSR(next ? 'Volume estimate drawer opened.' : 'Volume estimate drawer closed.'); }
+            }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Estimate')),
+            worldActive && el('button', {
+              type: 'button', className: 'gw-compact-action gw-focusable',
+              'aria-expanded': objectivesOpen, 'aria-controls': 'gw-objective-panel',
+              'aria-label': objectivesOpen ? 'Close lesson objectives' : 'Open lesson objectives',
+              onClick: function() { var next = !objectivesOpen; setSceneMapOpen(false); upd({ objectivesOpen: next, showPredictionPanel: false, showGameSettings: false, hudPanel: '' }); }
+            }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), el('span', { className: 'gw-compact-action-label' }, 'Objectives')),
+            el('button', {
+              type: 'button', className: 'gw-compact-action gw-focusable',
+              'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog',
+              'aria-expanded': showGameSettings, 'aria-controls': 'gw-settings-dialog',
+              'aria-label': __alloT('stem.geometryworld.a11y_open_game_settings_and_tools', 'Open game settings and tools'), onClick: openGameSettings
+            }, el('span', { 'aria-hidden': 'true' }, '\u2699\uFE0F'), el('span', { className: 'gw-compact-action-label' }, 'Menu')),
+            el('button', {
+              type: 'button', className: 'gw-compact-action gw-toolbar-collapse gw-focusable',
+              'aria-label': __alloT('stem.geometryworld.a11y_hide_the_geometry_world_game_bar', 'Hide the Geometry World game bar'), title: 'Hide game bar',
+              onClick: function() { var saved = saveGeometryHudPreferences({ toolbarCollapsed: true }); upd('toolbarCollapsed', true); announceToSR('Game bar hidden; use the Show game bar button to restore it.' + (saved ? ' Preference saved on this device.' : ' Preference applies for this session.')); }
+            }, '\u25B2')
+          )
+        ),
+
+        toolbarCollapsed && !isWorkspaceFullscreen && el('button', {
+          type: 'button', className: 'gw-toolbar-reveal gw-focusable',
+          'aria-label': __alloT('stem.geometryworld.a11y_show_the_geometry_world_game_bar', 'Show the Geometry World game bar'),
+          onClick: function() { var saved = saveGeometryHudPreferences({ toolbarCollapsed: false }); upd('toolbarCollapsed', false); announceToSR('Game bar shown.' + (saved ? ' Preference saved on this device.' : ' Preference applies for this session.')); }
+        }, el('span', { 'aria-hidden': 'true' }, '\u25BC'), ' Show game bar'),
+
+        el('div', { className: 'gw-fullscreen-quickbar', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_fullscreen_game_tools', 'Fullscreen game tools') },
+          worldActive && el('button', {
+            type: 'button', className: 'gw-compact-action gw-focusable',
+            'aria-expanded': showPredictionPanel, 'aria-controls': 'gw-prediction-panel',
+            'aria-label': showPredictionPanel ? 'Close volume estimate drawer' : 'Open volume estimate drawer',
+            onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); }
+          }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Estimate')),
+          worldActive && el('button', {
+            type: 'button', className: 'gw-compact-action gw-focusable',
+            'aria-expanded': objectivesOpen, 'aria-controls': 'gw-objective-panel',
+            'aria-label': objectivesOpen ? 'Close lesson objectives' : 'Open lesson objectives',
+            onClick: function() { var next = !objectivesOpen; setSceneMapOpen(false); upd({ objectivesOpen: next, showPredictionPanel: false, showGameSettings: false, hudPanel: '' }); }
+          }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), el('span', { className: 'gw-compact-action-label' }, 'Objectives')),
+          el('button', {
+            type: 'button', className: 'gw-compact-action gw-focusable',
+            'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog',
+            'aria-expanded': showGameSettings, 'aria-controls': 'gw-settings-dialog',
+            'aria-label': __alloT('stem.geometryworld.a11y_open_game_settings_and_tools', 'Open game settings and tools'), onClick: openGameSettings
+          }, el('span', { 'aria-hidden': 'true' }, '\u2699\uFE0F'), el('span', { className: 'gw-compact-action-label' }, 'Menu'))
+        ),
+
+          // Badge notification popup
+          lastBadgeNotification && !measureResult && !d.showcaseActive && openModals.length === 0 && el('div', {
+            role: 'status', 'aria-live': 'polite', className: 'gw-achievement-toast',
+            style: { position: 'absolute', top: '64px', left: '50%', transform: 'translateX(-50%)', zIndex: 60,
+              background: 'linear-gradient(135deg, #4c1d95, #7c3aed)', border: '2px solid #a78bfa',
+              borderRadius: '12px', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px',
+              boxShadow: '0 4px 20px rgba(124,58,237,0.4)', animation: 'fadeIn 0.3s ease-out' }
+          },
+            el('span', {className:'gw-achievement-medal','aria-hidden':'true'},renderWorkspaceIcon(el,'award')),
+            el('div', {className:'gw-achievement-copy'},
+              el('div', {className:'gw-achievement-kicker'},'Achievement unlocked'),
+              el('div', {className:'gw-achievement-name'},lastBadgeNotification.name),
+              el('div', {className:'gw-achievement-description'},lastBadgeNotification.desc)
+            )
+          ),
+          // Volume-estimate drawer — available on demand without consuming play space.
+          showPredictionPanel && el('section', { id: 'gw-prediction-panel', role: 'region', className: 'gw-prediction-bar gw-prediction-panel', 'aria-labelledby': 'gw-prediction-title', 'data-geometry-prediction-cycle': 'commit-before-measure', 'data-geometry-estimation-challenge': 'draft-commit-measure-reflect', 'data-geometry-estimate-locked': volumeEstimateCommitment ? 'true' : 'false', style: { display: 'grid', alignItems: 'center', gap: '6px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '9px' } },
+            el('div', { className: 'gw-prediction-heading' },
+              el('h3', { id: 'gw-prediction-title', className: 'gw-prediction-title' }, '\uD83D\uDCDD Volume estimate challenge'),
+              el('button', { type: 'button', className: 'gw-prediction-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_close_volume_estimate_drawer', 'Close volume estimate drawer'), onClick: function() { upd('showPredictionPanel', false); focusWorldSurface(); } }, '\u00D7')
+            ),
+            el('p', { style: { gridColumn: '1 / -1', margin: 0, color: '#dbeafe', fontSize: '10px', lineHeight: 1.4 } }, 'This is an ungraded estimate. Aim at one unmeasured structure, commit your thinking, then measure that same structure.'),
+            el('label', { htmlFor: 'gw-volume-prediction', style: { color: '#fde68a', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap' } }, 'Estimate V'),
+            el('input', {
+              id: 'gw-volume-prediction',
+              type: 'text', inputMode: 'decimal', value: volumePrediction, disabled: !!volumeEstimateCommitment,
+              onChange: function(ev) { upd({ volumePrediction: ev.target.value, volumeEstimateCommitError: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' }); },
+              placeholder: 'e.g. 24',
+              'aria-label': __alloT('stem.geometryworld.a11y_estimated_volume_in_cubic_units', 'Estimated volume in cubic units'),
+              'aria-invalid': String(volumePrediction || '').trim() && !volumeEstimateDraftValid ? 'true' : 'false',
+              'aria-describedby': 'gw-volume-estimate-status',
+              title: volumeEstimateCommitment ? 'This estimate is locked until it is measured or you choose Change estimate.' : 'Enter an estimate before measuring. Decimals and fractions such as 3/4 are supported.',
+              style: { width: '58px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '11px', fontFamily: 'monospace' }
+            }),
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } }, 'cu'),
+            el('label', { htmlFor: 'gw-prediction-strategy', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 700 } }, 'using'),
+            el('select', {
+              id: 'gw-prediction-strategy', value: predictionStrategy, disabled: !!volumeEstimateCommitment,
+              onChange: function(ev) { upd({ predictionStrategy: ev.target.value, volumeEstimateCommitError: '' }); },
+              'aria-label': __alloT('stem.geometryworld.a11y_estimation_strategy', 'Estimation strategy'),
+              style: { maxWidth: '132px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px', color: '#fff', fontSize: '9px' }
+            },
+              el('option', { value: '' }, predictionScaffold.strategyPrompt),
+              el('option', { value: 'counting cubes' }, 'Count cubes'),
+              el('option', { value: 'layers' }, 'Base area \u00d7 height'),
+              el('option', { value: 'decomposition' }, 'Split into prisms'),
+              el('option', { value: 'bounding box' }, 'Box \u2212 empty space')
+            ),
+            el('input', {
+              type: 'text', value: predictionReason, disabled: !!volumeEstimateCommitment,
+              onChange: function(ev) { upd({ predictionReason: ev.target.value, volumeEstimateCommitError: '' }); },
+              placeholder: predictionScaffold.reasonPrompt,
+              'aria-label': __alloT('stem.geometryworld.a11y_brief_reason_for_estimate', 'Brief reason for estimate'),
+              style: { width: '125px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
+            }),
+            el('button', {
+              type: 'button', className: 'gw-compact-action gw-focusable',
+              'data-geometry-estimate-action': volumeEstimateCommitment ? 'change' : 'commit',
+              disabled: !volumeEstimateCommitment && !volumeEstimateDraftValid,
+              onClick: function() {
+                var eng = window[engineKey];
+                if (volumeEstimateCommitment) {
+                  if (eng) eng._predictionState = Object.assign({}, eng._predictionState || {}, { commitment: null });
+                  upd({ volumeEstimateCommitment: null, volumeEstimateCommitError: '' });
+                  announceToSR(__alloT('stem.geometryworld.sr_estimate_unlocked_you_may_revise_it_before_measur', 'Estimate unlocked. You may revise it before measuring.'));
+                  return;
+                }
+                var hit = eng && eng.blockUnderCrosshair ? eng.blockUnderCrosshair() : null;
+                var gp = hit && hit.object && hit.object.userData ? hit.object.userData.gridPos : null;
+                var measurement = gp && eng && eng.measureStructure ? eng.measureStructure(gp.x, gp.y, gp.z) : null;
+                var currentEstimateState = eng && eng._predictionState ? eng._predictionState : {};
+                var observedTargets = normalizeVolumeEstimateTargetKeys(currentEstimateState.observedTargetKeys || volumeEstimateObservedTargets);
+                var result = commitVolumeEstimateDraft({ input: volumePrediction, strategy: predictionStrategy, reason: predictionReason }, geometryMeasurementTargetKey(measurement), observedTargets);
+                if (!result.ok) {
+                  var message = result.code === 'invalid_estimate'
+                    ? 'Enter a valid numerical estimate before committing.'
+                    : result.code === 'already_observed'
+                      ? 'That structure has already been measured. Aim at an unmeasured structure for a new estimate.'
+                      : 'Aim the crosshair at a complete structure before committing.';
+                  upd('volumeEstimateCommitError', message);
+                  announceToSR(message);
+                  return;
+                }
+                if (eng) eng._predictionState = Object.assign({}, currentEstimateState, { commitment: result.commitment, observedTargetKeys: observedTargets, input: volumePrediction, strategy: predictionStrategy, reason: predictionReason });
+                upd({ volumeEstimateCommitment: result.commitment, volumeEstimateCommitError: '' });
+                announceToSR(__alloT('stem.geometryworld.sr_estimate_locked_for_the_aimed_structure_measure_t', 'Estimate locked for the aimed structure. Measure that same structure to compare.'));
+              },
+              style: { minHeight: '30px', padding: '4px 9px' }
+            }, volumeEstimateCommitment ? 'Change estimate' : 'Commit estimate'),
+            el('div', { id: 'gw-volume-estimate-status', role: 'status', 'aria-live': 'polite', 'data-geometry-estimate-status': volumeEstimateCommitment ? 'locked' : volumeEstimateCommitError || (String(volumePrediction || '').trim() && !volumeEstimateDraftValid) ? 'error' : 'draft', style: { gridColumn: '1 / -1', color: volumeEstimateCommitError || (String(volumePrediction || '').trim() && !volumeEstimateDraftValid) ? '#fecaca' : volumeEstimateCommitment ? '#a7f3d0' : '#bfdbfe', fontSize: '9px', fontWeight: volumeEstimateCommitment || volumeEstimateCommitError ? 750 : 600, lineHeight: 1.4 } },
+              volumeEstimateCommitment
+                ? 'Estimate locked for the aimed structure. Measure that same structure; the original stays fixed.'
+                : volumeEstimateCommitError || (String(volumePrediction || '').trim() && !volumeEstimateDraftValid ? 'Enter a positive number, decimal, or fraction before committing.' : 'Aim at an unmeasured structure, commit, then press M. Difference is described only for an estimate committed before measurement; it is not scored.')
+            ),
+            el('div', { 'data-geometry-prediction-scaffold': predictionScaffold.level, title: predictionScaffold.cue, style: { flexBasis: '100%', display: 'flex', gap: '5px', alignItems: 'center', color: predictionScaffold.level === 'independent' ? '#86efac' : '#bfdbfe', fontSize: '9px', lineHeight: 1.3 } },
+              el('span', { style: { fontWeight: 800, whiteSpace: 'nowrap' } }, predictionScaffold.label + ':'),
+              el('span', null, predictionScaffold.cue)
+            )
+          ),
+          measureResult && el('div', { role: 'region', className: 'gw-measure-card', 'data-measurement-compact': isMobile ? 'true' : 'false', 'data-details-open': !isMobile || measurementDetailsOpen ? 'true' : 'false', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_inspector', 'Measurement inspector'), style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
+            el('div', { className: 'gw-measure-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' } },
+              el('div', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 800, color: '#cffafe' } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
+              el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': __alloT('stem.geometryworld.a11y_close_measurement_inspector', 'Close measurement inspector'), title: 'Close measurement inspector', onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); setMeasurementDetailsOpen(false); upd('measureResult', null); } }, '\u00D7')
+            ),
+            measureResult.isComplete === false && el('div', { role: 'alert', 'data-geometry-measurement-incomplete': 'true',
+              style: { margin: '2px 0', padding: '4px 6px', borderRadius: '4px', background: '#7f1d1d', color: '#fecaca', fontWeight: 700 } },
+              'Measurement limit reached. At least ' + measureResult.count + ' connected blocks were found; volume, dimensions, and surface area below are partial and not exact.'),
+            measureResult.isComplete !== false && el('div', { className: 'gw-measure-dimensions', 'aria-label': 'Principal dimensions in units' },
+              [['Length', measureResult.L], ['Width', measureResult.W], ['Height', measureResult.H]].map(function(dimension) {
+                return el('div', { className: 'gw-measure-dimension', key: dimension[0] }, el('span', null, dimension[0]), el('strong', null, dimension[1]));
+              })
+            ),
+            el('div', { className: 'gw-measure-volume', 'data-geometry-occupied-volume': 'true' },
+              el('span', null, measureResult.isComplete === false ? 'Occupied volume, at least' : 'Occupied volume'),
+              el('span', { className: 'gw-measure-volume-value' }, el('strong', null, measureResult.formattedOccupiedVolume), el('span', null, ' cubic units'))
+            ),
+            el('details', { className: 'gw-measure-details', open: !isMobile || measurementDetailsOpen,
+              onToggle: function(ev) { if (isMobile && ev.currentTarget.open !== measurementDetailsOpen) setMeasurementDetailsOpen(ev.currentTarget.open); }
+            },
+              el('summary', { className: 'gw-measure-details-toggle gw-focusable' }, __alloT('stem.geometryworld.explore_measurement_details', 'Explore measurement details')),
+              el('div', { className: 'gw-measure-details-content' },
+            el('div', { className: 'gw-measure-equation', style: { fontFamily: 'monospace', color: measureResult.isSolidPrism ? '#4ade80' : '#fbbf24' } },
+              measureResult.isComplete === false
+                ? 'Counted at least ' + measureResult.count + ' connected blocks'
+                : measureResult.isSolidPrism
+                ? 'V = ' + measureResult.L + ' \u00d7 ' + measureResult.W + ' \u00d7 ' + measureResult.H + ' = ' + measureResult.formattedOccupiedVolume
+                : 'Occupied volume = ' + measureResult.formattedOccupiedVolume + ' cubic units'
+            ),
+            measureResult.isComplete !== false && !measureResult.isSolidPrism && el('div', { className: 'gw-measure-equation-note', style: { fontSize: '10px', color: '#fde68a' } },
+              'Bounding box ' + measureResult.boundingVolume + ' \u2212 empty ' + formatVolume(measureResult.missingVolume) + ' = ' + measureResult.formattedOccupiedVolume + ' (' + measureResult.fillPercent + '% filled)'
+            ),
+            el('div', { 'data-geometry-surface-area': measureResult.surfaceAreaExact ? 'exact' : 'partial', style: { fontSize: '10px', color: measureResult.surfaceAreaExact ? '#86efac' : '#cbd5e1' } },
+              measureResult.isComplete === false
+                ? 'Surface area unavailable until the full structure is measured'
+                : measureResult.surfaceAreaExact ? 'Exposed surface area = ' + measureResult.exposedSurfaceArea + ' square units' : 'Surface area needs partial-face analysis (press N)'),
+            layerExplorerHeight > 1 && el('section', { className: 'gw-layer-explorer', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_layer_explorer', 'Layer explorer'), 'data-geometry-layer-explorer': 'true', style: { marginTop: '4px', padding: '7px 8px', border: '1px solid rgba(45,212,191,0.28)', borderRadius: '8px', background: 'rgba(13,148,136,0.1)' } },
+              el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' } },
+                el('span', { style: { color: '#99f6e4', fontSize: '9px', fontWeight: 850, letterSpacing: '0.05em', textTransform: 'uppercase' } }, 'Layer explorer'),
+                el('output', { htmlFor: 'gw-layer-focus', 'aria-live': 'polite', style: { color: '#f0fdfa', fontSize: '9px', fontWeight: 800 } }, layerFocus === 0 ? 'All layers' : 'Layers 1-' + layerFocus + ' of ' + layerExplorerHeight)
+              ),
+              el('label', { htmlFor: 'gw-layer-focus', style: { display: 'block', marginTop: '4px', color: '#ccfbf1', fontSize: '9px', fontWeight: 700 } }, 'Reveal through layer'),
+              el('input', {
+                id: 'gw-layer-focus', type: 'range', min: 0, max: layerExplorerHeight, step: 1, value: layerFocus,
+                className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_layer_explorer_depth', 'Layer explorer depth'),
+                'aria-valuetext': layerFocus === 0 ? 'All layers visible' : 'Layers 1 through ' + layerFocus + ' of ' + layerExplorerHeight + ' visible',
+                onChange: function(ev) {
+                  var next = Math.max(0, Math.min(layerExplorerHeight, Number(ev.target.value) || 0));
+                  setLayerFocus(next);
+                  var eng = window[engineKey];
+                  if (eng && eng.setLayerFocus) eng.setLayerFocus(next);
+                },
+                style: { display: 'block', width: '100%', margin: '5px 0 2px', accentColor: '#2dd4bf' }
+              }),
+              el('div', { style: { display: 'flex', justifyContent: 'space-between', color: '#99f6e4', fontSize: '8px' } },
+                el('span', null, 'All'),
+                el('span', null, 'Top layer ' + layerExplorerHeight)
+              ),
+              el('button', { type: 'button', className: 'gw-focusable', disabled: layerFocus === 0, 'aria-label': __alloT('stem.geometryworld.a11y_show_all_layers', 'Show all layers'), onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); }, style: { minHeight: 28, marginTop: '5px', padding: '3px 8px', border: '1px solid rgba(153,246,228,0.28)', borderRadius: '6px', background: 'rgba(15,23,42,0.54)', color: '#ccfbf1', fontSize: '9px', fontWeight: 800, cursor: layerFocus === 0 ? 'not-allowed' : 'pointer', opacity: layerFocus === 0 ? 0.6 : 1 } }, 'Show all layers')
+            ),            predictionResult && el('div', { 'data-geometry-prediction-result': 'true', 'data-geometry-estimate-result': 'committed-before-measurement', style: { marginTop: '2px', padding: '5px 6px', borderRadius: '4px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)' } },
+              el('div', { style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px' } }, 'Committed estimate ' + formatVolume(predictionResult.prediction) + ' \u2192 Measured ' + formatVolume(predictionResult.actual)),
+              el('div', { style: { color: '#bfdbfe', fontSize: '10px', fontWeight: 700 } }, predictionResult.accuracyLabel + (predictionResult.relation === 'exact' ? '. Descriptive, ungraded.' : ' (' + predictionResult.percentError + '% ' + predictionResult.relation + 'estimate). Descriptive, ungraded.')),
+              (predictionResult.strategy || predictionResult.reason) && el('div', { style: { color: '#bfdbfe', fontSize: '9px' } },
+                (predictionResult.strategy ? 'Strategy: ' + predictionResult.strategy : '') + (predictionResult.reason ? ' \u2022 Reason: ' + predictionResult.reason : '')
+              ),
+              predictionResult.learningPrompt && el('div', { 'data-geometry-misconception-feedback': predictionResult.diagnosisCode || 'general', style: { marginTop: '3px', color: '#fff', fontSize: '10px', fontWeight: 700 } }, 'Think: ' + predictionResult.learningPrompt),
+              el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px' } },
+                el('label', { htmlFor: 'gw-prediction-revision', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 700 } }, 'Revise after evidence'),
+                el('input', {
+                  id: 'gw-prediction-revision', type: 'text', inputMode: 'decimal', value: predictionRevision,
+                  onChange: function(ev) { upd({ predictionRevision: ev.target.value, predictionRevisionResult: null }); },
+                  placeholder: 'new V', 'aria-label': __alloT('stem.geometryworld.a11y_revised_volume_estimate_after_evidence', 'Revised volume estimate after evidence'),
+                  style: { width: '52px', background: '#0f172a', border: '1px solid #a78bfa', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
+                }),
+                el('input', {
+                  type: 'text', value: predictionReflection,
+                  onChange: function(ev) { upd('predictionReflection', ev.target.value); },
+                  placeholder: 'What changed in your thinking?', 'aria-label': __alloT('stem.geometryworld.a11y_explain_what_changed_in_your_reasoning', 'Explain what changed in your reasoning'),
+                  style: { width: '160px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
+                }),
+                el('button', {
+                  type: 'button', className: 'gw-focusable gw-measure-check-revision',
+                  onClick: function() {
+                    var revision = comparePredictionRevision(predictionResult, predictionRevision);
+                    if (!revision) { if (addToast) addToast('Enter a positive revised volume.', 'info'); return; }
+                    upd('predictionRevisionResult', revision);
+                    var eng = window[engineKey];
+                    if (eng && eng.logEvent) eng.logEvent('prediction_revision', { originalPrediction: predictionResult.prediction, revisedPrediction: revision.prediction, actualVolume: revision.actual, originalPercentError: predictionResult.percentError, revisedPercentError: revision.percentError, improvement: revision.improvement, strategy: predictionResult.strategy || '', misconception: predictionResult.diagnosisCode || '', reflection: predictionReflection.trim() });
+                  },
+                  style: { background: '#7c3aed', border: 'none', borderRadius: '4px', padding: '3px 7px', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: 'pointer' }
+                }, 'Check revision')
+              ),
+              predictionRevisionResult && el('div', { role: 'status', 'data-geometry-revision-result': 'true', style: { marginTop: '3px', color: predictionRevisionResult.improvement >= 0 ? '#86efac' : '#fca5a5', fontSize: '10px', fontWeight: 700 } },
+                predictionRevisionResult.feedback + ' Revised error: ' + predictionRevisionResult.percentError + '%.'
+              )
+            ),
+
+            volumeRepresentations.length > 1 && activeVolumeRepresentation && el('div', { 'data-geometry-volume-representation': activeVolumeRepresentation.key, style: { marginTop: '3px', padding: '5px 6px', borderRadius: '5px', background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(167,139,250,0.3)', maxWidth: '320px' } },
+              el('div', { className: 'gw-measure-view-picker', style: { display: 'flex', gap: '5px', alignItems: 'center', marginBottom: '3px' } },
+                el('label', { htmlFor: 'gw-volume-representation', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 800, whiteSpace: 'nowrap' } }, 'Equivalent view'),
+                el('select', {
+                  id: 'gw-volume-representation', value: activeVolumeRepresentation.key, className: 'gw-focusable',
+                  'aria-label': __alloT('stem.geometryworld.a11y_choose_an_equivalent_volume_representation', 'Choose an equivalent volume representation'),
+                  onChange: function(ev) {
+                    var key = ev.target.value;
+                    if (hasUnsavedRepresentationDraft) {
+                      ev.target.value = activeVolumeRepresentation.key;
+                      if (addToast) addToast('Save or discard your explanation draft before switching views.', 'info');
+                      announceToSR(__alloT('stem.geometryworld.sr_view_not_changed_save_or_discard_your_explanation', 'View not changed. Save or discard your explanation draft first.'));
+                      return;
+                    }
+                    upd({ volumeRepresentationFromKey: activeVolumeRepresentation.key, volumeRepresentationKey: key, volumeRepresentationVisitedKeys: representationExploration.visitedKeys.concat([key]).filter(function(item, index, list) { return list.indexOf(item) === index; }), volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false });
+                    var selectedView = volumeRepresentations.find(function(view) { return view.key === key; });
+                    var eng = window[engineKey];
+                    if (eng && eng.logEvent) eng.logEvent('representation_view', { representation: key, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite', volume: measureResult.occupiedVolume });
+                    if (selectedView) announceToSR(__alloFill(__alloT('stem.geometryworld.sr_showing_equivalent_view', 'Showing equivalent view: {value1}. {value2}. {value3}'), { value1: selectedView.label, value2: selectedView.expression, value3: selectedView.question }));
+                  },
+                  style: { flex: 1, minWidth: '110px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '2px', color: '#fff', fontSize: '9px' }
+                }, volumeRepresentations.map(function(view) { return el('option', { key: view.key, value: view.key }, view.label); }))
+              ),
+              el('div', { className: 'gw-measure-equation', style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px', fontWeight: 700 } }, activeVolumeRepresentation.expression),
+              el('div', {
+                role: 'progressbar',
+                'data-complete': representationExploration.complete ? 'true' : 'false',
+                'data-geometry-representation-progress': representationExploration.visitedCount + '/' + representationExploration.target,
+                'aria-label': __alloT('stem.geometryworld.a11y_equivalent_volume_views_explored', 'Equivalent volume views explored'),
+                'aria-valuemin': 0,
+                'aria-valuemax': representationExploration.target || 1,
+                'aria-valuenow': representationExploration.progressValue,
+                style: { marginBottom: '4px' }
+              },
+                el('div', { className: 'gw-measure-view-progress-caption', style: { display: 'flex', justifyContent: 'space-between', color: representationExploration.complete ? '#86efac' : '#ddd6fe', fontSize: '9px', fontWeight: 700 } }, el('span', null, 'Views compared: ' + representationExploration.visitedCount + '/' + representationExploration.target), el('span', null, representationExploration.complete ? '\u2713 Ready to explain' : 'Compare 2 views')),
+                el('div', { style: { height: '3px', marginTop: '2px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(148,163,184,0.25)' } }, el('div', { className: 'gw-measure-view-progress-fill', style: { width: representationExploration.percent + '%', height: '100%', borderRadius: '999px', background: representationExploration.complete ? '#22c55e' : '#a78bfa', transition: 'width 0.2s ease' } }))
+              ),
+              el('div', { className: 'gw-measure-prompt', style: { color: '#cbd5e1', fontSize: '8px', marginBottom: '3px' } }, representationExploration.prompt),
+              el('div', { id: 'gw-representation-connect-prompt', style: { color: '#bfdbfe', fontSize: '9px', marginTop: '2px' } }, 'Connect: ' + activeVolumeRepresentation.question),
+              recommendedVolumeRepresentation && el('div', {
+                role: 'note',
+                'data-geometry-representation-recommendation': recommendedVolumeRepresentation.diagnosisCode,
+                style: { marginBottom: '4px', padding: '4px 5px', borderRadius: '4px', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a', fontSize: '8px', lineHeight: 1.35 }
+              },
+                el('div', { style: { fontWeight: 800 } }, 'Recommended next: ' + recommendedVolumeRepresentation.label),
+                el('div', null, recommendedVolumeRepresentation.reason),
+                recommendedVolumeRepresentation.key !== activeVolumeRepresentation.key && el('button', {
+                  type: 'button',
+                  className: 'gw-focusable',
+                  'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_open_recommended_volume_view', 'Open recommended volume view: {value1}'), { value1: recommendedVolumeRepresentation.label }),
+                  onClick: function() {
+                    if (hasUnsavedRepresentationDraft) {
+                      if (addToast) addToast('Save or discard your explanation draft before opening another view.', 'info');
+                      announceToSR(__alloT('stem.geometryworld.sr_recommended_view_not_opened_save_or_discard_your', 'Recommended view not opened. Save or discard your explanation draft first.'));
+                      return;
+                    }
+                    var key = recommendedVolumeRepresentation.key;
+                    var recommendedView = volumeRepresentations.find(function(view) { return view.key === key; });
+                    upd({
+                      volumeRepresentationFromKey: activeVolumeRepresentation.key,
+                      volumeRepresentationKey: key,
+                      volumeRepresentationVisitedKeys: representationExploration.visitedKeys.concat([key]).filter(function(item, index, list) { return list.indexOf(item) === index; }),
+                      volumeRepresentationReason: '',
+                      volumeRepresentationInvariantChecked: false,
+                      volumeRepresentationEvidenceChecked: false,
+                      volumeRepresentationConnectionSaved: false
+                    });
+                    if (recommendedView) announceToSR(__alloFill(__alloT('stem.geometryworld.sr_showing_recommended_view', 'Showing recommended view: {value1}. {value2}. {value3}'), { value1: recommendedView.label, value2: recommendedView.expression, value3: recommendedView.question }));
+                    var eng = window[engineKey];
+                    if (eng && eng.logEvent) eng.logEvent('representation_view', { representation: key, source: 'misconception_recommendation', misconception: recommendedVolumeRepresentation.diagnosisCode, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite', volume: measureResult.occupiedVolume });
+                  },
+                  style: { marginTop: '3px', background: '#b45309', border: 'none', borderRadius: '4px', padding: '3px 6px', color: '#fff', fontSize: '8px', fontWeight: 800, cursor: 'pointer' }
+                }, 'Open recommended view')
+              ),
+              volumeRepresentationFromKey && volumeRepresentationFromKey !== activeVolumeRepresentation.key && el('div', { 'data-geometry-representation-connection': 'true', style: { marginTop: '5px', display: 'grid', gap: '4px' } },
+                el('label', { htmlFor: 'gw-representation-reason', style: { color: '#ddd6fe', fontSize: '9px', fontWeight: 700 } }, 'Explain: Both views show the same volume because...'),
+                el('textarea', {
+                  id: 'gw-representation-reason', className: 'gw-focusable',
+                  value: volumeRepresentationReason,
+                  rows: 2,
+                  'aria-label': __alloT('stem.geometryworld.a11y_explain_why_the_two_volume_representations_are', 'Explain why the two volume representations are equivalent'),
+                  'aria-describedby': representationSentenceStarter ? 'gw-representation-connect-prompt gw-representation-sentence-starter' : 'gw-representation-connect-prompt',
+                  placeholder: representationSentenceStarter || ('Both views show ' + formatVolume(measureResult.occupiedVolume) + ' cubic units because...'),
+                  onChange: function(ev) { upd({ volumeRepresentationReason: ev.target.value, volumeRepresentationConnectionSaved: false }); },
+                  style: { resize: 'vertical', minHeight: '34px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '4px', color: '#fff', fontSize: '9px', lineHeight: 1.35 }
+                }),
+                representationSentenceStarter && el('div', { id: 'gw-representation-sentence-starter', 'data-geometry-representation-sentence-starter': predictionScaffold.level, style: { padding: '3px 4px', borderRadius: '4px', background: 'rgba(59,130,246,0.1)', color: '#bfdbfe', fontSize: '8px', lineHeight: 1.35 } },
+                  el('strong', null, 'Sentence starter: '), '\u201c' + representationSentenceStarter + '\u201d'
+                ),
+                el('div', { role: 'group', className: 'gw-measure-self-check', 'aria-label': __alloT('stem.geometryworld.a11y_explanation_self_check', 'Explanation self-check'), style: { display: 'grid', gap: '2px', color: '#ddd6fe', fontSize: '8px' } },
+                  el('label', { style: { display: 'flex', gap: '4px', alignItems: 'flex-start', cursor: 'pointer' } },
+                    el('input', { type: 'checkbox', className: 'gw-focusable', checked: volumeRepresentationInvariantChecked, disabled: volumeRepresentationConnectionSaved, onChange: function(ev) { upd({ volumeRepresentationInvariantChecked: ev.target.checked, volumeRepresentationConnectionSaved: false }); } }),
+                    el('span', null, 'I named what stays the same.')
+                  ),
+                  el('label', { style: { display: 'flex', gap: '4px', alignItems: 'flex-start', cursor: 'pointer' } },
+                    el('input', { type: 'checkbox', className: 'gw-focusable', checked: volumeRepresentationEvidenceChecked, disabled: volumeRepresentationConnectionSaved, onChange: function(ev) { upd({ volumeRepresentationEvidenceChecked: ev.target.checked, volumeRepresentationConnectionSaved: false }); } }),
+                    el('span', null, 'I used evidence from the structure or equation.')
+                  )
+                ),
+                el('button', {
+                  type: 'button', className: 'gw-focusable gw-measure-save-connection',
+                  'data-state': volumeRepresentationConnectionSaved ? 'saved' : representationConnectionReadiness.ready ? 'ready' : 'draft',
+                  'aria-describedby': 'gw-representation-connect-prompt',
+                  disabled: volumeRepresentationConnectionSaved,
+                  onClick: function() {
+                    var response = volumeRepresentationReason.trim();
+                    if (!representationConnectionReadiness.ready) { if (addToast) addToast(representationConnectionReadiness.message, 'info'); return; }
+                    upd('volumeRepresentationConnectionSaved', true);
+                    var eng = window[engineKey];
+                    if (eng && eng.logEvent) eng.logEvent('representation_connection', { from: volumeRepresentationFromKey, to: activeVolumeRepresentation.key, text: response, viewsExplored: representationExploration.visitedCount, selfCheck: { invariant: true, evidence: true }, volume: measureResult.occupiedVolume, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite' });
+                  },
+                  style: { justifySelf: 'start', background: volumeRepresentationConnectionSaved ? '#166534' : representationConnectionReadiness.ready ? '#7c3aed' : '#475569', border: 'none', borderRadius: '4px', padding: '3px 7px', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: volumeRepresentationConnectionSaved ? 'default' : 'pointer' }
+                }, volumeRepresentationConnectionSaved ? '\u2713 Connection saved' : 'Save connection'),
+                volumeRepresentationConnectionSaved && el('div', { role: 'status', 'aria-live': 'polite', style: { color: '#86efac', fontSize: '9px', fontWeight: 700 } }, 'Your explanation is part of the learning evidence.'),
+                hasUnsavedRepresentationDraft && el('button', {
+                  type: 'button',
+                  className: 'gw-focusable',
+                  'aria-label': __alloT('stem.geometryworld.a11y_discard_unsaved_representation_explanation', 'Discard unsaved representation explanation'),
+                  onClick: function() {
+                    upd({ volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false });
+                    if (addToast) addToast('Explanation draft discarded.', 'info');
+                    announceToSR(__alloT('stem.geometryworld.sr_explanation_draft_discarded_you_can_now_choose_an', 'Explanation draft discarded. You can now choose another view.'));
+                  },
+                  style: { justifySelf: 'start', background: 'transparent', border: '1px solid #94a3b8', borderRadius: '4px', padding: '3px 7px', color: '#cbd5e1', fontSize: '9px', fontWeight: 700, cursor: 'pointer' }
+                }, 'Discard draft'),
+              )
+            ),
+            el('div', { className: 'gw-measure-block-count', style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+              measureResult.count + ' blocks' + (measureResult.hasFractions
+                ? ' (' + Object.keys(measureResult.shapeCounts).map(function(s) {
+                    var sd = BLOCK_SHAPES.find(function(bs) { return bs.id === s; });
+                    return measureResult.shapeCounts[s] + '\u00d7' + (sd ? sd.fraction : '1');
+                  }).join(' + ') + ')'
+                : measureResult.isSolidPrism ? ' \u2713' : ' (count the occupied cubes)')
+            ),
+            Object.keys(measureResult.materialCounts || {}).length > 1 && el('div', { 'data-geometry-material-breakdown': 'true', style: { fontSize: '10px', color: '#bfdbfe' } },
+              'Materials: ' + Object.keys(measureResult.materialCounts).map(function(type) { return measureResult.materialCounts[type] + ' ' + type; }).join(', ')
+            ),
+            measureResult.isComplete !== false && el('button', {
+              className: 'gw-measure-build-card gw-focusable',
+              onClick: function() {
+                var card = generateManipulativeCard(measureResult, currentLesson.title);
+                var win = window.open('', '_blank');
+                if (win) { win.document.write(card); win.document.close(); win.print(); }
+                if (addToast) addToast('\uD83E\uDDF1 Build card ready to print!', 'success');
+                var eng = window[engineKey];
+                if (eng && eng.logEvent) eng.logEvent('manipulative_card', { L: measureResult.L, W: measureResult.W, H: measureResult.H, V: measuredVolume(measureResult), boundingVolume: measureResult.boundingVolume });
+              },
+              title: __alloT('stem.geometryworld.print_a_card_to_build_this_structure_w', 'Print a card to build this structure with physical cubes'),
+              style: { background: '#7c3aed', border: 'none', borderRadius: '4px', padding: '2px 8px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 700, marginTop: '2px' }
+            }, '\uD83E\uDDF1 Build This!')
+              )
+            )
+          ),
+          // Secondary setup and utility controls stay out of the flex layout.
+          showGameSettings && el('div', {
+            className: 'gw-settings-backdrop',
+            onMouseDown: function(ev) { if (ev.target === ev.currentTarget) closeGameSettings(); }
+          },
+            el('section', {
+              id: 'gw-settings-dialog', role: 'dialog', 'aria-modal': 'true',
+              'aria-labelledby': 'gw-settings-title', 'aria-describedby': 'gw-settings-description',
+              className: 'gw-settings-dialog', tabIndex: -1, ref: gwDialogRef,
+              onKeyDown: function(ev) { if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); closeGameSettings(); } }
+            },
+              el('div', { className: 'gw-settings-header' },
+                el('div', null,
+                  el('h2', { id: 'gw-settings-title', className: 'gw-settings-title' }, '\u2699\uFE0F Game settings & tools'),
+                  el('p', { id: 'gw-settings-description', className: 'gw-settings-description' }, 'Choose a saved HUD layout, adjust the lesson and view, or export your work. Closing this menu returns you to the game.')
+                ),
+                el('button', { type: 'button', className: 'gw-dialog-close gw-settings-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_close_game_settings_and_tools', 'Close game settings and tools'), onClick: closeGameSettings }, '\u00D7')
+              ),
+              el('div', { className: 'gw-settings-controls' },
+                el('h3', { className: 'gw-settings-section-title' }, 'Play & view'),
+                el('label', { className: 'gw-quality-control', title: renderQualityProfile.reason },
+                  el('span', { className: 'gw-quality-label' }, '3D quality'),
+                  el('select', {
+                    value: renderQuality, 'data-geometry-render-quality': 'true',
+                    'aria-label': __alloT('stem.geometryworld.a11y_3d_graphics_quality', '3D graphics quality'), 'aria-describedby': 'gw-quality-help',
+                    onChange: function(ev) {
+                      var preference = ev.target.value;
+                      upd('renderQuality', preference);
+                      var liveEngine = window[engineKey];
+                      var profile = liveEngine && liveEngine.applyRenderQuality ? liveEngine.applyRenderQuality(preference) : resolveGeometryRenderProfile(preference, {});
+                      announceToSR(__alloFill(__alloT('stem.geometryworld.sr_3d_graphics_quality_set_to', '3D graphics quality set to {value1}.'), { value1: profile.label }));
+                    }
+                  },
+                    el('option', { value: 'auto' }, 'Auto (' + renderQualityProfile.label + ')'),
+                    el('option', { value: 'saver' }, 'Battery saver'),
+                    el('option', { value: 'balanced' }, 'Balanced'),
+                    el('option', { value: 'detail' }, 'Detailed')
+                  ),
+                  el('span', { className: 'gw-quality-resolved', role: 'status', 'aria-live': 'polite', 'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_resolved_graphics_mode', 'Resolved graphics mode: {value1}'), { value1: renderQualityProfile.label })}, renderQualityProfile.label),
+                  el('span', { id: 'gw-quality-help', className: 'gw-quality-help' }, renderQualityProfile.reason)
+                ),
+                worldActive && tutorialDismissed && engine && el('button', {
+                  type: 'button', className: 'gw-tour-button gw-focusable',
+                  'aria-pressed': guidedTourActive,
+                  'aria-label': guidedTourActive ? 'Stop guided explore tour' : 'Start guided explore tour',
+                  onClick: function() {
+                    if (!engine) return;
+                    if (guidedTourActive && engine.stopGuidedTour) engine.stopGuidedTour(false);
+                    else if (engine.startGuidedTour) engine.startGuidedTour();
+                    closeGameSettings();
+                  },
+                  style: { border: '1px solid rgba(167,139,250,0.42)', borderRadius: 8, background: guidedTourActive ? '#92400e' : '#4c1d95', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                }, guidedTourActive ? '\u23F9 Exit tour' : '\u2728 Explore tour'),
+                worldActive && tutorialDismissed && engine && el('div', {
+                  className: 'gw-view-presets', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_camera_views', 'Camera views'),
+                  style: { display: 'inline-flex', alignItems: 'center', gap: 4, border: '1px solid rgba(148,163,184,0.28)', borderRadius: 9, background: 'rgba(15,23,42,0.66)' }
+                },
+                  el('span', { className: 'gw-view-presets-label', style: { color: '#cbd5e1', fontSize: 10, fontWeight: 800, padding: '0 4px' } }, 'Camera'),
+                  ['front', 'side', 'top', 'free'].map(function(preset) {
+                    var active = viewPreset === preset;
+                    return el('button', {
+                      key: preset, type: 'button', className: 'gw-view-preset gw-focusable',
+                      'aria-pressed': active, 'aria-label': viewPresetLabels[preset] + ' camera view',
+                      onClick: function() { if (engine && engine.setViewPreset) engine.setViewPreset(preset); closeGameSettings(); },
+                      style: { minHeight: 30, minWidth: 42, padding: '4px 7px', border: active ? '1px solid #c4b5fd' : '1px solid transparent', borderRadius: 6, background: active ? '#5b21b6' : 'transparent', color: '#fff', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
+                    }, viewPresetLabels[preset]);
+                  })
+                ),
+                worldActive && tutorialDismissed && engine && el('button', {
+                  type: 'button', className: 'gw-scene-map-button gw-focusable',
+                  'aria-label': sceneMapOpen ? 'Close textual scene map' : 'Open textual scene map',
+                  'aria-expanded': sceneMapOpen, 'aria-controls': 'gw-scene-map',
+                  onClick: function() { var next = !sceneMapOpen; setSceneMapOpen(next); if (next) upd({ hudPanel: '', showPredictionPanel: false, objectivesOpen: false }); announceToSR(next ? 'Textual scene map opened.' : 'Textual scene map closed.'); closeGameSettings(); },
+                  style: { border: '1px solid rgba(45,212,191,0.5)', borderRadius: 8, background: '#115e59', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                }, sceneMapOpen ? 'Close scene map' : 'Scene map'),
+                worldActive && el('fieldset', { className: 'gw-hud-preset-fieldset', 'aria-describedby': 'gw-hud-preset-help' },
+                  el('legend', { className: 'gw-settings-section-title' }, 'HUD layout'),
+                  el('p', { id: 'gw-hud-preset-help', className: 'gw-hud-preset-help' }, 'Choose a default game view. Your preset and game-bar visibility are saved on this device.'),
+                  el('div', { className: 'gw-hud-presets', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_choose_a_saved_hud_preset', 'Choose a saved HUD preset'), 'aria-describedby': 'gw-hud-preset-help' },
+                    [
+                      { id: 'minimal', icon: '\uD83C\uDFAE', label: 'Minimal', description: 'Clear view with optional panels hidden.', ariaLabel: 'Use Minimal HUD: hide optional HUD panels' },
+                      { id: 'learning', icon: '\uD83C\uDF93', label: 'Learning', description: 'Lesson progress, score, and activity status.', ariaLabel: 'Use Learning HUD: show lesson progress' },
+                      { id: 'builder', icon: '\uD83E\uDDF1', label: 'Builder', description: 'Block counts and total constructed volume.', ariaLabel: 'Use Builder HUD: show block inventory' }
+                    ].map(function(preset) {
+                      var active = hudPreset === preset.id;
+                      return el('button', {
+                        key: preset.id, type: 'button', className: 'gw-hud-preset-card gw-focusable',
+                        'data-geometry-hud-preset': preset.id, 'aria-pressed': active,
+                        'aria-label': preset.ariaLabel,
+                        onClick: function() { applyHudPreset(preset.id); }
+                      },
+                        el('span', { className: 'gw-hud-preset-icon', 'aria-hidden': 'true' }, preset.icon),
+                        el('span', { className: 'gw-hud-preset-copy' },
+                          el('span', { className: 'gw-hud-preset-name' }, preset.label),
+                          el('span', { className: 'gw-hud-preset-description' }, preset.description)
+                        )
+                      );
+                    })
+                  )
+                ),
+                worldActive && el('h3', { className: 'gw-settings-section-title' }, 'Optional HUD overlays'),
+                worldActive && [
+                  { id: 'progress', controls: 'gw-progress-hud', icon: '\uD83D\uDCCA', label: 'Progress', disabled: false },
+                  { id: 'map', controls: 'gw-minimap', icon: '\uD83D\uDDFA\uFE0F', label: 'Minimap', disabled: !engine },
+                  { id: 'history', controls: 'gw-history-panel', icon: '\uD83D\uDCCF', label: 'Measurements', disabled: measureHistory.length === 0 },
+                  { id: 'inventory', controls: 'gw-inventory-panel', icon: '\uD83E\uDDF1', label: 'Block counts', disabled: !engine },
+                  { id: 'transform', controls: 'gw-transform-panel', icon: '\uD83D\uDCD0', label: 'Transform lab', disabled: false }
+                ].map(function(panel) {
+                  var active = hudPanel === panel.id;
+                  return el('button', {
+                    key: panel.id, type: 'button', className: 'gw-compact-action gw-hud-toggle gw-focusable',
+                    'aria-pressed': active, 'aria-controls': panel.controls, disabled: panel.disabled,
+                    title: panel.disabled ? panel.label + ' becomes available during play' : (active ? 'Hide ' + panel.label : 'Show ' + panel.label),
+                    onClick: function() { setHudPanel(panel.id, panel.label); }
+                  }, el('span', { 'aria-hidden': 'true' }, panel.icon), active ? 'Hide ' + panel.label : panel.label);
+                }),
+                el('h3', { className: 'gw-settings-section-title' }, 'Lesson & accessibility'),
+
+          // Lesson selector (built-in + AI-generated)
+          el('select', {
+            'aria-label': __alloT('stem.geometryworld.choose_lesson', 'Choose lesson'),
+            value: activeLesson,
+            onChange: function(ev) {
+              var lessonKey = ev.target.value;
+              upd({ activeLesson: lessonKey, showLessonIntro: true, showReflection: false, showGameSettings: false });
+            },
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
+          },
+            el('optgroup', { label: __alloT('stem.geometryworld.built_in_lessons', 'Built-in Lessons') },
+              el('option', { value: 'volumeExplorer' }, '\uD83D\uDCCF Volume Explorer'),
+              el('option', { value: 'areaSurface' }, '\uD83D\uDCD0 Area & Surface'),
+              el('option', { value: 'buildChallenge' }, '\uD83C\uDFD7\uFE0F Build Challenge'),
+              el('option', { value: 'realWorld' }, '\uD83D\uDCE6 Packing & Shipping'),
+              el('option', { value: 'geometryGarden' }, '\uD83C\uDF3F The Geometry Garden'),
+              el('option', { value: 'compositeVolume' }, '\uD83E\uDDE9 Composite Volume'),
+              el('option', { value: 'fractionVolume' }, '\u00BD Fractional Dimensions'),
+              el('option', { value: 'volumeEstimation' }, '\uD83C\uDFAF Volume Estimation'),
+              el('option', { value: 'fractionBuilder' }, '\u00BD Fraction Builder'),
+              el('option', { value: 'base10Blocks' }, '\uD83E\uDDF1 Base 10 Place Value'),
+              el('option', { value: 'fluencyMaze' }, '\uD83C\uDFAF Volume Fluency Maze')
+            ),
+            getMyLessons().length > 0 && el('optgroup', { label: '\uD83E\uDD16 AI-Generated (' + getMyLessons().length + ')' },
+              getMyLessons().slice(0, 5).map(function(ml) {
+                return el('option', { key: ml._id, value: ml._id }, '\u2728 ' + (ml.title || 'Untitled').slice(0, 30));
+              })
+            )
+          ),
+          // Home language selector (multilingual NPC voices)
+          el('select', {
+            'aria-label': __alloT('stem.geometryworld.student_home_language_for_bilingual_np', 'Student home language for bilingual NPC speech'),
+            value: homeLang,
+            onChange: function(ev) { upd({ homeLang: ev.target.value, npcTranslations: {} }); },
+            title: __alloT('stem.geometryworld.student_home_language_npcs_will_speak_', 'Student home language \u2014 NPCs will speak bilingually'),
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: homeLang !== 'en' ? '#fbbf24' : '#e2e8f0', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
+          },
+            el('option', { value: 'en' }, '\uD83C\uDDFA\uD83C\uDDF8 English'),
+            el('option', { value: 'es' }, '\uD83C\uDDEA\uD83C\uDDF8 Espa\u00f1ol'),
+            el('option', { value: 'fr' }, '\uD83C\uDDEB\uD83C\uDDF7 Fran\u00e7ais'),
+            el('option', { value: 'ar' }, '\uD83C\uDDF8\uD83C\uDDE6 \u0627\u0644\u0639\u0631\u0628\u064A\u0629'),
+            el('option', { value: 'so' }, '\uD83C\uDDF8\uD83C\uDDF4 Soomaali'),
+            el('option', { value: 'pt' }, '\uD83C\uDDE7\uD83C\uDDF7 Portugu\u00eas'),
+            el('option', { value: 'vi' }, '\uD83C\uDDFB\uD83C\uDDF3 Ti\u1EBFng Vi\u1EC7t'),
+            el('option', { value: 'zh' }, '\uD83C\uDDE8\uD83C\uDDF3 \u4E2D\u6587'),
+            el('option', { value: 'sw' }, '\uD83C\uDDF0\uD83C\uDDEA Kiswahili')
+          ),
+          // Help toggle
+          el('button', {
+            onClick: function() { upd({ showHelp: !showHelp, showGameSettings: false }); },
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }
+          }, showHelp ? 'Hide Help' : '? Help'),
+          // Sound mute toggle
+          el('button', {
+            onClick: function() {
+              var newMuted = !soundMuted;
+              upd('soundMuted', newMuted);
+              // Actually mute/unmute the audio context
+              var ac = getAC();
+              if (ac) {
+                if (newMuted) { ac.suspend(); } else { ac.resume(); }
+              }
+              if (addToast) addToast(newMuted ? '\uD83D\uDD07 Sound muted' : '\uD83D\uDD0A Sound on', 'info');
+            },
+            title: soundMuted ? 'Unmute sounds' : 'Mute all sounds',
+            'aria-label': soundMuted ? 'Unmute sounds' : 'Mute all sounds',
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: soundMuted ? '#ef4444' : '#94a3b8', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, soundMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
+          // Environment preset selector
+          el('select', {
+            'aria-label': __alloT('stem.geometryworld.time_of_day_environment_preset', 'Time of day / environment preset'),
+            value: d.envPreset || 'day',
+            onChange: function(ev) {
+              var key = ev.target.value;
+              upd('envPreset', key);
+              var eng = window[engineKey];
+              if (eng) applyEnvPreset(eng, key);
+            },
+            title: __alloT('stem.geometryworld.time_of_day_environment', 'Time of day / environment'),
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
+          },
+            Object.keys(ENV_PRESETS).map(function(k) {
+              return el('option', { key: k, value: k }, ENV_PRESETS[k].label);
+            })
+          ),
+          // Auto day/night cycle toggle
+          el('button', {
+            type: 'button', className: 'gw-focusable',
+            'aria-label': d.autoCycle ? 'Stop automatic day and night cycle' : 'Start automatic day and night cycle',
+            'aria-pressed': d.autoCycle ? 'true' : 'false',
+            onClick: function() { upd('autoCycle', !(d.autoCycle || false)); },
+            title: d.autoCycle ? 'Stop auto day/night cycle' : 'Start auto day/night cycle (changes every 60s)',
+            style: { background: d.autoCycle ? '#f59e0b' : '#1e293b', border: '1px solid ' + (d.autoCycle ? '#fbbf24' : '#334155'), borderRadius: '6px', padding: '3px 6px', color: d.autoCycle ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
+          }, d.autoCycle ? '\u2600\uFE0F\u27F3' : '\u2600\uFE0F'),
+          el('h3', { className: 'gw-settings-section-title' }, 'Create, share & export'),
+          // Save/Export world
+          engine && el('button', {
+            onClick: function() {
+              var eng = window[engineKey];
+              if (!eng) return;
+              var builderPure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+              if (!builderPure || typeof builderPure.editableWorld !== 'function' || typeof builderPure.normalizeEditableWorld !== 'function') {
+                if (addToast) addToast('The safe editable-world helper is still loading. Try Save again in a moment.', 'info');
+                return;
+              }
+              var checkedWorld = builderPure.normalizeEditableWorld(builderPure.editableWorld(eng));
+              if (!checkedWorld.ok) { if (addToast) addToast(checkedWorld.error, 'error'); return; }
+              var worldData = checkedWorld.value;
+              worldData.title = __alloT('stem.geometryworld.student_build', 'Student Build');
+              var json = JSON.stringify(worldData, null, 2);
+              var blob = new Blob([json], { type: 'application/json' });
+              var a = document.createElement('a');
+              a.href = URL.createObjectURL(blob); a.download = 'geometry_world_' + new Date().toISOString().slice(0, 10) + '.json';
+              document.body.appendChild(a); a.click(); document.body.removeChild(a);
+              URL.revokeObjectURL(a.href);
+              if (addToast) addToast('\uD83D\uDCBE Saved ' + checkedWorld.summary.blockCount + ' editable student blocks', 'success');
+            },
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, '\uD83D\uDCBE Save'),
+          // 3D Print Export (STL)
+          engine && el('button', {
+            onClick: function() {
+              var printBuilder = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+              if (printBuilder && printBuilder.openSelectedBuildInPrintLab) { printBuilder.openSelectedBuildInPrintLab(ctx); return; }
+              var eng = window[engineKey];
+              if (!eng) return;
+              var blockKeys = Object.keys(eng.blocks).filter(function(k) {
+                var m = eng.blocks[k]; return m && m.userData.gridPos && m.userData.blockType !== 'grass';
+              });
+              if (blockKeys.length === 0) { if (addToast) addToast('No structures to export (ground blocks are excluded)', 'error'); return; }
+
+              // Build STL binary — each block face = 2 triangles, only render exposed faces
+              var faces = [];
+              var shapedCount = 0;
+              // One surface rule for both exports. The builder's unionSurface drops a
+              // face wherever two neighbours present the same polygon on their shared
+              // boundary, which is what keeps a slab or wedge on a cube watertight for
+              // Print Lab's preflight; the cube-only rule below stays as the fallback
+              // for a host that loads this file without the builder.
+              var builderPure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+              if (builderPure && typeof builderPure.unionSurface === 'function') {
+                var selectedKeys = {};
+                var perBlock = blockKeys.map(function(key) {
+                  var m = eng.blocks[key];
+                  try { m.updateMatrixWorld(true); } catch (e) {}
+                  if ((m.userData.shape || 'cube') !== 'cube') shapedCount++;
+                  selectedKeys[key] = true;
+                  return { position: m.userData.gridPos, triangles: stlTrianglesFromMesh(m) };
+                });
+                faces = builderPure.unionSurface(perBlock, selectedKeys);
+              }
+              if (!faces.length) blockKeys.forEach(function(key) {
+                var m = eng.blocks[key];
+                var p = m.userData.gridPos;
+                var x = p.x, y = p.y, z = p.z;
+                // Non-cube shapes: emit their real geometry. Face-culling assumes a
+                // shape tiles the cell, which slabs and wedges do not.
+                if ((m.userData.shape || 'cube') !== 'cube') {
+                  try { m.updateMatrixWorld(true); } catch (e) {}
+                  var shapeTris = stlTrianglesFromMesh(m);
+                  if (shapeTris.length) { shapedCount++; shapeTris.forEach(function(t) { faces.push(t); }); }
+                  return;
+                }
+                // Check 6 neighbors — only add face if neighbor is empty
+                var dirs = [
+                  { dx: 1, dy: 0, dz: 0, n: [1,0,0], verts: [[1,0,0],[1,1,0],[1,1,1],[1,0,1]] },
+                  { dx:-1, dy: 0, dz: 0, n: [-1,0,0], verts: [[0,0,1],[0,1,1],[0,1,0],[0,0,0]] },
+                  { dx: 0, dy: 1, dz: 0, n: [0,1,0], verts: [[0,1,0],[0,1,1],[1,1,1],[1,1,0]] },
+                  { dx: 0, dy:-1, dz: 0, n: [0,-1,0], verts: [[0,0,1],[0,0,0],[1,0,0],[1,0,1]] },
+                  { dx: 0, dy: 0, dz: 1, n: [0,0,1], verts: [[0,0,1],[1,0,1],[1,1,1],[0,1,1]] },
+                  { dx: 0, dy: 0, dz:-1, n: [0,0,-1], verts: [[1,0,0],[0,0,0],[0,1,0],[1,1,0]] }
+                ];
+                dirs.forEach(function(d) {
+                  var nk = (x+d.dx)+','+(y+d.dy)+','+(z+d.dz);
+                  var neighbor = eng.blocks[nk];
+                  if (!coversFullFace(neighbor)) {
+                    // Add two triangles for this face
+                    var v = d.verts.map(function(vt) { return [x+vt[0], y+vt[1], z+vt[2]]; });
+                    faces.push({ n: d.n, v: [v[0], v[1], v[2]] });
+                    faces.push({ n: d.n, v: [v[0], v[2], v[3]] });
+                  }
+                });
+              });
+
+              // The standalone fallback uses the same default 5 mm block scale and Z-up STL.
+              faces = faces.map(function(t){return {n:[t.n[0],-t.n[2],t.n[1]],v:t.v.map(function(v){return [v[0]*5,-v[2]*5,v[1]*5];})};});
+              // Write binary STL
+              var numTriangles = faces.length;
+              var bufferSize = 84 + numTriangles * 50;
+              var buffer = new ArrayBuffer(bufferSize);
+              var view = new DataView(buffer);
+              // Header (80 bytes)
+              var header = 'AlloFlow Geometry World - 3D Print Export';
+              for (var hi = 0; hi < 80; hi++) view.setUint8(hi, hi < header.length ? header.charCodeAt(hi) : 0);
+              // Triangle count
+              view.setUint32(80, numTriangles, true);
+              // Triangles
+              var offset = 84;
+              faces.forEach(function(face) {
+                // Normal
+                view.setFloat32(offset, face.n[0], true); offset += 4;
+                view.setFloat32(offset, face.n[1], true); offset += 4;
+                view.setFloat32(offset, face.n[2], true); offset += 4;
+                // Vertices
+                for (var vi = 0; vi < 3; vi++) {
+                  view.setFloat32(offset, face.v[vi][0], true); offset += 4;
+                  view.setFloat32(offset, face.v[vi][1], true); offset += 4;
+                  view.setFloat32(offset, face.v[vi][2], true); offset += 4;
+                }
+                // Attribute byte count
+                view.setUint16(offset, 0, true); offset += 2;
+              });
+
+              var blob = new Blob([buffer], { type: 'application/octet-stream' });
+              var a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = 'geometry_world_' + new Date().toISOString().slice(0, 10) + '.stl';
+              document.body.appendChild(a); a.click(); document.body.removeChild(a);
+              URL.revokeObjectURL(a.href);
+              if (addToast) addToast('\uD83E\uDE78 STL exported! ' + blockKeys.length + ' blocks \u2192 ' + numTriangles + ' triangles'
+                + (shapedCount ? ' (incl. ' + shapedCount + ' half/wedge block' + (shapedCount === 1 ? '' : 's') + ' at true volume)' : '')
+                + '. Ready for 3D printing!', 'success');
+              if (eng.logEvent) eng.logEvent('stl_export', { blocks: blockKeys.length, triangles: numTriangles, shapedBlocks: shapedCount });
+            },
+            title: __alloT('stem.geometryworld.export_structures_as_stl_file_for_3d_p', 'Export structures as STL file for 3D printing'),
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#f472b6', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, '\uD83E\uDE78 3D Print'),
+          // Screenshot capture
+          engine && el('button', {
+            onClick: function() {
+              var eng = window[engineKey];
+              if (!eng || !eng.renderer || !eng.scene || !eng.camera) return;
+              try {
+                // Force fresh render since WebGLRenderer wasn't created with preserveDrawingBuffer
+                if (eng.composer && eng._postFxEnabled !== false) { try { eng.composer.render(); } catch (e) { eng.renderer.render(eng.scene, eng.camera); } } else { eng.renderer.render(eng.scene, eng.camera); }
+                var dataUrl = eng.renderer.domElement.toDataURL('image/png');
+                // Filename includes the lesson title so students can recognize their work later
+                var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                var safeTitle = (currentLesson.title || 'geometry-world').replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 40).replace(/^-|-$/g, '');
+                var a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = 'geometry-world_' + safeTitle + '_' + stamp + '.png';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success');
+                if (eng.logEvent) eng.logEvent('screenshot', { timestamp: Date.now(), lesson: currentLesson.title });
+              } catch(err) {
+                console.warn('Screenshot failed:', err);
+                if (addToast) addToast('Screenshot failed — try again.', 'info');
+              }
+            },
+            title: __alloT('stem.geometryworld.capture_a_screenshot_of_your_world_sav', 'Capture a screenshot of your world (saves to downloads)'),
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#60a5fa', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, '\uD83D\uDCF8 Photo'),
+          // Print companion worksheet
+          el('button', {
+            onClick: function() {
+              var worksheet = generateWorksheetHTML(currentLesson);
+              var win = window.open('', '_blank');
+              if (win) { win.document.write(worksheet); win.document.close(); win.print(); }
+              if (addToast) addToast('\uD83D\uDDA8\uFE0F Worksheet ready to print!', 'success');
+              var eng = window[engineKey];
+              if (eng && eng.logEvent) eng.logEvent('worksheet_print', { lesson: currentLesson.title });
+            },
+            title: __alloT('stem.geometryworld.print_companion_worksheet_for_this_les', 'Print companion worksheet for this lesson'),
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#f59e0b', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, '\uD83D\uDDA8\uFE0F Worksheet'),
+          // Creator Mode toggle
+          el('button', {
+            onClick: function() { upd({ creatorMode: !creatorMode, showGameSettings: false }); if (!creatorMode && addToast) addToast('\uD83C\uDFA8 Creator Mode ON \u2014 build a lesson for your classmates!', 'info'); },
+            style: { background: creatorMode ? '#7c3aed' : '#1e293b', border: '1px solid ' + (creatorMode ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: creatorMode ? '#fff' : '#a78bfa', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
+          }, creatorMode ? '\uD83C\uDFA8 Creating...' : '\uD83C\uDFA8 Create'),
+          // Load World (import JSON)
+          el('button', {
+            onClick: function() {
+              var input = document.createElement('input');
+              input.type = 'file'; input.accept = '.json';
+              input.onchange = function(ev) {
+                var file = ev.target.files && ev.target.files[0];
+                if (!file) return;
+                if (Number(file.size) > 2 * 1024 * 1024) { if (addToast) addToast('Geometry World JSON files are limited to 2 MiB.', 'error'); return; }
+                var reader = new FileReader();
+                reader.onload = function(e2) {
+                  try {
+                    var worldData = JSON.parse(e2.target.result);
+                    var eng = window[engineKey];
+                    if (eng) {
+                      var builderPure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+                      var isEditableWorld = worldData && worldData.schema === 'alloflow-geometry-world/2';
+                      var isLegacyBlockWorld = worldData && !worldData.structures && !worldData.npcs && Array.isArray(worldData.blocks);
+                      if (isEditableWorld || isLegacyBlockWorld) {
+                        if (!builderPure || typeof builderPure.normalizeEditableWorld !== 'function' || typeof builderPure.restoreEditableWorld !== 'function') throw new Error('The safe editable-world helper is still loading. Try Load again in a moment.');
+                        var checked;
+                        if (isEditableWorld && typeof builderPure.parseEditableWorldText === 'function') checked = builderPure.parseEditableWorldText(e2.target.result, file.size);
+                        else checked = builderPure.normalizeEditableWorld({
+                          schema: 'alloflow-geometry-world/2',
+                          title: worldData.title || 'Imported legacy build',
+                          blocks: worldData.blocks.filter(function(b) { return b && b.type !== 'grass'; }).map(function(b) {
+                            return { x: b.x, y: b.y, z: b.z, type: b.type || 'stone', shape: b.shape || 'cube', rotation: b.rotation == null ? 0 : b.rotation };
+                          })
+                        });
+                        if (!checked.ok) throw new Error(checked.error);
+                        var bounds = checked.summary.bounds;
+                        var promptText = 'Open "' + checked.value.title + '" with ' + checked.summary.blockCount + ' student blocks (bounds ' + bounds.width + ' x ' + bounds.depth + ' x ' + bounds.height + ')? This replaces the current world and cannot be undone.';
+                        if (typeof window.confirm === 'function' && !window.confirm(promptText)) { if (addToast) addToast('World import canceled. The current world was not changed.', 'info'); return; }
+                        var restored = builderPure.restoreEditableWorld(eng, checked.value);
+                        if (!restored.ok) throw new Error(restored.error);
+                        upd({ activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', measureResult: null, measureHistory: [], blocksPlaced: restored.placedCount });
+                        if (addToast) addToast('\uD83C\uDF0D Opened ' + restored.placedCount + ' validated student blocks', 'success');
+                      } else if (worldData.structures || worldData.npcs) {
+                        eng.loadLesson(worldData);
+                        if (addToast) addToast('\uD83C\uDF0D Loaded: ' + (worldData.title || 'World'), 'success');
+                      } else throw new Error('This JSON file is neither a Geometry World lesson nor an editable world.');
+                      if (eng.logEvent) eng.logEvent('world_import', { title: worldData.title || 'imported', blockCount: (worldData.blocks || []).length });
+                    }
+                  } catch (err) {
+                    if (addToast) addToast('Failed to load world: ' + err.message, 'error');
+                  }
+                };
+                reader.readAsText(file);
+              };
+              input.click();
+            },
+            title: __alloT('stem.geometryworld.import_a_world_from_json_file', 'Import a world from JSON file'),
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, '\uD83D\uDCC2 Load'),
+          // Research data export (session analytics as CSV)
+          engine && engine.sessionLog && engine.sessionLog.length > 0 && el('button', {
+            onClick: function() {
+              var eng = window[engineKey];
+              if (!eng) return;
+              eng.logEvent('data_export', { eventCount: eng.sessionLog.length });
+              var csv = eng.exportSessionCSV();
+              var blob = new Blob([csv], { type: 'text/csv' });
+              var a = document.createElement('a');
+              a.href = URL.createObjectURL(blob); a.download = 'geometry_session_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.csv';
+              document.body.appendChild(a); a.click(); document.body.removeChild(a);
+              URL.revokeObjectURL(a.href);
+              if (addToast) addToast('\uD83D\uDCCA Session data exported (' + eng.sessionLog.length + ' events)', 'success');
+            },
+            title: __alloT('stem.geometryworld.export_session_analytics_as_csv_for_re', 'Export session analytics as CSV for research'),
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#22d3ee', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, '\uD83D\uDCCA Data'),
+          // MTSS Progress Report export
+          engine && engine.sessionLog && engine.sessionLog.length > 0 && el('button', {
+            onClick: function() {
+              var eng = window[engineKey];
+              if (!eng || !eng.generateProgressReport) return;
+              var report = eng.exportProgressReport();
+              if (addToast) addToast('\uD83D\uDCCB MTSS Report: ' + report.accuracy + ' accuracy \u2192 ' + report.rtiTierSuggestion, 'success');
+            },
+            title: __alloT('stem.geometryworld.export_mtss_progress_monitoring_report', 'Export MTSS progress monitoring report (RTI tier classification, longitudinal data)'),
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#4ade80', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, '\uD83D\uDCCB MTSS'),
+          // ── Peer Worlds: Share button ──
+          sessionCode && engine && el('button', {
+            onClick: function() {
+              var eng = window[engineKey];
+              if (!eng) return;
+              var worldData = { title: (creatorMode ? 'Custom World' : currentLesson.title) + ' by ' + playerName, blocks: [] };
+              Object.keys(eng.blocks).forEach(function(key) {
+                var m = eng.blocks[key];
+                if (m && m.userData.gridPos && m.userData.blockType !== 'grass') {
+                  // shape + rotation were omitted, so a shared build made of wedges and
+                  // slabs rebuilt as a wall of plain cubes on the recipient's screen.
+                  worldData.blocks.push({
+                    x: m.userData.gridPos.x, y: m.userData.gridPos.y, z: m.userData.gridPos.z,
+                    type: m.userData.blockType,
+                    shape: m.userData.shape || 'cube',
+                    rotation: m.userData.rotation || 0
+                  });
+                }
+              });
+              // Include NPC data if in creator mode
+              if (eng.npcs && eng.npcs.length > 0) {
+                worldData.npcs = eng.npcs.map(function(n) { return n.data; });
+              }
+              shareWorldToClass(worldData);
+            },
+            title: __alloT('stem.geometryworld.share_this_world_to_the_class_library', 'Share this world to the class library'),
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#c084fc', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, '\uD83C\uDF10 Share'),
+          // ── Peer Worlds: Browse class library ──
+          sessionCode && el('button', {
+            onClick: function() { upd('showGameSettings', false); loadPeerWorlds(); },
+            title: __alloT('stem.geometryworld.browse_worlds_shared_by_classmates', 'Browse worlds shared by classmates'),
+            style: { background: showPeerWorlds ? '#7c3aed' : '#1e293b', border: '1px solid ' + (showPeerWorlds ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: showPeerWorlds ? '#fff' : '#c084fc', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, '\uD83D\uDCDA Class Worlds'),
+          // ── Collaborative Mode toggle ──
+          sessionCode && el('button', {
+            onClick: function() {
+              if (collabMode) {
+                // Stop collab mode
+                if (collabUnsubscribe) collabUnsubscribe();
+                var eng = window[engineKey];
+                if (eng && eng._collabPosInterval) clearInterval(eng._collabPosInterval);
+                upd({ collabMode: false, collabUnsubscribe: null, collabPlayers: {} });
+                if (addToast) addToast('\uD83D\uDC65 Collaborative mode OFF', 'info');
+              } else {
+                startCollabMode();
+              }
+            },
+            title: collabMode ? 'Building together \u2014 click to disconnect' : 'Start collaborative building with classmates',
+            style: { background: collabMode ? '#059669' : '#1e293b', border: '1px solid ' + (collabMode ? '#34d399' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: collabMode ? '#fff' : '#34d399', fontSize: '11px', cursor: 'pointer', fontWeight: 700, animation: collabMode ? 'none' : 'none' }
+          }, collabMode ? '\uD83D\uDC65 Building...' : '\uD83D\uDC65 Collab'),
+          // ── Teacher Command Center toggle ──
+          isTeacher && sessionCode && el('button', {
+            onClick: function() { upd('showGameSettings', false); toggleTeacherView(); },
+            title: showTeacherView ? 'Close teacher dashboard' : 'Open real-time student progress dashboard',
+            style: { background: showTeacherView ? '#dc2626' : '#1e293b', border: '1px solid ' + (showTeacherView ? '#f87171' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: showTeacherView ? '#fff' : '#f87171', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
+          }, showTeacherView ? '\uD83D\uDCCA Live!' : '\uD83D\uDCCA Teacher'),
+          el('h3', { className: 'gw-settings-section-title' }, 'AI lesson builder'),
+          // ── AI Lesson Generator (enhanced) ──
+          callGemini && el('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
+            el('input', {
+              type: 'text', value: aiPrompt, 'aria-label': __alloT('stem.geometryworld.describe_a_geometry_lesson_topic_for_a', 'Describe a geometry lesson topic for AI generation'),
+              onChange: function(ev) { upd('aiPrompt', ev.target.value); },
+              onKeyDown: function(ev) { if (ev.key === 'Enter') generateWorld(); },
+              placeholder: __alloT('stem.geometryworld.describe_a_lesson_topic', 'Describe a lesson topic...'),
+              style: { width: '150px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' }
+            }),
+            // Grade level selector
+            el('select', {
+              'aria-label': __alloT('stem.geometryworld.target_grade_level', 'Target grade level'), value: aiGradeLevel,
+              onChange: function(ev) { upd('aiGradeLevel', ev.target.value); },
+              style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 4px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' }
+            },
+              el('option', { value: '3' }, 'Gr 3'), el('option', { value: '4' }, 'Gr 4'),
+              el('option', { value: '5' }, 'Gr 5'), el('option', { value: '6' }, 'Gr 6'),
+              el('option', { value: '7' }, 'Gr 7'), el('option', { value: '8' }, 'Gr 8')
+            ),
+            // Depth (API calls) selector
+            el('select', {
+              'aria-label': __alloT('stem.geometryworld.generation_depth_number_of_ai_passes', 'Generation depth: number of AI passes'), value: String(aiPassCount),
+              onChange: function(ev) { upd('aiPassCount', parseInt(ev.target.value)); },
+              title: __alloT('stem.geometryworld.1_quick_1_call_2_refined_2_calls_3_ful', '1=Quick (1 call), 2=Refined (2 calls), 3=Full scaffolding (3 calls)'),
+              style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 4px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' }
+            },
+              el('option', { value: '1' }, '\u26A1 Quick'), el('option', { value: '2' }, '\u2728 Refine'), el('option', { value: '3' }, '\uD83C\uDF1F Full')
+            ),
+            // Generate button (shows pass progress with descriptive labels)
+            (function() {
+              var passLabels = ['', 'Drafting', 'Refining', 'Adding hints'];
+              var buttonLabel = aiGenerating
+                ? '\u23F3 ' + (passLabels[aiCurrentPass] || 'Working') + '... ' + aiCurrentPass + '/' + aiPassCount
+                : '\u2728 Generate';
+              return el('button', {
+                onClick: generateWorld, disabled: aiGenerating || !aiPrompt.trim(),
+                title: aiGenerating
+                  ? 'Pass ' + aiCurrentPass + ' of ' + aiPassCount + ': ' + (aiCurrentPass === 1 ? 'generating initial lesson JSON' : aiCurrentPass === 2 ? 'improving structures + dialogue' : 'adding scaffolded follow-up questions')
+                  : 'Generate an AI lesson from your prompt',
+                style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minWidth: '120px' }
+              }, buttonLabel);
+            })(),
+            // Surprise Me (grade-aware topics)
+            el('button', {
+              onClick: function() {
+                var gradeTopics = {
+                  '3': ['counting unit cubes in a toy box', 'how many blocks fill a sandbox?', 'building a doghouse with blocks', 'comparing sizes of gift boxes', 'stacking blocks to make towers of different heights'],
+                  '4': ['volume of rectangular prisms with a treasure hunt', 'building animal habitats at a zoo', 'packing lunch boxes with different foods', 'designing bookshelves with specific dimensions', 'a candy factory where each box holds different amounts'],
+                  '5': ['comparing volumes of different shipping containers', 'designing rooms in a dream house', 'a museum where each room has a different volume', 'building an aquarium with compartments', 'packing a moving truck efficiently'],
+                  '6': ['surface area vs volume of gift-wrapping boxes', 'composite volume shapes in an obstacle course', 'designing a skate park with ramps and half-pipes', 'L-shaped rooms in an architect studio', 'maximizing storage in a warehouse'],
+                  '7': ['fractional dimensions in a bakery (half-loaves)', 'volume estimation challenge in a grocery store', 'composite volumes of buildings with additions', 'designing efficient packaging with minimal waste', 'comparing prisms with same volume but different shapes'],
+                  '8': ['optimizing surface area to volume ratio for heat loss', 'cross-sections of 3D shapes in an engineering lab', 'volume of composite structures in city planning', 'scaling models proportionally for a science fair', 'designing efficient containers using fractional dimensions']
+                };
+                var pool = gradeTopics[aiGradeLevel] || gradeTopics['5'];
+                upd('aiPrompt', pool[Math.floor(Math.random() * pool.length)]);
+              },
+              disabled: aiGenerating, title: __alloT('stem.geometryworld.random_topic', 'Random topic'),
+              style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 6px', color: '#fbbf24', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
+            }, '\uD83C\uDFB2'),
+            // My Lessons library button
+            el('button', {
+              onClick: function() { upd({ showMyLessons: !showMyLessons, showGameSettings: false }); },
+              title: __alloT('stem.geometryworld.browse_saved_ai_generated_lessons', 'Browse saved AI-generated lessons'),
+              style: { background: showMyLessons ? '#7c3aed' : '#1e293b', border: '1px solid ' + (showMyLessons ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 8px', color: showMyLessons ? '#fff' : '#a78bfa', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
+            }, '\uD83D\uDCDA ' + getMyLessons().length)
+          ),
+          // ── Refine bar (shown when a lesson was just generated) ──
+          callGemini && lastGeneratedLesson && !aiGenerating && el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center', marginTop: '2px' } },
+            el('input', {
+              type: 'text', value: aiRefinePrompt, 'aria-label': __alloT('stem.geometryworld.refine_the_generated_lesson', 'Refine the generated lesson'),
+              onChange: function(ev) { upd('aiRefinePrompt', ev.target.value); },
+              onKeyDown: function(ev) { if (ev.key === 'Enter') refineLesson(); },
+              placeholder: __alloT('stem.geometryworld.refine_make_it_harder_add_more_npcs_ch', 'Refine: "Make it harder" / "Add more NPCs" / "Change theme to ocean"...'),
+              style: { flex: 1, minWidth: '180px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid #7c3aed33', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '10px', fontFamily: 'inherit' }
+            }),
+            el('button', {
+              onClick: refineLesson, disabled: !aiRefinePrompt.trim(),
+              style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 }
+            }, '\uD83D\uDD04 Refine'),
+            el('button', {
+              onClick: function() { upd({ showLessonEditor: !showLessonEditor, showGameSettings: false }); },
+              title: __alloT('stem.geometryworld.edit_the_raw_lesson_json_manually', 'Edit the raw lesson JSON manually'),
+              style: { background: showLessonEditor ? '#f59e0b' : '#1e293b', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: showLessonEditor ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
+            }, '\u270F\uFE0F JSON')
+          )
+              )
+            )
+          ),
+
+        // ── LESSON PROGRESS HUD (always visible while playing, hidden when modals cover it) ──
+        // Compact status card top-left below the toolbar. Students always see lesson title +
+        // NPC progress + blocks placed without opening a menu.
+        worldActive && openModals.length === 0 && hudPanel === 'progress' && el('section', { id: 'gw-progress-hud',
+          style: { position: 'absolute', top: '56px', left: '10px', zIndex: 5, padding: '8px 12px', borderRadius: '10px', background: 'rgba(15,23,42,0.72)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.22)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 600, maxWidth: '260px', pointerEvents: 'auto' },
+          role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: ' + (currentLesson.title || 'Lesson') + ', ' + Object.keys(answeredNpcs).length + ' of ' + totalQ + ' NPCs answered, ' + ((engine && engine.blocksPlaced) || 0) + ' blocks placed'
+        },
+          el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_hide_progress_hud', 'Hide progress HUD'), onClick: function() { closeHudPanel('Progress'); }, style: { float: 'right', margin: '-3px -5px 3px 8px' } }, '\u00D7 Hide'),
+          el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+            el('span', { style: { fontSize: '13px' } }, '📐'),
+            el('span', { style: { color: '#c4b5fd', fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' } }, currentLesson.title || 'Geometry Lesson')
+          ),
+          el('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', fontSize: '10px' } },
+            totalQ > 0 && el('span', { title: __alloT('stem.geometryworld.npcs_answered', 'NPCs answered'), style: { color: Object.keys(answeredNpcs).length === totalQ ? '#4ade80' : '#94a3b8' } },
+              '💬 ' + Object.keys(answeredNpcs).length + '/' + totalQ),
+            el('span', { title: __alloT('stem.geometryworld.blocks_placed_this_session', 'Blocks placed this session'), style: { color: '#fbbf24' } },
+              '🧱 ' + ((engine && engine.blocksPlaced) || 0)),
+            el('span', { title: __alloT('stem.geometryworld.correct_answers_this_session', 'Correct answers this session'), style: { color: '#34d399' } },
+              '⭐ ' + score),
+            ((engine && engine._sessionXP) || 0) > 0 && el('span', { title: __alloT('stem.geometryworld.xp_earned_this_session', 'XP earned this session'), style: { color: '#c084fc' } },
+              '✨ +' + (engine._sessionXP) + ' XP')
+          ),
+          // NPC progress bar (only if there are NPCs in this lesson)
+          totalQ > 0 && el('div', { style: { marginTop: '4px', height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' } },
+            el('div', { style: { width: Math.round((Object.keys(answeredNpcs).length / totalQ) * 100) + '%', height: '100%', background: 'linear-gradient(90deg, #7c3aed, #34d399)', transition: 'width 0.4s' } })
+          ),
+        ),
+
+        // ── NPC COMPASS — live-updating horizontal pip strip centered on camera facing ──
+        // Pips colored green (answered) or red (unanswered) help students locate NPCs they've missed.
+        // Self-contained: canvas ref boots a rAF loop that reads engine.camera + engine.npcs each frame.
+        worldActive && openModals.length === 0 && engine && engine.npcs && engine.npcs.length > 0 && el('canvas', {
+          // Decorative: an unlabelled canvas is noise in the accessibility tree, and
+          // everything it encodes (who is where, who still owes a question) is now
+          // spoken by L via summarizeNearbyNpcs.
+          'aria-hidden': 'true',
+          ref: function(cv) {
+            if (!cv) return;
+            if (cv._compassStarted) return; // guard against React re-render re-initialization
+            cv._compassStarted = true;
+            var dpr = window.devicePixelRatio || 1;
+            var W = 260, H = 32;
+            cv.width = W * dpr; cv.height = H * dpr;
+            cv.style.width = W + 'px'; cv.style.height = H + 'px';
+            var ctx = cv.getContext('2d');
+            ctx.scale(dpr, dpr);
+            // The strip is absolutely positioned inside the WORKSPACE, which starts
+            // at the toolbar, so a plain top:12px put the whole thing inside the dark
+            // header: drawn correctly, camouflaged against the header's own navy, and
+            // nowhere near where a player is looking. Measure the viewport instead of
+            // hard-coding a toolbar height, which wraps on narrow screens.
+            function placeStrip() {
+              try {
+                var wrapEl = document.getElementById('geoworld-fs-wrap');
+                var host = cv.offsetParent;
+                if (!wrapEl || !host) return;
+                var wr = wrapEl.getBoundingClientRect(), hr = host.getBoundingClientRect();
+                cv.style.top = Math.max(0, Math.round(wr.top - hr.top) + 12) + 'px';
+              } catch (e) {}
+            }
+            placeStrip();
+            var stripRO = null;
+            try {
+              if (window.ResizeObserver && cv.offsetParent) { stripRO = new window.ResizeObserver(placeStrip); stripRO.observe(cv.offsetParent); }
+            } catch (e) { stripRO = null; }
+            window.addEventListener('resize', placeStrip);
+            function stopStrip() {
+              try { if (stripRO) stripRO.disconnect(); } catch (e) {}
+              window.removeEventListener('resize', placeStrip);
+            }
+            function render() {
+              if (!cv.isConnected) { stopStrip(); return; } // canvas removed — stop loop
+              if (!window.THREE || !engine || !engine.camera || !engine.npcs) {
+                requestAnimationFrame(render);
+                return;
+              }
+              ctx.clearRect(0, 0, W, H);
+              // Background pill
+              ctx.fillStyle = 'rgba(15,23,42,0.82)';
+              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(0, 0, W, H, 16); ctx.fill(); }
+              else ctx.fillRect(0, 0, W, H);
+              ctx.strokeStyle = 'rgba(124,58,237,0.3)'; ctx.lineWidth = 1;
+              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(0.5, 0.5, W - 1, H - 1, 16); ctx.stroke(); }
+              // Read camera yaw from quaternion (YXZ order gives yaw directly)
+              var euler = new window.THREE.Euler().setFromQuaternion(engine.camera.quaternion, 'YXZ');
+              var camYaw = euler.y;
+              var halfFov = Math.PI; // show full 180° ahead and behind (180° = ±π/2)
+              var answered = engine._answeredRef || {};
+              // Draw center forward tick
+              ctx.fillStyle = '#fbbf24';
+              ctx.beginPath();
+              ctx.moveTo(W / 2, 5); ctx.lineTo(W / 2 - 4, 11); ctx.lineTo(W / 2 + 4, 11);
+              ctx.closePath(); ctx.fill();
+              // North tick. Without it the strip is blank whenever every character is
+              // behind you, which is exactly when a lost player looks at it. World
+              // north is -Z, the same convention the pips below use.
+              var relNorth = -camYaw;
+              while (relNorth > Math.PI) relNorth -= 2 * Math.PI;
+              while (relNorth < -Math.PI) relNorth += 2 * Math.PI;
+              if (Math.abs(relNorth) <= halfFov / 2) {
+                var northX = W / 2 + (relNorth / (halfFov / 2)) * (W / 2 - 12);
+                ctx.strokeStyle = 'rgba(226,232,240,0.75)'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.moveTo(northX, 6); ctx.lineTo(northX, 12); ctx.stroke();
+                ctx.fillStyle = 'rgba(226,232,240,0.9)'; ctx.font = 'bold 8px system-ui';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                ctx.fillText('N', northX, 12);
+              }
+              // Draw pips for each NPC
+              engine.npcs.forEach(function(npc, i) {
+                if (!npc || !npc.body) return;
+                var dx = npc.body.position.x - engine.camera.position.x;
+                var dz = npc.body.position.z - engine.camera.position.z;
+                var dist = Math.sqrt(dx * dx + dz * dz);
+                // World-frame angle: atan2(-dx, -dz) gives 0 when NPC is directly ahead (−Z forward)
+                var worldAngle = Math.atan2(dx, -dz);
+                var relAngle = worldAngle - camYaw;
+                while (relAngle > Math.PI) relAngle -= 2 * Math.PI;
+                while (relAngle < -Math.PI) relAngle += 2 * Math.PI;
+                // Only show pips within ±90° field of compass
+                if (Math.abs(relAngle) > halfFov / 2) {
+                  // Off-compass: draw a small edge arrow
+                  var edgeX = relAngle > 0 ? W - 10 : 10;
+                  ctx.fillStyle = answered[i] ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.6)';
+                  ctx.beginPath();
+                  if (relAngle > 0) { ctx.moveTo(edgeX, 16); ctx.lineTo(edgeX - 6, 12); ctx.lineTo(edgeX - 6, 20); }
+                  else { ctx.moveTo(edgeX, 16); ctx.lineTo(edgeX + 6, 12); ctx.lineTo(edgeX + 6, 20); }
+                  ctx.closePath(); ctx.fill();
+                  return;
+                }
+                var pipX = W / 2 + (relAngle / (halfFov / 2)) * (W / 2 - 12);
+                var isAnswered = !!answered[i];
+                // Pip — circle for answered (done, closed), square for unanswered (open task)
+                // Shape + color + glyph = triple-coded for color-blind accessibility
+                ctx.fillStyle = isAnswered ? '#22c55e' : '#ef4444';
+                if (isAnswered) {
+                  ctx.beginPath(); ctx.arc(pipX, 18, 6, 0, 6.28); ctx.fill();
+                } else {
+                  ctx.fillRect(pipX - 6, 12, 12, 12); // square = "task open"
+                }
+                // Inner glyph (third visual channel)
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 9px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(isAnswered ? '✓' : '?', pipX, 18);
+                // Distance dot size hints (closer = bigger) — subtle
+                if (dist < 8) {
+                  ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.5;
+                  ctx.beginPath(); ctx.arc(pipX, 18, 8, 0, 6.28); ctx.stroke();
+                }
+              });
+              requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+          },
+          style: { position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 5, pointerEvents: 'none', borderRadius: '16px' },
+          role: 'img', 'aria-label': __alloT('stem.geometryworld.npc_compass_strip_showing_relative_dir', 'NPC compass strip showing relative direction to each NPC from camera facing')
+        })
+        ,
+
+        // (Block palette hotbar already exists at bottom-center further below — line ~5060)
+
+        // ── Cinematic vignette overlay ──
+        // Subtle radial darkening at the frame edges draws the eye to the center of the
+        // view. Pure DOM, pointer-events: none, so it has zero effect on WebGL perf or
+        // input handling. z-index 4 keeps it below the compass (5) and HUD (20).
+        worldActive && el('div', {
+          'aria-hidden': 'true',
+          style: { position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none',
+            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.28) 100%)',
+            mixBlendMode: 'multiply' }
+        }),
+
+        // ── FLOATING "BACK TO GAME" BUTTON — appears when any modal/overlay is open ──
+        // Lets students instantly dismiss all overlays and return to the 3D world.
+        // Positioned bottom-center so it doesn't collide with any modal, high z-index so always visible.
+        openModals.length > 0 && el('div', { className: 'gw-return-dock',
+          style: { position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', pointerEvents: 'none' }
+        },
+          // Status pill: list of open overlays
+          el('div', { className: 'gw-return-status',
+            style: { pointerEvents: 'auto', padding: '4px 10px', borderRadius: '14px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', color: '#c4b5fd', fontSize: '10px', fontWeight: 600, maxWidth: '420px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+            title: openModals.length + ' overlay' + (openModals.length === 1 ? '' : 's') + ' open: ' + openModals.map(function(m) { return m.emoji + ' ' + m.label; }).join(', ')
+          },
+            openModals.length === 1 ? (openModals[0].emoji + ' ' + openModals[0].label + ' open') :
+              (openModals.length + ' overlays open: ' + openModals.map(function(m) { return m.emoji; }).join(' '))
+          ),
+          // Main "Back to Game" button (prominent)
+          el('button', { type: 'button', className: 'gw-return-button',
+            onClick: closeAllModals,
+            'aria-label': __alloT('stem.geometryworld.close_all_open_overlays_and_return_to_', 'Close all open overlays and return to the game view'),
+            title: __alloT('stem.geometryworld.close_all_overlays_return_to_the_3d_ga', 'Close all overlays & return to the 3D game (or press Shift+Esc)'),
+            style: { pointerEvents: 'auto', padding: '10px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: 'none', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.45), 0 0 0 2px rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'transform 0.15s' },
+            onMouseEnter: function(ev) { ev.currentTarget.style.transform = 'scale(1.03)'; },
+            onMouseLeave: function(ev) { ev.currentTarget.style.transform = 'scale(1)'; }
+          },
+            el('span', { style: { fontSize: '18px' } }, '🎮'),
+            'Back to Game',
+            openModals.length > 1 && el('span', { style: { fontSize: '10px', padding: '2px 6px', borderRadius: '10px', background: 'rgba(0,0,0,0.25)', fontWeight: 700 } }, 'close all ' + openModals.length)
+          ),
+          // Keyboard hint (subtle)
+          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px', fontWeight: 600 } },
+            openModals.length === 1 ? 'Esc also closes this' : 'Esc closes one · Shift+Esc closes all'
+          )
+        ),
+
+        // Help overlay
+        showHelp && el('div', { role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_controls_and_help', 'Controls and help'), tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', right: '8px', zIndex: 20, background: 'rgba(15,23,42,0.95)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, maxWidth: '240px' } },
+          el('div', { style: { fontWeight: 700, color: '#a78bfa', marginBottom: '6px', fontSize: '12px' } }, '\uD83C\uDFAE Controls'),
+          el('div', { style: { display: 'grid', gridTemplateColumns: '70px 1fr', gap: '2px 8px', marginBottom: '10px' } },
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'WASD'), 'Move around',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'Mouse'), 'Look around',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, '←↑↓→'), 'Look around (no mouse)',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'L-Click'), 'Break block',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'R-Click'), 'Place block',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'X / B'), 'Break / build (no mouse)',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'E'), 'Talk to NPC',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'M'), 'Measure structure',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'Space'), 'Jump',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'Shift'), 'Sprint',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'Scroll'), 'Cycle blocks',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, '1-9,0'), 'Select block',
+            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Z'), 'Undo',
+            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Y'), 'Redo',
+            el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, '2\u00d7Space'), 'Toggle fly (or F key)',
+            el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, 'G'), 'Toggle grid',
+            el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)',
+            el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'R'), 'Rotate shape 90\u00b0',
+            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'T'), 'Ruler (2 points)',
+            el('span', { style: { color: '#f472b6', fontWeight: 600 } }, 'V'), 'Angle (3 points \u2014 A, vertex, C)',
+            el('span', { style: { color: '#34d399', fontWeight: 600 } }, 'N'), 'Net unfolding (surface area)',
+            el('span', { style: { color: '#67e8f9', fontWeight: 600 } }, 'C'), 'Toggle coord SR announcements',
+            el('span', { style: { color: '#93c5fd', fontWeight: 600 } }, 'H'), 'Return to spawn',
+            el('span', { style: { color: '#67e8f9', fontWeight: 600 } }, 'L'), 'Say where characters are',
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Esc'), 'Close open overlay',
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Shift+Esc'), 'Close ALL overlays'
+          ),
+          // Mobile touch controls section (shown on touch devices)
+          isMobile && el('div', { style: { marginBottom: '8px' } },
+            el('div', { style: { fontWeight: 700, color: '#f472b6', marginBottom: '4px', fontSize: '12px' } }, '\uD83D\uDCF1 Touch Controls'),
+            el('div', { style: { display: 'grid', gridTemplateColumns: '50px 1fr', gap: '2px 8px', marginBottom: '8px' } },
+              el('span', { style: { color: '#f472b6', fontWeight: 600 } }, 'Left'), 'Drag to move (joystick)',
+              el('span', { style: { color: '#f472b6', fontWeight: 600 } }, 'Right'), 'Swipe to look around',
+              el('span', { style: { color: '#60a5fa', fontWeight: 600 } }, '\u2B06\uFE0F'), 'Jump / fly up',
+              el('span', { style: { color: '#22c55e', fontWeight: 600 } }, '\uD83E\uDDF1'), 'Place block',
+              el('span', { style: { color: '#ef4444', fontWeight: 600 } }, '\u26CF\uFE0F'), 'Break block',
+              el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, '\uD83D\uDCCF'), 'Measure',
+              el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, '\uD83D\uDDE3\uFE0F'), 'Talk to NPC',
+              el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, '\u21A9'), 'Undo last action'
+            )
+          ),
+          el('div', { style: { fontWeight: 700, color: '#22d3ee', marginBottom: '4px', fontSize: '12px' } }, '\uD83D\uDCCF Formulas'),
+          el('div', { style: { background: '#0c4a6e', borderRadius: '6px', padding: '6px 8px', marginBottom: '8px', fontFamily: 'monospace', fontSize: '11px' } },
+            el('div', null, 'Volume = L \u00d7 W \u00d7 H'),
+            el('div', null, 'Volume = Area \u00d7 Height'),
+            el('div', null, 'Area = L \u00d7 W'),
+            el('div', { style: { color: '#fbbf24', marginTop: '4px' } }, 'L-Block: V\u2081 + V\u2082 = Total'),
+            el('div', { style: { color: '#c084fc', marginTop: '4px', borderTop: '1px solid var(--allo-stem-border, #334155)', paddingTop: '4px' } }, '\u25E2 Shapes & Fractions'),
+            el('div', null, '\u25E2 Half (diagonal) = \u00BD'),
+            el('div', null, '\u25AD Half (slab) = \u00BD'),
+            el('div', null, '\u25E3 Quarter wedge = \u00BC'),
+            el('div', null, '2 halves = 1 cube \u2713'),
+            el('div', null, '4 quarters = 1 cube \u2713')
+          ),
+          el('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: '4px', fontSize: '12px' } }, '\uD83C\uDF31 Tips'),
+          el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+            '\u2022 Walk up to NPCs and press E to talk', el('br'),
+            '\u2022 Point at a structure and press M to measure', el('br'),
+            '\u2022 Right-click to place blocks, left-click to break', el('br'),
+            '\u2022 Fill empty pools by placing blocks inside them'
+          ),
+          // Multilingual math vocabulary (when home language is set)
+          homeLang !== 'en' && el('div', { style: { marginTop: '8px' } },
+            el('div', { style: { fontWeight: 700, color: '#fbbf24', marginBottom: '4px', fontSize: '12px' } }, '\uD83C\uDF0D Math Words'),
+            el('div', { style: { fontSize: '10px', lineHeight: 1.8, background: '#0c4a6e', borderRadius: '6px', padding: '6px 8px' } },
+              (function() {
+                var MATH_VOCAB = {
+                  es: { Volume: 'Volumen', Length: 'Longitud', Width: 'Ancho', Height: 'Altura', 'Cubic units': 'Unidades c\u00fabicas', Area: '\u00c1rea', Block: 'Bloque', Measure: 'Medir' },
+                  fr: { Volume: 'Volume', Length: 'Longueur', Width: 'Largeur', Height: 'Hauteur', 'Cubic units': 'Unit\u00e9s cubiques', Area: 'Aire', Block: 'Bloc', Measure: 'Mesurer' },
+                  ar: { Volume: '\u0627\u0644\u062D\u062C\u0645', Length: '\u0627\u0644\u0637\u0648\u0644', Width: '\u0627\u0644\u0639\u0631\u0636', Height: '\u0627\u0644\u0627\u0631\u062A\u0641\u0627\u0639', 'Cubic units': '\u0648\u062D\u062F\u0627\u062A \u0645\u0643\u0639\u0628\u0629', Area: '\u0627\u0644\u0645\u0633\u0627\u062D\u0629', Block: '\u0645\u0643\u0639\u0628', Measure: '\u0642\u064A\u0627\u0633' },
+                  so: { Volume: 'Mugga', Length: 'Dherer', Width: 'Ballac', Height: 'Joog', 'Cubic units': 'Unugyo kubig', Area: 'Aag', Block: 'Xaashi', Measure: 'Qiyaas' },
+                  pt: { Volume: 'Volume', Length: 'Comprimento', Width: 'Largura', Height: 'Altura', 'Cubic units': 'Unidades c\u00fabicas', Area: '\u00c1rea', Block: 'Bloco', Measure: 'Medir' },
+                  vi: { Volume: 'Th\u1EC3 t\u00EDch', Length: 'Chi\u1EC1u d\u00E0i', Width: 'Chi\u1EC1u r\u1ED9ng', Height: 'Chi\u1EC1u cao', 'Cubic units': '\u0110\u01A1n v\u1ECB kh\u1ED1i', Area: 'Di\u1EC7n t\u00EDch', Block: 'Kh\u1ED1i', Measure: '\u0110o' },
+                  zh: { Volume: '\u4F53\u79EF', Length: '\u957F\u5EA6', Width: '\u5BBD\u5EA6', Height: '\u9AD8\u5EA6', 'Cubic units': '\u7ACB\u65B9\u5355\u4F4D', Area: '\u9762\u79EF', Block: '\u65B9\u5757', Measure: '\u6D4B\u91CF' },
+                  sw: { Volume: 'Ujazo', Length: 'Urefu', Width: 'Upana', Height: 'Kimo', 'Cubic units': 'Vipimo vya ujazo', Area: 'Eneo', Block: 'Jiwe', Measure: 'Pima' }
+                };
+                var vocab = MATH_VOCAB[homeLang] || {};
+                return Object.keys(vocab).map(function(eng) {
+                  return el('div', { key: eng, style: { display: 'flex', justifyContent: 'space-between' } },
+                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, eng),
+                    el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, vocab[eng])
+                  );
+                });
+              })()
+            )
+          )
+        ),
+        // ── My Lessons Library Panel ──
+        showMyLessons && el('div', { role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_my_lessons', 'My lessons'), tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.95)', border: '1px solid #7c3aed', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', maxWidth: '280px', maxHeight: '320px', overflowY: 'auto' } },
+          el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' } },
+            '\uD83D\uDCDA My Lessons (' + getMyLessons().length + ')',
+            el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_my_lessons', 'Close My Lessons'), onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+          ),
+          getMyLessons().length === 0 && el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', padding: '12px 0', textAlign: 'center' } }, 'No saved lessons yet. Generate one with AI!'),
+          getMyLessons().map(function(lesson, li) {
+            return el('div', { key: lesson._id || li, style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '6px', background: 'rgba(30,41,59,0.5)', marginBottom: '4px', border: '1px solid rgba(100,116,139,0.15)' } },
+              el('div', { style: { flex: 1, minWidth: 0 } },
+                el('div', { style: { fontWeight: 700, fontSize: '11px', color: 'var(--allo-stem-text, #e2e8f0)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, lesson.title || 'Untitled'),
+                el('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                  (lesson.npcs || []).length + ' NPCs \u2022 ' + (lesson.structures || []).length + ' structures' + (lesson._savedAt ? ' \u2022 ' + new Date(lesson._savedAt).toLocaleDateString() : ''))
+              ),
+              el('button', {
+                type: 'button', className: 'gw-focusable', 'aria-label': 'Load saved lesson: ' + (lesson.title || 'Untitled lesson'),
+                onClick: function() {
+                  var eng = window[engineKey];
+                  // activeLesson gets the saved lesson's own _id, not the generic
+                  // 'ai_generated' — that is the key currentLesson and the chat-history
+                  // key are both resolved from, so a specific saved lesson has to be
+                  // addressable rather than collapsing onto "whatever was last made".
+                  if (eng) { eng.loadLesson(lesson); upd({ showMyLessons: false, lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), activeLesson: lesson._id || 'ai_generated' }); }
+                },
+                style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '4px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontWeight: 700, flexShrink: 0 }
+              }, '\u25B6'),
+              el('button', {
+                type: 'button', className: 'gw-focusable', 'aria-label': 'Delete saved lesson: ' + (lesson.title || 'Untitled lesson'),
+                onClick: function() { deleteMyLesson(lesson._id); upd('showMyLessons', true); /* force re-render */ },
+                title: __alloT('stem.geometryworld.delete_this_saved_lesson', 'Delete this saved lesson'),
+                style: { background: 'none', border: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer', flexShrink: 0, padding: '2px' }
+              }, '\u00d7')
+            );
+          })
+        ),
+        // ── JSON Lesson Editor Panel ──
+        showLessonEditor && lastGeneratedLesson && el('div', { role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_editor', 'Lesson editor'), tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 26, background: 'rgba(15,23,42,0.97)', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px', width: '400px', maxHeight: '400px', fontSize: '11px' } },
+          el('div', { style: { fontWeight: 800, color: '#f59e0b', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+            '\u270F\uFE0F Lesson JSON Editor',
+            el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_editor', 'Close editor'), onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+          ),
+          el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px', margin: '0 0 6px', lineHeight: 1.3 } }, 'Edit the lesson JSON directly. Change NPC dialogue, add questions, move structures. Click Apply to reload.'),
+          el('textarea', {
+            value: lessonEditorJson,
+            onChange: function(ev) { upd('lessonEditorJson', ev.target.value); },
+            style: { width: '100%', height: '250px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '10px', fontFamily: 'monospace', resize: 'vertical', lineHeight: 1.4 },
+            spellCheck: false
+          }),
+          el('div', { style: { display: 'flex', gap: '6px', marginTop: '6px' } },
+            el('button', {
+              onClick: function() {
+                try {
+                  var lesson = JSON.parse(lessonEditorJson);
+                  // Hand-authored lessons used to go straight to loadLesson, skipping
+                  // validateLesson \u2014 so this, the one path a teacher actually types
+                  // into, was the ONLY path with no guardrails: no coordinate clamping,
+                  // no block-type check, no malformed-question repair, and no block
+                  // budget (a typo of y2: 200 built until the engine cap cut it off).
+                  lesson = validateLesson(lesson);
+                  var eng = window[engineKey];
+                  if (eng && lesson && lesson.structures) {
+                    eng.loadLesson(lesson);
+                    saveToMyLessons(lesson);
+                    // Point activeLesson at what was just loaded. Without it the tool
+                    // kept resolving currentLesson to the PREVIOUS lesson while the
+                    // engine held the new one \u2014 wrong title, objectives and worksheet.
+                    upd({ lastGeneratedLesson: lesson, showLessonEditor: false, activeLesson: lesson._id || 'ai_generated' });
+                    if (addToast) addToast('\u2705 Lesson applied and saved!', 'success');
+                  } else if (!lesson && addToast) {
+                    addToast('\u274c That JSON is not a lesson object', 'error');
+                  }
+                } catch(e) {
+                  if (addToast) addToast('\u274C Invalid JSON: ' + e.message, 'error');
+                }
+              },
+              style: { flex: 1, background: '#22c55e', color: '#000', border: 'none', borderRadius: '6px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            }, '\u2705 Apply & Save'),
+            el('button', {
+              onClick: function() {
+                try {
+                  var formatted = JSON.stringify(JSON.parse(lessonEditorJson), null, 2);
+                  upd('lessonEditorJson', formatted);
+                } catch(e) {
+                  if (addToast) addToast('Cannot format: invalid JSON', 'error');
+                }
+              },
+              style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '6px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            }, '\uD83D\uDCCB Format')
+          )
+        ),
+        // ── Creator Mode Panel ──
+        creatorMode && el('div', { role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_creator_mode', 'Creator mode'), tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 25, background: 'rgba(15,23,42,0.95)', border: '2px solid #7c3aed', borderRadius: '12px', padding: '14px', width: '320px', fontSize: '11px' } },
+          el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+            '\uD83C\uDFA8 Lesson Creator',
+            el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_creator_panel', 'Close creator panel'), onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+          ),
+          el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', margin: '0 0 8px', lineHeight: 1.4 } }, 'Build structures with blocks (right-click), then add an NPC teacher below. Save your world to share with classmates!'),
+          // NPC Creator form
+          el('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+            el('input', { type: 'text', value: creatorNpcName, 'aria-label': __alloT('stem.geometryworld.npc_name', 'NPC name'), onChange: function(ev) { upd('creatorNpcName', ev.target.value); }, placeholder: __alloT('stem.geometryworld.npc_name_e_g_professor_volume', 'NPC Name (e.g. Professor Volume)'), style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
+            el('textarea', { value: creatorNpcDialogue, 'aria-label': __alloT('stem.geometryworld.npc_dialogue', 'NPC dialogue'), onChange: function(ev) { upd('creatorNpcDialogue', ev.target.value); }, placeholder: __alloT('stem.geometryworld.what_should_the_npc_say_e_g_look_at_th', 'What should the NPC say? (e.g. "Look at the structure behind me!")'), rows: 2, style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', resize: 'vertical' } }),
+            el('input', { type: 'text', value: creatorNpcQuestion, 'aria-label': __alloT('stem.geometryworld.npc_question_optional', 'NPC question (optional)'), onChange: function(ev) { upd('creatorNpcQuestion', ev.target.value); }, placeholder: __alloT('stem.geometryworld.question_optional_e_g_what_is_the_volu', 'Question (optional, e.g. "What is the volume?")'), style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
+            creatorNpcQuestion.trim() && el('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px' } },
+              el('input', { type: 'text', value: creatorNpcChoices, 'aria-label': __alloT('stem.geometryworld.answer_choices_separated_by_pipe_chara', 'Answer choices, separated by pipe character'), onChange: function(ev) { upd('creatorNpcChoices', ev.target.value); }, placeholder: __alloT('stem.geometryworld.answers_separated_by_e_g_24_units_12_u', 'Answers separated by | (e.g. 24 units|12 units|36 units)'), style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
+              el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+                el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' } }, 'Correct answer #:'),
+                el('input', { type: 'number', min: 1, max: 5, value: creatorNpcCorrect + 1, onChange: function(ev) { upd('creatorNpcCorrect', Math.max(0, parseInt(ev.target.value, 10) - 1)); }, style: { width: '40px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '3px 6px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', textAlign: 'center' } })
+              )
+            ),
+            el('button', {
+              onClick: function() {
+                if (!creatorNpcName.trim() || !creatorNpcDialogue.trim()) { if (addToast) addToast('NPC needs a name and dialogue!', 'error'); return; }
+                var eng = window[engineKey];
+                if (!eng) return;
+                // Place NPC at player's position
+                var px = Math.floor(eng.camera.position.x);
+                var py = Math.floor(eng.camera.position.y) - 1;
+                var pz = Math.floor(eng.camera.position.z) + 2; // slightly in front
+
+                var npcData = {
+                  position: [px, py, pz],
+                  name: creatorNpcName.trim(),
+                  color: [0x7c3aed, 0x2563eb, 0x16a34a, 0xf59e0b, 0xdc2626][Math.floor(Math.random() * 5)],
+                  dialogue: creatorNpcDialogue.trim(),
+                  question: null
+                };
+
+                if (creatorNpcQuestion.trim() && creatorNpcChoices.trim()) {
+                  var choices = creatorNpcChoices.split('|').map(function(c) { return c.trim(); }).filter(Boolean);
+                  if (choices.length >= 2) {
+                    npcData.question = { text: creatorNpcQuestion.trim(), choices: choices, correct: Math.min(creatorNpcCorrect, choices.length - 1) };
+                    upd('totalQ', totalQ + 1);
+                  }
+                }
+
+                eng.createNPC(npcData);
+                sfxPlace('stone');
+                if (addToast) addToast('\uD83E\uDDD1\u200D\uD83C\uDFEB NPC "' + npcData.name + '" placed!', 'success');
+                if (eng.logEvent) eng.logEvent('npc_created', { name: npcData.name, hasQuestion: !!npcData.question, position: npcData.position });
+                upd({ creatorNpcName: '', creatorNpcDialogue: '', creatorNpcQuestion: '', creatorNpcChoices: '' });
+              },
+              disabled: !creatorNpcName.trim() || !creatorNpcDialogue.trim(),
+              style: { background: creatorNpcName.trim() && creatorNpcDialogue.trim() ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, marginTop: '4px' }
+            }, '\uD83E\uDDD1\u200D\uD83C\uDFEB Place NPC Here'),
+            el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px', margin: '4px 0 0' } }, 'The NPC will appear near where you\u2019re standing. Build structures first, then add NPCs that ask questions about them. Save your world with \uD83D\uDCBE to share!')
+          )
+        ),
+        // Objectives panel (left side) — glass style with progress bar
+        objectivesOpen && el('section', { id: 'gw-objective-panel', className: 'gw-objective-panel', role: 'region', 'aria-labelledby': 'gw-objective-title' },
+          el('div', { className: 'gw-objective-header' },
+            el('h2', { id: 'gw-objective-title', className: 'gw-objective-title' }, '\uD83D\uDCCB Objectives'),
+            totalQ > 0 && el('div', { className: 'gw-objective-count' }, score + '/' + totalQ)
+          ),
+          // Semantic progress bar: question completion is determinate.
+          totalQ > 0 && el('div', { className: 'gw-objective-progress', role: 'progressbar', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_question_progress', 'Lesson question progress'), 'aria-valuemin': 0, 'aria-valuemax': totalQ, 'aria-valuenow': Math.min(score, totalQ), 'aria-valuetext': score + ' of ' + totalQ + ' questions completed' },
+            el('div', { className: 'gw-objective-progress-fill', style: { width: Math.min(100, Math.round((score / totalQ) * 100)) + '%', background: score >= totalQ ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' : 'linear-gradient(90deg, #7c3aed, #a78bfa)' }, 'aria-hidden': 'true' })
+          ),
+          currentLesson.objectives && el('div', { className: 'gw-objective-list' },
+            currentLesson.objectives.map(function(obj, i) {
+            var isDone = i < score;
+            var objectiveText = obj && obj.text ? obj.text : obj;
+            return el(isDone ? 'div' : 'button', { key: 'obj-' + i + '-' + String(objectiveText).slice(0, 24),
+              onClick: function() {
+                if (isDone) return;
+                // Navigate camera toward the NPC that corresponds to this objective
+                var eng = window[engineKey];
+                if (!eng || !eng.npcs) return;
+                // Find the i-th NPC with a question (objectives map 1:1 to question NPCs)
+                var qNpcs = eng.npcs.filter(function(n) { return n.data.question; });
+                var targetNpc = qNpcs[i];
+                if (targetNpc && targetNpc.body) {
+                  // Teleport camera near the NPC (but not on top of them)
+                  var np = targetNpc.data.position;
+                  eng.camera.position.set(np[0] - 2, np[1] + 2, np[2] - 2);
+                  eng.camera.lookAt(np[0] + 0.5, np[1] + 1, np[2] + 0.5);
+                  upd('actionFeedback', '\uD83D\uDCCD Navigate to: ' + (targetNpc.data.name || 'NPC'));
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+                  sfxNpcChime();
+                }
+              },
+              type: isDone ? undefined : 'button',
+              className: 'gw-objective-item gw-focusable',
+              'data-complete': isDone ? 'true' : 'false',
+              'aria-label': isDone ? undefined : 'Navigate to objective: ' + objectiveText,
+              title: isDone ? 'Completed' : 'Navigate to this objective'
+            },
+              el('span', { className: 'gw-objective-marker', 'aria-hidden': 'true' }, isDone ? '\u2705' : '\u25CB'),
+              el('span', { className: 'gw-objective-copy', style: { textDecoration: isDone ? 'line-through' : 'none' } }, objectiveText)
+            );
+          })),
+          // Reset button
+          el('button', {
+            type: 'button',
+            className: 'gw-reset-button gw-focusable',
+            'aria-label': __alloT('stem.geometryworld.a11y_reset_lesson_progress_and_reload_the_world', 'Reset lesson progress and reload the world'),
+            onClick: function() {
+              var eng = window[engineKey];
+              if (eng) eng.loadLesson(currentLesson);
+              if (eng) eng._predictionState = { input: '', strategy: '', reason: '', commitment: null, observedTargetKeys: [], history: [] };
+              upd({ score: 0, answeredNpcs: {}, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+            },
+            title: 'Reset lesson progress and reload the world'
+          }, '\u21BB Reset World')
+        ),
+        // ── Minimap — top-down view showing player + NPC positions ──
+        engine && hudPanel === 'map' && el('section', { id: 'gw-minimap', className: 'gw-minimap-shell', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_minimap', 'Minimap') },
+          el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_hide_minimap', 'Hide minimap'), onClick: function() { closeHudPanel('Minimap'); } }, '\u00D7 Map'),
+          el('canvas', {
+          className: 'gw-minimap',
+          'aria-hidden': 'true',
+          ref: function(canvasNode) {
+            if (!canvasNode || !engine) return;
+            // The map was painted once, right here, when React attached the node.
+            // Walking never redrew it, so it showed wherever you happened to be
+            // standing when you opened it: measured, fourteen blocks of travel left
+            // the canvas pixel-identical. It now runs its own loop, like the compass
+            // strip does, and the pulsing question markers finally pulse.
+            if (canvasNode._miniStarted) return;
+            canvasNode._miniStarted = true;
+            var ctx = canvasNode.getContext('2d');
+            if (!ctx) return;
+            var lastMiniDraw = 0;
+            function drawMinimap() {
+              // Read the live engine and the live answered map on every draw. A loop
+              // that outlives a React render would otherwise hold the closure's
+              // engine and answered set from whichever render started it.
+              var engine = window.__geoWorldEngine;
+              if (!engine || !engine.camera || !engine.npcs || !window.THREE) return;
+              var answeredNpcs = engine._answeredRef || {};
+            var w = canvasNode.width, h = canvasNode.height;
+            var scale = 3; // pixels per block
+            var camX = engine.camera.position.x, camZ = engine.camera.position.z;
+
+            ctx.clearRect(0, 0, w, h);
+            // Background
+            ctx.fillStyle = 'rgba(15,23,42,0.85)';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw ground blocks as dots (sampling — don't iterate all blocks for perf)
+            ctx.fillStyle = 'rgba(100,116,139,0.3)';
+            var blockKeys = Object.keys(engine.blocks);
+            for (var bi = 0; bi < blockKeys.length; bi += 3) {
+              var bm = engine.blocks[blockKeys[bi]];
+              if (!bm || !bm.userData.gridPos) continue;
+              var bp = bm.userData.gridPos;
+              if (bp.y > 0) continue; // only ground layer
+              var bpx = w / 2 + (bp.x - camX) * scale;
+              var bpz = h / 2 + (bp.z - camZ) * scale;
+              if (bpx >= 0 && bpx < w && bpz >= 0 && bpz < h) {
+                ctx.fillRect(bpx, bpz, scale, scale);
+              }
+            }
+            // Draw structure blocks (above ground, color-coded by type)
+            var mmBlockColors = { stone: 'rgba(128,128,128,0.5)', diamond: 'rgba(0,188,212,0.6)', gold: 'rgba(255,215,0,0.6)', wood: 'rgba(141,110,99,0.5)', sand: 'rgba(245,222,179,0.5)', glass: 'rgba(227,242,253,0.4)', water: 'rgba(33,150,243,0.5)', brick: 'rgba(183,28,28,0.5)', ice: 'rgba(179,229,252,0.5)', lava: 'rgba(255,87,34,0.6)' };
+            for (var bi2 = 0; bi2 < blockKeys.length; bi2 += 2) {
+              var bm2 = engine.blocks[blockKeys[bi2]];
+              if (!bm2 || !bm2.userData.gridPos) continue;
+              var bp2 = bm2.userData.gridPos;
+              if (bp2.y <= 0) continue;
+              var bpx2 = w / 2 + (bp2.x - camX) * scale;
+              var bpz2 = h / 2 + (bp2.z - camZ) * scale;
+              if (bpx2 >= 0 && bpx2 < w && bpz2 >= 0 && bpz2 < h) {
+                ctx.fillStyle = mmBlockColors[bm2.userData.blockType] || 'rgba(148,163,184,0.4)';
+                ctx.fillRect(bpx2, bpz2, scale, scale);
+              }
+            }
+
+            // Draw NPCs (pulsing ? for unanswered questions)
+            var _mmPulse = 0.5 + Math.sin(Date.now() / 400) * 0.4;
+            engine.npcs.forEach(function(npc, ni) {
+              var np = npc.data.position;
+              var nx = w / 2 + (np[0] - camX) * scale;
+              var nz = h / 2 + (np[2] - camZ) * scale;
+              if (nx < -5 || nx > w + 5 || nz < -5 || nz > h + 5) return;
+              ctx.fillStyle = '#' + (npc.data.color || 0x7c3aed).toString(16).padStart(6, '0');
+              ctx.beginPath(); ctx.arc(nx, nz, 3, 0, Math.PI * 2); ctx.fill();
+              // Pulsing question indicator for unanswered NPCs
+              if (npc.data.question && !answeredNpcs[ni]) {
+                ctx.save();
+                ctx.globalAlpha = _mmPulse;
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.fillText('?', nx - 3, nz - 5);
+                // Glow ring
+                ctx.strokeStyle = 'rgba(251,191,36,' + (_mmPulse * 0.5).toFixed(2) + ')';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.arc(nx, nz, 6, 0, Math.PI * 2); ctx.stroke();
+                ctx.restore();
+              } else if (npc.data.question && answeredNpcs[ni]) {
+                ctx.fillStyle = '#22c55e'; ctx.font = 'bold 7px sans-serif';
+                ctx.fillText('\u2713', nx - 2, nz - 4);
+              }
+            });
+
+            // Draw player (center, with direction wedge)
+            var fwd2 = new (window.THREE.Vector3)();
+            engine.camera.getWorldDirection(fwd2);
+            var pAngle = Math.atan2(fwd2.z, fwd2.x);
+            // Direction wedge (triangle)
+            ctx.fillStyle = '#4ade80';
+            ctx.beginPath();
+            ctx.moveTo(w / 2 + Math.cos(pAngle) * 7, h / 2 + Math.sin(pAngle) * 7);
+            ctx.lineTo(w / 2 + Math.cos(pAngle + 2.5) * 4, h / 2 + Math.sin(pAngle + 2.5) * 4);
+            ctx.lineTo(w / 2 + Math.cos(pAngle - 2.5) * 4, h / 2 + Math.sin(pAngle - 2.5) * 4);
+            ctx.closePath(); ctx.fill();
+            // Player dot
+            ctx.beginPath(); ctx.arc(w / 2, h / 2, 2.5, 0, Math.PI * 2); ctx.fill();
+
+            // Compass rose labels
+            ctx.fillStyle = '#cbd5e1'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('N', w / 2, 8); ctx.fillText('S', w / 2, h - 2);
+            ctx.fillText('W', 5, h / 2 + 3); ctx.fillText('E', w - 5, h / 2 + 3);
+            // Border
+            ctx.strokeStyle = 'rgba(100,116,139,0.4)'; ctx.lineWidth = 1;
+            ctx.strokeRect(0, 0, w, h);
+            }
+            function miniLoop(now) {
+              if (!canvasNode.isConnected) { canvasNode._miniStarted = false; return; }
+              // A map does not need sixty frames a second, and each draw walks the
+              // whole block map; ten a second tracks a walking player perfectly well.
+              if (now - lastMiniDraw >= 100) { lastMiniDraw = now; try { drawMinimap(); } catch (e) {} }
+              requestAnimationFrame(miniLoop);
+            }
+            requestAnimationFrame(miniLoop);
+          },
+          width: 100, height: 100,
+          style: { overflow: 'hidden' }
+          })
+        ),
+        // Shape selector (above block toolbar) — matching glass style
+        el('div', { className: 'gw-shape-tray', style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
+          el('span', { className:'gw-shape-heading' }, 'Shape'),
+          // Rotation badge (only when non-cube shape selected)
+          selectedShape > 0 && el('button', {
+            style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#94a3b8', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
+            type: 'button', className: 'gw-focusable gw-shape-rotate', 'aria-keyshortcuts': 'R',
+            'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_rotate_selected_shape_current_rotation_degrees', 'Rotate selected shape. Current rotation {value1} degrees'), { value1: (blockRotation * 90) }),
+            onClick: function() { setBuildShape('rotate'); },
+            title: 'Click or press R to rotate (' + (blockRotation * 90) + '\u00b0)'
+          }, el('span',{className:'gw-shape-rotate-icon','aria-hidden':'true'},'\u21BB'), el('span',null,(blockRotation*90)+'\u00b0')),
+          BLOCK_SHAPES.map(function(bs, i) {
+            return el('button', {
+              key: bs.id,
+              type: 'button', className: 'gw-focusable gw-shape-item',
+              'aria-label': 'Select ' + bs.name + ' shape, ' + bs.desc + (i === selectedShape ? ', currently selected' : ''),
+              'aria-pressed': i === selectedShape ? 'true' : 'false',
+              onClick: function() { setBuildShape('select', i); },
+              title: bs.name + ' (' + bs.desc + ')',
+              style: { width: isMobile ? '26px' : '32px', height: isMobile ? '26px' : '32px', borderRadius: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer',
+                border: i === selectedShape ? '2px solid #fbbf24' : '2px solid transparent',
+                background: i === selectedShape ? 'rgba(251,191,36,0.2)' : 'transparent' }
+            },
+              renderShapeSwatch(el, bs.id),
+              el('span', { className:'gw-shape-fraction' }, bs.fraction)
+            );
+          })
+        ),
+        // Block toolbar (bottom overlay) — with key hints and glow
+        el('div', { className: 'gw-hotbar', inert: openModals.length > 0 ? '' : undefined, 'aria-hidden': openModals.length > 0 ? 'true' : undefined, style: { position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.75)', borderRadius: '12px', padding: '5px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '95vw' } },
+          BLOCK_TYPES.map(function(bt, i) {
+            var isActive = i === selectedBlock;
+            var shortcut = i < 9 ? String(i + 1) : ['0','-','='][i - 9];
+            return el('div', {
+              key: bt.id,
+              className: 'gw-focusable gw-hotbar-item',
+              'data-active': isActive ? 'true' : 'false',
+              role: 'button',
+              tabIndex: 0,
+              'aria-label': 'Select ' + bt.name + ' block, key ' + shortcut + (isActive ? ', currently selected' : ''),
+              'aria-pressed': isActive ? 'true' : 'false',
+              onClick: function() { upd('selectedBlock', i); },
+              onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedBlock', i); } },
+              title: bt.name + ' (' + shortcut + ')',
+              style: { width: isMobile ? '30px' : '38px', height: isMobile ? '30px' : '38px', borderRadius: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '14px' : '17px', cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
+                border: isActive ? '2px solid #a78bfa' : '2px solid rgba(255,255,255,0.08)',
+                background: isActive ? 'rgba(124,58,237,0.35)' : 'rgba(255,255,255,0.03)',
+                boxShadow: isActive ? '0 0 10px rgba(124,58,237,0.5), inset 0 0 8px rgba(124,58,237,0.2)' : 'none' }
+            },
+              renderBlockSwatch(el, bt.id),
+              el('span', {className:'gw-material-name'}, bt.name),
+              el('span', {className:'gw-material-key','aria-hidden':'true'}, shortcut)
+            );
+          })
+        ),
+        // ── Coordinate & Compass HUD (bottom-left) ──
+        engine && engine.camera && el('details', { className:'gw-coordinate-hud', open:typeof window === 'undefined' || window.innerWidth > 800,
+          style: { position: 'absolute', bottom: '10px', left: '8px', zIndex: 20, background: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '5px 10px', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.06)', fontFamily: 'monospace', fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 }
+        },
+          el('summary', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, fontSize: '10px', letterSpacing: '0.5px', marginBottom: '1px', cursor:'pointer' } }, 'Position'),
+          el('div', null,
+            el('span', { style: { color: '#ef4444' } }, 'X'),
+            ' ' + Math.floor(engine.camera.position.x) + '  ',
+            el('span', { style: { color: '#22c55e' } }, 'Y'),
+            ' ' + Math.floor(engine.camera.position.y) + '  ',
+            el('span', { style: { color: '#3b82f6' } }, 'Z'),
+            ' ' + Math.floor(engine.camera.position.z)
+          ),
+          (function() {
+            // Compass: derive facing direction from camera
+            var fwd = new (window.THREE.Vector3)();
+            engine.camera.getWorldDirection(fwd);
+            var angle = Math.atan2(fwd.x, fwd.z) * (180 / Math.PI);
+            if (angle < 0) angle += 360;
+            var dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+            var idx = Math.round(angle / 45) % 8;
+            return el('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' } },
+              el('span', { style: { color: '#fbbf24', fontWeight: 700, fontSize: '11px' } }, dirs[idx]),
+              el('span', { style: { color: 'var(--allo-stem-text-soft, #475569)' } }, Math.round(angle) + '\u00b0')
+            );
+          })(),
+          // Target block line — shows the XYZ of the block the player is aiming at.
+          engine._targetGrid && el('div', { style: { marginTop: '3px', paddingTop: '3px', borderTop: '1px solid rgba(255,255,255,0.08)' } },
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginRight: '4px' } }, 'TARGET'),
+            el('span', { style: { color: '#ef4444' } }, 'X'),
+            ' ' + engine._targetGrid.x + '  ',
+            el('span', { style: { color: '#22c55e' } }, 'Y'),
+            ' ' + engine._targetGrid.y + '  ',
+            el('span', { style: { color: '#3b82f6' } }, 'Z'),
+            ' ' + engine._targetGrid.z
+          ),
+          // SR-announce pill — indicator + click toggle (matches 'C' key). When on, position
+          // is announced periodically to the shared live region so low-vision students can
+          // navigate by coordinate.
+          el('button', {
+            type: 'button', className: 'gw-focusable',
+            onClick: function() {
+              var eng = window[engineKey]; if (!eng) return;
+              eng._coordAnnounce = !eng._coordAnnounce;
+              if (addToast) addToast(eng._coordAnnounce ? '\uD83D\uDD0A Coord announcements ON (press C to toggle)' : '\uD83D\uDD07 Coord announcements OFF', 'info');
+              if (eng._coordAnnounce && typeof announceToSR === 'function') {
+                announceToSR(__alloFill(__alloT('stem.geometryworld.sr_coordinate_announcements_on_position_at_x_y_z', 'Coordinate announcements on. Position at X {value1} Y {value2} Z {value3}'), { value1: Math.floor(eng.camera.position.x), value2: Math.floor(eng.camera.position.y), value3: Math.floor(eng.camera.position.z) }));
+              }
+            },
+            'aria-pressed': engine._coordAnnounce ? 'true' : 'false',
+            'aria-label': __alloT('stem.geometryworld.toggle_coordinate_screen_reader_announ', 'Toggle coordinate screen-reader announcements (key C)'),
+            title: __alloT('stem.geometryworld.announce_coordinates_to_screen_reader_', 'Announce coordinates to screen reader (C)'),
+            style: { marginTop: '4px', cursor: 'pointer', padding: '2px 6px', borderRadius: '6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.5px', display: 'inline-block',
+              background: engine._coordAnnounce ? 'rgba(34,211,238,0.25)' : 'rgba(100,116,139,0.15)',
+              color: engine._coordAnnounce ? '#67e8f9' : '#94a3b8',
+              border: '1px solid ' + (engine._coordAnnounce ? 'rgba(34,211,238,0.5)' : 'rgba(100,116,139,0.2)') }
+          }, engine._coordAnnounce ? '\uD83D\uDD0A SR ON' : '\uD83D\uDD07 SR OFF')
+        ),
+        // ── Unified action bar (mode toggles, undo/redo, world actions) ──
+        // All pills live in one wrapping flex row so they align regardless of which are
+        // visible, and wrap gracefully on narrow viewports instead of colliding.
+        engine && el('div', { className: 'gw-action-bar',
+          // Centred and shrink-wrapped like the shape tray and hotbar below it.
+          // Pinned left AND right, this glass panel spanned almost the whole width
+          // to hold three small buttons, reading as an empty band across the world.
+          style: { position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', width: 'max-content', maxWidth: 'calc(100% - 24px)', zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', justifyContent: 'center' }
+        },
+          // Fly mode toggle (always visible)
+          el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_toggle_fly_mode', 'Toggle fly mode'), 'aria-pressed':engine.flyMode ? 'true':'false', 'data-gw-utility':'fly',
+            onClick: function() {
+              var eng = window[engineKey];
+              if (!eng) return;
+              eng.flyMode = !eng.flyMode; eng.velocity.y = 0;
+              if (!eng.flyMode) { eng.moveState.flyUp=false; eng.moveState.flyDown=false; }
+              upd('flyMode', eng.flyMode);
+              if (addToast) addToast(eng.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON — Space=up, Shift=down, double-tap Space to land' : '\uD83D\uDC63 Walk mode', 'info');
+            },
+            title: __alloT('stem.geometryworld.toggle_fly_mode_or_double_tap_space', 'Toggle fly mode (or double-tap Space)'),
+            style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#94a3b8', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' }
+          }, renderWorkspaceAction(el,'fly','Fly')),
+          engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, backdropFilter: 'blur(4px)' } }, '\uD83D\uDCCF GRID'),
+          // Undo — conditional
+          engine._undoStack && engine._undoStack.length > 0 && el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_undo_last_action', 'Undo last action'), 'data-gw-utility':'undo',
+            style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
+            onClick: function() { if (engine.undo) engine.undo(); },
+            title: 'Undo (Ctrl+Z) — ' + engine._undoStack.length + ' actions'
+          }, renderWorkspaceAction(el,'undo','Undo',engine._undoStack.length)),
+          // Redo — conditional
+          engine._redoStack && engine._redoStack.length > 0 && el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_redo_last_action', 'Redo last action'), 'data-gw-utility':'redo',
+            style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
+            onClick: function() { if (engine.redo) engine.redo(); },
+            title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
+          }, renderWorkspaceAction(el,'redo','Redo',engine._redoStack.length)),
+          // Home (return to spawn)
+          worldActive && el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_return_to_spawn_point', 'Return to spawn point'),
+            style: { background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#93c5fd', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
+            onClick: function() { if (engine && engine.returnToSpawn) { engine.returnToSpawn(); if (addToast) addToast('🏠 Teleported to spawn', 'info'); } },
+            title: __alloT('stem.geometryworld.return_to_spawn_point_h', 'Return to spawn point (H)')
+          }, renderWorkspaceAction(el,'home','Home')),
+          // Clear my blocks
+          worldActive && el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_clear_my_placed_blocks', 'Clear my placed blocks'),
+            style: { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fca5a5', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
+            onClick: async function() {
+              if (!engine || !engine.clearPlayerBlocks) return;
+              var count = 0;
+              Object.keys(engine.blocks || {}).forEach(function(k) {
+                var m = engine.blocks[k];
+                if (m && m.userData && !m.userData._lessonBlock) count++;
+              });
+              if (count === 0) {
+                if (addToast) addToast('Nothing to clear — you haven\'t placed any blocks.', 'info');
+                return;
+              }
+              // Accessible dialog rather than window.confirm, and fails CLOSED:
+              // with no dialog service the blocks are kept, not silently cleared.
+              var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+              var unavailable = 'Clearing is unavailable right now, so your blocks were kept.';
+              if (typeof confirmApi !== 'function') { if (addToast) addToast(unavailable, 'warning'); return; }
+              var okToClear = false;
+              try {
+                okToClear = await confirmApi(
+                  'Clear all ' + count + ' of your placed blocks? The lesson\'s structures and NPCs will stay. This cannot be undone.',
+                  { title: 'Clear your placed blocks', confirmText: 'Clear ' + count + ' block' + (count === 1 ? '' : 's'),
+                    cancelText: 'Keep my blocks', tone: 'warning' }
+                );
+              } catch (e) { if (addToast) addToast(unavailable, 'warning'); return; }
+              if (okToClear) {
+                var cleared = engine.clearPlayerBlocks();
+                upd('blocksPlaced', 0);
+                if (addToast) addToast('🗑️ Cleared ' + cleared + ' block' + (cleared === 1 ? '' : 's') + '. Lesson structures preserved.', 'success');
+              }
+            },
+            title: __alloT('stem.geometryworld.clear_only_your_placed_blocks_lesson_s', 'Clear only YOUR placed blocks (lesson structures stay). Useful for restarting an experiment.')
+          }, renderWorkspaceAction(el,'clear','Clear'))
+        ),
+        // ── Mobile touch controls overlay (visible on touch devices) ──
+        isMobile && touchMode && worldActive && engine && el('div', { className: 'gw-touch-controls', style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0, zIndex: 8, pointerEvents: 'none' } },
+          el('div', { className: 'gw-touch-mode-hint', role: 'status', 'aria-live': 'polite' }, 'Swipe on the right to look'),
+          el('div', { className: 'gw-touch-look-zone', role: 'img', 'aria-label': __alloT('stem.geometryworld.a11y_touch_look_area_swipe_on_the_right_side_to_look', 'Touch look area: swipe on the right side to look around'), style: { position: 'absolute', top: '50%', right: '18px', width: '120px', height: '120px', borderRadius: '50%', border: '1px dashed rgba(196,181,253,0.2)', background: 'rgba(124,58,237,0.04)', pointerEvents: 'none' } },
+            el('div', { className: 'gw-touch-look-reticle', style: { position: 'absolute', top: '50%', left: '50%', width: '42px', height: '42px', borderRadius: '50%', border: '1px solid rgba(196,181,253,0.42)', background: 'rgba(124,58,237,0.14)', transform: 'translate(calc(-50% + var(--gw-touch-look-x, 0px)), calc(-50% + var(--gw-touch-look-y, 0px)))' } }),
+            el('div', { className: 'gw-touch-look-label' }, 'LOOK')
+          ),
+          el('div', { className: 'gw-touch-look-panel', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_touch_look_settings', 'Touch look settings'), style: { position: 'absolute', top: '82px', right: '12px', width: '134px', pointerEvents: 'auto' }, onTouchStart: function(ev) { ev.stopPropagation(); } },
+            el('label', { className: 'gw-touch-look-label', htmlFor: 'gw-touch-look-sensitivity' },
+              el('span', null, 'Look speed'),
+              el('output', { htmlFor: 'gw-touch-look-sensitivity' }, Math.round(touchLookSensitivity / 0.004 * 100) + '%')
+            ),
+            el('input', { id: 'gw-touch-look-sensitivity', type: 'range', min: 0.002, max: 0.008, step: 0.001, value: touchLookSensitivity, 'aria-label': __alloT('stem.geometryworld.a11y_touch_look_sensitivity', 'Touch look sensitivity'), 'aria-valuetext': 'Look speed ' + Math.round(touchLookSensitivity / 0.004 * 100) + ' percent', onChange: function(ev) {
+              var next = Math.max(0.002, Math.min(0.008, Number(ev.target.value)));
+              upd('touchLookSensitivity', next);
+              if (engine && engine.setTouchLookSensitivity) engine.setTouchLookSensitivity(next);
+            } })
+          ),
+          // Left side: virtual joystick zone indicator
+          el('div', { className:'gw-touch-joystick', role: 'img', 'aria-label': __alloT('stem.geometryworld.a11y_touch_joystick_drag_on_the_left_side_to_move', 'Touch joystick: drag on the left side to move'), style: { position: 'absolute', bottom: '80px', left: '20px', width: '100px', height: '100px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' } },
+            el('div', { className: 'gw-touch-joystick-thumb', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(calc(-50% + var(--gw-touch-stick-x, 0px)), calc(-50% + var(--gw-touch-stick-y, 0px)))', width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' } }),
+            el('div', { style: { position: 'absolute', top: '4px', left: '50%', transform: 'translateX(-50%)', fontSize: '12px', color: '#cbd5e1' } }, '\u25B2'),
+            el('div', { style: { position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', fontSize: '12px', color: '#cbd5e1' } }, '\u25BC'),
+            el('div', { style: { position: 'absolute', left: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#cbd5e1' } }, '\u25C0'),
+            el('div', { style: { position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#cbd5e1' } }, '\u25B6')
+          ),
+          // Right side: action buttons
+          el('div', { className: 'gw-touch-actions', onTouchEnd: finishMobileButtonTouch, onTouchCancel: finishMobileButtonTouch, role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_touch_actions', 'Touch actions'), style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
+            // Jump button
+            el('button', {
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_jump_or_fly_up', 'Jump or fly up'), title: engine.flyMode ? 'Hold to fly up' : 'Jump', 'data-gw-touch-action':'up',
+              onTouchStart: function(ev) { runMobileButtonAction('jump', beginMobileJump, ev); },
+              onTouchEnd: stopMobileJump, onTouchCancel: stopMobileJump, onBlur: stopMobileJump,
+              onClick: function(ev) { runMobileButtonAction('jump', activateMobileJump, ev); },
+              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(99,102,241,0.4)', border: '2px solid rgba(99,102,241,0.6)', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, renderTouchAction(el,'up',engine.flyMode ? 'Up' : 'Jump')),
+            engine.flyMode && el('button', {
+              type:'button',className:'gw-focusable','aria-label':__alloT('stem.geometryworld.a11y_fly_down','Fly down'),title:'Hold to fly down','data-gw-touch-action':'down',
+              onTouchStart:function(ev){runMobileButtonAction('down',beginMobileDescent,ev);},
+              onTouchEnd:stopMobileDescent,onTouchCancel:stopMobileDescent,onBlur:stopMobileDescent,
+              onClick:function(ev){runMobileButtonAction('down',activateMobileDescent,ev);}
+            },renderTouchAction(el,'down','Down')),
+            // Place block button
+            el('button', {
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_place_block', 'Place block'), title: 'Place block', 'data-gw-touch-action':'place',
+              onTouchStart: function(ev) { runMobileButtonAction('place', placeMobileBlock, ev); },
+              onClick: function(ev) { runMobileButtonAction('place', placeMobileBlock, ev); },
+              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(34,197,94,0.4)', border: '2px solid rgba(34,197,94,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, renderTouchAction(el,'place','Place')),
+            // Break block button
+            el('button', {
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_break_block', 'Break block'), title: 'Break block', 'data-gw-touch-action':'break',
+              onTouchStart: function(ev) { runMobileButtonAction('break', breakMobileBlock, ev); },
+              onClick: function(ev) { runMobileButtonAction('break', breakMobileBlock, ev); },
+              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(239,68,68,0.4)', border: '2px solid rgba(239,68,68,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, renderTouchAction(el,'break','Break')),
+            // Measure button
+            el('button', {
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure'), title: 'Measure structure',
+              onTouchStart: function(ev) { runMobileButtonAction('measure', measureMobileStructure, ev); },
+              onClick: function(ev) { runMobileButtonAction('measure', measureMobileStructure, ev); },
+              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(251,191,36,0.4)', border: '2px solid rgba(251,191,36,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, renderTouchAction(el,'measure','Measure')),
+            // Talk is available in worlds with characters.
+            engine.npcs && engine.npcs.length > 0 && el('button', {
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_talk_to_nearby_character', 'Talk to nearby character'), title: 'Talk to nearby character',
+              onTouchStart: function(ev) { runMobileButtonAction('talk', talkToNearbyNpc, ev); },
+              onClick: function(ev) { runMobileButtonAction('talk', talkToNearbyNpc, ev); },
+              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(124,58,237,0.4)', border: '2px solid rgba(124,58,237,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, renderTouchAction(el,'talk','Talk')),
+            // Keep the action column stable while Undo becomes available.
+            el('button', { disabled:!engine._undoStack || engine._undoStack.length === 0,
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action'), title: 'Undo last block action',
+              onTouchStart: function(ev) { runMobileButtonAction('undo', undoMobileBlockAction, ev); },
+              onClick: function(ev) { runMobileButtonAction('undo', undoMobileBlockAction, ev); },
+              style: { width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(251,191,36,0.3)', border: '2px solid rgba(251,191,36,0.5)', color: '#fff', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, renderTouchAction(el,'undo','Undo'))
+          )
+        ),
+        // ── Water submersion blue tint ──
+        engine && engine._inWater && el('div', { className: 'gw-environment-tint gw-environment-tint--water', 'aria-hidden': 'true' }),
+        // Lava submersion red tint + warning
+        engine && engine._inLava && el('div', { className: 'gw-environment-tint gw-environment-tint--lava' },
+          el('div', { className: 'gw-environment-warning', role: 'alert', 'aria-live': 'assertive', 'aria-atomic': 'true' }, '\uD83D\uDD25 In lava \u2014 move to safety')
+        ),
+        worldActive && !d.showcaseActive && openModals.length === 0 && d.placementHint && el('div', {
+          className:'gw-placement-hint','data-allowed':d.placementHint.allowed ? 'true':'false',
+          'data-placement-code':d.placementHint.code,role:'status','aria-live':'polite','aria-atomic':'true'
+        },el('span',{className:'gw-placement-hint-mark','aria-hidden':'true'},d.placementHint.allowed ? '\u2713':'!'),el('span',null,d.placementHint.reason)),
+        // ── Action feedback toast (center-bottom, fades in/out) ──
+        actionFeedback && el('div', { className: 'gw-action-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+          'data-feedback-kind': actionFeedback === shapeActionRef.current.shapeFeedback ? 'shape' : 'action',
+          style: { position: 'absolute', bottom: '135px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
+            background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '10px',
+            padding: '7px 14px', fontSize: '12px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, whiteSpace: 'normal',
+            width: 'max-content', maxWidth: isMobile ? 'calc(100vw - 168px)' : 'min(680px, calc(100vw - 40px))', textAlign: 'center', lineHeight: 1.35, overflowWrap: 'anywhere',
+            boxShadow: '0 8px 24px rgba(2,6,23,0.35)', animation: 'fadeIn 0.2s ease-out' }
+        }, actionFeedback),
+        // ── Measurement history panel (bottom-left, above position HUD) ──
+        hudPanel === 'history' && measureHistory.length > 0 && el('section', { id: 'gw-history-panel', className: 'gw-history-panel', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_history', 'Measurement history') },
+          el('div', { className: 'gw-history-title gw-hud-panel-heading' }, el('span', null, '\uD83D\uDCCF MEASUREMENTS \u00b7 ' + completedMeasurements.length + '/' + measureHistory.length + ' COMPLETE'), el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_hide_measurement_history', 'Hide measurement history'), onClick: function() { closeHudPanel('Measurements'); } }, '\u00D7')),
+          measureHistory.slice(-5).reverse().map(function(mh, mi) {
+            return el('div', { key: mi, className: 'gw-history-row', 'data-current': mi === 0 ? 'true' : 'false', 'data-incomplete': mh.isComplete === false ? 'true' : 'false' },
+              el('span', null, mh.isComplete === false ? 'Incomplete scan' : mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
+              el('span', { style: { color: mh.isComplete === false ? '#fca5a5' : mi === 0 ? '#fbbf24' : '#94a3b8' } }, mh.isComplete === false ? '\u2265' + mh.blocks : '=' + mh.vol),
+              mh.prediction != null && el('span', { title: 'Committed estimate ' + formatVolume(mh.prediction) + '; descriptive difference ' + mh.percentError + '%', style: { color: '#bfdbfe', fontSize: '8px' } }, 'E:' + formatVolume(mh.prediction) + ' (\u0394 ' + mh.percentError + '%)')
+            );
+          }),
+          measurementComparison && el('div', { className: 'gw-history-comparison', role: 'status', 'data-geometry-measurement-comparison': 'true' },
+            el('div', { style: { color: '#c4b5fd', fontWeight: 800, fontSize: '8px', letterSpacing: '0.4px' } }, 'COMPARE LATEST TWO COMPLETE'),
+            el('div', { style: { color: '#e2e8f0' } }, 'Volume: ' + formatVolume(measurementComparison.previousVolume) + ' \u2192 ' + formatVolume(measurementComparison.latestVolume) + (measurementComparison.sameVolume ? ' (same)' : ' (change ' + formatVolume(Math.abs(measurementComparison.volumeDifference)) + ')')),
+            measurementComparison.surfaceAreaDifference !== null && el('div', { style: { color: '#86efac' } }, 'Surface area: ' + measurementComparison.previousSurfaceArea + ' \u2192 ' + measurementComparison.latestSurfaceArea + ' square units'),
+            measurementComparison.moreSurfaceEfficient && el('div', { style: { color: '#fde68a', fontWeight: 700 } }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' shape uses ' + Math.abs(measurementComparison.surfaceAreaDifference) + ' fewer square units for the same volume.'),
+            measurementComparison.surfaceAreaDifference === null && el('div', { style: { color: '#94a3b8' } }, 'Surface comparison unavailable for partial blocks.')
+          ),
+          activeRetrievalCheckpoint && el('div', { className: 'gw-retrieval-card', 'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept },
+            el('div', { className: 'gw-retrieval-title' }, 'RETRIEVAL CHECK'),
+            el('div', { style: { color: '#e2e8f0', fontSize: '9px', marginBottom: '4px' } }, activeRetrievalCheckpoint.prompt),
+            el('div', { className: 'gw-retrieval-controls' },
+              el('input', {
+                type: 'text', inputMode: 'decimal', value: retrievalAnswer, disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
+                className: 'gw-retrieval-input gw-focusable',
+                onChange: function(ev) { upd({ retrievalAnswer: ev.target.value, retrievalResult: null }); },
+                placeholder: 'answer', 'aria-label': __alloT('stem.geometryworld.a11y_retrieval_checkpoint_answer', 'Retrieval checkpoint answer'),
+                autoComplete: 'off'
+              }),
+              el('button', {
+                type: 'button', className: 'gw-focusable gw-retrieval-button',
+                disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
+                onClick: function() {
+                  var nextAttempt = retrievalAttemptCount + 1;
+                  var result = checkRetrievalAnswer(activeRetrievalCheckpoint, retrievalAnswer, nextAttempt);
+                  if (!result) return;
+                  result.checkpointId = activeRetrievalCheckpoint.id;
+                  result.attempt = result.valid ? nextAttempt : retrievalAttemptCount;
+                  upd({ retrievalResult: result, retrievalAttemptCount: result.attempt });
+                  if (result.valid) {
+                    var eng = window[engineKey];
+                    if (eng && eng.logEvent) eng.logEvent('retrieval_check', { checkpointId: activeRetrievalCheckpoint.id, concept: activeRetrievalCheckpoint.concept, attempt: result.attempt, answer: result.answer, expected: result.expected, correct: result.correct });
+                    if (result.correct) sfxCorrect(); else sfxWrong();
+                  }
+                  announceToSR(result.feedback);
+                },
+                'aria-label': __alloT('stem.geometryworld.a11y_check_retrieval_answer', 'Check retrieval answer')
+              }, 'Check')
+            ),
+            retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && el('div', { role: 'status', 'data-geometry-retrieval-result': retrievalResult.correct ? 'correct' : 'retry', style: { marginTop: '3px', color: retrievalResult.correct ? '#86efac' : '#fde68a', fontSize: '9px', fontWeight: 700 } }, retrievalResult.feedback)
+          )
+        ),
+        // ── Block inventory widget (top-right, shows counts per type) ──
+        hudPanel === 'inventory' && engine && el('section', { id: 'gw-inventory-panel', className: 'gw-inventory-panel', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_block_inventory', 'Block inventory') },
+          el('div', { className: 'gw-inventory-title gw-hud-panel-heading' }, el('span', null, 'BLOCKS PLACED'), el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_hide_block_inventory', 'Hide block inventory'), onClick: function() { closeHudPanel('Block counts'); } }, '\u00D7')),
+          // Real-time total volume counter
+          (function() {
+            var totalVol = 0;
+            var bks = Object.keys(engine.blocks);
+            for (var vi = 0; vi < bks.length; vi++) {
+              var bm = engine.blocks[bks[vi]];
+              if (bm && bm.userData && !bm.userData._lessonBlock && bm.userData.volume) totalVol += bm.userData.volume;
+            }
+            return el('div', { className: 'gw-inventory-volume' },
+              '\uD83D\uDCE6 ' + (totalVol === Math.floor(totalVol) ? totalVol : totalVol.toFixed(2)) + ' cu'
+            );
+          })(),
+          (function() {
+            var counts = {};
+            var bk = Object.keys(engine.blocks);
+            for (var bi = 0; bi < bk.length; bi++) {
+              var bm = engine.blocks[bk[bi]];
+              if (bm && bm.userData.blockType && !bm.userData._lessonBlock && bm.userData.blockType !== 'grass') {
+                var bt = bm.userData.blockType;
+                counts[bt] = (counts[bt] || 0) + 1;
+              }
+            }
+            var typeKeys = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
+            if (typeKeys.length === 0) return el('div', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: '9px' } }, 'None yet');
+            return typeKeys.slice(0, 6).map(function(tk) {
+              var bt = BLOCK_TYPES.find(function(b) { return b.id === tk; });
+              return el('div', { key: tk, className: 'gw-inventory-row' },
+                el('span', null, (bt ? bt.emoji + ' ' : '') + tk),
+                el('span', { className: 'gw-inventory-count' }, counts[tk])
+              );
+            });
+          })()
+        ),
+        sceneMapOpen && worldActive && engine && sceneOverview && el('section', {
+          id: 'gw-scene-map', className: 'gw-scene-map', role: 'region', 'aria-labelledby': 'gw-scene-map-title',
+          style: { position: 'absolute', top: '58px', right: '10px', zIndex: 34, width: 'min(360px, calc(100vw - 20px))', maxHeight: 'min(560px, calc(100% - 90px))', overflow: 'auto', padding: '12px', border: '1px solid rgba(45,212,191,0.34)', borderRadius: 14, background: 'linear-gradient(155deg,rgba(6,78,59,0.96),rgba(15,23,42,0.97))', boxShadow: '0 20px 54px rgba(2,6,23,0.56)', backdropFilter: 'blur(14px)' }
+        },
+          el('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' } },
+            el('div', null,
+              el('div', { style: { color: '#99f6e4', fontSize: 9, fontWeight: 850, letterSpacing: '0.12em', textTransform: 'uppercase' } }, 'Text alternative'),
+              el('h3', { id: 'gw-scene-map-title', style: { margin: '3px 0 0', color: '#f0fdfa', fontSize: 16, fontWeight: 850 } }, 'Scene map')
+            ),
+            el('button', { type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_close_textual_scene_map', 'Close textual scene map'), onClick: function() { setSceneMapOpen(false); announceToSR(__alloT('stem.geometryworld.sr_textual_scene_map_closed', 'Textual scene map closed.')); }, style: { minWidth: 32, minHeight: 32, border: '1px solid rgba(153,246,228,0.3)', borderRadius: 8, background: 'rgba(15,23,42,0.56)', color: '#ccfbf1', fontSize: 18, cursor: 'pointer' } }, '×')
+          ),
+          el('p', { style: { margin: '7px 0 10px', color: '#ccfbf1', fontSize: 10, lineHeight: 1.45 } }, 'A readable inventory of the 3D lesson. Use View structure to jump to a repeatable camera view.'),
+          el('section', { 'aria-labelledby': 'gw-scene-structures-title' },
+            el('h4', { id: 'gw-scene-structures-title', style: { margin: '0 0 6px', color: '#99f6e4', fontSize: 10, fontWeight: 850, letterSpacing: '0.08em', textTransform: 'uppercase' } }, 'Structures · ' + sceneOverview.structures.length),
+            sceneOverview.structures.length > 0 && el('div', { role: 'list', 'aria-label': __alloT('stem.geometryworld.a11y_structures_in_scene', 'Structures in scene'), style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              sceneOverview.structures.map(function(structure) {
+                return el('div', { key: structure.index, role: 'listitem', style: { padding: '8px', border: '1px solid rgba(153,246,228,0.18)', borderRadius: 9, background: 'rgba(15,23,42,0.5)' } },
+                  el('div', { style: { color: '#f0fdfa', fontSize: 11, fontWeight: 800 } }, structure.label),
+                  el('div', { style: { marginTop: 2, color: '#a7f3d0', fontFamily: 'monospace', fontSize: 10 } }, structure.dimensions.length + ' × ' + structure.dimensions.width + ' × ' + structure.dimensions.height + ' units'),
+                  el('div', { style: { marginTop: 2, color: '#94a3b8', fontSize: 9 } }, 'Origin X' + structure.origin.x + ' Y' + structure.origin.y + ' Z' + structure.origin.z + ' · ' + structure.type),
+                  el('button', { type: 'button', className: 'gw-focusable', 'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_view_structure', 'View structure: {value1}'), { value1: structure.label }), onClick: function() { if (engine && engine.focusStructure) engine.focusStructure(structure.index); }, style: { minHeight: 34, marginTop: 6, padding: '5px 9px', border: '1px solid rgba(45,212,191,0.3)', borderRadius: 7, background: 'rgba(13,148,136,0.28)', color: '#ccfbf1', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'View structure')
+                );
+              })
+            ),
+            sceneOverview.structures.length === 0 && el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'No named structures are listed for this lesson.')
+          ),
+          sceneOverview.npcs.length > 0 && el('section', { 'aria-labelledby': 'gw-scene-guides-title', style: { marginTop: 12 } },
+            el('h4', { id: 'gw-scene-guides-title', style: { margin: '0 0 6px', color: '#99f6e4', fontSize: 10, fontWeight: 850, letterSpacing: '0.08em', textTransform: 'uppercase' } }, 'Guides · ' + sceneOverview.npcs.length),
+            el('ul', { style: { display: 'grid', gap: 4, margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 10, lineHeight: 1.45 } }, sceneOverview.npcs.map(function(npc) { return el('li', { key: npc.index }, npc.name + ' — ' + npc.prompt); }))
+          ),
+          sceneOverview.camera && el('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 12, paddingTop: 8, borderTop: '1px solid rgba(153,246,228,0.18)', color: '#a7f3d0', fontFamily: 'monospace', fontSize: 9 } }, 'Camera X' + sceneOverview.camera.x + ' Y' + sceneOverview.camera.y + ' Z' + sceneOverview.camera.z + (sceneOverview.target ? ' · Target ' + sceneOverview.target.type + ' X' + sceneOverview.target.x + ' Y' + sceneOverview.target.y + ' Z' + sceneOverview.target.z : ''))
+        ),        // ── Guided explore tour overlay ──
+        guidedTourActive && worldActive && engine && el('div', {
+          className: 'gw-tour-overlay',
+          role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_guided_explore_checkpoint', 'Guided explore checkpoint'),
+          style: { position: 'absolute', top: '58px', left: '50%', transform: 'translateX(-50%)', zIndex: 31, width: 'min(330px, calc(100vw - 24px))', pointerEvents: 'auto' }
+        },
+          el('div', { style: { padding: '10px 12px', border: '1px solid rgba(196,181,253,0.34)', borderRadius: 13, background: 'linear-gradient(155deg,rgba(30,27,75,0.94),rgba(15,23,42,0.95))', boxShadow: '0 16px 36px rgba(2,6,23,0.48)', backdropFilter: 'blur(12px)' } },
+            el('div', { style: { color: '#c4b5fd', fontSize: 9, fontWeight: 850, letterSpacing: '0.12em', textTransform: 'uppercase' } }, 'Guided explore'),
+            el('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 3, color: '#f8fafc', fontSize: 14, fontWeight: 850 } }, guidedTourSteps[guidedTourStep] || guidedTourSteps[0]),
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 } },
+              [0, 1, 2].map(function(si) { return el('span', { key: si, 'aria-hidden': 'true', style: { height: 4, flex: 1, borderRadius: 999, background: si <= guidedTourStep ? '#a78bfa' : 'rgba(100,116,139,0.38)', boxShadow: si === guidedTourStep ? '0 0 10px rgba(167,139,250,0.55)' : 'none' } }); }),
+              el('span', { style: { color: '#a8b3c7', fontSize: 9, fontWeight: 750, whiteSpace: 'nowrap' } }, (guidedTourStep + 1) + ' / 3')
+            ),
+            el('button', { type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_exit_guided_explore_tour', 'Exit guided explore tour'), onClick: function() { if (engine && engine.stopGuidedTour) engine.stopGuidedTour(false); }, style: { minHeight: 34, marginTop: 9, padding: '5px 10px', border: '1px solid rgba(148,163,184,0.28)', borderRadius: 8, background: 'rgba(15,23,42,0.56)', color: '#cbd5e1', fontSize: 10, fontWeight: 750, cursor: 'pointer' } }, 'Exit tour')
+          )
+        ),
+        // ── Tutorial overlay (first-time users) ──
+        !tutorialDismissed && tutorialStep < 4 && worldActive && el('div', { className: 'gw-tutorial-shell',
+          role: 'region', 'aria-labelledby': 'gw-tutorial-title', 'aria-describedby': 'gw-tutorial-instruction', 'aria-live': 'polite', 'aria-atomic': 'true',
+          style: { position: 'absolute', bottom: '140px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none', textAlign: 'center', maxWidth: '340px' }
+        },
+          el('div', { className: 'gw-tutorial-card', style: { background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px) saturate(120%)', border: '2px solid rgba(124,58,237,0.5)', borderRadius: '16px', padding: '16px 20px', boxShadow: '0 8px 32px rgba(124,58,237,0.25)', pointerEvents: 'auto' } },
+            el('div', { className: 'gw-tutorial-kicker' }, 'Quick tour'),
+            el('h3', { id: 'gw-tutorial-title', className: 'gw-tutorial-title' },
+              ['Explore the world', 'Meet a guide', 'Measure a structure', 'Build a block'][tutorialStep]
+            ),
+            el('div', { id: 'gw-tutorial-instruction', className: 'gw-tutorial-instruction' },
+              tutorialStep === 0 ? (isMobile ? '\uD83D\uDC46 Swipe right side to look. Drag left side to move.' : '\uD83D\uDDB1\uFE0F Click the 3D world to look around. Use WASD to move.') :
+              tutorialStep === 1 ? (isMobile ? '\uD83D\uDC64 Walk near a purple character and tap the \uD83D\uDDE3\uFE0F button.' : '\uD83D\uDC64 Walk up to a purple character and press E to talk.') :
+              tutorialStep === 2 ? (isMobile ? '\uD83D\uDCCF Point at the blue blocks and tap the \uD83D\uDCCF button.' : '\uD83D\uDCCF Point at the blue blocks and press M to measure.') :
+              (isMobile ? '\uD83E\uDDF1 Point at a block and tap the \uD83E\uDDF1 button to place!' : '\uD83E\uDDF1 Right-click on any block face to place a new block!')
+            ),
+            // Semantic step progress
+            el('div', { className: 'gw-tutorial-progress', role: 'progressbar', 'aria-label': __alloT('stem.geometryworld.a11y_tutorial_progress', 'Tutorial progress'), 'aria-valuemin': 1, 'aria-valuemax': 4, 'aria-valuenow': tutorialStep + 1 },
+              el('div', { className: 'gw-tutorial-track', 'aria-hidden': 'true' },
+                [0,1,2,3].map(function(si) {
+                  return el('span', { key: si, className: 'gw-tutorial-dot', 'data-complete': si < tutorialStep ? 'true' : 'false', 'data-current': si === tutorialStep ? 'true' : 'false' });
+                })
+              ),
+              el('span', { className: 'gw-tutorial-count', 'aria-hidden': 'true' }, (tutorialStep + 1) + ' / 4')
+            ),
+            el('div', { className: 'gw-tutorial-actions', style: { pointerEvents: 'auto' } },
+              el('button', { type: 'button', className: 'gw-tutorial-skip gw-focusable',
+                'aria-label': __alloT('stem.geometryworld.skip_tutorial_and_proceed_to_lesson', 'Skip tutorial and proceed to lesson'),
+                onClick: function() { upd({ tutorialStep: 4, tutorialDismissed: true }); },
+                style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', padding: '4px 12px', cursor: 'pointer' }
+              }, 'Skip tutorial'),
+              el('button', { type: 'button', className: 'gw-tutorial-next gw-focusable',
+                'aria-label': tutorialStep === 3 ? 'Finish tutorial and start exploring' : __alloT('stem.geometryworld.next_tutorial_step', 'Next tutorial step'),
+                onClick: function() {
+                  var nextStep = tutorialStep + 1;
+                  if (nextStep >= 4) { upd({ tutorialStep: 4, tutorialDismissed: true }); }
+                  else { upd('tutorialStep', nextStep); }
+                },
+                style: { background: '#7c3aed', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '10px', padding: '4px 14px', cursor: 'pointer', fontWeight: 700 }
+              }, tutorialStep === 3 ? 'Start exploring' : 'Next \u2192')
+            )
+          )
+        ),
+        // Crosshair — interactive (changes color based on target)
+        (function() {
+          var ct = engine ? (engine._crosshairTarget || 'none') : 'none';
+          var chColor = ct === 'npc_question' ? '#fbbf24' : ct === 'npc' ? '#a78bfa' : ct === 'block' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)';
+          // One-pixel white arms at half alpha disappear over bright grass, which is
+          // most of this world. A dark ring around each arm reads on any background,
+          // bright or dark, which a soft drop shadow alone does not.
+          var chRing = '0 0 0 1px rgba(2,6,23,0.6)';
+          var chGlow = (ct === 'npc_question' ? '0 0 6px #fbbf24' : ct === 'npc' ? '0 0 4px #a78bfa' : '0 0 2px rgba(0,0,0,0.5)') + ', ' + chRing;
+          var chSize = ct === 'npc_question' ? '5px' : ct === 'npc' ? '4px' : '3px';
+          return el('div', { className: 'gw-crosshair', 'data-target': ct, 'aria-hidden': 'true', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '22px', height: '22px', transition: 'all 0.15s ease' } },
+            el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: chSize, height: chSize, borderRadius: '50%', background: chColor, boxShadow: chGlow, transition: 'all 0.15s ease' } }),
+            el('div', { style: { position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+            el('div', { style: { position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+            el('div', { style: { position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+            el('div', { style: { position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+            // Target label hint
+            ct === 'npc_question' && el('div', { className: 'gw-target-hint', style: { position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#fbbf24', fontWeight: 700, whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.8)' } }, isMobile ? 'Tap Talk' : 'Press E')
+          );
+        })(),
+        // ── Lesson Intro Screen ──
+        showLessonIntro && el('div', {
+          role: 'dialog', className: 'gw-dialog gw-dialog--intro', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_introduction', 'Lesson introduction'), 'aria-labelledby': 'gw-intro-title', 'aria-describedby': 'gw-intro-description', tabIndex: -1, ref: gwDialogRef,
+          style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 40,
+            background: 'linear-gradient(180deg, rgba(15,23,42,0.97) 0%, rgba(30,27,58,0.97) 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'auto' }
+        },
+          el('div', { className: 'gw-intro-card', style: { maxWidth: '420px', width: '90%', textAlign: 'center' } },
+            el('div', { className: 'gw-intro-heading' },
+              el('div', { className: 'gw-intro-icon', 'aria-hidden': 'true' }, '\uD83E\uDDF1'),
+              el('div', null,
+                el('h2', { id: 'gw-intro-title', className: 'gw-intro-title' }, currentLesson.title || 'Geometry World'),
+                el('p', { id: 'gw-intro-description', className: 'gw-intro-description' }, currentLesson.description || 'Explore geometric measurement in an interactive 3D world.')
+              )
+            ),
+            // Objectives preview
+            currentLesson.objectives && el('section', { className: 'gw-intro-objectives', 'aria-labelledby': 'gw-intro-objectives-title' },
+              el('h3', { id: 'gw-intro-objectives-title', className: 'gw-intro-section-title' }, '\uD83C\uDFAF Objectives'),
+              el('ol', null,
+                currentLesson.objectives.map(function(obj, i) {
+                  return el('li', { key: 'objlist-' + i + '-' + String(obj).slice(0, 24) }, obj);
+                })
+              )
+            ),
+            // Key formulas
+            el('div', { className: 'gw-intro-formula', role: 'note', 'aria-label': __alloT('stem.geometryworld.a11y_key_formulas', 'Key formulas') },
+              'V = L \u00d7 W \u00d7 H \u2022 Area = L \u00d7 W'
+            ),
+            // NPC count
+            el('div', { className: 'gw-intro-meta', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_overview', 'Lesson overview') },
+              el('span', null, (currentLesson.npcs || []).length + ' guides'),
+              el('span', null, (currentLesson.npcs || []).filter(function(n) { return n.question; }).length + ' questions'),
+              el('span', null, (currentLesson.structures || []).length + ' structures')
+            ),
+            // Start paths for new and returning students
+            el('div', { className: 'gw-intro-actions' },
+              el('button', { type: 'button', className: 'gw-primary-cta gw-intro-start gw-focusable',
+                onClick: function() { loadLessonByKey(activeLesson); },
+                style: { background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', border: 'none', borderRadius: '12px',
+                  padding: '14px 20px', fontSize: '14px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.4)' }
+              }, '\u25B6\uFE0F Start Lesson'),
+              el('button', { type: 'button', className: 'gw-intro-secondary gw-focusable',
+                'aria-label': __alloT('stem.geometryworld.a11y_start_lesson_without_the_guided_tutorial', 'Start lesson without the guided tutorial'),
+                onClick: function() { loadLessonByKey(activeLesson, 0, true); },
+                title: 'For returning students'
+              }, 'Skip guided tour')
+            )
+          )
+        ),
+        // ── Student Reflection Prompt (before Next Lesson) ──
+        showReflection && score >= totalQ && totalQ > 0 && el('div', {
+          role: 'dialog', className: 'gw-dialog gw-dialog--compact gw-reflection-dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_quick_reflection', 'Quick reflection'), 'aria-labelledby': 'gw-reflection-title', 'aria-describedby': 'gw-reflection-description gw-reflection-prompt', tabIndex: -1, ref: gwDialogRef,
+          style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 36, pointerEvents: 'auto',
+            background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(12px)', border: '2px solid rgba(124,58,237,0.4)', borderRadius: '18px',
+            padding: '24px 28px', maxWidth: '360px', textAlign: 'center', boxShadow: '0 8px 32px rgba(124,58,237,0.2)' }
+        },
+          el('div', { className: 'gw-reflection-heading' },
+            el('div', { className: 'gw-reflection-icon', 'aria-hidden': 'true' }, '\uD83E\uDD14'),
+            el('div', null,
+              el('h2', { id: 'gw-reflection-title', className: 'gw-reflection-title' }, 'Quick reflection'),
+              el('p', { id: 'gw-reflection-description', className: 'gw-reflection-description' }, 'Connect your strategy to evidence from the world.')
+            )
+          ),
+          el('div', { id: 'gw-reflection-prompt', className: 'gw-reflection-prompt', 'data-geometry-reflection-evidence': latestCompleteMeasurement ? 'true' : 'general' },
+            latestCompleteMeasurement ? reflectionEvidencePrompt : 'What strategy helped you understand volume or surface area today?'
+          ),
+          el('label', { htmlFor: 'gw-reflection-text', className: 'gw-reflection-label' }, 'Your reflection'),
+          el('textarea', {
+            id: 'gw-reflection-text', className: 'gw-reflection-textarea gw-focusable', value: reflectionText,
+            maxLength: 600, 'aria-describedby': 'gw-reflection-prompt gw-reflection-count',
+            onChange: function(ev) { upd('reflectionText', ev.target.value); },
+            placeholder: 'Describe what you noticed, tried, or would change next time.'
+          }),
+          el('div', { className: 'gw-reflection-footer' },
+            el('span', { className: 'gw-reflection-readiness', 'data-ready': reflectionText.trim() ? 'true' : 'false' }, reflectionText.trim() ? 'Ready to save' : 'Optional response'),
+            el('span', { id: 'gw-reflection-count' }, reflectionText.length + ' / 600 characters')
+          ),
+          el('div', { className: 'gw-reflection-actions' },
+            // Primary action — saves if there's text, otherwise behaves like a quick confirm
+            el('button', {
+              type: 'button', className: 'gw-reflection-save gw-focusable', disabled: !reflectionText.trim(),
+              onClick: function() {
+                upd('showReflection', false);
+                var eng = window[engineKey];
+                if (eng && eng.logEvent) eng.logEvent('reflection', { text: reflectionText.trim(), lesson: currentLesson.title, measuredVolume: latestCompleteMeasurement ? latestCompleteMeasurement.occupiedVolume : null, prediction: predictionResult ? predictionResult.prediction : null, revisedPrediction: predictionRevisionResult ? predictionRevisionResult.prediction : null, strategy: predictionResult ? predictionResult.strategy : '', misconception: predictionResult ? predictionResult.diagnosisCode : '' });
+              },
+            }, '\u2705 Save & Continue'),
+            // Secondary "later" — dismisses without firing the save event
+            el('button', { type: 'button', className: 'gw-reflection-skip gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_continue_without_saving_a_reflection', 'Continue without saving a reflection'),
+              onClick: function() { upd('showReflection', false); },
+            }, 'Continue without reflection')
+          )
+        ),
+        // ── Lesson Completion overlay with Next Lesson ──
+        score >= totalQ && totalQ > 0 && !showNpcDialog && !showReflection && el('div', {
+          role: 'dialog', className: 'gw-dialog gw-dialog--compact gw-completion-dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_complete', 'Lesson complete'), 'aria-labelledby': 'gw-completion-title', 'aria-describedby': 'gw-completion-description', tabIndex: -1, ref: gwDialogRef,
+          style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 35, pointerEvents: 'auto', textAlign: 'center',
+            background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px)', border: '2px solid rgba(251,191,36,0.5)', borderRadius: '20px',
+            padding: '24px 32px', maxWidth: '380px', boxShadow: '0 12px 40px rgba(251,191,36,0.2)' }
+        },
+          el('div', { className: 'gw-completion-icon', 'aria-hidden': 'true' }, '\uD83C\uDFC6'),
+          el('h2', { id: 'gw-completion-title', className: 'gw-completion-title' }, 'Lesson complete!'),
+          el('p', { id: 'gw-completion-description', className: 'gw-completion-description' }, currentLesson.title + ' \u2014 ' + score + ' of ' + totalQ + ' questions answered.'),
+          el('div', { className: 'gw-completion-metrics', role: 'list', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_activity_summary', 'Lesson activity summary') },
+            el('span', { className: 'gw-completion-metric', role: 'listitem' }, (engine ? (engine.blocksPlaced || 0) : 0) + ' blocks placed'),
+            el('span', { className: 'gw-completion-metric', role: 'listitem' }, completedMeasurements.length + ' complete measurements')
+          ),
+          // Next Lesson button
+          (function() {
+            var curIdx = LESSON_ORDER.indexOf(activeLesson);
+            var nextKey = curIdx >= 0 && curIdx < LESSON_ORDER.length - 1 ? LESSON_ORDER[curIdx + 1] : null;
+            var nextLesson = nextKey ? SAMPLE_LESSONS[nextKey] : null;
+            return el('div', { className: 'gw-completion-actions' },
+              nextLesson && el('button', { type: 'button', className: 'gw-completion-next gw-focusable', 'aria-label': 'Continue to next lesson: ' + (nextLesson.title || 'Next lesson'),
+                onClick: function() {
+                  upd({ activeLesson: nextKey, measureHistory: [], reflectionText: '' });
+                  var eng = window[engineKey]; if (eng) eng.loadLesson(nextLesson);
+                },
+              }, '\u27A1\uFE0F Next: ' + (nextLesson.title || '').split(' \u2014')[0]),
+              el('button', { type: 'button', className: 'gw-completion-replay gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_replay_current_lesson', 'Replay current lesson'),
+                onClick: function() {
+                  var eng = window[engineKey]; if (eng) eng.loadLesson(currentLesson);
+                  upd({ measureHistory: [], reflectionText: '' });
+                },
+              }, '\uD83D\uDD04 Replay'),
+              !nextLesson && el('section', { className: 'gw-completion-journey', 'aria-labelledby': 'gw-journey-title' },
+                el('div', { className: 'gw-journey-icon', 'aria-hidden': 'true' }, '\uD83C\uDFC6\u2B50\uD83C\uDF1F'),
+                el('h3', { id: 'gw-journey-title', className: 'gw-journey-title' }, 'All lessons complete!'),
+                el('p', { className: 'gw-journey-description' },
+                  'You\u2019ve completed all ' + LESSON_ORDER.length + ' geometry lessons. Here\u2019s your journey:'),
+                el('div', { className: 'gw-journey-stats', role: 'list', 'aria-label': __alloT('stem.geometryworld.a11y_course_achievement_summary', 'Course achievement summary') },
+                  el('div', { className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'badges' },
+                    el('span', { className: 'gw-journey-value' }, String(Object.keys(earnedBadges).length)),
+                    el('span', null, 'badges earned')),
+                  el('div', { className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'blocks' },
+                    el('span', { className: 'gw-journey-value' }, String(engine ? engine.blocksPlaced || 0 : 0)),
+                    el('span', null, 'blocks placed')),
+                  el('div', { className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'measurements' },
+                    el('span', { className: 'gw-journey-value' }, String(completedMeasurements.length)),
+                    el('span', null, 'complete measurements')),
+                  el('div', { className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'questions' },
+                    el('span', { className: 'gw-journey-value' }, String(score)),
+                    el('span', null, 'questions answered'))
+                ),
+                el('blockquote', { className: 'gw-journey-quote' },
+                  '\u201CEvery block you placed made your brain stronger.\u201D')
+              )
+            );
+          })()
+        ),
+        // ── Block count warning ──
+        engine && Object.keys(engine.blocks).length > MAX_BLOCKS * 0.8 && el('div', {
+          style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
+            background: Object.keys(engine.blocks).length >= MAX_BLOCKS ? 'rgba(239,68,68,0.9)' : 'rgba(251,191,36,0.85)',
+            borderRadius: '8px', padding: '4px 14px', fontSize: '11px', color: '#fff', fontWeight: 700 }
+        }, Object.keys(engine.blocks).length >= MAX_BLOCKS
+          ? '\u26A0\uFE0F Block limit reached (' + MAX_BLOCKS + ') \u2014 remove some blocks for performance'
+          : '\u26A0\uFE0F ' + Object.keys(engine.blocks).length + '/' + MAX_BLOCKS + ' blocks \u2014 approaching limit'),
+        // NPC Dialog overlay
+        showNpcDialog && engine && engine.npcs[dialogNpcIdx] && (function() {
+          var npc = engine.npcs[dialogNpcIdx];
+          var data = npc.data;
+          var isAnswered = !!answeredNpcs[dialogNpcIdx];
+          // Bilingual: auto-translate NPC dialogue when home language is set
+          var transKey = dialogNpcIdx + '_' + homeLang;
+          var translation = npcTranslations[transKey] || null;
+          // Translation is GATED + EXPLICIT. It previously auto-fired callGemini
+          // DURING RENDER for any non-English home language — sending an ELL/refugee
+          // student's dialogue to the AI with no opt-in, plus a React side-effect in
+          // render. Now it only runs when the teacher has enabled AI hints AND the
+          // student clicks the Translate button below.
+          var npcIsTranslating = !!npcTranslations[transKey + '_loading'];
+          var doTranslate = function() {
+            if (translation || npcIsTranslating || !callGemini) return;
+            var newTrans = Object.assign({}, npcTranslations);
+            newTrans[transKey + '_loading'] = true;
+            upd('npcTranslations', newTrans);
+            var LANG_NAMES = { es: 'Spanish', fr: 'French', ar: 'Arabic', so: 'Somali', pt: 'Portuguese', vi: 'Vietnamese', zh: 'Simplified Chinese', sw: 'Swahili' };
+            var langName = LANG_NAMES[homeLang] || homeLang;
+            var textToTranslate = data.dialogue + (data.question ? '\n---\n' + data.question.text : '');
+            callGemini('Translate the following geometry lesson NPC dialogue to ' + langName + '. '
+              + 'Keep mathematical terms (volume, length, width, height, cubic units) in BOTH languages. '
+              + 'For example: "Volume (volumen) = Length (longitud) x Width (ancho) x Height (altura)". '
+              + 'Preserve numbers and formulas exactly. Respond with ONLY the translation, no explanation.\n\n' + textToTranslate, true)
+              .then(function(result) {
+                var parts = result.split('---');
+                var ut = Object.assign({}, npcTranslations);
+                ut[transKey] = { dialogue: (parts[0] || result).trim(), question: parts[1] ? parts[1].trim() : null };
+                delete ut[transKey + '_loading'];
+                upd('npcTranslations', ut);
+              }).catch(function() {
+                var ut = Object.assign({}, npcTranslations);
+                delete ut[transKey + '_loading'];
+                upd('npcTranslations', ut);
+              });
+          };
+          var npcHexColor = '#' + (data.color || 0x7c3aed).toString(16).padStart(6, '0');
+          return el('div', {
+              // The NPC dialog carries the lesson's actual assessment — the answer
+              // choices — and opening it exits pointer lock, so the mouse is freed but
+              // keyboard focus stayed behind on the world surface. A screen-reader user
+              // got no signal it had appeared and had to tab through the whole HUD to
+              // reach the choices. Naming it a dialog and moving focus into it makes
+              // the reader announce it and puts the choices one Tab away.
+              role: 'dialog',
+              className: 'gw-dialog gw-dialog--npc',
+              'aria-modal': 'true',
+              'aria-label': data.name + (data.question ? ' — question' : ''),
+              tabIndex: -1,
+              ref: gwDialogRef,
+              style: {
+              position: 'absolute',
+              // On mobile the dialog sits a bit higher so it doesn't overlap the touch-action buttons
+              bottom: isMobile ? '160px' : '60px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 30,
+              background: 'rgba(15,23,42,0.92)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(100,116,139,0.25)',
+              borderRadius: '16px',
+              padding: '0',
+              maxWidth: '440px',
+              width: isMobile ? '94%' : '90%',
+              // Clamp vertical size on mobile so it never eats the whole screen
+              maxHeight: isMobile ? 'calc(100vh - 220px)' : '70vh',
+              overflow: 'auto',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+            } },
+            // Header bar with NPC color accent
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'linear-gradient(135deg, ' + npcHexColor + '22, ' + npcHexColor + '08)', borderBottom: '1px solid rgba(100,116,139,0.15)' } },
+              // NPC avatar circle
+              el('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, ' + npcHexColor + ', ' + npcHexColor + '88)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: '#fff', fontWeight: 800, flexShrink: 0, border: '2px solid ' + npcHexColor + '66' } }, data.name.charAt(0)),
+              el('div', { style: { flex: 1 } },
+                el('div', { style: { fontSize: '13px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, data.name),
+                data.question && !isAnswered && el('div', { style: { display: 'inline-flex', marginTop: '2px', padding: '2px 6px', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '999px', background: 'rgba(15,23,42,0.92)', color: '#fde68a', fontSize: '10px', fontWeight: 800, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
+              ),
+              el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_npc_dialog', 'Close NPC dialog'), onClick: function() { upd({ showNpcDialog: false }); focusWorldSurface(); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
+            ),
+            // Body content
+            el('div', { style: { padding: '12px 16px' } },
+            el('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: homeLang !== 'en' ? '4px' : '10px', minHeight: '20px' } },
+              // Typewriter effect: reveal characters progressively
+              npcTypewriterNpc === dialogNpcIdx && npcTypewriterPos < (data.dialogue || '').length
+                ? el('span', null, (data.dialogue || '').slice(0, npcTypewriterPos), el('span', { style: { opacity: 0.4, animation: 'pulse 0.8s infinite' } }, '\u2588'))
+                : data.dialogue
+            ),
+            // Bilingual translation line (click to hear)
+            homeLang !== 'en' && translation && el('div', {
+              onClick: function() {
+                // Speak translation aloud using browser TTS
+                if (window.speechSynthesis) {
+                  var LANG_CODES = { es: 'es-ES', fr: 'fr-FR', ar: 'ar-SA', so: 'so-SO', pt: 'pt-BR', vi: 'vi-VN', zh: 'zh-CN', sw: 'sw-KE' };
+                  var utt = new SpeechSynthesisUtterance(translation.dialogue);
+                  utt.lang = LANG_CODES[homeLang] || homeLang;
+                  utt.rate = 0.85;
+                  window.speechSynthesis.cancel();
+                  window.speechSynthesis.speak(utt);
+                }
+              },
+              title: __alloT('stem.geometryworld.click_to_hear_translation_spoken_aloud', 'Click to hear translation spoken aloud'),
+              style: { fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, marginBottom: '10px', fontStyle: 'italic', borderLeft: '3px solid #fbbf24', paddingLeft: '8px', cursor: 'pointer' }
+            }, '\uD83D\uDD0A ' + translation.dialogue),
+            homeLang !== 'en' && !translation && npcIsTranslating && el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, '\u23F3 Translating...'),
+            homeLang !== 'en' && !translation && !npcIsTranslating && ctx && ctx.aiHintsEnabled && callGemini && el('button', {
+              onClick: doTranslate,
+              title: __alloT('stem.geometryworld.translate_this_dialogue_with_ai_uses_a', 'Translate this dialogue with AI (uses an AI request)'),
+              style: { fontSize: '11px', color: '#fbbf24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '8px', padding: '4px 10px', marginBottom: '10px', cursor: 'pointer', fontWeight: 700 }
+            }, '\uD83C\uDF10 Translate (AI)'),
+            data.question && !isAnswered && (function() {
+              // Determine current question (base or follow-up)
+              var curStep = npcFollowUpStep[dialogNpcIdx] || 0;
+              var followUps = data.question.followUp || [];
+              var curQ = curStep === 0 ? data.question : (followUps[curStep - 1] || data.question);
+              var totalSteps = 1 + followUps.length;
+              var isLastStep = curStep >= totalSteps - 1;
+
+              return el('div', null,
+                // Progress dots for multi-step questions
+                totalSteps > 1 && el('div', { style: { display: 'flex', gap: '4px', justifyContent: 'center', marginBottom: '6px' } },
+                  Array.apply(null, Array(totalSteps)).map(function(_, di) {
+                    return el('div', { key: 'stepdot-' + di, style: { width: 8, height: 8, borderRadius: '50%', background: di < curStep ? '#22c55e' : di === curStep ? '#7c3aed' : 'rgba(100,116,139,0.4)', transition: 'all 0.3s' } });
+                  })
+                ),
+                el('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', marginBottom: homeLang !== 'en' ? '2px' : '6px' } }, curQ.text),
+                homeLang !== 'en' && translation && translation.question && curStep === 0 && el('div', { style: { fontSize: '11px', color: '#fbbf24', marginBottom: '6px', fontStyle: 'italic' } }, translation.question),
+                curQ.choices.map(function(choice, ci) {
+                  return el('button', {
+                    key: 'choice-' + ci + '-' + String(choice).slice(0, 24),
+                    'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_answer_option', 'Answer option {value1}: {value2}'), { value1: (ci + 1), value2: choice }),
+                    onClick: function() {
+                      if (ci === curQ.correct) {
+                        sfxCorrect();
+                        // Clear wrongs lesson-wide + this NPC's wrong count
+                        var clearedWrongs = Object.assign({}, d.npcWrongCount || {});
+                        delete clearedWrongs[dialogNpcIdx];
+                        upd({ consecutiveWrong: 0, npcWrongCount: clearedWrongs });
+                        if (typeof awardXP === 'function') awardXP('geometryWorld', 2, 'Step correct: ' + data.name);
+                        var eng = window[engineKey];
+                        if (eng && eng.logEvent) eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, step: curStep, isFinalStep: !!isLastStep });
+                        // Check if there are more follow-up steps
+                        if (!isLastStep) {
+                          // Advance to next follow-up
+                          var newFU = Object.assign({}, npcFollowUpStep);
+                          newFU[dialogNpcIdx] = curStep + 1;
+                          upd('npcFollowUpStep', newFU);
+                          if (addToast) addToast('\u2705 Correct! Next step...', 'success');
+                        } else {
+                          // Final step — mark NPC as answered, award full score
+                          var newAnswered = Object.assign({}, answeredNpcs);
+                          newAnswered[dialogNpcIdx] = true;
+                          var newScore = score + 1;
+                          upd({ score: newScore, answeredNpcs: newAnswered, _scorePulse: Date.now() });
+                          // Auto-save progress to localStorage
+                          try { var pk = eng && eng._progressKey; if (pk) localStorage.setItem(pk, JSON.stringify({ score: newScore, answeredNpcs: newAnswered, npcFollowUpStep: npcFollowUpStep })); } catch(e) {}
+                          if (addToast) addToast('\u2705 Correct! +1', 'success');
+                          if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'Correct answer: ' + data.name);
+                          announceToSR(__alloFill(__alloT('stem.geometryworld.sr_correct_score_is_now_of', 'Correct! Score is now {value1} of {value2}'), { value1: newScore, value2: totalQ }));
+                      if (window._alloHaptic) window._alloHaptic('correct');
+                          // 3D confetti from NPC + celebration bounce
+                          if (eng && npc.body) {
+                            try { spawnPlaceParticles(eng, npc.body.position.x, npc.body.position.y + 1.5, npc.body.position.z); } catch(e) {}
+                            npc._celebrateUntil = (eng.clock ? eng.clock.getElapsedTime() : 0) + 0.8;
+                          }
+                          // Check lesson completion
+                          if (newScore >= totalQ && totalQ > 0) {
+                            sfxComplete();
+                            if (addToast) addToast('\uD83C\uDFC6 Lesson Complete! Look up...', 'success');
+                            announceToSR(__alloFill(__alloT('stem.geometryworld.sr_lesson_complete_you_answered_all_questions_correc', 'Lesson complete! You answered all {value1} questions correctly. The sun is setting \u2014 look up to see the celebration.'), { value1: totalQ }));
+                              // Trigger reflection prompt after a delay
+                              setTimeout(function() { upd({ showReflection: true, reflectionText: '' }); }, 5000);
+                            if (typeof awardXP === 'function') awardXP('geometryWorld', 15, 'Lesson complete: ' + currentLesson.title);
+                            if (eng && !eng.completionTriggered) {
+                              eng.completionTriggered = true; eng.completionProgress = 0;
+                              if (eng.logEvent) eng.logEvent('lesson_complete', { score: newScore, totalQuestions: totalQ, timeToComplete: ((Date.now() - eng.sessionStart) / 1000).toFixed(1) + 's', blocksPlaced: eng.blocksPlaced || 0 });
+                              // Confetti burst from camera position
+                              var camP = eng.camera.position;
+                              var confettiColors = [0xfbbf24, 0x22c55e, 0x3b82f6, 0xef4444, 0xa78bfa, 0xf472b6, 0x06b6d4];
+                              for (var ci = 0; ci < 40; ci++) {
+                                try {
+                                  // Flat flakes, not cubes, so they catch the light as they turn.
+                                  var cGeo = new THREE.BoxGeometry(0.14, 0.02, 0.09);
+                                  var cMat = new THREE.MeshBasicMaterial({ color: confettiColors[ci % confettiColors.length], transparent: true, opacity: 1 });
+                                  var cMesh = new THREE.Mesh(cGeo, cMat);
+                                  cMesh.position.set(camP.x + (Math.random() - 0.5) * 3, camP.y + Math.random() * 2, camP.z + (Math.random() - 0.5) * 3);
+                                  cMesh.userData._age = 0; cMesh.userData._life = 2 + Math.random();
+                                  cMesh.userData._vel = { x: (Math.random() - 0.5) * 4, y: 3 + Math.random() * 3, z: (Math.random() - 0.5) * 4 };
+                                  cMesh.userData._spin = new THREE.Vector3((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
+                                  eng.scene.add(cMesh); eng._particles.push(cMesh);
+                                } catch(e) {}
+                              }
+                            }
+                          }
+                        }
+                        setTimeout(runAchievementCheck, 100);
+                      } else {
+                        sfxWrong(); if (window._alloHaptic) window._alloHaptic('wrong');
+                        // NPC shake animation
+                        var eng2 = window[engineKey];
+                        if (eng2 && npc && npc._shakeUntil !== undefined) { npc._shakeUntil = (eng2.clock ? eng2.clock.getElapsedTime() : 0) + 0.5; }
+                        if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: curQ.text, chosenAnswer: choice, correctAnswer: curQ.choices[curQ.correct], step: curStep, isFinalStep: !!isLastStep });
+                        // Track per-NPC wrong count (not global) so hint escalation is scoped.
+                        // Previously `consecutiveWrong` was lesson-wide, letting wrongs on NPC A
+                        // trigger level-3 hints on the first wrong answer at NPC B. Also prevents
+                        // "farming" — wrong 3× on NPC A used to REVEAL the correct answer, which
+                        // students could exploit to bypass learning.
+                        var npcWrongMap = Object.assign({}, d.npcWrongCount || {});
+                        npcWrongMap[dialogNpcIdx] = (npcWrongMap[dialogNpcIdx] || 0) + 1;
+                        var newWrong = npcWrongMap[dialogNpcIdx];
+                        // Remember this NPC's last wrong choice so the gated AI-hint
+                        // button (shown at >=2 wrongs) can pass it to ctx.getHint.
+                        var npcLastWrongMap = Object.assign({}, d.npcLastWrong || {});
+                        npcLastWrongMap[dialogNpcIdx] = choice;
+                        var totalConsecutive = consecutiveWrong + 1;
+                        upd({ consecutiveWrong: totalConsecutive, npcWrongCount: npcWrongMap, npcLastWrong: npcLastWrongMap });
+                        checkFrustration(totalConsecutive);
+                        setTimeout(runAchievementCheck, 100);
+                        var hintText = '\u274C Not quite. ';
+                        // Escalate scaffolding WITHOUT revealing the correct answer choice.
+                        if (newWrong >= 3) {
+                          hintText += 'Try measuring with M first. Then count carefully: how many blocks long, wide, and tall?';
+                        } else if (newWrong >= 2) {
+                          hintText += data.dialogue.indexOf('layer') >= 0 ? 'Count the blocks in one layer, then count how many layers tall.' : data.dialogue.indexOf('L-block') >= 0 ? 'Split it into two rectangles. Find each volume, then add.' : 'Count: how many blocks long? How many wide? How many tall? Multiply!';
+                        } else {
+                          hintText += 'Hint: think about ' + (data.dialogue.indexOf('layer') >= 0 ? 'counting the layers' : data.dialogue.indexOf('L-block') >= 0 ? 'splitting into two prisms' : 'L \u00d7 W \u00d7 H');
+                        }
+                        if (addToast) addToast(hintText, 'error');
+                        announceToSR('Not quite right. ' + hintText.replace(/^❌\s*Not quite\.\s*/, ''));
+                      }
+                    },
+                    style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', boxShadow: 'inset 0 0 0 1px #475569' }
+                  }, choice);
+                }),
+                // Gated AI hint (slice-2 pilot). Only shows when the teacher has
+                // enabled AI hints AND the student has missed this NPC >=2 times.
+                // ctx.getHint self-gates (off => zero traffic), enforces the
+                // attempt floor + one-per-question cap + reveal-check.
+                ctx && ctx.aiHintsEnabled && ((d.npcWrongCount || {})[dialogNpcIdx] || 0) >= 2 && el('button', {
+                  key: 'aihint',
+                  'aria-label': __alloT('stem.geometryworld.ask_the_ai_for_a_hint', 'Ask the AI for a hint'),
+                  onClick: function() {
+                    var wc = (d.npcWrongCount || {})[dialogNpcIdx] || 0;
+                    var lw = (d.npcLastWrong || {})[dialogNpcIdx];
+                    ctx.getHint('geometryworld', curQ.text, lw != null ? String(lw) : '', String(curQ.choices[curQ.correct]), wc, function(hint) { if (addToast) addToast(hint, 'info'); });
+                  },
+                  style: { display: 'block', width: '100%', padding: '6px 12px', marginTop: '2px', background: 'rgba(124,58,237,0.15)', border: '1px solid #7c3aed', borderRadius: '7px', color: '#c4b5fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit' }
+                }, '🤖 Ask AI for a hint')
+              );
+            })(),
+            isAnswered && el('div', { style: { borderTop: '1px solid rgba(34,197,94,0.2)', paddingTop: '8px', marginTop: '4px' } },
+              el('div', { style: { color: '#4ade80', fontWeight: 700, fontSize: '12px', marginBottom: '6px' } }, '\u2705 Great job!'),
+              el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, background: 'rgba(34,197,94,0.08)', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(34,197,94,0.15)' } },
+                // Bonus fun fact based on dialogue content
+                data.dialogue.indexOf('volume') >= 0 || data.dialogue.indexOf('Volume') >= 0
+                  ? '\uD83E\uDDE0 Fun fact: The word "volume" comes from Latin "volumen" meaning a roll of papyrus. Ancient mathematicians measured volume by filling containers with water!'
+                  : data.dialogue.indexOf('area') >= 0 || data.dialogue.indexOf('Area') >= 0
+                  ? '\uD83E\uDDE0 Fun fact: The ancient Egyptians used area calculations to resurvey farmland after Nile floods. That\u2019s how geometry (earth-measuring) got its name!'
+                  : data.dialogue.indexOf('layer') >= 0
+                  ? '\uD83E\uDDE0 Fun fact: A stack of 1,000 sheets of paper is about 4 inches tall. Each sheet is a "layer" \u2014 just like counting block layers to find volume!'
+                  : data.dialogue.indexOf('L-block') >= 0 || data.dialogue.indexOf('composite') >= 0
+                  ? '\uD83E\uDDE0 Fun fact: Architects decompose complex buildings into rectangular sections (just like you did!) to calculate materials needed for construction.'
+                  : data.dialogue.indexOf('fraction') >= 0 || data.dialogue.indexOf('half') >= 0
+                  ? '\uD83E\uDDE0 Fun fact: A pizza box is about 1728 cubic inches (12\u00d712\u00d712). If you eat half, you\u2019ve consumed 864 cubic inches of pizza-space!'
+                  : '\uD83E\uDDE0 Fun fact: The largest known rectangular prism building is the Boeing Everett Factory at 472 million cubic feet \u2014 big enough to hold Disneyland!'
+              )
+            ),
+            // ── AI Chat with NPC (ask anything) ──
+            callGemini && el('div', { style: { marginTop: '10px', borderTop: '1px solid var(--allo-stem-border, #334155)', paddingTop: '8px' } },
+              el('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '4px' } }, '\uD83D\uDCAC Ask ' + data.name + ' anything:'),
+              // Chat history for this NPC
+              (npcChatHistory[dialogNpcIdx] || []).length > 0 && el('div', { style: { maxHeight: '100px', overflowY: 'auto', marginBottom: '6px' } },
+                (npcChatHistory[dialogNpcIdx] || []).map(function(msg, mi) {
+                  return el('div', { key: mi, style: { fontSize: '11px', marginBottom: '3px', color: msg.role === 'user' ? '#e2e8f0' : '#4ade80', paddingLeft: msg.role === 'user' ? '0' : '8px', borderLeft: msg.role === 'user' ? 'none' : '2px solid #4ade80' } },
+                    msg.role === 'user' ? '\uD83D\uDDE3\uFE0F ' + msg.text : msg.text
+                  );
+                })
+              ),
+              el('div', { style: { display: 'flex', gap: '4px' } },
+                el('input', {
+                  type: 'text', value: npcChatInput,
+                  onChange: function(ev) { upd('npcChatInput', ev.target.value); },
+                  onKeyDown: function(ev) {
+                    if (ev.key === 'Enter' && npcChatInput.trim() && !npcChatLoading && callGemini) {
+                      var userMsg = npcChatInput.trim();
+                      var history = (npcChatHistory[dialogNpcIdx] || []).concat([{ role: 'user', text: userMsg }]);
+                      var newHist = Object.assign({}, npcChatHistory);
+                      newHist[dialogNpcIdx] = history;
+                      upd({ npcChatHistory: newHist, npcChatInput: '', npcChatLoading: true });
+
+                      var npcPrompt = 'You are ' + data.name + ', a friendly geometry teacher NPC in a 3D block world. '
+                        + 'You are standing near structures made of blocks. Each block is 1 cubic unit. '
+                        + 'Your specialty: ' + data.dialogue + '\n'
+                        + (measureResult ? 'The student recently measured a structure: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' Occupied volume=' + measuredVolume(measureResult) + ' Bounding-box volume=' + measureResult.boundingVolume + '\n' : '')
+                        + 'The student asks: "' + userMsg + '"\n\n'
+                        + 'Respond in 2-3 sentences. Be warm, encouraging, and age-appropriate. '
+                        + 'Use concrete examples with blocks. If they ask about volume, reference L\u00d7W\u00d7H. '
+                        + 'If they seem confused, break it down into simpler steps.';
+
+                      callGemini(npcPrompt, true).then(function(response) {
+                        var updatedHist = Object.assign({}, npcChatHistory);
+                        updatedHist[dialogNpcIdx] = history.concat([{ role: 'npc', text: response }]);
+                        upd({ npcChatHistory: updatedHist, npcChatLoading: false });
+                        var eng = window[engineKey];
+                        if (eng && eng.logEvent) eng.logEvent('npc_chat', { npc: data.name, question: userMsg, response: response.substring(0, 100) });
+                      }).catch(function() {
+                        var updatedHist = Object.assign({}, npcChatHistory);
+                        updatedHist[dialogNpcIdx] = history.concat([{ role: 'npc', text: __alloT('stem.geometryworld.hmm_i_m_having_trouble_thinking_right_', 'Hmm, I\u2019m having trouble thinking right now. Try asking in a different way!') }]);
+                        upd({ npcChatHistory: updatedHist, npcChatLoading: false });
+                      });
+                    }
+                  },
+                  disabled: npcChatLoading,
+                  placeholder: npcChatLoading ? 'Thinking...' : 'Ask a question...',
+                  style: { flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' }
+                }),
+                el('button', {
+                  onClick: function() {
+                    // Trigger same as Enter key
+                    if (!npcChatInput.trim() || npcChatLoading || !callGemini) return;
+                    var userMsg = npcChatInput.trim();
+                    var history = (npcChatHistory[dialogNpcIdx] || []).concat([{ role: 'user', text: userMsg }]);
+                    var newHist = Object.assign({}, npcChatHistory);
+                    newHist[dialogNpcIdx] = history;
+                    upd({ npcChatHistory: newHist, npcChatInput: '', npcChatLoading: true });
+                    var npcPrompt = 'You are ' + data.name + ', a friendly geometry teacher in a 3D block world. Each block = 1 cubic unit. '
+                      + 'Context: ' + data.dialogue + ' '
+                      + (measureResult ? 'Student measured: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' occupied V=' + measuredVolume(measureResult) + ', bounding-box V=' + measureResult.boundingVolume + '. ' : '')
+                      + 'Student asks: "' + userMsg + '". Respond in 2-3 warm, concrete sentences.';
+                    callGemini(npcPrompt, true).then(function(r) {
+                      var uh = Object.assign({}, npcChatHistory); uh[dialogNpcIdx] = history.concat([{ role: 'npc', text: r }]);
+                      upd({ npcChatHistory: uh, npcChatLoading: false });
+                      // Must use gwChatKey — loadLesson READS with it. Writing with the
+                      // raw activeLesson stored a freshly generated world's chat under
+                      // 'ai_generated' while the read looked under the lesson's _id, so
+                      // AI-lesson chat history never came back.
+                      try { sessionStorage.setItem('gw_chat_' + gwChatKey(currentLesson), JSON.stringify(uh)); } catch(e) {}
+                    }).catch(function() { upd('npcChatLoading', false); });
+                  },
+                  disabled: npcChatLoading || !npcChatInput.trim(),
+                  style: { background: npcChatInput.trim() && !npcChatLoading ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }
+                }, npcChatLoading ? '\u23F3' : '\u2728')
+              ),
+              el('div', { style: { fontSize: 11, opacity: 0.7, marginTop: 4 } },
+                '\uD83D\uDCA1 Sent to an AI helper \u2014 don\u2019t type your name or personal info.')
+            )
+            ) // close body content div
+          );
+        })(),
+        // ── Growth Mindset Nudge Overlay (SEL + Academic Integration) ──
+        showGrowthNudge && el('div', {
+          role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_encouragement', 'Encouragement'), tabIndex: -1, ref: gwDialogRef,
+          style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 35,
+            background: 'linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.97))',
+            border: '2px solid #a78bfa', borderRadius: '18px', padding: '24px 28px', maxWidth: '380px', width: '85%',
+            boxShadow: '0 0 40px rgba(167,139,250,0.3), 0 0 80px rgba(167,139,250,0.1)',
+            textAlign: 'center', animation: 'fadeIn 0.4s ease-out' }
+        },
+          el('div', { style: { fontSize: '32px', marginBottom: '10px' } }, '\uD83C\uDF31'),
+          el('div', { style: { fontSize: '14px', fontWeight: 700, color: '#c4b5fd', marginBottom: '8px', letterSpacing: '0.5px' } }, 'Growth Mindset Moment'),
+          el('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: '16px' } }, growthNudgeMsg),
+          el('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+            el('button', {
+              onClick: function() { upd('showGrowthNudge', false); },
+              style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, 'I\u2019ve got this! \uD83D\uDCAA'),
+            callGemini && el('button', {
+              onClick: function() {
+                upd({ showGrowthNudge: false, showNpcDialog: false });
+                var eng = window[engineKey];
+                if (!eng || !callGemini) return;
+                var wrong = (eng.sessionLog || []).filter(function(e) { return e.type === 'answer_wrong'; });
+                var lastWrong = wrong.length > 0 ? wrong[wrong.length - 1] : null;
+                // Integrity: do NOT send the correct answer to the model (it was
+                // being injected here and could be echoed back, revealing it). The
+                // coach gives GENERAL strategy + encouragement, not the solution.
+                var coachPrompt = 'You are a warm, encouraging growth mindset coach for a student (age 8-12) struggling with a geometry question in a 3D block world. '
+                  + (lastWrong ? 'They just got this geometry question wrong: "' + (lastWrong.data.question || '') + '". ' : '')
+                  + 'In 2-3 sentences: (1) validate their effort, (2) give a concrete GENERAL strategy for solving volume problems using blocks \u2014 do NOT solve this specific problem or state any numeric answer, (3) end with encouragement. '
+                  + 'Use language a child would understand. Reference counting blocks, layers, or L\u00d7W\u00d7H.';
+                callGemini(coachPrompt, true).then(function(response) {
+                  if (addToast) addToast('\uD83C\uDF31 Coach: ' + response, 'info');
+                  if (eng && eng.logEvent) eng.logEvent('growth_nudge_coach', { response: response.substring(0, 100) });
+                });
+              },
+              style: { background: 'var(--allo-stem-panel, #1e293b)', color: '#a78bfa', border: '1px solid #7c3aed', borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, 'Help me think \uD83E\uDDE0')
+          )
+        ),
+        // ── Peer Worlds Browser Overlay ──
+        showPeerWorlds && el('div', {
+          role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_class_world_library', 'Class world library'), tabIndex: -1, ref: gwDialogRef,
+          style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 36,
+            background: 'rgba(15,23,42,0.97)', border: '2px solid #a78bfa', borderRadius: '16px',
+            padding: '20px', maxWidth: '520px', width: '90%', maxHeight: '70%', overflowY: 'auto' }
+        },
+          el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+            el('div', { style: { fontSize: '15px', fontWeight: 800, color: '#c4b5fd' } }, '\uD83D\uDCDA Class World Library'),
+            el('div', { style: { display: 'flex', gap: '6px' } },
+              el('button', { onClick: loadPeerWorlds, style: { background: 'none', border: 'none', color: '#c4b5fd', fontSize: '12px', cursor: 'pointer', fontWeight: 700 } }, '\u21BB Refresh'),
+              el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_class_worlds_browser', 'Close class worlds browser'), onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
+            )
+          ),
+          peerWorldsList.length === 0
+            ? el('div', { style: { textAlign: 'center', padding: '24px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                el('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '\uD83C\uDF0D'),
+                el('div', { style: { fontSize: '13px' } }, 'No worlds shared yet! Build something in Creator Mode and click Share.')
+              )
+            : el('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                peerWorldsList.map(function(world, wi) {
+                  return el('div', {
+                    key: wi,
+                    style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', cursor: 'pointer', transition: 'border-color 0.2s' },
+                    onClick: function() {
+                      var eng = window[engineKey];
+                      if (!eng) return;
+                      var wd = world.data;
+                      if (wd.structures || wd.npcs) {
+                        eng.loadLesson(wd);
+                      } else if (wd.blocks) {
+                        eng.clearWorld();
+                        eng.scene.background.setRGB(0.53, 0.81, 0.92);
+                        wd.blocks.forEach(function(b) { eng.placeBlock(b.x, b.y, b.z, b.type || 'stone', b.shape, b.rotation); });
+                        if (wd.npcs) wd.npcs.forEach(function(n) { eng.createNPC(n); });
+                      }
+                      upd('showPeerWorlds', false);
+                      if (addToast) addToast('\uD83C\uDF0D Loaded "' + world.title + '" by ' + world.author, 'success');
+                      if (eng.logEvent) eng.logEvent('peer_world_loaded', { title: world.title, author: world.author });
+                    }
+                  },
+                    el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                      el('div', null,
+                        el('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '13px' } }, '\uD83E\uDDF1 ' + world.title),
+                        el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'by ' + world.author)
+                      ),
+                      el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                        world.timestamp ? new Date(world.timestamp).toLocaleTimeString() : '',
+                        el('div', null, (world.data.blocks ? world.data.blocks.length + ' blocks' : ''))
+                      )
+                    )
+                  );
+                })
+              )
+        ),
+        // ── Teacher Command Center Overlay ──
+        showTeacherView && el('div', {
+          role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_teacher_view', 'Teacher view'), tabIndex: -1, ref: gwDialogRef,
+          style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.97)',
+            border: '2px solid #f87171', borderRadius: '14px', padding: '16px', width: '340px', maxHeight: '70%', overflowY: 'auto' }
+        },
+          el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+            el('div', { style: { fontWeight: 800, color: '#f87171', fontSize: '14px' } }, '\uD83D\uDCCA Teacher Dashboard'),
+            el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_teacher_dashboard', 'Close teacher dashboard'), onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
+          ),
+          // Live session info
+          el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: '6px' } },
+            'Session: ' + sessionCode + ' \u2022 ' + Object.keys(studentProgressMap).length + ' students connected'
+          ),
+          // Student cards
+          Object.keys(studentProgressMap).length === 0
+            ? el('div', { style: { textAlign: 'center', padding: '20px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                el('div', { style: { fontSize: '24px', marginBottom: '6px' } }, '\uD83D\uDC65'),
+                'Waiting for students to join...'
+              )
+            : el('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                Object.keys(studentProgressMap).map(function(sid) {
+                  var sp = studentProgressMap[sid];
+                  var stats = sp.stats || {};
+                  var accuracy = stats.quizAvg || 0;
+                  var tierColor = accuracy >= 80 ? '#22c55e' : accuracy >= 50 ? '#f59e0b' : '#ef4444';
+                  var tierLabel = accuracy >= 80 ? 'T1' : accuracy >= 50 ? 'T2' : 'T3';
+                  return el('div', {
+                    key: sid,
+                    style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '10px' }
+                  },
+                    el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+                      el('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px' } }, sp.studentNickname || sid),
+                      el('div', { style: { background: tierColor, color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 } }, tierLabel + ' ' + Math.round(accuracy) + '%')
+                    ),
+                    // Stats row
+                    el('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                      el('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'var(--allo-stem-canvas, #0f172a)', padding: '2px 6px', borderRadius: '4px' } },
+                        '\u2B50 ' + (stats.globalPoints || 0) + ' XP'),
+                      stats.focusRatio !== undefined && el('span', { style: { fontSize: '10px', color: stats.focusRatio > 0.7 ? '#4ade80' : '#f59e0b', background: 'var(--allo-stem-canvas, #0f172a)', padding: '2px 6px', borderRadius: '4px' } },
+                        '\uD83C\uDFAF ' + Math.round((stats.focusRatio || 0) * 100) + '% focus'),
+                      el('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'var(--allo-stem-canvas, #0f172a)', padding: '2px 6px', borderRadius: '4px' } },
+                        '\uD83D\uDD52 ' + (stats.engagedMinutes || 0) + 'min')
+                    ),
+                    // Last synced
+                    sp.lastSynced && el('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #475569)', marginTop: '4px' } },
+                      'Last sync: ' + new Date(sp.lastSynced).toLocaleTimeString())
+                  );
+                })
+              ),
+          // Collab players in geometry world
+          Object.keys(collabPlayers).length > 0 && el('div', { style: { marginTop: '12px', borderTop: '1px solid var(--allo-stem-border, #334155)', paddingTop: '10px' } },
+            el('div', { style: { fontWeight: 700, color: '#34d399', fontSize: '11px', marginBottom: '6px' } }, '\uD83E\uDDF1 In Geometry World Right Now'),
+            Object.keys(collabPlayers).map(function(key) {
+              var p = collabPlayers[key];
+              return el('div', { key: key, style: { fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', padding: '2px 0', display: 'flex', alignItems: 'center', gap: '6px' } },
+                el('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: p.color || '#34d399' } }),
+                p.name,
+                el('span', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: '9px' } },
+                  p.position ? ' at (' + Math.round(p.position[0]) + ', ' + Math.round(p.position[2]) + ')' : '')
+              );
+            })
+          )
+        ),
+        // ── Collaborative Player Indicators ──
+        collabMode && Object.keys(collabPlayers).length > 0 && el('div', {
+          className: 'gw-collab-roster',
+          role: 'region',
+          'aria-label': __alloT('stem.geometryworld.a11y_builders_online', 'Builders online')
+        },
+          el('div', { className: 'gw-collab-title' }, '\uD83D\uDC65 Builders Online'),
+          Object.keys(collabPlayers).map(function(key) {
+            var p = collabPlayers[key];
+            var isMe = p.name === playerName;
+            return el('div', {
+              key: key,
+              className: 'gw-collab-player',
+              'data-self': isMe ? 'true' : 'false'
+            },
+              el('span', { className: 'gw-collab-dot', 'aria-hidden': 'true', style: { background: p.color || '#34d399' } }),
+              el('span', { style: { fontWeight: isMe ? 700 : 500 } }, p.name + (isMe ? ' (you)' : '')),
+              p.position && el('span', { style: { color: '#a8b3c7', fontSize: '9px' } },
+                '(' + Math.round(p.position[0]) + ', ' + Math.round(p.position[2]) + ')')
+            );
+          })
+        ),
+        // 3D Canvas container (or fallback if WebGL unavailable)
+        (webglError || window[engineKey + '_failed'])
+          ? el('section', { id: 'gw-webgl-recovery', ref: webglRecoveryRef, tabIndex: -1, role: 'alert', 'aria-live': 'assertive', 'aria-labelledby': 'gw-webgl-recovery-title', 'data-geometry-webgl-recovery': 'true', className: 'gw-state-screen gw-state-screen--inline' },
+              el('div', { className: 'gw-state-card' },
+                el('div', { className: 'gw-state-icon gw-state-icon--error', 'aria-hidden': 'true' }, '\uD83C\uDFAE'),
+                el('div', { className: 'gw-state-kicker' }, recoveryFailureLabel),
+                el('h2', { id: 'gw-webgl-recovery-title', className: 'gw-state-title' }, contextFailure ? 'Graphics Device Reset' : (runtimeFailure ? '3D View Paused' : '3D View Could Not Start')),
+                el('p', { className: 'gw-state-copy' }, recoveryGuidance),
+                el('div', { className: 'gw-recovery-summary', role: 'status' },
+                  contextFailure ? 'Try the saver-quality retry first if the graphics reset repeats.' : 'Your lesson data remains in this session while you recover the 3D view.'
+                ),
+                el('ul', { className: 'gw-recovery-checklist', 'aria-label': __alloT('stem.geometryworld.a11y_recovery_suggestions', 'Recovery suggestions') },
+                  el('li', { className: 'gw-recovery-check' }, 'Close other graphics-heavy tabs if the device is under load.'),
+                  el('li', { className: 'gw-recovery-check' }, 'Use saver quality if the standard retry fails.'),
+                  el('li', { className: 'gw-recovery-check' }, 'Keep Technical details available when asking for support.')
+                ),
+                engineFailure && engineFailure.message && el('details', { className: 'gw-recovery-details' },
+                  el('summary', null, 'Technical details'),
+                  el('code', null, engineFailure.message),
+                  el('div', { className: 'gw-state-actions' },
+                    el('button', { type: 'button', className: 'gw-state-secondary gw-focusable', onClick: copyEngineFailureDetails }, 'Copy error details')
+                  )
+                ),
+                webglRetrying && el('div', { className: 'gw-recovery-retry-status', role: 'status', 'aria-live': 'polite' }, 'Restarting 3D mode…'),
+                el('div', { className: 'gw-state-actions gw-recovery-actions' },
+                  el('button', {
+                    type: 'button',
+                    className: 'gw-primary-cta gw-state-primary gw-focusable',
+                    disabled: webglRetrying,
+                    'aria-busy': webglRetrying,
+                    onClick: function() { retryWebglMode(false); }
+                  }, webglRetrying ? 'Retrying 3D mode…' : 'Retry 3D Mode'),
+                  el('button', {
+                    type: 'button',
+                    className: 'gw-state-secondary gw-focusable',
+                    disabled: webglRetrying,
+                    onClick: function() { retryWebglMode(true); }
+                  }, 'Retry in saver mode')
+                )
+              )
+            )
+          : el('div', {
+              // Stable ref (see gwContainerRef above). Must NOT be an inline function:
+              // a fresh identity each render made React tear the engine down and rebuild
+              // it on every state update, which blanked the world right after a lesson
+              // loaded. gwContainerRef still tears the engine down on real unmount.
+              ref: gwContainerRef,
+              id: 'geoworld-fs-wrap',
+              // WCAG 4.1.2 — this was role="img". ARIA treats an img's subtree as
+              // presentational, so the Fullscreen and Enter VR buttons rendered
+              // inside it were pruned from the accessibility tree entirely, and a
+              // focusable surface with its own WASD/pointer-lock key handling was
+              // announced as a static graphic. role="application" is what the other
+              // interactive 3D STEM tools use (galaxy, flightsim, dinolab, …): it
+              // passes keystrokes through to the tool instead of the reader's
+              // browse mode, which is exactly what the movement keys need.
+              role: 'application',
+              'aria-label': (currentLesson.title || 'Geometry World') + ' — interactive 3D world. ' + score + ' of ' + totalQ + ' questions answered.',
+              'aria-describedby': 'geoworld-instructions',
+              tabIndex: 0,
+              // minHeight/minWidth 0: a flex item defaults to min-height:auto, which
+              // refuses to shrink below its content — so the canvas could push this
+              // container taller than its flex allotment instead of being bounded by
+              // it, which is what let the resize feedback loop run away.
+              className: 'gw-viewport',
+              style: { flex: 1, position: 'relative', minHeight: 0, minWidth: 0, overflow: 'hidden', background: 'linear-gradient(180deg,#0f172a,#020617)' }
+            },
+              // Keyboard contract, announced on focus. Previously the only hint was
+              // "Click to enter" in the label — mouse-only guidance on a surface
+              // that is fully keyboard-drivable.
+              el('div', {
+                id: 'geoworld-instructions',
+                style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0, whiteSpace: 'nowrap' }
+              }, 'Interactive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L says where the characters are and who still has a question, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.'),
+              isMobile && el('button', {
+                type: 'button',
+                className: 'gw-viewport-control gw-viewport-control--touch gw-focusable',
+                'data-geometry-touch-toggle': 'true',
+                'aria-pressed': touchMode,
+                'aria-label': touchMode ? 'Turn touch controls off' : 'Turn touch controls on',
+                title: touchMode ? 'Turn touch controls off' : 'Turn touch controls on',
+                onClick: function(ev) {
+                  ev.stopPropagation();
+                  var next = !touchMode;
+                  upd('touchMode', next);
+                  var liveEngine = window[engineKey];
+                  if (liveEngine && typeof liveEngine.setTouchControlsEnabled === 'function') liveEngine.setTouchControlsEnabled(next);
+                  announceToSR(next ? 'Touch controls on. Swipe right to look and drag left to move.' : 'Touch controls off. Desktop-style view selected.');
+                },
+                style: {
+                  position: 'absolute', top: 8, right: 48, zIndex: 100,
+                  minWidth: 40, height: 32, padding: '0 7px', borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: touchMode ? 'rgba(6,78,59,0.9)' : 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                  border: touchMode ? '1px solid rgba(52,211,153,0.65)' : '1px solid rgba(148,163,184,0.45)', color: touchMode ? '#a7f3d0' : '#cbd5e1',
+                  fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                }
+              }, el('span', { 'aria-hidden': 'true' }, touchMode ? '\u261d\uFE0F' : '\u2328\uFE0F'), el('span', { className: 'gw-touch-toggle-label' }, touchMode ? 'Touch' : 'Desktop')),
+              // Fullscreen toggle (top-right). React will mount this as a
+              // child of the engine container; the engine's renderer DOM
+              // element is appended later via initEngine, so the button
+              // and the canvas coexist as siblings. zIndex keeps the button
+              // above the WebGL surface.
+              el('button', {
+                type: 'button',
+                className: 'gw-viewport-control gw-viewport-control--fullscreen gw-focusable',
+                'aria-label': isWorkspaceFullscreen ? 'Exit fullscreen for the Geometry World workspace' : 'Enter fullscreen for the Geometry World workspace',
+                'aria-pressed': isWorkspaceFullscreen,
+                title: isWorkspaceFullscreen ? 'Exit fullscreen' : 'Enter fullscreen',
+                onClick: function(ev) {
+                  ev.stopPropagation();
+                  var fsEl = document.getElementById('geoworld-fs-workspace');
+                  if (!fsEl) return;
+                  var inFull = document.fullscreenElement === fsEl || document.webkitFullscreenElement === fsEl || document.mozFullScreenElement === fsEl;
+                  if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
+                  else { if (window.__alloStemFS) window.__alloStemFS(fsEl); }
+                },
+                style: {
+                  position: 'absolute', top: 8, right: 8, zIndex: 100,
+                  width: 32, height: 32, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                  border: '1px solid rgba(167,139,250,0.55)', color: '#c4b5fd',
+                  fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                }
+              }, '⛶'),
+              xrSupported && el('button', {
+                type: 'button',
+                className: 'gw-viewport-control gw-viewport-control--vr gw-focusable',
+                'aria-label': __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
+                title: __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
+                onClick: function(ev) { ev.stopPropagation(); var eng = window[engineKey]; if (eng && eng.vr && eng.vr.enterVR) eng.vr.enterVR(); },
+                style: {
+                  position: 'absolute', top: 8, left: 8, zIndex: 100,
+                  height: 32, padding: '0 12px', borderRadius: 8,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  background: '#4f46e5', border: '1px solid rgba(129,140,248,0.6)', color: '#fff',
+                  fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                }
+              }, '🥽 ' + __alloT('vr.enter', 'VR'))
+            ),
+            // === H7b'' inquiry widget: transformation discovery ===
+            hudPanel === 'transform' && (function() {
+              var iq = d._transformHunt || { rot: 0, scale: 1, shear: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_transformHunt', Object.assign({}, iq, patch)); }
+              var volume = iq.scale * iq.scale * iq.scale;
+              var state;
+              if (volume < 0.05) state = 'degenerate';
+              else if (Math.abs(iq.shear) > 30) state = 'skewed';
+              else if (iq.scale < 0.9 || iq.scale > 1.1) state = 'scaled';
+              else state = 'aligned';
+              // Dark-surface tokens — these were light pastel pills on the dark (#0f172a) HUD panel
+              var sm = {
+                aligned:    { label: __alloT('stem.geometryworld.aligned_axes_preserved', '🟢 Aligned (axes preserved)'), color: '#6ee7b7', bg: 'rgba(110,231,183,0.12)', border: 'rgba(110,231,183,0.4)' },
+                scaled:     { label: __alloT('stem.geometryworld.scaled_volume_changed', '🔵 Scaled (volume changed)'), color: '#67e8f9', bg: 'rgba(103,232,249,0.12)', border: 'rgba(103,232,249,0.4)' },
+                skewed:     { label: __alloT('stem.geometryworld.skewed_shape_deformed', '🟠 Skewed (shape deformed)'), color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.4)' },
+                degenerate: { label: __alloT('stem.geometryworld.degenerate_volume_0', '💀 Degenerate (volume → 0)'), color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.4)' }
+              }[state];
+              return el('section', { id: 'gw-transform-panel', className: 'gw-transform-panel', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_transform_discovery', 'Transform discovery') },
+                el('div', { className: 'gw-transform-heading gw-hud-panel-heading' },
+                  el('h3', { style: { fontSize: 12, fontWeight: 800, color: '#c4b5fd', margin: 0 } }, '\uD83D\uDCD0 Transform discovery'),
+                  el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_hide_transform_discovery', 'Hide transform discovery'), onClick: function() { closeHudPanel('Transform lab'); } }, '\u00D7')
+                ),
+                el('div', { className: 'gw-transform-state', role: 'status', 'aria-live': 'polite', style: { color: sm.color, background: sm.bg, border: '1px solid ' + sm.border } },
+                  sm.label
+                ),
+                ['rot', 'scale', 'shear'].map(function(k) {
+                  var conf = { rot: { l: 'Rot°', mn: 0, mx: 360, st: 5 }, scale: { l: 'Scale', mn: 0.1, mx: 2, st: 0.1 }, shear: { l: 'Shear', mn: -45, mx: 45, st: 5 } }[k];
+                  return el('div', { key: k, className: 'gw-transform-control' },
+                    el('label', { htmlFor: 'tr-' + k, style: { fontSize: 10, fontWeight: 'bold' } }, conf.l + ': ', el('span', { style: { fontFamily: 'monospace', color: '#a78bfa' } }, iq[k])),
+                    el('input', { id: 'tr-' + k, type: 'range', min: conf.mn, max: conf.mx, step: conf.st, value: iq[k],
+                      onChange: function(e) { var p = {}; p[k] = parseFloat(e.target.value); setIQ(p); },
+                      style: { width: '100%' }, 'aria-valuetext': (k === 'scale' ? (iq[k] + 'x scale') : (iq[k] + '°')), 'aria-label': conf.l }));
+                }),
+                el('div', { className: 'gw-transform-actions' },
+                  /* Replaced below with labeled, keyboard-native actions.
+                  el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); }, style: { padding: '2px 6px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '📋'),
+                  el('button', { onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '2px 6px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺')
+                  */
+                  el('button', { type: 'button', className: 'gw-transform-action gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_add_current_transform_to_observation_log', 'Add current transform to observation log'), title: 'Add to observation log', onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); } }, '\uD83D\uDCCB Add to log'),
+                  el('button', { type: 'button', className: 'gw-transform-action gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_reset_transform_discovery', 'Reset transform discovery'), title: 'Reset transform', onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); } }, '\u21BA Reset')
+                ),
+                el('div', { style: { marginTop: 8, color: '#a8b3c7', fontSize: 9, lineHeight: 1.45 } }, 'Adjust one property at a time and observe what changes.')
+              );
+            })()
+      );
+    }
+  });
+
+  console.log('[StemLab] Geometry World tool registered');
+})();

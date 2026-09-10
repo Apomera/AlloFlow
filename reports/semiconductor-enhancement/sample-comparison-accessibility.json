@@ -1,0 +1,22 @@
+[
+  {
+    "variant": "logarithmic comparison",
+    "violations": []
+  },
+  {
+    "variant": "duplicate selection",
+    "violations": []
+  },
+  {
+    "variant": "missing value",
+    "violations": []
+  },
+  {
+    "variant": "signed current",
+    "violations": []
+  },
+  {
+    "variant": "solar dual comparison",
+    "violations": []
+  }
+]

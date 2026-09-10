@@ -103,10 +103,10 @@ test('canvas overlay text stays legible across the day/night cycle', async ({ pa
 
   // label, source anchor the ink is read from, region, minimum required
   const specs: Array<[string, string, number[], number]> = [
-    ['HUD population', "fillText(activeScenario.prey.emoji", [8, 14, 182, 30], 4.5],
-    ['HUD day/night', "fillText(aquaticRender ?", [8, 44, 182, 12], 4.5],
-    ['HUD tool label', "fillText('Tool: '", [8, 54, 182, 10], 4.5],
-    ['mini chart caption', "fillText(__alloT('stem.ecosystem.last_10s'", [size.w - 160, 8, 150, 16], 4.5],
+    ['HUD population', "fillText(activeScenario.prey.emoji", [8, 14, 232, 34], 4.5],
+    ['HUD day/night', "fillText(aquaticRender ?", [8, 50, 232, 16], 4.5],
+    ['HUD tool label', "fillText('Tool: '", [8, 66, 232, 18], 4.5],
+    ['mini chart caption', "fillText(__alloT('stem.ecosystem.recent_population_samples'", [size.w - 160, 10, 150, 18], 4.5],
   ];
   const texts = specs.map(([name, anchor, box, need]) => {
     const ink = inkBefore(anchor);

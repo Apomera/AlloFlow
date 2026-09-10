@@ -1,0 +1,36 @@
+{
+  "lightAxe": [],
+  "darkAxe": [],
+  "mobileOverflow": {
+    "width": 390,
+    "scroll": 390
+  },
+  "mobileAxe": [],
+  "expandedLightAxe": [],
+  "expandedDarkAxe": [],
+  "expandedMobileAxe": [],
+  "expansion": {
+    "hours": 168,
+    "stressCases": 4,
+    "milestones": 6,
+    "regionalCapacityConserved": true,
+    "demandEnergyConserved": true,
+    "direct3dPicking": true,
+    "cameraDoesNotChangePlan": true
+  },
+  "guidedLightAxe": [],
+  "guidedDarkAxe": [],
+  "guidedMobileAxe": [],
+  "guided": {
+    "challengeRules": true,
+    "challengeCheckpoint": true,
+    "challengePersistence": true,
+    "controlledVariableOnly": true,
+    "staleResultsExcluded": true,
+    "capturedBaselinePreserved": true,
+    "hourExplanation": true
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "exportHours": 72
+}

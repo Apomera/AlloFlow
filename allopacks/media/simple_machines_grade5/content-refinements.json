@@ -1,0 +1,459 @@
+[
+  {
+    "resourceId": "sk-reading",
+    "path": [
+      "data"
+    ],
+    "from": "## The Deal\n\nA machine does not make you stronger. It changes how your strength gets used — and it always charges you for the favor.\n\nThere are six classic **simple machines**, and everything mechanical you have ever touched is built from them.\n\nA **lever** is a stiff bar that turns on a fixed point called a **fulcrum**. Push down on one end and the other end lifts. A crowbar, a seesaw, a bottle opener, and the bones in your arm are all levers.\n\nAn **inclined plane** is a ramp. Walking a heavy box up a ramp takes less force than lifting it straight up — but you have to travel farther to get it to the same height.\n\nA **wedge** is really an inclined plane that moves. An axe, a knife, a nail, and your front teeth all drive a thin edge into something and push it apart.\n\nA **screw** is an inclined plane wrapped around a post. Look closely at the threads — that spiral is a ramp that has been rolled up. Turning the screw many times pulls it forward a small distance with great force.\n\nA **wheel and axle** is a wheel fixed to a rod so they turn together. Doorknobs, steering wheels, and screwdrivers all use it. A small turn at the wide outer edge produces a strong twist at the narrow center.\n\nA **pulley** is a wheel with a groove for a rope. One pulley changes the direction you pull — handy, because pulling down is easier than lifting up. Add more pulleys and you also reduce the force needed, though you must pull more rope.\n\nNow the deal, which is the same in every case: **you trade distance for force.** Use half the force, move twice as far. Use a quarter of the force, move four times as far. A machine never reduces the total work — it just spreads it out into a form your body can manage.\n\nAnd every real machine charges a small extra fee called **friction**, which turns a bit of your effort into heat. That is why rubbing your hands warms them and why machines need grease.\n\nSo when someone says a machine makes work easier, they mean something precise. Not less work. Less force at any one moment, paid for with more distance — a trade that is almost always worth making.",
+    "to": "## The Deal\n\nA machine does not make you stronger. It changes how your strength gets used — and it always charges you for the favor.\n\nThere are six classic **simple machines**, and many everyday tools combine them.\n\nA **lever** is a stiff bar that turns on a fixed point called a **fulcrum**. In one common arrangement, pushing down on one side of the fulcrum lifts the other side. A crowbar, a seesaw, a bottle opener, and the bones in your arm are all levers.\n\nAn **inclined plane** is a ramp. Walking a heavy box up a ramp takes less force than lifting it straight up — but you have to travel farther to get it to the same height.\n\nA **wedge** is really an inclined plane that moves. An axe, a knife, a nail, and your front teeth all drive a thin edge into something and push it apart.\n\nA **screw** is an inclined plane wrapped around a post. Look closely at the threads — that spiral is a ramp that has been rolled up. Turning the screw many times pulls it forward a small distance with great force.\n\nA **wheel and axle** is a wheel fixed to a rod so they turn together. Doorknobs, steering wheels, and screwdrivers all use it. A tangential push at the wide outer edge can produce a larger force at the narrow axle; both turn through the same angle, while the rim travels farther.\n\nA **pulley** is a wheel with a groove for a rope. A single fixed pulley changes pull direction. A movable pulley attached to a load can reduce the effort force. The ideal advantage depends on the rope segments supporting the moving load, not simply on the number of wheels.\n\nHere is the ideal trade when a machine multiplies force: **less effort force means more effort distance.** Half the force requires twice the distance; a quarter requires four times the distance. Some arrangements instead change direction or increase movement speed. Without friction, input work equals output work.\n\nReal machines also have **friction** and other losses, which convert some mechanical energy into thermal energy and other forms. These losses can be small or large. That is why rubbing your hands warms them and why machines need grease.\n\nSo when someone says a machine makes work easier, they mean something precise. A machine may reduce the required effort force, change its direction, or change speed. It cannot create energy. For the same useful task, losses make real input work greater than useful output work."
+  },
+  {
+    "resourceId": "sk-glossary",
+    "path": [
+      "data",
+      8,
+      "def"
+    ],
+    "from": "What happens when a force moves something a distance.",
+    "to": "Energy transferred when a force acts through a displacement. Along the motion, work equals force times distance."
+  },
+  {
+    "resourceId": "sk-glossary",
+    "path": [
+      "data",
+      9,
+      "def"
+    ],
+    "from": "The rubbing force that resists motion and turns some effort into heat.",
+    "to": "A contact force that opposes relative sliding or its tendency; sliding friction converts mechanical energy into thermal energy."
+  },
+  {
+    "resourceId": "sk-anchor",
+    "path": [
+      "data",
+      "sections",
+      3,
+      "bullets",
+      1
+    ],
+    "from": "Small turn outside, strong twist inside",
+    "to": "Rim travels farther than the narrower axle surface"
+  },
+  {
+    "resourceId": "sk-anchor",
+    "path": [
+      "data",
+      "sections",
+      4,
+      "bullets",
+      1
+    ],
+    "from": "One pulley changes DIRECTION",
+    "to": "A fixed pulley changes pull direction"
+  },
+  {
+    "resourceId": "sk-anchor",
+    "path": [
+      "data",
+      "sections",
+      4,
+      "bullets",
+      2
+    ],
+    "from": "More pulleys: less force, more rope",
+    "to": "Supporting rope segments determine the ideal force advantage"
+  },
+  {
+    "resourceId": "sk-anchor",
+    "path": [
+      "data",
+      "sections",
+      5,
+      "bullets"
+    ],
+    "from": [
+      "Half the force = twice the distance",
+      "Total work never decreases",
+      "Friction always charges a small fee"
+    ],
+    "to": [
+      "Ideal force gain trades for longer effort travel",
+      "Ideal input work equals output work",
+      "Friction adds to the required input work"
+    ]
+  },
+  {
+    "resourceId": "sk-outline",
+    "path": [
+      "data",
+      "branches",
+      1,
+      "items",
+      2
+    ],
+    "from": "Pulley — a wheel and axle with a rope in its groove; one changes direction, more reduce force",
+    "to": "Pulley: a grooved rope wheel; fixed and movable arrangements have different effects."
+  },
+  {
+    "resourceId": "sk-outline",
+    "path": [
+      "data",
+      "branches",
+      2,
+      "title"
+    ],
+    "from": "The deal, in every case",
+    "to": "The ideal trade when multiplying force"
+  },
+  {
+    "resourceId": "sk-outline",
+    "path": [
+      "data",
+      "branches",
+      2,
+      "items"
+    ],
+    "from": [
+      "You trade distance for force",
+      "Half the force, twice the distance; a quarter of the force, four times the distance",
+      "A machine never reduces the total work — it spreads it into a form your body can manage"
+    ],
+    "to": [
+      "Less effort force requires more effort distance",
+      "Half the force, twice the distance in an ideal machine",
+      "Some machines instead change direction or increase speed; none creates energy"
+    ]
+  },
+  {
+    "resourceId": "sk-outline",
+    "path": [
+      "data",
+      "branches",
+      3,
+      "items"
+    ],
+    "from": [
+      "Friction turns some of your effort into heat",
+      "That is why rubbing your hands warms them, and why machines need grease",
+      "It can be reduced; it cannot be removed"
+    ],
+    "to": [
+      "Friction can convert mechanical energy into thermal energy",
+      "Lubrication and bearings can reduce losses",
+      "Real losses are not always small"
+    ]
+  },
+  {
+    "resourceId": "sk-memory",
+    "path": [
+      "data",
+      "sourceExcerpt"
+    ],
+    "from": "There are six classic simple machines: lever, inclined plane, wedge, screw, wheel and axle, pulley. You trade distance for force. Use half the force, move twice as far. A machine never reduces the total work. Every real machine charges a small extra fee called friction.",
+    "to": "Six classic simple machines are the lever, inclined plane, wedge, screw, wheel and axle, and pulley. When an ideal machine multiplies force, it trades longer effort travel for smaller effort force. Friction increases real input work."
+  },
+  {
+    "resourceId": "sk-memory",
+    "path": [
+      "data",
+      "cards",
+      1,
+      "essentialFacts"
+    ],
+    "from": [
+      "A machine trades distance for force: half the force means moving twice as far.",
+      "A machine never reduces the total work; it spreads the work into a form your body can manage.",
+      "Friction turns a little of your effort into heat, so real machines always cost slightly more than the trade alone."
+    ],
+    "to": [
+      "When an ideal machine multiplies force, half the effort force requires twice the effort distance.",
+      "Ideal input work equals output work; a machine cannot create energy.",
+      "Real losses convert some mechanical energy into thermal energy and other forms, so input work exceeds useful output work."
+    ]
+  },
+  {
+    "resourceId": "sk-memory",
+    "path": [
+      "data",
+      "cards",
+      1,
+      "aiExample"
+    ],
+    "from": "Paying for a bike in installments: the price never changes, you just pay smaller amounts more times. A machine lets you pay for work in smaller pushes over a longer distance, and friction is the small fee on every payment.",
+    "to": "For an ideal force-multiplying machine, imagine paying the same price in smaller installments over more payments. Real machines add a friction cost that can vary."
+  },
+  {
+    "resourceId": "sk-quiz",
+    "path": [
+      "data",
+      "questions",
+      3,
+      "question"
+    ],
+    "from": "A machine lets you lift a load using half the force. What does it cost you?",
+    "to": "An ideal machine lifts the same load using half the effort force. How far must the effort move compared with the load?"
+  },
+  {
+    "resourceId": "sk-quiz",
+    "path": [
+      "data",
+      "questions",
+      3,
+      "options",
+      0
+    ],
+    "from": "You must move roughly twice the distance",
+    "to": "The effort must move twice as far as the load"
+  },
+  {
+    "resourceId": "sk-quiz",
+    "path": [
+      "data",
+      "questions",
+      3,
+      "correctAnswer"
+    ],
+    "from": "You must move roughly twice the distance",
+    "to": "The effort must move twice as far as the load"
+  },
+  {
+    "resourceId": "sk-quiz",
+    "path": [
+      "data",
+      "questions",
+      4,
+      "options",
+      2
+    ],
+    "from": "Turns some of your effort into heat, so a little is always lost",
+    "to": "Converts some mechanical energy into thermal energy, increasing required input work"
+  },
+  {
+    "resourceId": "sk-quiz",
+    "path": [
+      "data",
+      "questions",
+      4,
+      "correctAnswer"
+    ],
+    "from": "Turns some of your effort into heat, so a little is always lost",
+    "to": "Converts some mechanical energy into thermal energy, increasing required input work"
+  },
+  {
+    "resourceId": "sk-quiz",
+    "path": [
+      "data",
+      "questions",
+      6,
+      "expectedAnswer"
+    ],
+    "from": "Machines do not reduce the total work. They reduce the FORCE needed at any moment by making you move a longer distance, and friction actually makes the total effort slightly greater. The work is spread out, not removed.",
+    "to": "For the same useful task, an ideal machine has equal input and output work. A force-multiplying arrangement reduces effort force by increasing effort distance. Other arrangements change direction or speed. Friction means real input work is greater than useful output work; energy is not destroyed."
+  },
+  {
+    "resourceId": "sk-faq",
+    "path": [
+      "data",
+      2,
+      "answer"
+    ],
+    "from": "No real one. Friction always takes a cut, turning some effort into heat. Engineers reduce it with grease, bearings, and smooth surfaces, but nobody has ever eliminated it.",
+    "to": "An ideal model can be 100% efficient. Ordinary real machines have friction and other losses, so useful output work is less than input work. Bearings and lubrication reduce these losses; their size depends on the machine."
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "title"
+    ],
+    "from": "Design Challenge: Lift the Water Jug",
+    "to": "Design Challenge: Lift the Water Jug — Tabletop Model"
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "title"
+    ],
+    "from": "Lift the Water Jug",
+    "to": "Lift the Water Jug — Tabletop Model"
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "instructions"
+    ],
+    "from": "Design a simple machine, or a combination of two, that lets one student lift a full five-gallon water jug onto a table using less force than lifting it by hand. Predict the trade you are making, then test it.",
+    "to": "Design and test a small tabletop model of a machine that could help lift a water jug. Use a sealed container with a total mass no greater than 250 grams as the model load. Raise it no more than 10 centimeters above a tray, with teacher approval. Do not lift a full water-cooler jug."
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "brief",
+      "context"
+    ],
+    "from": "The classroom water cooler sits on a table. Full replacement jugs weigh about 19 kilograms (over 40 pounds), too heavy for most students to lift safely onto the table. You have a sturdy plank, a wooden block, rope, two pulleys with hooks, a hand truck wheel, tape, and a spring scale that reads up to 10 kilograms of pull.",
+    "to": "A water cooler needs replacement jugs, but a full jug is too heavy for this classroom experiment. Model the problem using a sealed container no heavier than 250 grams, a short ruler or craft plank, blocks, string, small classroom pulleys and a spring scale marked in newtons. Keep the setup on a tray and the rise at 10 centimeters or less."
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "brief",
+      "drivingQuestion"
+    ],
+    "from": "Which simple machine, or pair of machines, lets one student raise the full jug onto the table with a pull the spring scale can measure, and exactly what does that machine cost us in distance?",
+    "to": "Which approved tabletop machine lets us lift the same model load with less measured force, and how much farther does the effort travel?"
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "brief",
+      "lockedLessonFacts"
+    ],
+    "from": [
+      "A lever is a stiff bar turning on a fulcrum; push down on one end and the other lifts.",
+      "An inclined plane lets you push a load up with less force over a longer path.",
+      "One pulley changes the direction of a pull; more pulleys reduce the force needed but you must pull more rope.",
+      "Every machine trades distance for force; the total work never decreases.",
+      "Friction turns some effort into heat, so a real machine costs a little more than the trade alone."
+    ],
+    "to": [
+      "A lever turns about a fulcrum; its arm lengths affect its force and distance trade.",
+      "A longer frictionless ramp reduces force along the ramp for the same rise.",
+      "A fixed pulley changes direction; a movable pulley can multiply force through supporting rope segments.",
+      "In an ideal machine, input work equals output work.",
+      "Real losses convert mechanical energy to other forms, increasing the required input."
+    ]
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "brief",
+      "openQuestions"
+    ],
+    "from": [
+      "How long can the ramp be before it runs into the wall, and how steep does that make it?",
+      "Where should the fulcrum sit so the student's end goes down far enough?",
+      "How much rope do we need if two pulleys cut the force in half?",
+      "How much of our effort will friction eat on the plank?"
+    ],
+    "to": [
+      "How does ramp length affect pull for the same height?",
+      "How do effort-arm and load-arm lengths compare?",
+      "How many rope segments support the moving load?",
+      "What difference between predicted and measured pull might friction explain?"
+    ]
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "brief",
+      "stakeholders"
+    ],
+    "from": [
+      "The student doing the lifting",
+      "Anyone standing nearby while a heavy jug moves",
+      "The teacher who must approve the setup",
+      "Whoever stores the equipment afterward"
+    ],
+    "to": [
+      "The student measuring force",
+      "Classmates observing from clear of the model",
+      "The teacher approving the setup",
+      "The team storing the materials"
+    ]
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "brief",
+      "criteria"
+    ],
+    "from": [
+      "The jug reaches the table height safely with a measured pull of 10 kilograms or less",
+      "The team predicts the trade (how far the student moves for how much less force) before testing and compares it to the result",
+      "The design sheet names the machine and its parts with lesson vocabulary",
+      "Friction is measured or estimated and mentioned in the explanation"
+    ],
+    "to": [
+      "The same sealed model load rises the same small height in each comparison",
+      "Measure pull in newtons within the scale range and record effort travel and load rise",
+      "Predict the trade before testing, then compare prediction with evidence",
+      "Name the machine parts and explain where friction may affect the result"
+    ]
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "brief",
+      "constraints"
+    ],
+    "from": [
+      "Nothing may be lifted more than waist high by hand",
+      "The jug must be secured so it cannot roll or fall",
+      "Only the listed materials",
+      "Setup and test fit in one class period"
+    ],
+    "to": [
+      "Total model-load mass is no more than 250 grams",
+      "Raise the model no more than 10 centimeters above a tray",
+      "Teacher must check supports, attachments and scale range before testing",
+      "Keep fingers clear; use no sharp tools and no full-size jug",
+      "Change only one feature between comparison trials"
+    ]
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "supports",
+      "parallelExample"
+    ],
+    "from": {
+      "context": "Movers needed to get a piano into a truck bed a meter off the ground.",
+      "move": "They laid a long ramp instead of lifting, then added a rope around a pulley on the truck so two people could pull from the truck bed. They accepted walking the piano four meters to gain one meter of height, and they waxed the ramp to cut friction.",
+      "whyItHelps": "It is the same trade with the same two fixes you can use: a longer path for less force, and a pulley to change direction. Waxing the ramp is the friction fee being paid on purpose."
+    },
+    "to": {
+      "context": "A team needed to raise a small sealed model container onto a block.",
+      "move": "They compared two ramps that reached the same 8-centimeter height. They pulled the same model steadily with a newton scale, recorded force and travel distance, and repeated each test. The longer ramp was predicted to need less pull; friction could change the measured values.",
+      "whyItHelps": "The load and rise stayed constant while ramp length changed, making the comparison useful."
+    }
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "supports",
+      "frameChoices"
+    ],
+    "from": [
+      "A ramp from the floor to the table, pushing the jug up on the hand-truck wheel",
+      "A lever with the fulcrum near the jug so a small push lifts a heavy load",
+      "Two pulleys hooked above the table to halve the pull and change its direction",
+      "A ramp plus one pulley so the student pulls down instead of pushing up"
+    ],
+    "to": [
+      "A longer ramp reaching the same small platform",
+      "A lever with a longer effort arm than load arm",
+      "A teacher-approved movable pulley supported by two rope segments",
+      "A ramp with a fixed pulley to change pull direction"
+    ]
+  },
+  {
+    "resourceId": "sk-challenge",
+    "path": [
+      "data",
+      "sourceExcerpt"
+    ],
+    "from": "You trade distance for force. Use half the force, move twice as far. A machine never reduces the total work; it just spreads it out into a form your body can manage.",
+    "to": "An ideal force-multiplying machine trades longer effort travel for smaller effort force. Input work equals output work in the ideal model; real friction increases required input work."
+  }
+]

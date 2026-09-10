@@ -124,7 +124,7 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('var initialPlayAsOrg = d.playAsOrganism ? world.organisms.find(function (o) { return o.def.id === d.playAsOrganism; }) : null;');
       expect(source).toContain('if (playAsOrg && canvasEl._onZoom) canvasEl._onZoom(cam.zoom);');
 
-      expect(source).toContain('canvasEl._cellSimResetView = function () { cam.x = WORLD_W / 2; cam.y = WORLD_H / 2; cam.zoom = 1; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); };');
+      expect(source).toContain('canvasEl._cellSimResetView = function () { setObservationFollow(false); cam.x = WORLD_W / 2; cam.y = WORLD_H / 2; cam.zoom = 1; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); };');
       expect(source).toContain(`"aria-label": __alloT('stem.cell.a11y_reset_microscope_view', 'Reset microscope view')`);
       expect(source).toContain('if (cv && cv._cellSimResetView) cv._cellSimResetView(); else upd("zoom", 1);');
 
@@ -140,7 +140,7 @@ describe('cell simulator canvas ref stability', () => {
 
       expect(source).toContain('"aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ?');
       expect(source).toContain('"Interactive cell biology simulation. Playing as " + activePlayDef.label');
-      expect(source).toContain(': "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy."');
+      expect(source).toContain(': "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy. Press Escape to dismiss an anatomy explanation."');
     });
   });
 
@@ -173,17 +173,17 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('if (renderMotion) {');
       expect(source).toContain('v.trail.push({ x: v.x, y: v.y });');
       expect(source).toContain('var ttAgeMs = tt.startTime ? renderNow - tt.startTime : (world.tick - tt.startTick) * (1000 / 60);');
-      expect(source).toContain('if (ttAgeMs > 5000) world._tooltip = null;');
+      expect(source).toContain('if (playAsOrg && ttAgeMs > 5000) world._tooltip = null;');
       expect(source).toContain('var hlAgeMs = hl.startTime ? renderNow - hl.startTime : (world.tick - hl.startTick) * (1000 / 60);');
       expect(source).toContain('if (hlAgeMs > 1000)');
       expect(source).toContain('startTime: canvasNow()');
 
-      expect(source).toContain('var labelBoxes = [];');
+      expect(source).toContain('var labelBoxes = layoutCellAnatomyLabels(items,');
       expect(source).toContain("var labelFillColor = 'rgba(248,250,252,0.97)';");
       expect(source).toContain("var labelTextColor = '#0f172a';");
-      expect(source).toContain("var labelShadowColor = 'rgba(2,6,23,0.38)';");
-      expect(source).toContain('var overlaps = !(pillX > b.x + b.w + gapX || pillX + pillW + gapX < b.x || pillY > b.y + b.h + gapY || pillY + pillH + gapY < b.y);');
-      expect(source).toContain('labelBoxes.push({ x: pillX, y: pillY, w: pillW, h: pillH });');
+      expect(source).toContain("var labelShadowColor = 'rgba(2,6,23,0.18)';");
+      expect(source).toContain('canvasEl._cellSimGetAnatomyLabels = function ()');
+      expect(source).toContain('_labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o });');
       expect(source).toContain('cctx.shadowColor = labelShadowColor;');
       expect(source).toContain('cctx.fillStyle = labelFillColor;');
       expect(source).toContain('cctx.fillStyle = labelTextColor;');

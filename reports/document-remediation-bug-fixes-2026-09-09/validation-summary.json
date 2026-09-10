@@ -1,0 +1,124 @@
+{
+  "measuredAt": "2026-09-10T02:07:36.776Z",
+  "policyVersion": "20260909-5",
+  "issuesClosed": 13,
+  "originalReviewCasesPassed": 18,
+  "originalEvidenceUnchanged": true,
+  "distinctTestsPassed": 422,
+  "unitTestsPassed": 280,
+  "browserTestsPassed": 142,
+  "unitFiles": [
+    {
+      "file": "tests/aifix_chunk_gates.test.js",
+      "report": "live/vitest.json",
+      "passed": 20
+    },
+    {
+      "file": "tests/remediation_followup_fidelity.test.js",
+      "report": "live/vitest.json",
+      "passed": 26
+    },
+    {
+      "file": "tests/remediation_gate_regressions.test.js",
+      "report": "live/vitest-final.json",
+      "passed": 43
+    },
+    {
+      "file": "tests/remediation_semantic_fidelity.test.js",
+      "report": "live/vitest.json",
+      "passed": 29
+    },
+    {
+      "file": "tests/remediation_inline_math_option_groups.test.js",
+      "report": "live/vitest-final.json",
+      "passed": 27
+    },
+    {
+      "file": "tests/aifix_source_associations.test.js",
+      "report": "integration-tests.json",
+      "passed": 39
+    },
+    {
+      "file": "tests/doc_pipeline_build_parity.test.js",
+      "report": "integration-tests.json",
+      "passed": 1
+    },
+    {
+      "file": "tests/remediation_form_association_index.test.js",
+      "report": "integration-tests.json",
+      "passed": 17
+    },
+    {
+      "file": "tests/remediation_review_evidence.test.js",
+      "report": "integration-tests.json",
+      "passed": 3
+    },
+    {
+      "file": "tests/remediation_review_helpers.test.js",
+      "report": "integration-tests.json",
+      "passed": 28
+    },
+    {
+      "file": "tests/remediation_source_contract_integration.test.js",
+      "report": "integration-tests.json",
+      "passed": 15
+    },
+    {
+      "file": "tests/rendered_fidelity_calibration.test.js",
+      "report": "rendered/final-unit.json",
+      "passed": 4
+    },
+    {
+      "file": "tests/rendered_fidelity_resilience.test.js",
+      "report": "rendered/final-unit.json",
+      "passed": 19
+    },
+    {
+      "file": "tests/rendered_fidelity_review.test.js",
+      "report": "rendered/final-unit.json",
+      "passed": 7
+    },
+    {
+      "file": "tests/document_export_inspection_failures.test.js",
+      "report": "export/inspection-failure-tests.json",
+      "passed": 2
+    }
+  ],
+  "browserReports": [
+    {
+      "report": "rendered/final-browser.json",
+      "passed": 67,
+      "skipped": 0,
+      "retries": 0
+    },
+    {
+      "report": "export/review-fix-final-tests.json",
+      "passed": 75,
+      "skipped": 0,
+      "retries": 0
+    }
+  ],
+  "generatedModulesMatch": true,
+  "implementationHashes": {
+    "doc_pipeline_source.jsx": "a2c1ea9c7ba90b18ac0546dac54a66ab0e423a1902a375433807ef7363b92abb",
+    "doc_pipeline_module.js": "156f2ec3d8eb4003240ce049c0118fd25981eb8a71c860965b9dd49457b388c6",
+    "desktop/web-app/public/doc_pipeline_module.js": "156f2ec3d8eb4003240ce049c0118fd25981eb8a71c860965b9dd49457b388c6",
+    "dev-tools/document_export_at_acceptance.cjs": "1bb823da6503375243d25211d55d17b1de1a425c26071f614088abc2754fa590",
+    "dev-tools/rendered_document_fidelity.cjs": "c8310dbf87f169b8c84534ebd86ee887685bf6b2e8b37b78c0483331938818cb"
+  },
+  "mcp": {
+    "passed": true,
+    "durationMs": 20915.087,
+    "scriptedModelCalls": 11,
+    "sourceDrift": false,
+    "report": "mcp-selftest/benchmark-report.json"
+  },
+  "originalCasesReport": "original-cases-results.json",
+  "humanValidation": "not-run",
+  "liveModelCalls": 0,
+  "deployment": "not-run",
+  "limitations": [
+    "Validation uses synthetic local fixtures and scripted model transport.",
+    "Optional rendered checks assess authored checkpoints, not whole-document or human screen-reader acceptance."
+  ]
+}

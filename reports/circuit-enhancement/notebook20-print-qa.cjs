@@ -1,0 +1,2 @@
+const {chromium}=require('playwright'),fs=require('fs'),path=require('path');
+(async()=>{const b=await chromium.launch({headless:true});try{const p=await b.newPage();await p.setContent(fs.readFileSync('reports/circuit-enhancement/notebook20-report.html','utf8'));fs.mkdirSync('tmp/pdfs',{recursive:true});await p.pdf({path:'tmp/pdfs/circuit-investigation-print.pdf',format:'A4',printBackground:true,preferCSSPageSize:true});console.log('Browser PDF print check created');}finally{await b.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

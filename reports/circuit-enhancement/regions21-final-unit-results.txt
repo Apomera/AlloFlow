@@ -1,0 +1,92 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_active_regions.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > locates manual boundaries from the circuit equations rather than graph samples
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > matches independently inverted light divider boundaries
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > matches independently inverted dark divider boundaries
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > finds an active interval much narrower than one plotted sample
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > does not invent a saturation boundary beyond the available drive
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > handles light designs saturated throughout the control range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > handles dark designs saturated throughout the control range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > retains a reachable endpoint without requiring a visibly wide graph band
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > partitions the full manual range with trustworthy region examples and continuous boundaries
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·········stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > partitions the full light range with trustworthy region examples and continuous boundaries
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > partitions the full dark range with trustworthy region examples and continuous boundaries
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > does not mutate the circuit or depend on probes, history, notebook, or operating input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > recalculates the saturation point when a component changes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > renders named graph bands, numerical boundaries, reachable actions, and the current limit explanation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > continuous operating-region exploration > explains unavailable regions without offering a misleading preset
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > boundary-aware response curves > plots calculated manual transition points while preserving the uniform CSV
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > boundary-aware response curves > plots calculated light transition points while preserving the uniform CSV
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_regions.test.js > boundary-aware response curves > plots calculated dark transition points while preserving the uniform CSV
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·······stdout | tests/circuit_active_regions.test.js > boundary-aware response curves > renders the live and reference curves with their own transition points
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all twelve SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····
+
+ Test Files  2 passed (2)
+      Tests  23 passed (23)
+   Start at  17:58:47
+   Duration  3.13s (transform 38ms, setup 51ms, import 97ms, tests 1.20s, environment 1.50s)
+

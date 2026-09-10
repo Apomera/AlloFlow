@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": [
+    "working chart scales",
+    "exact-year gaps",
+    "die scope filter",
+    "product navigation",
+    "package comparison",
+    "doubling presets and slider",
+    "line visibility",
+    "future evidence",
+    "misconception check",
+    "eight WCAG variants",
+    "mobile overflow",
+    "guided baseline reload",
+    "connected fabrication lesson"
+  ],
+  "errors": []
+}

@@ -85,7 +85,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBe(20);
+        expect(call({ a: 'hello' }).v).toBe(21);
         const claim = call({ a: 'claim' });
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);

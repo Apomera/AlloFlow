@@ -1,0 +1,69 @@
+{
+  "verifiedAt": "2026-09-09T03:52:03.961Z",
+  "passedTests": 254,
+  "testsByFile": {
+    "geometry_world_display_controls.test.js": {
+      "count": 27,
+      "evidence": "integration-final-tests.json"
+    },
+    "geometry_world_dock_selection.test.js": {
+      "count": 2,
+      "evidence": "integration-final-tests.json"
+    },
+    "geometry_world_engine_lifecycle.test.js": {
+      "count": 9,
+      "evidence": "integration-final-tests.json"
+    },
+    "geometry_world_input_transitions.test.js": {
+      "count": 12,
+      "evidence": "integration-final-tests.json"
+    },
+    "geometry_world_printlab_bridge.test.js": {
+      "count": 28,
+      "evidence": "integration-final-tests.json"
+    },
+    "geometry_world_print_workflow.test.js": {
+      "count": 12,
+      "evidence": "integration-final-tests.json"
+    },
+    "geometry_world_retained_selection.test.js": {
+      "count": 10,
+      "evidence": "integration-final-tests.json"
+    },
+    "geometry_world_showcase_export.test.js": {
+      "count": 11,
+      "evidence": "integration-final-tests.json"
+    },
+    "geometry_world_visual_pipeline.test.js": {
+      "count": 55,
+      "evidence": "integration-final-tests.json"
+    },
+    "geometry_world_wayfinding.test.js": {
+      "count": 21,
+      "evidence": "integration-final-tests.json"
+    },
+    "geometry_world_reduced_motion.test.js": {
+      "count": 12,
+      "evidence": "reduced-motion-tests.json"
+    },
+    "geometry_world_creation_camera_fit.test.js": {
+      "count": 24,
+      "evidence": "camera-fit-tests.json"
+    },
+    "geometry_world_creation_focus.test.js": {
+      "count": 31,
+      "evidence": "creation-focus-tests.json"
+    }
+  },
+  "syntax": "passed",
+  "desktopMirrors": "byte-identical",
+  "sourceSHA256": {
+    "stem_tool_geometryworld.js": "e9683f850f9b1367b39fdfea32b389f5e255e265af852f71c88b6e1feb2cb62d",
+    "stem_tool_geometryworld_builder.js": "3224fb5fb812f52dea2bbfa3cc710a4896610f44cc574ff7dc887f4f6669de15",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "browser": {
+    "passed": true,
+    "evidence": "focus-final-results.json"
+  }
+}

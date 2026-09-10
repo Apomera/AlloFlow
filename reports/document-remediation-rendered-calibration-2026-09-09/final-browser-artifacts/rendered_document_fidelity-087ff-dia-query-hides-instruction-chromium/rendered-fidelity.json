@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "a2309ee1508e6f8e4bd4fbb3e0cc274a3f4f34b1f48dd2517f6530f4bbc442a6",
+    "bytes": 358
+  },
+  "candidate": {
+    "sha256": "831260fa3b1354d07aa74b0c04aa7204f2df8e24ddc533d6ce23b296234c8060",
+    "bytes": 425
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "durationMs": 1680.7304000000004,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0
+    }
+  },
+  "checks": [
+    {
+      "id": "desktop-instruction",
+      "sourceSelector": "#instruction",
+      "candidateSelector": "#instruction",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Bring a printed copy to your appointment.",
+          "candidate": "Bring a printed copy to your appointment."
+        },
+        {
+          "property": "visible",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        },
+        {
+          "property": "exposed",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

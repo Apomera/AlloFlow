@@ -14,11 +14,52 @@
   var React = window.React;
   if (!React) { console.error('[SchoolRewards] React not found on window'); return; }
 
+// Shared, deterministic guidance. No network, storage, identities or mutations.
+// Embedded locally in the School Rewards panel and both AlloBot modules.
+function createSchoolStoreSetupGuide() {
+  const paths = [
+    { id: 'practice', title: 'Try the demo', intro: 'Explore with fictional data. No Google setup or real student records are needed.', steps: [
+      { id: 'understand', title: 'Start with fictional data', body: 'Practice uses simulated accounts, balances and delivery. It does not connect to a school ledger. The separate local guided demo also needs its presentation server running.', target: 'practice', manualHash: 'quickstart' },
+      { id: 'try', title: 'Try an award and a purchase', body: 'Open practice, use its fictional roles, review the learner, award points and complete a reviewed checkout. Reset to rehearse again. No real email or printer command is sent.', target: 'practice', manualHash: 'store' }
+    ] },
+    { id: 'join', title: 'Join my school’s existing Store', intro: 'For teachers and cashiers: use the Store your school has already approved. You do not need to create an Apps Script project.', steps: [
+      { id: 'link', title: 'Get the approved Store link', body: 'Ask your school administrator for the managed Store web-app address ending in /exec and confirm that they have granted your staff or cashier role. Do not put the address, credentials or student details in chat.', target: 'connection', manualHash: 'setup' },
+      { id: 'save', title: 'Save the address on this device', body: 'Paste the approved address into the Store connection field and choose Save address. If you edit a saved address, save or discard the change before opening the Store. Only Disconnect removes the saved address. Saving does not sign you in, grant access or verify the deployment.', target: 'connection', manualHash: 'setup' },
+      { id: 'open', title: 'Open your school’s Store', body: 'Open the Store with your own managed school Google account. An opening attempt is not proof that the tab opened or that access was granted. If no tab appears, use the direct fallback link. If access is denied, ask the administrator rather than creating another Store. More local tips are under Help opening your Store.', target: 'launch', manualHash: 'access' },
+      { id: 'check', title: 'Confirm your school and role', body: 'Open the deployment check and read its result. Confirm the expected school and role with the administrator. AlloBot cannot see or certify that separate Google page. Teachers award; cashiers check out; students see only their own records.', target: 'check', manualHash: 'troubleshooting' }
+    ] },
+    { id: 'setup', title: 'Set up a Store for my school', intro: 'For the school administrator or technology coordinator. This is a reviewed school-wide setup, not something every teacher repeats.', steps: [
+      { id: 'approval', title: 'Confirm district review and ownership', body: 'Identify the managed account and technical owner. Obtain district review of the code, requested permissions, storage, email and retention. Stop and consult IT if Google or district policy blocks access; do not bypass a warning.', target: 'approval', manualHash: 'privacy' },
+      { id: 'handoff', title: 'Choose who will do the technical work', body: 'The technology coordinator can use the existing handoff packet. Enter school configuration only in the setup form, not in AlloBot. The packet contains configuration and source files and should go to the intended coordinator.', target: 'handoff', manualHash: 'setup' },
+      { id: 'files', title: 'Prepare the reviewed project files', body: 'Follow the existing checklist for Code.gs, Portal.html, Index.html and appsscript.json. Copying a file or ticking a box does not verify the installed project. Have the technical owner check the actual files.', target: 'files', manualHash: 'setup' },
+      { id: 'configuration', title: 'Run the reviewed one-time setup', body: 'Check the school configuration and managed account. The technical owner runs the generated setup function only after approval and verifies its result. AlloBot does not execute it or approve Google permissions.', target: 'configuration', manualHash: 'setup' },
+      { id: 'deploy', title: 'Deploy privately and save the link', body: 'Use the domain-restricted deployment described in the checklist, never public access. Save its /exec address locally. Source changes require a new reviewed deployment version; saving a URL does not publish code.', target: 'deploy', manualHash: 'setup' },
+      { id: 'verify', title: 'Verify with approved test accounts', body: 'Read the deployment check and test each intended role with approved test accounts and fictional records. A recorded verification checkbox is your confirmation, not automatic evidence from AlloBot.', target: 'check', manualHash: 'setup' },
+      { id: 'first-week', title: 'Finish the Store’s first-week checklist', body: 'Inside the signed-in Store, use Admin setup for staff, roster, categories, prizes and shopping windows. Add optional class links, Classroom imports or Print Lab only after their own review. Educator Evaluation remains separate.', target: 'launch', manualHash: 'admin' }
+    ] }
+  ];
+  const troubleshooting = [
+    { id: 'new-tab', title: 'Nothing opened in a new tab', body: 'An opening request is not confirmation that a new tab appeared. Check your other tabs, then use the direct fallback link shown after your attempt. If your browser or district blocks it, ask your technology coordinator about the approved browser settings. Do not bypass a Google or district security warning.', manualHash: 'troubleshooting' },
+    { id: 'sign-in', title: 'Google asks me to sign in', body: 'Use your own managed school Google account and the school-approved Store link. Being signed into Gemini or a personal Google account does not grant Store access. If the wrong account appears, use the account-switching method approved by your school; do not share passwords or accounts.', manualHash: 'access' },
+    { id: 'role-access', title: 'I can sign in, but access is denied', body: 'Ask the Store administrator to confirm the approved deployment, allowed school domain and your assigned role. A teacher or cashier needs the corresponding staff access; students use their own managed identity. The launcher cannot grant a role, and creating another Store will not fix access to the existing one.', manualHash: 'troubleshooting' },
+    { id: 'address', title: 'My Store link will not save, or looks wrong', body: 'Ask the administrator for the approved HTTPS script.google.com deployment address ending in /macros/s/{deployment}/exec, without extra query parameters or a fragment. Do not use the editor address or a /dev test link. An edited address must be saved or discarded before launching. The saved-address badge does not verify which school is behind the link.', manualHash: 'setup' },
+    { id: 'connections', title: 'Which Google connection do I need?', body: 'The school-managed Store has its own sign-in and staff roles. Classroom authorization is a separate read-only roster import and does not grant Store access. Canvas and desktop launch the Store; they do not hold its official ledger. Educator Evaluation has separate personnel records and permissions. A Clever launch link does not replace these approvals.', manualHash: 'classroom' }
+  ];
+  function freeze(value) { if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; }
+  freeze(paths);
+  freeze(troubleshooting);
+  return Object.freeze({ version: 1, getPaths: () => paths, getPath: id => paths.find(path => path.id === id) || null, getTroubleshooting: () => troubleshooting });
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { createSchoolStoreSetupGuide };
+
 const SR_PORTAL_URL_KEY = "allo_school_rewards_portal_url_v1";
 const SR_SETUP_KEY = "allo_school_rewards_setup_v1";
 const SR_SOURCE_DIR = "apps_script/school_rewards/";
 const SR_CDN_BASE = "https://alloflow-cdn.pages.dev/";
 const SR_DEFAULT_THRESHOLDS = [0, 25, 75, 150, 300];
+const SR_PATHS = ["practice", "join", "setup"];
+const SR_LAUNCH_SUFFIXES = Object.freeze({ portal: "", recognition: "?view=recognition", check: "?api=status" });
+const SR_GUIDE_TARGETS = Object.freeze({ practice: "sr-path-practice", connection: "schoolrewards-portal-url", launch: "sr-path-launch", check: "sr-path-check", approval: "sr-card-approval", handoff: "sr-path-handoff", files: "sr-card-code", configuration: "sr-card-setup", deploy: "sr-card-deployed" });
 const SR_FILES = [
   { name: "Code.gs", step: "code", signatures: ["function setupSchoolRewardsRepository", "function doGet", "var SR_SERVICE = 'alloflow-school-rewards'"] },
   { name: "Portal.html", step: "portal", signatures: ['id="school-title"', "School Rewards sections", "google.script.run"] },
@@ -50,7 +91,8 @@ function srReadSetup() {
     if (!parsed || typeof parsed !== "object") return fallback;
     return {
       steps: Array.isArray(parsed.steps) ? parsed.steps.filter((step) => SR_STEP_ORDER.indexOf(step) !== -1) : [],
-      form: parsed.form && typeof parsed.form === "object" ? parsed.form : {}
+      form: parsed.form && typeof parsed.form === "object" ? parsed.form : {},
+      verifiedPortalUrl: srNormalizePortalUrl(parsed.verifiedPortalUrl || srReadLocalPortalUrl())
     };
   } catch (_) {
     return fallback;
@@ -59,7 +101,9 @@ function srReadSetup() {
 function srWriteSetup(setup) {
   try {
     window.localStorage.setItem(SR_SETUP_KEY, JSON.stringify(setup));
+    return true;
   } catch (_) {
+    return false;
   }
 }
 async function srCopyText(text) {
@@ -139,9 +183,9 @@ function srHandoffSteps(form) {
     ["Add the Portal page", "In the Files list on the left click the + beside Files and choose HTML. Type Portal as the name (the editor adds .html itself) and press Enter. Select its starter lines with Ctrl+A, paste the Portal.html source, and save."],
     ["Add the Index page", "Same again: click the + beside Files, choose HTML, name it Index, press Enter, select the starter lines, paste the Index.html source, and save."],
     ["Replace appsscript.json", "Click appsscript.json in the Files list, select everything with Ctrl+A, paste the manifest source, and save."],
-    ["Run the one-time setup", 'Open Code.gs, press Ctrl+End to reach the bottom, paste the setup function (below), and save. In the toolbar, the dropdown beside Debug lists the functions: choose runInitialSchoolRewardsSetup, then click Run. Google shows an authorisation screen: pick the account, click Advanced, then "Go to AlloFlow School Rewards (unsafe)" (that wording appears for every in-house script that is not published to the store), then Allow. The Execution log should end with "ok": true. You may delete the pasted function afterwards.'],
+    ["Run the one-time setup", 'Open Code.gs, press Ctrl+End to reach the bottom, paste the setup function (below), and save. In the toolbar, the dropdown beside Debug lists the functions: choose runInitialSchoolRewardsSetup, then click Run. Review the managed account and each requested permission with the district-approved technical owner. Authorise only the reviewed permissions. If Google or district policy blocks access, stop and consult IT; do not bypass a warning. The Execution log should end with "ok": true. You may delete the pasted function afterwards.'],
     ["Deploy privately", 'Click Deploy (top right), then New deployment. Beside "Select type" click the gear and choose Web app. Description: School Rewards. Execute as: Me. Who has access: your organisation (the domain), never Anyone. Click Deploy and copy the Web app URL that ends in /exec.'],
-    ["Send the link back", "Send that /exec link to the person who gave you this packet (for " + school + "). They paste it into AlloFlow and the tool is live. If any file changes later, use Deploy, Manage deployments, edit, New version, or the change will not go live."]
+    ["Send the link back", "Send that /exec link to the person who gave you this packet (for " + school + "). They save the launcher address in AlloFlow, then separately check the deployment and each intended role with approved test accounts. Saving the address does not verify the Store. If any file changes later, use Deploy, Manage deployments, edit, New version, or the change will not go live."]
   ];
 }
 function srHandoffText(form, snippet) {
@@ -235,9 +279,6 @@ function SrCopySource({ file, onCopied, tt }) {
     if (source) sourceRef.current = source;
     return source;
   }, [file]);
-  React.useEffect(() => {
-    fetchSource().catch(() => "");
-  }, [fetchSource]);
   const finishCopied = () => {
     setManualSource("");
     setState("copied");
@@ -276,23 +317,25 @@ function SrCopySource({ file, onCopied, tt }) {
 function SrShareWithStaff({ portalUrl, tt, addToast }) {
   const [svg, setSvg] = React.useState("");
   const [copied, setCopied] = React.useState(false);
+  const qrRequest = React.useRef(0);
   React.useEffect(() => {
-    let cancelled = false;
+    qrRequest.current++;
     setSvg("");
-    (async () => {
-      try {
-        if (typeof window !== "undefined" && typeof window.__alloMakeQrSvg === "function") {
-          const markup = await window.__alloMakeQrSvg(portalUrl, "School Rewards");
-          if (!cancelled && typeof markup === "string" && markup) setSvg(markup);
-        }
-      } catch (_) {
-        if (!cancelled) setSvg("");
-      }
-    })();
     return () => {
-      cancelled = true;
+      qrRequest.current++;
     };
   }, [portalUrl]);
+  const createQr = async () => {
+    const request = ++qrRequest.current;
+    try {
+      if (typeof window !== "undefined" && typeof window.__alloMakeQrSvg === "function") {
+        const markup = await window.__alloMakeQrSvg(portalUrl, "School Rewards");
+        if (request === qrRequest.current && typeof markup === "string" && markup) setSvg(markup);
+      }
+    } catch (_) {
+      if (request === qrRequest.current) setSvg("");
+    }
+  };
   const copyLink = async () => {
     if (await srCopyText(portalUrl)) {
       setCopied(true);
@@ -301,7 +344,7 @@ function SrShareWithStaff({ portalUrl, tt, addToast }) {
     }
     addToast(tt("schoolrewards.share_copy_failed", "Clipboard is blocked here. Select the link and press Ctrl+C."), "info");
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "mt-4 rounded-xl border border-slate-200 bg-white p-3", "data-help-key": "schoolrewards_share_staff" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-slate-900" }, tt("schoolrewards.share_title", "Share with staff")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-700" }, tt("schoolrewards.share_help", "Teachers, cashiers, and administrators open this same link with their school Google sign-in; the server decides what each role can do. The link holds no secret, so posting it in a staff channel is fine.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-3" }, svg ? /* @__PURE__ */ React.createElement("figure", { className: "m-0", "aria-label": tt("schoolrewards.share_qr_label", "QR code for the School Rewards portal") }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-300 bg-white p-1", style: { width: 132, height: 132 }, dangerouslySetInnerHTML: { __html: svg } })) : null, /* @__PURE__ */ React.createElement("div", { className: "min-w-[220px] flex-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "schoolrewards-share-link", className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.share_link", "Staff link")), /* @__PURE__ */ React.createElement("input", { id: "schoolrewards-share-link", className: SR_INPUT + " mt-1 font-mono text-xs", readOnly: true, value: portalUrl, onFocus: (event) => event.target.select() }), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY + " mt-2", onClick: copyLink, "data-help-key": "schoolrewards_share_copy" }, copied ? tt("schoolrewards.share_copied", "Link copied") : tt("schoolrewards.share_copy", "Copy staff link")))));
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-4 rounded-xl border border-slate-200 bg-white p-3", "data-help-key": "schoolrewards_share_staff" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-slate-900" }, tt("schoolrewards.share_title", "Share with staff")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-700" }, tt("schoolrewards.share_help", "Teachers, cashiers, and administrators open this same link with their school Google sign-in; the server decides what each role can do. The link holds no secret, so posting it in a staff channel is fine.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-3" }, !svg && /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET, onClick: createQr, "data-help-key": "schoolrewards_share_qr" }, tt("schoolrewards.share_make_qr", "Create staff-link QR code")), svg ? /* @__PURE__ */ React.createElement("figure", { className: "m-0", "aria-label": tt("schoolrewards.share_qr_label", "QR code for the School Rewards portal") }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-300 bg-white p-1", style: { width: 132, height: 132 }, dangerouslySetInnerHTML: { __html: svg } })) : null, /* @__PURE__ */ React.createElement("div", { className: "min-w-[220px] flex-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "schoolrewards-share-link", className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.share_link", "Staff link")), /* @__PURE__ */ React.createElement("input", { id: "schoolrewards-share-link", className: SR_INPUT + " mt-1 font-mono text-xs", readOnly: true, value: portalUrl, onFocus: (event) => event.target.select() }), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY + " mt-2", onClick: copyLink, "data-help-key": "schoolrewards_share_copy" }, copied ? tt("schoolrewards.share_copied", "Link copied") : tt("schoolrewards.share_copy", "Copy staff link")))));
 }
 function srReadClassroomRoster() {
   try {
@@ -449,53 +492,134 @@ function SchoolRewardsPanel(props) {
   const addToast = typeof props.addToast === "function" ? props.addToast : () => {
   };
   const tt = React.useMemo(() => srMakeTt(t), [t]);
-  const [portalUrl, setPortalUrl] = React.useState(() => srNormalizePortalUrl(typeof props.portalUrl === "string" && props.portalUrl ? props.portalUrl : srReadLocalPortalUrl()));
+  const [portalUrl, setPortalUrl] = React.useState(() => typeof props.portalUrl === "string" ? srNormalizePortalUrl(props.portalUrl) : srReadLocalPortalUrl());
   React.useEffect(() => {
     if (typeof props.portalUrl === "string") setPortalUrl(srNormalizePortalUrl(props.portalUrl));
   }, [props.portalUrl]);
   const connected = Boolean(portalUrl);
   const [setup, setSetup] = React.useState(() => srReadSetup());
+  const lastWrittenSetup = React.useRef(setup);
+  const [setupSaveFailed, setSetupSaveFailed] = React.useState(false);
+  const persistSetup = (value) => {
+    const saved = srWriteSetup(value);
+    if (saved) lastWrittenSetup.current = value;
+    setSetupSaveFailed(!saved);
+    return saved;
+  };
   React.useEffect(() => {
-    srWriteSetup(setup);
+    if (lastWrittenSetup.current !== setup) persistSetup(setup);
   }, [setup]);
-  const [showSetup, setShowSetup] = React.useState(() => !srReadLocalPortalUrl() && !(typeof props.portalUrl === "string" && props.portalUrl));
+  const [path, setPath] = React.useState(() => SR_PATHS.includes(props.initialPath) ? props.initialPath : portalUrl ? "join" : "");
+  const [guideOpen, setGuideOpen] = React.useState(() => props.initialGuide === true && SR_PATHS.includes(props.initialPath));
+  const [guideIndex, setGuideIndex] = React.useState(0);
+  const [focusTarget, setFocusTarget] = React.useState("");
+  const guide = React.useMemo(() => typeof createSchoolStoreSetupGuide === "function" ? createSchoolStoreSetupGuide() : null, []);
+  const troubleshooting = guide && typeof guide.getTroubleshooting === "function" ? guide.getTroubleshooting() : [];
+  const guidePath = guide && guide.getPath(path);
+  const guideStep = guidePath && guidePath.steps[Math.min(guideIndex, guidePath.steps.length - 1)];
+  const [showSetup, setShowSetup] = React.useState(() => props.initialPath === "setup");
+  const lastHostPath = React.useRef({ path: props.initialPath, guide: props.initialGuide, serial: props.guideRequestSerial });
+  React.useEffect(() => {
+    if (lastHostPath.current.path === props.initialPath && lastHostPath.current.guide === props.initialGuide && lastHostPath.current.serial === props.guideRequestSerial) return;
+    lastHostPath.current = { path: props.initialPath, guide: props.initialGuide, serial: props.guideRequestSerial };
+    const next = SR_PATHS.includes(props.initialPath) ? props.initialPath : portalUrl ? "join" : "";
+    setPath(next);
+    setGuideIndex(0);
+    setGuideOpen(props.initialGuide === true && !!next);
+    if (next === "setup") setShowSetup(true);
+    setFocusTarget(next ? props.initialGuide === true ? "sr-local-guide" : "sr-path-heading" : "sr-path-choices");
+  }, [props.initialPath, props.initialGuide, props.guideRequestSerial, portalUrl]);
   const [urlDraft, setUrlDraft] = React.useState(portalUrl);
   React.useEffect(() => {
     setUrlDraft(portalUrl);
   }, [portalUrl]);
   const [urlMessage, setUrlMessage] = React.useState({ text: "", tone: "info" });
+  const urlDirty = String(urlDraft || "").trim() !== portalUrl;
+  const [launchAttempt, setLaunchAttempt] = React.useState(null);
+  React.useEffect(() => {
+    setLaunchAttempt(null);
+  }, [urlDraft, portalUrl]);
+  const launchTarget = (kind) => !urlDirty && portalUrl && srNormalizePortalUrl(portalUrl) === portalUrl && Object.prototype.hasOwnProperty.call(SR_LAUNCH_SUFFIXES, kind) ? portalUrl + SR_LAUNCH_SUFFIXES[kind] : "";
+  const fallbackTarget = launchAttempt && launchAttempt.baseUrl === portalUrl ? launchTarget(launchAttempt.kind) : "";
   const [snippetState, setSnippetState] = React.useState("idle");
   const dialogRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!focusTarget) return;
+    const target = dialogRef.current && Array.from(dialogRef.current.querySelectorAll("[id]")).find((node) => node.id === focusTarget);
+    if (target && !target.closest("[hidden]")) {
+      target.focus();
+      if (typeof target.scrollIntoView === "function") target.scrollIntoView({ block: "nearest" });
+    }
+    setFocusTarget("");
+  }, [focusTarget, path, showSetup, guideOpen, guideIndex]);
+  const choosePath = (next) => {
+    if (!SR_PATHS.includes(next)) return;
+    setPath(next);
+    setGuideIndex(0);
+    if (next === "setup") setShowSetup(true);
+    setFocusTarget(guideOpen ? "sr-local-guide" : "sr-path-heading");
+  };
+  const focusGuideSection = () => {
+    const target = guideStep && Object.prototype.hasOwnProperty.call(SR_GUIDE_TARGETS, guideStep.target) && SR_GUIDE_TARGETS[guideStep.target];
+    if (!target) return;
+    if (path === "setup") setShowSetup(true);
+    setFocusTarget(target);
+  };
   const completed = React.useMemo(() => {
     const set = new Set(setup.steps);
     if (connected) set.add("connected");
     else set.delete("connected");
+    if (!connected || setup.verifiedPortalUrl !== portalUrl) set.delete("verified");
     return set;
-  }, [setup.steps, connected]);
+  }, [setup.steps, setup.verifiedPortalUrl, connected, portalUrl]);
   const doneCount = SR_STEP_ORDER.filter((step) => completed.has(step)).length;
   const nextStep = SR_STEP_ORDER.find((step) => !completed.has(step));
   const setStep = React.useCallback((step, on) => {
     setSetup((current) => {
       const steps = current.steps.filter((item) => item !== step);
       if (on) steps.push(step);
-      return Object.assign({}, current, { steps });
+      return Object.assign({}, current, { steps }, step === "verified" ? { verifiedPortalUrl: on ? portalUrl : "" } : {});
     });
-  }, []);
+  }, [portalUrl]);
   const setForm = React.useCallback((key, value) => {
     setSetup((current) => Object.assign({}, current, { form: Object.assign({}, current.form, { [key]: value }) }));
   }, []);
   const form = setup.form || {};
   const snippet = React.useMemo(() => srSetupSnippet(form), [form]);
-  const savePortalUrl = (value) => {
+  const savePortalUrl = (value, remove = false) => {
     const raw = String(value || "").trim();
+    if (!raw && !remove) {
+      setUrlMessage({ text: tt("schoolrewards.url_blank", "Enter the approved Store address. To remove a saved address, use Disconnect on this device."), tone: "error", invalid: true });
+      return;
+    }
+    if (raw && !srNormalizePortalUrl(raw)) {
+      setUrlMessage({ text: tt("schoolrewards.url_invalid", "Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec."), tone: "error", invalid: true });
+      return;
+    }
     if (typeof onSavePortalUrl === "function") {
-      const result = onSavePortalUrl(raw);
+      let result;
+      try {
+        result = onSavePortalUrl(raw);
+      } catch (_) {
+        setUrlMessage({ text: tt("schoolrewards.url_save_failed", "This browser could not save the launcher URL."), tone: "error" });
+        return;
+      }
       if (result && result.ok === false) {
         setUrlMessage({ text: result.error || tt("schoolrewards.url_invalid", "Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec."), tone: "error" });
         return;
       }
-      const saved = result && typeof result.url === "string" ? result.url : srNormalizePortalUrl(raw);
+      if (!result || result.ok !== true || typeof result.url !== "string" || typeof result.then === "function") {
+        setUrlMessage({ text: tt("schoolrewards.url_save_unconfirmed", "Saving this address was not confirmed. The previous destination was kept; try again or discard your changes."), tone: "error" });
+        return;
+      }
+      const saved = srNormalizePortalUrl(result.url);
+      if (saved !== srNormalizePortalUrl(raw) || result.url !== "" && !saved) {
+        setUrlMessage({ text: tt("schoolrewards.url_save_unconfirmed", "Saving this address was not confirmed. The previous destination was kept; try again or discard your changes."), tone: "error" });
+        return;
+      }
       setPortalUrl(saved);
+      setUrlDraft(saved);
+      setLaunchAttempt(null);
       setUrlMessage({ text: saved ? tt("schoolrewards.url_saved", "Launcher saved on this device. Open the deployment check to confirm the portal answers.") : tt("schoolrewards.url_cleared", "Launcher removed from this device."), tone: "info" });
       return;
     }
@@ -512,35 +636,55 @@ function SchoolRewardsPanel(props) {
       return;
     }
     setPortalUrl(normalized);
+    setUrlDraft(normalized);
+    setLaunchAttempt(null);
     setUrlMessage({ text: normalized ? tt("schoolrewards.url_saved", "Launcher saved on this device. Open the deployment check to confirm the portal answers.") : tt("schoolrewards.url_cleared", "Launcher removed from this device."), tone: "info" });
   };
-  const openWindow = (url, blockedText) => {
+  const openWindow = (kind, useHost = false) => {
+    const target = launchTarget(kind);
+    if (!target) return false;
     try {
-      const popup = window.open(url, "_blank", "noopener,noreferrer");
-      if (!popup) {
-        addToast(blockedText, "error");
-        return false;
-      }
-      popup.opener = null;
-      return true;
+      const dispatched = useHost && typeof onOpenPortal === "function" ? onOpenPortal() !== false : (window.open(target, "_blank", "noopener,noreferrer"), true);
+      setLaunchAttempt({ baseUrl: portalUrl, kind, dispatched });
+      return dispatched;
     } catch (_) {
-      addToast(blockedText, "error");
+      setLaunchAttempt({ baseUrl: portalUrl, kind, dispatched: false });
       return false;
     }
   };
   const openPortal = () => {
-    if (!connected) return;
-    if (typeof onOpenPortal === "function") {
-      onOpenPortal();
-      return;
-    }
-    openWindow(portalUrl, tt("schoolrewards.popup_blocked", "School Rewards was blocked. Allow pop-ups for AlloFlow and try again."));
+    openWindow("portal", true);
+  };
+  const openRecognition = () => {
+    openWindow("recognition");
   };
   const [healthHint, setHealthHint] = React.useState(false);
+  const previousPortalUrl = React.useRef(portalUrl);
+  React.useEffect(() => {
+    const changed = previousPortalUrl.current !== portalUrl;
+    previousPortalUrl.current = portalUrl;
+    if (changed) setHealthHint(false);
+    setSetup((current) => current.steps.includes("verified") && (changed || !portalUrl || current.verifiedPortalUrl !== portalUrl) ? Object.assign({}, current, { steps: current.steps.filter((step) => step !== "verified"), verifiedPortalUrl: "" }) : current);
+  }, [portalUrl]);
+  const editUrl = (value) => {
+    setUrlDraft(value);
+    setUrlMessage({ text: "", tone: "info" });
+    setLaunchAttempt(null);
+    if (srNormalizePortalUrl(value) !== portalUrl) {
+      setStep("verified", false);
+      setHealthHint(false);
+    }
+  };
+  const discardUrl = () => {
+    setUrlDraft(portalUrl);
+    setUrlMessage({ text: tt("schoolrewards.url_discarded", "Unsaved address changes discarded. The saved destination was not changed."), tone: "info" });
+    setLaunchAttempt(null);
+    setHealthHint(false);
+    setFocusTarget("schoolrewards-portal-url");
+  };
   const openHealth = () => {
-    if (!connected) return;
-    setHealthHint(true);
-    openWindow(portalUrl + "?api=status", tt("schoolrewards.popup_blocked_check", "The deployment check was blocked. Allow pop-ups for AlloFlow and try again."));
+    if (!launchTarget("check")) return;
+    setHealthHint(openWindow("check"));
   };
   const copySnippet = async () => {
     if (await srCopyText(snippet)) {
@@ -560,8 +704,17 @@ function SchoolRewardsPanel(props) {
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+      'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let parent = el.parentElement; parent && parent !== dialog; parent = parent.parentElement) {
+        if (parent.tagName === "DETAILS" && !parent.open) {
+          const summary = Array.from(parent.children).find((child) => child.tagName === "SUMMARY");
+          if (!summary || !summary.contains(el)) return false;
+        }
+      }
+      return true;
+    });
     const first = getFocusable()[0];
     (first || dialog).focus();
     const onKeyDown = (event) => {
@@ -617,30 +770,38 @@ function SchoolRewardsPanel(props) {
     const derived = step === "connected";
     const number = SR_STEP_ORDER.indexOf(step) + 1;
     const inputId = "sr-step-" + step;
-    return /* @__PURE__ */ React.createElement("li", { key: step, className: "rounded-2xl border p-4 " + (done ? "border-emerald-300 bg-emerald-50/60" : nextStep === step ? "border-emerald-700 bg-white shadow-sm" : "border-slate-200 bg-white"), "data-help-key": "schoolrewards_step_" + step }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("input", { id: inputId, type: "checkbox", className: "mt-1 h-5 w-5 shrink-0 accent-emerald-700", checked: done, disabled: derived, onChange: derived ? void 0 : (event) => setStep(step, event.target.checked), "aria-describedby": inputId + "-body" }), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: inputId, className: "block text-base font-black " + (done ? "text-emerald-900 line-through decoration-2" : "text-slate-900") }, number, ". ", title), /* @__PURE__ */ React.createElement("p", { id: inputId + "-body", className: "mt-1 text-sm leading-relaxed text-slate-700" }, body), children)));
+    return /* @__PURE__ */ React.createElement("li", { key: step, id: "sr-card-" + step, tabIndex: -1, className: "rounded-2xl border p-4 focus:outline-none focus:ring-2 focus:ring-emerald-600 " + (done ? "border-emerald-300 bg-emerald-50/60" : nextStep === step ? "border-emerald-700 bg-white shadow-sm" : "border-slate-200 bg-white"), "data-help-key": "schoolrewards_step_" + step }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("input", { id: inputId, type: "checkbox", className: "mt-1 h-5 w-5 shrink-0 accent-emerald-700", checked: done, disabled: derived, onChange: derived ? void 0 : (event) => setStep(step, event.target.checked), "aria-describedby": inputId + "-body" }), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: inputId, className: "block text-base font-black " + (done ? "text-emerald-900 line-through decoration-2" : "text-slate-900") }, number, ". ", title), /* @__PURE__ */ React.createElement("p", { id: inputId + "-body", className: "mt-1 text-sm leading-relaxed text-slate-700" }, body), children)));
   };
   const fileCard = (file, title, body) => stepCard(file.step, title, body, /* @__PURE__ */ React.createElement(SrCopySource, { file, tt, onCopied: () => setStep(file.step, true) }));
+  const portalUrlForm = /* @__PURE__ */ React.createElement("form", { className: "mt-3", noValidate: true, onSubmit: (event) => {
+    event.preventDefault();
+    savePortalUrl(urlDraft);
+  } }, /* @__PURE__ */ React.createElement("label", { htmlFor: "schoolrewards-portal-url", className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.approved_url_label", "Approved school Store address")), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-col gap-2 sm:flex-row" }, /* @__PURE__ */ React.createElement("input", { id: "schoolrewards-portal-url", className: SR_INPUT, type: "url", inputMode: "url", autoComplete: "off", spellCheck: false, value: urlDraft, onChange: (event) => editUrl(event.target.value), placeholder: "https://script.google.com/macros/s/.../exec", "aria-describedby": "schoolrewards-portal-url-help", "aria-invalid": urlMessage.invalid === true ? "true" : void 0 }), /* @__PURE__ */ React.createElement("button", { type: "submit", className: SR_BTN_PRIMARY + " shrink-0", "data-help-key": "schoolrewards_connect" }, tt("schoolrewards.save_address", "Save address")), urlDirty && /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET + " shrink-0", onClick: discardUrl, "data-help-key": "schoolrewards_discard_address" }, tt("schoolrewards.discard_address", "Discard changes"))), /* @__PURE__ */ React.createElement("p", { id: "schoolrewards-portal-url-help", className: "mt-2 text-xs leading-relaxed " + (urlMessage.tone === "error" ? "text-rose-900" : "text-slate-700"), role: urlMessage.text ? "status" : void 0 }, urlMessage.text || tt("schoolrewards.url_help", "Only an HTTPS script.google.com address ending in /macros/s/{deployment}/exec is accepted.")));
   return /* @__PURE__ */ React.createElement("div", { className: "sr-root fixed inset-0 z-[260] flex items-center justify-center bg-slate-900/60 p-3 sm:p-6", style: { zIndex: 260 }, onMouseDown: (event) => {
     if (event.target === event.currentTarget) onClose();
-  } }, /* @__PURE__ */ React.createElement("style", null, SR_THEME_STYLES), /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "schoolrewards-title", "aria-describedby": "schoolrewards-subtitle", tabIndex: -1, className: "flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus:outline-none" }, /* @__PURE__ */ React.createElement("header", { className: "flex items-start justify-between gap-3 border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 px-5 py-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "schoolrewards-title", className: "flex items-center gap-2 text-xl font-black text-slate-900" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🎟️"), " ", tt("schoolrewards.title", "School Rewards & Store")), /* @__PURE__ */ React.createElement("p", { id: "schoolrewards-subtitle", className: "mt-1 text-sm text-slate-700" }, tt("schoolrewards.subtitle", "A school-owned rewards ledger for staff recognition, private student balances, prize previews, and locked trimester store checkout. Setup and launch live here."))), /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-2" }, /* @__PURE__ */ React.createElement("a", { className: "inline-flex min-h-11 items-center rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-600", href: "https://alloflow-cdn.pages.dev/school-rewards-manual", target: "_blank", rel: "noopener noreferrer", "data-help-key": "schoolrewards_manual" }, tt("schoolrewards.manual", "Manual")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600", "aria-label": tt("schoolrewards.close", "Close School Rewards & Store") }, "✕"))), /* @__PURE__ */ React.createElement("div", { className: "min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-950", role: "note" }, /* @__PURE__ */ React.createElement("strong", null, tt("schoolrewards.boundary_title", "Student-data boundary:")), " ", tt("schoolrewards.boundary_body", "names, managed emails, balances, and roles live only in the ledger your managed Google Education account owns. AlloFlow stores this launcher address and your checklist on this device, nothing else. The pilot stays separate from AlloHaven XP.")), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "schoolrewards-launch-title", className: "rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { id: "schoolrewards-launch-title", className: "text-base font-black text-slate-900" }, tt("schoolrewards.launch_title", "Launch")), /* @__PURE__ */ React.createElement("span", { className: "rounded-full px-3 py-1 text-xs font-black " + (connected ? "bg-emerald-700 text-white" : "border border-amber-500 bg-white text-amber-900"), "data-help-key": "schoolrewards_status" }, connected ? tt("schoolrewards.status_connected", "Connected") : tt("schoolrewards.status_not_connected", "Not connected yet"))), connected ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "schoolrewards-saved-url", className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.saved_url", "Saved deployment")), /* @__PURE__ */ React.createElement("input", { id: "schoolrewards-saved-url", className: SR_INPUT + " font-mono text-xs", readOnly: true, value: portalUrl, onFocus: (event) => event.target.select() }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_PRIMARY, onClick: openPortal, "data-help-key": "schoolrewards_open_portal" }, tt("schoolrewards.open_portal", "Open School Rewards portal")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, onClick: openHealth, "data-help-key": "schoolrewards_open_check" }, tt("schoolrewards.open_check", "Open deployment check")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET, onClick: () => savePortalUrl(""), "data-help-key": "schoolrewards_disconnect" }, tt("schoolrewards.disconnect", "Disconnect on this device"))), /* @__PURE__ */ React.createElement(SrShareWithStaff, { portalUrl, tt, addToast }), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed text-slate-700" }, tt("schoolrewards.launch_help", 'The portal opens in a new tab under Google sign-in; server-side roles decide who can award, check out, or administer. The deployment check page should say "Deployment check passed" and show the school, domain, and your role.'))) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm leading-relaxed text-slate-700" }, tt("schoolrewards.not_connected_help", "Work through the checklist below. Step 9 saves the deployment URL on this device and turns this card into the launcher.")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2 border-t border-emerald-200 pt-3" }, /* @__PURE__ */ React.createElement("a", { className: SR_BTN_SECONDARY, href: "https://alloflow-cdn.pages.dev/school-rewards-practice", target: "_blank", rel: "noopener noreferrer", "data-help-key": "schoolrewards_practice" }, tt("schoolrewards.practice", "Practice with fictional data")), /* @__PURE__ */ React.createElement("span", { className: "text-xs leading-relaxed text-slate-700" }, tt("schoolrewards.practice_help", "The real portal running on a fictional ledger in your browser: award, undo, group awards, checkout, and the student view, with a role switcher, scenario presets, and a tour you can edit. Nothing reaches a real ledger.")))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "schoolrewards-setup-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { id: "schoolrewards-setup-title", className: "text-base font-black text-slate-900" }, tt("schoolrewards.setup_title", "Setup checklist")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET, "aria-expanded": showSetup, "aria-controls": "schoolrewards-setup-body", onClick: () => setShowSetup((value) => !value), "data-help-key": "schoolrewards_toggle_setup" }, showSetup ? tt("schoolrewards.hide_setup", "Hide checklist") : tt("schoolrewards.show_setup", "Show checklist"))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200", role: "progressbar", "aria-label": tt("schoolrewards.progress_label", "School Rewards setup progress"), "aria-valuemin": 0, "aria-valuemax": SR_STEP_ORDER.length, "aria-valuenow": doneCount, "aria-valuetext": doneCount + " of " + SR_STEP_ORDER.length }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full bg-emerald-700", style: { width: Math.round(doneCount / SR_STEP_ORDER.length * 100) + "%" } })), /* @__PURE__ */ React.createElement("p", { className: "mt-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-950", role: "status", "data-help-key": "schoolrewards_next_step" }, nextStep ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("strong", null, tt("schoolrewards.next_step", "Next step:")), " ", stepLabels[nextStep]) : /* @__PURE__ */ React.createElement("strong", null, tt("schoolrewards.all_done", "Setup complete. The portal is connected and verified on this device."))), showSetup && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-4", "data-help-key": "schoolrewards_handoff" }, /* @__PURE__ */ React.createElement("p", { className: "m-0 text-sm font-black text-slate-900" }, tt("schoolrewards.handoff_title", "Not doing the editor steps yourself?")), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-1 text-sm leading-relaxed text-slate-800" }, tt("schoolrewards.handoff_body", "Steps 2 to 8 happen in the Google Apps Script editor. Fill in the school details under step 7 first, then hand the whole job to your technology coordinator as one file. They send back a link and you paste it in step 9.")), /* @__PURE__ */ React.createElement(SrHandoff, { form, snippet, tt })), /* @__PURE__ */ React.createElement("ol", { id: "schoolrewards-setup-body", hidden: !showSetup, className: "mt-3 list-none space-y-3 p-0" }, stepCard("approval", tt("schoolrewards.step_approval", "Confirm district review and the managed account"), tt("schoolrewards.step_approval_body", "The school or district reviews Code.gs, Portal.html, Index.html, and appsscript.json, plus Apps Script use, Sheet storage, mail sending, and retention. Sign into the managed Google Education account that will own the ledger, the mail trigger, and the private print-model folder; a durable role account is safer than a personal one.")), stepCard("project", tt("schoolrewards.step_project", "Create the private project"), /* @__PURE__ */ React.createElement(React.Fragment, null, tt("schoolrewards.step_project_body_a", "Open "), /* @__PURE__ */ React.createElement("a", { className: "font-bold text-emerald-900 underline", href: "https://script.new/", target: "_blank", rel: "noopener noreferrer" }, "script.new"), tt("schoolrewards.step_project_body_b", ", verify the account again, and name the project "), /* @__PURE__ */ React.createElement("code", { className: "rounded bg-slate-100 px-1" }, "AlloFlow School Rewards"), tt("schoolrewards.step_project_body_c", '. In Project Settings turn on "Show appsscript.json manifest file in editor".'))), fileCard(SR_FILES[0], tt("schoolrewards.step_code", "Replace Code.gs"), tt("schoolrewards.step_code_body", "Code.gs is already open in the editor with a few starter lines. Click inside it, press Ctrl+A (Cmd+A on a Mac) to select everything, paste this source over it with Ctrl+V, then save with Ctrl+S. The copy button puts the whole file on your clipboard.")), fileCard(SR_FILES[1], tt("schoolrewards.step_portal", "Add the Portal page"), /* @__PURE__ */ React.createElement(React.Fragment, null, tt("schoolrewards.step_portal_body_a", "In the Files list on the left, click the + beside Files and choose HTML. A new file appears with its name selected: type "), /* @__PURE__ */ React.createElement("code", { className: "rounded bg-slate-100 px-1" }, "Portal"), tt("schoolrewards.step_portal_body_b", " (the editor adds .html itself) and press Enter. Select its starter lines with Ctrl+A, paste this source, and save with Ctrl+S."))), fileCard(SR_FILES[2], tt("schoolrewards.step_index", "Add the Index page"), /* @__PURE__ */ React.createElement(React.Fragment, null, tt("schoolrewards.step_index_body_a", "Same as the Portal page: click the + beside Files, choose HTML, type "), /* @__PURE__ */ React.createElement("code", { className: "rounded bg-slate-100 px-1" }, "Index"), tt("schoolrewards.step_index_body_b", ", press Enter, select the starter lines, paste this source, and save. This page only wraps the Portal page; it is what the web address opens."))), fileCard(SR_FILES[3], tt("schoolrewards.step_manifest", "Replace appsscript.json"), tt("schoolrewards.step_manifest_body", "In the Files list click appsscript.json (it appears once the Project Settings option from step 2 is on). Select everything in it with Ctrl+A, paste this manifest, and save. It restricts the web app to your domain, runs it as the deploying account, and declares the Sheets, Drive, mail, and trigger scopes the ledger needs.")), stepCard(
+  } }, /* @__PURE__ */ React.createElement("style", null, SR_THEME_STYLES), /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "schoolrewards-title", "aria-describedby": "schoolrewards-subtitle", tabIndex: -1, className: "flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus:outline-none" }, /* @__PURE__ */ React.createElement("header", { className: "border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 px-5 py-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("h2", { id: "schoolrewards-title", className: "flex items-center gap-2 text-xl font-black text-slate-900" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🎟️"), " ", tt("schoolrewards.title", "School Rewards & Store")), /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-2" }, /* @__PURE__ */ React.createElement("a", { className: "inline-flex min-h-11 items-center rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-600", href: "https://alloflow-cdn.pages.dev/school-rewards-manual", target: "_blank", rel: "noopener noreferrer", "data-help-key": "schoolrewards_manual" }, tt("schoolrewards.manual", "Manual")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600", "aria-label": tt("schoolrewards.close", "Close School Rewards & Store") }, "✕"))), /* @__PURE__ */ React.createElement("p", { id: "schoolrewards-subtitle", className: "mt-2 text-sm text-slate-700" }, tt("schoolrewards.path_subtitle", "Practice with fictional data, join your school’s Store, or set up a shared rewards ledger."))), /* @__PURE__ */ React.createElement("div", { className: "min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5" }, setupSaveFailed && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-500 bg-amber-50 p-4 text-sm text-amber-950", role: "status", "data-help-key": "schoolrewards_persistence_warning" }, /* @__PURE__ */ React.createElement("p", null, tt("schoolrewards.setup_local_only", "Your latest checklist and form changes are kept in this tab only. Local saving failed; closing this tab may lose those changes. Your approvals were not changed.")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY + " mt-2", onClick: () => persistSetup(setup), "data-help-key": "schoolrewards_retry_setup_save" }, tt("schoolrewards.retry_setup_save", "Retry saving"))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "sr-path-choices", "data-help-key": "schoolrewards_paths" }, /* @__PURE__ */ React.createElement("h3", { id: "sr-path-choices", tabIndex: -1, className: "text-base font-black text-slate-900" }, tt("schoolrewards.choose_path", "What would you like to do?")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" }, [["practice", "Try demo"], ["join", "Join existing Store"], ["setup", "Set up school Store"]].map(([id, label]) => /* @__PURE__ */ React.createElement("button", { key: id, type: "button", className: path === id ? SR_BTN_PRIMARY : SR_BTN_SECONDARY, "aria-pressed": path === id, onClick: () => choosePath(id), "data-store-path": id }, tt("schoolrewards.path_" + id, label)))), !path && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-sm text-slate-700" }, tt("schoolrewards.choose_path_help", "Teachers usually join their existing school Store. A district-approved administrator sets up the shared Store once."))), path && /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "sr-path-heading" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { id: "sr-path-heading", tabIndex: -1, className: "text-base font-black text-slate-900" }, guidePath ? guidePath.title : path === "practice" ? "Try the demo" : path === "join" ? "Join existing Store" : "Set up school Store"), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, disabled: !guidePath, "aria-expanded": guideOpen, "aria-controls": "sr-local-guide", onClick: () => {
+    setGuideOpen((value) => !value);
+    setFocusTarget(guideOpen ? "sr-path-heading" : "sr-local-guide");
+  }, "data-help-key": "schoolrewards_guide" }, tt("schoolrewards.guide_me", "Guide me"))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-slate-700" }, guidePath ? guidePath.intro : tt("schoolrewards.guide_unavailable", "The local guide is unavailable in this version. Use the controls below or the manual.")), guideOpen && guideStep && /* @__PURE__ */ React.createElement("section", { id: "sr-local-guide", tabIndex: -1, "aria-labelledby": "sr-guide-title", className: "mt-3 rounded-xl border border-sky-300 bg-sky-50 p-4 focus:outline-none focus:ring-2 focus:ring-emerald-600" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-slate-700", "aria-live": "polite" }, tt("schoolrewards.guide_step", "Guide step"), " ", guideIndex + 1, " / ", guidePath.steps.length), /* @__PURE__ */ React.createElement("h4", { id: "sr-guide-title", className: "mt-1 text-base font-black text-slate-900" }, guideStep.title), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-slate-800" }, guideStep.body), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-700" }, tt("schoolrewards.guide_local_only", "Local guidance only. Next does not save, approve, verify, or complete any step.")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET, disabled: guideIndex === 0, onClick: () => {
+    setGuideIndex((index) => index - 1);
+    setFocusTarget("sr-local-guide");
+  }, "data-help-key": "schoolrewards_guide_back" }, tt("schoolrewards.guide_back", "Back")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_PRIMARY, onClick: focusGuideSection, disabled: !Object.prototype.hasOwnProperty.call(SR_GUIDE_TARGETS, guideStep.target), "data-help-key": "schoolrewards_guide_section" }, tt("schoolrewards.guide_section", "Show this section")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET, disabled: guideIndex === guidePath.steps.length - 1, onClick: () => {
+    setGuideIndex((index) => index + 1);
+    setFocusTarget("sr-local-guide");
+  }, "data-help-key": "schoolrewards_guide_next" }, tt("schoolrewards.guide_next", "Next")), /* @__PURE__ */ React.createElement("a", { className: SR_BTN_QUIET, href: SR_CDN_BASE + "school-rewards-manual" + (/^[a-z0-9-]+$/.test(guideStep.manualHash) ? "#" + guideStep.manualHash : ""), target: "_blank", rel: "noopener noreferrer" }, tt("schoolrewards.guide_manual", "Read this in the manual"))))), path === "practice" && /* @__PURE__ */ React.createElement("section", { id: "sr-path-practice", tabIndex: -1, "aria-labelledby": "sr-practice-title", className: "rounded-xl border border-sky-200 bg-sky-50 p-4" }, /* @__PURE__ */ React.createElement("h3", { id: "sr-practice-title", className: "text-base font-black text-slate-900" }, tt("schoolrewards.practice_title", "Fictional practice, no school setup")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-slate-800" }, tt("schoolrewards.practice_help", "The real portal running on a fictional ledger in your browser: award, undo, group awards, checkout, and the student view, with a role switcher, scenario presets, and a tour you can edit. Nothing reaches a real ledger.")), /* @__PURE__ */ React.createElement("a", { className: SR_BTN_PRIMARY + " mt-3", href: "https://alloflow-cdn.pages.dev/school-rewards-practice", target: "_blank", rel: "noopener noreferrer", "data-help-key": "schoolrewards_practice" }, tt("schoolrewards.practice", "Practice with fictional data")), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-xs text-slate-700" }, tt("schoolrewards.local_demo_separate", "The separate local guided demo is optional and needs its presentation server running. It is not the public practice link. See the manual for that walkthrough; do not use real student data in either demo."))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-950", role: "note" }, /* @__PURE__ */ React.createElement("strong", null, tt("schoolrewards.boundary_title", "Student-data boundary:")), " ", tt("schoolrewards.launcher_boundary_body", "This Store launcher stores its address and setup checklist on this device; it does not copy the school ledger. Classroom tools may separately keep codename-based class state. Names, managed emails, balances and Store roles belong in the school-managed repository. The Store stays separate from AlloHaven XP.")), (path === "join" || path === "setup") && /* @__PURE__ */ React.createElement("section", { id: "sr-path-launch", tabIndex: -1, "aria-labelledby": "schoolrewards-launch-title", className: "rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { id: "schoolrewards-launch-title", className: "text-base font-black text-slate-900" }, tt("schoolrewards.launch_title", "Launch")), /* @__PURE__ */ React.createElement("span", { className: "rounded-full px-3 py-1 text-xs font-black " + (connected ? "bg-emerald-700 text-white" : "border border-amber-500 bg-white text-amber-900"), "data-help-key": "schoolrewards_status" }, connected ? tt("schoolrewards.status_address_saved", "Store address saved") : tt("schoolrewards.status_no_address", "No Store address saved"))), urlDirty && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-amber-500 bg-amber-50 p-3 text-sm text-amber-950", role: "status", "data-help-key": "schoolrewards_unsaved_address" }, /* @__PURE__ */ React.createElement("p", null, tt("schoolrewards.unsaved_address", "You have unsaved address changes. Save or discard them before opening, checking or sharing the Store. The saved destination has not changed.")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET + " mt-2", onClick: () => {
+    if (path === "setup") setShowSetup(true);
+    setFocusTarget("schoolrewards-portal-url");
+  }, "data-help-key": "schoolrewards_review_address" }, tt("schoolrewards.review_address", "Review address changes"))), connected ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "schoolrewards-saved-url", className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.saved_url", "Saved deployment")), /* @__PURE__ */ React.createElement("input", { id: "schoolrewards-saved-url", className: SR_INPUT + " font-mono text-xs", readOnly: true, value: portalUrl, onFocus: (event) => event.target.select() }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_PRIMARY, onClick: openPortal, disabled: urlDirty, "data-help-key": "schoolrewards_open_portal" }, tt("schoolrewards.open_portal", "Open School Rewards portal")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, onClick: openRecognition, disabled: urlDirty, "data-help-key": "schoolrewards_open_recognition" }, tt("schoolrewards.open_recognition", "Open recognition")), /* @__PURE__ */ React.createElement("button", { id: "sr-path-check", type: "button", className: SR_BTN_SECONDARY, onClick: openHealth, disabled: urlDirty, "data-help-key": "schoolrewards_open_check" }, tt("schoolrewards.open_check", "Open deployment check")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET, onClick: () => savePortalUrl("", true), "data-help-key": "schoolrewards_disconnect" }, tt("schoolrewards.disconnect", "Disconnect on this device"))), path === "setup" && !urlDirty && /* @__PURE__ */ React.createElement(SrShareWithStaff, { portalUrl, tt, addToast }), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed text-slate-700" }, tt("schoolrewards.launch_help", 'The portal opens in a new tab under Google sign-in; server-side roles decide who can award, check out, or administer. The deployment check page should say "Deployment check passed" and show the school, domain, and your role.'))) : /* @__PURE__ */ React.createElement("p", { id: "sr-path-check", tabIndex: -1, className: "mt-2 text-sm leading-relaxed text-slate-700" }, tt("schoolrewards.get_approved_address", "Ask your school administrator for the approved Store address and your staff or cashier access. Save the address here, then open it with your managed school account. Saving does not grant access or verify the deployment.")), path === "join" && portalUrlForm, fallbackTarget && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-slate-900", role: "status", "data-help-key": "schoolrewards_launch_feedback" }, /* @__PURE__ */ React.createElement("p", null, launchAttempt.dispatched ? tt("schoolrewards.launch_unconfirmed", "An opening request was sent to your browser. AlloFlow cannot confirm whether a new tab opened or whether Google allowed access.") : tt("schoolrewards.launch_rejected", "The opening request could not be dispatched. No Store access or deployment result was verified.")), /* @__PURE__ */ React.createElement("a", { className: SR_BTN_SECONDARY + " mt-2", href: fallbackTarget, target: "_blank", rel: "noopener noreferrer", "data-help-key": "schoolrewards_launch_fallback" }, launchAttempt.kind === "check" ? tt("schoolrewards.direct_check", "Open deployment check directly") : launchAttempt.kind === "recognition" ? tt("schoolrewards.direct_recognition", "Open recognition directly") : tt("schoolrewards.direct_store", "Open saved Store directly")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs" }, tt("schoolrewards.launch_fallback_help", "If nothing appeared, try the direct link. Use your managed school account; contact your administrator if access is denied."))), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-xs leading-relaxed text-slate-700" }, tt("schoolrewards.address_is_not_verification", "A saved address is not a connection test. Read the separate deployment check; AlloFlow and AlloBot cannot see or certify that Google page.")), healthHint && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-800", role: "status", "data-help-key": "schoolrewards_health_hint" }, tt("schoolrewards.health_self_check", "Read the check in the separate tab and confirm the expected school and role. No verification box was changed automatically.")), Array.isArray(troubleshooting) && troubleshooting.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-3 rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-900", "data-help-key": "schoolrewards_opening_help" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer py-2 font-bold" }, tt("schoolrewards.opening_help", "Help opening your Store")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-700" }, tt("schoolrewards.opening_help_local", "General local guidance, not a diagnosis of your Google account or Store. Nothing is checked or sent by opening these notes.")), troubleshooting.filter((item) => item && typeof item.id === "string" && typeof item.title === "string" && typeof item.body === "string" && /^[a-z0-9-]+$/.test(item.manualHash)).map((item) => /* @__PURE__ */ React.createElement("details", { key: item.id, className: "mt-2 border-t border-slate-200 pt-2", "data-help-key": "schoolrewards_troubleshooting_item" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer py-2 font-bold" }, item.title), /* @__PURE__ */ React.createElement("p", { className: "mt-2 leading-relaxed" }, item.body), /* @__PURE__ */ React.createElement("a", { className: "mt-2 inline-flex min-h-11 items-center font-bold text-emerald-900 underline", href: SR_CDN_BASE + "school-rewards-manual#" + item.manualHash, target: "_blank", rel: "noopener noreferrer" }, tt("schoolrewards.guide_manual", "Read this in the manual"))))), path === "join" && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-slate-900", "data-help-key": "schoolrewards_voice_boundary" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black" }, tt("schoolrewards.voice_boundary_title", "Voice awards belong inside the signed-in Store")), /* @__PURE__ */ React.createElement("p", { className: "mt-2" }, tt("schoolrewards.voice_boundary_body", "Open recognition, load your reviewed class links, and select a class and category. The Store can use on-device speech to fill a draft when the browser supports it. Review the student and confirm the award separately. If local speech is unavailable or blocked, type instead. Do not use the ordinary Allobot microphone for student awards; its selected engine may use remote transcription.")), /* @__PURE__ */ React.createElement("p", { className: "mt-2" }, tt("schoolrewards.voice_pathways", "Canvas and desktop are launchers, not the points ledger. Classroom authorization only imports rosters. The managed Store records official points; practice uses fictional data. Educator Evaluation has its own personnel records and permissions, and receives no award transcript.")))), path === "setup" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "schoolrewards-setup-title" }, /* @__PURE__ */ React.createElement("div", { className: "mb-4 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-slate-900", role: "note", "data-help-key": "schoolrewards_voice_boundary" }, /* @__PURE__ */ React.createElement("h3", { className: "font-black" }, tt("schoolrewards.voice_boundary_title", "Voice awards belong inside the signed-in Store")), /* @__PURE__ */ React.createElement("p", { className: "mt-2" }, tt("schoolrewards.voice_boundary_body", "Open recognition, load your reviewed class links, and select a class and category. The Store can use on-device speech to fill a draft when the browser supports it. Review the student and confirm the award separately. If local speech is unavailable or blocked, type instead. Do not use the ordinary Allobot microphone for student awards; its selected engine may use remote transcription.")), /* @__PURE__ */ React.createElement("p", { className: "mt-2" }, tt("schoolrewards.voice_pathways", "Canvas and desktop are launchers, not the points ledger. Classroom authorization only imports rosters. The managed Store records official points; practice uses fictional data. Educator Evaluation has its own personnel records and permissions, and receives no award transcript."))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { id: "schoolrewards-setup-title", className: "text-base font-black text-slate-900" }, tt("schoolrewards.setup_title", "Setup checklist")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET, "aria-expanded": showSetup, "aria-controls": "schoolrewards-setup-body", onClick: () => setShowSetup((value) => !value), "data-help-key": "schoolrewards_toggle_setup" }, showSetup ? tt("schoolrewards.hide_setup", "Hide checklist") : tt("schoolrewards.show_setup", "Show checklist"))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200", role: "progressbar", "aria-label": tt("schoolrewards.progress_label", "School Rewards setup progress"), "aria-valuemin": 0, "aria-valuemax": SR_STEP_ORDER.length, "aria-valuenow": doneCount, "aria-valuetext": doneCount + " of " + SR_STEP_ORDER.length }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full bg-emerald-700", style: { width: Math.round(doneCount / SR_STEP_ORDER.length * 100) + "%" } })), /* @__PURE__ */ React.createElement("p", { className: "mt-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-950", role: "status", "data-help-key": "schoolrewards_next_step" }, nextStep ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("strong", null, tt("schoolrewards.next_step", "Next step:")), " ", stepLabels[nextStep]) : /* @__PURE__ */ React.createElement("strong", null, tt("schoolrewards.checklist_attested_complete", "Your checklist is complete. These are your confirmations, not automatic deployment verification."))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-700" }, tt("schoolrewards.setup_once_attested", "The district-approved technical owner completes this shared setup once. Checkboxes record your own confirmations; neither copying files nor AlloBot verifies the installed Store.")), showSetup && /* @__PURE__ */ React.createElement("div", { id: "sr-path-handoff", tabIndex: -1, className: "mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-4", "data-help-key": "schoolrewards_handoff" }, /* @__PURE__ */ React.createElement("p", { className: "m-0 text-sm font-black text-slate-900" }, tt("schoolrewards.handoff_title", "Not doing the editor steps yourself?")), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-1 text-sm leading-relaxed text-slate-800" }, tt("schoolrewards.handoff_body", "Steps 2 to 8 happen in the Google Apps Script editor. Fill in the school details under step 7 first, then hand the whole job to your technology coordinator as one file. They send back a link and you paste it in step 9.")), /* @__PURE__ */ React.createElement(SrHandoff, { form, snippet, tt })), /* @__PURE__ */ React.createElement("ol", { id: "schoolrewards-setup-body", hidden: !showSetup, className: "mt-3 list-none space-y-3 p-0" }, stepCard("approval", tt("schoolrewards.step_approval", "Confirm district review and the managed account"), tt("schoolrewards.step_approval_body", "The school or district reviews Code.gs, Portal.html, Index.html, and appsscript.json, plus Apps Script use, Sheet storage, mail sending, and retention. Sign into the managed Google Education account that will own the ledger, the mail trigger, and the private print-model folder; a durable role account is safer than a personal one.")), stepCard("project", tt("schoolrewards.step_project", "Create the private project"), /* @__PURE__ */ React.createElement(React.Fragment, null, tt("schoolrewards.step_project_body_a", "Open "), /* @__PURE__ */ React.createElement("a", { className: "font-bold text-emerald-900 underline", href: "https://script.new/", target: "_blank", rel: "noopener noreferrer" }, "script.new"), tt("schoolrewards.step_project_body_b", ", verify the account again, and name the project "), /* @__PURE__ */ React.createElement("code", { className: "rounded bg-slate-100 px-1" }, "AlloFlow School Rewards"), tt("schoolrewards.step_project_body_c", '. In Project Settings turn on "Show appsscript.json manifest file in editor".'))), fileCard(SR_FILES[0], tt("schoolrewards.step_code", "Replace Code.gs"), tt("schoolrewards.step_code_body", "Code.gs is already open in the editor with a few starter lines. Click inside it, press Ctrl+A (Cmd+A on a Mac) to select everything, paste this source over it with Ctrl+V, then save with Ctrl+S. The copy button puts the whole file on your clipboard.")), fileCard(SR_FILES[1], tt("schoolrewards.step_portal", "Add the Portal page"), /* @__PURE__ */ React.createElement(React.Fragment, null, tt("schoolrewards.step_portal_body_a", "In the Files list on the left, click the + beside Files and choose HTML. A new file appears with its name selected: type "), /* @__PURE__ */ React.createElement("code", { className: "rounded bg-slate-100 px-1" }, "Portal"), tt("schoolrewards.step_portal_body_b", " (the editor adds .html itself) and press Enter. Select its starter lines with Ctrl+A, paste this source, and save with Ctrl+S."))), fileCard(SR_FILES[2], tt("schoolrewards.step_index", "Add the Index page"), /* @__PURE__ */ React.createElement(React.Fragment, null, tt("schoolrewards.step_index_body_a", "Same as the Portal page: click the + beside Files, choose HTML, type "), /* @__PURE__ */ React.createElement("code", { className: "rounded bg-slate-100 px-1" }, "Index"), tt("schoolrewards.step_index_body_b", ", press Enter, select the starter lines, paste this source, and save. This page only wraps the Portal page; it is what the web address opens."))), fileCard(SR_FILES[3], tt("schoolrewards.step_manifest", "Replace appsscript.json"), tt("schoolrewards.step_manifest_body", "In the Files list click appsscript.json (it appears once the Project Settings option from step 2 is on). Select everything in it with Ctrl+A, paste this manifest, and save. It restricts the web app to your domain, runs it as the deploying account, and declares the Sheets, Drive, mail, and trigger scopes the ledger needs.")), stepCard(
     "setup",
     tt("schoolrewards.step_setup", "Run the one-time repository setup"),
-    tt("schoolrewards.step_setup_body", 'Fill in the school details below and copy the generated function. In the editor open Code.gs, press Ctrl+End to reach the bottom, paste it there, and save. In the toolbar the dropdown beside Debug lists the functions: choose runInitialSchoolRewardsSetup and click Run. Google asks you to authorise once: pick the account, click Advanced, then "Go to AlloFlow School Rewards (unsafe)" (that wording appears for every in-house script), then Allow. The Execution log should end with "ok": true. The account that runs it becomes the first administrator, and the domain must match its email. Staff, cashiers, and students are added later inside the portal.'),
+    tt("schoolrewards.step_setup_reviewed_body", 'Fill in the school details below and copy the generated function. In the editor open Code.gs, press Ctrl+End to reach the bottom, paste it there, and save. In the toolbar the dropdown beside Debug lists the functions: choose runInitialSchoolRewardsSetup and click Run only after district review. Confirm the managed account and approve only the reviewed permissions. If Google or district policy blocks access, stop and consult IT; do not bypass a warning. The Execution log should end with "ok": true. The account that runs it becomes the first administrator, and the domain must match its email. Staff, cashiers, and students are added later inside the portal.'),
     /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-3 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.form_school", "School name"), /* @__PURE__ */ React.createElement("input", { className: SR_INPUT + " mt-1 font-normal", value: form.schoolName || "", onChange: (event) => setForm("schoolName", event.target.value), placeholder: "Example Elementary" })), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.form_domain", "School sign-in domain"), /* @__PURE__ */ React.createElement("span", { className: "block font-normal text-slate-700" }, tt("schoolrewards.form_domain_help", "The part after the @ in your school email, for example lincoln.k12.example. Only accounts on this domain can sign in.")), /* @__PURE__ */ React.createElement("input", { className: SR_INPUT + " mt-1 font-normal", value: form.allowedDomain || "", onChange: (event) => setForm("allowedDomain", event.target.value), placeholder: "school.example", inputMode: "url", autoComplete: "off", spellCheck: false })), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.form_year", "Academic year"), /* @__PURE__ */ React.createElement("input", { className: SR_INPUT + " mt-1 font-normal", value: form.academicYear || "", onChange: (event) => setForm("academicYear", event.target.value), placeholder: "2026-27" })), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.form_thresholds", "Growth levels"), /* @__PURE__ */ React.createElement("span", { className: "block font-normal text-slate-700" }, tt("schoolrewards.form_thresholds_help", "Students reach a new level at each number of points. The defaults suit most schools; change them only if you already have levels.")), /* @__PURE__ */ React.createElement("input", { className: SR_INPUT + " mt-1 font-normal", value: form.levelThresholds || "", onChange: (event) => setForm("levelThresholds", event.target.value), placeholder: "0, 25, 75, 150, 300", inputMode: "numeric" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-sm font-bold text-slate-800 sm:col-span-2" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", className: "h-5 w-5 accent-emerald-700", checked: form.seedHowls !== false, onChange: (event) => setForm("seedHowls", event.target.checked) }), tt("schoolrewards.form_seed", "Start with the built-in recognition categories (you can rename or replace them in the portal later)")), /* @__PURE__ */ React.createElement("div", { className: "sm:col-span-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "schoolrewards-setup-snippet", className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.snippet_label", "Generated setup function")), /* @__PURE__ */ React.createElement("textarea", { id: "schoolrewards-setup-snippet", className: SR_INPUT + " mt-1 font-mono text-xs", readOnly: true, rows: 9, value: snippet, spellCheck: false, onFocus: (event) => event.target.select(), "data-help-key": "schoolrewards_setup_snippet" }), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, onClick: copySnippet, "data-help-key": "schoolrewards_copy_snippet" }, snippetState === "copied" ? tt("schoolrewards.snippet_copied", "Copied setup function") : tt("schoolrewards.snippet_copy", "Copy setup function")), snippetState === "manual" && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-amber-950", role: "status" }, tt("schoolrewards.snippet_manual", "Clipboard blocked: click the box, press Ctrl+A, then Ctrl+C.")))))
-  ), stepCard("deployed", tt("schoolrewards.step_deployed", "Deploy as a domain-restricted web app"), tt("schoolrewards.step_deployed_body", 'Click Deploy (top right), then New deployment. Beside "Select type" click the gear and choose Web app. Execute as: Me. Who has access: your organisation (the domain), never Anyone. Click Deploy, approve if asked, and copy the Web app URL that ends in /exec. Any later change to a file needs Deploy, Manage deployments, New version before it goes live.')), stepCard(
-    "connected",
-    tt("schoolrewards.step_connected", "Paste the deployment URL and connect"),
-    tt("schoolrewards.step_connected_body", "Saved on this device only; each leader who needs the launcher pastes it once. Google sign-in still decides what each person can see."),
-    /* @__PURE__ */ React.createElement("form", { className: "mt-3", onSubmit: (event) => {
-      event.preventDefault();
-      savePortalUrl(urlDraft);
-    } }, /* @__PURE__ */ React.createElement("label", { htmlFor: "schoolrewards-portal-url", className: "block text-xs font-black text-slate-800" }, tt("schoolrewards.url_label", "School or district Apps Script web-app URL")), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-col gap-2 sm:flex-row" }, /* @__PURE__ */ React.createElement("input", { id: "schoolrewards-portal-url", className: SR_INPUT, type: "url", inputMode: "url", autoComplete: "off", spellCheck: false, value: urlDraft, onChange: (event) => setUrlDraft(event.target.value), placeholder: "https://script.google.com/macros/s/.../exec", "aria-describedby": "schoolrewards-portal-url-help" }), /* @__PURE__ */ React.createElement("button", { type: "submit", className: SR_BTN_PRIMARY + " shrink-0", "data-help-key": "schoolrewards_connect" }, connected ? tt("schoolrewards.update", "Update connection") : tt("schoolrewards.connect", "Connect"))), /* @__PURE__ */ React.createElement("p", { id: "schoolrewards-portal-url-help", className: "mt-2 text-xs leading-relaxed " + (urlMessage.tone === "error" ? "text-rose-900" : "text-slate-700"), role: urlMessage.text ? "status" : void 0 }, urlMessage.text || tt("schoolrewards.url_help", "Only an HTTPS script.google.com address ending in /macros/s/{deployment}/exec is accepted.")))
-  ), stepCard(
+  ), stepCard("deployed", tt("schoolrewards.step_deployed", "Deploy as a domain-restricted web app"), tt("schoolrewards.step_deployed_body", 'Click Deploy (top right), then New deployment. Beside "Select type" click the gear and choose Web app. Execute as: Me. Who has access: your organisation (the domain), never Anyone. Click Deploy, approve if asked, and copy the Web app URL that ends in /exec. Any later change to a file needs Deploy, Manage deployments, New version before it goes live.')), stepCard("connected", tt("schoolrewards.step_saved_address", "Save the approved Store address"), tt("schoolrewards.step_connected_body", "Saved on this device only; each leader who needs the launcher pastes it once. Google sign-in still decides what each person can see."), portalUrlForm), stepCard(
     "verified",
-    tt("schoolrewards.step_verified", "Verify the deployment and each role"),
-    tt("schoolrewards.step_verified_body", 'Open the deployment check: a page should say "Deployment check passed" with your school and your role. Then open the portal: the Admin setup tab has a First-week checklist that ticks itself as staff, students, prizes, and the first award appear, so you can see each role working without borrowing accounts.'),
-    /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, onClick: openHealth, disabled: !connected }, tt("schoolrewards.open_check", "Open deployment check")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, onClick: openPortal, disabled: !connected }, tt("schoolrewards.open_portal", "Open School Rewards portal")), healthHint && /* @__PURE__ */ React.createElement("p", { className: "m-0 w-full text-xs leading-relaxed text-slate-800", role: "status", "data-help-key": "schoolrewards_health_hint" }, tt("schoolrewards.health_hint", 'A new tab opened. If Google asks you to sign in, use your school account. A green "Deployment check passed" means the link works: come back and tick this step. Red means the page says what to check.')))
-  ))), /* @__PURE__ */ React.createElement(SrRosterBridge, { tt, addToast }), /* @__PURE__ */ React.createElement(SrRecognitionWorksheet, { recognition: props.recognition || null, tt, addToast }))));
+    tt("schoolrewards.step_verified_self", "I personally checked the deployment and intended roles"),
+    tt("schoolrewards.step_verified_self_body", "Read the deployment check for the expected school and role. Test each intended role with approved test accounts and fictional records, then use Admin setup for the first-week checklist. This checkbox records your confirmation only; AlloFlow and AlloBot cannot inspect or certify the separate signed-in Google page."),
+    /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, onClick: openHealth, disabled: !connected || urlDirty }, tt("schoolrewards.open_check", "Open deployment check")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, onClick: openPortal, disabled: !connected || urlDirty }, tt("schoolrewards.open_portal", "Open School Rewards portal")))
+  ))), /* @__PURE__ */ React.createElement(SrRosterBridge, { tt, addToast }), /* @__PURE__ */ React.createElement(SrRecognitionWorksheet, { recognition: props.recognition || null, tt, addToast })))));
 }
 
   window.AlloModules = window.AlloModules || {};

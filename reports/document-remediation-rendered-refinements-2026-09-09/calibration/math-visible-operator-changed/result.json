@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\math-visible-operator-changed\\source.html",
+    "sha256": "0e8f220167714484b746774efaff1fe404920c1e49953465e2bfa966032b9587",
+    "bytes": 379
+  },
+  "candidate": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\math-visible-operator-changed\\candidate.html",
+    "sha256": "6a4c6304ec11bac19ae9790516d2563f737903e2c3ab4047278b0808d1e7cccd",
+    "bytes": 377
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 20190.401299999983,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0
+    }
+  },
+  "checks": [
+    {
+      "id": "formula-operator",
+      "sourceSelector": "#formula",
+      "candidateSelector": "#formula",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "failed",
+          "source": "x − 2",
+          "candidate": "x + 2"
+        },
+        {
+          "property": "name",
+          "status": "passed",
+          "source": "x minus two",
+          "candidate": "x minus two"
+        },
+        {
+          "property": "role",
+          "status": "passed",
+          "source": "math",
+          "candidate": "math"
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

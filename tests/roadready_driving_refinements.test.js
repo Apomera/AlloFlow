@@ -37,7 +37,8 @@ describe('RoadReady driving-view refinements', () => {
     expect(src).toContain('var gpRideAlongLocked = rideAlongControlsLocked()');
     expect(src).toContain('var gpMovementLocked = gpRideAlongLocked || pausedRef.current || gpRearmBlocked');
     expect(src).toContain('k._gpThrottle = gpMovementLocked ? 0 : rtVal');
-    expect(src).toContain('isTouchDeviceRef.current && !rideAlongActiveUi');
+    expect(src).toContain("window.StemInput.preferences().mode !== 'auto' || window.StemInput.preferences().showTouch");
+    expect(src).toContain('&& !rideAlongActiveUi');
   });
 
   it.each(ROADREADY_FILES)('%s uses simulation time for evaluations and realistic signal feedback', (relPath) => {

@@ -1,0 +1,361 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\print-only-instruction-hidden\\source.html",
+    "sha256": "574873432502a7ddb7ed97e84095fe1f684998f131d4b7445dc84e48d189e009",
+    "bytes": 197
+  },
+  "candidate": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\print-only-instruction-hidden\\candidate.html",
+    "sha256": "7ffd66cbae09de020e0256a49853fe0dd1b2163d51572813e42acf0e0f6e2a48",
+    "bytes": 237
+  },
+  "browserVersion": "148.0.7778.96",
+  "status": "review-required",
+  "durationMs": 1834.8987999999954,
+  "profiles": [
+    {
+      "schemaVersion": 1,
+      "kind": "rendered-html-fidelity",
+      "source": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\print-only-instruction-hidden\\source.html",
+        "sha256": "574873432502a7ddb7ed97e84095fe1f684998f131d4b7445dc84e48d189e009",
+        "bytes": 197
+      },
+      "candidate": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\print-only-instruction-hidden\\candidate.html",
+        "sha256": "7ffd66cbae09de020e0256a49853fe0dd1b2163d51572813e42acf0e0f6e2a48",
+        "bytes": 237
+      },
+      "browserVersion": "148.0.7778.96",
+      "viewport": {
+        "width": 1100,
+        "height": 800
+      },
+      "media": "screen",
+      "profileId": "desktop",
+      "durationMs": 546.4809000000241,
+      "status": "passed",
+      "coverage": {
+        "requested": 1,
+        "inspected": 1,
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "resources": {
+        "source": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "candidate": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        }
+      },
+      "checks": [
+        {
+          "id": "instruction",
+          "sourceSelector": "#instruction",
+          "candidateSelector": "#instruction",
+          "status": "passed",
+          "properties": [
+            {
+              "property": "text",
+              "status": "passed",
+              "source": "Keep the original instruction.",
+              "candidate": "Keep the original instruction."
+            },
+            {
+              "property": "visible",
+              "status": "passed",
+              "source": true,
+              "candidate": true
+            },
+            {
+              "property": "exposed",
+              "status": "passed",
+              "source": true,
+              "candidate": true
+            }
+          ]
+        }
+      ],
+      "humanValidation": "not-run",
+      "limitations": [
+        "Only the source-authored checkpoints and selected properties are assessed.",
+        "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+        "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+        "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+      ],
+      "id": "desktop"
+    },
+    {
+      "schemaVersion": 1,
+      "kind": "rendered-html-fidelity",
+      "source": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\print-only-instruction-hidden\\source.html",
+        "sha256": "574873432502a7ddb7ed97e84095fe1f684998f131d4b7445dc84e48d189e009",
+        "bytes": 197
+      },
+      "candidate": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\print-only-instruction-hidden\\candidate.html",
+        "sha256": "7ffd66cbae09de020e0256a49853fe0dd1b2163d51572813e42acf0e0f6e2a48",
+        "bytes": 237
+      },
+      "browserVersion": "148.0.7778.96",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "media": "screen",
+      "profileId": "mobile",
+      "durationMs": 595.5742000000027,
+      "status": "passed",
+      "coverage": {
+        "requested": 1,
+        "inspected": 1,
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "resources": {
+        "source": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "candidate": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        }
+      },
+      "checks": [
+        {
+          "id": "instruction",
+          "sourceSelector": "#instruction",
+          "candidateSelector": "#instruction",
+          "status": "passed",
+          "properties": [
+            {
+              "property": "text",
+              "status": "passed",
+              "source": "Keep the original instruction.",
+              "candidate": "Keep the original instruction."
+            },
+            {
+              "property": "visible",
+              "status": "passed",
+              "source": true,
+              "candidate": true
+            },
+            {
+              "property": "exposed",
+              "status": "passed",
+              "source": true,
+              "candidate": true
+            }
+          ]
+        }
+      ],
+      "humanValidation": "not-run",
+      "limitations": [
+        "Only the source-authored checkpoints and selected properties are assessed.",
+        "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+        "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+        "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+      ],
+      "id": "mobile"
+    },
+    {
+      "schemaVersion": 1,
+      "kind": "rendered-html-fidelity",
+      "source": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\print-only-instruction-hidden\\source.html",
+        "sha256": "574873432502a7ddb7ed97e84095fe1f684998f131d4b7445dc84e48d189e009",
+        "bytes": 197
+      },
+      "candidate": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\print-only-instruction-hidden\\candidate.html",
+        "sha256": "7ffd66cbae09de020e0256a49853fe0dd1b2163d51572813e42acf0e0f6e2a48",
+        "bytes": 237
+      },
+      "browserVersion": "148.0.7778.96",
+      "viewport": {
+        "width": 1100,
+        "height": 800
+      },
+      "media": "print",
+      "profileId": "print",
+      "durationMs": 692.7713999999978,
+      "status": "review-required",
+      "coverage": {
+        "requested": 1,
+        "inspected": 1,
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "resources": {
+        "source": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "candidate": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        }
+      },
+      "checks": [
+        {
+          "id": "instruction",
+          "sourceSelector": "#instruction",
+          "candidateSelector": "#instruction",
+          "status": "failed",
+          "properties": [
+            {
+              "property": "text",
+              "status": "passed",
+              "source": "Keep the original instruction.",
+              "candidate": "Keep the original instruction."
+            },
+            {
+              "property": "visible",
+              "status": "failed",
+              "source": true,
+              "candidate": false
+            },
+            {
+              "property": "exposed",
+              "status": "failed",
+              "source": true,
+              "candidate": false
+            }
+          ]
+        }
+      ],
+      "humanValidation": "not-run",
+      "limitations": [
+        "Only the source-authored checkpoints and selected properties are assessed.",
+        "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+        "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+        "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+      ],
+      "id": "print"
+    }
+  ],
+  "coverage": {
+    "requested": 3,
+    "inspected": 3,
+    "complete": true,
+    "wholeDocument": false,
+    "profilesRequested": 3,
+    "profilesCompleted": 3,
+    "reasons": []
+  },
+  "checks": [
+    {
+      "id": "desktop/instruction",
+      "sourceSelector": "#instruction",
+      "candidateSelector": "#instruction",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Keep the original instruction.",
+          "candidate": "Keep the original instruction."
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        }
+      ],
+      "checkpointId": "instruction",
+      "profileId": "desktop"
+    },
+    {
+      "id": "mobile/instruction",
+      "sourceSelector": "#instruction",
+      "candidateSelector": "#instruction",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Keep the original instruction.",
+          "candidate": "Keep the original instruction."
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        }
+      ],
+      "checkpointId": "instruction",
+      "profileId": "mobile"
+    },
+    {
+      "id": "print/instruction",
+      "sourceSelector": "#instruction",
+      "candidateSelector": "#instruction",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Keep the original instruction.",
+          "candidate": "Keep the original instruction."
+        },
+        {
+          "property": "visible",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        },
+        {
+          "property": "exposed",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        }
+      ],
+      "checkpointId": "instruction",
+      "profileId": "print"
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

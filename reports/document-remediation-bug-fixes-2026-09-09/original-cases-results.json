@@ -1,0 +1,1559 @@
+{
+  "measuredAt": "2026-09-10T02:07:28.005Z",
+  "kind": "original-review-case-closure",
+  "policyVersion": "20260909-5",
+  "passed": true,
+  "originalEvidenceUnchanged": true,
+  "implementationUnchangedDuringRun": true,
+  "implementationHashes": {
+    "doc_pipeline_source.jsx": "a2c1ea9c7ba90b18ac0546dac54a66ab0e423a1902a375433807ef7363b92abb",
+    "doc_pipeline_module.js": "156f2ec3d8eb4003240ce049c0118fd25981eb8a71c860965b9dd49457b388c6",
+    "desktop/web-app/public/doc_pipeline_module.js": "156f2ec3d8eb4003240ce049c0118fd25981eb8a71c860965b9dd49457b388c6",
+    "dev-tools/document_export_at_acceptance.cjs": "1bb823da6503375243d25211d55d17b1de1a425c26071f614088abc2754fa590",
+    "dev-tools/rendered_document_fidelity.cjs": "c8310dbf87f169b8c84534ebd86ee887685bf6b2e8b37b78c0483331938818cb"
+  },
+  "evidenceHashes": {
+    "live-source-probes.json": "29615faa5e91f3f9c233033cfebd984afd0d7b4b92b8226cdae2b7544e467403",
+    "export-review-probes.json": "d5ed87b39733947518af432c61237d88b881bc60f3a7dc6f59e38109bcb72a5d",
+    "rendered-probe-results.json": "0fcfb734e37cc2b4069927de58bfb716a456df0d049dcde30966f38b8e8fc70d"
+  },
+  "caseCount": 18,
+  "passingCases": 18,
+  "browserVersion": "148.0.7778.96",
+  "live": [
+    {
+      "id": "native-label-aria-override",
+      "expected": "reject",
+      "decision": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "form-state-changed",
+              "sourceLocation": "control:1"
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "field-description-reassigned",
+      "expected": "reject",
+      "decision": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "form-state-changed",
+              "sourceLocation": "control:1"
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "linked-exponent-base-moved",
+      "expected": "reject",
+      "decision": {
+        "accepted": false,
+        "reason": "math-content-changed",
+        "sourceLocation": "document"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "math-content-changed",
+              "sourceLocation": "document"
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "exponent-moved-between-links",
+      "expected": "reject",
+      "decision": {
+        "accepted": false,
+        "reason": "math-content-changed",
+        "sourceLocation": "document"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "math-content-changed",
+              "sourceLocation": "document"
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "header-role-downgrade",
+      "expected": "reject",
+      "decision": {
+        "accepted": false,
+        "reason": "table-semantics-changed",
+        "sourceLocation": "table:1/cell:1"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "table-semantics-changed",
+              "sourceLocation": "table:1/cell:1"
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "fixed-linked-script-kind-control",
+      "expected": "reject",
+      "decision": {
+        "accepted": false,
+        "reason": "math-content-changed",
+        "sourceLocation": "document"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 1,
+          "candidateRejectionCount": 1,
+          "candidateRejections": [
+            {
+              "chunkId": "1",
+              "phase": "single",
+              "reason": "math-content-changed",
+              "sourceLocation": "document"
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "equivalent-native-name-control",
+      "expected": "accept",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0306242638398115,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "rejectionEvidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "exports": [
+    {
+      "id": "valid-table-control",
+      "expected": "passed",
+      "passed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Field study",
+              "Area",
+              "Score",
+              "Sunlight",
+              "95"
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-1",
+            "status": "passed",
+            "observed": {
+              "caption": "Field study",
+              "rows": [
+                [
+                  {
+                    "text": "Area",
+                    "role": "TH",
+                    "scope": "col"
+                  },
+                  {
+                    "text": "Score",
+                    "role": "TH",
+                    "scope": "col"
+                  }
+                ],
+                [
+                  {
+                    "text": "Sunlight",
+                    "role": "TD",
+                    "scope": null
+                  },
+                  {
+                    "text": "95",
+                    "role": "TD",
+                    "scope": null
+                  }
+                ]
+              ],
+              "exposure": {
+                "table": true,
+                "columnHeaders": [
+                  true,
+                  true
+                ],
+                "rowHeaders": [
+                  false
+                ]
+              }
+            },
+            "expected": {
+              "caption": "Field study",
+              "headers": [
+                "Area",
+                "Score"
+              ],
+              "rows": [
+                [
+                  "Sunlight",
+                  "95"
+                ]
+              ]
+            }
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "passed",
+            "observed": {
+              "reasons": [],
+              "resources": {
+                "blocked": 0,
+                "scripts": 0,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      }
+    },
+    {
+      "id": "presentational-table",
+      "expected": "failed-table",
+      "passed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Field study",
+              "Area",
+              "Score",
+              "Sunlight",
+              "95"
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-1",
+            "status": "failed",
+            "observed": {
+              "caption": "Field study",
+              "rows": [
+                [
+                  {
+                    "text": "Area",
+                    "role": "TH",
+                    "scope": "col"
+                  },
+                  {
+                    "text": "Score",
+                    "role": "TH",
+                    "scope": "col"
+                  }
+                ],
+                [
+                  {
+                    "text": "Sunlight",
+                    "role": "TD",
+                    "scope": null
+                  },
+                  {
+                    "text": "95",
+                    "role": "TD",
+                    "scope": null
+                  }
+                ]
+              ],
+              "exposure": {
+                "table": false,
+                "columnHeaders": [
+                  false,
+                  false
+                ],
+                "rowHeaders": [
+                  false
+                ]
+              }
+            },
+            "expected": {
+              "caption": "Field study",
+              "headers": [
+                "Area",
+                "Score"
+              ],
+              "rows": [
+                [
+                  "Sunlight",
+                  "95"
+                ]
+              ]
+            }
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "passed",
+            "observed": {
+              "reasons": [],
+              "resources": {
+                "blocked": 0,
+                "scripts": 0,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      }
+    },
+    {
+      "id": "aria-hidden-table",
+      "expected": "failed-table",
+      "passed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Field study",
+              "Area",
+              "Score",
+              "Sunlight",
+              "95"
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-1",
+            "status": "failed",
+            "observed": {
+              "caption": "Field study",
+              "rows": [
+                [
+                  {
+                    "text": "Area",
+                    "role": "TH",
+                    "scope": "col"
+                  },
+                  {
+                    "text": "Score",
+                    "role": "TH",
+                    "scope": "col"
+                  }
+                ],
+                [
+                  {
+                    "text": "Sunlight",
+                    "role": "TD",
+                    "scope": null
+                  },
+                  {
+                    "text": "95",
+                    "role": "TD",
+                    "scope": null
+                  }
+                ]
+              ],
+              "exposure": {
+                "table": false,
+                "columnHeaders": [
+                  false,
+                  false
+                ],
+                "rowHeaders": [
+                  false
+                ]
+              }
+            },
+            "expected": {
+              "caption": "Field study",
+              "headers": [
+                "Area",
+                "Score"
+              ],
+              "rows": [
+                [
+                  "Sunlight",
+                  "95"
+                ]
+              ]
+            }
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "passed",
+            "observed": {
+              "reasons": [],
+              "resources": {
+                "blocked": 0,
+                "scripts": 0,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      }
+    },
+    {
+      "id": "canonical-table-false-rejection",
+      "expected": "passed",
+      "passed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Field study",
+              "Area",
+              "Score",
+              "Café",
+              "95"
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-1",
+            "status": "passed",
+            "observed": {
+              "caption": "Field study",
+              "rows": [
+                [
+                  {
+                    "text": "Area",
+                    "role": "TH",
+                    "scope": "col"
+                  },
+                  {
+                    "text": "Score",
+                    "role": "TH",
+                    "scope": "col"
+                  }
+                ],
+                [
+                  {
+                    "text": "Café",
+                    "role": "TD",
+                    "scope": null
+                  },
+                  {
+                    "text": "95",
+                    "role": "TD",
+                    "scope": null
+                  }
+                ]
+              ],
+              "exposure": {
+                "table": true,
+                "columnHeaders": [
+                  true,
+                  true
+                ],
+                "rowHeaders": [
+                  false
+                ]
+              }
+            },
+            "expected": {
+              "caption": "Field study",
+              "headers": [
+                "Area",
+                "Score"
+              ],
+              "rows": [
+                [
+                  "Café",
+                  "95"
+                ]
+              ]
+            }
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "passed",
+            "observed": {
+              "reasons": [],
+              "resources": {
+                "blocked": 0,
+                "scripts": 0,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      }
+    },
+    {
+      "id": "relative-css-background",
+      "expected": "incomplete-dependency-coverage",
+      "passed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Read this."
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "unavailable",
+            "observed": 1,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "unavailable",
+            "observed": {
+              "reasons": [
+                "blocked-network-requests",
+                "unresolved-resource-references"
+              ],
+              "resources": {
+                "blocked": 1,
+                "scripts": 0,
+                "unresolved": 1,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": false,
+          "wholeDocument": false,
+          "reasons": [
+            "blocked-network-requests",
+            "unresolved-resource-references"
+          ]
+        },
+        "resources": {
+          "blocked": 1,
+          "scripts": 0,
+          "unresolved": 1,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      }
+    },
+    {
+      "id": "inert-xml-data-block",
+      "expected": "passed",
+      "passed": true,
+      "report": {
+        "checks": [
+          {
+            "id": "html.utf8-encoding",
+            "status": "passed",
+            "observed": {
+              "declaredCharsets": []
+            },
+            "expected": "valid UTF-8 with compatible declarations"
+          },
+          {
+            "id": "html.document-identity",
+            "status": "passed",
+            "observed": {
+              "title": "Export probe",
+              "language": "en"
+            },
+            "expected": {
+              "title": "Export probe",
+              "language": "en"
+            }
+          },
+          {
+            "id": "html.main-landmark",
+            "status": "passed",
+            "observed": 1,
+            "expected": 1
+          },
+          {
+            "id": "html.heading-navigation-semantics",
+            "status": "passed",
+            "observed": [],
+            "expected": []
+          },
+          {
+            "id": "html.reading-order",
+            "status": "passed",
+            "observed": {
+              "anchorsInOrder": true
+            },
+            "expected": [
+              "Read this."
+            ]
+          },
+          {
+            "id": "html.no-positive-tabindex",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.table-count",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.no-required-network",
+            "status": "passed",
+            "observed": 0,
+            "expected": 0
+          },
+          {
+            "id": "html.inspection-coverage",
+            "status": "passed",
+            "observed": {
+              "reasons": [],
+              "resources": {
+                "blocked": 0,
+                "scripts": 0,
+                "unresolved": 0,
+                "animations": 0
+              }
+            }
+          }
+        ],
+        "coverage": {
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        },
+        "limitations": [
+          "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+          "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+          "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+          "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+        ]
+      }
+    }
+  ],
+  "rendered": [
+    {
+      "id": "hidden-negation-in-checkpoint",
+      "expected": "review-required",
+      "passed": true,
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\hidden-negation-in-checkpoint\\source.html",
+          "sha256": "4d44fc3a5487e07c34f8691efad10d21e4cc8774c924c282c7bb9e3ce8ce48db",
+          "bytes": 166
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\hidden-negation-in-checkpoint\\candidate.html",
+          "sha256": "0e8ac6e2d849ba843831619e73c03f1bf98da6f9f921aa32265280a70f82c4a6",
+          "bytes": 187
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 321.9520000000002,
+        "status": "review-required",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "failed",
+            "properties": [
+              {
+                "property": "text",
+                "status": "passed",
+                "source": "Do not open the container.",
+                "candidate": "Do not open the container."
+              },
+              {
+                "property": "visible",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              },
+              {
+                "property": "exposed",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              },
+              {
+                "property": "visibleText",
+                "status": "failed",
+                "source": "Do not open the container.",
+                "candidate": "Do open the container."
+              },
+              {
+                "property": "exposedText",
+                "status": "failed",
+                "source": "Do not open the container.",
+                "candidate": "Do open the container."
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "display-contents-opacity",
+      "expected": "review-required",
+      "passed": true,
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\display-contents-opacity\\source.html",
+          "sha256": "9e4f7da48eebdf55088759c4b8db8d4aa6c83b9958bda24764af9c9b48bbf3c5",
+          "bytes": 193
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\display-contents-opacity\\candidate.html",
+          "sha256": "8f297eb53467a58152703d094cbf9e88936d5087f802b635f9df1de83d45cb5e",
+          "bytes": 211
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 327.84469999999965,
+        "status": "review-required",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "failed",
+            "properties": [
+              {
+                "property": "text",
+                "status": "passed",
+                "source": "Keep the required instruction.",
+                "candidate": "Keep the required instruction."
+              },
+              {
+                "property": "visible",
+                "status": "failed",
+                "source": true,
+                "candidate": false
+              },
+              {
+                "property": "exposed",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              },
+              {
+                "property": "visibleText",
+                "status": "failed",
+                "source": "Keep the required instruction.",
+                "candidate": ""
+              },
+              {
+                "property": "exposedText",
+                "status": "passed",
+                "source": "Keep the required instruction.",
+                "candidate": "Keep the required instruction."
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "duplicate-option-values",
+      "expected": "review-required",
+      "passed": true,
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\duplicate-option-values\\source.html",
+          "sha256": "e8bc6fade6737ef0ff753dac53b9bb9a0c6738626bae56d22b7115138ae6d571",
+          "bytes": 258
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\duplicate-option-values\\candidate.html",
+          "sha256": "706c8255b379943a7d6b386a14900e9e1242e03099cbab99771532fe4e8895dd",
+          "bytes": 258
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 340.65880000000016,
+        "status": "review-required",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "failed",
+            "properties": [
+              {
+                "property": "selected",
+                "status": "failed",
+                "source": [
+                  {
+                    "index": 0,
+                    "value": "direction",
+                    "label": "North"
+                  }
+                ],
+                "candidate": [
+                  {
+                    "index": 1,
+                    "value": "direction",
+                    "label": "South"
+                  }
+                ]
+              },
+              {
+                "property": "value",
+                "status": "passed",
+                "source": "direction",
+                "candidate": "direction"
+              },
+              {
+                "property": "text",
+                "status": "passed",
+                "source": "NorthSouth",
+                "candidate": "NorthSouth"
+              },
+              {
+                "property": "name",
+                "status": "passed",
+                "source": "Direction",
+                "candidate": "Direction"
+              },
+              {
+                "property": "role",
+                "status": "passed",
+                "source": "combobox",
+                "candidate": "combobox"
+              },
+              {
+                "property": "disabled",
+                "status": "passed",
+                "source": false,
+                "candidate": false
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "relative-link-root-collapse",
+      "expected": "review-required",
+      "passed": true,
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\relative-link-root-collapse\\source.html",
+          "sha256": "b10d83acb63f448935a639884746b9ab0237d41921666bdc4459bf3f743b12ba",
+          "bytes": 164
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\relative-link-root-collapse\\candidate.html",
+          "sha256": "4fbec1a5d2c608743d46c25d3ebd831c646aadc6d0828b93de1a41e6b75978e2",
+          "bytes": 165
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 311.5532000000003,
+        "status": "review-required",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "failed",
+            "properties": [
+              {
+                "property": "href",
+                "status": "failed",
+                "source": {
+                  "relative": "./chapter.pdf",
+                  "resolved": "https://rendered-fidelity.invalid/chapter.pdf"
+                },
+                "candidate": {
+                  "relative": "../chapter.pdf",
+                  "resolved": "https://rendered-fidelity.invalid/chapter.pdf"
+                }
+              },
+              {
+                "property": "text",
+                "status": "passed",
+                "source": "Read the chapter",
+                "candidate": "Read the chapter"
+              },
+              {
+                "property": "name",
+                "status": "passed",
+                "source": "Read the chapter",
+                "candidate": "Read the chapter"
+              },
+              {
+                "property": "role",
+                "status": "passed",
+                "source": "link",
+                "candidate": "link"
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "unrequested-large-text",
+      "expected": "passed",
+      "passed": true,
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\unrequested-large-text\\source.html",
+          "sha256": "70c132df71cbe68d0bb7f51985895be3600ecbc91a0c308fb7e6a2553527d0ba",
+          "bytes": 10940
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-bug-review-2026-09-09\\unrequested-large-text\\candidate.html",
+          "sha256": "70c132df71cbe68d0bb7f51985895be3600ecbc91a0c308fb7e6a2553527d0ba",
+          "bytes": 10940
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 326.32029999999986,
+        "status": "passed",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "passed",
+            "properties": [
+              {
+                "property": "role",
+                "status": "passed",
+                "source": "main",
+                "candidate": "main"
+              },
+              {
+                "property": "exposed",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    }
+  ],
+  "scope": "Synthetic local candidate-gate and Chromium checker reproductions; model transport is mocked. No live-model, human screen-reader, or downstream delivery acceptance claim."
+}

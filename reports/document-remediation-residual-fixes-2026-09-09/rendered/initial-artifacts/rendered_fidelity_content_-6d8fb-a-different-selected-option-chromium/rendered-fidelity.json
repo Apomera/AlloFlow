@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "ad3b3e4329f39a5e3877a91debca0e10ac60e488f2469b35985ddc3a71ae0fce",
+    "bytes": 145
+  },
+  "candidate": {
+    "sha256": "3cccc0303baf129d4913ca1cd97653f48602151408efdf46935c4a04ab7364e4",
+    "bytes": 145
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 539.6316000000006,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "p",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "selected",
+          "status": "failed",
+          "source": [
+            {
+              "index": 0,
+              "value": "direction",
+              "label": "North"
+            }
+          ],
+          "candidate": [
+            {
+              "index": 1,
+              "value": "direction",
+              "label": "South"
+            }
+          ]
+        },
+        {
+          "property": "value",
+          "status": "passed",
+          "source": "direction",
+          "candidate": "direction"
+        },
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "NorthSouth",
+          "candidate": "NorthSouth"
+        },
+        {
+          "property": "name",
+          "status": "passed",
+          "source": "Direction",
+          "candidate": "Direction"
+        },
+        {
+          "property": "role",
+          "status": "passed",
+          "source": "combobox",
+          "candidate": "combobox"
+        },
+        {
+          "property": "disabled",
+          "status": "passed",
+          "source": false,
+          "candidate": false
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

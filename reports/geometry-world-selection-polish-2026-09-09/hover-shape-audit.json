@@ -1,0 +1,153 @@
+{
+  "method": "Actual core placement and updateGhostPreview executed with local THREE r128; ray hit and unrelated effects use the existing transaction fixture.",
+  "results": [
+    {
+      "shape": "cube",
+      "rotation": 1,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          3.990000009536743,
+          2.990000009536743,
+          5.990000009536743
+        ],
+        "max": [
+          5.009999990463257,
+          4.009999990463257,
+          7.009999990463257
+        ]
+      },
+      "targetTriangles": 12,
+      "hoverTriangles": 12,
+      "targetRotationY": 0,
+      "hoverRotationY": 0,
+      "ghostScale": [
+        1.0159847214410396,
+        1.0159847214410396,
+        1.0159847214410396
+      ]
+    },
+    {
+      "shape": "halfB",
+      "rotation": 1,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          3.990000009536743,
+          2.990000009536743,
+          5.990000009536743
+        ],
+        "max": [
+          5.009999990463257,
+          4.009999990463257,
+          7.009999990463257
+        ]
+      },
+      "targetTriangles": 12,
+      "hoverTriangles": 12,
+      "targetRotationY": 1.5707963267948966,
+      "hoverRotationY": 0,
+      "ghostScale": [
+        1.0159847214410396,
+        1.0159847214410396,
+        1.0159847214410396
+      ]
+    },
+    {
+      "shape": "halfA",
+      "rotation": 1,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          4,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          3.990000009536743,
+          2.990000009536743,
+          5.990000009536743
+        ],
+        "max": [
+          5.009999990463257,
+          4.009999990463257,
+          7.009999990463257
+        ]
+      },
+      "targetTriangles": 8,
+      "hoverTriangles": 12,
+      "targetRotationY": 1.5707963267948966,
+      "hoverRotationY": 0,
+      "ghostScale": [
+        1.0159847214410396,
+        1.0159847214410396,
+        1.0159847214410396
+      ]
+    },
+    {
+      "shape": "quarter",
+      "rotation": 1,
+      "targetBounds": {
+        "min": [
+          4,
+          3,
+          6
+        ],
+        "max": [
+          5,
+          3.5,
+          7
+        ]
+      },
+      "hoverBounds": {
+        "min": [
+          3.990000009536743,
+          2.990000009536743,
+          5.990000009536743
+        ],
+        "max": [
+          5.009999990463257,
+          4.009999990463257,
+          7.009999990463257
+        ]
+      },
+      "targetTriangles": 8,
+      "hoverTriangles": 12,
+      "targetRotationY": 1.5707963267948966,
+      "hoverRotationY": 0,
+      "ghostScale": [
+        1.0159847214410396,
+        1.0159847214410396,
+        1.0159847214410396
+      ]
+    }
+  ]
+}

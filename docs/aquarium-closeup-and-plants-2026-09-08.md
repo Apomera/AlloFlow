@@ -33,3 +33,5 @@ The final lifecycle test verifies that zero-biomass plants allocate no materials
 A final browser lifecycle smoke on those exact delivery bytes also passes: three zero/regrowth and quality-rebuild cycles preserve focus recovery, clock, stock, and chemistry; unmount/remount works; both scene disposals return GPU geometry and texture counts to zero. Rendered materials are released, and unused constructor-only fish palette allocations are collectible. See `focus-v4-lifecycle-final-verified/report.json` in the evidence folder. There are no browser errors.
 
 Implementation checks establish rendering and interaction behavior. These plant forms and relative biomass scales do not establish calibrated physical dimensions, biological rates, or photorealism.
+
+The next visual pass refines fish surfaces, underwater lighting and compact camera controls; see [the surfaces and lighting notes](aquarium-surfaces-and-lighting-2026-09-08.md).

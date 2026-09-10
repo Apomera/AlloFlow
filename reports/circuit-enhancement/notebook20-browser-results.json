@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "checks": [
+    "recorded settings and probes frozen",
+    "notes outside electrical history",
+    "revisit and reference from observations",
+    "removal undo",
+    "shared explanation",
+    "JSON and HTML downloads",
+    "invalid and oversized file rejection",
+    "preview/dismiss without mutation",
+    "load and restore previous investigation",
+    "workspace persistence",
+    "newest async file selection wins",
+    "unmount ignores stale read",
+    "eight-point capacity",
+    "390/320 px layout",
+    "standalone report values and zero requests",
+    "print styles"
+  ],
+  "axeViolations": 0
+}

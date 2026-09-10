@@ -1,0 +1,12 @@
+{
+  "before": "a2127e6b153534bbcde4220acf14891d843f541d51c4e8c1369d258758ad5574",
+  "after": "9e0c2f5f1973eb2fb5baded9f9ac81f0f7249356f834767daaf5a0b3952e55cc",
+  "syntax": true,
+  "parity": true,
+  "previousBreakpoint": 360,
+  "breakpoint": 420,
+  "minTarget": 44,
+  "allLabelsRetained": true,
+  "scope": "Existing compact utility row only; widths above420px unchanged",
+  "lineEnding": "LF"
+}

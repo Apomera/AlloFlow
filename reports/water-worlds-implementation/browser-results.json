@@ -1,0 +1,44 @@
+{
+  "checks": [
+    "Cold sibling-module loading",
+    "Optional ground grid changes only rendering and restores the identical landscape",
+    "Undo restores edited cover without changing water",
+    "Model-derived flow arrows and accessible cell-transfer readings",
+    "Live storm, pause, step, conserved completion, immutable baseline",
+    "Same-weather comparison changes physical runoff and preserves starting water",
+    "Synchronized difference map, signed cell readings, table, and immutable export",
+    "Recorded-time inspection and changed-cover overlays preserve completed evidence",
+    "Learning-level investigation prompts leave the experiment unchanged",
+    "Evidence export with model version, conditions, samples, and reflection",
+    "Readable report exports the completed result while inspecting the past",
+    "Second storm retains antecedent soil moisture",
+    "Mode-switch persistence and paused restore",
+    "Keyboard location selection and soil lens",
+    "Narrow layouts and a stable paused canvas under reduced motion",
+    "Difference preferences restore with dark-mode contrast and 320px layout",
+    "Equal-depth rainfall timing experiment, replay controls, recorded intensity, and exported provenance",
+    "High-density canvas retains logical coordinates and keyboard selection",
+    "Light/dark accessibility and no browser exceptions"
+  ],
+  "errors": [],
+  "results": {
+    "a": {
+      "rainfallM3": 1152.0000000000034,
+      "outflowM3": 563.4497433843446,
+      "evaporationM3": 10.450659318172827,
+      "storageChangeM3": 578.0995972975231,
+      "peakM3s": 0.1533001241514298,
+      "errorM3": -3.728928277269006e-11,
+      "elapsedMinutes": 100
+    },
+    "b": {
+      "rainfallM3": 1152.0000000000034,
+      "outflowM3": 508.7380128724832,
+      "evaporationM3": 11.2,
+      "storageChangeM3": 632.0619871275646,
+      "peakM3s": 0.1400867322179798,
+      "errorM3": -4.411049303598702e-11,
+      "elapsedMinutes": 100
+    }
+  }
+}

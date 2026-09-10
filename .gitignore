@@ -282,3 +282,7 @@ dev-tools/sn_out/
 
 # Python bytecode caches (tts-server + test helpers).
 __pycache__/
+
+# Local translation refresh intermediates
+/ui_strings.js.visual-refresh-tmp
+/desktop/web-app/public/ui_strings.js.math-refinements-tmp

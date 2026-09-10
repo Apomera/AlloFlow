@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "checks": [
+    "recorded values without rerun",
+    "saved comparison pair",
+    "live state and draft preservation",
+    "keyboard selection",
+    "mobile overflow",
+    "incomplete archives",
+    "solar reference curve",
+    "four WCAG variants"
+  ],
+  "errors": []
+}

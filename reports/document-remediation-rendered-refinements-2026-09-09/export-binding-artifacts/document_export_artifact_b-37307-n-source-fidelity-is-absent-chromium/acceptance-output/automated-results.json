@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "runAt": "2026-09-09T23:14:13.717Z",
+  "browserVersion": "148.0.7778.96",
+  "artifacts": [
+    {
+      "id": "artifact-0",
+      "documentKind": "reading",
+      "kind": "html",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\export-binding-artifacts\\document_export_artifact_b-37307-n-source-fidelity-is-absent-chromium\\artifact-0.html",
+      "sha256": "243137f68803234ff4f1e2c0892dabc3665a8f83097f3db3bea40a245a2d26e6",
+      "bytes": 159,
+      "checks": [
+        {
+          "id": "html.document-identity",
+          "status": "passed",
+          "observed": {
+            "title": "Reading check",
+            "language": "en"
+          },
+          "expected": {
+            "title": "Reading check",
+            "language": "en"
+          }
+        },
+        {
+          "id": "html.main-landmark",
+          "status": "passed",
+          "observed": 1,
+          "expected": 1
+        },
+        {
+          "id": "html.heading-navigation-semantics",
+          "status": "passed",
+          "observed": [],
+          "expected": []
+        },
+        {
+          "id": "html.reading-order",
+          "status": "passed",
+          "observed": {
+            "anchorsInOrder": true
+          },
+          "expected": [
+            "Read the original instruction."
+          ]
+        },
+        {
+          "id": "html.no-positive-tabindex",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.table-count",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.no-required-network",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "artifact.byte-stability",
+          "status": "passed",
+          "observed": {
+            "reason": "artifact-unchanged"
+          }
+        }
+      ],
+      "limitations": [
+        "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+        "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+        "Export scripts are disabled; script-dependent interactions require a separate manual task."
+      ],
+      "automatedStatus": "passed",
+      "manualATStatus": "not-run"
+    }
+  ],
+  "automatedStatus": "passed",
+  "humanAcceptance": {
+    "status": "not-run",
+    "releaseDecision": "pending-human-at",
+    "protocol": "docs/document-export-at-acceptance.md"
+  }
+}

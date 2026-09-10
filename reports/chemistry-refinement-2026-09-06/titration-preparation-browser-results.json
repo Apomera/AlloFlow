@@ -1,0 +1,166 @@
+{
+  "checks": [
+    "Current delivered mass loads without changing the transfer record; dissolution precedes transfer; exact additions approach the mark; eye-level alignment and mixing produce the correct g/L record; controls and live guidance reflect the finished state.",
+    "A changed or stale transfer cannot silently replace the preparation sample; explicit reload updates it; restart keeps the chosen mass; overshoot blocks completion and persists across navigation; forced-colors keyboard controls work.",
+    "Malformed saved state cannot manufacture a completed record; desktop/mobile accessibility and overflow checks pass; Escape returns focus; live titration fields are preserved."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "no-source",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "no-source",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "received",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "received",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dissolved",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dissolved",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "filling",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "filling",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "near-mark",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "near-mark",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "at-mark",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "at-mark",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "meniscus-closeup",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "meniscus-closeup",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "recorded",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "recorded",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "changed-source",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "changed-source",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "reloaded-source",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "reloaded-source",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "overshoot",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "overshoot",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "corrupt-state-recovery",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "corrupt-state-recovery",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "whole-equipment",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "whole-equipment",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

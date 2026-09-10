@@ -1,0 +1,35 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "screw-0.001-50",
+    "screw-0.001-100",
+    "screw-0.002-50",
+    "screw-0.002-100",
+    "screw-0.005-50",
+    "screw-0.005-100",
+    "screw-0.007-50",
+    "screw-0.007-100",
+    "screw-0.01-50",
+    "screw-0.01-100",
+    "screw-0.02-50",
+    "screw-0.02-100",
+    "screw-radius-0.05",
+    "screw-radius-0.5",
+    "screw-rear"
+  ],
+  "checks": [
+    "Keyboard and held camera pose: screw 390",
+    "Keyboard and held camera pose: screw 320",
+    "Reduced motion holds half stroke",
+    "Old timer cannot interrupt newer run",
+    "Next station starts at rest"
+  ]
+}

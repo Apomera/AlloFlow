@@ -1390,6 +1390,8 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_cyberdefense.js',
     'stem_lab/stem_tool_physics.js',
     'stem_lab/stem_tool_watercycle.js',
+    'stem_lab/water_worlds_kernel.js',
+    'stem_lab/water_worlds_view.js',
     'stem_lab/stem_tool_weathersystems.js',
     'stem_lab/stem_tool_rocks.js',
     'stem_lab/stem_tool_dissection.js',
@@ -1656,6 +1658,17 @@ function simplePureCompilePair(name, fileBase, guardKey) {
 }
 
 const COMPILE_PAIRS = [
+    // Rebuild the shared recognition privacy guard with both command surfaces.
+    ...['udl_chat', 'allo_commands'].map(name => ({
+        name: name === 'udl_chat' ? 'UdlChat' : 'AlloCommands',
+        srcPath: path.join(ROOT, name + '_source.jsx'),
+        modPath: path.join(ROOT, name + '_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public', name + '_module.js'),
+        wrap() {
+            execFileSync(process.execPath, [path.join(ROOT, '_build_' + name + '_module.js')], { cwd: ROOT, stdio: 'inherit' });
+            return fs.readFileSync(path.join(ROOT, name + '_module.js'), 'utf8');
+        },
+    })),
     {
         name: 'LessonTeachingScript',
         srcPath: path.join(ROOT, 'lesson_teaching_script_source.jsx'),

@@ -1,0 +1,88 @@
+{
+  "enhancements": [
+    "Curved rotation guides for wheel-and-axle and screw",
+    "Effort arrows follow handle tangents",
+    "Output force arrows track the raised load and downward press",
+    "Screw Close view reveals the horizontal turning plane"
+  ],
+  "tests": {
+    "passed": 846,
+    "failed": 0,
+    "files": 25,
+    "added": 14
+  },
+  "browsers": {
+    "pass14-light-final": {
+      "shots": [
+        "windlass-50",
+        "windlass-100",
+        "screw-50",
+        "screw-100",
+        "windlass-quarter-0.05",
+        "windlass-quarter-0.5",
+        "screw-quarter-0.05",
+        "screw-quarter-0.5"
+      ],
+      "checks": [
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: screw 390",
+        "Keyboard and held camera pose: windlass 320",
+        "Keyboard and held camera pose: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ],
+      "errors": [],
+      "overflow": false
+    },
+    "pass14-dark-final": {
+      "shots": [
+        "windlass-50",
+        "windlass-100",
+        "screw-50",
+        "screw-100",
+        "windlass-quarter-0.05",
+        "windlass-quarter-0.5",
+        "screw-quarter-0.05",
+        "screw-quarter-0.5"
+      ],
+      "checks": [
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: screw 390",
+        "Keyboard and held camera pose: windlass 320",
+        "Keyboard and held camera pose: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ],
+      "errors": [],
+      "overflow": false
+    },
+    "pass14-contrast-final": {
+      "shots": [
+        "windlass-50",
+        "windlass-100",
+        "screw-50",
+        "screw-100",
+        "windlass-quarter-0.05",
+        "windlass-quarter-0.5",
+        "screw-quarter-0.05",
+        "screw-quarter-0.5"
+      ],
+      "checks": [
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: screw 390",
+        "Keyboard and held camera pose: windlass 320",
+        "Keyboard and held camera pose: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ],
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceSha256": "5bad761761cbaba21e1f3355da07f4e12a105eeb85b921c6850720760d53d724",
+  "mirrorIdentical": true,
+  "publication": "Local only; no commit, push, or deployment in this pass"
+}

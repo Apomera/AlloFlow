@@ -1,0 +1,149 @@
+{
+  "checks": [
+    {
+      "id": "html.utf8-encoding",
+      "status": "passed",
+      "observed": {
+        "declaredCharsets": []
+      },
+      "expected": "valid UTF-8 with compatible declarations"
+    },
+    {
+      "id": "html.document-identity",
+      "status": "passed",
+      "observed": {
+        "title": "Export review",
+        "language": "en"
+      },
+      "expected": {
+        "title": "Export review",
+        "language": "en"
+      }
+    },
+    {
+      "id": "html.main-landmark",
+      "status": "passed",
+      "observed": 1,
+      "expected": 1
+    },
+    {
+      "id": "html.heading-navigation-semantics",
+      "status": "passed",
+      "observed": [],
+      "expected": []
+    },
+    {
+      "id": "html.reading-order",
+      "status": "passed",
+      "observed": {
+        "anchorsInOrder": true
+      },
+      "expected": []
+    },
+    {
+      "id": "html.no-positive-tabindex",
+      "status": "passed",
+      "observed": 0,
+      "expected": 0
+    },
+    {
+      "id": "html.table-1",
+      "status": "failed",
+      "observed": {
+        "caption": "Field study",
+        "rows": [
+          [
+            {
+              "text": "Area",
+              "role": "TH",
+              "scope": "col"
+            },
+            {
+              "text": "Score",
+              "role": "TH",
+              "scope": "col"
+            }
+          ],
+          [
+            {
+              "text": "Café",
+              "role": "TH",
+              "scope": "row"
+            },
+            {
+              "text": "x²",
+              "role": "TD",
+              "scope": null
+            }
+          ]
+        ],
+        "exposure": {
+          "table": false,
+          "columnHeaders": [
+            false,
+            false
+          ],
+          "rowHeaders": [
+            false
+          ]
+        }
+      },
+      "expected": {
+        "caption": "Field study",
+        "headers": [
+          "Area",
+          "Score"
+        ],
+        "rows": [
+          [
+            "Café",
+            "x²"
+          ]
+        ],
+        "rowHeaders": true
+      }
+    },
+    {
+      "id": "html.table-count",
+      "status": "passed",
+      "observed": 1,
+      "expected": 1
+    },
+    {
+      "id": "html.no-required-network",
+      "status": "passed",
+      "observed": 0,
+      "expected": 0
+    },
+    {
+      "id": "html.inspection-coverage",
+      "status": "passed",
+      "observed": {
+        "reasons": [],
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        }
+      }
+    }
+  ],
+  "coverage": {
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "blocked": 0,
+    "scripts": 0,
+    "unresolved": 0,
+    "animations": 0
+  },
+  "limitations": [
+    "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+    "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+    "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+    "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+  ]
+}

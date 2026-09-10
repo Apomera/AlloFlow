@@ -1,0 +1,37 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/collaborative_memory_palace.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > registers a separate ready class activity without replacing Realm Builder
+[CDN] arcade_mode_realm_builder loaded
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > normalizes and bounds session-authored rooms and loci
+[CDN] arcade_mode_realm_builder loaded
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > keeps group palaces separate and auto-balances participant roles
+[CDN] arcade_mode_realm_builder loaded
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > turns the approved shared state into the existing MemoryPalace contract
+[CDN] arcade_mode_realm_builder loaded
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > rejects incomplete contributions before they reach the shared queue
+[CDN] arcade_mode_realm_builder loaded
+
+stdout | tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > bounds session history while preserving actionable submissions and class capacity
+[CDN] arcade_mode_realm_builder loaded
+
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > registers a separate ready class activity without replacing Realm Builder 8ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > normalizes and bounds session-authored rooms and loci 4ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > keeps group palaces separate and auto-balances participant roles 3ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > turns the approved shared state into the existing MemoryPalace contract 2ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > rejects incomplete contributions before they reach the shared queue 2ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > bounds session history while preserving actionable submissions and class capacity 12ms
+ ✓ tests/collaborative_memory_palace.test.js > AlloHaven collaborative Memory Palace > pins teacher setup, moderated contributions, 3D reuse, and remote close wiring 13ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  17:53:06
+   Duration  11.45s (transform 72ms, setup 68ms, import 47ms, tests 45ms, environment 8.26s)
+

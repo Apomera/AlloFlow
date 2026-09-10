@@ -1,0 +1,188 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_connected_network.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a balanced bridge with zero current in the cross-link
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves the loaded unbalanced bridge without treating its arms independently
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > accounts for a series feeder shared by parallel loads
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > supports an independent 3 V source between two non-ground nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > supports an independent -3 V source between two non-ground nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a signed current source of 0.005 A with a resistive return
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a signed current source of -0.005 A with a resistive return
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a signed current source of 1e-12 A with a resistive return
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > keeps known differential voltages and currents in a floating source loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > knows zero resistor drop without assigning a ground to isolated nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > retains node voltages but does not invent how parallel ideal sources share current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > uses an ideal closed wire without artificial resistance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > uses an ideal closed switch without artificial resistance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > marks only redundant wire currents unknown and still knows their zero power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > leaves the voltage of an open switch to a floating island unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects conflicting sources without leaking stale readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects shorted source without leaking stale readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects same-node nonzero source without leaking stale readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects a current source without a return even at 0.005 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects a current source without a return even at -0.005 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects a current source without a return even at 1e-12 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > handles balanced ideal current sources without inventing their terminal voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > conserves current and power across cross-linked networks and wide resistance ratios
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > normalizes finite settings, bounded part counts, node names, and unique IDs without mutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > exports terminal connectivity, polarity, and blank unknown values in CSV
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > connected workspace rendering > renders editable arbitrary terminals, the projected board, and measurements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > connected workspace rendering > shows a recoverable diagnostic and hides calculated values for inconsistent constraints
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > connected workspace rendering > shows empty-workspace guidance without mutating another saved workspace
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····························stdout | tests/circuit_network_transient.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > uses an open capacitor and a short inductor at DC equilibrium
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > matches RC charging or release for source 5 and initial 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > matches RC charging or release for source 0 and initial 5
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > matches RC charging or release for source -5 and initial 2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_transient.test.js > general network stored energy > matches RL startup and preserves initial current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > solves a capacitor cross-link with its loaded bridge, not independent arms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_transient.test.js > general network stored energy > matches an underdamped RLC step and captures overshoot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_transient.test.js > general network stored energy > preserves a floating loop’s internal time response without an invented ground
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > supports parallel capacitors with consistent starting voltages
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > rejects incompatible starting energy without exporting a partial curve
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > rejects incompatible starting energy without exporting a partial curve
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > rejects incompatible starting energy without exporting a partial curve
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > accepts a capacitor already at the ideal source voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > exports actual adaptive timestamps, initial energy settings, polarity, and integration metadata
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > general network stored energy > normalizes reactive settings without mutating the input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > integrates a current-driven capacitor even when no DC equilibrium exists
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > integrates a voltage-driven inductor even when no DC equilibrium exists
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·········stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > conserves signed power in a source-free LC exchange with bounded numerical damping
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > bounds expensive oscillations and exposes no partial trajectory
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > uses constant traces for resistive circuits and handles an empty workspace
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > renders scoped initial-condition controls and names the new scope
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_transient.test.js > transient edge cases and presentation > renders recoverable failed initial conditions without a plot or export
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all fourteen SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····
+
+ Test Files  3 passed (3)
+      Tests  54 passed (54)
+   Start at  19:29:01
+   Duration  5.27s (transform 48ms, setup 61ms, import 154ms, tests 2.32s, environment 2.26s)
+

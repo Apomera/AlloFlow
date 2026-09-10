@@ -1,0 +1,26 @@
+[
+  {
+    "key": "crescent",
+    "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show a waxing crescent in a northern-up textbook orientation: a very thin cream crescent follows the RIGHT circular rim, tapering to tips at top and bottom. Only about fifteen percent of the disk is bright; the rest is very dark navy. The outer limb stays a circle; the inner boundary curves to the right too.",
+    "alt": "A thin pale crescent follows the right rim of a dark circular Moon against navy.",
+    "status": "pending"
+  },
+  {
+    "key": "quarter",
+    "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show first quarter in a northern-up textbook orientation: exactly the RIGHT semicircle is pale cream and the LEFT semicircle dark navy. The terminator is a straight VERTICAL diameter from the exact top of the circle to its exact bottom. Do not show a crescent or gibbous.",
+    "alt": "The right semicircle of the Moon is pale, and the left semicircle is dark, separated by a vertical boundary.",
+    "status": "pending"
+  },
+  {
+    "key": "gibbous",
+    "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show a waxing gibbous in a northern-up textbook orientation: roughly eighty-five percent of the circle is bright cream, with only a narrow dark crescent along the LEFT rim. The bright region includes the entire right rim and the center. Keep the circular outer limb.",
+    "alt": "A mostly pale circular Moon has a narrow dark region along its left rim.",
+    "status": "pending"
+  },
+  {
+    "key": "red",
+    "prompt": "Square astronomy teaching illustration in matte gouache and gentle screen-print grain, deep navy background, restrained cream and cool gray, not photographic or glossy 3D. A single large circular Moon centered with generous margins. No stars, planets, people, labels, text, letters, numbers, arrows, logos or watermark. Surface marks are subtle and illustrative, not a claim to be a geographically exact lunar map. Clearly distinguish the illuminated surface from the dark portion. Show the full circular Moon during total lunar eclipse as a dim copper-red disk, subtle reddish mottling, NO bright white portion and NO crescent. Moon remains a complete visible circle. Use muted copper and burnt orange against navy. No foreground clouds or horizon.",
+    "alt": "A complete copper-red Moon with subtle dark mottling sits against a navy background.",
+    "status": "pending"
+  }
+]

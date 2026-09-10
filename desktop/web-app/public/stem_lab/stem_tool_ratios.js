@@ -382,7 +382,30 @@
     };
   }
 
+  function buildUnitComparison(amountA, costA, amountB, costB, quantity) {
+    var values = [amountA, costA, amountB, costB, quantity];
+    if (!values.every(function(value) { return typeof value === 'number' && isFinite(value) && value >= 0 && value <= MAX_UNIT_RATE_VALUE; })) return { ok: false, reason: 'range' };
+    if (amountA === 0 || amountB === 0 || quantity === 0) return { ok: false, reason: 'quantity' };
+    var pairs = [{ x: amountA, y: costA }, { x: amountB, y: costB }];
+    var rates = pairs.map(function(pair) { return pair.y / pair.x; });
+    var costs = rates.map(function(rate) { return rate * quantity; });
+    if (!rates.every(function(rate, index) { return unitRateIsRepresentable(pairs[index], rate); }) || !costs.every(function(cost, index) { return isFinite(cost) && !(cost === 0 && rates[index] !== 0); })) return { ok: false, reason: 'scale' };
+    var same = pairsShareUnitRate(pairs[0], pairs[1]);
+    // Compare the unrounded rates. Display rounding never decides the winner.
+    var winner = same ? 'same' : rates[0] < rates[1] ? 'a' : 'b';
+    var maximum = Math.max(costs[0], costs[1]);
+    return {
+      ok: true, quantity: quantity, rates: rates, costs: costs, winner: winner,
+      rateEvidence: formatUnitRateEvidence(pairs),
+      costEvidence: formatUnitRateEvidence(costs.map(function(cost) { return { x: 1, y: cost }; })),
+      widths: costs.map(function(cost) { return maximum === 0 ? 0 : cost / maximum * 100; }),
+      maximum: maximum,
+      stickerWinner: costA === costB ? 'same' : costA < costB ? 'a' : 'b'
+    };
+  }
+
   root.RatioLabPure = {
+    buildUnitComparison: buildUnitComparison,
     gcd: gcd,
     parsePairs: parsePairs,
     parsePairInput: parsePairInput,
@@ -573,12 +596,13 @@
             step: options.step == null ? 1 : options.step,
             onChange: function(event) {
               var raw = event.target.value;
-              var patch = {}; patch[draftKey] = raw;
+              var patch = typeof options.editPatch === 'function' ? options.editPatch() : {}; patch[draftKey] = raw;
               var nextState = validateNumericDraft(raw, options);
               if (nextState.valid) patch[key] = nextState.value;
               update(patch);
             },
             onBlur: function(event) {
+              if (options.preserveInvalid && !validateNumericDraft(event.target.value, options).valid) return;
               var nextValue = finiteNumber(event.target.value, value);
               if (options.integer) nextValue = Math.round(nextValue);
               if (options.min != null) nextValue = Math.max(options.min, nextValue);
@@ -586,7 +610,7 @@
               var patch = {}; patch[key] = nextValue; patch[draftKey] = null; update(patch);
             },
             className: 'w-full rounded-lg px-3 py-2 text-sm',
-            style: inputStyle,
+            style: Object.assign({ minHeight: 44, minWidth: 0 }, inputStyle),
             'aria-label': label,
             'aria-invalid': hasDraft && !state.valid ? 'true' : undefined,
             'aria-describedby': hasDraft && !state.valid ? errorId : undefined,
@@ -710,66 +734,138 @@
       }
 
       function renderUnitRates() {
-        var amountOptions = { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.1 };
-        var costOptions = { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.01 };
-        var optionAReady = numericFieldsReady([
-          { key: 'amountA', options: amountOptions },
-          { key: 'costA', options: costOptions }
-        ]);
-        var optionBReady = numericFieldsReady([
-          { key: 'amountB', options: amountOptions },
-          { key: 'costB', options: costOptions }
-        ]);
-        var comparisonReady = optionAReady && optionBReady;
+        function resetPrediction() { return { unitPredictionChoice: null, unitPredictionChecked: null }; }
+        var amountOptions = { min: 0, max: MAX_UNIT_RATE_VALUE, step: 'any', preserveInvalid: true, editPatch: resetPrediction };
+        var costOptions = { min: 0, max: MAX_UNIT_RATE_VALUE, step: 'any', preserveInvalid: true, editPatch: resetPrediction };
+        var quantityOptions = { min: 0.01, max: MAX_UNIT_RATE_VALUE, step: 'any', preserveInvalid: true };
+        var optionAReady = numericFieldsReady([{ key: 'amountA', options: amountOptions }, { key: 'costA', options: costOptions }]);
+        var optionBReady = numericFieldsReady([{ key: 'amountB', options: amountOptions }, { key: 'costB', options: costOptions }]);
         var amountA = clamp(finiteNumber(d.amountA, 12), 0, MAX_UNIT_RATE_VALUE);
         var costA = clamp(finiteNumber(d.costA, 3.6), 0, MAX_UNIT_RATE_VALUE);
         var amountB = clamp(finiteNumber(d.amountB, 20), 0, MAX_UNIT_RATE_VALUE);
         var costB = clamp(finiteNumber(d.costB, 5.4), 0, MAX_UNIT_RATE_VALUE);
-        var computedRateA = optionAReady && amountA > 0 ? costA / amountA : null;
-        var computedRateB = optionBReady && amountB > 0 ? costB / amountB : null;
-        var rateA = computedRateA !== null && unitRateIsRepresentable({ x: amountA, y: costA }, computedRateA) ? computedRateA : null;
-        var rateB = computedRateB !== null && unitRateIsRepresentable({ x: amountB, y: costB }, computedRateB) ? computedRateB : null;
-        var rateEvidence = rateA !== null && rateB !== null
-          ? formatUnitRateEvidence([{ x: amountA, y: costA }, { x: amountB, y: costB }])
-          : { displays: [formatUnitRate(rateA), formatUnitRate(rateB)] };
-        var comparison = t('stem.ratios.enter_an_amount_greater_than_zero_for_', "Enter an amount greater than zero for both options.");
-        if (!comparisonReady) {
-          comparison = t('stem.ratios.finish_valid_inputs_before_comparing', "Finish the highlighted inputs before comparing the options.");
-        } else if (rateA !== null && rateB !== null) {
-          comparison = pairsShareUnitRate({ x: amountA, y: costA }, { x: amountB, y: costB }) ? t('stem.ratios.both_options_have_the_same_cost_per_un', "Both options have the same cost per unit.") : (rateA < rateB ? t('stem.ratios.option_a_has_the_lower_cost_per_unit', "Option A has the lower cost per unit.") : t('stem.ratios.option_b_has_the_lower_cost_per_unit', "Option B has the lower cost per unit."));
-        } else if (amountA > 0 && amountB > 0) {
-          comparison = t('stem.ratios.adjust_the_values_so_both_unit_rates_s', "Adjust the values so both unit rates stay within the learning-model range.");
-        }
+        var quantity = clamp(finiteNumber(d.unitCompareQuantity, 1), 0.01, MAX_UNIT_RATE_VALUE);
+        var baseModel = buildUnitComparison(amountA, costA, amountB, costB, 1);
+        var ready = optionAReady && optionBReady && baseModel.ok;
+        var model = buildUnitComparison(amountA, costA, amountB, costB, quantity);
+        var modelReady = ready && numericDraftState('unitCompareQuantity', quantityOptions).valid && model.ok;
+        var predictionKey = [amountA, costA, amountB, costB].join('|');
+        var checked = ready && d.unitPredictionChecked && d.unitPredictionChecked.key === predictionKey ? d.unitPredictionChecked : null;
+        var revealed = !d.unitPredictFirst || !!checked;
+        var names = [t('stem.ratios.option_a', 'Option A'), t('stem.ratios.option_b', 'Option B')];
+        var unitLabel = t('stem.ratios.fair_units', 'units');
+        var actions = { background: panel, color: text, border: '1px solid ' + muted, minHeight: 44 };
+        var comparison = !optionAReady || !optionBReady
+          ? t('stem.ratios.finish_valid_inputs_before_comparing', 'Finish the highlighted inputs before comparing the options.')
+          : amountA === 0 || amountB === 0
+          ? t('stem.ratios.enter_an_amount_greater_than_zero_for_', 'Enter an amount greater than zero for both options.')
+          : !baseModel.ok
+          ? t('stem.ratios.adjust_the_values_so_both_unit_rates_s', 'Adjust the values so both unit rates stay within the learning-model range.')
+          : baseModel.winner === 'same'
+          ? t('stem.ratios.both_options_have_the_same_cost_per_un', 'Both options have the same cost per unit.')
+          : baseModel.winner === 'a'
+          ? t('stem.ratios.option_a_has_the_lower_cost_per_unit', 'Option A has the lower cost per unit.')
+          : t('stem.ratios.option_b_has_the_lower_cost_per_unit', 'Option B has the lower cost per unit.');
 
-        function optionCard(name, amount, cost, amountKey, costKey, ready, rate, rateDisplay) {
-          return h('fieldset', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
-            h('legend', { className: 'px-2 font-bold' }, name),
-            h('div', { className: 'grid grid-cols-2 gap-3' },
-              numericField(name + t('stem.ratios.quantity', " quantity"), amount, amountKey, amountOptions),
-              numericField(name + t('stem.ratios.cost_in_dollars', " cost in dollars"), cost, costKey, costOptions)
+        function precise(value) { return formatSignificantNumber(value, 15); }
+        function rateText(index) { return '$' + baseModel.rateEvidence.displays[index]; }
+        function costText(index) { return '$' + model.costEvidence.displays[index]; }
+        function pickExample(values) {
+          update(Object.assign(resetPrediction(), { amountA: values[0], costA: values[1], amountB: values[2], costB: values[3], amountADraft: null, costADraft: null, amountBDraft: null, costBDraft: null, unitCompareQuantity: 1, unitCompareQuantityDraft: null }));
+        }
+        function optionCard(index, amount, cost, amountKey, costKey) {
+          var optionReady = index === 0 ? optionAReady : optionBReady;
+          var rate = optionReady && amount > 0 ? cost / amount : null;
+          if (rate !== null && !unitRateIsRepresentable({ x: amount, y: cost }, rate)) rate = null;
+          return h('fieldset', { className: 'rounded-xl p-4 space-y-3', style: Object.assign({ minWidth: 0 }, cardStyle) },
+            h('legend', { className: 'px-2 font-bold' }, names[index]),
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+              numericField(names[index] + t('stem.ratios.quantity', ' quantity'), amount, amountKey, amountOptions),
+              numericField(names[index] + t('stem.ratios.cost_in_dollars', ' cost in dollars'), cost, costKey, costOptions)
             ),
-            h('div', { className: 'rounded-lg p-3 text-center', style: { background: soft, border: '1px solid ' + border } },
-              h('div', { className: 'text-xs', style: { color: muted } }, t('stem.ratios.cost_for_1_unit', "Cost for 1 unit")),
-              h('div', { className: 'text-2xl font-black', style: { color: rate === null ? warning : accent } }, !ready ? t('stem.ratios.finish_the_inputs', "Finish the inputs") : (rate === null ? (amount > 0 ? t('stem.ratios.rate_outside_model_range', "Rate outside model range") : t('stem.ratios.needs_a_quantity', "Needs a quantity")) : '$' + rateDisplay)),
-              rate !== null && h('div', { className: 'text-xs', style: { color: muted } }, '$' + formatNumber(cost) + ' \u00F7 ' + formatNumber(amount))
+            revealed && h('div', { className: 'rounded-lg p-3 text-center', 'data-unit-rate-card': index, style: { background: soft, border: '1px solid ' + border, overflowWrap: 'anywhere' } },
+              h('div', { className: 'text-xs', style: { color: muted } }, t('stem.ratios.cost_for_1_unit', 'Cost for 1 unit')),
+              h('div', { className: 'text-2xl font-black', style: { color: rate === null ? warning : accent } }, !optionReady ? t('stem.ratios.finish_the_inputs', 'Finish the inputs') : rate === null ? amount > 0 ? t('stem.ratios.rate_outside_model_range', 'Rate outside model range') : t('stem.ratios.needs_a_quantity', 'Needs a quantity') : ready ? rateText(index) : '$' + formatUnitRate(rate)),
+              rate !== null && h('div', { className: 'text-xs', style: { color: muted } }, '$' + precise(cost) + ' ÷ ' + precise(amount))
             )
           );
         }
 
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'grid md:grid-cols-2 gap-4' },
-            optionCard(t('stem.ratios.option_a', "Option A"), amountA, costA, 'amountA', 'costA', optionAReady, rateA, rateEvidence.displays[0]),
-            optionCard(t('stem.ratios.option_b', "Option B"), amountB, costB, 'amountB', 'costB', optionBReady, rateB, rateEvidence.displays[1])
+        return h('div', { className: 'space-y-4', 'data-unit-comparison': true },
+          h('p', { className: 'text-sm', style: { color: muted } }, t('stem.ratios.fair_same_unit', 'Use the same unit for both quantities, such as ounces for both options. A lower package price does not always mean a lower cost per unit.')),
+          h('details', { className: 'rounded-xl p-3', style: cardStyle },
+            h('summary', { className: 'cursor-pointer text-sm font-bold' }, t('stem.ratios.fair_examples', 'Try a comparison')),
+            h('div', { className: 'flex flex-wrap gap-2 mt-3' },
+              h('button', { type: 'button', className: 'rounded-lg px-3 py-2 text-sm', style: actions, onClick: function() { pickExample([12, 3.6, 20, 5.4]); } }, t('stem.ratios.fair_example_package', 'Different package sizes')),
+              h('button', { type: 'button', className: 'rounded-lg px-3 py-2 text-sm', style: actions, onClick: function() { pickExample([6, 2.4, 15, 6]); } }, t('stem.ratios.fair_example_equal', 'Same unit price')),
+              h('button', { type: 'button', className: 'rounded-lg px-3 py-2 text-sm', style: actions, onClick: function() { pickExample([4, 0, 10, 1.5]); } }, t('stem.ratios.fair_example_zero', 'An option with zero cost'))
+            )
           ),
-          h('div', { className: 'rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2', role: 'status', 'aria-live': 'polite', style: { background: soft, border: '1px solid ' + border } },
-            h('span', { className: 'text-xl', 'aria-hidden': 'true' }, '\u2696\uFE0F'),
-            h('div', null,
-              h('div', { className: 'font-bold' }, comparison),
-              h('div', { className: 'text-xs', style: { color: muted } }, t('stem.ratios.a_fair_comparison_divides_each_cost_by', "A fair comparison divides each cost by its own quantity. Context may also involve quality, waste, or other needs."))
+          h('label', { className: 'flex items-center gap-2 text-sm font-bold', style: { minHeight: 44 } },
+            h('input', { type: 'checkbox', checked: !!d.unitPredictFirst, onChange: function(event) { update(Object.assign(resetPrediction(), { unitPredictFirst: event.target.checked })); }, style: { width: 20, height: 20, accentColor: accent } }),
+            t('stem.ratios.fair_predict_first', 'Predict before comparing')
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-4' }, optionCard(0, amountA, costA, 'amountA', 'costA'), optionCard(1, amountB, costB, 'amountB', 'costB')),
+          d.unitPredictFirst && h('fieldset', { className: 'rounded-xl p-4 space-y-3', 'data-unit-prediction': true, style: cardStyle },
+            h('legend', { className: 'px-2 text-sm font-bold' }, t('stem.ratios.fair_predict_question', 'Which has the lower cost for the same quantity?')),
+            h('div', { className: 'flex flex-wrap gap-2' }, [['a', names[0]], ['b', names[1]], ['same', t('stem.ratios.fair_same_cost', 'Same cost')]].map(function(choice) {
+              return h('label', { key: choice[0], className: 'rounded-lg px-3 py-2 flex items-center gap-2 text-sm', style: actions },
+                h('input', { type: 'radio', name: 'unit-rate-prediction', value: choice[0], checked: d.unitPredictionChoice === choice[0], onChange: function() { update({ unitPredictionChoice: choice[0], unitPredictionChecked: null }); }, style: { accentColor: accent } }), choice[1]);
+            })),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              h('button', { type: 'button', className: 'rounded-lg px-3 py-2 font-bold text-sm disabled:opacity-60', style: actions, disabled: !ready || ['a', 'b', 'same'].indexOf(d.unitPredictionChoice) < 0, onClick: function() { update({ unitPredictionChecked: { key: predictionKey, choice: d.unitPredictionChoice } }); } }, t('stem.ratios.fair_check_prediction', 'Check prediction')),
+              h('button', { type: 'button', className: 'rounded-lg px-3 py-2 text-sm disabled:opacity-60', style: actions, disabled: !ready, onClick: function() { update({ unitPredictionChoice: null, unitPredictionChecked: { key: predictionKey, choice: null } }); } }, t('stem.ratios.fair_reveal', 'Show the comparison'))
+            ),
+            checked && h('p', { role: 'status', 'aria-live': 'polite', 'data-unit-prediction-feedback': true, className: 'text-sm font-bold' }, checked.choice === null ? t('stem.ratios.fair_worked_support', 'Use the equal quantities below to explain the comparison.') : checked.choice === baseModel.winner ? t('stem.ratios.fair_prediction_confirmed', 'Prediction confirmed. Compare the equal quantities below.') : t('stem.ratios.fair_prediction_revisit', 'Revisit your prediction using the equal quantities below.'))
+          ),
+          (!ready || revealed) && h('div', { className: 'rounded-xl p-4 text-sm', role: 'status', 'aria-live': 'polite', 'data-unit-verdict': true, style: { background: soft, border: '1px solid ' + border } },
+            h('p', { className: 'font-bold' }, comparison),
+            ready && baseModel.stickerWinner !== baseModel.winner && h('p', { className: 'mt-2', 'data-unit-package-insight': true }, baseModel.winner === 'same' ? t('stem.ratios.fair_equal_explanation', 'The package totals differ because the quantities differ. At the same quantity, the costs match.') : t('stem.ratios.fair_package_explanation', 'Package totals alone give a different comparison. Divide by each quantity first so both prices describe one unit.')),
+            ready && h('p', { className: 'mt-2 text-xs', style: { color: muted } }, t('stem.ratios.a_fair_comparison_divides_each_cost_by', 'A fair comparison divides each cost by its own quantity. Context may also involve quality, waste, or other needs.'))
+          ),
+          ready && revealed && h('section', { className: 'rounded-xl p-4 space-y-4', 'aria-labelledby': 'unit-fair-title', 'data-unit-worked-model': true, style: cardStyle },
+            h('h3', { id: 'unit-fair-title', className: 'font-bold' }, t('stem.ratios.fair_model_title', 'Compare equal quantities')),
+            h('p', { className: 'text-sm', style: { color: muted } }, t('stem.ratios.fair_model_scope', 'This model assumes a constant price per unit and allows portions of a package. Buying only whole packages may lead to a different checkout total.')),
+            numericField(t('stem.ratios.fair_quantity_label', 'Quantity to compare for both options'), quantity, 'unitCompareQuantity', quantityOptions),
+            h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.ratios.fair_benchmarks', 'Comparison quantities') },
+              [{ q: 1, label: t('stem.ratios.fair_one_unit', '1 unit') }, { q: amountA, label: t('stem.ratios.fair_use_a_quantity', 'Use A quantity') }, { q: amountB, label: t('stem.ratios.fair_use_b_quantity', 'Use B quantity') }].map(function(item, index) {
+                return h('button', { key: index, type: 'button', className: 'rounded-lg px-3 py-2 text-sm', style: actions, 'aria-pressed': modelReady && quantity === item.q, disabled: item.q < quantityOptions.min, onClick: function() { update({ unitCompareQuantity: item.q, unitCompareQuantityDraft: null }); } }, item.label);
+              })
+            ),
+            !modelReady ? h('p', { role: 'status', className: 'text-sm', style: { color: warning } }, model.ok ? t('stem.ratios.fair_finish_quantity', 'Finish the comparison quantity to update the model.') : t('stem.ratios.fair_adjust_scale', 'Choose less extreme values to show both scaled costs reliably.')) : h('div', { className: 'space-y-4', 'data-unit-normalized': true },
+              h('div', { className: 'grid md:grid-cols-2 gap-3' }, [0, 1].map(function(index) {
+                var amount = index === 0 ? amountA : amountB, cost = index === 0 ? costA : costB;
+                return h('div', { key: index, className: 'rounded-lg p-3 space-y-2 text-sm', style: { background: soft, border: '1px solid ' + border, minWidth: 0, overflowWrap: 'anywhere' }, 'data-unit-scaling': index },
+                  h('h4', { className: 'font-bold' }, names[index]),
+                  h('p', null, precise(amount) + ' ' + unitLabel + ' ↔ $' + precise(cost)),
+                  h('p', { className: 'font-bold', style: { color: accent } }, '÷ ' + precise(amount) + ' → ' + t('stem.ratios.both_quantities', 'both quantities')),
+                  h('p', null, t('stem.ratios.fair_one_unit', '1 unit') + ' ↔ ' + rateText(index)),
+                  quantity !== 1 && h(React.Fragment, null,
+                    h('p', { className: 'font-bold', style: { color: accent } }, '× ' + precise(quantity) + ' → ' + t('stem.ratios.both_quantities', 'both quantities')),
+                    h('p', null, precise(quantity) + ' ' + unitLabel + ' ↔ ' + costText(index))
+                  )
+                );
+              })),
+              h('figure', { className: 'space-y-3', 'data-unit-cost-bars': true },
+                h('figcaption', { className: 'text-sm font-bold' }, t('stem.ratios.fair_cost_at', 'Cost at ') + precise(quantity) + ' ' + unitLabel),
+                [0, 1].map(function(index) {
+                  return h('div', { key: index, className: 'space-y-1' },
+                    h('div', { className: 'flex flex-wrap justify-between gap-2 text-sm font-bold', style: { overflowWrap: 'anywhere' } }, h('span', null, names[index]), h('span', null, costText(index))),
+                    h('div', { 'aria-hidden': true, style: { height: 28, borderLeft: '2px solid ' + text, background: soft, position: 'relative' } },
+                      h('div', { 'data-unit-cost-bar': index, style: { height: '100%', width: model.widths[index] + '%', background: index === 0 ? accent : success } })
+                    )
+                  );
+                }),
+                h('div', { className: 'flex justify-between gap-2 text-xs', style: { overflowWrap: 'anywhere' } }, h('span', null, '$0'), h('span', null, '$' + precise(model.maximum))),
+                h('p', { className: 'text-xs', style: { color: muted } }, model.maximum === 0 ? t('stem.ratios.fair_zero_bars', 'Both costs are zero, so neither bar has a filled length.') : t('stem.ratios.fair_bar_scale', 'Both bars start at zero and use the same dollar scale. Very close prices may look equal; use the numbers to compare.'))
+              ),
+              h('p', { className: 'text-xs', style: { color: muted } }, t('stem.ratios.fair_rounding', 'Displayed rates and scaled costs may be rounded. Calculations use the unrounded values; the divisions above retain the original quantities.')),
+              h('p', { className: 'text-sm font-bold' }, t('stem.ratios.fair_reflect', 'Change the comparison quantity. Explain why scaling both costs by the same positive amount preserves their order.'))
             )
           )
         );
       }
+
 
       function renderPercent() {
         var kind = ['findPart', 'findPercent', 'findWhole'].indexOf(d.percentKind) >= 0 ? d.percentKind : 'findPart';

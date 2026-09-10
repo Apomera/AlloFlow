@@ -145,3 +145,110 @@ test('closing a pending 3D load cannot create a detached renderer', async ({ pag
   await expect(page.locator('#diss-canvas')).toBeFocused();
 });
 
+
+async function evidence(page: any) {
+  return page.evaluate(() => {
+    const d = (window as any).__ctx.toolData.dissection;
+    return { explored: d.exploredOrgans, notes: d.organNotes, confidence: d.organConfidence, revealed: d.revealedLayers, score: d.quizScore, total: d.quizTotal };
+  });
+}
+
+test('Find in 2D preserves a locked layer and never awards inspection credit', async ({ page }) => {
+  await harness.mount(page, { dissection: state }, undefined, { expectCanvas: false });
+  const before = await evidence(page);
+  await page.locator('#diss-eye-study-toggle').click();
+  const panel = page.locator('[data-eye-study]');
+  await expect(panel).toHaveAttribute('data-eye-status', 'ready');
+  await expect(panel.locator('[data-eye-handoff]')).toContainText('This layer is still locked');
+  await panel.getByRole('button', { name: 'Find in 2D: Crystalline Lens', exact: true }).click();
+  await expect(panel).toHaveCount(0);
+  await expect(page.locator('#diss-organ-search')).toBeFocused();
+  await expect(page.locator('#diss-organ-search')).toHaveValue('Crystalline Lens');
+  await expect(page.locator('[data-other-layer-results]')).toContainText('Crystalline Lens');
+  expect(await page.evaluate(() => (window as any).__ctx.toolData.dissection.activeLayer)).toBe('skin');
+  expect(await evidence(page)).toEqual(before);
+  await page.locator('#diss-eye-study-toggle').click();
+  await expect(panel.locator('[data-eye-part="lens"]')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('Find in 2D opens an available layer without selecting or recording the structure', async ({ page }) => {
+  await harness.mount(page, { dissection: { ...state, revealedLayers: { skin: true } } }, undefined, { expectCanvas: false });
+  const before = await evidence(page);
+  await page.locator('#diss-eye-study-toggle').click();
+  const panel = page.locator('[data-eye-study]');
+  await expect(panel.locator('[data-eye-handoff]')).not.toContainText('This layer is still locked');
+  await panel.getByRole('button', { name: 'Find in 2D: Crystalline Lens', exact: true }).click();
+  await expect(page.locator('#diss-organ-search')).toBeFocused();
+  await expect(page.locator('#diss-organ-search')).toHaveValue('Crystalline Lens');
+  expect(await page.evaluate(() => {
+    const d = (window as any).__ctx.toolData.dissection; return [d.activeLayer, d.selectedOrgan];
+  })).toEqual(['organs', null]);
+  expect(await evidence(page)).toEqual(before);
+});
+
+test('existing evidence notes round-trip to the same 3D structure with keyboard focus', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await harness.mount(page, { dissection: state }, undefined, { expectCanvas: false });
+  await page.addStyleTag({ content: '#wrap { width: 100% !important; max-width: 1180px; }' });
+  const before = await evidence(page);
+  await page.locator('#diss-eye-study-toggle').click();
+  const panel = page.locator('[data-eye-study]');
+  await expect(panel).toHaveAttribute('data-eye-status', 'ready');
+  await panel.locator('[data-eye-part="cornea"]').click();
+  await expect(panel.locator('[data-eye-record-status]')).toHaveText('Note and confidence recorded');
+  await panel.locator('[data-eye-handoff]').screenshot({ path: out + '/eye-3d-evidence-handoff-mobile.png' });
+  await panel.getByRole('button', { name: 'Review my evidence note', exact: true }).click();
+  await expect(page.locator('#diss-note-cornea')).toBeFocused();
+  await expect(page.locator('#diss-note-cornea')).toHaveValue(state.organNotes['sheepEye|cornea']);
+  expect(await evidence(page)).toEqual(before);
+  await page.getByRole('button', { name: 'Return to 3D study: Cornea', exact: true }).click();
+  await expect(panel).toHaveAttribute('data-eye-status', 'ready');
+  await expect(panel.locator('#diss-eye-study-title')).toBeFocused();
+  await expect(panel.locator('[data-eye-part="cornea"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(await evidence(page)).toEqual(before);
+});
+
+test('note review changes to an available internal layer without rewriting evidence', async ({ page }) => {
+  const internal = { ...state, revealedLayers: { skin: true }, exploredOrgans: { ...state.exploredOrgans, 'sheepEye|lens': true },
+    organNotes: { ...state.organNotes, 'sheepEye|lens': 'The lens has two curved faces.' } };
+  await harness.mount(page, { dissection: internal }, undefined, { expectCanvas: false });
+  const before = await evidence(page);
+  await page.locator('#diss-eye-study-toggle').click();
+  await page.getByRole('button', { name: 'Review my evidence note', exact: true }).click();
+  await expect(page.locator('#diss-note-lens')).toBeFocused();
+  await expect(page.locator('#diss-note-lens')).toHaveValue(internal.organNotes['sheepEye|lens']);
+  expect(await page.evaluate(() => (window as any).__ctx.toolData.dissection.activeLayer)).toBe('organs');
+  expect(await evidence(page)).toEqual(before);
+});
+
+test('fit specimen frames every camera view on desktop and phone without changing evidence', async ({ page }) => {
+  await harness.mount(page, { dissection: state }, undefined, { expectCanvas: false });
+  const before = await evidence(page);
+  await page.locator('#diss-eye-study-toggle').click();
+  const panel = page.locator('[data-eye-study]'), canvas = panel.locator('[data-eye-canvas]');
+  await expect(panel).toHaveAttribute('data-eye-status', 'ready');
+  for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await page.addStyleTag({ content: '#wrap { width: 100% !important; max-width: 1180px; }' });
+    for (const name of ['Overview', 'Anterior · cornea', 'Side', 'Posterior · nerve']) {
+      await panel.getByRole('button', { name, exact: true }).click();
+      await canvas.scrollIntoViewIfNeeded();
+      await expect.poll(() => canvas.evaluate((el: any) => {
+        const b = el._dissEyeStudy.projectedBounds(); return Math.max(Math.abs(b.minX), Math.abs(b.maxX), Math.abs(b.minY), Math.abs(b.maxY));
+      })).toBeLessThanOrEqual(.861);
+      const b = await canvas.evaluate((el: any) => el._dissEyeStudy.projectedBounds());
+      expect(Math.max(b.maxX - b.minX, b.maxY - b.minY)).toBeGreaterThan(1.25);
+    }
+  }
+  await canvas.focus(); await page.keyboard.press('ArrowRight');
+  await panel.getByRole('button', { name: 'Zoom in', exact: true }).click();
+  await expect(canvas).not.toHaveAttribute('data-eye-zoom', '100');
+  await panel.getByRole('button', { name: 'Fit specimen', exact: true }).click();
+  await expect(canvas).toHaveAttribute('data-eye-zoom', '100');
+  await expect(panel.locator('[data-eye-camera]')).toHaveAttribute('data-eye-view', 'custom');
+  await panel.getByRole('button', { name: 'Overview', exact: true }).click();
+  await canvas.scrollIntoViewIfNeeded();
+  await expect(canvas).toHaveAttribute('data-eye-rendered-view', 'oblique');
+  await panel.locator('.diss-eye-study__viewport').screenshot({ path: out + '/eye-3d-fitted-mobile.png' });
+  expect(await evidence(page)).toEqual(before);
+});

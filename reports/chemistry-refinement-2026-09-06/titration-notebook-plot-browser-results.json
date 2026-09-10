@@ -1,0 +1,107 @@
+{
+  "checks": [
+    "Saved points, mouse selection, native keyboard navigation, duplicate-point selection, note display and A/B comparison handoff work without changing experiment data or recreating the viewer. Escape restores focus.",
+    "Setup groups remain separate. The active series and saved selection survive new saves, live experiment changes, and 2D/3D switches. Redox values retain volts.",
+    "Touch taps select saved points at 320 pixels without disabling page scrolling.",
+    "All layout and accessibility scans passed. Forced-colors keyboard controls, note/CSV preservation, close focus, notebook clearing and fresh single-reading plots work."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "name": "acid-base",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "overlap",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "overlap",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "overlap",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "overlap",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "single",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "single",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "single",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "single",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

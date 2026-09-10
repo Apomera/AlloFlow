@@ -1,0 +1,177 @@
+{
+  "checks": [
+    "Fresh mobile layout starts with its companion panel hidden. Illustrated cards have named descriptions and selected states. Direct touch launches switch close-ups, reveal the panel, retain volume marks, and preserve experiment/notebook data and the existing viewer. All aid focus handoffs, expanded relationships, keyboard cards, and inspector Escape/return controls passed.",
+    "All 24 layout/accessibility scans passed in 3D and 2D. Direct color and measurement tools also work in the WebGL fallback; the unavailable 3D addition inspector is omitted."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "view": "3D bench",
+      "focus": "Full apparatus",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Full apparatus",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Full apparatus",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Full apparatus",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Flask close-up",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Flask close-up",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Flask close-up",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Flask close-up",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Burette close-up",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Burette close-up",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Burette close-up",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "3D bench",
+      "focus": "Burette close-up",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Full apparatus",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Full apparatus",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Full apparatus",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Full apparatus",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Flask close-up",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Flask close-up",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Flask close-up",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Flask close-up",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Burette close-up",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Burette close-up",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Burette close-up",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "view": "2D diagram",
+      "focus": "Burette close-up",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

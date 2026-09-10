@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "61c05f261c0fdd3fd3e2adf1a5fd9eba9327a30151b157d2087165a381fee29e",
+    "bytes": 435
+  },
+  "candidate": {
+    "sha256": "11912ecbac9646f261d1e94d6bc0fe5237e24f9761366d260f1e35c816fc41ca",
+    "bytes": 463
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 601.7811999999976,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "account-label-precedence",
+      "sourceSelector": "#account",
+      "candidateSelector": "#account",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "name",
+          "status": "failed",
+          "source": "Account number",
+          "candidate": "Shipping address"
+        },
+        {
+          "property": "role",
+          "status": "passed",
+          "source": "textbox",
+          "candidate": "textbox"
+        },
+        {
+          "property": "value",
+          "status": "passed",
+          "source": "0012",
+          "candidate": "0012"
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

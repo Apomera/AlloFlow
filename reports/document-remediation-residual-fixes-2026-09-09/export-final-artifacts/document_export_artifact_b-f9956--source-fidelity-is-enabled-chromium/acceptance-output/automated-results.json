@@ -1,0 +1,317 @@
+{
+  "schema": 1,
+  "runAt": "2026-09-10T03:32:19.434Z",
+  "browserVersion": "148.0.7778.96",
+  "artifacts": [
+    {
+      "id": "artifact-0",
+      "documentKind": "reading",
+      "kind": "html",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-residual-fixes-2026-09-09\\export-final-artifacts\\document_export_artifact_b-f9956--source-fidelity-is-enabled-chromium\\artifact-0.html",
+      "sha256": "243137f68803234ff4f1e2c0892dabc3665a8f83097f3db3bea40a245a2d26e6",
+      "bytes": 159,
+      "checks": [
+        {
+          "id": "html.utf8-encoding",
+          "status": "passed",
+          "observed": {
+            "declaredCharsets": []
+          },
+          "expected": "valid UTF-8 with compatible declarations"
+        },
+        {
+          "id": "html.document-identity",
+          "status": "passed",
+          "observed": {
+            "title": "Reading check",
+            "language": "en"
+          },
+          "expected": {
+            "title": "Reading check",
+            "language": "en"
+          }
+        },
+        {
+          "id": "html.main-landmark",
+          "status": "passed",
+          "observed": 1,
+          "expected": 1
+        },
+        {
+          "id": "html.heading-navigation-semantics",
+          "status": "passed",
+          "observed": [],
+          "expected": []
+        },
+        {
+          "id": "html.reading-order",
+          "status": "passed",
+          "observed": {
+            "anchorsInOrder": true
+          },
+          "expected": [
+            "Read the original instruction."
+          ]
+        },
+        {
+          "id": "html.no-positive-tabindex",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.table-count",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.no-required-network",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.inspection-coverage",
+          "status": "passed",
+          "observed": {
+            "reasons": [],
+            "resources": {
+              "blocked": 0,
+              "scripts": 0,
+              "unresolved": 0,
+              "animations": 0
+            }
+          }
+        },
+        {
+          "id": "html.rendered-source-fidelity",
+          "status": "passed",
+          "observed": {
+            "status": "passed",
+            "coverage": {
+              "requested": 1,
+              "inspected": 1,
+              "complete": true,
+              "wholeDocument": false,
+              "reasons": []
+            }
+          }
+        },
+        {
+          "id": "artifact.byte-stability",
+          "status": "passed",
+          "observed": {
+            "reason": "artifact-unchanged"
+          }
+        },
+        {
+          "id": "html.rendered-source-byte-stability",
+          "status": "passed",
+          "observed": {
+            "reason": "source-unchanged"
+          }
+        }
+      ],
+      "coverage": {
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "resources": {
+        "blocked": 0,
+        "scripts": 0,
+        "unresolved": 0,
+        "animations": 0
+      },
+      "limitations": [
+        "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+        "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+        "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+        "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+      ],
+      "renderedFidelity": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-residual-fixes-2026-09-09\\export-final-artifacts\\document_export_artifact_b-f9956--source-fidelity-is-enabled-chromium\\source.html",
+          "sha256": "243137f68803234ff4f1e2c0892dabc3665a8f83097f3db3bea40a245a2d26e6",
+          "bytes": 159
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-residual-fixes-2026-09-09\\export-final-artifacts\\document_export_artifact_b-f9956--source-fidelity-is-enabled-chromium\\artifact-0.html",
+          "sha256": "243137f68803234ff4f1e2c0892dabc3665a8f83097f3db3bea40a245a2d26e6",
+          "bytes": 159
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 362.74789999999996,
+        "status": "passed",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "instruction",
+            "sourceSelector": "#instruction",
+            "candidateSelector": "#instruction",
+            "status": "passed",
+            "properties": [
+              {
+                "property": "text",
+                "status": "passed",
+                "source": "Read the original instruction.",
+                "candidate": "Read the original instruction."
+              },
+              {
+                "property": "visible",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              },
+              {
+                "property": "exposed",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              },
+              {
+                "property": "visibleText",
+                "status": "passed",
+                "source": "Read the original instruction.",
+                "candidate": "Read the original instruction.",
+                "occurrences": {
+                  "basis": "canonical-dom-text-offsets",
+                  "source": [
+                    [
+                      0,
+                      4
+                    ],
+                    [
+                      5,
+                      8
+                    ],
+                    [
+                      9,
+                      17
+                    ],
+                    [
+                      18,
+                      30
+                    ]
+                  ],
+                  "candidate": [
+                    [
+                      0,
+                      4
+                    ],
+                    [
+                      5,
+                      8
+                    ],
+                    [
+                      9,
+                      17
+                    ],
+                    [
+                      18,
+                      30
+                    ]
+                  ]
+                }
+              },
+              {
+                "property": "exposedText",
+                "status": "passed",
+                "source": "Read the original instruction.",
+                "candidate": "Read the original instruction.",
+                "occurrences": {
+                  "basis": "canonical-dom-text-offsets",
+                  "source": [
+                    [
+                      0,
+                      4
+                    ],
+                    [
+                      5,
+                      8
+                    ],
+                    [
+                      9,
+                      17
+                    ],
+                    [
+                      18,
+                      30
+                    ]
+                  ],
+                  "candidate": [
+                    [
+                      0,
+                      4
+                    ],
+                    [
+                      5,
+                      8
+                    ],
+                    [
+                      9,
+                      17
+                    ],
+                    [
+                      18,
+                      30
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      },
+      "automatedStatus": "passed",
+      "manualATStatus": "not-run"
+    }
+  ],
+  "automatedStatus": "passed",
+  "humanAcceptance": {
+    "status": "not-run",
+    "releaseDecision": "pending-human-at",
+    "protocol": "docs/document-export-at-acceptance.md"
+  }
+}

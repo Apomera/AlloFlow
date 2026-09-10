@@ -170,6 +170,78 @@ service cloud.firestore {
             && request.resource.data.get('democracy', {}).get('votes', {}).get(request.auth.uid, '')
               in resource.data.get('democracy', {}).get('activeOptions', []);
         }
+        function lessonBoardPlay() {
+          let old = resource.data.get('escapeRoomState', {});
+          let next = request.resource.data.get('escapeRoomState', {});
+          let oldAll = old.get('teamProgress', {}).get('All', {});
+          let nextAll = next.get('teamProgress', {}).get('All', {});
+          let run = oldAll.get('boardRuns', {}).get(old.get('attemptId', ''), {});
+          let step = run.get('steps', {}).get('t' + string(run.get('turn', 0)), {});
+          let changed = old.diff(next).affectedKeys();
+          let action = nextAll.get('boardActions', {}).get(request.auth.uid, {});
+          return changed.hasOnly(['teamProgress', 'teams'])
+            && old.get('teams', {}).diff(next.get('teams', {})).affectedKeys().hasOnly([request.auth.uid])
+            && (old.get('isActive', false) == true
+            && resource.data.get('roster', {}).keys().hasAny([request.auth.uid])
+            && (!('teams' in changed) || next.get('teams', {}).get(request.auth.uid, '') == 'All')
+            && (!('teamProgress' in changed) || (
+              old.get('isPaused', false) == false
+              && old.get('teams', {}).get(request.auth.uid, '') == 'All'
+              && old.get('teamProgress', {}).diff(next.get('teamProgress', {})).affectedKeys().hasOnly(['All'])
+              && oldAll.diff(nextAll).affectedKeys().hasOnly(['boardActions'])
+              && oldAll.get('boardActions', {}).diff(nextAll.get('boardActions', {})).affectedKeys().hasOnly([request.auth.uid])
+              && action is map && action.keys().hasAll(['attemptId', 'turn', 'requestId', 'kind', 'targetId', 'value'])
+              && action.keys().hasOnly(['attemptId', 'turn', 'requestId', 'kind', 'targetId', 'value'])
+              && action.attemptId == old.get('attemptId', '!')
+              && action.attemptId is string && action.attemptId.matches('^[A-Za-z0-9_-]{1,128}$')
+              && !(action.attemptId in ['constructor', 'prototype', '__proto__'])
+              && action.turn is int && action.turn == run.get('turn', -1) && action.turn >= 0 && action.turn < 48
+              && action.requestId is string && action.requestId.matches('^[A-Za-z0-9_-]{1,128}$')
+              && !(action.requestId in ['constructor', 'prototype', '__proto__'])
+              && action.targetId is string && action.targetId.matches('^[a-z][a-z0-9-]{0,39}$')
+              && !(action.targetId in ['constructor', 'prototype', '__proto__'])
+              && action.value is string
+              && ((action.kind == 'vote' && step.get('phase', '') == 'choose' && action.value == '')
+                || (action.kind == 'answer' && step.get('phase', '') == 'answer'
+                  && action.targetId == step.get('targetId', '') && action.value.matches('^[0-9,]{1,24}$')))
+            ))
+          );
+        }
+
+        function connectedEscapePlay() {
+          let old = resource.data.get('escapeRoomState', {});
+          let next = request.resource.data.get('escapeRoomState', {});
+          let oldAll = old.get('teamProgress', {}).get('All', {});
+          let nextAll = next.get('teamProgress', {}).get('All', {});
+          let changed = old.diff(next).affectedKeys();
+          let action = nextAll.get('connectedActions', {}).get(request.auth.uid, {});
+          return old.get('mode', '') != 'connected-room' || (
+            old.get('isActive', false) == true
+            && resource.data.get('roster', {}).keys().hasAny([request.auth.uid])
+            && (!('teams' in changed) || next.get('teams', {}).get(request.auth.uid, '') == 'All')
+            && (!('teamProgress' in changed) || (
+              old.get('isPaused', false) == false
+              && old.get('teams', {}).get(request.auth.uid, '') == 'All'
+              && old.get('teamProgress', {}).diff(next.get('teamProgress', {})).affectedKeys().hasOnly(['All'])
+              && oldAll.diff(nextAll).affectedKeys().hasOnly(['connectedActions'])
+              && oldAll.get('connectedActions', {}).diff(nextAll.get('connectedActions', {})).affectedKeys().hasOnly([request.auth.uid])
+              && action is map
+              && action.keys().hasOnly(['attemptId', 'requestId', 'nodeId', 'kind', 'value'])
+              && action.get('attemptId', '') == old.get('attemptId', '!')
+              && action.get('attemptId', '') is string
+              && action.get('attemptId', '').matches('^[A-Za-z0-9_-]{1,160}$')
+              && !(action.get('requestId', '') in ['__proto__', 'constructor', 'prototype'])
+              && !(action.get('nodeId', '') in ['constructor', 'prototype'])
+              && action.get('requestId', '') is string
+              && action.get('requestId', '').matches('^[A-Za-z0-9_-]{1,160}$')
+              && action.get('nodeId', '') is string
+              && action.get('nodeId', '').matches('^[a-z][a-z0-9_-]{0,39}$')
+              && action.get('kind', '') in ['interact', 'hint']
+              && action.get('value', false) is string
+              && action.get('value', '').matches('^[0-9,]{0,40}$')
+            ))
+          );
+        }
         function escapeRoomTeamPlay() {
           // Collaborative escape room: team progress is SHARED game state by
           // design (non-PII enums/ids, session-scoped) — any roster member
@@ -186,6 +258,7 @@ service cloud.firestore {
           return oldEscape
               .diff(request.resource.data.get('escapeRoomState', {}))
               .affectedKeys().hasOnly(['teamProgress', 'teams'])
+            && connectedEscapePlay()
             && (
               oldEscape.get('mode', '') != 'concept-quest'
               || !('teamProgress' in changedEscape)
@@ -260,7 +333,7 @@ service cloud.firestore {
           && (!('quizState' in changedTop()) || quizOnlySelf())
           && (!('bridgeReactions' in changedTop()) || reactionsOnlySelf())
           && (!('democracy' in changedTop()) || democracyOnlySelfVote())
-          && (!('escapeRoomState' in changedTop()) || escapeRoomTeamPlay())
+          && (!('escapeRoomState' in changedTop()) || (resource.data.get('escapeRoomState', {}).get('mode', '') == 'lesson-board' ? lessonBoardPlay() : escapeRoomTeamPlay()))
         );
       }
 

@@ -1,0 +1,165 @@
+{
+  "checks": [
+    "Pathway derives record counts and values, marks only invalid current records for attention, explains earlier source copies, and continues to the relevant activity with current-step focus. Compact pipetting reveals each action in order and moves keyboard focus to the next action or final record.",
+    "Full-step review changes no measurements, forced-colors keyboard use works, errors focus their explanation and recovery action, Escape returns focus, corrupted state cannot inflate progress, and live chemistry is preserved."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "initial",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "initial",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "weighing-started",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "weighing-started",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "complete",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "complete",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "changed-weighing",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "changed-weighing",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "changed-transfer",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "changed-transfer",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "overshoot",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "overshoot",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "compact-error",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "compact-error",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "all-steps",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "all-steps",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "focused-fill",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "focused-fill",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "focused-adjusted",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "focused-adjusted",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "compact-record",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "compact-record",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "malformed-state",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "malformed-state",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "whole-equipment",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "whole-equipment",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

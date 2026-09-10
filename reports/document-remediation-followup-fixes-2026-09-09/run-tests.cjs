@@ -1,0 +1,16 @@
+const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');
+process.chdir(path.resolve(__dirname,'../..'));
+const files=process.argv.slice(2);
+if(!files.length)throw Error('Provide exact test files');
+const report=path.join(__dirname,'final-tests.json');
+if(fs.existsSync(report))throw Error('Use a fresh runner/report directory to preserve prior results');
+const run=spawnSync(process.execPath,['node_modules/vitest/vitest.mjs','run',...files,'--maxWorkers=1','--testTimeout=120000','--reporter=default','--reporter=json','--outputFile='+report],{encoding:'utf8',maxBuffer:16*1024*1024});
+fs.writeFileSync(path.join(__dirname,'tests.stdout.log'),run.stdout||'');
+fs.writeFileSync(path.join(__dirname,'tests.stderr.log'),run.stderr||'');
+const result=fs.existsSync(report)?JSON.parse(fs.readFileSync(report,'utf8')):null;
+const actual=new Map((result?.testResults||[]).map(r=>[path.resolve(r.name).toLowerCase(),r]));
+const missing=files.filter(f=>!actual.has(path.resolve(f).toLowerCase()));
+const failed=files.filter(f=>{const r=actual.get(path.resolve(f).toLowerCase());return r&&(r.status!=='passed'||!r.assertionResults.length||r.assertionResults.some(t=>t.status!=='passed'));});
+const summary={exitCode:run.status,signal:run.signal,error:run.error?.message||null,requestedFiles:files,reportedFiles:actual.size,missing,failed,tests:result?.numTotalTests,passed:result?.numPassedTests,complete:run.status===0&&!missing.length&&!failed.length&&result?.success===true};
+fs.writeFileSync(path.join(__dirname,'validation-summary.json'),JSON.stringify(summary,null,2)+'\n');console.log(JSON.stringify(summary,null,2));
+if(!summary.complete)process.exitCode=1;

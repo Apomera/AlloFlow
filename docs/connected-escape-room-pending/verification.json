@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "moduleRevision": "4b8c21a0ab",
+  "regressionTests": 223,
+  "testFiles": 9,
+  "newTests": 23,
+  "solo": {
+    "keyboardTabSteps": 373,
+    "liveWrites": 0,
+    "audits": 12
+  },
+  "live": {
+    "independentBrowsers": 4,
+    "permissionCheckedWrites": 33,
+    "audits": 10
+  },
+  "manualScreenReaderValidation": "Outstanding",
+  "deployment": "Local implementation only"
+}

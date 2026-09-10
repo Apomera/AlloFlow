@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\external-stylesheet-is-unavailable\\source.html",
+    "sha256": "f67b8ed199a2f487ee0e1f22d1d3c58a98515c2992e0282cc77b6bae9b022811",
+    "bytes": 443
+  },
+  "candidate": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\external-stylesheet-is-unavailable\\candidate.html",
+    "sha256": "f67b8ed199a2f487ee0e1f22d1d3c58a98515c2992e0282cc77b6bae9b022811",
+    "bytes": 443
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 906.1857000000018,
+  "status": "unavailable",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": false,
+    "wholeDocument": false,
+    "reasons": [
+      "blocked-network-requests",
+      "unresolved-resources"
+    ]
+  },
+  "resources": {
+    "source": {
+      "blocked": 1,
+      "scripts": 0,
+      "unresolved": 1,
+      "animations": 0
+    },
+    "candidate": {
+      "blocked": 1,
+      "scripts": 0,
+      "unresolved": 1,
+      "animations": 0
+    }
+  },
+  "checks": [
+    {
+      "id": "externally-styled-instruction",
+      "sourceSelector": "#instruction",
+      "candidateSelector": "#instruction",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Bring a printed copy to your appointment.",
+          "candidate": "Bring a printed copy to your appointment."
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "passed": true,
+  "ai": "Deterministic fixture through independent production review requests",
+  "soloTransportWrites": 0,
+  "keyboardTabSteps": 377,
+  "scenarios": [
+    "saved library preserves two variations and separate progress",
+    "saved selection resumes after reload",
+    "guide cross-area keyboard navigation",
+    "journal keyboard shortcuts",
+    "new investigation links",
+    "standalone solo generation",
+    "independent review without answer key",
+    "keyboard-only complete room",
+    "wrong-answer feedback",
+    "reload progress and unsent settings",
+    "personal hints",
+    "boundary focus and movement announcements",
+    "resume completed room",
+    "expanded evidence and lesson review",
+    "keyboard revisit with debrief return",
+    "completed solo reflection prompts",
+    "confirmed restart",
+    "modal background inertness and restored trigger focus",
+    "coordinate boundary and text position"
+  ],
+  "audits": [
+    {
+      "name": "solo-device-desktop",
+      "width": 1280,
+      "dark": false,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-device-mobile",
+      "width": 320,
+      "dark": false,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-device-dark",
+      "width": 390,
+      "dark": true,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-device-large-text",
+      "width": 320,
+      "dark": false,
+      "large": true,
+      "forced": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-device-forced-colors",
+      "width": 390,
+      "dark": false,
+      "large": false,
+      "forced": true,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-device-reset",
+      "width": 1280,
+      "dark": false,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-complete-mobile",
+      "width": 320,
+      "dark": false,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-debrief-expanded",
+      "width": 320,
+      "dark": false,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-debrief-large-text",
+      "width": 320,
+      "dark": false,
+      "large": true,
+      "forced": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-debrief-dark",
+      "width": 390,
+      "dark": true,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-debrief-forced-colors",
+      "width": 390,
+      "dark": false,
+      "large": false,
+      "forced": true,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "solo-debrief-reset",
+      "width": 1280,
+      "dark": false,
+      "large": false,
+      "forced": false,
+      "overflow": false,
+      "violations": []
+    }
+  ],
+  "errors": []
+}

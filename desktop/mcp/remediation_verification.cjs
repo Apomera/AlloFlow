@@ -118,12 +118,13 @@ const CANDIDATE_REJECTION_SCHEMA = {
   candidateRejections: { type: 'array', maxItems: 100, items: {
     type: 'object', additionalProperties: false, required: ['chunkId', 'phase', 'reason'],
     properties: {
+      sourceLocation: { type: 'string', maxLength: 100, pattern: "^(?:document|(?:table|row|cell|link|figure|control|math):[1-9][0-9]{0,7}(?:/(?:row|cell):[1-9][0-9]{0,7}){0,2})$" },
       pass: { type: 'integer', minimum: 1, maximum: 1000000 },
       chunkId: { type: 'string', maxLength: 32, pattern: '^(?:all|[0-9]{1,8}(?:\\.[0-9]{1,8})?)$' },
       phase: { type: 'string', enum: ['single', 'chunk', 'image-retry', 'half', 'half-assembly', 'assembly'] },
       reason: { type: 'string', enum: ['empty-output', 'no-original', 'size-shrink', 'size-growth-unexpected',
         'text-shrink', 'text-growth-unexpected', 'no-doc-markers', 'image-reference-changed',
-        'image-reference-uncheckable', 'table-cell-transposition', 'invalid-json-wrapper', 'content-not-preserved'] },
+        'image-reference-uncheckable', 'table-cell-transposition', 'invalid-json-wrapper', "table-content-changed", "source-value-changed", "link-destination-changed", "image-association-changed", "source-reading-order-changed", "source-content-added", "source-contract-uncheckable", "source-visibility-changed", "table-semantics-changed", "form-state-changed", "math-content-changed", 'content-not-preserved'] },
     },
   } },
 };
@@ -141,6 +142,7 @@ function normalizeCandidateRejectionEvidence(value, schema = CANDIDATE_REJECTION
         || !fields.reason.enum.includes(entry.reason)) continue;
       const record = { chunkId: entry.chunkId, phase: entry.phase, reason: entry.reason };
       if (Number.isSafeInteger(entry.pass) && entry.pass >= fields.pass.minimum && entry.pass <= fields.pass.maximum) record.pass = entry.pass;
+      if (typeof entry.sourceLocation === 'string' && fields.sourceLocation && entry.sourceLocation.length <= fields.sourceLocation.maxLength && new RegExp(fields.sourceLocation.pattern).test(entry.sourceLocation)) record.sourceLocation = entry.sourceLocation;
       records.push(record);
     }
   }

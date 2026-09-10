@@ -1517,11 +1517,14 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     setAnchors((prev) => prev.filter((anchor) => !Number.isInteger(anchor.fromSubmissionIdx)));
   };
   const rosterStudents = rosterKey && rosterKey.students || {};
-  const rosterStudentNames = Object.keys(rosterStudents);
   const _normalizeNickname = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const rosterMatch = React.useMemo(() => {
+    const rosterStudentNames = Object.keys(rosterStudents);
+    const caseInsensitiveRoster = /* @__PURE__ */ new Map();
     const normalizedRoster = {};
     rosterStudentNames.forEach((n) => {
+      const lowerName = n.toLowerCase();
+      if (!caseInsensitiveRoster.has(lowerName)) caseInsensitiveRoster.set(lowerName, n);
       const normalized = _normalizeNickname(n);
       if (!normalized) return;
       if (Object.prototype.hasOwnProperty.call(normalizedRoster, normalized) && normalizedRoster[normalized] !== n) normalizedRoster[normalized] = null;
@@ -1531,7 +1534,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
       if (!nickname || nickname === "?") return { kind: "unknown" };
       const raw = String(nickname);
       if (rosterStudents[raw]) return { kind: "exact", name: raw };
-      const exactCi = rosterStudentNames.find((n) => n.toLowerCase() === raw.toLowerCase());
+      const exactCi = caseInsensitiveRoster.get(raw.toLowerCase());
       if (exactCi) return { kind: "exact", name: exactCi };
       const norm = _normalizeNickname(raw);
       if (norm && normalizedRoster[norm]) return { kind: "fuzzy", name: normalizedRoster[norm] };

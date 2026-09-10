@@ -2,6 +2,103 @@
 // (args, deps) => pattern. Body is byte-identical to original; closure-captured
 // state and helpers are passed via the deps object and destructured at top.
 
+// Bundled locally, not a lazy dependency: recognition text must never fall
+// through to a cloud router because the command module is unavailable.
+const _storeRecognitionTools = typeof createSchoolStoreRecognitionTools === 'function' ? createSchoolStoreRecognitionTools() : null;
+const _isStoreRecognitionRequest = value => {
+  try { return _isStoreSetupGuideRequest(value) || !_storeRecognitionTools || _storeRecognitionTools.isRecognitionRequest(value); }
+  catch (_) { return true; }
+};
+function _isStoreRecognitionValue(value) {
+  const seen = new Set(); let count = 0;
+  function inspect(item, depth) {
+    if (++count > 256 || depth > 8) return true;
+    if (typeof item === 'string') return _isStoreRecognitionRequest(item);
+    if (item == null || typeof item === 'number' || typeof item === 'boolean') return false;
+    if (typeof item !== 'object' || seen.has(item)) return true;
+    seen.add(item);
+    return Object.keys(item).some(key => _isStoreRecognitionRequest(key) || inspect(item[key], depth + 1));
+  }
+  try { return inspect(value, 0); } catch (_) { return true; }
+}
+function _isStoreGuideSentinel(value) {
+  return typeof value === 'string' && /^__allo_store_guide_/i.test(value.normalize('NFKC').replace(/[\p{Cf}\u034f\u180b-\u180d\ufe00-\ufe0f\u0000-\u001f\u007f-\u009f]/gu, '').trim());
+}
+function _isStoreSetupGuideRequest(value) {
+  if (typeof value !== 'string') return false;
+  if (_isStoreGuideSentinel(value)) return true;
+  if (value.length > 200 || /[\u0000-\u001f\u007f-\u009f\p{Cf}]/u.test(value)) return false;
+  const text = value.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ').replace(/[.!?]$/, '');
+  const products = ['school store', 'school rewards', 'alloflow school store', 'alloflow school rewards'];
+  return products.some(product => [
+    'help me set up ' + product, 'help me setup ' + product, 'help me use ' + product, 'help me with ' + product,
+    'set up ' + product, 'setup ' + product, 'how do i set up ' + product, 'how can i set up ' + product,
+    product + ' setup help', product + ' setup guide', product + ' setup', product + ' help', product + ' guide', product + ' manual',
+    'open ' + product + ' manual', 'show ' + product + ' manual', 'show me the ' + product + ' manual'
+  ].some(alias => text === alias || text === 'please ' + alias));
+}
+function _handleStoreSetupGuide(value, deps) {
+  if (typeof deps.setUdlInput === 'function') deps.setUdlInput('');
+  const emit = (text, choices) => { if (typeof deps.setUdlMessages === 'function') deps.setUdlMessages(prev => [...prev, { role: 'model', localOnly: true, text, ...(choices ? { type: 'choices', choices } : {}) }]); };
+  if (deps._planRunRef && deps._planRunRef.current && deps._planRunRef.current.running) { emit('Wait for the current plan to finish or stop it first. No School Store setup action was taken.'); return true; }
+  for (const key of ['_pendingBotCmdRef', '_pendingBotPlanRef']) if (deps[key]) deps[key].current = null;
+  if (deps._botCommandPlanningRef) { const previous = deps._botCommandPlanningRef.current || {}; try { if (previous.controller) previous.controller.abort(); } catch (_) {} deps._botCommandPlanningRef.current = { controller: null, serial: (Number(previous.serial) || 0) + 1 }; }
+  let ctx = {}; try { ctx = typeof deps._alloCmdCtx === 'function' ? deps._alloCmdCtx() || {} : {}; } catch (_) {}
+  const teacher = ctx.isTeacherMode === true && !ctx.isParentMode && !ctx.isIndependentMode && !ctx.isStudentLinkMode && (!ctx.commandAudience || ctx.commandAudience === 'teacher');
+  const token = typeof value === 'string' && value.startsWith('__allo_store_guide_') ? value.slice('__allo_store_guide_'.length) : null;
+  if (token === 'dismiss') { emit('School Store guide closed. No settings or records were changed.'); return true; }
+  if (!teacher) { emit('School Store setup guidance is available from the teacher launcher. Ask your school administrator for the approved staff or student portal. No settings or records were changed.'); return true; }
+  if ((token !== null && !['practice', 'join', 'setup', 'start'].includes(token)) || (_isStoreGuideSentinel(value) && token === null)) { emit('That School Store guide choice is unavailable. Ask for School Store setup help to choose a current path.'); return true; }
+  let guide;
+  try { guide = typeof createSchoolStoreSetupGuide === 'function' ? createSchoolStoreSetupGuide() : null; } catch (_) {}
+  if (!guide || typeof guide.getPath !== 'function' || typeof guide.getPaths !== 'function' || typeof ctx.openSchoolStoreGuide !== 'function') { emit('The local School Store setup guide is unavailable in this view. Open School Rewards & Store from the teacher tools and use its manual. No setup information was sent to AI.'); return true; }
+  let paths; try { paths = ['practice', 'join', 'setup'].map(id => guide.getPath(id)); } catch (_) { emit('The local School Store guide could not be loaded. Use the manual in the School Rewards & Store launcher.'); return true; }
+  if (paths.some((path, index) => !path || path.id !== ['practice', 'join', 'setup'][index] || typeof path.title !== 'string' || typeof path.intro !== 'string' || !Array.isArray(path.steps))) { emit('The local School Store guide could not be loaded. Use the manual in the School Rewards & Store launcher.'); return true; }
+  if (token && token !== 'start') {
+    const path = paths.find(item => item.id === token); let opened = false;
+    try { opened = ctx.openSchoolStoreGuide(path.id) !== false; } catch (_) {}
+    emit(path.title + '\n\n' + path.intro + '\n\n' + (opened ? 'The launcher guide is open. Follow its reviewed steps there; no permissions, settings or records were changed.' : 'The launcher could not open. Open School Rewards & Store from teacher tools to follow this path.') + '\n\nKeep student details, credentials and deployment configuration out of this chat.'); return true;
+  }
+  emit('Choose a School Store guide. These local steps do not configure accounts or change school records. Keep student details, credentials and deployment configuration out of this chat.', paths.map(path => ({ label: path.title, value: '__allo_store_guide_' + path.id })).concat([{ label: 'Cancel', value: '__allo_store_guide_dismiss' }]));
+  return true;
+}
+function _handleStoreRecognitionBoundary(value, deps = {}) {
+  // Only exact non-award guide phrases may precede the broad private guard.
+  if (_isStoreSetupGuideRequest(value)) return _handleStoreSetupGuide(value, deps);
+  const open = value === '__allo_store_open', dismiss = value === '__allo_store_dismiss';
+  if (!open && !dismiss && !_isStoreRecognitionValue(value)) return false;
+  if (typeof deps.setUdlInput === 'function') deps.setUdlInput('');
+  if (deps._planRunRef && deps._planRunRef.current && deps._planRunRef.current.running) {
+    if (typeof deps.setUdlMessages === 'function') deps.setUdlMessages(prev => [...prev, { role: 'model', localOnly: true, text: _chatText(deps.t, 'schoolrewards.recognition_busy', 'Wait for the current plan to finish or stop it first. No point award was sent.') }]);
+    return true;
+  }
+  for (const key of ['_pendingBotCmdRef', '_pendingBotPlanRef']) if (deps[key]) deps[key].current = null;
+  if (deps._botCommandPlanningRef) {
+    const previous = deps._botCommandPlanningRef.current || {};
+    try { if (previous.controller) previous.controller.abort(); } catch (_) {}
+    deps._botCommandPlanningRef.current = { controller: null, serial: (Number(previous.serial) || 0) + 1 };
+  }
+  let ctx = {};
+  try { ctx = typeof deps._alloCmdCtx === 'function' ? deps._alloCmdCtx() || {} : {}; } catch (_) {}
+  const teacher = ctx.isTeacherMode === true && !ctx.isParentMode && !ctx.isIndependentMode && !ctx.isStudentLinkMode && (!ctx.commandAudience || ctx.commandAudience === 'teacher');
+  const canOpen = teacher && typeof ctx.openSchoolStoreRecognition === 'function';
+  let text = _chatText(deps.t, 'schoolrewards.private_command_voice_notice', 'Your request was not added to this chat. Open the signed-in School Store, select your linked class, and re-enter the request by typing or its dedicated on-device dictation when available. Do not use the ordinary Allobot microphone for student awards. Review the student and confirm separately. Nothing has been awarded.');
+  if (dismiss) text = _chatText(deps.t, 'schoolrewards.private_command_cancelled', 'Cancelled. No point award was sent.');
+  else if (open) {
+    try { if (canOpen) ctx.openSchoolStoreRecognition(); } catch (_) {}
+    text = canOpen
+      ? _chatText(deps.t, 'schoolrewards.private_command_voice_opened', 'Use the School Store that opens, or its launcher if setup is needed. Select your linked class and re-enter the request by typing or the Store on-device dictation when available. No student details were transferred and no points were awarded.')
+      : _chatText(deps.t, 'schoolrewards.private_command_unavailable', 'School Store recognition is unavailable in this view. Use the approved staff portal. No request was sent.');
+  }
+  const message = { role: 'model', text, localOnly: true };
+  if (canOpen && !open && !dismiss) Object.assign(message, { type: 'choices', choices: [
+    { label: _chatText(deps.t, 'schoolrewards.open_recognition', 'Open School Store'), value: '__allo_store_open' },
+    { label: _chatText(deps.t, 'schoolrewards.cancel_recognition', 'Cancel'), value: '__allo_store_dismiss' }
+  ] });
+  if (typeof deps.setUdlMessages === 'function') deps.setUdlMessages(prev => [...prev, message]);
+  return true;
+}
+
 const _normalizeBlueprintSourceText = (value) => String(value || '').trim().replace(/\s+/g, ' ');
 
 // A lesson conversation can become useful planning input, but it is not a
@@ -16,8 +113,9 @@ const _lessonHandoffText = (value, max = 1400) => String(value == null ? '' : va
 const _lessonHandoffSignal = /\b(lesson|unit|teach|teacher|student|learner|class|grade|standard|objective|goal|topic|reading|text|source|activity|assessment|quiz|vocab|scaffold|differentiat|accommodat|udl|blueprint|resource|generate|create|plan)\b/i;
 
 const buildLessonConversationHandoff = (messages, options = {}) => {
+  if (_isStoreRecognitionValue(options.latestRequest)) return '';
   const rows = (Array.isArray(messages) ? messages : [])
-    .filter((message) => message && !message.isWelcome && message.type !== 'choices' && message.type !== 'blueprint')
+    .filter((message) => message && !message.localOnly && !_isStoreRecognitionRequest(message.text) && !message.isWelcome && message.type !== 'choices' && message.type !== 'blueprint')
     .map((message) => {
       const text = _lessonHandoffText(message.text);
       if (!text || /^__allo_/i.test(text)) return '';
@@ -145,6 +243,7 @@ const normalizeSourceGenerationConfig = (rawConfig) => {
 };
 
 const inferLessonConversationHandoff = async (options = {}, deps = {}) => {
+  if (_isStoreRecognitionValue(options.conversationContext) || _isStoreRecognitionValue(options.latestRequest)) return normalizeSourceGenerationConfig(options.fallbackConfig || {});
   const conversationContext = _lessonHandoffText(options.conversationContext, _LESSON_HANDOFF_MAX_CHARS);
   const latestRequest = _lessonHandoffText(options.latestRequest, 1200);
   const fallback = normalizeSourceGenerationConfig(options.fallbackConfig || {});
@@ -348,13 +447,14 @@ const _blueprintChatMessage = (config, text) => ({
 });
 
 const _generateStandardChatResponse = async (userText, deps = {}) => {
+  if (_handleStoreRecognitionBoundary(userText, deps)) return { ok: false, localOnly: true };
   const {
     udlMessages, history, inputText, isParentMode, isIndependentMode,
     currentUiLanguage, gradeLevel, getGroupDifferentiationContext,
     callGemini, setUdlMessages, warnLog, t,
   } = deps;
   try {
-    const historyText = (udlMessages || []).slice(-20).map(m => `${m.role === 'user' ? 'User' : 'Expert'}: ${m.text}`).join('\n');
+    const historyText = (udlMessages || []).filter(m => m && !m.localOnly && !_isStoreRecognitionRequest(m.text)).slice(-20).map(m => `${m.role === 'user' ? 'User' : 'Expert'}: ${m.text}`).join('\n');
     const resourceContext = history.length > 0
       ? history.map(h => `- ${h.type}: ${h.title}`).join('\n')
       : 'No resources generated yet.';
@@ -510,6 +610,7 @@ ${toolList}
 };
 
 const handleSendUDLMessage = async (manualText = null, deps) => {
+  if (_handleStoreRecognitionBoundary(manualText != null ? manualText : deps.udlInput, deps)) return { ok: false, localOnly: true };
   // Phase E hotfix: comprehensive deps list (was missing isShowMeMode, isBotVisible,
   // history, inputText, standardsInput, targetStandards, dokLevel, sourceLength,
   // sourceTone, quizMcqCount, differentiationRange, outlineType, visualStyle,
@@ -2319,15 +2420,19 @@ function _commandWorkflowLibraryCard(service, ctx, t, mode, prefix, hasCurrentPl
 // AlloBot command-planning layer — extracted to UdlChat (2026-07-20).
 // Every host binding arrives via deps; the host wrapper is contract-gated.
 async function planAndSendUdlMessage(manualText, deps) {
+  const recognitionCandidate = manualText != null ? manualText : deps.udlInput;
+  if (_handleStoreRecognitionBoundary(recognitionCandidate, deps)) return { ok: false, localOnly: true };
   const {
     captureIntentSnapshot, restoreIntentSnapshot, inputText, setInputText, answerUdlQuestion, setIsChatProcessing = () => {},
-    _alloCmdCtx, _botCommandPlanningRef, _pendingBotCmdRef, _pendingBotPlanRef, _planRunRef, _planUndoRef, lastIntentSnapshotRef, setActiveView, setGeneratedContent, setHistory, setUdlInput, setUdlMessages, udlInput, udlMessages, _sendUdlToChat, activeView, generatedContent, history, t,
+    _alloCmdCtx, _botCommandPlanningRef, _pendingBotCmdRef, _pendingBotPlanRef, _planRunRef, _planUndoRef, lastIntentSnapshotRef, setActiveView, setGeneratedContent, setHistory, setUdlInput, setUdlMessages, udlInput, udlMessages, _sendUdlToChat: sendOrdinaryUdlChat, activeView, generatedContent, history, t,
   } = deps;
 
+    const _sendUdlToChat = text => _handleStoreRecognitionBoundary(text == null ? udlInput : text, deps) ? { ok: false, localOnly: true } : sendOrdinaryUdlChat(text);
     const _AC = window.AlloModules && window.AlloModules.AlloCommands;
     const _inputAction = manualText && typeof manualText === 'object' ? manualText : null;
     const _rawUtter = _inputAction ? '' : String((manualText != null ? manualText : udlInput) || '');
     const answerQuestion = async text => {
+      if (_handleStoreRecognitionBoundary(text, deps)) return { ok: false, localOnly: true };
       setIsChatProcessing(true);
       try {
         if (typeof answerUdlQuestion === 'function') return await answerUdlQuestion(text);

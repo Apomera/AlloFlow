@@ -1,0 +1,53 @@
+{
+  "enhancement": "Screw lead engagement and visible workpiece compression",
+  "tests": {
+    "focusedPassed": 383,
+    "files": 5,
+    "added": 13,
+    "finalGeometryRerun": 235
+  },
+  "browser": {
+    "light": {
+      "desktopScenarios": 15,
+      "mobileScenarios": 2,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: screw 390",
+        "Keyboard and held camera pose: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "dark": {
+      "desktopScenarios": 15,
+      "mobileScenarios": 2,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: screw 390",
+        "Keyboard and held camera pose: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "contrast": {
+      "desktopScenarios": 15,
+      "mobileScenarios": 2,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: screw 390",
+        "Keyboard and held camera pose: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "sourceSha256": "2977bd26828d9927b2572bd76843f06d65af4620384469bf3dfaa939ae6e9f52",
+  "published": false
+}

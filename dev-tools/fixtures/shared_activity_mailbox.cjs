@@ -49,7 +49,7 @@ function makeGsSandbox() {
     const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle };');
     const api = factory(...Object.values(services));
     const call = payload => JSON.parse(api.handle(payload).getContent());
-    return { call, driveFiles };
+    return { call, driveFiles, readDocument: (code, token = 's') => JSON.parse(cacheStore.get('d:' + code + ':' + token) || 'null')?.d };
 }
 
 module.exports = { makeGsSandbox };

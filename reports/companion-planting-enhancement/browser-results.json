@@ -1,0 +1,52 @@
+{
+  "viewports": [
+    {
+      "width": 390,
+      "geometry": {
+        "width": 378,
+        "content": 376,
+        "viewport": 390,
+        "right": 384
+      }
+    },
+    {
+      "width": 320,
+      "geometry": {
+        "width": 308,
+        "content": 306,
+        "viewport": 320,
+        "right": 314
+      }
+    }
+  ],
+  "assertions": [
+    "Keyboard swap and focus navigation",
+    "Modeled layout effect",
+    "Live garden isolation",
+    "Notebook save",
+    "CSV download",
+    "Serialized state restoration",
+    "390px and 320px containment",
+    "Stale result invalidation",
+    "Reopen saved trial",
+    "Close and resume",
+    "All 16 plot centers select correctly at desktop and 320px",
+    "Dense crop and winter scenes render",
+    "Maximized garden fits all beds"
+  ],
+  "errors": [],
+  "motion": [
+    "Play advances recorded days",
+    "Pause stops the timer",
+    "Keyboard scrubbing reaches endpoint",
+    "Manual and OS reduced motion",
+    "Manual stepping without motion",
+    "Offscreen playback pauses",
+    "Live canvas receives current day without remount",
+    "Canvas motion respects OS and lab settings",
+    "Canvas fits 320px and hit-tests plot 16 correctly",
+    "Canvas stops when offscreen",
+    "Canvas releases animation resources on unmount"
+  ],
+  "accessibility": []
+}

@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "checks": [
+    "empty state",
+    "route selection without reset",
+    "guided route progress",
+    "route next lesson",
+    "zero-value snapshots",
+    "same-lesson comparison",
+    "scoped restore preserves drafts and other lessons",
+    "Markdown download",
+    "cross-lesson guard",
+    "legacy restoration",
+    "mobile layout",
+    "four WCAG variants"
+  ],
+  "errors": []
+}

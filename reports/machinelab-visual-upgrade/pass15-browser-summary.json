@@ -1,0 +1,42 @@
+{
+  "browser": {
+    "pass15-light-final": {
+      "scenarios": 8,
+      "checks": [
+        "Keyboard and held camera pose: ramp 390",
+        "Keyboard and held camera pose: ramp 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ],
+      "errors": [],
+      "overflow": false
+    },
+    "pass15-dark-final": {
+      "scenarios": 8,
+      "checks": [
+        "Keyboard and held camera pose: ramp 390",
+        "Keyboard and held camera pose: ramp 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ],
+      "errors": [],
+      "overflow": false
+    },
+    "pass15-contrast-final": {
+      "scenarios": 8,
+      "checks": [
+        "Keyboard and held camera pose: ramp 390",
+        "Keyboard and held camera pose: ramp 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ],
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceSha256": "3cd84ce318e9930c641f777388ddd87075bcb38fd12dcdae0c677bb28dfa9c31",
+  "mirrorIdentical": true
+}

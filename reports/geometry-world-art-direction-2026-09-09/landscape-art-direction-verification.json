@@ -1,0 +1,386 @@
+{
+  "pass": true,
+  "scope": "Actual vendored THREE r128 geometry/lifecycle test; no browser launch",
+  "results": [
+    {
+      "ground": {
+        "xMin": -5,
+        "xMax": 5,
+        "zMin": -4,
+        "zMax": 4,
+        "y": 0
+      },
+      "tier": "detail",
+      "triangles": 5468,
+      "drawCalls": 6,
+      "minimumClearance": 31.93148475059182,
+      "maxHeight": 50.44578552246094,
+      "detail": {
+        "tier": "detail",
+        "trees": 26,
+        "rocks": 12,
+        "grassTufts": 36
+      },
+      "meshes": [
+        {
+          "name": "gw-rolling-hills",
+          "triangles": 1536
+        },
+        {
+          "name": "gw-mountain-ridges",
+          "triangles": 1152
+        },
+        {
+          "name": "gw-distant-ridges",
+          "triangles": 1152
+        },
+        {
+          "name": "gw-distant-tree-trunks",
+          "triangles": 260
+        },
+        {
+          "name": "gw-distant-tree-canopies",
+          "triangles": 936
+        },
+        {
+          "name": "gw-natural-accents",
+          "triangles": 432
+        }
+      ],
+      "hash": "d22964be6b679c9d7edc108cc961ddc2a9b041b3d8792ecb52f63bc861093212"
+    },
+    {
+      "ground": {
+        "xMin": 100,
+        "xMax": 1000,
+        "zMin": -100,
+        "zMax": -95,
+        "y": 12
+      },
+      "tier": "detail",
+      "triangles": 5468,
+      "drawCalls": 6,
+      "minimumClearance": 31.931440170656533,
+      "maxHeight": 50.44578552246094,
+      "detail": {
+        "tier": "detail",
+        "trees": 26,
+        "rocks": 12,
+        "grassTufts": 36
+      },
+      "meshes": [
+        {
+          "name": "gw-rolling-hills",
+          "triangles": 1536
+        },
+        {
+          "name": "gw-mountain-ridges",
+          "triangles": 1152
+        },
+        {
+          "name": "gw-distant-ridges",
+          "triangles": 1152
+        },
+        {
+          "name": "gw-distant-tree-trunks",
+          "triangles": 260
+        },
+        {
+          "name": "gw-distant-tree-canopies",
+          "triangles": 936
+        },
+        {
+          "name": "gw-natural-accents",
+          "triangles": 432
+        }
+      ],
+      "hash": "a945037100b1fbfa8f7799eae310a5b05aaa2ad8d6cc40f661f6d39320faad5b"
+    },
+    {
+      "ground": {
+        "xMin": 20,
+        "xMax": -20,
+        "zMin": 2,
+        "zMax": -2,
+        "y": -4
+      },
+      "tier": "detail",
+      "triangles": 5468,
+      "drawCalls": 6,
+      "minimumClearance": 31.93148465943278,
+      "maxHeight": 50.44578552246094,
+      "detail": {
+        "tier": "detail",
+        "trees": 26,
+        "rocks": 12,
+        "grassTufts": 36
+      },
+      "meshes": [
+        {
+          "name": "gw-rolling-hills",
+          "triangles": 1536
+        },
+        {
+          "name": "gw-mountain-ridges",
+          "triangles": 1152
+        },
+        {
+          "name": "gw-distant-ridges",
+          "triangles": 1152
+        },
+        {
+          "name": "gw-distant-tree-trunks",
+          "triangles": 260
+        },
+        {
+          "name": "gw-distant-tree-canopies",
+          "triangles": 936
+        },
+        {
+          "name": "gw-natural-accents",
+          "triangles": 432
+        }
+      ],
+      "hash": "c0aa308889c725f8f4f5f0966ad8a41edd51d8203d9b7eeb3b2282e90a8008d5"
+    },
+    {
+      "ground": {
+        "xMin": 0,
+        "xMax": 0,
+        "zMin": 0,
+        "zMax": 0,
+        "y": 0
+      },
+      "tier": "detail",
+      "triangles": 5468,
+      "drawCalls": 6,
+      "minimumClearance": 31.93148475059182,
+      "maxHeight": 50.44578552246094,
+      "detail": {
+        "tier": "detail",
+        "trees": 26,
+        "rocks": 12,
+        "grassTufts": 36
+      },
+      "meshes": [
+        {
+          "name": "gw-rolling-hills",
+          "triangles": 1536
+        },
+        {
+          "name": "gw-mountain-ridges",
+          "triangles": 1152
+        },
+        {
+          "name": "gw-distant-ridges",
+          "triangles": 1152
+        },
+        {
+          "name": "gw-distant-tree-trunks",
+          "triangles": 260
+        },
+        {
+          "name": "gw-distant-tree-canopies",
+          "triangles": 936
+        },
+        {
+          "name": "gw-natural-accents",
+          "triangles": 432
+        }
+      ],
+      "hash": "9374a52ad03435a3a799142a89d0023bf9604204382a872331a2650fb28b20e5"
+    },
+    {
+      "ground": {
+        "xMin": -5,
+        "xMax": 5,
+        "zMin": -4,
+        "zMax": 4,
+        "y": 0
+      },
+      "tier": "saver",
+      "triangles": 3292,
+      "drawCalls": 6,
+      "minimumClearance": 31.845910482022976,
+      "maxHeight": 50.44578552246094,
+      "detail": {
+        "tier": "saver",
+        "trees": 12,
+        "rocks": 6,
+        "grassTufts": 12
+      },
+      "meshes": [
+        {
+          "name": "gw-rolling-hills",
+          "triangles": 1024
+        },
+        {
+          "name": "gw-mountain-ridges",
+          "triangles": 768
+        },
+        {
+          "name": "gw-distant-ridges",
+          "triangles": 768
+        },
+        {
+          "name": "gw-distant-tree-trunks",
+          "triangles": 120
+        },
+        {
+          "name": "gw-distant-tree-canopies",
+          "triangles": 432
+        },
+        {
+          "name": "gw-natural-accents",
+          "triangles": 180
+        }
+      ],
+      "hash": "5400810026d0ad7987e33ef70f2de2ea70b13fa6c3a25ea353e78a08fb62faed"
+    },
+    {
+      "ground": {
+        "xMin": 100,
+        "xMax": 1000,
+        "zMin": -100,
+        "zMax": -95,
+        "y": 12
+      },
+      "tier": "saver",
+      "triangles": 3292,
+      "drawCalls": 6,
+      "minimumClearance": 31.84588506612892,
+      "maxHeight": 50.44578552246094,
+      "detail": {
+        "tier": "saver",
+        "trees": 12,
+        "rocks": 6,
+        "grassTufts": 12
+      },
+      "meshes": [
+        {
+          "name": "gw-rolling-hills",
+          "triangles": 1024
+        },
+        {
+          "name": "gw-mountain-ridges",
+          "triangles": 768
+        },
+        {
+          "name": "gw-distant-ridges",
+          "triangles": 768
+        },
+        {
+          "name": "gw-distant-tree-trunks",
+          "triangles": 120
+        },
+        {
+          "name": "gw-distant-tree-canopies",
+          "triangles": 432
+        },
+        {
+          "name": "gw-natural-accents",
+          "triangles": 180
+        }
+      ],
+      "hash": "7a309a1f5ae3b689c3ebde503113ee8286db669586e11e043910df43d6386b44"
+    },
+    {
+      "ground": {
+        "xMin": 20,
+        "xMax": -20,
+        "zMin": 2,
+        "zMax": -2,
+        "y": -4
+      },
+      "tier": "saver",
+      "triangles": 3292,
+      "drawCalls": 6,
+      "minimumClearance": 31.84591006676747,
+      "maxHeight": 50.44578552246094,
+      "detail": {
+        "tier": "saver",
+        "trees": 12,
+        "rocks": 6,
+        "grassTufts": 12
+      },
+      "meshes": [
+        {
+          "name": "gw-rolling-hills",
+          "triangles": 1024
+        },
+        {
+          "name": "gw-mountain-ridges",
+          "triangles": 768
+        },
+        {
+          "name": "gw-distant-ridges",
+          "triangles": 768
+        },
+        {
+          "name": "gw-distant-tree-trunks",
+          "triangles": 120
+        },
+        {
+          "name": "gw-distant-tree-canopies",
+          "triangles": 432
+        },
+        {
+          "name": "gw-natural-accents",
+          "triangles": 180
+        }
+      ],
+      "hash": "faa9abfa6df6b88c380a39efeaee20049e70c237e46300e9efea66ea8bd13b4e"
+    },
+    {
+      "ground": {
+        "xMin": 0,
+        "xMax": 0,
+        "zMin": 0,
+        "zMax": 0,
+        "y": 0
+      },
+      "tier": "saver",
+      "triangles": 3292,
+      "drawCalls": 6,
+      "minimumClearance": 31.845910343604515,
+      "maxHeight": 50.44578552246094,
+      "detail": {
+        "tier": "saver",
+        "trees": 12,
+        "rocks": 6,
+        "grassTufts": 12
+      },
+      "meshes": [
+        {
+          "name": "gw-rolling-hills",
+          "triangles": 1024
+        },
+        {
+          "name": "gw-mountain-ridges",
+          "triangles": 768
+        },
+        {
+          "name": "gw-distant-ridges",
+          "triangles": 768
+        },
+        {
+          "name": "gw-distant-tree-trunks",
+          "triangles": 120
+        },
+        {
+          "name": "gw-distant-tree-canopies",
+          "triangles": 432
+        },
+        {
+          "name": "gw-natural-accents",
+          "triangles": 180
+        }
+      ],
+      "hash": "c28c310262d38f2309a58d7ea2163cb9e4ff3d25e0d4c0a092c4f8fa5f58e2ee"
+    }
+  ],
+  "repeatHash": "d22964be6b679c9d7edc108cc961ddc2a9b041b3d8792ecb52f63bc861093212",
+  "createdMeshes": 54,
+  "disposedGeometry": 54,
+  "disposedMaterial": 54
+}

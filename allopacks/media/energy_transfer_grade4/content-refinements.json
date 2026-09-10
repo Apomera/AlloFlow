@@ -1,0 +1,122 @@
+[
+  {
+    "resourceId": "en-glossary",
+    "path": [
+      "data",
+      8,
+      "def"
+    ],
+    "from": "Energy carried along a wire.",
+    "to": "The flow of electric charge through a circuit. A current can transfer energy."
+  },
+  {
+    "resourceId": "en-reading",
+    "path": [
+      "data"
+    ],
+    "from": "## Energy Moves\n\nYou cannot hold **energy** in your hand. You cannot put it in a jar. But you can see what it does.\n\nEnergy is what lets one thing make something else happen. A moving ball knocks over a cup. A hot pan warms the soup. A battery lights a bulb. In each one, something changed, and energy is the reason.\n\n### Faster means more\n\nAnything moving has energy, and how much depends on its **speed**. Roll a ball slowly into a stack of blocks and one block wobbles. Roll the same ball fast and the whole stack scatters.\n\nThe ball did not get heavier. It got faster, and faster means more energy of **motion**. This is why running into someone hurts more than walking into them.\n\n### Energy does not stay put\n\nHere is the important part. Energy can move from one place to another. That move is called a **transfer**, and it happens in four ways you meet every day.\n\n**Sound.** A drum is hit, the drum skin shakes, and the shaking travels through the air. When it reaches your ear, you hear it. If the drum is loud enough you feel it in your chest, because the energy really did travel to you.\n\n**Light.** The Sun is very far away, and its energy still reaches your face. A torch sends energy across a dark room to the wall.\n\n**Heat.** Put a metal spoon in hot soup and the handle warms up. The energy moved along the spoon, from the hot end toward the cool end. It always goes that way, warm to cool, never the other way.\n\n**Electric current.** A wire carries energy from a battery to a bulb. Nothing you can see is moving along the wire, but the energy arrives, and the bulb glows.\n\n### Crashes are transfers\n\nWhen two things **collide**, energy moves between them. A rolling marble hits a still marble, stops, and the still one shoots away. The energy went from the first to the second.\n\nSome of it usually leaks out too. A collision often makes a sound, and the objects can get slightly warmer. That sound and that warmth are energy, leaving in another form.\n\n### It never just vanishes\n\nPeople say energy gets used up. It does not. It **changes** form and it spreads out.\n\nA torch does not destroy the energy in its battery. It turns it into light and a little heat. A bouncing ball ends up still on the floor, and the energy went into sound and warming the ground very slightly.\n\nSo when something stops happening, do not ask where the energy went missing. Ask where it went. There is always an answer.",
+    "to": "## Energy Moves\n\nYou cannot hold **energy** in your hand. You cannot put it in a jar. But you can see what it does.\n\nEnergy is what lets one thing make something else happen. A moving ball knocks over a cup. A hot pan warms the soup. A battery lights a bulb. In each one, something changed, and energy is the reason.\n\n### Faster means more\n\nAnything moving has energy, and how much depends on its **speed**. Roll a ball slowly into a stack of blocks and one block wobbles. Roll the same ball fast and the whole stack scatters.\n\nThe ball did not get heavier. It got faster, and faster means more energy of **motion**. This is why running into someone hurts more than walking into them.\n\n### Energy does not stay put\n\nHere is the important part. Energy can move from one place to another. That move is called a **transfer**, and it happens in four ways you meet every day.\n\n**Sound.** A drum is hit, the drum skin shakes, and the shaking travels through the air. When it reaches your ear, you hear it. If the drum is loud enough you feel it in your chest, because the energy really did travel to you.\n\n**Light.** The Sun is very far away, and its energy still reaches your face. A torch sends energy across a dark room to the wall.\n\n**Heat.** Put a metal spoon in hot soup and the handle warms up. The energy moved along the spoon, from the hot end toward the cool end. On its own, net heat transfer goes from warmer to cooler. A device such as a refrigerator needs an energy supply to move heat the other way.\n\n**Electric current.** In a complete circuit, electric charge flows through the wires and bulb. This flow is called current. Energy transfers from the battery to the bulb, which glows.\n\n### Crashes are transfers\n\nWhen two things **collide**, energy moves between them. In a nearly elastic, straight-on collision between equal-mass marbles, the rolling marble can nearly stop while the still marble moves away. Real results depend on the objects and the collision. The energy went from the first to the second.\n\nSome of it usually leaks out too. A collision often makes a sound, and the objects can get slightly warmer. That sound and that warmth are energy, leaving in another form.\n\n### It never just vanishes\n\nPeople say energy gets used up. It does not. It **changes** form and it spreads out.\n\nA torch does not destroy the energy in its battery. It turns it into light and a little heat. A bouncing ball ends up still on the floor, and the energy went into sound and warming the ground very slightly.\n\nSo when something stops happening, do not ask where the energy went missing. Ask where it went. There is always an answer."
+  },
+  {
+    "resourceId": "en-anchor",
+    "path": [
+      "data",
+      "sections",
+      2,
+      "bullets",
+      0
+    ],
+    "from": "Warm to cool, always",
+    "to": "Net heat flows from warmer to cooler on its own"
+  },
+  {
+    "resourceId": "en-anchor",
+    "path": [
+      "data",
+      "sections",
+      2,
+      "bullets",
+      1
+    ],
+    "from": "Never cool to warm",
+    "to": "Moving heat the other way needs an energy supply"
+  },
+  {
+    "resourceId": "en-anchor",
+    "path": [
+      "data",
+      "sections",
+      3,
+      "bullets",
+      0
+    ],
+    "from": "Carried along a wire",
+    "to": "Electric charge flows around a complete circuit"
+  },
+  {
+    "resourceId": "en-anchor",
+    "path": [
+      "data",
+      "sections",
+      4,
+      "bullets",
+      0
+    ],
+    "from": "Faster means more energy",
+    "to": "For the same mass, faster means more motion energy"
+  },
+  {
+    "resourceId": "en-quiz",
+    "path": [
+      "data",
+      "questions",
+      2,
+      "question"
+    ],
+    "from": "Which way does heat always move?",
+    "to": "Which way does net heat flow on its own?"
+  },
+  {
+    "resourceId": "en-quiz",
+    "path": [
+      "data",
+      "questions",
+      6,
+      "expectedAnswer"
+    ],
+    "from": "It started as the energy of your hands moving. When they collided it transferred, and most of it left as sound travelling through the air to people's ears. A little also made your hands slightly warmer. None of it was destroyed.",
+    "to": "It started as energy of the moving hands. During the clap, some energy transferred to the air as sound and some became thermal energy in the hands and surroundings. The proportions are not measured here. Energy was transferred and transformed, not destroyed."
+  },
+  {
+    "resourceId": "en-quiz",
+    "path": [
+      "data",
+      "questions",
+      7,
+      "expectedAnswer"
+    ],
+    "from": "Energy is not destroyed. The battery ran down because its energy was changed into other forms and moved away, such as light and heat from a bulb. The battery is empty because the energy left, not because it stopped existing.",
+    "to": "Energy is not destroyed. As a battery powers a device, stored chemical energy transfers and changes into other forms, such as light and thermal energy. A flat battery can no longer supply enough electrical energy for that device under those conditions."
+  },
+  {
+    "resourceId": "en-faq",
+    "path": [
+      "data",
+      0,
+      "answer"
+    ],
+    "from": "Because the energy left the battery. It went out as light, sound and heat, and spread into the room. It still exists, but it is now spread out so thinly that nothing can use it again.",
+    "to": "As a battery powers a device, stored chemical energy is transferred and changed into forms such as light, sound and thermal energy. A flat battery can no longer supply enough electrical energy for the device. The transferred energy still exists, often dispersed as thermal energy that is less useful for doing the original job."
+  },
+  {
+    "resourceId": "en-challenge",
+    "path": [
+      "data",
+      "brief",
+      "lockedLessonFacts",
+      0
+    ],
+    "from": "Faster means more energy of motion.",
+    "to": "For the same mass, faster motion means more kinetic energy."
+  }
+]

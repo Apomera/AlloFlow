@@ -121,6 +121,14 @@
   .clab-root .clab-pit-notebook summary{min-height:44px;padding:8px 0;box-sizing:border-box;line-height:1.5;font-weight:700}
   .clab-root .clab-pit-notebook summary span{font:700 10px var(--mono);margin-right:5px;opacity:.75}
   .clab-root .clab-pit-notebook summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+  .clab-root .clab-pit-note-overview{border:1px solid var(--line2);border-radius:9px;padding:10px;margin:12px 0;background:rgba(124,226,239,.04)}
+  .clab-root [data-pit-note-status]{margin:0 0 10px;font-size:12px;font-weight:700;color:var(--ink)}
+  .clab-root .clab-pit-note-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .clab-root .clab-pit-note-stages>span{display:grid;gap:4px;padding:8px 3px;text-align:center;border:1px solid var(--line2);border-radius:7px;min-width:0}
+  .clab-root .clab-pit-note-stages b{font-size:11px;color:var(--ink2)}
+  .clab-root .clab-pit-note-stages small{font:11px var(--mono);color:var(--pit)}
+  .clab-root .clab-pit-note-stages [data-noted="true"]{border-color:var(--pit);background:rgba(124,226,239,.07)}
+  .clab-root [data-pit-continue]{width:100%;min-height:44px;margin-top:10px;white-space:normal;border-color:var(--pit);color:var(--pit)}
   .clab-root .clab-pit-note-body label{display:block;font-size:12px;line-height:1.5;color:var(--ink);margin-top:8px}
   .clab-root .clab-pit-note-body textarea{min-height:76px;font-size:13px;line-height:1.5}
   .clab-root .clab-pit-notebook [data-pit-download]{width:100%;min-height:44px;margin-top:8px;white-space:normal}
@@ -1055,6 +1063,14 @@ const PHYSICS_PIT_STOPS = [
   }
 ];
 const PHYSICS_PIT_NOTE_FIELDS = ['change', 'fixed', 'prediction', 'baseline', 'revised', 'explanation'];
+function physicsPitNotebookStatus(notebook){
+  const hasNote = key => typeof (notebook && notebook[key]) === 'string' && notebook[key].trim().length > 0;
+  const groups = [['change', 'fixed', 'prediction'], ['baseline', 'revised'], ['explanation']];
+  const next = PHYSICS_PIT_NOTE_FIELDS.find(key => !hasNote(key));
+  return { count: PHYSICS_PIT_NOTE_FIELDS.filter(hasNote).length,
+    groups: groups.map(keys => ({ count: keys.filter(hasNote).length, total: keys.length })),
+    next: next || 'explanation' };
+}
 function physicsPitNotebookText(item, notebook){
   const labels = ['One change', 'What I kept the same', 'My prediction and reason', 'Baseline observation', 'Revised observation', 'My explanation'];
   return 'CoasterLab investigation: ' + item.label + '\n\n' +
@@ -1117,7 +1133,7 @@ function renderPhysicsPitIllustration(id){
 function renderPhysicsPitNotebook(item){
   const notes = physicsPit.stops[item.id].notebook;
   const field = (key, label, placeholder) => '<label for="clab-pitNote-' + key + '">' + label + '</label><textarea id="clab-pitNote-' + key + '" data-pit-note="' + key + '" maxlength="600" placeholder="' + placeholder + '">' + guidedHtmlEscape(notes[key]) + '</textarea>';
-  return '<section class="clab-pit-notebook" aria-labelledby="clab-pitNotebookTitle"><h4 id="clab-pitNotebookTitle">My investigation notebook</h4><p class="hint">Keep short notes or keywords. Record your own readings from the run report, including units and where you measured.</p>' +
+  return '<section class="clab-pit-notebook" aria-labelledby="clab-pitNotebookTitle"><h4 id="clab-pitNotebookTitle" tabindex="-1">My investigation notebook</h4><p class="hint">Keep short notes or keywords. Record your own readings from the run report, including units and where you measured.</p><div class="clab-pit-note-overview"><p data-pit-note-status role="status" aria-live="polite"></p><div class="clab-pit-note-stages" aria-label="Notes by stage">' + ['Plan', 'Observe', 'Explain'].map((label, index) => '<span><b>' + label + '</b><small data-pit-stage-count="' + index + '"></small></span>').join('') + '</div><button type="button" data-pit-continue>Continue notes</button><p class="chnote">Notes recorded, not a score. You can revisit any prompt.</p></div>' +
     '<details open><summary><span aria-hidden="true">01</span> Plan a fair comparison</summary><div class="clab-pit-note-body">' +
     field('change', 'One change I will make', 'Name the node or setting and how you will change it.') +
     field('fixed', 'What I will keep the same', 'List the ride settings and other features you will hold fixed.') +
@@ -1129,6 +1145,20 @@ function renderPhysicsPitNotebook(item){
     field('explanation', 'My explanation', 'My evidence was ... This supports or changes my prediction because ... Next I would ...') + '</div></details>' +
     '<button type="button" data-pit-download>Download my notes (.txt)</button><p class="chnote" data-pit-save role="status">' + (physicsPitSaved ? 'Notes save on this device.' : 'Device storage is unavailable. Keep this page open to retain your responses.') + '</p></section>';
 }
+function syncPhysicsPitNotebookStatus(item){
+  const panel = __clabGet('clab-pitExperiment');
+  const status = physicsPitNotebookStatus(physicsPit.stops[item.id].notebook);
+  const message = status.count + ' of 6 prompts have notes';
+  const label = panel.querySelector('[data-pit-note-status]');
+  if(label.textContent !== message) label.textContent = message;
+  panel.querySelectorAll('[data-pit-stage-count]').forEach(el => {
+    const group = status.groups[Number(el.dataset.pitStageCount)];
+    const text = group.count + ' of ' + group.total;
+    if(el.textContent !== text) el.textContent = text;
+    el.parentElement.dataset.noted = String(group.count === group.total);
+  });
+  panel.querySelector('[data-pit-continue]').textContent = status.count === 6 ? 'Review my explanation' : 'Continue notes';
+}
 function renderPhysicsPitExperiment(){
   const panel = __clabGet('clab-pitExperiment');
   const item = PHYSICS_PIT_STOPS.find(stop => stop.id === physicsPit.experiment);
@@ -1137,8 +1167,16 @@ function renderPhysicsPitExperiment(){
   panel.dataset.idea = item.id;
   panel.innerHTML = '<p class="eyebrow">Your next experiment · ' + item.label + '</p><div class="clab-pit-heading">' + physicsPitEmblem() + '<h3 tabindex="-1">Try it on your track</h3></div><div class="clab-pit-task"><span aria-hidden="true">01</span><div><b>Change &amp; compare</b><p class="hint">' + item.experiment + '</p></div></div><div class="clab-pit-task"><span aria-hidden="true">02</span><div><b>Evidence to collect</b><p class="hint">' + item.measure + '</p></div></div>' + renderPhysicsPitNotebook(item) + '<div class="btnrow"><button type="button" data-pit-return>Return to my prediction</button><button type="button" data-pit-dismiss>Dismiss plan</button></div>';
   panel.querySelectorAll('[data-pit-note]').forEach(input => {
-    input.oninput = () => { physicsPit.stops[item.id].notebook[input.dataset.pitNote] = input.value.slice(0, 600); savePhysicsPit(); };
+    input.oninput = () => { physicsPit.stops[item.id].notebook[input.dataset.pitNote] = input.value.slice(0, 600); savePhysicsPit(); syncPhysicsPitNotebookStatus(item); };
   });
+  syncPhysicsPitNotebookStatus(item);
+  panel.querySelector('[data-pit-continue]').onclick = () => {
+    const next = physicsPitNotebookStatus(physicsPit.stops[item.id].notebook).next;
+    const input = panel.querySelector('[data-pit-note="' + next + '"]');
+    const section = input.closest('details');
+    panel.querySelectorAll('.clab-pit-notebook details').forEach(detail => { detail.open = detail === section; });
+    input.scrollIntoView({ block: 'center', behavior: 'auto' }); input.focus({ preventScroll: true });
+  };
   panel.querySelector('[data-pit-download]').onclick = () => {
     const blob = new Blob([physicsPitNotebookText(item, physicsPit.stops[item.id].notebook)], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob), link = document.createElement('a');

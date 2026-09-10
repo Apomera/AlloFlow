@@ -28,9 +28,10 @@ describe('document pipeline generated artifacts', function () {
         stdio: 'pipe',
       });
       const expected = readFileSync(join(scratch, 'doc_pipeline_module.js'));
-      expect(readFileSync(join(ROOT, 'doc_pipeline_module.js'))).toEqual(expected);
-      expect(readFileSync(join(ROOT, 'desktop', 'web-app', 'public', 'doc_pipeline_module.js')))
-        .toEqual(expected);
+      // Compare bytes natively; structural Buffer equality walks millions of properties.
+      expect(readFileSync(join(ROOT, 'doc_pipeline_module.js')).equals(expected)).toBe(true);
+      expect(readFileSync(join(ROOT, 'desktop', 'web-app', 'public', 'doc_pipeline_module.js')).equals(expected))
+        .toBe(true);
     } finally {
       rmSync(scratch, { recursive: true, force: true });
     }

@@ -1,0 +1,105 @@
+{
+  "pass": true,
+  "processExits": {
+    "baselineBrowser": 0,
+    "finalBrowser": 0,
+    "finalTests": 0
+  },
+  "sources": [
+    {
+      "file": "stem_tool_geometryworld.js",
+      "sha256": "9e0c2f5f1973eb2fb5baded9f9ac81f0f7249356f834767daaf5a0b3952e55cc",
+      "mirrorIdentical": true,
+      "browserSnapshotIdentical": true,
+      "parses": true,
+      "changed": true
+    },
+    {
+      "file": "stem_tool_geometryworld_builder.js",
+      "sha256": "0d32e048b1654d4c804f50a7b5f56dda01a0f02942a46f2d0fffacba6c62ffa8",
+      "mirrorIdentical": true,
+      "browserSnapshotIdentical": true,
+      "parses": true,
+      "changed": true
+    },
+    {
+      "file": "stem_tool_printlab.js",
+      "sha256": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742",
+      "mirrorIdentical": true,
+      "browserSnapshotIdentical": true,
+      "parses": true,
+      "changed": false
+    }
+  ],
+  "testFiles": 6,
+  "loadedAssertions": 98,
+  "passedAssertions": 98,
+  "browserViewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    },
+    {
+      "width": 414,
+      "height": 896
+    },
+    {
+      "width": 320,
+      "height": 700
+    },
+    {
+      "width": 844,
+      "height": 390
+    }
+  ],
+  "utilityStates": 10,
+  "phoneUtilitiesAllReachable": true,
+  "outsideCompact": [
+    {
+      "width": 430,
+      "redo": false,
+      "buttonGeometryUnchanged": true
+    },
+    {
+      "width": 430,
+      "redo": true,
+      "buttonGeometryUnchanged": true
+    },
+    {
+      "width": 844,
+      "redo": false,
+      "buttonGeometryUnchanged": true
+    },
+    {
+      "width": 844,
+      "redo": true,
+      "buttonGeometryUnchanged": true
+    }
+  ],
+  "nativeFullscreenPassed": true,
+  "contrast": {
+    "background": "rgb(0, 0, 0)",
+    "border": "rgb(0, 255, 255)",
+    "color": "rgb(255, 255, 255)"
+  },
+  "scaleDraft": {
+    "same": true,
+    "focused": true,
+    "value": "12.75"
+  },
+  "printLabReturn": {
+    "selectedMetrics": [
+      "60Blocks selected",
+      "6×4×5Block bounds"
+    ],
+    "unitMm": 12.5,
+    "fullWorkspacePreserved": true
+  },
+  "browserErrors": [],
+  "consoleErrors": [],
+  "shaderErrors": []
+}

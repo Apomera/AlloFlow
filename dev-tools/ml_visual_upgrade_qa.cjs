@@ -6,8 +6,12 @@ let source = fs.readFileSync(path.join(__dirname, 'ml_scene_shots.cjs'), 'utf8')
 source = source.replace("const OUT = process.argv[2] || '.';", "const OUT = path.resolve(process.argv[2] || '.');");
 source = source.replace('deviceScaleFactor: 2', 'deviceScaleFactor: 1');
 // Expose the field only in this generated review page, for a reproducible transient frame.
-source = source.replace("const tool = read('stem_lab/stem_tool_machinelab.js');", "const tool = read('stem_lab/stem_tool_machinelab.js').replace('build: buildFieldScene', 'build: function(THREE,S,m){buildFieldScene(THREE,S,m);window.__qaField=S;}');");
+source = source.replace("const tool = read('stem_lab/stem_tool_machinelab.js');", "const tool = read('stem_lab/stem_tool_machinelab.js').replace('build: buildFieldScene', 'build: function(THREE,S,m){buildFieldScene(THREE,S,m);window.__qaField=S;}').replace('build: buildSimpleMachineScene', 'build: function(THREE,S,m){buildSimpleMachineScene(THREE,S,m);window.__qaShop=S;}');");
 source = source.replace('await pg.waitForTimeout(wait);', `await pg.waitForTimeout(wait);
+    if((label.startsWith('workshop11-') || label.startsWith('workshop12-')) && label.includes('lift')) {
+      await pg.evaluate(()=>{const s=window.__qaShop;s.mlDemoId=null;s.data.demoId=11;s.tick(0);s.tick(1100);s.tick=function(){};});
+      await pg.waitForTimeout(100);
+    }
     if(label.includes('damage-impact')) {
       await pg.evaluate(()=>{const s=window.__qaField;s.flightId=null;s.camCur=null;s.data.static=true;s.tick(1000);s.tick(1800);for(let t=1850;t<=2250;t+=50)s.tick(t);s.tick=function(){};});
       await pg.waitForTimeout(100);
@@ -37,9 +41,35 @@ source = source.replace('let st = state;', `const only=(process.argv.find(a=>a.s
       return {...base,wallBlocks:blocks,rubbleRest:rest,shotsFired:count};
     },[st,label]);`);
 source = source.replace('manifest.push(label);', `if (await pg.locator('canvas').count()) await pg.locator('canvas').first().screenshot({path:path.join(OUT,label+'-detail.png')});
+    if(label.startsWith('workshop12-') && await pg.locator('.ml-trade-comparison').count()) await pg.locator('.ml-trade-comparison').locator('xpath=..').screenshot({path:path.join(OUT,label+'-comparison.png')});
     manifest.push(label);`);
 source = source.replace('for (const [label, state, opts, wait] of SHOTS)', `for (const [label, state, opts, wait] of [
   ...SHOTS.filter(s => /^(01-|02-|02b-|03-|03b-|04-|05-build|06-|07-|08[a-z]?-range|09-|10-|11b-|11c-)/.test(s[0])),
+  ...['lever','pulley','windlass','ramp','wedge','screw'].map(bench=>['workshop12-'+bench, S({view:'machines',bench}), {}, 650]),
+  ['workshop12-lift-lever', S({view:'machines',bench:'lever',shopAnimating:true,shopDemoId:1}), {}, 800],
+  ['workshop12-lever-reverse', S({view:'machines',bench:'lever',leverEffortArm:0.2,leverLoadArm:4}), {}, 650],
+  ['workshop12-lever-equal', S({view:'machines',bench:'lever',leverEffortArm:2,leverLoadArm:2}), {}, 650],
+  ['workshop12-screw-fine', S({view:'machines',bench:'screw',screwHandleR:0.5,screwPitch:0.001}), {}, 650],
+  ...[1,2,3,4,5,6].map(n=>['workshop11-pulley-'+n, S({view:'machines',bench:'pulley',pulleySegments:n}), {}, 650]),
+  ['workshop11-pulley-lift-two', S({view:'machines',bench:'pulley',pulleySegments:2,shopAnimating:true,shopDemoId:1}), {}, 800],
+  ['workshop11-pulley-lift-six', S({view:'machines',bench:'pulley',pulleySegments:6,shopAnimating:true,shopDemoId:1}), {}, 800],
+  ['workshop11-pulley-rear', S({view:'machines',bench:'pulley',pulleySegments:6,shopRotY:196}), {}, 650],
+  ['workshop10-wedge-ready', S({view:'machines',bench:'wedge'}), {}, 650],
+  ['workshop10-wedge-split', S({view:'machines',bench:'wedge',shopAnimating:true,shopDemoId:1}), {}, 1000],
+  ['workshop10-wedge-thin', S({view:'machines',bench:'wedge',wedgeLength:0.6,wedgeThickness:0.01,shopAnimating:true,shopDemoId:1}), {}, 1000],
+  ['workshop10-wedge-thick', S({view:'machines',bench:'wedge',wedgeLength:0.05,wedgeThickness:0.2,shopAnimating:true,shopDemoId:1}), {}, 1000],
+  ['workshop10-wedge-square', S({view:'machines',bench:'wedge',wedgeLength:0.2,wedgeThickness:0.2}), {}, 650],
+  ['workshop10-wedge-rear', S({view:'machines',bench:'wedge',shopRotY:196}), {}, 650],
+  ['workshop9-lever-ready', S({view:'machines',bench:'lever'}), {}, 650],
+  ['workshop9-lever-lift', S({view:'machines',bench:'lever',shopAnimating:true,shopDemoId:1}), {}, 1000],
+  ['workshop9-lever-long-effort', S({view:'machines',bench:'lever',leverEffortArm:4,leverLoadArm:0.2,shopAnimating:true,shopDemoId:1}), {}, 1000],
+  ['workshop9-lever-equal', S({view:'machines',bench:'lever',leverEffortArm:2,leverLoadArm:2}), {}, 650],
+  ['workshop9-lever-long-load', S({view:'machines',bench:'lever',leverEffortArm:0.2,leverLoadArm:4,shopAnimating:true,shopDemoId:1}), {}, 1000],
+  ['workshop9-ramp-ready', S({view:'machines',bench:'ramp'}), {}, 650],
+  ['workshop9-ramp-lift', S({view:'machines',bench:'ramp',shopAnimating:true,shopDemoId:1}), {}, 1000],
+  ['workshop9-ramp-low', S({view:'machines',bench:'ramp',rampLength:8,rampHeight:0.2}), {}, 650],
+  ['workshop9-ramp-steep', S({view:'machines',bench:'ramp',rampHeight:3.9}), {}, 650],
+  ['workshop9-ramp-vertical', S({view:'machines',bench:'ramp',rampHeight:4}), {}, 650],
   ['workshop-windlass-ready', S({view:'machines',bench:'windlass'}), {}, 650],
   ['workshop-windlass-lift', S({view:'machines',bench:'windlass',shopAnimating:true,shopDemoId:1}), {}, 1000],
   ['workshop-windlass-large', S({view:'machines',bench:'windlass',windlassHandleR:1,windlassDrumR:0.3}), {}, 650],
@@ -90,21 +120,32 @@ source = source.slice(0, source.indexOf('  // The simple-machine workshop is a s
     await pg.screenshot({path:path.join(OUT,'mobile-320.png'),fullPage:true});
     await pg.locator('canvas').first().screenshot({path:path.join(OUT,'mobile-320-detail.png')});
   }
-  if(process.argv.includes('--only=workshop')){
-    for(const bench of ['windlass','screw'])for(const width of [390,320]){
+  if(process.argv.includes('--only=workshop') || process.argv.includes('--only=workshop9') || process.argv.includes('--only=workshop10') || process.argv.includes('--only=workshop11') || process.argv.includes('--only=workshop12')){
+    for(const bench of (process.argv.includes('--only=workshop12') ? ['lever','screw'] : process.argv.includes('--only=workshop11') ? ['pulley'] : process.argv.includes('--only=workshop10') ? ['wedge'] : process.argv.includes('--only=workshop9') ? ['lever','ramp'] : ['windlass','screw']))for(const width of [390,320]){
       await pg.setViewportSize({width,height:844});
-      await pg.evaluate(([s,o])=>window.__mount(s,o),[S({view:'machines',bench}),{dark:DARK,contrast:CONTRAST}]);await pg.waitForTimeout(350);
+      await pg.evaluate(([s,o])=>window.__mount(s,o),[S({view:'machines',bench,pulleySegments:process.argv.includes('--only=workshop11') ? 6 : 2,...(process.argv.includes('--only=workshop12') ? {leverEffortArm:0.2,leverLoadArm:4,screwHandleR:0.5,screwPitch:0.001} : {})}),{dark:DARK,contrast:CONTRAST}]);await pg.waitForTimeout(350);
       overflow=overflow || await pg.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
       const unobstructed=await pg.evaluate(()=>{const bay=document.querySelector('.ml-shop-bay').getBoundingClientRect(),hud=document.querySelector('.ml-shop-hud').getBoundingClientRect(),legend=document.querySelector('.ml-shop-legend').getBoundingClientRect();return hud.bottom<=bay.top+1 && legend.top>=bay.bottom-1;});
       if(!unobstructed)errors.push('Workshop overlays obstruct '+bench+' at '+width+'px');
       await pg.locator('.ml-shop-world').screenshot({path:path.join(OUT,'mobile-'+bench+'-'+width+'-stage.png')});
       await pg.screenshot({path:path.join(OUT,'mobile-'+bench+'-'+width+'.png'),fullPage:true});
       await pg.locator('canvas').first().screenshot({path:path.join(OUT,'mobile-'+bench+'-'+width+'-detail.png')});
+      if(process.argv.includes('--only=workshop12')) {
+        await pg.locator('.ml-trade-comparison').locator('xpath=..').screenshot({path:path.join(OUT,'mobile-'+bench+'-'+width+'-comparison.png')});
+        if(bench==='lever' && width===320) {
+          await pg.getByRole('slider',{name:/^Effort arm/}).press('End');await pg.waitForTimeout(350);
+          await pg.locator('.ml-shop-bay').scrollIntoViewIfNeeded();
+          const synced=await pg.waitForFunction(()=>{const d=window.__qaShop.mlDemo,bars=[...document.querySelectorAll('[data-ml-comparison=distance] [data-ml-bar]')];return Math.abs(d.effortTrack.geometry.parameters.width/d.loadTrack.geometry.parameters.width-1)<1e-9 && bars.every(b=>Math.abs(parseFloat(b.style.width)-100)<1e-9);},null,{timeout:15000}).then(()=>true,()=>false);
+          if(!synced)errors.push('Keyboard slider did not update both comparison views');
+          await pg.locator('.ml-trade-comparison').locator('xpath=..').screenshot({path:path.join(OUT,'keyboard-lever-equal-comparison.png')});
+        }
+      }
     }
     await pg.emulateMedia({reducedMotion:'reduce'});
-    await pg.evaluate(([s,o])=>window.__mount(s,o),[S({view:'machines',bench:'screw',shopAnimating:true,shopDemoId:2}),{dark:DARK,contrast:CONTRAST}]);await pg.waitForTimeout(350);
-    await pg.locator('canvas').first().screenshot({path:path.join(OUT,'screw-reduced-motion-detail.png')});
+    await pg.evaluate(([s,o])=>window.__mount(s,o),[S({view:'machines',bench:process.argv.includes('--only=workshop11') ? 'pulley' : process.argv.includes('--only=workshop10') ? 'wedge' : 'screw',pulleySegments:6,shopAnimating:true,shopDemoId:2}),{dark:DARK,contrast:CONTRAST}]);await pg.waitForTimeout(350);
+    await pg.locator('canvas').first().screenshot({path:path.join(OUT,process.argv.includes('--only=workshop11') ? 'pulley-reduced-motion-detail.png' : process.argv.includes('--only=workshop10') ? 'wedge-reduced-motion-detail.png' : 'screw-reduced-motion-detail.png')});
   }
+  if(process.argv.includes('--only=workshop12') && manifest.length!==10)errors.push('Expected ten shared comparison scenarios');
   fs.writeFileSync(path.join(OUT,'results.json'),JSON.stringify({ready,errors,overflow,shots:manifest},null,2));
   await b.close();
   if(errors.length || overflow) process.exitCode=1;

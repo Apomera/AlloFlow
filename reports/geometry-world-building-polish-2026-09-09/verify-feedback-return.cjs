@@ -1,0 +1,13 @@
+// Final source, return-only regression. Previous visual/control matrices are retained.
+const fs=require('node:fs'),path=require('node:path');
+let wrapper=fs.readFileSync(path.join(__dirname,'verify-building-controls-supplemental.cjs'),'utf8').replaceAll('supplemental-source','return-source').replaceAll('supplemental-results.json','return-results.json').replaceAll("const file='supplemental-'","const file='return-'");
+const compile="const localModule=new (require('node:module'))(__filename,module);";
+const injection=`
+const start=source.indexOf("    if(stage==='after'){\\n      result.shapeActions=[]"),end=source.indexOf('    // The cue is live',start);if(start<0||end<0)throw Error('Return-only markers changed');source=source.slice(0,start)+source.slice(end);
+source=source.replace("    // The cue is live", "    await page.evaluate(()=>__ctx.updateMulti('geometryWorld',{builderPrintContext:{unitMm:12.5}}));\\n    // The cue is live");
+source=source.replace("await page.getByRole('button',{name:'Send selected build to Print Lab',exact:true}).click();", "await page.getByRole('button',{name:'Send selected build to Print Lab',exact:true}).evaluate(button=>button.addEventListener('click',()=>{window.__cueAtActualSend=__ctx.toolData.geometryWorld.actionFeedback;},{capture:true,once:true}));await page.getByRole('button',{name:'Send selected build to Print Lab',exact:true}).click();result.cueAtActualSend=await page.evaluate(()=>__cueAtActualSend);check(!!result.cueAtActualSend,'Owned cue is still active when actual Send is dispatched');");
+source=source.replace("result.cueAfterUnmount=", "result.scaleAtPrintLab=await page.evaluate(()=>__ctx.toolData.printLab.unitMm);check(result.scaleAtPrintLab===12.5,'Actual Print Lab retains the12.5mm-per-block scale');result.cueAfterUnmount=");
+source=source.replace("result.controlsFinal=await controls();", "result.scaleAfterReturn=await page.evaluate(()=>__ctx.toolData.geometryWorld.builderPrintContext.unitMm);check(result.scaleAfterReturn===12.5,'Revise preserves physical print scale');result.feedbackNodes=await page.locator('.gw-action-feedback').count();check(result.feedbackNodes===0,'No stale action cue is rendered after returning');result.returnScreenshot=await shot('workspace-390x844');result.controlsFinal=await controls();");
+`;
+if(!wrapper.includes(compile))throw Error('Wrapper compile marker changed');wrapper=wrapper.replace(compile,injection+compile);
+const localModule=new (require('node:module'))(__filename,module);localModule.filename=__filename;localModule.paths=module.paths;localModule._compile(wrapper,__filename);

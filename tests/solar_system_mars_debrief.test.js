@@ -1,0 +1,10 @@
+import {describe,it,expect} from 'vitest';
+import {readFileSync} from 'node:fs';
+const s=readFileSync('stem_lab/stem_tool_solarsystem.js','utf8');const debrief=new Function(s.slice(s.indexOf('  function marsExpeditionDebrief('),s.indexOf('  function addMarsTransferTrial('))+';return marsExpeditionDebrief;')();
+const mission={startedAt:100,completedAt:300,reflection:'Later live edit'};
+const report={missionId:'earth-mars',source:'mission',missionStartedAt:100,prediction:'Original prediction',question:'What measurement next?',expedition:{trials:{aligned:{separation:0,days:258.9},offset:{separation:.789,days:258.9}},scan:{title:'Saved scan',observation:'Original scan evidence'},sample:{title:'Saved sample',observation:'Original specimen'},reflection:'Saved explanation'}};
+describe('Mars expedition debrief',()=>{
+ it('uses the saved report rather than later activity data',()=>{const entries=[{source:'drone',kind:'Scan',observation:'Later scan'},report],before=JSON.stringify(entries),view=debrief(mission,entries);expect(view.reflection).toBe('Saved explanation');expect(view.scan.observation).toBe('Original scan evidence');expect(view.sample.title).toBe('Saved sample');expect(view.trials[1].separation).toBe(.789);expect(view.prediction).toBe('Original prediction');expect(JSON.stringify(entries)).toBe(before);});
+ it('does not borrow an older or unrelated report and requires completion',()=>{expect(debrief({...mission,completedAt:null},[report])).toBeNull();expect(debrief(mission,[{...report,missionStartedAt:99}])).toBeNull();expect(debrief(mission,[{...report,source:'drone'}])).toBeNull();expect(debrief(mission,[])).toBeNull();});
+ it('handles incomplete report fields without inventing evidence',()=>{const view=debrief(mission,[{...report,reasoning:'Legacy saved reasoning',expedition:{trials:{aligned:{separation:NaN,days:100},offset:{separation:1,days:0}},scan:{observation:' '}}}]);expect(view.trials).toEqual([null,null]);expect(view.scan).toBeNull();expect(view.sample).toBeNull();expect(view.reflection).toBe('Legacy saved reasoning');});
+});

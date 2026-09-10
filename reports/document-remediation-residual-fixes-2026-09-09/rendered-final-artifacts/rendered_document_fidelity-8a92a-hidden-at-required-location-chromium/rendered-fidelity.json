@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "9c606efc860102d7d9c1a71a1f580c82b67c22cff9bb396c4564c79fe8c5bba1",
+    "bytes": 461
+  },
+  "candidate": {
+    "sha256": "74a3a62dd8ed83fcb4141812b71c2998b22aa68b50930887a81374bd19b40c88",
+    "bytes": 494
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 542.5128000000004,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "after-submitting-instruction",
+      "sourceSelector": "#required-copy",
+      "candidateSelector": "#required-copy",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Save the confirmation number.",
+          "candidate": "Save the confirmation number."
+        },
+        {
+          "property": "visible",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        },
+        {
+          "property": "exposed",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        },
+        {
+          "property": "visibleText",
+          "status": "failed",
+          "source": "Save the confirmation number.",
+          "candidate": "",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                4
+              ],
+              [
+                5,
+                8
+              ],
+              [
+                9,
+                21
+              ],
+              [
+                22,
+                29
+              ]
+            ],
+            "candidate": []
+          }
+        },
+        {
+          "property": "exposedText",
+          "status": "failed",
+          "source": "Save the confirmation number.",
+          "candidate": "",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                4
+              ],
+              [
+                5,
+                8
+              ],
+              [
+                9,
+                21
+              ],
+              [
+                22,
+                29
+              ]
+            ],
+            "candidate": []
+          }
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

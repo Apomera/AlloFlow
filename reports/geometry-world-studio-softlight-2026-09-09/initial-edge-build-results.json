@@ -1,0 +1,115 @@
+{
+  "sources": {
+    "stem_tool_geometryworld.js": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+    "stem_tool_geometryworld_builder.js": "17a00837ef131cac45b6578676f2e8349131c5b55f3817552bf93549d474077a",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [],
+  "captures": [
+    {
+      "name": "rotated-wedge",
+      "size": {
+        "w": 1200,
+        "h": 820,
+        "q": "balanced"
+      },
+      "state": {
+        "count": 1,
+        "resources": 8,
+        "programKey": "gwe-studio-floor-vogel16-r014-v1",
+        "shaders": [],
+        "materialIdentity": true,
+        "overflow": false
+      },
+      "screenshot": "after-rotated-wedge-balanced-1200x820.png"
+    },
+    {
+      "name": "rotated-wedge",
+      "size": {
+        "w": 390,
+        "h": 844,
+        "q": "detail"
+      },
+      "state": {
+        "count": 1,
+        "resources": 8,
+        "programKey": "gwe-studio-floor-vogel16-r014-v1",
+        "shaders": [],
+        "materialIdentity": true,
+        "overflow": false
+      },
+      "screenshot": "after-rotated-wedge-detail-390x844.png"
+    },
+    {
+      "name": "tall-tower",
+      "size": {
+        "w": 1200,
+        "h": 820,
+        "q": "balanced"
+      },
+      "state": {
+        "count": 50,
+        "resources": 8,
+        "programKey": "gwe-studio-floor-vogel16-r014-v1",
+        "shaders": [],
+        "materialIdentity": true,
+        "overflow": false
+      },
+      "screenshot": "after-tall-tower-balanced-1200x820.png"
+    },
+    {
+      "name": "tall-tower",
+      "size": {
+        "w": 390,
+        "h": 844,
+        "q": "detail"
+      },
+      "state": {
+        "count": 50,
+        "resources": 8,
+        "programKey": "gwe-studio-floor-vogel16-r014-v1",
+        "shaders": [],
+        "materialIdentity": true,
+        "overflow": false
+      },
+      "screenshot": "after-tall-tower-detail-390x844.png"
+    },
+    {
+      "name": "wide-span",
+      "size": {
+        "w": 1200,
+        "h": 820,
+        "q": "balanced"
+      },
+      "state": {
+        "count": 81,
+        "resources": 8,
+        "programKey": "gwe-studio-floor-vogel16-r014-v1",
+        "shaders": [],
+        "materialIdentity": true,
+        "overflow": false
+      },
+      "screenshot": "after-wide-span-balanced-1200x820.png"
+    },
+    {
+      "name": "wide-span",
+      "size": {
+        "w": 390,
+        "h": 844,
+        "q": "detail"
+      },
+      "state": {
+        "count": 81,
+        "resources": 8,
+        "programKey": "gwe-studio-floor-vogel16-r014-v1",
+        "shaders": [],
+        "materialIdentity": true,
+        "overflow": false
+      },
+      "screenshot": "after-wide-span-detail-390x844.png"
+    }
+  ],
+  "pass": true
+}

@@ -1,0 +1,10 @@
+{
+  "before": "c58a4eb29a6fdd6bcdd94ed29d20c69919d7215a85ee5ffb525e666ffcc91676",
+  "after": "d404aa8eb50229a15cd1b847413896376c694196f4cf59be7c7ff1958dab263a",
+  "syntax": true,
+  "parity": true,
+  "breakpoint": 360,
+  "minTarget": 44,
+  "retainsAllLabels": true,
+  "lineEnding": "LF"
+}

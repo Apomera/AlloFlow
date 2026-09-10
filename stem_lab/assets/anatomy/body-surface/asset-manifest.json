@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "makehuman-body-surface-v1",
+  "publisher": "MakeHuman Community",
+  "sourceRevision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+  "source": "https://github.com/makehumancommunity/makehuman/blob/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/3dobjs/base.obj",
+  "license": {
+    "spdx": "CC0-1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "modifications": "Body group only; removed helper and joint geometry; triangulated quads; computed smooth area-weighted vertex normals; generated solid PBR material; omitted UVs and textures.",
+  "vertices": 13380,
+  "triangles": 26756,
+  "bytes": 482744,
+  "bounds": {
+    "min": [
+      -4.962699890136719,
+      -8.16759967803955,
+      -1.0154000520706177
+    ],
+    "max": [
+      4.962699890136719,
+      8.491299629211426,
+      3.2146999835968018
+    ]
+  },
+  "sha256": {
+    "source": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c",
+    "model": "c8a9339d763796e4bac1de6b184efe2392ca3730553e7ec779b6c55c5a5888f1"
+  }
+}

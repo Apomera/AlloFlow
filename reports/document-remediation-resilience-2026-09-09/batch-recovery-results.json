@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "manifest": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-resilience-2026-09-09\\rendered-browser-artifacts\\rendered_fidelity_recovery-d6ffb-rs-together-in-both-reports-chromium\\manifest.json",
+    "sha256": "dad1a8891916e567622c62359927cc3d91bf5ec46f45df6a872d7ba5261d656e",
+    "stable": true
+  },
+  "reports": [
+    {
+      "schemaVersion": 1,
+      "kind": "rendered-html-fidelity",
+      "id": "unreadable",
+      "status": "unavailable",
+      "source": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-resilience-2026-09-09\\rendered-browser-artifacts\\rendered_fidelity_recovery-d6ffb-rs-together-in-both-reports-chromium\\missing.html"
+      },
+      "candidate": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-resilience-2026-09-09\\rendered-browser-artifacts\\rendered_fidelity_recovery-d6ffb-rs-together-in-both-reports-chromium\\candidate.html"
+      },
+      "humanValidation": "not-run",
+      "reason": "file-comparison-failed",
+      "message": "ENOENT: no such file or directory, open 'C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-resilience-2026-09-09\\rendered-browser-artifacts\\rendered_fidelity_recovery-d6ffb-rs-together-in-both-reports-chromium\\missing.html'",
+      "coverage": {
+        "complete": false,
+        "wholeDocument": false,
+        "requested": 1,
+        "inspected": 0,
+        "profilesRequested": 1,
+        "profilesAttempted": 0,
+        "profilesCompleted": 0,
+        "reasons": [
+          "file-comparison-failed"
+        ]
+      },
+      "checks": []
+    },
+    {
+      "id": "valid",
+      "schemaVersion": 1,
+      "kind": "rendered-html-fidelity",
+      "source": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-resilience-2026-09-09\\rendered-browser-artifacts\\rendered_fidelity_recovery-d6ffb-rs-together-in-both-reports-chromium\\source.html",
+        "sha256": "ef36ab15020fd2b60ee1b34e97f05e1fd667996eb5babf573d9d2b6d22f62c00",
+        "bytes": 142
+      },
+      "candidate": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-resilience-2026-09-09\\rendered-browser-artifacts\\rendered_fidelity_recovery-d6ffb-rs-together-in-both-reports-chromium\\candidate.html",
+        "sha256": "ef36ab15020fd2b60ee1b34e97f05e1fd667996eb5babf573d9d2b6d22f62c00",
+        "bytes": 142
+      },
+      "execution": {
+        "complete": true
+      },
+      "browserVersion": "148.0.7778.96",
+      "viewport": {
+        "width": 1100,
+        "height": 800
+      },
+      "media": "screen",
+      "profileId": "default",
+      "durationMs": 2003.7517000000007,
+      "status": "passed",
+      "coverage": {
+        "requested": 1,
+        "inspected": 1,
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "resources": {
+        "source": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0,
+          "failures": []
+        },
+        "candidate": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0,
+          "failures": []
+        }
+      },
+      "checks": [
+        {
+          "id": "p",
+          "sourceSelector": "#p",
+          "candidateSelector": "#p",
+          "status": "passed",
+          "properties": [
+            {
+              "property": "text",
+              "status": "passed",
+              "source": "Original text.",
+              "candidate": "Original text."
+            },
+            {
+              "property": "visible",
+              "status": "passed",
+              "source": true,
+              "candidate": true
+            },
+            {
+              "property": "exposed",
+              "status": "passed",
+              "source": true,
+              "candidate": true
+            }
+          ]
+        }
+      ],
+      "humanValidation": "not-run",
+      "limitations": [
+        "Only the source-authored checkpoints and selected properties are assessed.",
+        "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+        "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+        "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+      ]
+    }
+  ],
+  "executionFailures": [],
+  "humanValidation": "not-run"
+}

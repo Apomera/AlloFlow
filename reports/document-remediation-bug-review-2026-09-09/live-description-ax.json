@@ -1,0 +1,127 @@
+{
+  "sourceSha256": "ffd04f44ecaf611379e999396417be56a336d1fa7a05e220f6d17cc33910d343",
+  "fixture": "field-description-reassigned",
+  "browserVersion": "148.0.7778.96",
+  "source": {
+    "role": {
+      "type": "role",
+      "value": "textbox"
+    },
+    "name": {
+      "type": "computedString",
+      "value": "Weight",
+      "sources": [
+        {
+          "type": "relatedElement",
+          "attribute": "aria-labelledby"
+        },
+        {
+          "type": "attribute",
+          "attribute": "aria-label"
+        },
+        {
+          "type": "relatedElement",
+          "value": {
+            "type": "computedString",
+            "value": "Weight"
+          },
+          "nativeSource": "labelfor",
+          "nativeSourceValue": {
+            "type": "nodeList",
+            "relatedNodes": [
+              {
+                "backendDOMNodeId": 7,
+                "text": "Weight"
+              }
+            ]
+          }
+        },
+        {
+          "type": "attribute",
+          "attribute": "title",
+          "superseded": true
+        },
+        {
+          "type": "placeholder",
+          "attribute": "placeholder",
+          "superseded": true
+        },
+        {
+          "type": "placeholder",
+          "attribute": "aria-placeholder",
+          "superseded": true
+        },
+        {
+          "type": "attribute",
+          "attribute": "title",
+          "superseded": true
+        }
+      ]
+    },
+    "description": {
+      "type": "computedString",
+      "value": "Enter weight in kilograms."
+    }
+  },
+  "candidate": {
+    "role": {
+      "type": "role",
+      "value": "textbox"
+    },
+    "name": {
+      "type": "computedString",
+      "value": "Weight",
+      "sources": [
+        {
+          "type": "relatedElement",
+          "attribute": "aria-labelledby"
+        },
+        {
+          "type": "attribute",
+          "attribute": "aria-label"
+        },
+        {
+          "type": "relatedElement",
+          "value": {
+            "type": "computedString",
+            "value": "Weight"
+          },
+          "nativeSource": "labelfor",
+          "nativeSourceValue": {
+            "type": "nodeList",
+            "relatedNodes": [
+              {
+                "backendDOMNodeId": 37,
+                "text": "Weight"
+              }
+            ]
+          }
+        },
+        {
+          "type": "attribute",
+          "attribute": "title",
+          "superseded": true
+        },
+        {
+          "type": "placeholder",
+          "attribute": "placeholder",
+          "superseded": true
+        },
+        {
+          "type": "placeholder",
+          "attribute": "aria-placeholder",
+          "superseded": true
+        },
+        {
+          "type": "attribute",
+          "attribute": "title",
+          "superseded": true
+        }
+      ]
+    },
+    "description": {
+      "type": "computedString",
+      "value": "Enter weight in pounds."
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "success": true,
+  "uniquePassedTests": 268,
+  "uniqueTestFiles": 15,
+  "failures": [],
+  "runs": [
+    {
+      "name": "measurement-interior-tests.json",
+      "success": true,
+      "passed": 72,
+      "failed": 0,
+      "failedSuites": 0
+    },
+    {
+      "name": "print-presentation-tests.json",
+      "success": true,
+      "passed": 51,
+      "failed": 0,
+      "failedSuites": 0
+    },
+    {
+      "name": "selection-frame-final-tests.json",
+      "success": true,
+      "passed": 110,
+      "failed": 0,
+      "failedSuites": 0
+    },
+    {
+      "name": "presentation-regression-tests.json",
+      "success": true,
+      "passed": 35,
+      "failed": 0,
+      "failedSuites": 0
+    },
+    {
+      "name": "inspector-overlap-tests.json",
+      "success": true,
+      "passed": 11,
+      "failed": 0,
+      "failedSuites": 0
+    }
+  ],
+  "sources": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "sha256": "bfce4860fc3f6efd19a85ee8c2d4b0fb9c49c4f8103330e01e5b15e02b8013ed",
+      "syntax": true,
+      "mirrorMatches": true,
+      "fullRunSourceMatchesExceptOverlapFix": true,
+      "browserTestedCurrentSource": true
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "sha256": "95fd225c30e43435ecb525d7e45af1c58bc44cb77340fb370482d69533453a56",
+      "syntax": true,
+      "mirrorMatches": true,
+      "fullRunSourceMatchesExceptOverlapFix": true,
+      "browserTestedCurrentSource": true
+    },
+    {
+      "name": "stem_tool_printlab.js",
+      "sha256": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742",
+      "syntax": true,
+      "mirrorMatches": true,
+      "fullRunSourceMatchesExceptOverlapFix": true,
+      "browserTestedCurrentSource": true
+    }
+  ],
+  "browser": {
+    "pass": true,
+    "errors": [],
+    "consoleErrors": [],
+    "failures": [],
+    "shaderErrors": [],
+    "supplementalPass": true,
+    "supplementalFailures": [],
+    "supplementalErrors": [],
+    "supplementalStlUnchanged": true,
+    "supplementalWorldUnchanged": true,
+    "supplementalHistoryUnchanged": true,
+    "fixture": {
+      "kind": "offcenter",
+      "expected": 44,
+      "world": 45,
+      "origin": {
+        "x": 31,
+        "z": -27
+      }
+    },
+    "selectedStlUnchanged": true,
+    "worldUnchanged": true,
+    "historyUnchanged": true
+  }
+}

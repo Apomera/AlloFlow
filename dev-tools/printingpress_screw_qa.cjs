@@ -1,0 +1,115 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const { chromium } = require('@playwright/test');
+const root = path.resolve(__dirname, '..');
+const out = path.join(root, 'reports/printingpress-screw-experiment');
+fs.mkdirSync(out, { recursive: true });
+(async () => {
+  const browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 1000 }, reducedMotion: 'reduce' });
+  const errors = [];
+  await context.route('http://printingpress.test/**', route => route.fulfill({ contentType: 'text/html', body: '<!doctype html><html lang="en"><head><title>Printing Press review</title></head><body><main id="root"></main></body></html>' }));
+  async function mount(page, initial = {}) {
+    page.on('pageerror', e => errors.push(e.message));
+    await page.goto('http://printingpress.test/');
+    await page.addStyleTag({ content: 'body{margin:0;background:#19140e;font-family:system-ui}button,input,select,textarea{font:inherit}button{cursor:pointer}#root{max-width:1120px;margin:auto}' });
+    await page.addScriptTag({ path: path.join(root, 'desktop/web-app/node_modules/react/umd/react.development.js') });
+    await page.addScriptTag({ path: path.join(root, 'desktop/web-app/node_modules/react-dom/umd/react-dom.development.js') });
+    await page.addScriptTag({ path: path.join(root, 'stem_lab/stem_tool_printingpress.js') });
+    await page.evaluate(initial => {
+      const R = React, h = R.createElement;
+      function App() {
+        const [data, setData] = R.useState({ printingPress: { view: 'pressMechanism', ...initial } });
+        const updateMulti = (id, patch) => setData(p => ({ ...p, [id]: { ...p[id], ...patch } }));
+        window.ppData = data; window.ppPatch = patch => updateMulti('printingPress', patch);
+        return StemLab._registry.printingPress.render({ React: R, toolData: data, update: (id, key, value) => updateMulti(id, { [key]: value }), updateMulti, t: (k, f) => f || k, addToast: () => {}, awardXP: () => {}, setStemLabTool: () => {} });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+    }, initial);
+    await page.locator('#pp-phrase').waitFor();
+  }
+  try {
+    const page=await context.newPage(); await mount(page, { pressRun: { phrase: 'PRINT', count: 1, proofs: [{ number: 1, phrase: 'PRINT', prediction: 'readable' }], notes: 'My saved explanation.' } });
+    const saved=await page.evaluate(()=>JSON.stringify(ppData.printingPress.pressRun));
+    const lab=page.locator('#pp-screw-lab');
+    const bar=page.getByRole('slider',{name:'Bar length',exact:false});
+    const pitch=page.getByRole('slider',{name:'Thread pitch',exact:false});
+    assert.equal(await page.locator('#pp-screw-advantage').innerText(),'125.7×');
+    assert.equal(await page.locator('#pp-screw-force').innerText(),'1,257 N');
+    await bar.fill('40');
+    assert.equal(await page.locator('#pp-screw-advantage').innerText(),'251.3×');
+    assert.equal(await page.locator('#pp-screw-travel').innerText(),'10 mm');
+    await page.getByRole('button',{name:'Reset experiment',exact:true}).click();
+    await pitch.fill('20');
+    assert.equal(await page.locator('#pp-screw-advantage').innerText(),'62.8×');
+    assert.equal(await page.locator('#pp-screw-travel').innerText(),'20 mm');
+    await pitch.focus(); await page.keyboard.press('ArrowLeft');
+    assert.equal(await pitch.inputValue(),'19');
+    assert.equal(await pitch.getAttribute('aria-valuetext'),'19 millimetres');
+    await page.getByRole('button',{name:'Reset experiment',exact:true}).click();
+    assert.equal(await bar.inputValue(),'20'); assert.equal(await pitch.inputValue(),'10');
+    assert.equal(await page.evaluate(()=>JSON.stringify(ppData.printingPress.pressRun)),saved,'Experiment preserves printed work and notes');
+    await page.getByText('See the calculation and model limits',{exact:true}).click();
+    assert.ok((await lab.innerText()).includes('2 × π × 200 mm ÷ 10 mm'));
+    const keep=page.getByRole('button',{name:'Keep these settings as A',exact:true});
+    await keep.focus(); await page.keyboard.press('Enter');
+    const comparison=page.locator('#pp-screw-comparison');
+    const add=page.getByRole('button',{name:'Add comparison to notebook',exact:true});
+    assert.equal(await add.isDisabled(),true);
+    await bar.fill('40');
+    assert.ok((await page.locator('#pp-screw-change-message').innerText()).includes('Only bar length changed'));
+    assert.ok((await comparison.innerText()).includes('2.00×'));
+    const widths=await page.locator('.pp-force-bar').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));
+    assert.ok(Math.abs(widths[1]/widths[0]-2)<0.01,'Force bars share a zero-based scale');
+    assert.equal(await comparison.locator('tbody tr').first().innerText(),'Bar length\t20 cm\t40 cm');
+    await pitch.fill('20');
+    assert.ok((await page.locator('#pp-screw-change-message').innerText()).includes('Both settings changed'));
+    await bar.fill('20');
+    assert.ok((await page.locator('#pp-screw-change-message').innerText()).includes('Only pitch changed'));
+    assert.ok((await comparison.innerText()).includes('0.50×'));
+    await pitch.fill('10'); await bar.fill('40');
+    await add.click();
+    const evidence=await page.locator('#pp-run-notes').inputValue();
+    assert.ok(evidence.startsWith('My saved explanation.\n\n'));
+    assert.ok(evidence.includes('Setup A: bar 20 cm; pitch 10 mm; ideal force 1257 N'));
+    assert.ok(evidence.includes('Setup B: bar 40 cm; pitch 10 mm; ideal force 2513 N'));
+    await add.click(); assert.equal(await page.locator('#pp-run-notes').inputValue(),evidence,'Duplicate click does not append duplicate evidence');
+    await page.getByRole('button',{name:'Write my explanation',exact:true}).click();
+    assert.equal(await page.locator('#pp-run-notes').evaluate(el=>document.activeElement===el),true);
+    const download=page.waitForEvent('download'); await page.getByRole('button',{name:'Download notebook',exact:true}).click();
+    await (await download).saveAs(path.join(out,'comparison-notebook.txt'));
+    assert.ok(fs.readFileSync(path.join(out,'comparison-notebook.txt'),'utf8').includes(evidence));
+    await page.locator('#pp-run-notes').fill('x'.repeat(3990));
+    await add.click(); assert.equal((await page.locator('#pp-run-notes').inputValue()).length,3990);
+    assert.ok((await comparison.innerText()).includes('nearly full'));
+    await page.locator('#pp-run-notes').fill(evidence);
+    await pitch.fill('11');
+    assert.ok(!(await comparison.innerText()).includes('nearly full'),'Changing settings clears stale status');
+    await pitch.fill('10');
+    await page.addScriptTag({path:path.join(root,'axe-core/4.12.1/axe.min.js')});
+    const accessibility=[];
+    const sizes=[];
+    for(const width of [1280,768,390,320]) {
+      await page.setViewportSize({width,height:1000});
+      await lab.scrollIntoViewIfNeeded();
+      const geometry=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth}));
+      assert.ok(geometry.document<=width+1,JSON.stringify(geometry));sizes.push(geometry);
+      const violations=await page.evaluate(async()=> (await axe.run(document.querySelector('#pp-screw-lab'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})));
+      assert.deepEqual(violations,[]);accessibility.push({width,violations});
+      await lab.screenshot({path:path.join(out,'experiment-'+width+'.png')});
+      await comparison.screenshot({path:path.join(out,'comparison-'+width+'.png')});
+    }
+    await page.getByRole('button',{name:'Use current settings as A',exact:true}).click();
+    assert.equal(await add.isDisabled(),true); assert.ok((await comparison.innerText()).includes('A and B match'));
+    await bar.fill('30'); assert.ok((await comparison.innerText()).includes('0.75×'));
+    await page.getByRole('button',{name:'Reset experiment',exact:true}).click();
+    assert.equal(await comparison.count(),0); assert.equal(await page.locator('#pp-run-notes').inputValue(),evidence);
+    const reopened=await context.newPage(); await mount(reopened);
+    assert.equal(await reopened.locator('#pp-run-notes').inputValue(),evidence,'Notebook evidence survives reopening');
+    assert.equal(await reopened.locator('#pp-screw-comparison').count(),0,'Transient comparison does not imply autosave');
+    assert.deepEqual(errors,[]);
+    fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify({passed:true,checks:['default unit conversion','double bar','double pitch','keyboard slider changes','reset experiment preserves run','calculation and assumptions','responsive layouts','WCAG A/AA','fixed baseline','single and two-variable feedback','proportional force bars','append-only evidence','duplicate prevention','full notebook preservation','export and reload recovery','focus handoff','comparison reset'],sizes,accessibility,errors},null,2));
+    console.log('Printing Press screw experiment browser checks passed.');
+  } finally { await browser.close(); }
+})().catch(e=>{console.error(e);process.exitCode=1;});

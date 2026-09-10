@@ -814,6 +814,112 @@ window.StemLab = window.StemLab || {
     };
   })();
   window.AquariumEcosystemCore = AquariumEcosystemCore;
+  // Inquiry snapshots exclude other snapshots: branches never share mutable tank state.
+  var AquariumInquiryCore = (function () {
+    var metrics = [ ['dissolvedO2', 'Oxygen', 'mg/L'], ['co2', 'CO₂', 'mg/L'], ['ammonia', 'Ammonia', 'ppm'], ['nitrite', 'Nitrite', 'ppm'], ['nitrate', 'Nitrate', 'ppm'], ['pH', 'pH', ''], ['temp', 'Temperature', '°F'] ];
+    function cloneTank(tank) {
+      var copy = Object.assign({}, tank || {});
+      ['inquiryExperiment', 'observationBaseline', 'careEvidence'].forEach(function (key) { delete copy[key]; });
+      return JSON.parse(JSON.stringify(copy));
+    }
+    function randomFor(seed, tick) {
+      var counts = {};
+      return function (site) {
+        var text = seed + ':' + tick + ':' + site + ':' + (counts[site] || 0);
+        counts[site] = (counts[site] || 0) + 1;
+        var h = 2166136261;
+        for (var i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+        h ^= h >>> 16; h = Math.imul(h, 0x7feb352d); h ^= h >>> 15;
+        return (h >>> 0) / 4294967296;
+      };
+    }
+    function evidence(before, after, label, kind) {
+      var changes = metrics.filter(function (m) { return Number.isFinite(before.waterChem && before.waterChem[m[0]]) && Number.isFinite(after.waterChem && after.waterChem[m[0]]); }).map(function (m) {
+        return { key: m[0], label: m[1], unit: m[2], before: before.waterChem[m[0]], after: after.waterChem[m[0]], delta: after.waterChem[m[0]] - before.waterChem[m[0]] };
+      });
+      var hungerDrop = Object.keys(after.hungerLevels || {}).reduce(function (total, id) {
+        return total + (Number.isFinite((before.hungerLevels || {})[id]) ? Math.max(0, before.hungerLevels[id] - after.hungerLevels[id]) : 0);
+      }, 0);
+      return { kind: kind, label: label, tick: after.simTick || 0, fromTick: before.simTick || 0, changes: changes, hungerDrop: hungerDrop,
+        algaeDelta: Number(after.algaeLevel || 0) - Number(before.algaeLevel || 0),
+        exchange: kind === 'hour' ? JSON.parse(JSON.stringify(after.lastEcosystemExchange || null)) : null };
+    }
+    function record(before, after, label, kind) {
+      return (before.careEvidence || []).concat([evidence(before, after, label, kind)]).slice(-8);
+    }
+    function factorOptions(baseline) {
+      var tank = baseline && baseline.tankState || {};
+      var options = [
+        { id: 'lightsOn', label: 'Biological lights', base: tank.lightsOn !== false, kind: 'lights', hint: 'Change biological lighting. Daylight still follows the saved aquarium clock; camera lighting is separate.' },
+        { id: 'airPump', label: 'Air pump level', base: Number((tank.equipment || {}).airPump || 0), kind: 'equipment', hint: 'Change the pump level. Saved condition and faults remain; this does not repair a failed pump.' },
+        { id: 'filter', label: 'Filter level', base: Number((tank.equipment || {}).filter || 0), kind: 'equipment', hint: 'Change the filter level. Bacteria, filter condition and faults start as saved; observe nitrogen readings over time.' }
+      ];
+      (baseline && baseline.plantOptions || []).forEach(function (plant) {
+        if (!(tank.tankPlants || []).includes(plant.id) || !Number.isFinite(plant.maxBiomass) || plant.maxBiomass <= 0) return;
+        options.push({ id: 'plant:' + plant.id, plantId: plant.id, label: plant.name + ' biomass', kind: 'plant', base: Number.isFinite((tank.plantBiomass || {})[plant.id]) ? tank.plantBiomass[plant.id] : 1, max: plant.maxBiomass,
+          hint: 'Change this species’ biomass index from 0 to ' + plant.maxBiomass + '. Matching clumps share this size; health, other plants and water start unchanged. Zero leaves the plant entry in the model.' });
+      });
+      return options.map(function (option) { option.defaultValue = option.kind === 'lights' ? !option.base : option.kind === 'plant' ? (option.base < option.max ? Math.min(option.max, Math.round((option.base + 1) * 100) / 100) : Math.max(0, option.base - 1)) : (option.base === 3 ? 0 : 3); return option; });
+    }
+    function validateFactor(baseline, factor, value) {
+      var option = factorOptions(baseline).find(function (item) { return item.id === factor; });
+      if (!option || value === '' || value === null || value === undefined || (typeof value === 'string' && !value.trim())) return null;
+      if (option.kind === 'lights') { if (![true,false,'true','false'].includes(value)) return null; value = value === true || value === 'true'; }
+      else { value = Number(value); if (!Number.isFinite(value)) return null; if (option.kind === 'plant' ? value < 0 || value > option.max : ![0,1,2,3].includes(value)) return null; }
+      return value === option.base ? null : { option: option, value: value };
+    }
+    function formatFactor(option, value) {
+      return option.label + ': ' + (option.kind === 'lights' ? (value === true || value === 'true' ? 'on' : 'off') : value + (option.kind === 'plant' ? ' biomass index' : ''));
+    }
+    function createExperiment(baseline, factor, value, prediction) {
+      if (!baseline || !baseline.tankState || !String(prediction || '').trim()) return null;
+      var a = cloneTank(baseline.tankState), b = cloneTank(baseline.tankState);
+      var validated = validateFactor(baseline, factor, value);
+      if (!validated) return null;
+      value = validated.value;
+      if (validated.option.kind === 'lights') b.lightsOn = value;
+      else if (validated.option.kind === 'plant') b.plantBiomass = Object.assign({}, a.plantBiomass, { [validated.option.plantId]: value });
+      else b.equipment = Object.assign({}, a.equipment, { [factor]: value });
+      a.simRunning = false; b.simRunning = false;
+      return { version: 1, tank: a.selectedTank, seed: 'aquarium-paired-v1', baseline: cloneTank(a), a: a, b: b, factor: factor, value: value, prediction: String(prediction).trim().slice(0,1000), reflection: '', elapsed: 0, plantOptions: JSON.parse(JSON.stringify(baseline.plantOptions || [])), factorLabel: validated.option.label, baselineSetting: formatFactor(validated.option, validated.option.base), changedSetting: formatFactor(validated.option, value),
+        series: [{ hour: 0, a: Object.assign({}, a.waterChem), b: Object.assign({}, b.waterChem) }] };
+    }
+    function advanceExperiment(experiment, hours, advance) {
+      if (!experiment || experiment.version !== 1 || ![1,6].includes(hours)) return experiment;
+      var next = JSON.parse(JSON.stringify(experiment));
+      var steps = Math.min(hours, 24 - next.elapsed);
+      for (var i = 0; i < steps; i++) {
+        ['a','b'].forEach(function (side) {
+          next[side] = advance(next[side], { random: randomFor(next.seed, next.elapsed), timestamp: 1700000000000 + next.elapsed * 3600000, liveRewards: false });
+        });
+        next.elapsed++;
+        next.series.push({ hour: next.elapsed, a: Object.assign({}, next.a.waterChem), b: Object.assign({}, next.b.waterChem) });
+      }
+      return next;
+    }
+    function exportTrial(experiment, format) {
+      if (!experiment || experiment.version !== 1) return null;
+      var exp = JSON.parse(JSON.stringify(experiment));
+      var descriptor = factorOptions({ tankState: exp.baseline, plantOptions: exp.plantOptions }).find(function (item) { return item.id === exp.factor; });
+      var original = exp.baselineSetting || (descriptor ? formatFactor(descriptor, descriptor.base) : exp.factor);
+      var changed = exp.changedSetting || (descriptor ? formatFactor(descriptor, exp.value) : String(exp.value));
+      var limitations = 'Simplified aquarium model; time is compressed and bacteria start pre-seeded. Shared initial conditions and random streams support a controlled model comparison, not a universal species care rule. Other processes and later biological events can affect the readings.';
+      var packet = { schema: 'aquarium-paired-evidence-v1', model: 'aquarium-hour-model/inquiry-v10', habitat: exp.tank, elapsedHours: exp.elapsed, startingModelHour: exp.baseline.simTick || 0, control: original, intervention: changed, prediction: exp.prediction, reflection: exp.reflection || '', limitations: limitations, trial: exp };
+      if (format === 'json') return { extension: 'json', mime: 'application/json', body: JSON.stringify(packet, null, 2) };
+      if (format === 'csv') {
+        var rows = [['trial_hour','model_hour','parameter','unit','baseline','tank_a','tank_b','b_minus_a']];
+        exp.series.forEach(function (point) { metrics.forEach(function (m) { var av = point.a[m[0]], bv = point.b[m[0]]; if (Number.isFinite(av) && Number.isFinite(bv)) rows.push([point.hour, (exp.baseline.simTick || 0) + point.hour, m[1], m[2], exp.baseline.waterChem[m[0]], av, bv, Number((bv-av).toFixed(6))]); }); });
+        return { extension: 'csv', mime: 'text/csv;charset=utf-8', body: rows.map(function (row) { return row.map(function (cell) { return '"' + String(cell === undefined ? '' : cell).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n') };
+      }
+      var lines = ['AQUARIUM INVESTIGATION REPORT', '', 'Habitat: ' + exp.tank, 'Starting model hour: ' + (exp.baseline.simTick || 0), 'Hours observed: ' + exp.elapsed, 'A — ' + original, 'B — ' + changed, '', 'PREDICTION', exp.prediction, '', 'MEASURED EVIDENCE'];
+      metrics.forEach(function (m) { var av = exp.a.waterChem[m[0]], bv = exp.b.waterChem[m[0]]; if (!Number.isFinite(av) || !Number.isFinite(bv)) return; lines.push(m[1] + ' (' + (m[2] || 'unitless') + '): start ' + Number(exp.baseline.waterChem[m[0]]).toFixed(3) + '; A ' + av.toFixed(3) + '; B ' + bv.toFixed(3) + '; B minus A ' + (bv-av).toFixed(3)); });
+      lines.push('', 'LEARNER EXPLANATION', exp.reflection || '(Not yet recorded)', '', 'REVIEW PROMPTS', 'Does the explanation compare A and B at the same time, with values and units?', 'Does it connect the changed setting to a plausible model process?', 'Does it address whether the evidence supports the prediction and name a limitation?', '', 'MODEL LIMITATIONS', limitations, '', 'Replay seed: ' + exp.seed, 'For all hourly readings use Export readings CSV. For the saved setup and trial states use Export trial JSON.');
+      return { extension: 'txt', mime: 'text/plain;charset=utf-8', body: lines.join('\n') };
+    }
+    return { factorOptions: factorOptions, validateFactor: validateFactor, formatFactor: formatFactor, exportTrial: exportTrial, metrics: metrics, cloneTank: cloneTank, randomFor: randomFor, evidence: evidence, record: record, createExperiment: createExperiment, advanceExperiment: advanceExperiment };
+  })();
+  window.AquariumInquiryCore = AquariumInquiryCore;
+
   // === End aquarium ecosystem core ===
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
@@ -11656,38 +11762,38 @@ window.StemLab = window.StemLab || {
       cardinal: ['Cardinal tetra','tetra','cardinal',0xb9d4cd,[.43,.16,.115],'swim','fork','Blue lateral stripe; red extends along the lower body.',''],
       rummy: ['Rummy-nose tetra','tetra','rummy',0xc7d6c8,[.46,.17,.12],'swim','fork','Red head and contrasting black-and-white tail bars.','Representative rummy-nose tetra group.'],
       guppy: ['Guppy','guppy','guppy',0xbca56d,[.4,.16,.12],'swim','fan','Slender livebearer with a broad patterned fan tail.','Representative fancy male; sexes and domestic strains vary.'],
-      cory: ['Corydoras catfish','corydoras','cory',0x9c9279,[.47,.19,.22],'swim','fork','Short armored body, mottling and short mouth barbels.','Representative Corydoras group.'],
+      cory: ['Corydoras catfish','corydoras','cory',0x9c9279,[.47,.19,.22],'swim','fork','Arched back, two rows of flank armor, mottling and short mouth barbels.','Representative Corydoras group.'],
       angel: ['Angelfish','angelfish','angel',0xcbd0bf,[.38,.43,.115],'swim','fork','Tall diamond silhouette, dark vertical bars and long pelvic filaments.','Representative silver domestic form.'],
       platy: ['Platy','platy','plain',0xe78d46,[.4,.255,.17],'swim','rounded','Short, deep livebearer body with a small rounded tail.','Representative orange domestic form.'],
       molly: ['Molly','molly','plain',0x343e3b,[.54,.235,.18],'swim','rounded','Longer livebearer body and a modest rounded dorsal fin.','Representative black domestic form; not a claim of a sailfin male.'],
-      nerite: ['Nerite snail','snail','nerite',0xb19e66,null,'crawl',null,'Rounded patterned shell, muscular foot and two tentacles.','Representative patterned nerite group.'],
-      dwarffrog: ['African dwarf frog','frog','frog',0x8e9270,null,'swim',null,'Flattened frog body, folded long hind legs and webbed feet.','Representative African dwarf frog.'],
+      nerite: ['Nerite snail','snail','nerite',0xb19e66,null,'crawl',null,'Low domed patterned shell, broad crawling foot and fine tentacles with eyes near their bases.','Representative patterned nerite group.'],
+      dwarffrog: ['African dwarf frog','frog','frog',0x8e9270,null,'swim',null,'Mottled olive body, pale underside, lateral eyes, folded hind legs and webbing on both forefeet and hindfeet.','Representative Hymenochirus dwarf frog; species and captive forms vary.'],
       oto: ['Otocinclus','otocinclus','oto',0xb4ad87,[.55,.13,.135],'swim','fork','Slender armored body, dark lateral stripe and underside sucker mouth.','Representative Otocinclus group.'],
-      shrimp: ['Cherry shrimp','shrimp','cherry',0xbe493e,null,'crawl',null,'Red translucent segmented shrimp with antennae and walking legs.','Representative red cherry shrimp.'],
+      shrimp: ['Cherry shrimp','shrimp','cherry',0xbe493e,null,'crawl',null,'Red translucent carapace, six abdominal segments, fine antennae and a horizontal tail fan.','Representative red cherry shrimp.'],
       betta: ['Betta','betta','plain',0xb83c65,[.49,.2,.135],'swim','flowing','Slender body with flowing caudal, dorsal and anal fins.','Representative long-fin domestic male; other forms vary.'],
       clown: ['Clownfish','clownfish','clown',0xef8b2e,[.43,.245,.15],'swim','rounded','Three white body bands edged in black on an orange body.','Representative orange three-band clownfish.'],
       tang: ['Palette tang','tang','tang',0x2875d8,[.49,.35,.125],'swim','fork','Blue compressed oval body, black palette marking and yellow tail.','Representative palette tang coloration.'],
       goby: ['Watchman goby','goby','goby',0xb7ab6a,[.61,.18,.18],'swim','rounded','Elongate bottom fish with a blunt head and two separate dorsal fins.','Representative watchman goby group.'],
-      anemone: ['Sea anemone','anemone','anemone',0xbe8d9d,null,'sessile',null,'Attached column with a central oral disc and tentacle crown.','Representative sea anemone.'],
-      stonycoral: ['Stony coral','coral','coral',0xc8ad8d,null,'sessile',null,'Attached branching colony; no fish eyes or fins.','Representative branching growth form; coral forms vary.'],
+      anemone: ['Sea anemone','anemone','anemone',0xbe8d9d,null,'sessile',null,'Anchored pedal disc, textured body column, radial oral disc with a central mouth and a crown of tapered tentacles.','Representative sea anemone; tentacle form, count and coloration vary by species.'],
+      stonycoral: ['Stony coral','coral','coral',0xc8ad8d,null,'sessile',null,'Attached branching colony with tapered rigid branches, outward-facing skeletal cups and small tentacled polyps.','Representative branching stony coral; growth forms and polyp anatomy vary. Visible polyps are illustrative, not a colony census.'],
       copepods: ['Copepod colony','copepod','copepod',0xb6c7b8,null,'swim',null,'Segmented tapering abdomen, long antennae and forked tail.','One enlarged representative of a colony, not a population count.'],
-      pistol: ['Pistol shrimp','shrimp','pistol',0xb58c66,null,'crawl',null,'Segmented shrimp with one enlarged snapping claw.','Representative pistol shrimp group.'],
-      pederson: ["Pederson's cleaner shrimp",'shrimp','pederson',0xccddda,null,'crawl',null,'Mostly transparent shrimp with violet markings and long pale antennae.','Representative coloration.'],
+      pistol: ['Pistol shrimp','shrimp','pistol',0xb58c66,null,'crawl',null,'Segmented body, horizontal tail fan and unequal paired claws with one enlarged snapping chela.','Representative pistol shrimp group.'],
+      pederson: ["Pederson's cleaner shrimp",'shrimp','pederson',0xccddda,null,'crawl',null,'Transparent shell with violet markings, banded fine legs and long white antennae.','Representative coloration.'],
       oscar: ['Oscar','oscar','oscar',0x655d4b,[.6,.34,.23],'swim','rounded','Deep oval cichlid, orange mottling and a tail-base eyespot.','Representative coloration; domestic forms vary.'],
       pike: ['Pike cichlid','pikecichlid','pike',0xa8a98e,[.86,.17,.18],'swim','rounded','Long, low body with a subdued lateral stripe and long dorsal fin.','Representative pike cichlid group.'],
       pleco: ['Plecostomus','pleco','pleco',0x7d8069,[.65,.18,.26],'swim','fork','Broad flattened head, tapering armored body, sucker mouth and large dorsal.','Representative suckermouth armored catfish group.'],
-      slider: ['Red-eared slider','turtle','slider',0x6c7849,null,'swim',null,'Scuted shell, webbed clawed feet, yellow neck stripes and red patches behind the eyes.','Representative red-eared slider.'],
+      slider: ['Red-eared slider','turtle','slider',0x6c7849,null,'swim',null,'Low oval shell with central and paired side scutes, yellow-marked underside, striped neck and limbs, webbed clawed feet and red patches behind the eyes.','Representative red-eared slider with short claws; age, sex and individual shell markings vary.'],
       goldfish: ['Goldfish','goldfish','plain',0xe79b3d,[.57,.235,.18],'swim','fork','Elongate gold body with a single forked tail.','Representative common or feeder goldfish; fancy breeds differ.'],
-      cleaner: ['Cleaner shrimp','shrimp','cleaner',0xcf6b54,null,'crawl',null,'White dorsal stripe bordered in red, long white antennae and walking legs.','Representative skunk cleaner shrimp.'],
-      urchin: ['Sea urchin','urchin','urchin',0x6b587b,null,'crawl',null,'Rounded test with radiating spines.','Representative sea urchin group.'],
-      crab: ['Hermit crab','hermitcrab','hermit',0xa9704a,null,'crawl',null,'Carried spiral shell with legs, eyestalks and claws projecting from the opening.','Representative occupied shell; shell shapes vary.'],
-      starfish: ['Sea star','starfish','starfish',0xc58b57,null,'crawl',null,'Central disc with five tapered arms and a textured upper surface.','Representative five-arm sea star.'],
+      cleaner: ['Cleaner shrimp','shrimp','cleaner',0xcf6b54,null,'crawl',null,'White dorsal stripe bordered in red, stalked eyes, long white antennae and a red-and-white tail fan.','Representative skunk cleaner shrimp.'],
+      urchin: ['Sea urchin','urchin','urchin',0x6b587b,null,'crawl',null,'Rounded test, tapered spines around the body and tube feet arranged in five radial bands.','Representative sea urchin group.'],
+      crab: ['Hermit crab','hermitcrab','hermit',0xa9704a,null,'crawl',null,'Carried spiral shell with a defined aperture, two pairs of exposed walking legs, paired claws, eyestalks and antennae.','Representative marine hermit crab; shell form and which claw is larger vary among species. Reduced rear legs and the soft abdomen remain inside the shell.'],
+      starfish: ['Sea star','starfish','starfish',0xc58b57,null,'crawl',null,'Solid central disc with five rounded, tapered arms, textured upper skin and tube feet underneath.','Representative five-arm sea star.'],
       rockfish: ['Pacific rockfish','rockfish','rockfish',0x9c7055,[.59,.28,.2],'swim','rounded','Robust fish with a spiny dorsal and angular head silhouette.','Representative Pacific rockfish group; colors vary by species.'],
-      seastar: ['Sunflower sea star','sunflowerstar','sunflowerstar',0xb19c72,null,'crawl',null,'Broad central disc surrounded by many flexible arms.','Adult representative with twenty arms; arm counts vary.'],
+      seastar: ['Sunflower sea star','sunflowerstar','sunflowerstar',0xb19c72,null,'crawl',null,'Broad, soft-looking disc with twenty rounded arms and rows of tube feet underneath.','Adult representative with twenty arms; arm counts vary.'],
       kelp: ['Giant kelp','kelp','kelp',0x938241,null,'sessile',null,'Attached holdfast, branching stipes, blades and small buoyancy floats.','One stocked macroalga; no fish eyes, fins or free swimming.'],
       archer: ['Archerfish','archerfish','archer',0xc6cab1,[.55,.255,.145],'swim','fork','Silver compressed body, dark oblique bands and an upturned mouth.','Representative banded archerfish group.'],
-      puffer: ['Figure-eight puffer','pufferfish','figure8',0x848352,[.44,.24,.23],'swim','rounded','Rounded olive back, pale belly and yellow-outlined dark loops on the back.','Normal uninflated posture.'],
-      mudskip: ['Mudskipper','mudskipper','mudskip',0x979777,[.66,.17,.17],'crawl','rounded','Elongate body, raised eyes and supportive pectoral fins.','Representative mudskipper group.']
+      puffer: ['Figure-eight puffer','pufferfish','figure8',0x848352,[.44,.24,.23],'swim','rounded','Uninflated olive body with a pale belly and dorsal loops, small rear dorsal and anal fins, fan-shaped pectorals, short gill slits and a beak-like mouth.','Representative figure-eight puffer in normal uninflated posture; individual markings vary.'],
+      mudskip: ['Mudskipper','mudskipper','mudskip',0x979777,[.66,.17,.17],'crawl','rounded','Broad head with raised eyes, tapered rear body, two dorsal fins and fleshy pectoral bases carrying broad fin fans.','Representative mudskipper group; coloration, fin shape and amphibious behavior vary by species.']
     };
     var id=String(speciesId||'').toLowerCase(),row=Object.prototype.hasOwnProperty.call(profiles,id)?profiles[id]:null;
     if(!row)return null;
@@ -11812,6 +11918,17 @@ window.StemLab = window.StemLab || {
       var path = new THREE.CatmullRomCurve3(points.map(function(p) { return new THREE.Vector3(p[0], p[1], p[2]); }));
       return mesh(new THREE.TubeGeometry(path, segments || 12, radius, 5, false), mat, parent);
     }
+    function smoothSurfaceNormals(geometry) {
+      // Sphere UV seams and pole vertices share a surface but not an index.
+      geometry.computeVertexNormals();
+      var positions=geometry.attributes.position,normals=geometry.attributes.normal,buckets={},keys=[];
+      for(var i=0;i<positions.count;i++){
+        var key=Math.round(positions.getX(i)*1000000)+':'+Math.round(positions.getY(i)*1000000)+':'+Math.round(positions.getZ(i)*1000000);keys[i]=key;
+        if(!buckets[key])buckets[key]=new THREE.Vector3();buckets[key].add(new THREE.Vector3().fromBufferAttribute(normals,i));
+      }
+      Object.keys(buckets).forEach(function(key){buckets[key].normalize();});
+      for(var n=0;n<positions.count;n++){var normal=buckets[keys[n]];normals.setXYZ(n,normal.x,normal.y,normal.z);}normals.needsUpdate=true;
+    }
     function finShape(points) {
       var shape = new THREE.Shape(); shape.moveTo(points[0][0], points[0][1]);
       points.slice(1).forEach(function(p) { shape.lineTo(p[0], p[1]); }); shape.closePath();
@@ -11829,9 +11946,17 @@ window.StemLab = window.StemLab || {
           ctx.fillStyle = 'rgba(' + tone + ',' + Math.floor(tone * 0.89) + ',' + Math.floor(tone * 0.72) + ',0.34)';
           ctx.fillRect(noise(n, 5) * 256, noise(n, 13) * 256, 0.5 + noise(n, 8) * 1.4, 0.5 + noise(n, 9) * 1.4);
         }
+      } else if (kind === 'bark') {
+        ctx.fillStyle = '#a0a0a0'; ctx.fillRect(0,0,256,256);
+        // Fixed grain follows the tube UVs; no simulation randomness is consumed.
+        for (var grain = 0; grain < 105; grain++) {
+          var gx = noise(grain,83)*256, tone = Math.floor(55+noise(grain,89)*120);
+          ctx.strokeStyle = 'rgb('+tone+','+tone+','+tone+')';ctx.lineWidth=.4+noise(grain,97)*1.6;
+          ctx.beginPath();ctx.moveTo(gx,-5);ctx.bezierCurveTo(gx+6,75,gx-5,175,gx+2,261);ctx.stroke();
+        }
       } else if (kind === 'depth') {
         var depthGradient = ctx.createLinearGradient(0, 0, 0, 256);
-        depthGradient.addColorStop(0, '#59958f'); depthGradient.addColorStop(0.45, '#174954'); depthGradient.addColorStop(1, '#071f30');
+        depthGradient.addColorStop(0, '#426f73'); depthGradient.addColorStop(0.45, '#244b55'); depthGradient.addColorStop(1, '#122e3d');
         ctx.fillStyle = depthGradient; ctx.fillRect(0, 0, 256, 256);
       } else if (kind === 'shadow') {
         var shadowGradient = ctx.createRadialGradient(128, 128, 8, 128, 128, 125);
@@ -11856,14 +11981,15 @@ window.StemLab = window.StemLab || {
           ctx.beginPath();ctx.moveTo(sx-5,256);ctx.bezierCurveTo(sx-13,190,sx+lean-15,sy+20,sx+lean,sy);ctx.bezierCurveTo(sx+lean+8,sy+40,sx+6,180,sx+5,256);ctx.fill();
         }
       } else {
-        ctx.clearRect(0, 0, 256, 256); ctx.lineWidth = 1.7; ctx.strokeStyle = 'rgba(215,255,241,0.52)';
-        ctx.shadowColor = '#b9fff1'; ctx.shadowBlur = 5;
-        for (var row = -1; row < 7; row++) for (var col = -1; col < 7; col++) {
-          var cx = col * 46 + (row % 2) * 23, cy = row * 45;
-          ctx.beginPath(); ctx.moveTo(cx, cy);
-          ctx.bezierCurveTo(cx + 28, cy - 15, cx + 45, cy + 4, cx + 43, cy + 28);
-          ctx.bezierCurveTo(cx + 39, cy + 45, cx + 11, cy + 51, cx - 2, cy + 28);
-          ctx.bezierCurveTo(cx - 8, cy + 16, cx - 10, cy + 7, cx, cy); ctx.stroke();
+        // Periodic displaced nodes make a continuous, irregular light network.
+        // This is a viewing effect, not a measurement of water clarity or chemistry.
+        ctx.clearRect(0,0,256,256);ctx.shadowColor='rgba(207,242,226,.35)';ctx.shadowBlur=2.2;
+        function lightNode(col,row){var key=((col%5+5)%5)+((row%5+5)%5)*5;return {x:col*51.2+(noise(key,43)-.5)*31,y:row*51.2+(noise(key,57)-.5)*31};}
+        for(var row=-1;row<6;row++)for(var col=-1;col<6;col++){
+          var node=lightNode(col,row),right=lightNode(col+1,row),below=lightNode(col,row+1),seed=((col%5+5)%5)+((row%5+5)%5)*5;
+          ctx.lineWidth=.65+noise(seed,23)*.8;ctx.strokeStyle='rgba(223,247,225,'+(.23+noise(seed,37)*.22)+')';
+          ctx.beginPath();ctx.moveTo(node.x,node.y);ctx.bezierCurveTo(node.x+(right.x-node.x)*.26,node.y-9,right.x-(right.x-node.x)*.22,right.y+8,right.x,right.y);ctx.stroke();
+          ctx.beginPath();ctx.moveTo(node.x,node.y);ctx.bezierCurveTo(node.x+9,node.y+(below.y-node.y)*.25,below.x-8,below.y-(below.y-node.y)*.28,below.x,below.y);ctx.stroke();
         }
       }
       var result = new THREE.CanvasTexture(tile);
@@ -11871,35 +11997,60 @@ window.StemLab = window.StemLab || {
       if (kind === 'sand' || kind === 'caustics') { result.wrapS = result.wrapT = THREE.RepeatWrapping; result.repeat.set(kind === 'sand' ? 5 : 3, kind === 'sand' ? 3 : 2); }
       persistentTextures.push(result); return result;
     }
-    var sandMap = texture('sand'), depthMap = texture('depth'), causticsMap = texture('caustics'), shadowMap = texture('shadow');
-    var frameMat = material(0x101e29, { metalness: 0.62, roughness: 0.3 });
-    var trimMat = material(0x729da3, { metalness: 0.75, roughness: 0.26 });
+    var sandMap = texture('sand'), depthMap = texture('depth'), causticsMap = texture('caustics'), shadowMap = texture('shadow'), barkMap = texture('bark');
+    var frameMat = material(0x18282e, { metalness: 0.5, roughness: 0.38 });frameMat.color.convertSRGBToLinear();
+    var trimMat = material(0x729296, { metalness: 0.62, roughness: 0.32 });trimMat.color.convertSRGBToLinear();
     mesh(new THREE.BoxGeometry(12.8, 0.5, 7.15), frameMat, tankGroup, 0, -0.82, 0);
     mesh(new THREE.BoxGeometry(12.45, 0.09, 6.9), trimMat, tankGroup, 0, -0.53, 0);
     mesh(new THREE.BoxGeometry(12.2, 0.28, 6.7), frameMat, tankGroup, 0, -0.34, 0);
     var stageShadow = mesh(new THREE.PlaneGeometry(19, 12), new THREE.MeshBasicMaterial({ map: shadowMap, transparent: true, opacity: 0.75, depthWrite: false }), tankGroup, 0, -1.09, 0);
     stageShadow.rotation.x = -Math.PI / 2; stageShadow.name = 'aquarium-ground-shadow'; scene.add(stageShadow);
-    var sandMaterial = material(0xe2cfac, { map: sandMap, roughness: 0.98, metalness: 0 });
-    mesh(new THREE.BoxGeometry(11.9, 0.3, 6.45), sandMaterial, tankGroup, 0, -0.13, 0);
-    var sandGeometry = new THREE.PlaneGeometry(11.9, 6.45, 34, 20);
+    var sandMaterial = material(0xe2cfac, { map: sandMap, bumpMap: sandMap, bumpScale: .045, roughness: 0.98, metalness: 0, vertexColors: true });
+    var substrateEdgeMaterial = sandMaterial.clone();substrateEdgeMaterial.vertexColors=false;
+    mesh(new THREE.BoxGeometry(11.9, 0.3, 6.45), substrateEdgeMaterial, tankGroup, 0, -0.13, 0);
+    var sandGeometry = new THREE.PlaneGeometry(11.9, 6.45, 64, 36);
     sandGeometry.rotateX(-Math.PI / 2);
     var sandVertices = sandGeometry.attributes.position;
     for (var sandIndex = 0; sandIndex < sandVertices.count; sandIndex++) {
       var sandX = sandVertices.getX(sandIndex), sandZ = sandVertices.getZ(sandIndex);
-      sandVertices.setY(sandIndex, 0.035 + Math.sin(sandX * 1.7 + sandZ) * 0.028 + noise(sandIndex, 5) * 0.018);
+      sandVertices.setY(sandIndex, 0.046 + Math.sin(sandX * 1.7 + sandZ) * 0.02 + noise(sandIndex, 5) * 0.012);
     }
     sandGeometry.computeVertexNormals();
-    mesh(sandGeometry, sandMaterial, tankGroup);
+    var sandColorBuffer = new Float32Array(sandVertices.count * 3);
+    sandGeometry.setAttribute('color', new THREE.BufferAttribute(sandColorBuffer, 3));
+    var sandBed = mesh(sandGeometry, sandMaterial, tankGroup);sandBed.name='aquarium-substrate-bed';sandBed.userData.ignorePick=true;
+    var substrateShadingSignature = '';
+    function updateSubstrateShading() {
+      // Baked soft contact shading: follows real object footprints without a shadow render pass.
+      var footprints = [];
+      [habitatRoot, plantRoot].forEach(function (root) { root.children.forEach(function (group) {
+        if (!group.visible || ['surface','emergent','refugium'].includes(group.userData.placement)) return;
+        var bounds = visibleObjectBounds(group);if (bounds.isEmpty() || bounds.min.y > tankSize.height*.55) return;
+        var center = bounds.getCenter(new THREE.Vector3()), size = bounds.getSize(new THREE.Vector3()), isPlant = root === plantRoot;
+        footprints.push({ x:center.x, z:center.z, rx:Math.max(.22,(size.x*.53)+(isPlant?.12:.18)), rz:Math.max(.2,(size.z*.55)+(isPlant?.12:.18)), strength:(isPlant?.23:.48)/(1+Math.max(0,bounds.min.y)*.6) });
+      }); });
+      var signature = JSON.stringify([dimensionSignature, footprints]);if(signature===substrateShadingSignature)return;substrateShadingSignature=signature;
+      for(var i=0;i<sandVertices.count;i++){
+        var x=sandVertices.getX(i),z=sandVertices.getZ(i),wx=x*sizeX(),wz=z*sizeZ();
+        var shade=.94 + .035*Math.sin(x*2.1+z*.7) + .025*noise(i,73);
+        // Gentle darkening at the back and glass edges gives the substrate depth.
+        shade-=.09*Math.pow(Math.abs(x)/5.95,8)+.10*Math.pow(Math.max(0,-z)/3.225,3);
+        footprints.forEach(function(f){var r=Math.pow((wx-f.x)/f.rx,2)+Math.pow((wz-f.z)/f.rz,2);shade*=1-f.strength*Math.exp(-r*1.85);});
+        shade=clamp(shade,.32,1);sandColorBuffer[i*3]=shade;sandColorBuffer[i*3+1]=shade;sandColorBuffer[i*3+2]=shade;
+      }
+      sandGeometry.attributes.color.needsUpdate=true;
+      sandBed.userData.contactFootprints=footprints.length;sandBed.userData.shading='Static soft contact approximation; not a light or chemistry measurement.';
+    }
     var pebbleMat = material(0xa89578, { roughness: 0.96 });
     for (var pebbleIndex = 0; pebbleIndex < 28; pebbleIndex++) {
       var pebble = sphere(tankGroup, pebbleMat, (noise(pebbleIndex, 2) - 0.5) * 11.4, 0.06, (noise(pebbleIndex, 4) - 0.5) * 6, 0.06 + noise(pebbleIndex, 6) * 0.07, 0.035, 0.06, 8);
       pebble.rotation.y = pebbleIndex;pebble.userData.substratePebble=true;pebble.userData.originalScale=pebble.scale.clone();
     }
-    var backMaterial = new THREE.MeshBasicMaterial({ map: depthMap, color: 0x9be4d7 });
+    var backMaterial = new THREE.MeshBasicMaterial({ map: depthMap, color: 0x9be4d7, toneMapped: false });
     mesh(new THREE.PlaneGeometry(11.95, 5.45), backMaterial, tankGroup, 0, 2.63, -3.27);
     var waterMaterial = new THREE.MeshPhongMaterial({ color: 0x71c8c4, transparent: true, opacity: 0.08, side: THREE.BackSide, depthWrite: false, shininess: 90 });
     mesh(new THREE.BoxGeometry(11.95, 5.2, 6.48), waterMaterial, tankGroup, 0, 2.58, 0);
-    var glassMaterial = new THREE.MeshPhongMaterial({ color: 0xc3f0f2, transparent: true, opacity: 0.065, side: THREE.DoubleSide, depthWrite: false, shininess: 140, specular: 0xffffff });
+    var glassMaterial = new THREE.MeshPhongMaterial({ color: 0xc3f0f2, transparent: true, opacity: 0.028, side: THREE.DoubleSide, depthWrite: false, shininess: 140, specular: 0xffffff });
     [-1, 1].forEach(function(side) {
       var pane = mesh(new THREE.PlaneGeometry(6.6, 5.6), glassMaterial, tankGroup, side * 6, 2.66, 0); pane.rotation.y = Math.PI / 2;
     });
@@ -11910,8 +12061,10 @@ window.StemLab = window.StemLab || {
     [-6.07, 6.07].forEach(function(x) { mesh(new THREE.BoxGeometry(0.115, 0.105, 6.68), frameMat, tankGroup, x, 5.51, 0); });
     var surfaceMaterial = new THREE.MeshPhongMaterial({ color: 0xb3ece2, transparent: true, opacity: 0.15, shininess: 160, specular: 0xffffff, side: THREE.DoubleSide, depthWrite: false });
     var surface = mesh(new THREE.PlaneGeometry(11.98, 6.5, 8, 6), surfaceMaterial, tankGroup, 0, 5.23, 0); surface.rotation.x = -Math.PI / 2;
+    var waterline=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-5.99,5.23,-3.25),new THREE.Vector3(5.99,5.23,-3.25),new THREE.Vector3(5.99,5.23,3.25),new THREE.Vector3(-5.99,5.23,3.25)]),new THREE.LineBasicMaterial({color:0xb3d8d8,transparent:true,opacity:.18,depthWrite:false}));
+    waterline.name='aquarium-waterline';waterline.userData.ignorePick=true;tankGroup.add(waterline);
     var causticMaterial = new THREE.MeshBasicMaterial({ map: causticsMap, color: 0xcbfff0, transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending });
-    var causticFloor = mesh(new THREE.PlaneGeometry(11.88, 6.4), causticMaterial, tankGroup, 0, 0.095, 0); causticFloor.rotation.x = -Math.PI / 2;
+    var causticFloor = mesh(new THREE.PlaneGeometry(11.88, 6.4), causticMaterial, tankGroup, 0, 0.095, 0); causticFloor.rotation.x = -Math.PI / 2;causticFloor.name='aquarium-water-shimmer';causticFloor.userData.ignorePick=true;
     var glassGlintMaterial = new THREE.MeshBasicMaterial({ color: 0xdafffa, transparent: true, opacity: 0.13, depthWrite: false });
     [-5.8, 5.8].forEach(function(x) { var glint = mesh(new THREE.PlaneGeometry(0.05, 4.95), glassGlintMaterial, tankGroup, x, 2.7, 3.33); glint.rotation.z = -0.022; });
     var grid = new THREE.GridHelper(11.4, 12, 0x67dbe5, 0x24576c); grid.scale.z = 6.2 / 11.4; grid.position.y = 0.12; grid.visible = false; tankGroup.add(grid);
@@ -11960,12 +12113,12 @@ window.StemLab = window.StemLab || {
     function tagHabitat(group, id) { group.traverse(function(node) { node.userData.habitatId = id; }); }
     function addStone(group, x, y, z, size, color, selected) {
       var geometry = new THREE.DodecahedronGeometry(0.65, 1), positions = geometry.attributes.position, colors = [];
-      var tint = new THREE.Color(color), seed = hash(x + ':' + z + ':' + size);
+      var tint = new THREE.Color(color).convertSRGBToLinear(), seed = hash(x + ':' + z + ':' + size);
       for (var i = 0; i < positions.count; i++) {
         var px = positions.getX(i), py = positions.getY(i), pz = positions.getZ(i);
         var displacement = 1 + Math.sin(px * 9 + py * 4 + pz * 7) * 0.085;
         positions.setXYZ(i, px * displacement, py * displacement, pz * displacement);
-        var shade = 0.83 + noise(i, seed) * 0.24; colors.push(tint.r * shade, tint.g * shade, tint.b * shade);
+        var shade = 0.67 + clamp((py + .65)/1.3,0,1)*.27 + noise(i, seed) * 0.12; colors.push(tint.r * shade, tint.g * shade, tint.b * shade);
       }
       geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); geometry.computeVertexNormals();
       var stone = mesh(geometry, habitatMaterial(0xffffff, selected), group, x, y, z, size * 1.2, size * 0.8, size);
@@ -11978,12 +12131,12 @@ window.StemLab = window.StemLab || {
       if (type.id === 'river_stone') {
         addStone(group, 0, 0.42, 0, 0.92, 0x858d82, selected); addStone(group, 0.55, 0.18, 0.2, 0.35, 0x777e74, selected);
       } else if (type.id === 'driftwood') {
-        var woodMat = material(0x765138, { roughness: 0.98, emissive: selected ? 0x21484b : 0 });
+        var woodMat = material(0x765138, { roughness: 0.96, bumpMap: barkMap, bumpScale: .055, emissive: selected ? 0x21484b : 0 });woodMat.color.convertSRGBToLinear();
         curve(group, [[-1.55,0.18,0.12],[-0.7,0.38,-0.08],[0.15,0.8,0],[1.25,1.08,-0.28]], 0.22, woodMat, 18);
         curve(group, [[-0.4,0.56,0],[0.05,1.03,0.18],[0.4,1.9,0.3],[0.95,2.3,0.02]], 0.09, woodMat, 14);
         curve(group, [[0.18,0.77,0],[-0.25,1.3,-0.24],[-0.9,1.85,-0.55]], 0.07, woodMat, 12);
         curve(group, [[0.56,0.92,-0.15],[0.95,0.53,0.32],[1.65,0.24,0.7]], 0.08, woodMat, 12);
-        var barkMat = material(0x3d3024, { roughness: 1 });
+        var barkMat = material(0x3d3024, { roughness: 1 });barkMat.color.convertSRGBToLinear();
         for (var ridge = 0; ridge < 3; ridge++) curve(group, [[-1.45,0.3+ridge*.02,0.15],[-.45,.6+ridge*.04,.13],[.45,.98+ridge*.025,.07],[1.14,1.13,-.13]], .012, barkMat, 14);
       } else if (type.id === 'cave' || type.id === 'rock_arch') {
         var archSize = type.id === 'cave' ? 1 : 1.28;
@@ -11994,13 +12147,13 @@ window.StemLab = window.StemLab || {
           addStone(group, -.68,.54,-.47,.62,0x70796e,selected); addStone(group,.64,.57,-.5,.65,0x70796e,selected); addStone(group,0,1.18,-.4,.7,0x879087,selected);
         }
       } else {
-        var leafMat = material(0x947040, { side: THREE.DoubleSide, roughness: 1 });
+        var leafMat = material(0x947040, { side: THREE.DoubleSide, roughness: 1 });leafMat.color.convertSRGBToLinear();
         for (var leafIndex = 0; leafIndex < 10; leafIndex++) {
           var leaf = mesh(finShape([[0,0],[-.24,.14],[-.46,0],[-.22,-.15]]), leafMat, group, -.72+(leafIndex%4)*.46,.06+leafIndex*.003,-.45+Math.floor(leafIndex/4)*.4);
           leaf.rotation.x = -Math.PI / 2; leaf.rotation.z = leafIndex * 1.7; leaf.scale.setScalar(.75 + leafIndex % 3 * .16);
         }
       }
-      var shadow = mesh(new THREE.PlaneGeometry(3.1, 2.4), new THREE.MeshBasicMaterial({ map: shadowMap, transparent: true, opacity: .46, depthWrite: false }), group, 0,.03,0); shadow.rotation.x = -Math.PI / 2; shadow.userData.ignorePick = true;
+      var shadow = mesh(new THREE.PlaneGeometry(3.1, 2.4), new THREE.MeshBasicMaterial({ map: shadowMap, transparent: true, opacity: .46/(1+Math.max(0,group.position.y)*.7), depthWrite: false }), group, 0,(.087*sizeY()-group.position.y)/Math.max(.01,item.scale),0); shadow.rotation.x = -Math.PI / 2; shadow.userData.ignorePick = true;shadow.name='aquarium-habitat-shadow';
       if (selected) { var ring = mesh(new THREE.TorusGeometry(1.25,.035,6,48),new THREE.MeshBasicMaterial({color:0xf0abfc}),group,0,.08,0); ring.rotation.x = Math.PI/2; ring.userData.ignorePick = true; ring.userData.inspectionHalo = true; }
       tagHabitat(group, item.id); return group;
     }
@@ -12168,12 +12321,16 @@ window.StemLab = window.StemLab || {
       return aliases[String(fish.speciesId||fish.id||'').toLowerCase()]||bodies[String(fish.bodyPlan||'').toLowerCase()]||'fish';
     }
     function fishAppearanceSignature(fish) {
-      return JSON.stringify([fish.id,fish.bodyPlan,fish.organismType,fish.color,fish.displaySize,!!fish.selected,options.overlay==='organisms',options.overlay==='organisms'?Math.floor((Number(fish.fitScore)||0)/20):0,((options.fish||[]).length>32||appearanceOptions().quality==='low'),appearanceOptions().animalScale]);
+      return JSON.stringify([fish.id,fish.bodyPlan,fish.organismType,fish.color,fish.displaySize,!!fish.selected,options.overlay==='organisms',options.overlay==='organisms'?Math.floor((Number(fish.fitScore)||0)/20):0,((options.fish||[]).length>32||appearanceOptions().quality==='low'),appearanceOptions().animalScale,appearanceOptions().quality]);
     }
+    var fishPigmentCache=new Map(),fishPigmentCacheBytes=0;
+    function clearFishPigmentCache(){fishPigmentCache.clear();fishPigmentCacheBytes=0;scene.userData.fishPigmentCacheBytes=0;scene.userData.fishPigmentCacheEntries=0;}
+    clearFishPigmentCache();
     function addFish(fish,index) {
       // r128 does not automatically decode sRGB palette colors. Convert pigments
       // once so identification markings retain their intended color under lighting.
-      function pigment(color,extra){var mat=material(color,extra);mat.color.convertSRGBToLinear();return mat;}
+      var fishMaterials=[];
+      function pigment(color,extra){var mat=material(color,extra);mat.color.convertSRGBToLinear();fishMaterials.push(mat);return mat;}
       var profile=visualProfile(fish),group=new THREE.Group(),shape=organismShape(fish),seed=hash(fish.instanceId||fish.id||index),lowDetail=(options.fish||[]).length>32||appearanceOptions().quality==='low';
       group.name='resident-'+String(fish.instanceId||fish.id||index);
       var palette={clownfish:0xf89136,betta:0xb84175,guppy:0xd4b469,angelfish:0xc9d0b6,goldfish:0xed9a39,tang:0x296fe3,corydoras:0x8e9985,pufferfish:0xc5ba75,tetra:0x58b7be,shrimp:0xd36543,crab:0xa36545,snail:0xcbb37b,bivalve:0x7b94a8,turtle:0x6d8350,frog:0x939453,cephalopod:0xb9878f,anemone:0xc98caf,coral:0xcda88d,urchin:0x6e527d,starfish:0xda9f68,seacucumber:0x887254,copepod:0xb9c8b6,fish:0x93b8b3};
@@ -12185,16 +12342,29 @@ window.StemLab = window.StemLab || {
       var belly=pigment(baseColor.clone().lerp(new THREE.Color(0xfff0d1),.5),{roughness:.52});
       var finMat=pigment(baseColor.clone().lerp(new THREE.Color(0xecd8bd),.18),{transparent:true,opacity:.8,side:THREE.DoubleSide,roughness:.55,depthWrite:false});
       var dark=pigment(0x182c30,{roughness:.48}),ivory=pigment(0xf9f4d8,{roughness:.35});
-      var eyeMat=pigment(0x080f12,{roughness:.12}),eyeRim=pigment(0xe9c67c,{roughness:.25,metalness:.2});
+      var eyeMat=pigment(0x080f12,{roughness:.12}),eyeRim=pigment(profile&&profile.body?0x8f9d89:0xe9c67c,{roughness:.38,metalness:.08});
       var tail=null,fins=[],stationary=/anemone|coral|urchin|bivalve/.test(shape),bottom=/shrimp|crab|snail|starfish|bivalve|urchin|anemone|coral/.test(shape);
       function eyes(x,y,z,r){
         [-1,1].forEach(function(side){
           sphere(group,eyeRim,x,y,z*side,r,r,r*.43,10);
           sphere(group,eyeMat,x+.006,y,z*side+side*r*.34,r*.65,r*.65,r*.25,10);
-          if(!lowDetail)sphere(group,ivory,x+r*.19,y+r*.25,z*side+side*r*.54,r*.2,r*.2,r*.12,7);
+          if(!lowDetail)sphere(group,ivory,x+r*.19,y+r*.25,z*side+side*r*.54,r*.13,r*.13,r*.09,7);
         });
       }
       function ribbon(parent,points,mat,x,y,z){return mesh(finShape(points),mat,parent,x||0,y||0,z||0);}
+      function anatomyBatch(base,placements,mat,part){
+        var vertices=[],normals=[],indices=[],bp=base.attributes.position,bn=base.attributes.normal,bi=base.index;
+        placements.forEach(function(place){
+          var q=place.direction?new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3().fromArray(place.direction).normalize()):new THREE.Quaternion();
+          var matrix=new THREE.Matrix4().compose(new THREE.Vector3().fromArray(place.position),q,new THREE.Vector3().fromArray(place.scale)),normalMatrix=new THREE.Matrix3().getNormalMatrix(matrix),offset=vertices.length/3;
+          for(var v=0;v<bp.count;v++){var point=new THREE.Vector3().fromBufferAttribute(bp,v).applyMatrix4(matrix),normal=new THREE.Vector3().fromBufferAttribute(bn,v).applyMatrix3(normalMatrix).normalize();vertices.push(point.x,point.y,point.z);normals.push(normal.x,normal.y,normal.z);}
+          for(var i=0;i<(bi?bi.count:bp.count);i++)indices.push(offset+(bi?bi.getX(i):i));
+        });
+        base.dispose();var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setIndex(indices);geometry.computeBoundingBox();geometry.computeBoundingSphere();
+        var batch=mesh(geometry,mat,group);batch.userData.anatomyPart=part;batch.userData.featureCount=placements.length;return batch;
+      }
+      function anatomyStem(start,end,radius){var a=new THREE.Vector3().fromArray(start),b=new THREE.Vector3().fromArray(end),delta=b.clone().sub(a);return {position:a.add(b).multiplyScalar(.5).toArray(),direction:delta.toArray(),scale:[radius,delta.length(),radius]};}
+
       if(shape==='kelp'){
         // A stocked macroalga, with anchored holdfast and blades, never a fish.
         for(var root=0;root<7;root++){var ra=root*2.4;curve(group,[[0,0,0],[Math.cos(ra)*.17,.08,Math.sin(ra)*.17],[Math.cos(ra)*.31,.015,Math.sin(ra)*.31]],.025,skin,8);}
@@ -12208,17 +12378,43 @@ window.StemLab = window.StemLab || {
           }
         }
       }else if(shape==='hermitcrab'){
-        var shellMat=pigment(0x9e9475,{roughness:.76});
-        sphere(group,shellMat,-.19,.23,0,.42,.38,.31,18).userData.carriedShell=true;
-        var shellSpiral=[];for(var turn=0;turn<54;turn++){var sa=turn*.2,sr=.015+turn*.0045;shellSpiral.push([-.2+Math.cos(sa)*sr,.25+Math.sin(sa)*sr,.3-sr*sr*.4]);}curve(group,shellSpiral,.019,dark,44);
-        sphere(group,dark,.16,.09,0,.18,.16,.22,12);
-        sphere(group,skin,.28,.055,0,.19,.14,.16,14);
+        // A representative gastropod shell with relief winding around its axis and an open lip.
+        var shellSegments=lowDetail?36:72,shellRings=lowDetail?28:54,sv=[],sc=[],si=[],shellTone=new THREE.Color(0xb5a184).convertSRGBToLinear();
+        for(var ring=0;ring<=shellRings;ring++)for(var slice=0;slice<=shellSegments;slice++){
+          var u=ring/shellRings,phi=slice/shellSegments*Math.PI*2,phase=phi-u*Math.PI*6;
+          var bodyRadius=u<.78?.015+.35*Math.pow(u/.78,.82):.365-(u-.78)/.22*.145;
+          var relief=1+.075*Math.sin(phase)*Math.sin(u*Math.PI),radius=bodyRadius*relief;
+          sv.push(-.64+.82*u,.22+.065*(1-u)+Math.cos(phi)*radius,Math.sin(phi)*radius);
+          var tone=.82+.12*Math.sin(phase)+.04*Math.sin(u*410+phi*2);sc.push(shellTone.r*tone,shellTone.g*tone,shellTone.b*tone);
+          if(ring<shellRings&&slice<shellSegments){var j=ring*(shellSegments+1)+slice;si.push(j,j+1,j+shellSegments+1,j+1,j+shellSegments+2,j+shellSegments+1);}
+        }
+        var shellGeometry=new THREE.BufferGeometry();shellGeometry.setAttribute('position',new THREE.Float32BufferAttribute(sv,3));shellGeometry.setAttribute('color',new THREE.Float32BufferAttribute(sc,3));shellGeometry.setIndex(si);shellGeometry.computeVertexNormals();
+        var shellMat=pigment(0xffffff,{vertexColors:true,roughness:.83,side:THREE.DoubleSide});
+        var shell=mesh(shellGeometry,shellMat,group);shell.userData.anatomyPart='carried-shell';shell.userData.carriedShell=true;
+        var aperture=sphere(group,pigment(0x322b24,{roughness:1}),.163,.22,0,.022,.211,.211,18);aperture.userData.anatomyPart='shell-aperture';
+        var lip=mesh(new THREE.TorusGeometry(.22,.015,6,lowDetail?24:48),pigment(0xd4c2a1,{roughness:.8}),group,.181,.22,0);lip.rotation.y=Math.PI/2;lip.userData.anatomyPart='shell-lip';
+        sphere(group,skin,.27,.105,0,.19,.135,.16,18).userData.anatomyPart='cephalothorax';
+        var joints=[],legs=[],clawTips=[],antennae=[];
         [-1,1].forEach(function(side){
-          for(var leg=0;leg<3;leg++)curve(group,[[.14-leg*.1,.05,side*.12],[.37-leg*.13,-.1,side*.33],[.44-leg*.15,-.24,side*.42]],.025,skin,8);
-          segment(group,[.3,.07,side*.08],[.56,.18,side*.28],side>0?.057:.043,skin);
-          sphere(group,skin,.61,.18,side*.29,side>0?.145:.1,.087,.083,12);
-          segment(group,[.3,.12,side*.07],[.39,.3,side*.115],.018,belly);sphere(group,eyeMat,.4,.31,side*.115,.027);
+          for(var leg=0;leg<2;leg++){
+            var start=[.22-leg*.11,.06,side*.13],knee=[.37-leg*.26,-.02,side*.34],ankle=[.39-leg*.3,-.17,side*.48],tip=[.51-leg*.38,-.29,side*.52];
+            legs.push(anatomyStem(start,knee,.031),anatomyStem(knee,ankle,.025),anatomyStem(ankle,tip,.012));
+            joints.push({position:knee,scale:[.035,.034,.035]},{position:ankle,scale:[.024,.024,.024]});
+          }
+          var big=side===1,handX=.58,handZ=side*.29,handY=.09,scale=big?1:.75;
+          segment(group,[.32,.08,side*.12],[.48,.04,side*.26],.037*scale,skin,.029*scale).userData.anatomyPart='cheliped';
+          var palm=sphere(group,skin,handX,handY,handZ,.12*scale,.077*scale,.081*scale,14);palm.userData.anatomyPart='claw-palm';palm.userData.clawSide=side;
+          // Separate fixed and movable fingers leave a visible pincer opening.
+          curve(group,[[handX+.07*scale,handY-.018,handZ-side*.045*scale],[handX+.17*scale,handY-.004,handZ-side*.05*scale],[handX+.21*scale,handY+.012,handZ-side*.011*scale]],.021*scale,skin,8).userData.anatomyPart='fixed-claw-finger';
+          curve(group,[[handX+.055*scale,handY+.025,handZ+side*.048*scale],[handX+.14*scale,handY+.048,handZ+side*.07*scale],[handX+.20*scale,handY+.022,handZ+side*.026*scale]],.018*scale,skin,8).userData.anatomyPart='movable-claw-finger';
+          segment(group,[.31,.19,side*.075],[.4,.34,side*.12],.016,belly,.012).userData.anatomyPart='eyestalk';
+          sphere(group,eyeMat,.405,.35,side*.122,.028,.032,.027,12).userData.anatomyPart='compound-eye';
+          var feeler=curve(group,[[.35,.17,side*.12],[.51,.23,side*.18],[.73,.28,side*.32],[.94,.29,side*.39]],.006,belly,lowDetail?9:16);feeler.userData.anatomyPart='antenna';
+          curve(group,[[.36,.18,side*.052],[.49,.29,side*.07],[.62,.31,side*.12]],.007,belly,10).userData.anatomyPart='antennule';
         });
+        anatomyBatch(new THREE.CylinderGeometry(.7,1,1,lowDetail?5:7),legs,skin,'walking-leg-segments');
+        anatomyBatch(new THREE.SphereGeometry(1,8,6),joints,belly,'leg-joints');
+        Object.assign(group.userData,{exposedWalkingLegPairs:2,clawPairs:1,antennaPairs:2,shellModel:'spiral-relief-with-aperture',hiddenRearLegPairs:2});
       }else if(shape==='seacucumber'){
         sphere(group,skin,0,0,0,.64,.19,.22,lowDetail?14:20);
         sphere(group,belly,.48,-.015,0,.17,.15,.16,12);
@@ -12240,79 +12436,362 @@ window.StemLab = window.StemLab || {
           for(var limb=0;limb<4;limb++)curve(group,[[.12-limb*.08,-.06,side*.07],[.05-limb*.08,-.16,side*.18],[-.04-limb*.08,-.17,side*.24]],.009,belly,7);
         });
         sphere(group,dark,.17,.13,0,.029,.021,.028,8);
-      }else if(shape==='shrimp'||shape==='crab'){
-        sphere(group,skin,0,0,0,shape==='crab'?.38:.42,.16,shape==='crab'?.31:.15);
-        if(shape==='shrimp'){
-          if(profile&&(profile.pattern==='pederson'||profile.pattern==='cherry')){skin.transparent=true;skin.opacity=profile.pattern==='pederson'?.44:.83;}
-          for(var abdominal=0;abdominal<4;abdominal++)sphere(group,abdominal%2?belly:skin,-.28-abdominal*.11,-abdominal*.017,0,.16-abdominal*.019,.13-abdominal*.015,.135-abdominal*.012,12);
-          ribbon(group,[[0,0],[-.24,.15],[-.29,-.12]],finMat,-.63,-.035,0);
-          for(var antenna=0;antenna<2;antenna++)curve(group,[[.26,.09,antenna?.06:-.06],[.64,.2,antenna?.18:-.18],[profile&&/cleaner|pederson/.test(profile.pattern)?1.18:.98,.25,antenna?.3:-.3]],.008,profile&&/cleaner|pederson/.test(profile.pattern)?ivory:belly,10);
-          if(profile&&profile.pattern==='pistol'){
-            segment(group,[.24,-.02,.12],[.5,.025,.28],.061,skin);sphere(group,skin,.65,.055,.29,.23,.13,.12,14).userData.snappingClaw=true;
-            ribbon(group,[[0,0],[.22,.08],[.1,-.065]],belly,.77,.08,.29);
-          }
-          if(profile&&profile.pattern==='cleaner')curve(group,[[-.62,.04,0],[-.3,.13,0],[0,.17,0],[.34,.12,0]],.028,ivory,14);
-          if(profile&&profile.pattern==='pederson'){
-            var violet=pigment(0x695796,{roughness:.4});
-            for(var mark=0;mark<8;mark++)sphere(group,violet,-.51+mark*.11,.105,mark%2?.045:-.045,.032,.014,.026,8);
+      }else if(shape==='shrimp'){
+        var shrimpPattern=profile?profile.pattern:'plain',cleanerShrimp=shrimpPattern==='cleaner',pedersonShrimp=shrimpPattern==='pederson',pistolShrimp=shrimpPattern==='pistol';
+        var shrimpQuality=appearanceOptions().quality,shrimpResolution=lowDetail?128:shrimpQuality==='high'?512:256,shrimpPixels=new Uint8Array(shrimpResolution*shrimpResolution/2*4);
+        var shrimpBase=new THREE.Color(cleanerShrimp?0xe5b978:baseColor),shrimpRed=new THREE.Color(0xc84032),shrimpViolet=new THREE.Color(0x6654b2),shrimpWhite=new THREE.Color(0xf3f4e7);
+        var shrimpSpots=[];
+        if(pedersonShrimp)for(var spotIndex=0;spotIndex<18;spotIndex++)shrimpSpots.push([.045+(spotIndex%9)*.103+noise(spotIndex+15,seed)*.018,(spotIndex<9?.11:.89)+(noise(spotIndex+55,seed)-.5)*.09,.012+noise(spotIndex+95,seed)*.01,.018+noise(spotIndex+135,seed)*.014]);
+        for(var py=0;py<shrimpResolution/2;py++){
+          var rowSpots=pedersonShrimp?shrimpSpots.filter(function(patch){return Math.abs((py+.5)/(shrimpResolution/2)-patch[1])<patch[3];}):[];
+          for(var px=0;px<shrimpResolution;px++){
+          var u=(px+.5)/shrimpResolution,v=(py+.5)/(shrimpResolution/2),dorsalAngle=Math.min(v,1-v)*Math.PI*2;
+          var opacity=pedersonShrimp?.23:shrimpPattern==='cherry'?.82:.76;
+          var fleck=.5+.5*Math.sin(u*197+Math.sin(v*77)*3)*Math.sin(v*173+u*51),shade=.94+fleck*.06;
+          var sr=shrimpBase.r*shade,sg=shrimpBase.g*shade,sb=shrimpBase.b*shade;
+          if(cleanerShrimp){
+            var redBand=clamp((.66-dorsalAngle)*12,0,1),whiteBand=clamp((.19-dorsalAngle)*24,0,1);
+            sr+=(shrimpRed.r-sr)*redBand;sg+=(shrimpRed.g-sg)*redBand;sb+=(shrimpRed.b-sb)*redBand;
+            sr+=(shrimpWhite.r-sr)*whiteBand;sg+=(shrimpWhite.g-sg)*whiteBand;sb+=(shrimpWhite.b-sb)*whiteBand;opacity+=redBand*.2;
+          }else if(pedersonShrimp){
+            var spot=0;
+            for(var patchIndex=0;patchIndex<rowSpots.length;patchIndex++){var patch=rowSpots[patchIndex],du=(u-patch[0])/patch[2],dv=(v-patch[1])/patch[3];spot=Math.max(spot,clamp((1-du*du-dv*dv)*5,0,1));}
+            sr+=(shrimpViolet.r-sr)*spot;sg+=(shrimpViolet.g-sg)*spot;sb+=(shrimpViolet.b-sb)*spot;opacity+=spot*.72;
+          }else if(shrimpPattern==='cherry'){var redAmount=fleck*.22;sr+=(shrimpRed.r-sr)*redAmount;sg+=(shrimpRed.g-sg)*redAmount;sb+=(shrimpRed.b-sb)*redAmount;}
+          var pixel=(py*shrimpResolution+px)*4;shrimpPixels[pixel]=sr*255;shrimpPixels[pixel+1]=sg*255;shrimpPixels[pixel+2]=sb*255;shrimpPixels[pixel+3]=Math.min(.98,opacity)*255;
           }
         }
-        for(var leg=0;leg<4;leg++)[-1,1].forEach(function(side){
-          var x=.24-leg*.16;
-          curve(group,[[x,-.04,side*.1],[x-.13,-.14,side*(shape==='crab'?.5:.28)],[x-.03,-.28,side*(shape==='crab'?.59:.34)]],.018,skin,7);
+        var shrimpMap=new THREE.DataTexture(shrimpPixels,shrimpResolution,shrimpResolution/2,THREE.RGBAFormat);shrimpMap.encoding=THREE.sRGBEncoding;shrimpMap.generateMipmaps=true;shrimpMap.minFilter=THREE.LinearMipmapLinearFilter;shrimpMap.needsUpdate=true;shrimpMap.userData={role:'shrimp-exoskeleton-pigment',pattern:shrimpPattern};
+        var shrimpShellMat=pigment(0xffffff,{map:shrimpMap,transparent:true,depthWrite:false,roughness:.35,metalness:0,side:THREE.FrontSide});
+        var shrimpLimbMat=pigment(cleanerShrimp?0xe9d3a0:pedersonShrimp?0xd4e1dc:baseColor,{transparent:true,opacity:pedersonShrimp?.48:.83,roughness:.42,depthWrite:false});
+        var antennaMat=cleanerShrimp||pedersonShrimp?ivory:shrimpLimbMat,pedersonBandMat=pedersonShrimp?pigment(0x6654b2,{roughness:.4}):null;
+        function shrimpSection(x1,x2,ry1,ry2,rz1,rz2,cy1,cy2,part,partIndex){
+          var radial=lowDetail?12:shrimpQuality==='high'?32:24,rings=lowDetail?4:8,positions=[],uvs=[],indices=[];
+          for(var ring=0;ring<=rings;ring++)for(var radialIndex=0;radialIndex<=radial;radialIndex++){
+            var t=ring/rings,theta=radialIndex/radial*Math.PI*2,x=x1+(x2-x1)*t,bulge=1+Math.sin(t*Math.PI)*.035,ry=(ry1+(ry2-ry1)*t)*bulge,rz=(rz1+(rz2-rz1)*t)*bulge;
+            positions.push(x,cy1+(cy2-cy1)*t+Math.cos(theta)*ry,Math.sin(theta)*rz);uvs.push((x+.76)/1.22,radialIndex/radial);
+            if(ring<rings&&radialIndex<radial){var a=ring*(radial+1)+radialIndex,b=a+radial+1;indices.push(a,b,a+1,b,b+1,a+1);}
+          }
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);smoothSurfaceNormals(geometry);geometry.computeBoundingSphere();
+          var section=mesh(geometry,shrimpShellMat,group);section.userData.anatomyPart=part;if(partIndex!==undefined)section.userData.segmentIndex=partIndex;return section;
+        }
+        shrimpSection(.43,-.12,.036,.145,.035,.125,.02,.035,'carapace');
+        var abdomenRadii=[.144,.139,.122,.102,.081,.06,.035],abdomenY=[.035,.026,.007,-.014,-.032,-.047,-.055];
+        for(var abdominal=0;abdominal<6;abdominal++)shrimpSection(-.115-abdominal*.09,-.215-abdominal*.09,abdomenRadii[abdominal],abdomenRadii[abdominal+1],abdomenRadii[abdominal]*.9,abdomenRadii[abdominal+1]*.9,abdomenY[abdominal],abdomenY[abdominal+1],'abdomen-segment',abdominal);
+        var fanMat=pigment(cleanerShrimp?0xc9503c:pedersonShrimp?0x8072b5:baseColor,{transparent:true,opacity:pedersonShrimp?.5:.69,side:THREE.DoubleSide,depthWrite:false,roughness:.43});
+        function shrimpFan(points,part){var fan=ribbon(group,points,fanMat,-.67,-.05,0);fan.rotation.x=Math.PI/2;fan.userData.anatomyPart=part;return fan;}
+        shrimpFan([[0,-.025],[-.24,-.045],[-.28,0],[-.24,.045],[0,.025]],'telson');
+        [-1,1].forEach(function(side){
+          for(var lobe=0;lobe<2;lobe++){
+            var tip=side*(lobe?.19:.105);shrimpFan([[0,side*.013],[-.10,tip*.92],[-.23,tip],[-.25,tip*.64],[-.09,side*.018]],'uropod');
+            if(cleanerShrimp)sphere(group,ivory,-.86,-.039,tip*.75,.025,.006,.023,10).userData.anatomyPart='tail-spot';
+          }
         });
-        if(shape==='crab')[-1,1].forEach(function(side){
-          segment(group,[.15,0,side*.2],[.52,.06,side*.42],.065,skin);
-          sphere(group,skin,.58,.07,side*.4,.16,.1,.12,10);
-          ribbon(group,[[0,0],[.2,.04],[.08,-.06]],belly,.64,.07,side*.4);
+        var rostrum=ribbon(group,[[.26,.11],[.55,.12],[.42,.054]],shrimpLimbMat);rostrum.userData.anatomyPart='rostrum';
+        var shrimpLegs=[],shrimpAntennae=[];
+        [-1,1].forEach(function(side){
+          var stalk=segment(group,[.32,.065,side*.05],[.395,.104,side*.105],.012,shrimpLimbMat,.009);stalk.userData.anatomyPart='eye-stalk';
+          sphere(group,eyeMat,.403,.109,side*.111,.025,.022,.023,12).userData.anatomyPart='compound-eye';
+          for(var pair=0;pair<2;pair++){
+            var feeler=new THREE.Group();feeler.position.set(.38,.068,side*(pair?.037:.068));group.add(feeler);
+            var length=(cleanerShrimp||pedersonShrimp?1:.76)*(pair?.7:1),spread=pair?.17:.35;
+            curve(feeler,[[0,0,0],[length*.4,.08,side*spread*.48],[length,.15+(pair?.10:0),side*spread]],pair?.0045:.006,antennaMat,lowDetail?9:18).userData.anatomyPart=pair?'antennule':'antenna';shrimpAntennae.push(feeler);
+          }
+          // Five thoracic appendage pairs. The snapping chela replaces, rather
+          // than supplements, the first walking-leg pair in the pistol profile.
+          for(var leg=0;leg<5;leg++){
+            var limb=new THREE.Group(),lx=.28-leg*.078;limb.position.set(lx,-.053,side*.082);limb.userData.anatomyPart='pereiopod';limb.userData.pairIndex=leg;limb.userData.side=side;group.add(limb);shrimpLegs.push(limb);
+            if(pistolShrimp&&leg===0){
+              var major=side>0,clawScale=major?1:.48;limb.userData.snappingClaw=major;
+              segment(limb,[0,0,0],[.19,.032,side*.12],major?.029:.016,shrimpLimbMat);
+              var chela=new THREE.Group();chela.position.set(.28,.04,side*.15);chela.scale.setScalar(clawScale);chela.userData.anatomyPart=major?'major-chela':'minor-chela';chela.userData.snappingClaw=major;limb.add(chela);
+              sphere(chela,skin,0,0,0,.16,.074,.087,18).userData.anatomyPart='claw-palm';
+              curve(chela,[[.09,0,-.042],[.25,.003,-.04],[.3,.004,.004]],.018,skin,10).userData.anatomyPart='fixed-finger';
+              var finger=curve(chela,[[.07,0,.047],[.21,.008,.065],[.29,.005,.025]],.019,skin,10);finger.userData.anatomyPart='movable-finger';
+            }else{
+              var reach=leg<2?.16:-.08,spread=leg<2?.18:.23;
+              curve(limb,[[0,0,0],[reach*.3,-.08,side*spread*.65],[reach,-.23,side*spread]],pedersonShrimp?.009:.011,shrimpLimbMat,8);
+              if(leg<2){segment(limb,[reach,-.23,side*spread],[reach+.045,-.21,side*(spread+.016)],.005,antennaMat,.002);segment(limb,[reach,-.23,side*spread],[reach+.046,-.235,side*(spread-.014)],.005,antennaMat,.002);}
+              if(pedersonShrimp)segment(limb,[reach*.3,-.08,side*spread*.65],[reach*.47,-.12,side*spread*.74],.0105,pedersonBandMat);
+            }
+          }
+          for(var swimmeret=0;swimmeret<5;swimmeret++){
+            var swimmingLeg=curve(group,[[-.17-swimmeret*.09,abdomenY[swimmeret]-.07,side*.04],[-.2-swimmeret*.09,abdomenY[swimmeret]-.12,side*.08],[-.25-swimmeret*.09,abdomenY[swimmeret]-.14,side*.065]],.006,shrimpLimbMat,5);swimmingLeg.userData.anatomyPart='pleopod';
+          }
         });
+        group.userData.crustaceanLegs=shrimpLegs;group.userData.crustaceanAntennae=shrimpAntennae;group.userData.surfaceModel='segmented-exoskeleton';
+      }else if(shape==='crab'){
+        sphere(group,skin,0,0,0,.38,.16,.31);
+        for(var leg=0;leg<4;leg++)[-1,1].forEach(function(side){var x=.24-leg*.16;curve(group,[[x,-.04,side*.1],[x-.13,-.14,side*.5],[x-.03,-.28,side*.59]],.018,skin,7);});
+        [-1,1].forEach(function(side){segment(group,[.15,0,side*.2],[.52,.06,side*.42],.065,skin);sphere(group,skin,.58,.07,side*.4,.16,.1,.12,10);ribbon(group,[[0,0],[.2,.04],[.08,-.06]],belly,.64,.07,side*.4);});
         eyes(.28,.1,.11,.042);
       }else if(shape==='snail'){
-        sphere(group,belly,.05,-.11,0,.45,.065,.16,12);
-        sphere(group,skin,-.08,.14,0,.28,.3,.23,18);
-        var spiral=[];
-        for(var sp=0;sp<60;sp++){var a=sp*.19,r=.018+sp*.0036;spiral.push([-.07+Math.cos(a)*r,.14+Math.sin(a)*r,.22-Math.pow(r,2)*.4]);}
-        curve(group,spiral,.012,dark,50);
-        [-1,1].forEach(function(side){segment(group,[.3,-.07,side*.08],[.44,.16,side*.13],.012,belly);sphere(group,eyeMat,.44,.16,side*.13,.025);});
+        // Representative freshwater neritid: a low spire and broad last whorl.
+        // Eyes sit beside the tentacle bases, not at the sensory tentacle tips.
+        sphere(group,belly,.035,-.115,0,.43,.055,.235,20).userData.anatomyPart='foot';
+        sphere(group,belly,.29,-.071,0,.16,.072,.16,16).userData.anatomyPart='head';
+        var shellSize=lowDetail?128:appearanceOptions().quality==='high'?512:256,shellPixels=new Uint8Array(shellSize*shellSize*4);
+        var shellBase=new THREE.Color(baseColor),shellInk=new THREE.Color(0x3c3428);
+        for(var sy=0;sy<shellSize;sy++)for(var sx=0;sx<shellSize;sx++){
+          var su=(sx+.5)/shellSize,sv=(sy+.5)/shellSize,angle=su*Math.PI*2;
+          var wave=Math.sin(angle*13+Math.sin(sv*9+angle*3)*.8+sv*5),stripe=clamp((wave-.12)*3,0,1)*.86;
+          var growth=1-.045*Math.pow(.5+.5*Math.sin(sv*240+Math.sin(angle)*2),6),si=(sy*shellSize+sx)*4;
+          shellPixels[si]=(shellBase.r+(shellInk.r-shellBase.r)*stripe)*255*growth;
+          shellPixels[si+1]=(shellBase.g+(shellInk.g-shellBase.g)*stripe)*255*growth;
+          shellPixels[si+2]=(shellBase.b+(shellInk.b-shellBase.b)*stripe)*255*growth;shellPixels[si+3]=255;
+        }
+        var shellMap=new THREE.DataTexture(shellPixels,shellSize,shellSize,THREE.RGBAFormat);shellMap.encoding=THREE.sRGBEncoding;shellMap.generateMipmaps=true;shellMap.minFilter=THREE.LinearMipmapLinearFilter;shellMap.needsUpdate=true;shellMap.userData={role:'nerite-shell-pigment'};
+        var shellMaterial=pigment(0xffffff,{map:shellMap,roughness:.36,metalness:0}),shellGeometry=new THREE.SphereGeometry(1,lowDetail?24:48,lowDetail?14:28,0,Math.PI*2,0,Math.PI*.54);
+        var shellVertices=shellGeometry.attributes.position;
+        for(var svx=0;svx<shellVertices.count;svx++){
+          var vx=shellVertices.getX(svx),vy=shellVertices.getY(svx),vz=shellVertices.getZ(svx);
+          shellVertices.setXYZ(svx,vx*.35-.06-vy*.085,vy*.34-.027,vz*.295);
+        }
+        smoothSurfaceNormals(shellGeometry);shellGeometry.computeBoundingSphere();
+        mesh(shellGeometry,shellMaterial,group).userData.anatomyPart='shell';
+        // The aperture is largely occupied by the extended animal in this posture.
+        var lip=mesh(new THREE.TorusGeometry(1,.027,6,40),belly,group,-.05,-.061,0);lip.rotation.x=Math.PI/2;lip.scale.set(.33,.276,.3);lip.userData.anatomyPart='shell-lip';
+        [-1,1].forEach(function(side){
+          var tentacle=curve(group,[[.33,-.024,side*.095],[.43,.035,side*.16],[.57,.095,side*.20]],.007,belly,10);tentacle.userData.anatomyPart='tentacle';
+          var stalk=segment(group,[.32,-.023,side*.12],[.345,.006,side*.16],.009,belly,.006);stalk.userData.anatomyPart='eye-stalk';
+          sphere(group,eyeMat,.346,.011,side*.164,.012,.013,.012,10).userData.anatomyPart='snail-eye';
+        });
       }else if(shape==='bivalve'){
         [-1,1].forEach(function(side){var shell=sphere(group,skin,0,side*.045,0,.4,.13,.27,18);shell.rotation.x=side*.13;});
         for(var rib=0;rib<8;rib++){var rz=-.2+rib*.055;curve(group,[[-.32,.075,rz],[0,.18,rz],[.32,.075,rz]],.009,belly,9);}
       }else if(shape==='starfish'||shape==='sunflowerstar'){
-        var arms=shape==='sunflowerstar'?20:5;group.userData.armCount=arms;
-        var points=[];for(var star=0;star<arms*2;star++){var starA=star*Math.PI/arms,starR=star%2?(arms>5?.27:.16):.54;points.push([Math.cos(starA)*starR,Math.sin(starA)*starR]);}
-        var starMesh=ribbon(group,points,skin);starMesh.rotation.x=-Math.PI/2;
-        sphere(group,belly,0,.015,0,.18,.065,.18,12);
-        for(var ridge=0;ridge<arms;ridge++){var ridgeAngle=ridge*Math.PI*2/arms;segment(group,[Math.cos(ridgeAngle)*.1,.035,Math.sin(ridgeAngle)*.1],[Math.cos(ridgeAngle)*.49,.025,Math.sin(ridgeAngle)*.49],arms>5?.037:.076,skin,.016);}
-        for(var arm=0;arm<arms;arm++)for(var spot=1;spot<(lowDetail?3:5);spot++)sphere(group,belly,Math.cos(arm*Math.PI*2/arms)*spot*.09,.025,Math.sin(arm*Math.PI*2/arms)*spot*.09,.023,.025,.023,7);
+        var arms=shape==='sunflowerstar'?20:5,starQuality=appearanceOptions().quality,angular=arms*(lowDetail?8:starQuality==='high'?20:14),rings=lowDetail?8:starQuality==='high'?20:14;
+        group.userData.armCount=arms;
+        var starOuter=arms>5?.62:.56,starInner=arms>5?.29:.17,starWidth=lowDetail?128:starQuality==='high'?512:256;
+        var aboralPixels=new Uint8Array(starWidth*starWidth*4),oralPixels=new Uint8Array(starWidth*starWidth*4),starBase=new THREE.Color(baseColor),starPale=new THREE.Color(0xd9c8a4);
+        for(var row=0;row<starWidth;row++)for(var col=0;col<starWidth;col++){
+          var x=((col+.5)/starWidth*2-1)*starOuter,z=((row+.5)/starWidth*2-1)*starOuter,rad=Math.sqrt(x*x+z*z),theta=Math.atan2(z,x),grain=.5+.5*Math.sin(x*823+Math.sin(z*341)*2)*Math.sin(z*791+x*119);
+          var shade=.83+grain*.2+.055*Math.sin(x*29)*Math.cos(z*35),offset=(row*starWidth+col)*4,groove=Math.pow(Math.max(0,Math.cos(theta*arms)),16)*Math.min(1,rad/.08);
+          aboralPixels[offset]=Math.min(255,starBase.r*shade*255);aboralPixels[offset+1]=Math.min(255,starBase.g*shade*255);aboralPixels[offset+2]=Math.min(255,starBase.b*shade*255);aboralPixels[offset+3]=255;
+          oralPixels[offset]=starPale.r*(.95-groove*.25)*255;oralPixels[offset+1]=starPale.g*(.95-groove*.25)*255;oralPixels[offset+2]=starPale.b*(.95-groove*.25)*255;oralPixels[offset+3]=255;
+        }
+        function starMap(pixels,role){var map=new THREE.DataTexture(pixels,starWidth,starWidth,THREE.RGBAFormat);map.encoding=THREE.sRGBEncoding;map.generateMipmaps=true;map.minFilter=THREE.LinearMipmapLinearFilter;map.needsUpdate=true;map.userData={role:role};return map;}
+        var starTopMat=pigment(0xffffff,{map:starMap(aboralPixels,'sea-star-aboral'),roughness:.84,metalness:0}),starBottomMat=pigment(0xffffff,{map:starMap(oralPixels,'sea-star-oral'),roughness:.78,metalness:0});
+        function starRadius(angle){return starInner+(starOuter-starInner)*Math.pow((1+Math.cos(angle*arms))/2,arms>5?.85:1.35);}
+        function starHeight(t,upper){var dome=Math.pow(Math.max(0,1-t*t),upper?.24:.5);return .018+(upper?(.092-.022*t)*dome:-.046*dome);}
+        var starPositions=[],starUvs=[],starIndices=[];
+        for(var face=0;face<2;face++)for(var ring=0;ring<=rings;ring++)for(var sector=0;sector<=angular;sector++){
+          var angle=sector/angular*Math.PI*2,t=ring/rings,radius=starRadius(angle)*t,px=Math.cos(angle)*radius,pz=Math.sin(angle)*radius;
+          starPositions.push(px,starHeight(t,face===0),pz);starUvs.push((px/starOuter+1)/2,(pz/starOuter+1)/2);
+        }
+        var layer=(rings+1)*(angular+1),topCount=0;
+        for(var faceIndex=0;faceIndex<2;faceIndex++){
+          for(var r=0;r<rings;r++)for(var j=0;j<angular;j++){
+            var v=faceIndex*layer+r*(angular+1)+j,w=v+angular+1;
+            if(faceIndex===0){starIndices.push(v,v+1,w,w,v+1,w+1);}else{starIndices.push(v,w,v+1,w,w+1,v+1);}
+          }
+          if(faceIndex===0)topCount=starIndices.length;
+        }
+        var starGeometry=new THREE.BufferGeometry();starGeometry.setAttribute('position',new THREE.Float32BufferAttribute(starPositions,3));starGeometry.setAttribute('uv',new THREE.Float32BufferAttribute(starUvs,2));starGeometry.setIndex(starIndices);starGeometry.addGroup(0,topCount,0);starGeometry.addGroup(topCount,starIndices.length-topCount,1);smoothSurfaceNormals(starGeometry);starGeometry.computeBoundingBox();starGeometry.computeBoundingSphere();
+        var starBody=mesh(starGeometry,[starTopMat,starBottomMat],group);starBody.userData.anatomyPart='sea-star-body';starBody.userData.surfaceModel='solid-radial-body';
+        var feet=[],pads=[],granules=[],footRows=lowDetail?4:starQuality==='high'?9:6;
+        for(var arm=0;arm<arms;arm++){
+          var armAngle=arm*Math.PI*2/arms,ca=Math.cos(armAngle),sa=Math.sin(armAngle);
+          for(var step=0;step<footRows;step++){
+            var t=.26+step/(footRows-1)*.6,rr=t*starOuter;
+            [-1,1].forEach(function(side){var spread=(arms>5?.012:.025)*(1-t*.65),fx=ca*rr-sa*spread*side,fz=sa*rr+ca*spread*side,fy=starHeight(t,false)-.002,tipY=-.08;feet.push(anatomyStem([fx,fy,fz],[fx,tipY,fz],.0045));pads.push({position:[fx,tipY-.002,fz],scale:[.008,.0035,.008]});});
+          }
+          for(var grainIndex=0;grainIndex<(lowDetail?3:6);grainIndex++){var t=.22+grainIndex*.105,rr=t*starOuter;granules.push({position:[ca*rr,starHeight(t,true)+.003,sa*rr],scale:[arms>5?.008:.011,.005,arms>5?.008:.011]});}
+        }
+        anatomyBatch(new THREE.CylinderGeometry(1,1,1,5),feet,belly,'tube-feet');anatomyBatch(new THREE.SphereGeometry(1,6,4),pads,belly,'tube-foot-pads');anatomyBatch(new THREE.SphereGeometry(1,7,5),granules,pigment(baseColor.clone().lerp(new THREE.Color(0xd6c5aa),.24),{roughness:.86}),'aboral-granules');
+        var mouth=mesh(new THREE.CircleGeometry(.028,16),dark,group,0,-.029,0);mouth.rotation.x=Math.PI/2;mouth.userData.anatomyPart='ventral-mouth';
+        group.userData.surfaceModel='solid-radial-body';group.userData.tubeFootNote='Representative rows of tube feet, not an anatomical count.';
       }else if(shape==='urchin'){
-        sphere(group,skin,0,0,0,.28,.24,.28);
-        for(var spine=0;spine<(lowDetail?24:48);spine++){var u=1-spine/(lowDetail?24:48),az=spine*2.399,rad=Math.sqrt(1-u*u),direction=new THREE.Vector3(Math.cos(az)*rad,u,Math.sin(az)*rad);segment(group,direction.clone().multiplyScalar(.2).toArray(),direction.clone().multiplyScalar(.46+noise(spine,seed)*.09).toArray(),.018,dark);}
+        var urchinQuality=appearanceOptions().quality,spineCount=lowDetail?64:urchinQuality==='high'?240:144;
+        var testMat=pigment(baseColor,{roughness:.83,metalness:0,vertexColors:true}),test=sphere(group,testMat,0,0,0,.28,.24,.28,lowDetail?18:36),testPositions=test.geometry.attributes.position,testColors=[];
+        var testBase=new THREE.Color(baseColor).convertSRGBToLinear(),testPale=new THREE.Color(0xa692a9).convertSRGBToLinear();
+        for(var tp=0;tp<testPositions.count;tp++){var tx=testPositions.getX(tp),tz=testPositions.getZ(tp),angle=Math.atan2(tz,tx),band=Math.pow(Math.abs(Math.cos(angle*2.5)),24)*.24;testColors.push(testBase.r+(testPale.r-testBase.r)*band,testBase.g+(testPale.g-testBase.g)*band,testBase.b+(testPale.b-testBase.b)*band);}
+        // Vertex colors carry the decoded pigment; the material multiplier stays white.
+        testMat.color.set(0xffffff);test.geometry.setAttribute('color',new THREE.Float32BufferAttribute(testColors,3));test.userData.anatomyPart='urchin-test';
+        var spines=[],tubeFeet=[],footPads=[];
+        for(var spine=0;spine<spineCount;spine++){
+          var u=1-(spine+.5)/spineCount*1.42,az=spine*2.399963,rad=Math.sqrt(1-u*u),dir=new THREE.Vector3(Math.cos(az)*rad,u,Math.sin(az)*rad),base=new THREE.Vector3(dir.x*.277,dir.y*.237,dir.z*.277),length=.15+noise(spine,seed)*.105,end=base.clone().addScaledVector(dir,length);
+          spines.push(anatomyStem(base.toArray(),end.toArray(),.009+noise(spine+71,seed)*.003));
+        }
+        anatomyBatch(new THREE.CylinderGeometry(0,1,1,lowDetail?5:7),spines,pigment(baseColor.clone().multiplyScalar(.48),{roughness:.69,metalness:0}),'urchin-spines');
+        for(var band=0;band<5;band++)for(var foot=0;foot<5;foot++)[-1,1].forEach(function(side){
+          var az=band*Math.PI*2/5+side*.075,u=-.87+foot*.28,rad=Math.sqrt(1-u*u),dir=new THREE.Vector3(Math.cos(az)*rad,u,Math.sin(az)*rad),start=new THREE.Vector3(dir.x*.278,dir.y*.238,dir.z*.278),end=start.clone().addScaledVector(dir,.07);end.y-=.018;
+          tubeFeet.push(anatomyStem(start.toArray(),end.toArray(),.0045));footPads.push({position:end.toArray(),scale:[.008,.006,.008]});
+        });
+        anatomyBatch(new THREE.CylinderGeometry(1,1,1,5),tubeFeet,belly,'tube-feet');anatomyBatch(new THREE.SphereGeometry(1,6,4),footPads,belly,'tube-foot-pads');
+        var oral=mesh(new THREE.CircleGeometry(.045,20),dark,group,0,-.242,0);oral.rotation.x=Math.PI/2;oral.userData.anatomyPart='ventral-mouth';group.userData.spineCount=spineCount;group.userData.ambulacralBands=5;group.userData.tubeFootNote='Representative tube feet between spines, not an anatomical count.';
       }else if(shape==='coral'){
-        sphere(group,skin,0,-.1,0,.3,.12,.26);
-        for(var branchIndex=0;branchIndex<(lowDetail?5:8);branchIndex++){var ba=branchIndex*2.4,bx=Math.cos(ba)*.26,bz=Math.sin(ba)*.22,by=.4+(branchIndex%3)*.15;curve(group,[[bx*.3,-.04,bz*.3],[bx*.65,by*.5,bz*.6],[bx,by,bz]],.044,skin,9);curve(group,[[bx*.6,by*.4,bz*.5],[bx+.12,by*.68,bz-.1],[bx+.17,by*.9,bz-.15]],.024,belly,8);sphere(group,belly,bx,by,bz,.058,.044,.058,8);}
+        var coralQuality=appearanceOptions().quality,branchSegments=lowDetail?10:coralQuality==='high'?22:16,branchSides=lowDetail?7:11,cupsPerBranch=lowDetail?5:coralQuality==='high'?12:8;
+        var branchMat=pigment(0xffffff,{vertexColors:true,roughness:.83,metalness:0}),branchBase=new THREE.Color(baseColor).multiplyScalar(.78).convertSRGBToLinear(),branchPale=new THREE.Color(0xc9b0a2).convertSRGBToLinear();
+        var branchVertices=[],branchColors=[],branchIndices=[],cups=[],polypDiscs=[],polypMouths=[],polypTentacles=[],tipCaps=[],branchCount=0;
+        var cupMat=pigment(baseColor.clone().lerp(new THREE.Color(0xd6c4ab),.22),{roughness:.87,metalness:0}),polypMat=pigment(0x9d8877,{roughness:.74,metalness:0}),mouthMat=pigment(0x675952,{roughness:.85});
+        var crustGeo=new THREE.SphereGeometry(1,lowDetail?24:40,lowDetail?12:22),crustPos=crustGeo.attributes.position,crustColors=[];
+        for(var v=0;v<crustPos.count;v++){
+          var x=crustPos.getX(v),y=crustPos.getY(v),z=crustPos.getZ(v),a=Math.atan2(z,x),edge=1+.10*Math.sin(a*5)+.06*Math.cos(a*9+seed*.01),relief=1+.10*Math.sin(x*13+z*8)*Math.cos(z*11-x*4);
+          crustPos.setXYZ(v,x*edge,y*relief,z*edge);var tone=.77+.12*Math.max(0,y)+.035*Math.sin(x*83+z*57);crustColors.push(branchBase.r*tone,branchBase.g*tone,branchBase.b*tone);
+        }
+        crustGeo.setAttribute('color',new THREE.Float32BufferAttribute(crustColors,3));crustGeo.computeVertexNormals();mesh(crustGeo,branchMat,group,0,-.06,0,.32,.062,.29).userData.anatomyPart='encrusting-base';
+        function coralBranch(points,startRadius,endRadius){
+          var path=new THREE.CatmullRomCurve3(points.map(function(p){return new THREE.Vector3().fromArray(p);})),geo=new THREE.TubeGeometry(path,branchSegments,1,branchSides,false),pos=geo.attributes.position,idx=geo.index,offset=branchVertices.length/3,frames=path.computeFrenetFrames(branchSegments,false),branchId=branchCount++;
+          for(var v=0;v<pos.count;v++){
+            var t=Math.floor(v/(branchSides+1))/branchSegments,center=path.getPointAt(t),radius=startRadius+(endRadius-startRadius)*t,point=new THREE.Vector3().fromBufferAttribute(pos,v).sub(center).multiplyScalar(radius).add(center);
+            branchVertices.push(point.x,point.y,point.z);var pale=t*t*.25,tone=.9+.045*Math.sin(point.x*311+point.z*127)*Math.cos(point.y*183);
+            branchColors.push((branchBase.r+(branchPale.r-branchBase.r)*pale)*tone,(branchBase.g+(branchPale.g-branchBase.g)*pale)*tone,(branchBase.b+(branchPale.b-branchBase.b)*pale)*tone);
+          }
+          for(var i=0;i<idx.count;i++)branchIndices.push(offset+idx.getX(i));geo.dispose();
+          var tip=path.getPointAt(1),tangent=path.getTangentAt(1);tipCaps.push({position:tip.toArray(),direction:tangent.toArray(),scale:[endRadius,endRadius*.38,endRadius]});
+          // Small corallites face outward from the branch surface, rather than all upward.
+          for(var c=0;c<cupsPerBranch;c++){
+            var t=.18+c/(cupsPerBranch-1)*.73,a=c*2.399963+branchId*.8,frame=Math.round(t*branchSegments),normal=frames.normals[frame].clone().multiplyScalar(Math.cos(a)).addScaledVector(frames.binormals[frame],Math.sin(a)),radius=startRadius+(endRadius-startRadius)*t,center=path.getPointAt(t).addScaledVector(normal,radius*.97),cupSize=.016+noise(c+branchId*31,seed)*.007;
+            cups.push({position:center.toArray(),direction:normal.toArray(),scale:[cupSize,cupSize*1.25,cupSize]});
+            var discCenter=center.clone().addScaledVector(normal,cupSize*.33),mouthCenter=center.clone().addScaledVector(normal,cupSize*.39);
+            polypDiscs.push({position:discCenter.toArray(),direction:normal.toArray(),scale:[cupSize*.57,cupSize*.095,cupSize*.57]});polypMouths.push({position:mouthCenter.toArray(),direction:normal.toArray(),scale:[cupSize*.15,cupSize*.035,cupSize*.15]});
+            // A subset of extended polyps makes the animal structure legible without implying a population count.
+            if(c%3===1){var q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal);for(var arm=0;arm<12;arm++){var aa=arm*Math.PI/6,start=new THREE.Vector3(Math.cos(aa)*cupSize*.43,cupSize*.4,Math.sin(aa)*cupSize*.43).applyQuaternion(q).add(center),end=new THREE.Vector3(Math.cos(aa)*cupSize*.77,cupSize*(.93+.12*Math.sin(aa*3)),Math.sin(aa)*cupSize*.77).applyQuaternion(q).add(center);polypTentacles.push(anatomyStem(start.toArray(),end.toArray(),cupSize*.075));}}
+          }
+          return path;
+        }
+        for(var branch=0;branch<7;branch++){
+          var angle=branch*2.399963,ca=Math.cos(angle),sa=Math.sin(angle),height=.61+noise(branch,seed)*.23,spread=.19+noise(branch+43,seed)*.16;
+          var mainPath=coralBranch([[ca*.10,-.005,sa*.09],[ca*spread*.48,height*.38,sa*spread*.48],[ca*spread*.85,height*.73,sa*spread*.85],[ca*spread,height,sa*spread]],.067,.025);
+          for(var fork=0;fork<2;fork++){var t=.36+fork*.25,start=mainPath.getPointAt(t),az=angle+(fork?-.86:.86),reach=.18+noise(branch*3+fork+91,seed)*.08,dx=Math.cos(az)*reach,dz=Math.sin(az)*reach,up=.23+fork*.035;coralBranch([start.toArray(),[start.x+dx*.36,start.y+up*.45,start.z+dz*.36],[start.x+dx*.76,start.y+up*.82,start.z+dz*.76],[start.x+dx,start.y+up,start.z+dz]],.034,.016);}
+        }
+        var branchGeo=new THREE.BufferGeometry();branchGeo.setAttribute('position',new THREE.Float32BufferAttribute(branchVertices,3));branchGeo.setAttribute('color',new THREE.Float32BufferAttribute(branchColors,3));branchGeo.setIndex(branchIndices);branchGeo.computeVertexNormals();var skeleton=mesh(branchGeo,branchMat,group);skeleton.userData.anatomyPart='branching-skeleton';skeleton.userData.featureCount=branchCount;
+        anatomyBatch(new THREE.SphereGeometry(1,lowDetail?8:12,lowDetail?5:8),tipCaps,cupMat,'branch-tips');
+        var cupProfile=[new THREE.Vector2(.55,0),new THREE.Vector2(.76,.16),new THREE.Vector2(1,.43),new THREE.Vector2(1,.55),new THREE.Vector2(.72,.55),new THREE.Vector2(.54,.24),new THREE.Vector2(.20,.18)];
+        anatomyBatch(new THREE.LatheGeometry(cupProfile,lowDetail?7:12),cups,cupMat,'corallite-cups');
+        anatomyBatch(new THREE.SphereGeometry(1,lowDetail?7:10,5),polypDiscs,polypMat,'polyp-discs');anatomyBatch(new THREE.SphereGeometry(1,6,4),polypMouths,mouthMat,'polyp-mouths');
+        anatomyBatch(new THREE.CylinderGeometry(.1,1,1,lowDetail?4:5),polypTentacles,cupMat,'polyp-tentacles');
+        Object.assign(group.userData,{surfaceModel:'branching-coral-colony',branchCount:branchCount,coralliteCount:cups.length,extendedPolypCount:polypTentacles.length/12,colonyModel:true,polypNote:'Representative enlarged corallites and extended polyps; visible counts are a rendering choice, not simulated colony size.'});
       }else if(shape==='anemone'){
-        sphere(group,skin,0,-.07,0,.23,.18,.23);
-        var tentacleMat=pigment(baseColor.clone().lerp(new THREE.Color(0xf4d7b5),.33),{roughness:.6});
-        for(var tentacle=0;tentacle<(lowDetail?14:26);tentacle++){var ta=tentacle*2.4,tr=.14+tentacle%3*.085,x=Math.cos(ta)*tr,z=Math.sin(ta)*tr;curve(group,[[x*.45,0,z*.45],[x,.22+tentacle%3*.05,z],[x+Math.sin(ta)*.1,.42+tentacle%4*.065,z+.07]],.025,tentacleMat,8);}
-        sphere(group,belly,0,.055,0,.16,.025,.16,12);
+        var tissueMat=pigment(0xffffff,{vertexColors:true,roughness:.62,metalness:0}),tissueBase=new THREE.Color(baseColor).convertSRGBToLinear(),tissueTip=new THREE.Color(0xe1c2ac).convertSRGBToLinear();
+        var columnPoints=[new THREE.Vector2(.21,-.095),new THREE.Vector2(.225,-.065),new THREE.Vector2(.18,-.015),new THREE.Vector2(.175,.065),new THREE.Vector2(.215,.14),new THREE.Vector2(.29,.185)];
+        var columnGeo=new THREE.LatheGeometry(columnPoints,lowDetail?24:48),columnPos=columnGeo.attributes.position,columnColors=[];
+        for(var v=0;v<columnPos.count;v++){var a=Math.atan2(columnPos.getZ(v),columnPos.getX(v)),tone=.65+.055*Math.cos(a*24);columnColors.push(tissueBase.r*tone,tissueBase.g*tone,tissueBase.b*tone);}
+        columnGeo.setAttribute('color',new THREE.Float32BufferAttribute(columnColors,3));mesh(columnGeo,tissueMat,group).userData.anatomyPart='body-column';
+        sphere(group,pigment(baseColor.clone().multiplyScalar(.65),{roughness:.8}),0,-.088,0,.24,.031,.24,lowDetail?18:30).userData.anatomyPart='pedal-disc';
+        var discVertices=[],discColors=[],discIndices=[],discSegments=lowDetail?40:72,discRings=8;
+        for(var ring=0;ring<=discRings;ring++)for(var point=0;point<=discSegments;point++){
+          var t=ring/discRings,r=.047+t*.245,a=point*Math.PI*2/discSegments,y=.174+t*t*.017+Math.sin(a*12)*.003*t;
+          discVertices.push(Math.cos(a)*r,y,Math.sin(a)*r);var shade=.75+.08*Math.cos(a*32)+t*.13;discColors.push(tissueBase.r*shade,tissueBase.g*shade,tissueBase.b*shade);
+          if(ring<discRings&&point<discSegments){var idx=ring*(discSegments+1)+point;discIndices.push(idx,idx+1,idx+discSegments+1,idx+1,idx+discSegments+2,idx+discSegments+1);}
+        }
+        var discGeo=new THREE.BufferGeometry();discGeo.setAttribute('position',new THREE.Float32BufferAttribute(discVertices,3));discGeo.setAttribute('color',new THREE.Float32BufferAttribute(discColors,3));discGeo.setIndex(discIndices);discGeo.computeVertexNormals();mesh(discGeo,tissueMat,group).userData.anatomyPart='oral-disc';
+        sphere(group,pigment(0x49383c,{roughness:.85}),0,.175,0,.051,.009,.027,18).userData.anatomyPart='central-mouth';
+        var lip=mesh(new THREE.TorusGeometry(.044,.004,6,28),pigment(baseColor.clone().multiplyScalar(.68),{roughness:.75}),group,0,.179,0);lip.rotation.x=-Math.PI/2;lip.scale.y=.58;lip.userData.anatomyPart='mouth-rim';
+        var tentacleCount=lowDetail?24:appearanceOptions().quality==='high'?60:42,tentacleSegments=lowDetail?9:14,radialSegments=lowDetail?5:7;
+        var vertices=[],colors=[],indices=[],weights=[],phases=[];
+        for(var tentacle=0;tentacle<tentacleCount;tentacle++){
+          var row=tentacle%3,angle=Math.floor(tentacle/3)*Math.PI*2/(tentacleCount/3)+row*.19,rootR=.125+row*.073,height=.22+row*.035+noise(tentacle,seed)*.085,reach=.12+row*.028;
+          var ca=Math.cos(angle),sa=Math.sin(angle),bend=(noise(tentacle+71,seed)-.5)*.09,rootY=.18+row*.004;
+          var path=new THREE.CatmullRomCurve3([new THREE.Vector3(ca*rootR,rootY,sa*rootR),new THREE.Vector3(ca*(rootR+reach*.32)-sa*bend*.3,rootY+height*.43,sa*(rootR+reach*.32)+ca*bend*.3),new THREE.Vector3(ca*(rootR+reach*.7)-sa*bend,rootY+height*.88,sa*(rootR+reach*.7)+ca*bend),new THREE.Vector3(ca*(rootR+reach)-sa*bend*.7,rootY+height,sa*(rootR+reach)+ca*bend*.7)]);
+          var radius=.019+row*.003,geo=new THREE.TubeGeometry(path,tentacleSegments,radius,radialSegments,false),pos=geo.attributes.position,index=geo.index,offset=vertices.length/3;
+          for(var v=0;v<pos.count;v++){
+            var t=Math.floor(v/(radialSegments+1))/tentacleSegments,center=path.getPointAt(t),taper=.06+.94*Math.pow(1-t,.65),point=new THREE.Vector3().fromBufferAttribute(pos,v).sub(center).multiplyScalar(taper).add(center);
+            vertices.push(point.x,point.y,point.z);weights.push(t*t);phases.push(angle*.7+row*.9);var pale=t*t*.65,tone=.91+.04*Math.sin(t*35+angle);
+            colors.push((tissueBase.r+(tissueTip.r-tissueBase.r)*pale)*tone,(tissueBase.g+(tissueTip.g-tissueBase.g)*pale)*tone,(tissueBase.b+(tissueTip.b-tissueBase.b)*pale)*tone);
+          }
+          for(var i=0;i<index.count;i++)indices.push(offset+index.getX(i));geo.dispose();
+        }
+        var tentacleGeo=new THREE.BufferGeometry();tentacleGeo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));tentacleGeo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));tentacleGeo.setIndex(indices);tentacleGeo.computeVertexNormals();tentacleGeo.computeBoundingBox();tentacleGeo.computeBoundingSphere();
+        var crown=mesh(tentacleGeo,tissueMat,group);crown.userData.anatomyPart='tentacle-crown';crown.userData.featureCount=tentacleCount;
+        group.anemoneTissue={mesh:crown,rest:new Float32Array(vertices),weights:new Float32Array(weights),phases:new Float32Array(phases)};
+        group.userData.softMotionEnvelope=.024;group.userData.surfaceModel='tapered-anemone-crown';group.userData.tentacleCount=tentacleCount;
+        group.userData.tentacleNote='Representative tentacle arrangement; count and form vary by species.';
+        group.userData.tissueMotionNote='Illustrative tentacle deflection follows effective filter output; this is not a fluid-flow calculation.';
       }else if(shape==='turtle'||shape==='frog'){
         if(shape==='turtle'){
-          sphere(group,skin,-.04,0,0,.48,.24,.34,20);
-          sphere(group,belly,.04,-.1,0,.43,.09,.3,14);
-          for(var plate=0;plate<5;plate++){var shellPlate=sphere(group,pigment(plate%2?0x677b40:0x8b9b59,{roughness:.75}),-.27+plate%3*.22,.205,Math.floor(plate/3)*.2-.1,.135,.055,.12,10);}
-          sphere(group,belly,.46,.03,0,.17,.125,.13);
-          for(var limb=0;limb<4;limb++){var side=limb%2?1:-1,lx=limb<2?.25:-.32;
-            segment(group,[lx,-.03,side*.24],[lx+.05,-.13,side*.42],.064,skin);
-            var foot=ribbon(group,[[0,0],[.18,.08],[.21,-.08],[-.06,-.12]],finMat,lx,-.16,side*.42);foot.rotation.x=-Math.PI/2;foot.userData.webbedFoot=true;
-            for(var toe=0;toe<3;toe++)segment(group,[lx+.11+toe*.025,-.16,side*(.39+toe*.045)],[lx+.22+toe*.025,-.18,side*(.39+toe*.045)],.009,ivory);
+          var shellMat=pigment(0xffffff,{vertexColors:true,roughness:.77}),shellGeo=new THREE.SphereGeometry(1,lowDetail?32:64,lowDetail?14:28,0,Math.PI*2,0,Math.PI/2),shellPos=shellGeo.attributes.position,shellColors=[];
+          var shellOlive=new THREE.Color(0x616d3d).convertSRGBToLinear(),shellGold=new THREE.Color(0xb1aa65).convertSRGBToLinear();
+          // Pigment follows the curved shell; seams lie on this same cap surface.
+          for(var v=0;v<shellPos.count;v++){
+            var nx=shellPos.getX(v),nz=shellPos.getZ(v),cellX=Math.round(nx*2.5)/2.5,cellZ=Math.abs(nz)<.34?0:Math.sign(nz)*.59;
+            var ring=Math.sqrt(Math.pow((nx-cellX)*5.5,2)+Math.pow((nz-cellZ)*4,2)),mark=Math.pow(Math.max(0,Math.cos(ring*8)),10)*.24;
+            var tone=.91+.055*Math.sin(nx*145+nz*73)*Math.cos(nz*119);
+            shellColors.push((shellOlive.r+(shellGold.r-shellOlive.r)*mark)*tone,(shellOlive.g+(shellGold.g-shellOlive.g)*mark)*tone,(shellOlive.b+(shellGold.b-shellOlive.b)*mark)*tone);
           }
-          if(profile&&profile.pattern==='slider')[-1,1].forEach(function(side){sphere(group,pigment(0xbb4935),.474,.065,side*.131,.059,.027,.014,10).userData.anatomyPart='red-ear-patch';curve(group,[[.26,-.005,side*.1],[.42,-.03,side*.126],[.58,-.015,side*.079]],.012,ivory,9);});
-          eyes(.51,.07,.105,.028);
+          shellGeo.setAttribute('color',new THREE.Float32BufferAttribute(shellColors,3));var carapace=mesh(shellGeo,shellMat,group,-.045,.015,0,.5,.225,.355);carapace.userData.anatomyPart='carapace';
+          var seamMat=pigment(0x354329,{roughness:.9}),shellMark=pigment(0xa4a365,{roughness:.84});
+          function shellPoint(x,z,lift){return [-.045+x*.5,.015+.225*Math.sqrt(Math.max(0,1-x*x-z*z))+(lift||.002),z*.355];}
+          function shellLine(points,part,radius,mat){var sampled=[];for(var i=0;i<points.length-1;i++)for(var n=0;n<8;n++){var t=n/8;sampled.push(shellPoint(points[i][0]*(1-t)+points[i+1][0]*t,points[i][1]*(1-t)+points[i+1][1]*t));}sampled.push(shellPoint(points[points.length-1][0],points[points.length-1][1]));var line=curve(group,sampled,radius||.004,mat||seamMat,sampled.length);line.userData.anatomyPart=part;return line;}
+          var centralBounds=[-.91,-.56,-.19,.19,.56,.91];
+          [-1,1].forEach(function(side){
+            // Five central vertebrals bordered by four costal regions per side.
+            shellLine([[-.91,0],[-.73,side*.28],[-.37,side*.34],[0,side*.35],[.37,side*.34],[.73,side*.28],[.91,0]],'vertebral-border');
+            for(var i=1;i<centralBounds.length-1;i++){var bx=centralBounds[i],bz=.35-Math.abs(bx)*.055;shellLine([[bx,0],[bx,side*bz]],'vertebral-seam');}
+            for(var i=0;i<3;i++){var bx=-.4+i*.4,edgeZ=Math.sqrt(.92*.92-bx*bx);shellLine([[bx,side*(.35-Math.abs(bx)*.055)],[bx-.035,side*.59],[bx,side*edgeZ]],'costal-seam');}
+            for(var i=0;i<4;i++){var cx=-.62+i*.41,edgeZ=Math.sqrt(.87*.87-cx*cx);shellLine([[cx-.09,side*.43],[cx,side*.54],[cx+.06,side*(edgeZ-.025)]],'costal-yellow-mark',.006,shellMark);}
+          });
+          var rimPoints=[],innerRim=[];for(var i=0;i<=72;i++){var a=i*Math.PI*2/72;rimPoints.push(shellPoint(Math.cos(a)*.995,Math.sin(a)*.995,.001));innerRim.push(shellPoint(Math.cos(a)*.92,Math.sin(a)*.92));}
+          curve(group,rimPoints,.014,shellMark,72).userData.anatomyPart='shell-rim';curve(group,innerRim,.004,seamMat,72).userData.anatomyPart='marginal-border';
+          for(var i=0;i<24;i++){var a=(i+.5)*Math.PI*2/24;shellLine([[Math.cos(a)*.92,Math.sin(a)*.92],[Math.cos(a)*.992,Math.sin(a)*.992]],'marginal-seam',.003);}
+          var plastronMat=pigment(0xffffff,{vertexColors:true,roughness:.82}),plastronGeo=new THREE.SphereGeometry(1,lowDetail?24:48,lowDetail?12:24),pp=plastronGeo.attributes.position,pc=[],yellow=new THREE.Color(0xc7b770).convertSRGBToLinear(),blotch=new THREE.Color(0x484d32).convertSRGBToLinear();
+          for(var v=0;v<pp.count;v++){var x=pp.getX(v),z=pp.getZ(v),nearest=10;for(var i=0;i<6;i++){var dx=(x-(-.78+i*.3))/.11,dz=(Math.abs(z)-.32)/.19;nearest=Math.min(nearest,dx*dx+dz*dz);}var mix=clamp((1.15-nearest)*3,0,1)*.86;pc.push(yellow.r+(blotch.r-yellow.r)*mix,yellow.g+(blotch.g-yellow.g)*mix,yellow.b+(blotch.b-yellow.b)*mix);}
+          plastronGeo.setAttribute('color',new THREE.Float32BufferAttribute(pc,3));mesh(plastronGeo,plastronMat,group,-.035,-.055,0,.45,.075,.307).userData.anatomyPart='plastron';
+          function stripedSkin(x,y,z,sx,sy,sz,part){var geo=new THREE.SphereGeometry(1,lowDetail?18:30,lowDetail?12:20),pos=geo.attributes.position,col=[],green=new THREE.Color(0x66794b).convertSRGBToLinear(),pale=new THREE.Color(0xbcc780).convertSRGBToLinear();for(var i=0;i<pos.count;i++){var angle=Math.atan2(pos.getY(i),pos.getZ(i)),stripe=Math.pow(Math.max(0,Math.cos(angle*8+pos.getX(i)*1.2)),16)*.82;col.push(green.r+(pale.r-green.r)*stripe,green.g+(pale.g-green.g)*stripe,green.b+(pale.b-green.b)*stripe);}geo.setAttribute('color',new THREE.Float32BufferAttribute(col,3));var node=mesh(geo,shellMat,group,x,y,z,sx,sy,sz);node.userData.anatomyPart=part;return node;}
+          stripedSkin(.4,.015,0,.21,.092,.102,'striped-neck');stripedSkin(.565,.035,0,.145,.105,.113,'striped-head');
+          var limbMat=pigment(0x65794d,{roughness:.8}),stripeMat=pigment(0xb6c17b,{roughness:.8}),footMat=pigment(0x798953,{roughness:.86,side:THREE.DoubleSide}),digits=[],claws=[];
+          for(var limb=0;limb<4;limb++){
+            var side=limb%2?1:-1,hind=limb>=2,lx=hind?-.34:.29,fx=hind?-.39:.38,fz=side*(hind?.49:.43),fy=-.115;
+            stripedSkin(lx,-.03,side*.27,hind?.13:.10,.073,.15,hind?'hindlimb':'forelimb');
+            curve(group,[[lx,-.035,side*.25],[lx+(hind?-.065:.03),-.075,side*.38],[fx,fy,fz]],.041,limbMat,12).userData.anatomyPart='lower-limb';
+            curve(group,[[lx+.018,-.003,side*.29],[lx+(hind?-.055:.04),-.038,side*.38],[fx+.008,fy+.036,fz]],.006,stripeMat,12).userData.anatomyPart='limb-stripe';
+            var tips=[],verts=[fx,fy,fz],indices=[];
+            for(var toe=0;toe<5;toe++){var t=toe/4,tx=fx+(hind?-.05:.02)+.13*Math.sin(t*Math.PI),tz=fz+side*(.045+(t-.5)*.21),ty=fy-.022;tips.push([tx,ty,tz]);digits.push(anatomyStem([fx,fy,fz],[tx,ty,tz],.011));if(!hind||toe<4)claws.push(anatomyStem([tx,ty,tz],[tx+.031,ty-.009,tz+side*.018],.005));}
+            for(var toe=0;toe<5;toe++){var tip=tips[toe];verts.push(fx+(tip[0]-fx)*.9,tip[1]+.003,fz+(tip[2]-fz)*.9);if(toe<4){var next=tips[toe+1];verts.push(fx+((tip[0]+next[0])*.5-fx)*.68,fy-.01,fz+((tip[2]+next[2])*.5-fz)*.68);}}
+            for(var i=1;i<verts.length/3-1;i++)indices.push(0,i,i+1);var webGeo=new THREE.BufferGeometry();webGeo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));webGeo.setIndex(indices);webGeo.computeVertexNormals();var foot=mesh(webGeo,footMat,group);foot.userData.webbedFoot=true;foot.userData.anatomyPart=hind?'hindfoot-webbing':'forefoot-webbing';foot.userData.digitCount=5;
+          }
+          anatomyBatch(new THREE.CylinderGeometry(.55,1,1,6),digits,limbMat,'digits');anatomyBatch(new THREE.CylinderGeometry(0,1,1,5),claws,ivory,'claws');
+          var tailSegments=[];for(var i=0;i<5;i++)tailSegments.push(anatomyStem([-.45-i*.038,-.045-i*.004,0],[-.488-i*.038,-.049-i*.004,.004],.031*(1-i/5)));anatomyBatch(new THREE.CylinderGeometry(.65,1,1,7),tailSegments,limbMat,'tapered-tail');
+          if(profile&&profile.pattern==='slider')[-1,1].forEach(function(side){sphere(group,pigment(0xba4935),.509,.065,side*.107,.053,.023,.009,14).userData.anatomyPart='red-ear-patch';});
+          eyes(.604,.075,.093,.026);
+          [-1,1].forEach(function(side){sphere(group,dark,.696,.06,side*.035,.006,.005,.006,8).userData.anatomyPart='nostril';});
+          curve(group,[[.632,-.007,-.088],[.697,-.016,0],[.632,-.007,.088]],.004,dark,16).userData.anatomyPart='beak-line';
+          Object.assign(group.userData,{surfaceModel:'scuted-slider',vertebralScutes:5,costalScutesPerSide:4,webbedFootCount:4,digitsPerFoot:5,foreClawsPerFoot:5,hindClawsPerFoot:4});
         }else{
-          sphere(group,skin,0,0,0,.35,.13,.22,16);sphere(group,belly,.3,.035,0,.19,.12,.2,16);
-          [-1,1].forEach(function(side){curve(group,[[-.17,0,side*.13],[-.45,.02,side*.35],[-.21,-.07,side*.45]],.067,skin,8);segment(group,[.18,-.04,side*.12],[.25,-.15,side*.3],.035,skin);});
-          [-1,1].forEach(function(side){var web=ribbon(group,[[0,0],[.21,.11],[.2,-.1]],finMat,-.21,-.07,side*.45);web.rotation.x=-Math.PI/2;web.userData.webbedFoot=true;});
-          eyes(.34,.12,.15,.045);
+          var frogSkin=pigment(0xffffff,{vertexColors:true,roughness:.72,metalness:0}),frogBase=new THREE.Color(0x8a8a69).convertSRGBToLinear(),frogPale=new THREE.Color(0xc9c5a4).convertSRGBToLinear();
+          function frogSurface(x,y,z,sx,sy,sz,part){
+            var geo=new THREE.SphereGeometry(1,lowDetail?18:32,lowDetail?12:22),pos=geo.attributes.position,colors=[];
+            for(var v=0;v<pos.count;v++){
+              var px=pos.getX(v),py=pos.getY(v),pz=pos.getZ(v),wx=x+px*sx,wz=z+pz*sz;
+              var spots=Math.pow(Math.max(0,Math.sin(wx*57+Math.sin(wz*33))*Math.cos(wz*49+wx*13)),5);
+              var under=clamp((-py-.1)*1.8,0,1),tone=.93-spots*.55*(1-under)+.035*Math.sin(wx*311+wz*173);
+              colors.push((frogBase.r+(frogPale.r-frogBase.r)*under)*tone,(frogBase.g+(frogPale.g-frogBase.g)*under)*tone,(frogBase.b+(frogPale.b-frogBase.b)*under)*tone);
+            }
+            geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));var node=mesh(geo,frogSkin,group,x,y,z,sx,sy,sz);node.userData.anatomyPart=part;return node;
+          }
+          frogSurface(-.065,0,0,.35,.135,.22,'body');frogSurface(.26,.025,0,.19,.106,.19,'head');
+          var frogLimb=pigment(0x898767,{roughness:.72,metalness:0}),webMat=pigment(0xa7a386,{roughness:.82,side:THREE.DoubleSide,transparent:true,opacity:.9,depthWrite:false}),toeStems=[],claws=[];
+          function webbedFoot(side,hind){
+            var cx=hind?-.22:.27,cy=hind?-.12:-.17,cz=side*(hind?.46:.31),count=hind?5:4,tips=[],verts=[],indices=[];
+            for(var toe=0;toe<count;toe++){
+              var t=toe/(count-1),tx=cx+(hind?.13:.08)+(hind?.16:.10)*Math.sin(t*Math.PI),tz=cz+side*((t-.5)*(hind?.30:.18)),ty=cy-.014*Math.sin(t*Math.PI);
+              tips.push([tx,ty,tz]);toeStems.push(anatomyStem([cx,cy,cz],[tx,ty,tz],hind?.009:.0065));
+              if(hind&&toe<3)claws.push(anatomyStem([tx,ty,tz],[tx+.024,ty-.008,tz],.0045));
+            }
+            // Scalloped membrane joins the toes; the distal digits remain distinct.
+            verts.push(cx,cy+.002,cz);
+            for(var toe=0;toe<count;toe++){
+              var tip=tips[toe];verts.push(cx+(tip[0]-cx)*.88,tip[1]+.003,cz+(tip[2]-cz)*.88);
+              if(toe<count-1){var next=tips[toe+1];verts.push(cx+((tip[0]+next[0])*.5-cx)*.62,cy+.003,cz+((tip[2]+next[2])*.5-cz)*.62);}
+            }
+            for(var n=1;n<verts.length/3-1;n++)indices.push(0,n,n+1);
+            var geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setIndex(indices);geo.computeVertexNormals();var web=mesh(geo,webMat,group);web.userData.webbedFoot=true;web.userData.anatomyPart=hind?'hindfoot-webbing':'forefoot-webbing';web.userData.digitCount=count;
+          }
+          [-1,1].forEach(function(side){
+            frogSurface(-.28,-.015,side*.235,.2,.10,.14,'thigh');
+            curve(group,[[-.32,-.015,side*.28],[-.47,-.035,side*.37],[-.27,-.09,side*.44],[-.22,-.12,side*.46]],.036,frogLimb,12).userData.anatomyPart='folded-hindleg';
+            curve(group,[[.15,-.045,side*.14],[.13,-.095,side*.25],[.27,-.17,side*.31]],.029,frogLimb,10).userData.anatomyPart='forelimb';
+            webbedFoot(side,true);webbedFoot(side,false);
+            sphere(group,frogLimb,.30,.085,side*.145,.055,.045,.052,14).userData.anatomyPart='eye-mound';
+            sphere(group,eyeMat,.324,.098,side*.181,.027,.028,.012,12).userData.anatomyPart='lateral-eye';
+            if(!lowDetail)sphere(group,ivory,.335,.109,side*.19,.006,.007,.004,7);
+            sphere(group,dark,.413,.066,side*.055,.009,.006,.008,8).userData.anatomyPart='nostril';
+          });
+          curve(group,[[.36,-.013,-.126],[.438,-.008,-.045],[.447,-.008,0],[.438,-.008,.045],[.36,-.013,.126]],.0045,dark,16).userData.anatomyPart='mouth-line';
+          anatomyBatch(new THREE.CylinderGeometry(.55,1,1,lowDetail?5:7),toeStems,frogLimb,'digits');
+          anatomyBatch(new THREE.CylinderGeometry(0,1,1,5),claws,dark,'hind-toe-claws');
+          Object.assign(group.userData,{foreDigitsPerFoot:4,hindDigitsPerFoot:5,webbedFootCount:4,hindClawsPerFoot:3,surfaceModel:'mottled-dwarf-frog'});
         }
       }else if(shape==='cephalopod'){
         sphere(group,skin,-.13,.13,0,.32,.4,.26);
@@ -12322,77 +12801,228 @@ window.StemLab = window.StemLab || {
         var tall=shape==='angelfish',round=shape==='pufferfish',body=profile&&profile.body;
         var bodyX=body?body[0]:shape==='tetra'?.43:round?.36:.48,bodyY=body?body[1]:tall?.42:round?.3:.23,bodyZ=body?body[2]:tall?.12:round?.25:.17;
         var pattern=profile?profile.pattern:'legacy',catfish=shape==='corydoras'||shape==='pleco'||shape==='otocinclus';
-        var bodyMesh=sphere(group,skin,0,0,0,bodyX,bodyY,bodyZ,lowDetail?14:24);bodyMesh.userData.anatomyPart='body';
-        sphere(group,belly,.04,-bodyY*.48,0,bodyX*.79,bodyY*.43,bodyZ*.91,lowDetail?12:18);
-        function band(x,bandWidth,color,tilt){var ratio=Math.sqrt(Math.max(.08,1-Math.pow(x/bodyX,2))),geometry=new THREE.CylinderGeometry(1,1,bandWidth,18,1,true);geometry.rotateZ(Math.PI/2);geometry.scale(1,bodyY*ratio*1.027,bodyZ*ratio*1.035);var mark=mesh(geometry,pigment(color,{roughness:.4}),group,x,0,0);mark.rotation.z=tilt||0;mark.userData.anatomyPart='body-marking';}
-        function lateral(color,x,y,length,thickness){[-1,1].forEach(function(side){var stripe=sphere(group,pigment(color,{roughness:.34}),x,y,side*bodyZ*.9,length,thickness,.022,14);stripe.userData.anatomyPart='lateral-marking';});}
-        function spots(color,count,size){var mat=pigment(color);for(var dot=0;dot<count;dot++){var dx=(noise(dot,seed)-.5)*bodyX*1.65,dy=(noise(dot+19,seed)-.35)*bodyY*1.2,side=dot%2?1:-1,z=Math.sqrt(Math.max(.05,1-Math.pow(dx/bodyX,2)-Math.pow(dy/bodyY,2)))*bodyZ;sphere(group,mat,dx,dy,side*z,size*(.65+noise(dot+8,seed)),size,.012,8);}}
-        if(shape==='clownfish'){[-.28,.04,.28].forEach(function(bx){band(bx,.095,0x18262b);band(bx,.066,0xfff8e9);});}
-        else if(shape==='angelfish'){[-.21,0,.23].forEach(function(bx){band(bx,.061,0x334142);});}
-        else if(pattern==='neon'||pattern==='cardinal'){
-          lateral(0x27bfd3,.012,.035,.35,.026);
-          lateral(0xcd3e36,pattern==='neon'?-.17:-.015,-.055,pattern==='neon'?.19:.35,.038);
-          group.userData.redExtent=pattern==='neon'?'rear-half':'full-lower-body';
-        }else if(pattern==='rummy'){band(.29,.18,0xb8463d);group.userData.redExtent='head-only';}
-        else if(shape==='tang'){[-1,1].forEach(function(side){sphere(group,dark,-.03,.04,side*bodyZ,.28,.24,.025,16);sphere(group,skin,.03,.035,side*(bodyZ+.022),.19,.145,.012,12);});}
-        else if(pattern==='oto'||pattern==='pike'){lateral(0x484b3c,-.03,-.005,bodyX*.87,pattern==='oto'?.038:.025);}
-        else if(pattern==='cory'||pattern==='pleco'){spots(0x485043,lowDetail?11:23,.033);}
-        else if(pattern==='oscar'){
-          spots(0xc9823f,lowDetail?13:25,.047);
-          [-1,1].forEach(function(side){sphere(group,pigment(0xd49a51),-bodyX*.71,.005,side*bodyZ*.73,.079,.072,.017,12);sphere(group,dark,-bodyX*.72,.005,side*(bodyZ*.73+.013),.045,.043,.013,10);});
-        }else if(pattern==='archer'){[-.3,-.07,.2].forEach(function(bx){band(bx,.086,0x394741,-.24);});}
-        else if(pattern==='goby'||pattern==='mudskip'||pattern==='rockfish'){spots(pattern==='goby'?0x8b966d:0x5d6957,lowDetail?8:16,.027);}
-        else if(pattern==='figure8'){
-          // Variable dorsal ocelli/loops; not an inflated or spiny generic puffer.
-          [0,.25,-.24].forEach(function(px,index){
-            var radius=.085+(index?0:.01),points=[],vertices=[],indices=[];
-            function dorsalY(x,z){return bodyY*Math.sqrt(Math.max(.02,1-x*x/(bodyX*bodyX)-z*z/(bodyZ*bodyZ)));}
-            vertices.push(px,dorsalY(px,0)+.008,0);
-            for(var step=0;step<=24;step++){var angle=step*Math.PI*2/24,x=px+Math.cos(angle)*radius,z=Math.sin(angle)*radius*.82,y=dorsalY(x,z);points.push([x,y+.019,z]);vertices.push(x,y+.008,z);if(step<24)indices.push(0,step+1,step+2);}
-            var patchGeometry=new THREE.BufferGeometry();patchGeometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));patchGeometry.setIndex(indices);patchGeometry.computeVertexNormals();
-            mesh(patchGeometry,pigment(0x3c4637,{side:THREE.DoubleSide}),group);
-            var loop=curve(group,points,.013,pigment(0xd5bc63),32);loop.userData.dorsalOcellus=true;
+        var quality=appearanceOptions().quality,bodyDetail=lowDetail?14:quality==='high'?48:36;
+        var pigmentColors={},sin=Math.sin,cos=Math.cos,sqrt=Math.sqrt,abs=Math.abs,pow=Math.pow,roundByte=Math.round;
+        function rgb(value){var key=value&&value.isColor?value.getHex():value;if(pigmentColors[key])return pigmentColors[key];var color=new THREE.Color(value);return pigmentColors[key]=[color.r*255,color.g*255,color.b*255];}
+        function mix(a,b,t){t=t<0?0:t>1?1:t;a[0]+=(b[0]-a[0])*t;a[1]+=(b[1]-a[1])*t;a[2]+=(b[2]-a[2])*t;return a;}
+        function soft(a,b,x){var t=(x-a)/(b-a);return t<=0?0:t>=1?1:t*t*(3-2*t);}
+        function range(x,a,b,edge){return soft(a-edge,a+edge,x)*(1-soft(b-edge,b+edge,x));}
+        function ellipse(x,y,cx,cy,rx,ry){var dx=(x-cx)/rx,dy=(y-cy)/ry;return sqrt(dx*dx+dy*dy);}
+        var mottled=['cory','pleco','oscar','goby','mudskip','rockfish'].indexOf(pattern)>=0;
+        function pigmentMap(width,height,role,sample){
+          // CPU buffers are immutable after generation. GPU textures remain
+          // separately owned by each fish and follow ordinary mesh disposal.
+          var key=JSON.stringify([role,width,height,shape,pattern,profile&&profile.id,baseColor.getHex(),bodyX,bodyY,bodyZ,tailType,tailHeight,tailLength,role==='body-pigment'&&mottled?seed:0]);
+          var cached=fishPigmentCache.get(key),pixels=cached&&cached.pixels;
+          if(!pixels){
+            pixels=new Uint8Array(width*height*4);
+            for(var row=0;row<height;row++)for(var col=0;col<width;col++){
+              var color=sample((col+.5)/width,(row+.5)/height,col,row),offset=(row*width+col)*4,alpha=color.length>3?color[3]:255;
+              pixels[offset]=roundByte(color[0]<0?0:color[0]>255?255:color[0]);pixels[offset+1]=roundByte(color[1]<0?0:color[1]>255?255:color[1]);pixels[offset+2]=roundByte(color[2]<0?0:color[2]>255?255:color[2]);pixels[offset+3]=roundByte(alpha<0?0:alpha>255?255:alpha);
+            }
+            fishPigmentCache.set(key,{pixels:pixels});fishPigmentCacheBytes+=pixels.byteLength;
+            while(fishPigmentCache.size>32||fishPigmentCacheBytes>8*1024*1024){var oldest=fishPigmentCache.keys().next().value,removed=fishPigmentCache.get(oldest);fishPigmentCache.delete(oldest);fishPigmentCacheBytes-=removed.pixels.byteLength;}
+          }else{fishPigmentCache.delete(key);fishPigmentCache.set(key,cached);}
+          scene.userData.fishPigmentCacheBytes=fishPigmentCacheBytes;scene.userData.fishPigmentCacheEntries=fishPigmentCache.size;
+          var map=new THREE.DataTexture(pixels,width,height,THREE.RGBAFormat);map.encoding=THREE.sRGBEncoding;
+          map.magFilter=THREE.LinearFilter;map.minFilter=THREE.LinearMipmapLinearFilter;map.generateMipmaps=true;map.needsUpdate=true;
+          map.userData={role:role,profileId:profile?profile.id:'legacy',pattern:pattern,cachedPixels:!!cached};return map;
+        }
+        var base=rgb(baseColor),pale=rgb(0xe2e8dc),charcoal=rgb(0x25332f),stripeBlue=rgb(0x20afd0),stripeRed=rgb(0xc93932),white=rgb(0xf5f1e5),bodyColor=[0,0,0];
+        function paint(pigment,amount){mix(bodyColor,pigment,amount);}
+        function verticalBand(x,y,center,width,pigment,tilt){paint(pigment,range(x-(tilt||0)*y,center-width/2,center+width/2,.004));}
+        function lateralStripe(x,y,pigment,cx,cy,halfLength,halfHeight){
+          var t=(x-(cx-halfLength))/(halfLength*2),height=halfHeight*pow(Math.max(0,sin((t<0?0:t>1?1:t)*Math.PI)),.17);
+          paint(pigment,range(x,cx-halfLength,cx+halfLength,.005)*(1-soft(height-.003,height+.003,abs(y-cy))));
+        }
+        var bodyPainter=null;
+        if(shape==='clownfish')bodyPainter=function(x,y){for(var i=0;i<3;i++){var center=i===0?-.28:i===1?.04:.28;verticalBand(x,y,center,.095,charcoal);verticalBand(x,y,center,.066,white);}};
+        else if(shape==='angelfish'){var barColor=rgb(0x334142);bodyPainter=function(x,y){verticalBand(x,y,-.21,.061,barColor);verticalBand(x,y,0,.061,barColor);verticalBand(x,y,.23,.061,barColor);};}
+        else if(pattern==='neon'||pattern==='cardinal'){var redCenter=pattern==='neon'?-.17:-.015,redLength=pattern==='neon'?.19:.35;bodyPainter=function(x,y){lateralStripe(x,y,stripeBlue,.012,.035,.35,.026);lateralStripe(x,y,stripeRed,redCenter,-.055,redLength,.038);};}
+        else if(pattern==='rummy'){var headColor=rgb(0xb94238);bodyPainter=function(x){paint(headColor,soft(.19,.21,x));};}
+        else if(shape==='tang')bodyPainter=function(x,y){var outer=1-soft(.96,1.03,ellipse(x,y,-.03,.04,.28,.24)),inner=1-soft(.96,1.03,ellipse(x,y,.03,.035,.19,.145));paint(charcoal,outer*(1-inner));};
+        else if(pattern==='oto'||pattern==='pike'){var lateralColor=rgb(0x414638),lateralHeight=pattern==='oto'?.038:.025;bodyPainter=function(x,y){lateralStripe(x,y,lateralColor,-.03,-.005,bodyX*.87,lateralHeight);};}
+        else if(mottled){
+          var mottleColor=rgb(pattern==='oscar'?0xc9823f:pattern==='goby'?0x8b966d:pattern==='rockfish'?0x5d6957:0x485043),ocellusColor=rgb(0xd49a51),mottleCells={};
+          for(var cellY=-2;cellY<16;cellY++)for(var cellX=-2;cellX<20;cellX++){
+            var cell=cellX+cellY*37;
+            mottleCells[cellX+':'+cellY]=[.29+noise(cell,seed)*.42,.28+noise(cell+71,seed)*.44,.13+noise(cell+109,seed)*.19,.12+noise(cell+149,seed)*.21,noise(cell+193,seed)<.2?0:.38+noise(cell+229,seed)*.55];
+          }
+          bodyPainter=function(x,y){
+            var nx=x/bodyX,ny=y/bodyY,gx=(nx+1)*(pattern==='oscar'?5.3:7)+sin(ny*5.1+seed*.01)*.56+sin(nx*7.3-ny*3.7)*.22,gy=(ny+1)*4.8+sin(nx*4.2+seed*.02)*.43;
+            var cx=Math.floor(gx),cy=Math.floor(gy),cell=mottleCells[cx+':'+cy];
+            if(cell){var dx=(gx-cx-cell[0])/cell[2],dy=(gy-cy-cell[1])/cell[3],amount=(1-soft(.6,1.12,sqrt(dx*dx+dy*dy)))*cell[4];paint(mottleColor,amount);}
+            if(pattern==='oscar'){var eyespot=ellipse(x,y,-bodyX*.71,.005,.079,.072);paint(ocellusColor,1-soft(.93,1.07,eyespot));paint(charcoal,1-soft(.52,.67,eyespot));}
+          };
+        }else if(pattern==='archer'){var archerColor=rgb(0x394741);bodyPainter=function(x,y){verticalBand(x,y,-.3,.086,archerColor,-.24);verticalBand(x,y,-.07,.086,archerColor,-.24);verticalBand(x,y,.2,.086,archerColor,-.24);};}
+        else if(pattern==='figure8'){var ringColor=rgb(0xd5bc63),ringCenter=rgb(0x3c4637);bodyPainter=function(x,y,z){if(y<=0)return;for(var i=0;i<3;i++){var px=i===0?0:i===1?.25:-.24,radius=.085+(i?0:.01),ring=ellipse(x,z,px,0,radius,radius*.82);paint(ringColor,1-soft(.98,1.1,ring));paint(ringCenter,1-soft(.7,.82,ring));}};}
+        function bodyPigment(x,y,z){
+          var ny=y/bodyY,shade=1-soft(.15,.93,ny)*.62*.36,bellyAmount=(1-soft(-.83,-.15,ny))*.62;
+          bodyColor[0]=base[0]*shade;bodyColor[1]=base[1]*shade;bodyColor[2]=base[2]*shade;mix(bodyColor,pale,bellyAmount);
+          var variation=1+sin(x/bodyX*92+y/bodyY*43)*sin(y/bodyY*67)*.013;bodyColor[0]*=variation;bodyColor[1]*=variation;bodyColor[2]*=variation;
+          if(bodyPainter)bodyPainter(x,y,z);
+          if(catfish){
+            // Flush seams suggest dermal armor without raised rods across the flank.
+            // Corydoradines have two flank rows; loricariid plate counts vary.
+            var nx=x/bodyX,rows=shape==='corydoras'?2:4,plateY=(ny+.72)/1.44*rows;
+            var rowIndex=Math.floor(plateY),rowFraction=plateY-rowIndex;
+            var phase=(nx+.9)*14+rowIndex*.5+rowFraction*.3,edge=Math.abs(phase-Math.round(phase));
+            var seam=Math.max(1-soft(.018,.075,edge),(1-soft(.025,.07,Math.min(rowFraction,1-rowFraction)))*.6);
+            var flank=range(nx,-.87,.4,.1)*range(ny,-.72,.72,.1)*soft(.18,.55,Math.abs(z/bodyZ));
+            paint(charcoal,seam*flank*.18);
+          }
+          return bodyColor;
+        }
+        var mapWidth=lowDetail?128:quality==='high'?512:256,latitudeSin=[],latitudeCos=[],longitudeSin=[],longitudeCos=[];
+        for(var row=0;row<mapWidth/2;row++){var latitude=(1-(row+.5)/(mapWidth/2))*Math.PI;latitudeSin[row]=sin(latitude);latitudeCos[row]=cos(latitude);}
+        for(var col=0;col<mapWidth;col++){var longitude=(col+.5)/mapWidth*Math.PI*2;longitudeSin[col]=sin(longitude);longitudeCos[col]=cos(longitude);}
+        var bodyMap=pigmentMap(mapWidth,mapWidth/2,'body-pigment',function(u,v,col,row){return bodyPigment(-longitudeCos[col]*latitudeSin[row]*bodyX,latitudeCos[row]*bodyY,longitudeSin[col]*latitudeSin[row]*bodyZ);});
+        var bodySkin=pigment(0xffffff,{map:bodyMap,roughness:.47,metalness:.035});
+        var bodyMesh=sphere(group,bodySkin,0,0,0,bodyX,bodyY,bodyZ,bodyDetail);bodyMesh.userData.anatomyPart='body';bodyMesh.userData.surfaceModel='continuous-pigment';
+        function catfishContour(x,y,z){
+          var broad=shape==='pleco',cory=shape==='corydoras';
+          var width=(cory?.76:broad?.52:.63)+(cory?.27:broad?.58:.42)*soft(-.85,.45,x);
+          var taper=(cory?.77:.58)+(cory?.23:.42)*soft(-.92,-.05,x);
+          var dorsal=1-(cory?.36:.48)*soft(.23,1,x);
+          var ventral=cory?.73:.54;
+          return [x,y>=0?y*taper*dorsal:-ventral*(1-Math.exp(y*4))/(1-Math.exp(-4))*taper,z*width];
+        }
+        if(catfish){
+          var contourPositions=bodyMesh.geometry.attributes.position;
+          for(var cp=0;cp<contourPositions.count;cp++){
+            var contoured=catfishContour(contourPositions.getX(cp),contourPositions.getY(cp),contourPositions.getZ(cp));contourPositions.setXYZ(cp,contoured[0],contoured[1],contoured[2]);
+          }
+          smoothSurfaceNormals(bodyMesh.geometry);bodyMesh.geometry.computeBoundingBox();bodyMesh.geometry.computeBoundingSphere();
+          bodyMesh.userData.bodyContour=shape;bodyMesh.userData.armorSurface='flush-pigment';
+        }
+        if(round){
+          var pufferPositions=bodyMesh.geometry.attributes.position;
+          for(var v=0;v<pufferPositions.count;v++){
+            var x=pufferPositions.getX(v),y=pufferPositions.getY(v),z=pufferPositions.getZ(v),rear=.55+.45*soft(-.95,.02,x),head=soft(-.5,.6,x);
+            pufferPositions.setXYZ(v,x,y*rear*(y>=0?.86+.14*head:.96),z*(.50+.54*soft(-.85,.32,x)));
+          }
+          smoothSurfaceNormals(bodyMesh.geometry);bodyMesh.geometry.computeBoundingBox();bodyMesh.geometry.computeBoundingSphere();bodyMesh.userData.bodyContour='uninflated-puffer';
+        }
+        if(shape==='mudskipper'){
+          var mudPositions=bodyMesh.geometry.attributes.position;
+          for(var v=0;v<mudPositions.count;v++){
+            var x=mudPositions.getX(v),y=mudPositions.getY(v),z=mudPositions.getZ(v),head=soft(-.6,.58,x),rear=.53+.47*soft(-.95,.1,x),width=.56+head*.74;
+            mudPositions.setXYZ(v,x>.55?.55+(x-.55)*.7:x,y>=0?y*(.75+.25*head)*rear:-.66*(1-Math.exp(y*4))/(1-Math.exp(-4))*rear,z*width);
+          }
+          smoothSurfaceNormals(bodyMesh.geometry);bodyMesh.geometry.computeBoundingBox();bodyMesh.geometry.computeBoundingSphere();bodyMesh.userData.bodyContour='mudskipper';
+        }
+        group.userData.surfaceModel='continuous-pigment';group.userData.bodyTextureWidth=mapWidth;
+        if(pattern==='neon'||pattern==='cardinal'||pattern==='rummy')group.userData.redExtent=pattern==='neon'?'rear-half':pattern==='cardinal'?'full-lower-body':'head-only';
+        if(pattern==='figure8')group.userData.dorsalOcellusCount=3;
+        var tailType=profile?profile.tail:round?'rounded':shape==='betta'?'flowing':shape==='guppy'?'fan':'fork',fan=tailType==='fan'||tailType==='flowing',rounded=tailType==='rounded';
+        var tailHeight=round?.135:tailType==='flowing'?.43:fan?.33:rounded?.19:tall?.25:.21;
+        var tailLength=round?.26:fan?.6:rounded?.36:.38,smallClear=shape==='tetra'||shape==='otocinclus';
+        function makeFinMaterial(caudal){
+          var size=lowDetail?64:quality==='high'?256:128,finColor=rgb(shape==='tang'&&caudal?0xfbd24b:smallClear?0xb5c8c0:baseColor),rayColor=rgb(smallClear?0x627f7b:0x756952);
+          var alpha=round?.60:smallClear?.28:tailType==='flowing'?.66:caudal?.57:.43,finPixel=[0,0,0,0],rummyWhite=rgb(0xebeee5),rummyDark=rgb(0x172422);
+          var map=pigmentMap(size,size,caudal?'caudal-membrane':'fin-membrane',function(u,v){
+            var color=finPixel,a=alpha*(.57+.43*soft(.02,.32,u)),ray=0;color[0]=finColor[0];color[1]=finColor[1];color[2]=finColor[2];
+            for(var i=0;i<7;i++){var slope=(i/6*2-1)*.68,distance=Math.abs((v-.5)-u*slope);ray=Math.max(ray,1-soft(.004,.01,distance));}
+            color=mix(color,rayColor,ray*.36);a+=ray*.12;
+            if(caudal&&pattern==='guppy')for(var spot=0;spot<6;spot++){
+              var x=-u*tailLength,y=(v*2-1)*tailHeight,ex=ellipse(x,y,-.25-spot%2*.17,(Math.floor(spot/2)-1)*.13,.031,.041),amount=1-soft(.86,1.09,ex);
+              color=mix(color,rgb(spot%2?0x243633:0x477f91),amount);a=Math.max(a,amount*.85);
+            }
+            if(caudal&&pattern==='rummy'){
+              var y=(v*2-1)*tailHeight,x=-u*tailLength,bar=range(Math.abs(y),.10,.145,.003)*range(x,-.348,-.17,.008);
+              bar=Math.max(bar,1-soft(.017,.023,Math.abs(y)));color[0]=rummyWhite[0];color[1]=rummyWhite[1];color[2]=rummyWhite[2];mix(color,rummyDark,bar);a=.86;
+            }
+            color[3]=(a<0?0:a>.93?.93:a)*255;return color;
           });
+          var mat=pigment(0xffffff,{map:map,transparent:true,opacity:1,side:THREE.DoubleSide,roughness:.62,metalness:0,depthWrite:false,alphaTest:.02});mat.userData.materialRole='fin-membrane';return mat;
+        }
+        var membraneMat=makeFinMaterial(false),tailMat=makeFinMaterial(true);
+        function membrane(parent,points,mat,part,caudal,x,y,z){
+          var outline=new THREE.Shape();outline.moveTo(points[0][0],points[0][1]);
+          for(var n=1;n<points.length;n++){
+            var previous=points[n-1],point=points[n],next=points[(n+1)%points.length],rounding=caudal&&fan?.16:.07;
+            outline.lineTo(point[0]+(previous[0]-point[0])*rounding,point[1]+(previous[1]-point[1])*rounding);
+            outline.quadraticCurveTo(point[0],point[1],point[0]+(next[0]-point[0])*rounding,point[1]+(next[1]-point[1])*rounding);
+          }
+          outline.closePath();var flat=new THREE.ShapeGeometry(outline,lowDetail?3:6),positions=flat.attributes.position,order=flat.index;
+          var vertices=[],indices=[],uvs=[],lookup={},minX=Math.min.apply(null,points.map(function(p){return p[0];})),maxX=Math.max.apply(null,points.map(function(p){return p[0];})),minY=Math.min.apply(null,points.map(function(p){return p[1];})),maxY=Math.max.apply(null,points.map(function(p){return p[1];}));
+          function vertex(p){var key=p.x.toFixed(7)+':'+p.y.toFixed(7);if(lookup[key]!==undefined)return lookup[key];var u=caudal?-p.x/tailLength:(maxX-p.x)/Math.max(.01,maxX-minX),v=caudal?(p.y/tailHeight+1)/2:(p.y-minY)/Math.max(.01,maxY-minY);
+            var bend=Math.sin(clamp(u,0,1)*Math.PI)*.012+Math.sin((v-.5)*Math.PI)*u*.016,index=vertices.length/3;vertices.push(p.x,p.y,bend);uvs.push(u,v);lookup[key]=index;return index;}
+          function triangle(a,b,c,depth){if(depth>0){var ab=a.clone().add(b).multiplyScalar(.5),bc=b.clone().add(c).multiplyScalar(.5),ca=c.clone().add(a).multiplyScalar(.5);triangle(a,ab,ca,depth-1);triangle(ab,b,bc,depth-1);triangle(ca,bc,c,depth-1);triangle(ab,bc,ca,depth-1);}else indices.push(vertex(a),vertex(b),vertex(c));}
+          for(var tri=0;tri<(order?order.count:positions.count);tri+=3){var a=new THREE.Vector3().fromBufferAttribute(positions,order?order.getX(tri):tri),b=new THREE.Vector3().fromBufferAttribute(positions,order?order.getX(tri+1):tri+1),c=new THREE.Vector3().fromBufferAttribute(positions,order?order.getX(tri+2):tri+2);triangle(a,b,c,lowDetail?0:1);}
+          flat.dispose();var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();
+          var fin=mesh(geometry,mat,parent,x||0,y||0,z||0);fin.userData.anatomyPart=part;fin.userData.surfaceModel='curved-membrane';return fin;
         }
         tail=new THREE.Group();tail.position.x=-bodyX*.86;group.add(tail);
-        var tailType=profile?profile.tail:shape==='betta'?'flowing':shape==='guppy'?'fan':'fork',fan=tailType==='fan'||tailType==='flowing',rounded=tailType==='rounded';
-        var tailHeight=tailType==='flowing'?.43:fan?.33:rounded?.19:tall?.25:.21;
-        var tailColor=shape==='tang'?pigment(0xfbd24b,{side:THREE.DoubleSide,roughness:.45}):finMat;
         var tailPoints=fan?[[0,0],[-.22,tailHeight*.76],[-.5,tailHeight],[-.59,tailHeight*.42],[-.6,-tailHeight*.46],[-.48,-tailHeight],[-.19,-tailHeight*.7]]:rounded?[[0,0],[-.24,tailHeight],[-.34,tailHeight*.66],[-.36,0],[-.34,-tailHeight*.66],[-.24,-tailHeight]]:[[0,0],[-.38,tailHeight],[-.27,0],[-.38,-tailHeight]];
-        ribbon(tail,tailPoints,tailColor).userData.anatomyPart='caudal-fin';
-        if(pattern==='rummy'){
-          ribbon(tail,tailPoints,pigment(0xe9ece5,{side:THREE.DoubleSide,roughness:.72}));
-          var tailBars=new THREE.MeshBasicMaterial({color:new THREE.Color(0x172422).convertSRGBToLinear(),side:THREE.DoubleSide,toneMapped:false});
-          // Raised layers on both faces avoid opaque-material sorting and z-fighting.
-          [-1,1].forEach(function(face){
-            [-1,1].forEach(function(lobe){var stripe=ribbon(tail,[[-.182,lobe*.10],[-.322,lobe*.10],[-.346,lobe*.145],[-.262,lobe*.145]],tailBars,0,0,face*.009);stripe.userData.caudalBarFace=face;});
-            var centerBar=ribbon(tail,[[0,.02],[-.274,.02],[-.274,-.02],[0,-.02]],tailBars,0,0,face*.009);centerBar.userData.caudalBarFace=face;
-          });group.userData.tailPattern='black-white-bars';
-        }
-        if(pattern==='guppy')for(var spot=0;spot<6;spot++)sphere(tail,spot%2?dark:pigment(0x5d9195),-.25-spot%2*.17,(Math.floor(spot/2)-1)*.13,.012,.03,.04,.012,8);
-        if(!lowDetail)for(var finRay=0;finRay<5;finRay++){var finY=(finRay/4*2-1)*tailHeight*.83;segment(tail,[-.04,0,0],[fan?-.51:rounded?-.3:-.31,finY,0],.005,belly);}
+        if(round)tailPoints=[[0,0],[-.17,.135],[-.24,.09],[-.26,0],[-.24,-.09],[-.17,-.135]];
+        membrane(tail,tailPoints,tailMat,'caudal-fin',true);if(pattern==='rummy')group.userData.tailPattern='black-white-bars';
         var dorsalPoints;
         if(shape==='pikecichlid')dorsalPoints=[[.4,bodyY*.6],[.25,bodyY+.09],[-.64,bodyY+.09],[-.7,bodyY*.35]];
         else if(shape==='pleco')dorsalPoints=[[.16,bodyY*.6],[-.02,bodyY+.43],[-.45,bodyY*.55]];
-        else if(shape==='rockfish'){
-          dorsalPoints=[[.32,bodyY*.65]];for(var spine=0;spine<8;spine++){var sx=.29-spine*.08;dorsalPoints.push([sx,bodyY+.13+(spine<4?.035:0)],[sx-.037,bodyY+.025]);}dorsalPoints.push([-.39,bodyY*.45]);
-        }else dorsalPoints=[[bodyX*.5,bodyY*.65],[-.09,bodyY+(tall?.4:tailType==='flowing'?.25:fan?.18:.12)],[-bodyX*.73,bodyY*.45]];
-        if(shape==='goby'||shape==='mudskipper'){
-          var dorsal1=ribbon(group,[[.15,bodyY*.7],[.035,bodyY+.19],[-.14,bodyY*.68]],finMat),dorsal2=ribbon(group,[[-.18,bodyY*.75],[-.27,bodyY+.14],[-.49,bodyY*.37]],finMat);fins.push(dorsal1,dorsal2);group.userData.dorsalFinCount=2;
-        }else{fins.push(ribbon(group,dorsalPoints,finMat));group.userData.dorsalFinCount=1;}
-        if(tall||shape==='betta')ribbon(group,[[.12,-bodyY*.65],[-.28,-bodyY-(tall?.29:.25)],[-.38,-bodyY*.42]],finMat);
+        else if(shape==='rockfish'){dorsalPoints=[[.32,bodyY*.65]];for(var spine=0;spine<8;spine++){var sx=.29-spine*.08;dorsalPoints.push([sx,bodyY+.13+(spine<4?.035:0)],[sx-.037,bodyY+.025]);}dorsalPoints.push([-.39,bodyY*.45]);}
+        else dorsalPoints=[[bodyX*.5,bodyY*.65],[-.09,bodyY+(tall?.4:tailType==='flowing'?.25:fan?.18:.12)],[-bodyX*.73,bodyY*.45]];
+        if(round){
+          var dorsalBase=new THREE.Group(),analBase=new THREE.Group();dorsalBase.position.set(-bodyX*.61,.12,0);analBase.position.set(-bodyX*.68,-.12,0);group.add(dorsalBase,analBase);
+          var pufferDorsal=membrane(dorsalBase,[[.04,0],[.005,.115],[-.07,.135],[-.135,.085],[-.115,0]],membraneMat,'dorsal-fin',false);
+          var pufferAnal=membrane(analBase,[[.025,0],[-.015,-.09],[-.09,-.115],[-.13,-.07],[-.10,0]],membraneMat,'anal-fin',false);
+          pufferDorsal.userData.pufferScull=true;pufferAnal.userData.pufferScull=true;fins.push(pufferDorsal,pufferAnal);group.userData.dorsalFinCount=1;group.userData.analFinCount=1;group.userData.finPlacement='posterior-dorsal-and-anal';
+        }else if(shape==='mudskipper'){
+          fins.push(membrane(group,[[.17,.115],[.13,.31],[.025,.34],[-.12,.26],[-.15,.11]],membraneMat,'dorsal-fin',false),membrane(group,[[-.20,.10],[-.24,.23],[-.45,.20],[-.56,.07]],membraneMat,'dorsal-fin',false));group.userData.dorsalFinCount=2;
+          membrane(group,[[-.19,-.085],[-.27,-.17],[-.48,-.14],[-.54,-.065]],membraneMat,'anal-fin',false);
+        }else if(shape==='goby'){
+          fins.push(membrane(group,[[.15,bodyY*.7],[.035,bodyY+.19],[-.14,bodyY*.68]],membraneMat,'dorsal-fin',false),membrane(group,[[-.18,bodyY*.75],[-.27,bodyY+.14],[-.49,bodyY*.37]],membraneMat,'dorsal-fin',false));group.userData.dorsalFinCount=2;
+        }else{fins.push(membrane(group,dorsalPoints,membraneMat,'dorsal-fin',false));group.userData.dorsalFinCount=1;}
+        if(tall||shape==='betta')membrane(group,[[.12,-bodyY*.65],[-.28,-bodyY-(tall?.29:.25)],[-.38,-bodyY*.42]],membraneMat,'anal-fin',false);
         [-1,1].forEach(function(side){
-          var pectoral=ribbon(group,shape==='mudskipper'?[[0,0],[-.19,-.03],[-.23,-.14],[.1,-.14]]:[[0,0],[-.18,-.17],[.08,-.1]],finMat,.13,-.04,side*bodyZ*.91);pectoral.rotation.y=side*.65;pectoral.userData.baseYaw=pectoral.rotation.y;fins.push(pectoral);
+          if(round){
+            var pufferPectoral=membrane(group,[[0,0],[-.07,.056],[-.135,.032],[-.15,-.025],[-.075,-.073],[.008,-.02]],membraneMat,'pectoral-fin',false,.018,.004,side*.205);
+            pufferPectoral.rotation.y=side*.70;pufferPectoral.userData.baseYaw=pufferPectoral.rotation.y;pufferPectoral.userData.pufferScull=true;fins.push(pufferPectoral);
+            sphere(group,dark,.072,.008,side*.212,.008,.033,.007,12).userData.anatomyPart='gill-slit';
+          }else if(shape==='mudskipper'){
+            var paddle=new THREE.Group();paddle.position.set(.20,-.035,side*bodyZ*.82);paddle.userData.anatomyPart='pectoral-paddle';paddle.userData.side=side;group.add(paddle);
+            sphere(paddle,skin,0,-.022,side*.057,.074,.055,.103,lowDetail?12:20).userData.anatomyPart='fleshy-pectoral-base';
+            var fanFin=membrane(paddle,[[0,0],[-.10,.07],[-.15,.15],[-.06,.20],[.06,.19],[.13,.13],[.10,.04]],pigment(baseColor.clone().lerp(new THREE.Color(0xc2c197),.35),{transparent:true,opacity:.88,side:THREE.DoubleSide,roughness:.72,metalness:0,depthWrite:false}),'pectoral-fin',false,0,-.05,side*.09);fanFin.rotation.x=side*1.92;
+            var finRays=[];fanFin.updateMatrix();for(var ray=0;ray<9;ray++){var a=ray/8*Math.PI,start=new THREE.Vector3(0,.009,0).applyMatrix4(fanFin.matrix),end=new THREE.Vector3(-.012+.13*Math.cos(a),.09+.10*Math.sin(a),.004).applyMatrix4(fanFin.matrix);finRays.push(anatomyStem(start.toArray(),end.toArray(),.0025));}
+            var rayBatch=anatomyBatch(new THREE.CylinderGeometry(.3,1,1,5),finRays,pigment(0x9caa83,{roughness:.7}),'pectoral-rays');paddle.add(rayBatch);
+            if(!group.userData.mudskipperPectorals)group.userData.mudskipperPectorals=[];group.userData.mudskipperPectorals.push(paddle);
+            var pelvic=membrane(group,[[0,0],[-.10,-.01],[-.15,.06],[-.055,.085]],membraneMat,'pelvic-fin',false,.025,-.12,side*.055);pelvic.rotation.x=side*1.65;
+          }else{
+            var pectoral=membrane(group,[[0,0],[-.18,-.17],[.08,-.1]],membraneMat,'pectoral-fin',false,.13,-.04,side*bodyZ*.91);pectoral.rotation.y=side*.65;pectoral.userData.baseYaw=pectoral.rotation.y;fins.push(pectoral);
+          }
           if(tall)curve(group,[[.16,-.25,side*.065],[.1,-.58,side*.1],[-.03,-.81,side*.09]],.009,belly,9);
           if(shape==='corydoras')curve(group,[[bodyX*.86,-.08,side*.06],[bodyX+.09,-.13,side*.11],[bodyX+.14,-.15,side*.16]],.008,belly,7);
-          if(catfish)for(var plate=0;plate<5;plate++){var plateX=-bodyX*.65+plate*bodyX*.25;segment(group,[plateX,-.035,side*bodyZ*.97],[plateX+.07,.08,side*bodyZ*.9],.007,dark);}
+          if(catfish){
+            var pelvic=membrane(group,[[0,0],[-.17,-.065],[-.06,.035]],membraneMat,'pelvic-fin',false,-bodyX*.3,-bodyY*.46,side*bodyZ*.55);pelvic.rotation.x=side*.95;
+          }
         });
-        var eyeY=shape==='mudskipper'?bodyY*.99:bodyY*.24,eyeZ=shape==='mudskipper'?bodyZ*.48:bodyZ*.76;
-        if(shape==='mudskipper')[-1,1].forEach(function(side){sphere(group,skin,bodyX*.59,eyeY,side*eyeZ,.082,.075,.06,12);});
-        eyes(bodyX*.62,eyeY,eyeZ,round?.052:shape==='otocinclus'?.034:.045);
+        var eyeY=bodyY*(round?.40:.24),eyeZ=bodyZ*(round?.72:.76);
+        if(shape==='mudskipper'){
+          [-1,1].forEach(function(side){
+            sphere(group,skin,.355,.148,side*.096,.092,.083,.07,lowDetail?14:22).userData.anatomyPart='raised-eye-mound';
+            var raisedIris=sphere(group,eyeRim,.371,.207,side*.145,.044,.047,.024,16);raisedIris.rotation.x=-side*.7;raisedIris.userData.anatomyPart='raised-eye-iris';
+            var raisedPupil=sphere(group,eyeMat,.377,.222,side*.164,.026,.030,.011,14);raisedPupil.rotation.x=-side*.7;raisedPupil.userData.anatomyPart='raised-eye-pupil';
+            if(!lowDetail)sphere(group,ivory,.389,.237,side*.173,.006,.007,.004,7);
+            sphere(group,dark,.55,.024,side*.044,.006,.004,.006,8).userData.anatomyPart='nostril';
+            curve(group,[[.24,.082,side*.15],[.265,-.01,side*.177],[.22,-.085,side*.151]],.004,pigment(0x65705b,{roughness:.8}),12).userData.anatomyPart='gill-cover';
+          });
+          curve(group,[[.49,-.014,-.082],[.574,-.020,0],[.49,-.014,.082]],.005,dark,16).userData.anatomyPart='mouth-line';
+          group.userData.pectoralMotionNote='Paired strokes are an illustrative crawling cue; the view does not simulate land contact or amphibious gait mechanics.';
+        }else{
+          if(catfish){var eyeContour=catfishContour(.62,.36,Math.sqrt(1-.62*.62-.36*.36));eyeY=eyeContour[1]*bodyY;eyeZ=eyeContour[2]*bodyZ+.005;}
+          eyes(bodyX*.62,eyeY,eyeZ,round?.052:shape==='otocinclus'?.034:.041);
+        }
         if(shape==='otocinclus'||shape==='pleco'){
-          var sucker=mesh(new THREE.TorusGeometry(shape==='pleco'?.07:.039,.014,7,18),belly,group,bodyX*.81,-bodyY*.66,0);sucker.rotation.x=-Math.PI/2;sucker.userData.suckerMouth=true;
-        }else sphere(group,dark,bodyX*.974,shape==='archerfish'?.045:-.025,0,.017,.026,.025,8);
+          var suckerRadius=shape==='pleco'?.069:.038,suckerY=-bodyY*.52;
+          var sucker=mesh(new THREE.TorusGeometry(suckerRadius,.011,8,24),belly,group,bodyX*.79,suckerY,0);sucker.rotation.x=-Math.PI/2;sucker.userData.suckerMouth=true;sucker.userData.anatomyPart='sucker-lip';
+          var opening=mesh(new THREE.CircleGeometry(suckerRadius*.8,20),dark,group,bodyX*.79,suckerY-.009,0);opening.rotation.x=Math.PI/2;opening.userData.anatomyPart='sucker-opening';
+        }
+        else if(round){
+          var lip=mesh(new THREE.TorusGeometry(.027,.0065,8,24),belly,group,bodyX*.994,-.014,0);lip.rotation.y=Math.PI/2;lip.scale.y=.67;lip.userData.anatomyPart='beak-lip';
+          sphere(group,dark,bodyX*1.013,-.014,0,.012,.013,.022,12).userData.anatomyPart='beak-opening';
+          [-1,1].forEach(function(side){sphere(group,ivory,bodyX*1.028,-.005,side*.009,.005,.007,.008,8).userData.anatomyPart='upper-beak-plate';sphere(group,ivory,bodyX*1.027,-.023,side*.009,.005,.006,.008,8).userData.anatomyPart='lower-beak-plate';sphere(group,skin,bodyX*.85,.080,side*.064,.018,.011,.012,10).userData.anatomyPart='nasal-papilla';});
+          group.userData.inflationState='normal-uninflated';group.userData.pelvicFinCount=0;group.userData.propulsionNote='Illustrative pectoral and rear-fin sculling; inflation and fluid forces are not simulated.';
+        }else if(shape!=='mudskipper')sphere(group,dark,bodyX*.974,shape==='archerfish'?.045:-.025,0,.017,.026,.025,8);
         if(shape==='rockfish')[-1,1].forEach(function(side){ribbon(group,[[0,0],[-.12,.1],[-.06,-.06]],dark,.29,.02,side*bodyZ*.88);});
       }
       var displaySize=Number(fish.displaySize&&fish.displaySize.w||fish.displaySize),scale=clamp(Number.isFinite(displaySize)&&displaySize>0?displaySize/40*1.6:1.6,.85,2.15);
@@ -12400,7 +13030,7 @@ window.StemLab = window.StemLab || {
       if(shape==='shrimp'||shape==='snail')scale*=.7;
       scale*=appearanceOptions().animalScale;group.scale.setScalar(scale);
       var bodyBounds=new THREE.Box3().setFromObject(group),extentX=Math.max(Math.abs(bodyBounds.min.x),Math.abs(bodyBounds.max.x)),extentZ=Math.max(Math.abs(bodyBounds.min.z),Math.abs(bodyBounds.max.z));
-      var turnRadius=Math.sqrt(extentX*extentX+extentZ*extentZ)+.09;
+      var turnRadius=Math.sqrt(extentX*extentX+extentZ*extentZ)+.09+(group.userData.softMotionEnvelope||0)*scale;
       group.userData.turnRadius=turnRadius;group.userData.bodyMinY=bodyBounds.min.y;group.userData.bodyMaxY=bodyBounds.max.y;group.userData.verticalMotionMargin=extentX*.03;updateResidentBounds(group);
       if(fish.selected){
         var selection=new THREE.Mesh(new THREE.TorusGeometry(.67,.018,6,48),new THREE.MeshBasicMaterial({color:0xfde68a,transparent:true,opacity:.86,depthTest:false}));
@@ -12410,6 +13040,8 @@ window.StemLab = window.StemLab || {
       group.userData.phase=seed%1000*.00628;group.userData.tail=tail;group.userData.fins=fins;
       group.userData.appearanceSignature=fishAppearanceSignature(fish);
       group.traverse(function(node){node.userData.fishInstanceId=fish.instanceId||fish.id;});
+      var usedFishMaterials=new Set();group.traverse(function(node){if(node.material)(Array.isArray(node.material)?node.material:[node.material]).forEach(function(mat){usedFishMaterials.add(mat);});});
+      fishMaterials.forEach(function(mat){if(!usedFishMaterials.has(mat))mat.dispose();});
       creatureRoot.add(group);updateFishState(group,fish,index,true);return group;
     }
 
@@ -12560,6 +13192,7 @@ window.StemLab = window.StemLab || {
         backdrop:['depth','planted','black'].indexOf(supplied.backdrop)>=0?supplied.backdrop:'depth',
         quality:['low','balanced','high'].indexOf(supplied.quality)>=0?supplied.quality:'balanced',
         lightIntensity:clamp(Number(supplied.lightIntensity)||1,.6,1.4),
+        waterShimmer:typeof supplied.waterShimmer==='number'&&Number.isFinite(supplied.waterShimmer)?clamp(supplied.waterShimmer,0,1):.4,
         animalScale:clamp(Number(supplied.animalScale)||1,.8,1.3),showEquipment:supplied.showEquipment!==false };
     }
     function equipmentState(key) {
@@ -12628,12 +13261,13 @@ window.StemLab = window.StemLab || {
         var ratio=appearance.quality==='low'?1:appearance.quality==='high'?2:1.5;
         renderer.setPixelRatio(Math.min(ratio,window.devicePixelRatio||1));renderer.setSize(canvas.clientWidth||760,canvas.clientHeight||420,false);
         environmentRoot.userData.quality=appearance.quality;environmentRoot.userData.substrate=appearance.substrate;environmentRoot.userData.backdrop=appearance.backdrop;
-        sandMaterial.color.set(appearance.substrate==='dark'?0x464e4a:appearance.substrate==='gravel'?0xaca18a:options.saltwater?0xf4dfc0:0xdfcea9);
+        sandMaterial.color.set(appearance.substrate==='dark'?0x464e4a:appearance.substrate==='gravel'?0xaca18a:options.saltwater?0xf4dfc0:0xdfcea9).convertSRGBToLinear();
         sandMaterial.roughness=appearance.substrate==='gravel'?.94:.98;
+        substrateEdgeMaterial.color.copy(sandMaterial.color);substrateEdgeMaterial.roughness=sandMaterial.roughness;
         tankGroup.children.forEach(function(item){if(item.userData.substratePebble){var factor=appearance.substrate==='gravel'?2.2:appearance.substrate==='dark'?1.35:1;item.scale.copy(item.userData.originalScale).multiplyScalar(factor);}});
-        pebbleMat.color.set(appearance.substrate==='dark'?0x394844:appearance.substrate==='gravel'?0x80796a:0xa89578);
+        pebbleMat.color.set(appearance.substrate==='dark'?0x394844:appearance.substrate==='gravel'?0x80796a:0xa89578).convertSRGBToLinear();
         backMaterial.map=appearance.backdrop==='black'?null:appearance.backdrop==='planted'?decorativeBackdropMap:depthMap;
-        backMaterial.color.set(appearance.backdrop==='black'?0x07100f:options.saltwater?0x7dc5ff:0xa9e3cb);backMaterial.needsUpdate=true;
+        backMaterial.color.set(appearance.backdrop==='black'?0x07100f:options.saltwater?0xb2d4ef:0xc8dfd8).convertSRGBToLinear();backMaterial.needsUpdate=true;
       }
       var algae=clamp(Number(options.algaeLevel)||0,0,100);
       environmentRoot.userData.algaeLevel=algae;
@@ -12680,18 +13314,18 @@ window.StemLab = window.StemLab || {
       var active=light.installed?light.on:daylight===null?options.lighting!=='night':daylight;
       var output=active?light.intensity:0;
       var mood=active?(typeof options.lighting==='string'?options.lighting:'day'):'night';
-      var moodKey=JSON.stringify([!!options.saltwater,mood,output,appearance.lightIntensity,appearance.backdrop]);
+      var moodKey=JSON.stringify([!!options.saltwater,mood,output,appearance.lightIntensity,appearance.backdrop,appearance.waterShimmer]);
       if(moodKey!==currentMood){
         currentMood=moodKey;var night=!active||mood==='night',blue=mood==='blue',marine=!!options.saltwater,gain=appearance.lightIntensity;
         scene.background.set(night?0x071320:marine?0x071f35:0x081f27);scene.fog.color.copy(scene.background);
-        ambient.color.set(night?0x879ac4:blue?0xa4dbf1:0xe2f4dc);ambient.intensity=(night?.36:.73)*gain;
-        keyLight.color.set(blue?0x8bc9ff:marine?0xe1f2ff:0xffedc9);keyLight.intensity=(night?.2:(blue?1.05:1.35)*output)*gain;
-        fillLight.color.set(marine?0x4badff:0x6cdad0);fillLight.intensity=(night?.2:blue?.72:.5)*gain;
-        rimLight.intensity=night?.15:.48*gain;renderer.toneMappingExposure=night?.86:1.05;
-        backMaterial.color.set(appearance.backdrop==='black'?0x07100f:marine?0x7dc5ff:0xa9e3cb);
-        waterMaterial.color.set(marine?0x62a8de:0x79c6b6);waterMaterial.opacity=night?.12:.075;
-        surfaceMaterial.color.set(blue?0x71b8ee:0xc5f1dd);surfaceMaterial.opacity=night?.055:.15*output;
-        causticMaterial.userData=causticMaterial.userData||{};causticMaterial.userData.baseOpacity=night?.02:(blue?.13:.2)*output;causticMaterial.opacity=causticMaterial.userData.baseOpacity;
+        ambient.color.set(night?0x879ac4:blue?0xa4dbf1:0xe2f4dc);ambient.intensity=(night?.36:.64)*gain;
+        keyLight.color.set(blue?0x8bc9ff:marine?0xe1f2ff:0xfff3dd);keyLight.intensity=(night?.2:(blue?.94:1.15)*output)*gain;
+        fillLight.color.set(marine?0x4badff:0x6cdad0);fillLight.intensity=(night?.2:blue?.54:.32)*gain;
+        rimLight.intensity=night?.15:.36*gain;renderer.toneMappingExposure=night?.86:1.02;
+        backMaterial.color.set(appearance.backdrop==='black'?0x07100f:marine?0xb2d4ef:0xc8dfd8).convertSRGBToLinear();
+        waterMaterial.color.set(marine?0x62a8de:0x79c6b6);waterMaterial.opacity=night?.045:.025;
+        surfaceMaterial.color.set(blue?0x71b8ee:0xc5f1dd);surfaceMaterial.opacity=night?.025:.075*output;waterline.material.opacity=night?.07:.18;
+        causticMaterial.userData=causticMaterial.userData||{};causticMaterial.userData.baseOpacity=night?0:(blue?.11:.16)*output*appearance.waterShimmer;causticMaterial.opacity=causticMaterial.userData.baseOpacity;causticFloor.visible=causticMaterial.opacity>0;environmentRoot.userData.waterShimmer=appearance.waterShimmer;
         environmentRoot.userData.lightActive=active;environmentRoot.userData.lightOutput=output;environmentRoot.userData.daylight=daylight;
       }
       grid.visible=options.overlay==='flow';
@@ -12730,7 +13364,7 @@ window.StemLab = window.StemLab || {
       Object.keys(fishById).forEach(function(key){if(!nextFishKeys[key]){disposeGroup(fishById[key]);creatureRoot.remove(fishById[key]);delete fishById[key];}});
       var nextOverlaySignature=JSON.stringify([options.overlay,options.layout,options.overlay==='organisms'?options.fish:[],options.overlay==='interactions'?options.interactions:[]]);
       if(nextOverlaySignature!==overlaySignature){overlaySignature=nextOverlaySignature;disposeGroup(overlayRoot);addOverlay(options.overlay||'none',options.layout||[],catalogById,options.fish||[],options.interactions||[]);}
-      syncSchools();syncFeeding();applyMood();applyEnvironment();syncFocusedCamera(false);syncInspectionHalos();lastTime=null;
+      syncSchools();syncFeeding();updateSubstrateShading();applyMood();applyEnvironment();syncFocusedCamera(false);syncInspectionHalos();lastTime=null;
       if(controls)controls.enableDamping=!(reducedMotion||options.reducedMotion||options.paused);
       requestRender();
     }
@@ -12868,8 +13502,16 @@ window.StemLab = window.StemLab || {
             tx=clamp(tx,-data.boundX,data.boundX);tz=clamp(tz,-data.boundZ,data.boundZ);ty=clamp(ty,data.minY,data.maxY);
             var ease=Math.min(1,.07+dt*3);group.position.x+=(tx-group.position.x)*ease;group.position.z+=(tz-group.position.z)*ease;group.position.y+=(ty-group.position.y)*ease;
             if(!data.stationary){var heading=Math.atan2(-dz,dx),difference=Math.atan2(Math.sin(heading-group.rotation.y),Math.cos(heading-group.rotation.y));group.rotation.y+=difference*Math.min(1,.09+dt*3);group.rotation.z=data.bottom?0:Math.sin(angle*1.8)*.025;}
-            if(data.tail)data.tail.rotation.y=Math.sin(motionTime*(data.speed*18+3)+data.phase)*(.16+data.activityHealth*.0009);
-            (data.fins||[]).forEach(function(fin,index){fin.rotation.y=(fin.userData.baseYaw||0)+Math.sin(motionTime*4.5+data.phase+index)*.11;});
+            (data.crustaceanLegs||[]).forEach(function(limb){var stride=.035+data.activityHealth*.0003;limb.rotation.y=Math.sin(motionTime*(2+data.speed*8)+data.phase+limb.userData.pairIndex*1.25+limb.userData.side*Math.PI*.5)*stride;});
+            (data.crustaceanAntennae||[]).forEach(function(feeler,index){feeler.rotation.y=Math.sin(motionTime*.85+data.phase+index*1.7)*.023;});
+            if(group.anemoneTissue){
+              var tissue=group.anemoneTissue,positions=tissue.mesh.geometry.attributes.position,filterFlow=equipmentState('filter'),amplitude=filterFlow.on?filterFlow.intensity*.018:0;
+              for(var v=0;v<positions.count;v++){var weight=tissue.weights[v],phase=tissue.phases[v],wave=Math.sin(motionTime*.85+phase),cross=Math.cos(motionTime*.63+phase*.8);positions.setXYZ(v,tissue.rest[v*3]+amplitude*weight*wave,tissue.rest[v*3+1],tissue.rest[v*3+2]+amplitude*.65*weight*cross);}
+              positions.needsUpdate=true;tissue.mesh.geometry.computeVertexNormals();tissue.mesh.geometry.computeBoundingBox();tissue.mesh.geometry.computeBoundingSphere();data.tissueFlowOutput=filterFlow.on?filterFlow.intensity:0;
+            }
+            if(data.tail)data.tail.rotation.y=Math.sin(motionTime*(data.speed*18+3)+data.phase)*(data.shape==='pufferfish'?.075:.16+data.activityHealth*.0009);
+            (data.mudskipperPectorals||[]).forEach(function(paddle){paddle.rotation.y=paddle.userData.side*Math.sin(motionTime*(1.5+data.activityHealth*.004)+data.phase)*.065;});
+            (data.fins||[]).forEach(function(fin,index){var scull=fin.userData.pufferScull===true;fin.rotation.y=(fin.userData.baseYaw||0)+Math.sin(motionTime*(scull?7.2:4.5)+data.phase+index)*(scull?.18:.11);});
           });
           var flow=equipmentState('filter');var sway=.013+(flow.on?flow.intensity*.018:0);
           plantRoot.children.forEach(function(group){group.rotation.z=(group.userData.baseRotation||0)+Math.sin(motionTime*.7+group.userData.phase)*sway;});
@@ -12914,7 +13556,7 @@ window.StemLab = window.StemLab || {
         if(resizeObserver)resizeObserver.disconnect();else window.removeEventListener('resize',resize);
         if(intersectionObserver)intersectionObserver.disconnect();
         if(controls){if(controls.removeEventListener)controls.removeEventListener('change',requestRender);controls.dispose();}
-        disposeGroup(scene);persistentTextures.forEach(function(map){map.dispose();});persistentTextures=[];
+        disposeGroup(scene);clearFishPigmentCache();persistentTextures.forEach(function(map){map.dispose();});persistentTextures=[];
         focusState=null;fishById={};plantById={};if(renderer.renderLists&&renderer.renderLists.dispose)renderer.renderLists.dispose();renderer.dispose();
       }
     };
@@ -12997,23 +13639,26 @@ window.StemLab = window.StemLab || {
       if (actions[event.key]) { event.preventDefault(); moveCamera(actions[event.key]); }
     }
     return React.createElement('div', { className: 'aquarium-3d-viewport', 'data-3d-status': status, 'data-camera-focus': focused ? focused.kind + ':' + focused.id : '' },
-      React.createElement('style', null, '.aquarium-3d-viewport{position:relative;min-width:0;background:#07151d;color:#e2f4f5;border-radius:16px;overflow:hidden}.aquarium-3d-canvas{display:block;width:100%;height:clamp(320px,44vw,480px);outline-offset:-4px}.aquarium-3d-canvas:focus-visible{outline:3px solid #fbbf24}.aquarium-camera-bar{display:flex;gap:6px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;background:#102a32;border-top:1px solid #31525a}.aquarium-camera-presets{display:flex;flex-wrap:wrap;gap:5px}.aquarium-camera-bar button,.aquarium-3d-error button{min-height:40px;min-width:44px;border:1px solid #54777e;border-radius:9px;background:#183c45;color:#e4f5f4;padding:7px 12px;font-size:12px;font-weight:700}.aquarium-camera-bar button[aria-pressed=true]{background:#b9ebe2;color:#0c333c;border-color:#d8fff6}.aquarium-camera-bar button:focus-visible,.aquarium-3d-error button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-3d-help{margin:0;padding:9px 14px 12px;font-size:12px;line-height:1.5;color:#aecbd1}.aquarium-3d-loading{position:absolute;inset:0;display:grid;place-content:center;background:radial-gradient(ellipse at 50% 30%,#174b5a,#07151d);text-align:center;color:#bdebe8;font-size:14px}.aquarium-3d-error{padding:12px 16px;background:#18303b;font-size:13px;line-height:1.5}.aquarium-3d-error p{margin:0 0 8px}.aquarium-camera-bar button{touch-action:manipulation}@media(max-width:480px){.aquarium-3d-canvas{height:270px}.aquarium-camera-bar{padding:9px}.aquarium-camera-bar button{min-height:44px;padding:7px 10px}}.aquarium-closeup-controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px 12px;background:#163740;border-top:1px solid #31525a}.aquarium-closeup-controls button{min-height:44px;border:1px solid #76a59f;border-radius:9px;padding:8px 12px;background:#c2eee0;color:#173f3e;font-size:12px;font-weight:750}.aquarium-closeup-controls button:disabled{opacity:.5;cursor:not-allowed}.aquarium-closeup-controls button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-closeup-controls p{flex:1;min-width:180px;margin:0;font-size:12px;line-height:1.5;color:#c1ddda}'),
+      React.createElement('style', null, '.aquarium-3d-viewport{position:relative;min-width:0;background:#07151d;color:#e2f4f5;border-radius:16px;overflow:hidden}.aquarium-3d-canvas{display:block;width:100%;height:clamp(320px,44vw,480px);outline-offset:-4px}.aquarium-3d-canvas:focus-visible{outline:3px solid #fbbf24}.aquarium-camera-bar{display:flex;gap:6px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;background:#102a32;border-top:1px solid #31525a}.aquarium-camera-presets{display:flex;flex-wrap:wrap;gap:5px}.aquarium-camera-bar button,.aquarium-3d-error button{min-height:40px;min-width:44px;border:1px solid #54777e;border-radius:9px;background:#183c45;color:#e4f5f4;padding:7px 12px;font-size:12px;font-weight:700}.aquarium-camera-bar button[aria-pressed=true]{background:#b9ebe2;color:#0c333c;border-color:#d8fff6}.aquarium-camera-bar button:focus-visible,.aquarium-3d-error button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-3d-help{margin:0;padding:9px 14px 12px;font-size:12px;line-height:1.5;color:#aecbd1}.aquarium-3d-loading{position:absolute;inset:0;display:grid;place-content:center;background:radial-gradient(ellipse at 50% 30%,#174b5a,#07151d);text-align:center;color:#bdebe8;font-size:14px}.aquarium-3d-error{padding:12px 16px;background:#18303b;font-size:13px;line-height:1.5}.aquarium-3d-error p{margin:0 0 8px}.aquarium-camera-bar button{touch-action:manipulation}@media(max-width:480px){.aquarium-3d-canvas{height:270px}.aquarium-camera-bar{padding:9px}.aquarium-camera-bar button{min-height:44px;padding:7px 10px}}.aquarium-closeup-controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px 12px;background:#163740;border-top:1px solid #31525a}.aquarium-closeup-controls button{min-height:44px;border:1px solid #76a59f;border-radius:9px;padding:8px 12px;background:#c2eee0;color:#173f3e;font-size:12px;font-weight:750}.aquarium-closeup-controls button:disabled{opacity:.5;cursor:not-allowed}.aquarium-closeup-controls button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-closeup-controls p{flex-basis:100%;min-width:0;margin:0;font-size:12px;line-height:1.5;color:#c1ddda}.aquarium-camera-zoom{display:flex;gap:5px;margin-left:auto}.aquarium-closeup-controls .aquarium-camera-zoom button{min-width:44px;padding:7px 10px;background:#183c45;color:#e4f5f4;border-color:#54777e}.aquarium-camera-options{border-top:1px solid #31525a;background:#102a32}.aquarium-camera-options summary{box-sizing:border-box;min-height:44px;padding:12px 14px;cursor:pointer;font-size:12px;font-weight:750;color:#c1ddda}.aquarium-camera-options summary:focus-visible{outline:3px solid #fbbf24;outline-offset:-3px}.aquarium-camera-options[open] summary{border-bottom:1px solid #31525a}.aquarium-camera-options .aquarium-camera-bar{border-top:0}'),
       status === 'error' ? React.createElement(React.Fragment, null,
         props.fallback || null,
         React.createElement('div', { className: 'aquarium-3d-error', role: 'status' }, React.createElement('p', null, props.fallback ? '3D is unavailable on this device right now. Your illustrated aquarium and all care controls are available.' : 'The 3D view is unavailable. Use the accessible habitat plan and object controls.'),
           React.createElement('button', { type: 'button', onClick: function() { setStatus('loading'); setRetry(retry + 1); } }, 'Retry 3D view')))
         : React.createElement(React.Fragment, null,
           React.createElement('canvas', { ref: canvasRef, className: 'aquarium-3d-canvas', role: 'img', tabIndex: 0, 'aria-label': props.label + ' Camera: arrow keys rotate, plus and minus zoom, Home resets.', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - Home', onKeyDown: onCameraKey }),
+          status === 'ready' && React.createElement('div', { className: 'aquarium-stage-caption' }, React.createElement('strong', null, focused && subject ? subject.label : 'Living aquarium'), React.createElement('span', null, focused ? 'Following selected subject' : 'Drag to orbit · select to inspect')),
           status === 'loading' && React.createElement('div', { className: 'aquarium-3d-loading', role: 'status' }, React.createElement('span', null, 'Lighting your aquarium…'), React.createElement('small', { style: { marginTop: 8, color: '#83aeb6' } }, 'Preparing the water, habitat, and residents')),
           status === 'ready' && React.createElement(React.Fragment, null,
             React.createElement('div', { className: 'aquarium-closeup-controls' },
               React.createElement('button', { type: 'button', disabled: !subjectVisible, 'aria-label': subject ? 'Inspect ' + subject.label + ' close-up' : 'Select a subject for close-up inspection', 'aria-pressed': !!focused, onClick: inspectCloseUp }, 'Focus selected'),
               focused && React.createElement('button', { type: 'button', onClick: function() { changeView('front'); } }, 'Whole tank'),
+              React.createElement('div', { className: 'aquarium-camera-zoom', role: 'group', 'aria-label': 'Camera zoom' }, React.createElement('button', { type: 'button', onClick: function() { moveCamera('in'); }, 'aria-label': 'Zoom in' }, '+'), React.createElement('button', { type: 'button', onClick: function() { moveCamera('out'); }, 'aria-label': 'Zoom out' }, '−')),
               React.createElement('p', { role: 'status' }, notice || (focused && subject ? 'Close-up: ' + subject.label + '. Camera follows this subject; simulation settings stay unchanged.' : subject && !subjectVisible ? 'No live foliage to inspect at zero biomass.' : 'Select a resident, plant, or habitat object, then focus to examine its details.'))),
-            React.createElement('div', { className: 'aquarium-camera-bar' },
-              React.createElement('div', { className: 'aquarium-camera-presets', role: 'group', 'aria-label': '3D camera presets' }, ['front', 'angle', 'top', 'left'].map(function(preset) { return React.createElement('button', { key: preset, type: 'button', 'aria-pressed': view === preset, onClick: function() { changeView(preset); } }, { front: 'Front', angle: 'Perspective', top: 'Above', left: 'Side' }[preset]); })),
-              React.createElement('div', { className: 'aquarium-camera-presets', role: 'group', 'aria-label': 'Camera zoom' }, React.createElement('button', { type: 'button', onClick: function() { moveCamera('in'); }, 'aria-label': 'Zoom in' }, '+'), React.createElement('button', { type: 'button', onClick: function() { moveCamera('out'); }, 'aria-label': 'Zoom out' }, '−'))),
-            React.createElement('p', { className: 'aquarium-3d-help' }, 'Drag to look around; select a resident or habitat object to inspect it. Keyboard: arrows rotate, + / − zoom, Home resets.')))
+            React.createElement('details', { className: 'aquarium-camera-options' },
+              React.createElement('summary', null, 'Camera angles & help'),
+              React.createElement('div', { className: 'aquarium-camera-bar' },
+                React.createElement('div', { className: 'aquarium-camera-presets', role: 'group', 'aria-label': '3D camera presets' }, ['front', 'angle', 'top', 'left'].map(function(preset) { return React.createElement('button', { key: preset, type: 'button', 'aria-pressed': view === preset, onClick: function() { changeView(preset); } }, { front: 'Front', angle: 'Perspective', top: 'Above', left: 'Side' }[preset]); }))),
+              React.createElement('p', { className: 'aquarium-3d-help' }, 'Drag to look around; select a resident, plant, or habitat object to inspect it. Keyboard: arrows rotate, + / − zoom, Home resets.'))))
     );
   }
 
@@ -13048,6 +13693,7 @@ window.StemLab = window.StemLab || {
       backdrop: ['depth', 'planted', 'black'].indexOf(source.backdrop) >= 0 ? source.backdrop : 'depth',
       quality: ['low', 'balanced', 'high'].indexOf(source.quality) >= 0 ? source.quality : 'balanced',
       lightIntensity: aquariumViewNumber(source.lightIntensity, 1, .6, 1.4),
+      waterShimmer: aquariumViewNumber(source.waterShimmer, .4, 0, 1),
       animalScale: aquariumViewNumber(source.animalScale, 1, .8, 1.3),
       showEquipment: source.showEquipment !== false
     };
@@ -13162,9 +13808,10 @@ window.StemLab = window.StemLab || {
         React.createElement('select', { id: id, value: appearance[key], onChange: function(event) { var patch = {}; patch[key] = event.target.value; props.onAppearance(patch); } },
           choices.map(function(choice) { return React.createElement('option', { key: choice[0], value: choice[0] }, choice[1]); })));
     }
-    function slider(id, label, key, minimum, maximum) {
-      return React.createElement('label', { className: 'aquarium-view-setting', htmlFor: id }, React.createElement('span', null, label + ' · ' + appearance[key].toFixed(1) + '×'),
-        React.createElement('input', { type: 'range', id: id, min: minimum, max: maximum, step: .1, value: appearance[key], 'aria-valuetext': appearance[key].toFixed(1) + ' times', onChange: function(event) { var patch = {}; patch[key] = Number(event.target.value); props.onAppearance(patch); } }));
+    function slider(id, label, key, minimum, maximum, percentage) {
+      var value=appearance[key],description=percentage?(value===0?'Off':Math.round(value*100)+'%'):value.toFixed(1)+'×';
+      return React.createElement('label', { className: 'aquarium-view-setting', htmlFor: id }, React.createElement('span', null, label + ' · ' + description),
+        React.createElement('input', { type: 'range', id: id, min: minimum, max: maximum, step: .1, value: value, 'aria-valuetext': percentage?description:value.toFixed(1)+' times', onChange: function(event) { var patch = {}; patch[key] = Number(event.target.value); props.onAppearance(patch); } }));
     }
     return React.createElement('details', { className: 'aquarium-view-settings' },
       React.createElement('summary', null, 'Customize 3D view'),
@@ -13178,9 +13825,10 @@ window.StemLab = window.StemLab || {
             React.createElement('select', { id: 'aquarium-view-overlay', value: props.overlay, onChange: function(event) { props.onOverlay(event.target.value); } },
               [['none','Natural view'],['shelter','Shelter'],['territory','Territory'],['flow','Flow pathways'],['light','Light zones'],['organisms','Habitat fit'],['interactions','Ecological interactions']].map(function(choice) { return React.createElement('option', { key: choice[0], value: choice[0] }, choice[1]); }))),
           slider('aquarium-view-exposure', 'Viewing exposure', 'lightIntensity', .6, 1.4),
-          slider('aquarium-view-scale', 'Animal emphasis', 'animalScale', .8, 1.3)),
+          slider('aquarium-view-scale', 'Animal emphasis', 'animalScale', .8, 1.3),
+          slider('aquarium-view-shimmer', 'Water shimmer', 'waterShimmer', 0, 1, true)),
         React.createElement('label', { className: 'aquarium-view-check', htmlFor: 'aquarium-view-equipment' }, React.createElement('input', { type: 'checkbox', id: 'aquarium-view-equipment', checked: appearance.showEquipment, onChange: function(event) { props.onAppearance({ showEquipment: event.target.checked }); } }), 'Show equipment in the scene'),
-        React.createElement('p', { className: 'aquarium-settings-note' }, 'Backdrop plants are decoration. Substrate appearance does not change substrate chemistry. Exposure changes viewing light, and animal emphasis changes display size; neither changes biological light or growth. Geometry is illustrative, not a physical scale model. Hiding equipment leaves its modeled output active.'),
+        React.createElement('p', { className: 'aquarium-settings-note' }, 'Backdrop plants are decoration. Substrate appearance does not change substrate chemistry. Exposure changes viewing light, and animal emphasis changes display size; neither changes biological light or growth. Water shimmer controls decorative reflections, not clarity or chemistry; it follows the modeled light being on. Geometry is illustrative, not a physical scale model. Hiding equipment leaves its modeled output active.'),
         React.createElement('button', { type: 'button', onClick: props.onResetAppearance }, 'Reset appearance')));
   }
   function AquariumSceneEvidence(props) {
@@ -13234,10 +13882,11 @@ window.StemLab = window.StemLab || {
       if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
     }
     return React.createElement('section', { id: props.id, tabIndex: -1, className: 'aquarium-live-display' + (props.paused ? ' aquarium-visuals-paused' : ''), 'data-aquarium-live-tank': 'true', 'data-aquarium-view': props.mode, 'aria-label': props.label },
-      React.createElement('style', null, '.aquarium-live-display{border:1px solid #bad6d8;border-radius:20px;background:#f4faf9;box-shadow:0 12px 35px -22px #0b526a;overflow:hidden;min-width:0}.aquarium-display-heading{padding:16px 18px 12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.aquarium-display-heading h3{font-size:19px;line-height:1.2;color:#123f49;font-weight:850;margin:0}.aquarium-display-eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#47727a;margin:0 0 5px;font-weight:800}.aquarium-display-counts{font-size:12px;color:#527079;margin:6px 0 0}.aquarium-view-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 18px 14px}.aquarium-view-controls button{min-height:42px;padding:9px 13px;border-radius:10px;border:1px solid #adc7cd;background:#fff;color:#244e59;font-size:12px;font-weight:750}.aquarium-view-controls button[aria-pressed=true]{background:#124d5a;border-color:#124d5a;color:#f0fffd}.aquarium-view-controls button:focus-visible,.aquarium-resident-inspector select:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-live-display .aquarium-3d-viewport{border-radius:0}.aquarium-display-mood{font-size:11px;color:#42676e;background:#e4f2ee;padding:7px 10px;border:1px solid #c5dcd4;border-radius:20px}.aquarium-resident-inspector{padding:12px 18px 14px;display:grid;gap:8px;font-size:12px;color:#365d66;border-top:1px solid #cfdfdf}.aquarium-resident-inspector label{font-weight:800;color:#244b55}.aquarium-resident-inspector select{width:100%;max-width:480px;min-height:42px;border:1px solid #98b8c2;border-radius:9px;padding:8px;background:#fff;color:#214953}.aquarium-resident-inspector p{margin:0;line-height:1.5}.aquarium-resident-inspector button{min-height:40px;border:1px solid #6a9896;border-radius:8px;padding:7px 10px;margin:5px 0;background:#fff;color:#184b52;font-size:12px;font-weight:750}.aquarium-resident-inspector button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-resident-detail{background:#e5f2ed;padding:10px 12px;border-radius:9px;border-left:3px solid #267775}.aquarium-visuals-paused #aquarium-illustrated-tank *{animation-play-state:paused!important}.aquarium-display-footnote{font-size:11px!important;color:#607b80}@media(prefers-reduced-motion:reduce){#aquarium-illustrated-tank *{animation:none!important;transition:none!important}}@media(max-width:480px){.aquarium-display-heading{padding:14px 13px 10px}.aquarium-view-controls{padding:0 13px 12px}.aquarium-view-controls button{min-height:44px;padding:8px 10px}.aquarium-resident-inspector{padding:12px 13px}}.aquarium-inspection-picker{display:grid;gap:6px;padding:10px 18px 13px;background:#e8f3ef;border-top:1px solid #c6dcd6;color:#244b55;font-size:12px}.aquarium-inspection-picker label{font-weight:800}.aquarium-inspection-picker select{width:100%;min-height:44px;border:1px solid #8cadae;border-radius:9px;background:#fff;padding:9px;color:#214953;font:inherit}.aquarium-inspection-picker select:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-resident-detail .aquarium-identification{margin-top:7px}.aquarium-resident-detail .aquarium-identification p+p{margin-top:5px}'),
+      React.createElement('style', null, '.aquarium-live-display{border:1px solid #bad6d8;border-radius:20px;background:#f4faf9;box-shadow:0 12px 35px -22px #0b526a;overflow:hidden;min-width:0}.aquarium-display-heading{padding:16px 18px 12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.aquarium-display-heading h3{font-size:19px;line-height:1.2;color:#123f49;font-weight:850;margin:0}.aquarium-display-eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#47727a;margin:0 0 5px;font-weight:800}.aquarium-display-counts{font-size:12px;color:#527079;margin:6px 0 0}.aquarium-view-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 18px 14px}.aquarium-view-controls button{min-height:42px;padding:9px 13px;border-radius:10px;border:1px solid #adc7cd;background:#fff;color:#244e59;font-size:12px;font-weight:750}.aquarium-view-controls button[aria-pressed=true]{background:#124d5a;border-color:#124d5a;color:#f0fffd}.aquarium-view-controls button:focus-visible,.aquarium-resident-inspector select:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-live-display .aquarium-3d-viewport{border-radius:0}.aquarium-display-mood{font-size:11px;color:#42676e;background:#e4f2ee;padding:7px 10px;border:1px solid #c5dcd4;border-radius:20px}.aquarium-resident-inspector{padding:12px 18px 14px;display:grid;gap:8px;font-size:12px;color:#365d66;border-top:1px solid #cfdfdf}.aquarium-resident-inspector label{font-weight:800;color:#244b55}.aquarium-resident-inspector select{width:100%;max-width:480px;min-height:42px;border:1px solid #98b8c2;border-radius:9px;padding:8px;background:#fff;color:#214953}.aquarium-resident-inspector p{margin:0;line-height:1.5}.aquarium-resident-inspector button{min-height:40px;border:1px solid #6a9896;border-radius:8px;padding:7px 10px;margin:5px 0;background:#fff;color:#184b52;font-size:12px;font-weight:750}.aquarium-resident-inspector button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-resident-detail{background:#e5f2ed;padding:10px 12px;border-radius:9px;border-left:3px solid #267775}.aquarium-visuals-paused #aquarium-illustrated-tank *{animation-play-state:paused!important}.aquarium-display-footnote{font-size:12px!important;color:#4d6b71}@media(prefers-reduced-motion:reduce){#aquarium-illustrated-tank *{animation:none!important;transition:none!important}}@media(max-width:480px){.aquarium-display-heading{padding:14px 13px 10px}.aquarium-view-controls{padding:0 13px 12px}.aquarium-view-controls button{min-height:44px;padding:8px 10px}.aquarium-resident-inspector{padding:12px 13px}}.aquarium-inspection-picker{display:grid;gap:6px;padding:10px 18px 13px;background:#e8f3ef;border-top:1px solid #c6dcd6;color:#244b55;font-size:12px}.aquarium-inspection-picker label{font-weight:800}.aquarium-inspection-picker select{width:100%;min-height:44px;border:1px solid #8cadae;border-radius:9px;background:#fff;padding:9px;color:#214953;font:inherit}.aquarium-inspection-picker select:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-resident-detail .aquarium-identification{margin-top:7px}.aquarium-resident-detail .aquarium-identification p+p{margin-top:5px}'),
       React.createElement('style', null, ".aquarium-view-settings{border-top:1px solid #cbdedc;background:#eef6f3;color:#244b55}.aquarium-view-settings summary,.aquarium-model-legend summary{cursor:pointer;min-height:44px;padding:13px 18px;font-size:12px;font-weight:800}.aquarium-settings-body{padding:0 18px 16px}.aquarium-settings-body p{margin:0 0 13px;font-size:12px;line-height:1.55}.aquarium-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}.aquarium-view-setting{display:grid;gap:6px;font-size:12px;font-weight:750;min-width:0}.aquarium-view-setting select{width:100%;min-height:42px;border:1px solid #90b2b7;border-radius:8px;background:#fff;color:#244b55;padding:8px;font:inherit}.aquarium-view-setting input[type=range]{width:100%;min-height:32px;accent-color:#246960}.aquarium-view-check{display:flex;gap:9px;align-items:center;min-height:44px;font-size:12px;margin:8px 0}.aquarium-view-check input{width:18px;height:18px;accent-color:#246960}.aquarium-settings-note{font-size:11px!important;color:#4d6b71}.aquarium-settings-body button,.aquarium-model-legend button{min-height:42px;border:1px solid #8aadaf;border-radius:8px;background:#fff;color:#244b55;font-size:12px;font-weight:750;padding:8px 12px}.aquarium-live-display summary:focus-visible,.aquarium-view-settings input:focus-visible,.aquarium-view-settings select:focus-visible,.aquarium-settings-body button:focus-visible,.aquarium-model-legend button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-scene-evidence{padding:15px 18px;border-top:1px solid #cfdfdf;background:#fcfefa;color:#315760}.aquarium-evidence-heading{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.aquarium-evidence-heading h4{margin:0;font-size:13px;color:#204e50}.aquarium-evidence-heading span{font-size:11px;color:#5c7376}.aquarium-evidence-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.aquarium-evidence-grid>div{border-left:2px solid #8fbcb2;padding-left:9px}.aquarium-evidence-grid dt,.aquarium-resident-readings dt,.aquarium-chemistry-readings dt{font-size:10px;color:#547076}.aquarium-evidence-grid dd{font-size:12px;font-weight:750;line-height:1.5;margin:4px 0 0;color:#204e50}.aquarium-feeding-evidence{font-size:11px;line-height:1.6;margin:0;color:#536e74}.aquarium-model-legend{margin-top:9px;border-top:1px solid #e1eae4}.aquarium-model-legend summary{padding:10px 0}.aquarium-model-legend p{font-size:12px;line-height:1.6;margin:0 0 10px}.aquarium-chemistry-readings,.aquarium-resident-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin:10px 0}.aquarium-chemistry-readings dd,.aquarium-resident-readings dd{font-size:12px;margin:3px 0 0;line-height:1.5}.aquarium-equipment-readings{background:#e8f3ee;padding:10px;border-radius:8px;margin-bottom:10px}.aquarium-equipment-readings p:last-child{margin-bottom:0}@media(max-width:580px){.aquarium-evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.aquarium-scene-evidence{padding:13px}.aquarium-settings-body{padding:0 13px 13px}.aquarium-view-settings summary{padding:13px}.aquarium-settings-grid{grid-template-columns:1fr}}"),
       React.createElement('style', null, ".aquarium-model-sizing{background:#f1f6ef;color:#274e49;border-top:1px solid #cbd9c9}.aquarium-model-sizing summary{cursor:pointer;padding:13px 18px;min-height:44px;font-size:12px;font-weight:800}.aquarium-sizing-body{padding:0 18px 16px}.aquarium-sizing-body p{font-size:12px;line-height:1.6;margin:0 0 12px}.aquarium-sizing-body h5{margin:20px 0 9px;font-size:13px}.aquarium-sizing-body input[type=number]{display:block;box-sizing:border-box;min-height:42px;padding:8px;border-radius:8px;border:1px solid #91ada0;background:#fff;color:#254b45;font:inherit;width:100%}.aquarium-sizing-body button{min-height:42px;padding:8px 12px;border:1px solid #6c9584;border-radius:8px;background:#fff;color:#235345;font-size:12px;font-weight:750}.aquarium-sizing-body button:disabled{opacity:.5;cursor:not-allowed}.aquarium-sizing-note{font-size:11px!important;color:#526e60;margin-top:10px!important}.aquarium-sizing-body input:focus-visible,.aquarium-sizing-body select:focus-visible,.aquarium-sizing-body button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-plant-sizing{border:1px solid #c0d4c5;border-radius:10px;padding:12px;margin-top:10px;background:#fafdf8}.aquarium-plant-sizing label{font-size:12px;line-height:1.6;font-weight:650}.aquarium-plant-sizing input[type=range]{width:100%;min-height:32px;accent-color:#276d52}.aquarium-sizing-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;font-size:12px}.aquarium-sizing-row>span{font-size:11px;color:#587166}.aquarium-sizing-row input[type=number]{max-width:130px}.aquarium-sizing-notice{padding:12px 18px;font-size:12px;line-height:1.6;color:#24534a;background:#e5f4e6;border-top:1px solid #b9d9bf;margin:0}@media(max-width:580px){.aquarium-sizing-body{padding:0 13px 13px}.aquarium-model-sizing summary{padding:13px}.aquarium-sizing-notice{padding:12px 13px}}"),
-      React.createElement('div', { className: 'aquarium-display-heading' }, React.createElement('div', null, React.createElement('p', { className: 'aquarium-display-eyebrow' }, 'A living window'), React.createElement('h3', null, props.name), React.createElement('p', { className: 'aquarium-display-counts' }, props.sceneOptions.fish.length + ' residents · ' + props.sceneOptions.plants.length + ' plants · ' + props.sceneOptions.layout.length + ' habitat objects')), React.createElement('span', { className: 'aquarium-display-mood' }, props.lightLabel)),
+      React.createElement('style', null, ".aquarium-live-display{border-color:#759994;border-radius:22px;box-shadow:0 18px 50px -25px #0a3947}.aquarium-display-heading{padding:21px 22px 15px;background:linear-gradient(115deg,#102f38,#184a50);align-items:flex-start}.aquarium-display-heading h3{font-size:25px;font-weight:800;letter-spacing:-.025em;color:#eefaf3}.aquarium-display-eyebrow{color:#aad0c5;font-size:10px;letter-spacing:.16em}.aquarium-display-counts{color:#bed6d0;margin-top:9px}.aquarium-display-mood{color:#ddf3e5;background:#ffffff0b;border-color:#749e94;font-size:11px}.aquarium-vessel-specs{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}.aquarium-vessel-specs span{border:1px solid #71978f;border-radius:5px;padding:3px 7px;color:#dfefe8;font-size:11px;font-variant-numeric:tabular-nums}.aquarium-view-controls{padding:10px 22px 13px;background:#102f38;gap:7px}.aquarium-view-controls button{border-color:#608981;background:#ffffff08;color:#d6e9e3;min-height:44px}.aquarium-view-controls button[aria-pressed=true]{background:#d0e9da;border-color:#d0e9da;color:#123c40}.aquarium-inspection-picker{grid-template-columns:minmax(135px,.4fr) minmax(0,1fr);align-items:center;padding:13px 22px;background:#e2eee7}.aquarium-inspection-picker select{border-color:#93b3a5;border-radius:9px;font-size:12px}.aquarium-resident-inspector{padding:16px 22px}.aquarium-resident-detail{border:1px solid #aecbbb;border-left:4px solid #477f70;border-radius:12px;padding:15px;background:linear-gradient(120deg,#e5f0e7,#f5f8ef)}.aquarium-resident-detail>p:first-child{font-size:14px;color:#224f4a}.aquarium-resident-readings{border-top:1px solid #bed3c3;padding-top:10px}.aquarium-stage-caption{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 16px;background:#0b252e;color:#b4d3cf;font-size:11px;border-top:1px solid #385953;font-variant-numeric:tabular-nums}.aquarium-stage-caption strong{color:#e1efe6;font-size:11px;font-weight:700}.aquarium-closeup-controls{background:#12353d;padding:12px 16px}.aquarium-closeup-controls button{border-radius:9px}.aquarium-camera-options{background:#102f38}.aquarium-camera-options summary{padding:13px 16px}.aquarium-3d-help{line-height:1.7}@media(max-width:580px){.aquarium-display-heading{padding:17px 14px 13px}.aquarium-display-heading h3{font-size:22px}.aquarium-view-controls{padding:10px 14px 13px}.aquarium-inspection-picker{grid-template-columns:1fr;padding:12px 14px}.aquarium-resident-inspector{padding:13px 14px}.aquarium-stage-caption{padding:10px 12px;flex-wrap:wrap;gap:5px}.aquarium-vessel-specs{margin-top:9px}}"),
+      React.createElement('div', { className: 'aquarium-display-heading' }, React.createElement('div', null, React.createElement('p', { className: 'aquarium-display-eyebrow' }, 'A living window'), React.createElement('h3', null, props.name), React.createElement('p', { className: 'aquarium-display-counts' }, props.sceneOptions.fish.length + ' residents · ' + props.sceneOptions.plants.length + ' plants · ' + props.sceneOptions.layout.length + ' habitat objects'), props.tankConfiguration && React.createElement('div', { className: 'aquarium-vessel-specs', 'aria-label': 'Vessel configuration' }, React.createElement('span', null, props.tankConfiguration.size + ' US gal'), React.createElement('span', null, props.tankConfiguration.shape + ' profile'))), React.createElement('span', { className: 'aquarium-display-mood' }, props.lightLabel)),
       React.createElement('div', { className: 'aquarium-view-controls', role: 'group', 'aria-label': 'Aquarium view controls' },
         React.createElement('button', { type: 'button', 'aria-pressed': props.mode === '3d', onClick: function() { props.onView('3d'); } }, '3D aquarium'),
         React.createElement('button', { type: 'button', 'aria-pressed': props.mode === 'illustrated', onClick: function() { props.onView('illustrated'); } }, 'Illustrated view'),
@@ -13481,7 +14130,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var aq = Object.assign({}, (prev && prev._aquarium) || {});
 
+              var before = (prev && prev._aquarium) || {};
               Object.keys(obj).forEach(function (k) { aq[k] = obj[k]; });
+              var careKeys = ['waterChem','hungerLevels','lightsOn','equipment','equipmentFaults','equipmentCondition','algaeLevel','fishSickness','quarantinedFish','tankFish','tankPlants','plantBiomass'];
+              if (!Object.prototype.hasOwnProperty.call(obj, 'selectedTank') && before.selectedTank && obj.eventLog && obj.eventLog.length && careKeys.some(function (key) { return Object.prototype.hasOwnProperty.call(obj, key); })) {
+                aq.careEvidence = AquariumInquiryCore.record(before, aq, obj.eventLog[obj.eventLog.length - 1].msg || 'Care action', 'action');
+              }
               if (Array.isArray(aq.eventLog) && aq.eventLog.length > 25) aq.eventLog = aq.eventLog.slice(-25);
 
               return Object.assign({}, prev, { _aquarium: aq });
@@ -18179,7 +18833,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               equipment: equipment.filter !== undefined ? equipment : { filter: 0, heater: 0, light: 0, airPump: 0 },
               perfectWaterTicks: 0, algaeLevel: 0, fishSickness: {}, fishStress: {}, quarantinedFish: {}, lastWaterChangeTick: 0, maintenanceLog: [], maintenanceHistoryExpanded: false,
               hungerLevels: {}, simDay: 0, simHour: 8, lightsOn: true,
-              observationBaseline: null, feedingLog: null, aquariumFeedingEvent: null, tutorialStep: 0, tutorialProgress: {}, tutorialEquipmentMaintained: false
+              inquiryExperiment: null, inquiryPrediction: "", inquiryValue: undefined, inquiryFactor: "lightsOn", careEvidence: [], aquariumWorkspacePanel: "observe", observationBaseline: null, feedingLog: null, aquariumFeedingEvent: null, tutorialStep: 0, tutorialProgress: {}, tutorialEquipmentMaintained: false
 
             });
 
@@ -18971,14 +19625,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           // Uses functional state update to always read fresh state (avoids stale closures)
 
-          var simStep = function () {
-
-            setLabToolData(function (prev) {
-
-              var aq = Object.assign({}, (prev && prev._aquarium) || {});
-
-              if (!aq.waterChem || !aq.selectedTank) return prev;
-
+          var advanceAquariumHour = function (input, settings) {
+            settings = settings || {};
+            var aq = AquariumInquiryCore.cloneTank(input);
+            if (!aq.waterChem || !aq.selectedTank) return aq;
+            var random = settings.random || function () { return Math.random(); };
+            var hourTimestamp = settings.timestamp === undefined ? Date.now() : settings.timestamp;
+            var classifyHourWater = function (param, value) {
+              return AquariumEcosystemCore.classifyWaterParameter(param, value, getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === aq.selectedTank; }), aq.aquariumTankConfig));
+            };
               var _tankFish = aq.tankFish || [];
               var _savedFishInstanceIds = Array.isArray(aq.fishInstanceIds) ? aq.fishInstanceIds : [];
               var _nextFishInstanceId = typeof aq.nextFishInstanceId === 'number' && aq.nextFishInstanceId > 0 ? Math.floor(aq.nextFishInstanceId) : 1;
@@ -19295,7 +19950,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               var co2Offgas = newCO2 > 3 ? Math.min(newCO2 - 3, Math.min(0.1, (newCO2 - 3) * 0.05) * surfaceExchangeScale) : 0;
               newCO2 -= co2Offgas;
 
-              var pHdrift = (Math.random() - 0.5) * 0.05;
+              var pHdrift = (random('event-0') - 0.5) * 0.05;
 
               // CO2 influences pH: high CO2 lowers pH (carbonic acid)
 
@@ -19307,7 +19962,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               var desiredTemp = _equipment.heater > 0 && _equipmentTank ? _equipmentTank.temp : ambientTemp;
               var effectiveHeaterStability = _heaterEquipment.tempStability * _equipmentOutput.heater;
               var heaterCorrectionRate = _equipment.heater > 0 && _equipmentOutput.heater > 0 ? 0.05 + effectiveHeaterStability * 0.15 : 0.04;
-              var tempNoise = (Math.random() - 0.5) * 0.6 * (1 - effectiveHeaterStability * 0.85);
+              var tempNoise = (random('event-1') - 0.5) * 0.6 * (1 - effectiveHeaterStability * 0.85);
               var tempDrift = (desiredTemp - _waterChem.temp) * heaterCorrectionRate + tempNoise;
 
               var newChem = {
@@ -19357,7 +20012,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 var definition = getTickEquipmentDefinition(type);
                 var baseFailureChance = typeof definition.failChance === 'number' ? definition.failChance : _equipmentFailureRates[type];
                 var conditionRisk = Math.max(0, Math.min(1, (16 - condition) / 16));
-                if (Math.random() >= baseFailureChance * conditionRisk) return;
+                if (random('event-2') >= baseFailureChance * conditionRisk) return;
                 var failedCatalog = EQUIPMENT_CATALOG[type];
                 _equipmentFaults[type] = { tick: newTick, reason: 'Low-condition failure' };
                 newLog.push({ tick: newTick, msg: '\u26D4 ' + failedCatalog.name + ' failed at ' + Math.round(condition) + '% condition. Output is offline until repaired.' });
@@ -19382,14 +20037,14 @@ var d = (labToolData && labToolData._aquarium) || {};
                 // Day milestones
                 if (newDay === 30 && !(aq.unlockedAchievements || {})['day_30']) {
                   aq.unlockedAchievements = Object.assign({}, aq.unlockedAchievements || {});
-                  aq.unlockedAchievements['day_30'] = { unlockedAt: Date.now() };
+                  aq.unlockedAchievements['day_30'] = { unlockedAt: hourTimestamp };
                   var _a30 = ACHIEVEMENTS.find(function (a) { return a.id === 'day_30'; });
                   if (_a30) { aq.coins = (aq.coins || 0) + _a30.coins; aq.totalCoinsEarned = (aq.totalCoinsEarned || 0) + _a30.coins; }
                   newLog.push({ tick: newTick, msg: '\u2B50 Achievement: Dedicated Keeper! (Day 30)' });
                 }
                 if (newDay === 100 && !(aq.unlockedAchievements || {})['day_100']) {
                   aq.unlockedAchievements = Object.assign({}, aq.unlockedAchievements || {});
-                  aq.unlockedAchievements['day_100'] = { unlockedAt: Date.now() };
+                  aq.unlockedAchievements['day_100'] = { unlockedAt: hourTimestamp };
                   var _a100 = ACHIEVEMENTS.find(function (a) { return a.id === 'day_100'; });
                   if (_a100) { aq.coins = (aq.coins || 0) + _a100.coins; aq.totalCoinsEarned = (aq.totalCoinsEarned || 0) + _a100.coins; }
                   newLog.push({ tick: newTick, msg: '\uD83C\uDFC6 Achievement: Master Aquarist! (Day 100)' });
@@ -19400,7 +20055,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               aq.perfectWaterTicks = _safe ? (aq.perfectWaterTicks || 0) + 1 : 0;
               if (aq.perfectWaterTicks >= 20 && !(aq.unlockedAchievements || {})['perfect_water']) {
                 aq.unlockedAchievements = Object.assign({}, aq.unlockedAchievements || {});
-                aq.unlockedAchievements['perfect_water'] = { unlockedAt: Date.now() };
+                aq.unlockedAchievements['perfect_water'] = { unlockedAt: hourTimestamp };
                 var _apw = ACHIEVEMENTS.find(function (a) { return a.id === 'perfect_water'; });
                 if (_apw) { aq.coins = (aq.coins || 0) + _apw.coins; aq.totalCoinsEarned = (aq.totalCoinsEarned || 0) + _apw.coins; }
                 newLog.push({ tick: newTick, msg: '\uD83D\uDCA7 Achievement: Crystal Clear!' });
@@ -19411,15 +20066,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               // XP for maintaining healthy parameters
 
-              var allOk = getChemStatus('ammonia', newChem.ammonia) === 'ok' &&
+              var allOk = classifyHourWater('ammonia', newChem.ammonia) === 'ok' &&
 
-                getChemStatus('nitrite', newChem.nitrite) === 'ok' &&
+                classifyHourWater('nitrite', newChem.nitrite) === 'ok' &&
 
-                getChemStatus('pH', newChem.pH) === 'ok';
+                classifyHourWater('pH', newChem.pH) === 'ok';
 
               if (allOk && _tankFish.length > 0 && newTick % 5 === 0) {
 
-                awardStemXP('aquarium', 2, 'Healthy tank maintenance');
+                if (settings.liveRewards) awardStemXP('aquarium', 2, 'Healthy tank maintenance');
 
               }
 
@@ -19513,16 +20168,16 @@ var d = (labToolData && labToolData._aquarium) || {};
               var averageExistingStress = existingStressKeys.length ? existingStressKeys.reduce(function (sum, fishId) { return sum + (_fishStress[fishId] || 0); }, 0) / existingStressKeys.length : 0;
               if (averageExistingStress > 60) environmentalDiseasePressure += 0.05;
               environmentalDiseasePressure = Math.max(0, Math.min(0.35, environmentalDiseasePressure) - cleanerProtection);
-              if (environmentalDiseasePressure > 0 && Math.random() < environmentalDiseasePressure && susceptibleIndexes.length > 0) {
+              if (environmentalDiseasePressure > 0 && random('event-3') < environmentalDiseasePressure && susceptibleIndexes.length > 0) {
 
-                var victimIndex = susceptibleIndexes[Math.floor(Math.random() * susceptibleIndexes.length)];
+                var victimIndex = susceptibleIndexes[Math.floor(random('event-4') * susceptibleIndexes.length)];
                 var victim = _fishInstanceIds[victimIndex];
 
                 if (!newSickness[victim]) {
 
                   var diseases = ['ich', 'fin_rot', 'velvet', 'dropsy'];
 
-                  newSickness[victim] = { disease: diseases[Math.floor(Math.random() * diseases.length)], severity: 1, tick: newTick };
+                  newSickness[victim] = { disease: diseases[Math.floor(random('event-5') * diseases.length)], severity: 1, tick: newTick };
 
                   sickChanged = true;
 
@@ -19542,9 +20197,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                 return isFishDiseaseHostByIndex(fishIndex) && !_quarantinedFish[fishId] && !newSickness[fishId];
               });
               var transmissionChance = Math.max(0, Math.min(0.35, contagiousFishIds.length * 0.08) - cleanerProtection);
-              if (contagiousFishIds.length > 0 && healthyMainTankFishIds.length > 0 && Math.random() < transmissionChance) {
-                var sourceFishId = contagiousFishIds[Math.floor(Math.random() * contagiousFishIds.length)];
-                var exposedFishId = healthyMainTankFishIds[Math.floor(Math.random() * healthyMainTankFishIds.length)];
+              if (contagiousFishIds.length > 0 && healthyMainTankFishIds.length > 0 && random('event-6') < transmissionChance) {
+                var sourceFishId = contagiousFishIds[Math.floor(random('event-7') * contagiousFishIds.length)];
+                var exposedFishId = healthyMainTankFishIds[Math.floor(random('event-8') * healthyMainTankFishIds.length)];
                 var sourceIllness = newSickness[sourceFishId];
                 newSickness[exposedFishId] = { disease: sourceIllness.disease, severity: 1, tick: newTick, source: sourceFishId };
                 sickChanged = true;
@@ -19685,7 +20340,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   }
                 }
 
-                if (hunger >= 100 && Math.random() < 0.25) {
+                if (hunger >= 100 && random('event-9') < 0.25) {
 
                   var sp = species.find(function (s) { return s.id === fId; });
 
@@ -19713,13 +20368,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       if (preySp && preySp.load < predSp.load && predSp.compat.indexOf(pId) === -1) {
 
-                        if (preyIdx === -1 || Math.random() < 0.5) preyIdx = pi;
+                        if (preyIdx === -1 || random('event-10') < 0.5) preyIdx = pi;
 
                       }
 
                     });
 
-                    if (preyIdx !== -1 && Math.random() < 0.12) {
+                    if (preyIdx !== -1 && random('event-11') < 0.12) {
 
                       var preySp2 = species.find(function (s) { return s.id === _tankFish[preyIdx]; });
 
@@ -19780,7 +20435,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     if (avgH > 70) aggressionChance += 0.05;
 
-                    if (Math.random() < aggressionChance) {
+                    if (random('event-12') < aggressionChance) {
 
                       var attacker = sp1.load >= sp2.load ? sp1 : sp2;
 
@@ -19849,7 +20504,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 if (vitalityState.lowTicks === 6) {
                   newLog.push({ tick: newTick, msg: '\u26A0\uFE0F ' + vitalityName + ' has remained at critical vitality for 6 hours. Limiting factor: ' + vitalityState.limitingLabel + '.' });
                 }
-                if (!_quarantinedFish[vitalityFishId] && vitalityState.lowTicks >= 12 && Math.random() < 0.06) {
+                if (!_quarantinedFish[vitalityFishId] && vitalityState.lowTicks >= 12 && random('event-13') < 0.06) {
                   fishToRemove.push(vitalityIndex);
                   delete nextFishVitality[vitalityFishId];
                   newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + vitalityName + ' died after prolonged critical vitality. Primary limiting factor: ' + vitalityState.limitingLabel + '.' });
@@ -20012,7 +20667,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   if (newO2 < 3) abortChance += 0.04;
 
-                  if (abortChance > 0 && Math.random() < abortChance) {
+                  if (abortChance > 0 && random('event-14') < abortChance) {
 
                     // Gestation aborted
 
@@ -20083,7 +20738,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     for (var fi = 0; fi < fryCount; fi++) {
 
-                      if (Math.random() < survivalRate) survivingFry++;
+                      if (random('event-15') < survivalRate) survivingFry++;
 
                     }
 
@@ -20111,16 +20766,16 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       if (msgs && msgs.birth) newLog.push({ tick: newTick, msg: msgs.birth(sp.name, survivingFry) });
 
-                      awardStemXP('aquarium', 5, 'Successful breeding: ' + sp.name);
+                      if (settings.liveRewards) awardStemXP('aquarium', 5, 'Successful breeding: ' + sp.name);
                       if (!(aq.unlockedAchievements || {})['first_breed']) {
                         aq.unlockedAchievements = Object.assign({}, aq.unlockedAchievements || {});
-                        aq.unlockedAchievements['first_breed'] = { unlockedAt: Date.now() };
+                        aq.unlockedAchievements['first_breed'] = { unlockedAt: hourTimestamp };
                         var _ab = ACHIEVEMENTS.find(function (a) { return a.id === 'first_breed'; });
                         if (_ab) { aq.coins = (aq.coins || 0) + _ab.coins; aq.totalCoinsEarned = (aq.totalCoinsEarned || 0) + _ab.coins; }
                       }
                       if (aq.totalFryBorn >= 10 && !(aq.unlockedAchievements || {})['ten_breeds']) {
                         aq.unlockedAchievements = Object.assign({}, aq.unlockedAchievements || {});
-                        aq.unlockedAchievements['ten_breeds'] = { unlockedAt: Date.now() };
+                        aq.unlockedAchievements['ten_breeds'] = { unlockedAt: hourTimestamp };
                         var _at = ACHIEVEMENTS.find(function (a) { return a.id === 'ten_breeds'; });
                         if (_at) { aq.coins = (aq.coins || 0) + _at.coins; aq.totalCoinsEarned = (aq.totalCoinsEarned || 0) + _at.coins; }
                       }
@@ -20183,7 +20838,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // Condition 8: random chance
 
-                if (Math.random() > bData.breedChance) return;
+                if (random('event-16') > bData.breedChance) return;
 
 
 
@@ -20199,7 +20854,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var fryMax = bData.fryCount[1];
 
-                var plannedFry = fryMin + Math.floor(Math.random() * (fryMax - fryMin + 1));
+                var plannedFry = fryMin + Math.floor(random('event-17') * (fryMax - fryMin + 1));
 
                 _breedingState[sId] = { stage: 'gestating', startTick: newTick, fryCount: plannedFry };
 
@@ -20428,15 +21083,55 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               }
 
-              aq = Object.assign(aq, tickUpdate);
 
-              return Object.assign({}, prev, { _aquarium: aq });
-
-            });
-
+            return Object.assign(aq, tickUpdate);
           };
-
-
+          var simStep = function () {
+            setLabToolData(function (prev) {
+              var before = (prev && prev._aquarium) || {};
+              if (!before.waterChem || !before.selectedTank) return prev;
+              var next = Object.assign({}, before, advanceAquariumHour(before, { liveRewards: true }));
+              next.careEvidence = AquariumInquiryCore.record(before, next, 'One aquarium hour observed', 'hour');
+              return Object.assign({}, prev, { _aquarium: next });
+            });
+          };
+          var saveObservationBaseline = function () {
+            stopAquariumRuntime(false);
+            setLabToolData(function (prev) {
+              var aq = Object.assign({}, prev._aquarium, { simRunning: false });
+              aq.observationBaseline = { tank: aq.selectedTank, tick: aq.simTick || 0, chemistry: Object.assign({}, aq.waterChem), tankState: AquariumInquiryCore.cloneTank(aq), plantOptions: getPlantsForTank(aq.selectedTank).filter(function (plant) { return (aq.tankPlants || []).includes(plant.id); }).map(function (plant) { return { id: plant.id, name: plant.name, maxBiomass: plant.maxSize }; }) };
+              return Object.assign({}, prev, { _aquarium: aq });
+            });
+          };
+          var startInquiryExperiment = function () {
+            setLabToolData(function (prev) {
+              var aq = prev._aquarium || {}, baseline = aq.observationBaseline;
+              if (!baseline || baseline.tank !== aq.selectedTank) return prev;
+              var factor = aq.inquiryFactor || 'lightsOn';
+              var availableOptions = AquariumInquiryCore.factorOptions(baseline);
+              var option = availableOptions.find(function (item) { return item.id === factor; }) || availableOptions[0];
+              factor = option.id;
+              var defaultValue = option.defaultValue;
+              var experiment = AquariumInquiryCore.createExperiment(baseline, factor, aq.inquiryValue === undefined ? defaultValue : aq.inquiryValue, aq.inquiryPrediction);
+              return experiment ? Object.assign({}, prev, { _aquarium: Object.assign({}, aq, { inquiryExperiment: experiment }) }) : prev;
+            });
+          };
+          var advanceInquiryExperiment = function (hours) {
+            setLabToolData(function (prev) {
+              var aq = prev._aquarium || {};
+              if (!aq.inquiryExperiment || aq.inquiryExperiment.tank !== aq.selectedTank) return prev;
+              return Object.assign({}, prev, { _aquarium: Object.assign({}, aq, { inquiryExperiment: AquariumInquiryCore.advanceExperiment(aq.inquiryExperiment, hours, advanceAquariumHour) }) });
+            });
+          };
+          var resetInquiryExperiment = function () {
+            setLabToolData(function (prev) {
+              var aq = prev._aquarium || {}, exp = aq.inquiryExperiment;
+              if (!exp) return prev;
+              var replay = AquariumInquiryCore.createExperiment({ tankState: exp.baseline, plantOptions: exp.plantOptions }, exp.factor, exp.value, exp.prediction);
+              if (replay) replay.reflection = exp.reflection || '';
+              return Object.assign({}, prev, { _aquarium: Object.assign({}, aq, { inquiryExperiment: replay }) });
+            });
+          };
 
           // (Disease, hunger, aggression, algae all handled inside simStep above via functional update)
 
@@ -21527,7 +22222,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   : { label: 'CHECK WATER', color: '#92400e', bg: 'rgba(245,158,11,0.15)' }
                 : { label: 'READINGS IN RANGE', color: '#166534', bg: 'rgba(34,197,94,0.15)' };
               var careNextAction = priorityCare ? priorityCare.label + ': ' + priorityCare.action
-                : !tankFish.length ? 'Add your first organism below. Compare its habitat needs and the bioload preview.'
+                : !tankFish.length ? 'Open Decide to add your first organism. Compare its habitat needs and the bioload preview.'
                 : 'Save a baseline, change one thing, and observe one hour. Compare the readings before making another change.';
               var observationBaseline = d.observationBaseline && d.observationBaseline.tank === selectedTank ? d.observationBaseline : null;
               var fishAlive = (tankFish || []).length;
@@ -22112,7 +22807,108 @@ var d = (labToolData && labToolData._aquarium) || {};
                 setTimeout(function () { URL.revokeObjectURL(evidenceUrl); }, 0);
                 if (addToast) addToast('Aquarium evidence exported as ' + safeFormat.toUpperCase() + '.', 'success');
               }
+
+              var workspacePanel = ['observe','decide','investigate'].includes(d.aquariumWorkspacePanel) ? d.aquariumWorkspacePanel : 'observe';
+              function renderWorkspaceNavigation() {
+                return React.createElement('div', { className: 'aquarium-workflow' },
+                  React.createElement('style', null, '.aquarium-workflow{color:#183e48}.aquarium-workflow-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.aquarium-workflow-nav button{min-height:60px;text-align:left;border:1px solid #aac6ca;border-radius:12px;background:#fff;padding:11px;color:#284f59;font:inherit}.aquarium-workflow-nav button[aria-pressed=true]{background:#144e59;color:#fff;border-color:#144e59}.aquarium-workflow-nav strong{display:block;font-size:14px}.aquarium-workflow-nav span{display:block;font-size:11px;margin-top:4px}.aquarium-workflow button:focus-visible,.aquarium-inquiry button:focus-visible,.aquarium-inquiry input:focus-visible,.aquarium-inquiry select:focus-visible,.aquarium-inquiry textarea:focus-visible{outline:3px solid #b87312;outline-offset:3px}.aquarium-inquiry{min-width:0;border:1px solid #a9c8c8;border-radius:16px;background:#f5faf8;padding:18px;color:#214c52;font-size:13px;line-height:1.55}.aquarium-inquiry h3{font-size:20px;font-weight:800;margin:0 0 6px}.aquarium-inquiry h4{font-size:14px;font-weight:800;margin:0 0 6px}.aquarium-inquiry p{margin:6px 0 12px}.aquarium-inquiry-controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.aquarium-inquiry button{min-height:44px;border-radius:9px;border:1px solid #56817d;background:#fff;padding:9px 13px;font:inherit;font-weight:750;color:#214e52}.aquarium-inquiry button.primary{background:#155963;color:#fff}.aquarium-inquiry button:disabled{opacity:.5;cursor:not-allowed}.aquarium-inquiry label{display:block;font-weight:750;margin:10px 0 5px}.aquarium-inquiry input,.aquarium-inquiry select,.aquarium-inquiry textarea{display:block;width:100%;min-height:44px;border:1px solid #91b3b1;border-radius:9px;padding:9px;background:#fff;color:#214c52;font:inherit;box-sizing:border-box}.aquarium-inquiry-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.aquarium-inquiry-tank{min-width:0;border:1px solid #b9d2d0;border-top:4px solid #246375;border-radius:12px;background:#fff;padding:13px}.aquarium-inquiry-tank.changed{border-top-color:#946123}.aquarium-inquiry-tank p{font-size:12px;margin:4px 0}.aquarium-inquiry-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.aquarium-inquiry-reading{padding:10px;border-radius:9px;background:#e8f3ef}.aquarium-inquiry-reading strong{display:block;font-size:13px}.aquarium-inquiry-reading span{display:block;font-size:12px}.aquarium-inquiry small{font-size:11px}.aquarium-inquiry .inquiry-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#477671}.aquarium-inquiry-chart{display:block;width:100%;height:auto;max-height:180px;background:#fff;border:1px solid #ccded9;border-radius:9px}.aquarium-inquiry details{margin-top:12px}.aquarium-inquiry summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:750}.aquarium-workflow-panel[hidden]{display:none!important}@media(max-width:480px){.aquarium-inquiry{padding:13px}.aquarium-inquiry-pair{grid-template-columns:1fr}.aquarium-workflow-nav span{display:none}.aquarium-workflow-nav button{min-height:48px;padding:8px}.aquarium-workflow-nav strong{font-size:12px}}'),
+                  React.createElement('nav', { className: 'aquarium-workflow-nav', 'aria-label': 'Aquarium workspace' },
+                    [['observe','Observe','Read the tank'],['decide','Decide','Care and customize'],['investigate','Investigate','Predict and compare']].map(function (item) {
+                      return React.createElement('button', { key: item[0], type: 'button', 'aria-pressed': workspacePanel === item[0], 'aria-controls': 'aquarium-panel-' + item[0], onClick: function () { upd('aquariumWorkspacePanel', item[0]); } }, React.createElement('strong', null, item[1]), React.createElement('span', null, item[2]));
+                    })
+                  ),
+                  React.createElement('p', { className: 'mt-2 text-xs leading-relaxed', role: 'status' }, careNextAction)
+                );
+              }
+              function renderCareEvidence() {
+                var entries = (Array.isArray(d.careEvidence) ? d.careEvidence : []).filter(function (entry) { return entry && Array.isArray(entry.changes); }), entry = entries[entries.length - 1];
+                if (!entry) return React.createElement('section', { className: 'aquarium-inquiry', 'aria-label': 'Action and observation evidence' }, React.createElement('h4', null, 'Make one decision. Look for a change.'), React.createElement('p', null, 'Choose care in Decide, then observe one hour. Measured changes will appear here, with the hour they came from.'));
+                var changed = entry.changes.filter(function (m) { return Math.abs(m.delta) >= .0005; });
+                var x = entry.exchange;
+                return React.createElement('section', { className: 'aquarium-inquiry', 'aria-label': 'Action and observation evidence' },
+                  React.createElement('div', { className: 'inquiry-tag' }, entry.kind === 'hour' ? 'Observed hour ' + entry.fromTick + ' → ' + entry.tick : 'Immediate result · hour ' + entry.tick),
+                  React.createElement('h4', null, entry.label),
+                  React.createElement('div', { className: 'aquarium-inquiry-readings', role: 'status', 'aria-live': 'polite' }, changed.map(function (m) {
+                    return React.createElement('div', { key: m.key, className: 'aquarium-inquiry-reading' }, React.createElement('strong', null, m.label + ' ' + (m.delta > 0 ? '+' : '') + m.delta.toFixed(3) + ' ' + m.unit), React.createElement('span', null, m.before.toFixed(3) + ' → ' + m.after.toFixed(3)));
+                  })),
+                  !changed.length && React.createElement('p', null, entry.kind === 'hour' ? 'No water reading changed by 0.001 or more this hour.' : 'No immediate water-reading change of 0.001 or more. Observe one hour to measure the response.'),
+                  entry.hungerDrop > 0 && React.createElement('p', null, 'Recorded hunger reduction: ' + entry.hungerDrop.toFixed(0) + ' points across the fed residents.'),
+                  Math.abs(entry.algaeDelta) >= .1 && React.createElement('p', null, 'Algae cover: ' + (entry.algaeDelta > 0 ? '+' : '') + entry.algaeDelta.toFixed(1) + ' percentage points.'),
+                  x && React.createElement('details', null, React.createElement('summary', null, 'Why did the readings change?'),
+                    React.createElement('p', null, 'Recorded ' + x.phase + ' contributions during this hour: residents used ' + Number((x.fish || {}).oxygenConsumed || 0).toFixed(3) + ' mg/L oxygen; plants produced ' + Number((x.plants || {}).oxygenProduced || 0).toFixed(3) + ' mg/L and used ' + Number((x.plants || {}).nightOxygenConsumed || 0).toFixed(3) + ' mg/L at night; aeration added ' + Number((x.equipment || {}).oxygenAdded || 0).toFixed(3) + ' mg/L.'),
+                    React.createElement('p', null, 'These are recorded contributions, not the whole oxygen budget. Surface exchange, bacteria and other processes also affect the net reading. A single hour is evidence of what happened in this model, not proof of one cause.')),
+                  entries.length > 1 && React.createElement('details', null, React.createElement('summary', null, 'Recent decisions and observations (' + entries.length + ')'),
+                    entries.slice(0,-1).reverse().map(function (old, index) { return React.createElement('p', { key: index }, 'Hour ' + old.tick + ' · ' + old.label + ' · ' + (old.changes.filter(function(m) { return Math.abs(m.delta) >= .0005; }).map(function(m) { return m.label + ' ' + (m.delta > 0 ? '+' : '') + m.delta.toFixed(3) + ' ' + m.unit; }).join('; ') || 'No immediate water change recorded.')); }))
+                );
+              }
+              function downloadTrialEvidence(format) {
+                var exp = d.inquiryExperiment;
+                if (!exp || exp.tank !== selectedTank) return;
+                var file = AquariumInquiryCore.exportTrial(exp, format);
+                if (!file) return;
+                var url = URL.createObjectURL(new Blob([file.body], { type: file.mime }));
+                var link = document.createElement('a'); link.href = url;
+                link.download = 'aquarium-trial-' + exp.tank + '-hour-' + exp.elapsed + '.' + file.extension;
+                document.body.appendChild(link); link.click(); link.remove();
+                setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+                if (typeof announceToSR === 'function') announceToSR('Trial evidence downloaded as ' + file.extension.toUpperCase() + '.');
+              }
+              function renderInquiryWorkbench() {
+                var baseline = observationBaseline, saved = baseline && baseline.tankState;
+                var exp = d.inquiryExperiment && d.inquiryExperiment.tank === selectedTank ? d.inquiryExperiment : null;
+                var options = AquariumInquiryCore.factorOptions(baseline);
+                var option = options.find(function (item) { return item.id === (d.inquiryFactor || 'lightsOn'); }) || options[0];
+                var factor = option.id, baseValue = option.base;
+                var value = d.inquiryValue === undefined ? option.defaultValue : d.inquiryValue;
+                var valid = saved && AquariumInquiryCore.validateFactor(baseline, factor, value) && String(d.inquiryPrediction || '').trim().length > 0;
+                var changedLabel = exp ? (exp.changedSetting || (exp.factor === 'lightsOn' ? 'Biological lights ' + (exp.value ? 'on' : 'off') : 'Air pump level ' + exp.value)) : '';
+                var chartMetric = AquariumInquiryCore.metrics.find(function (m) { return m[0] === d.inquiryChartMetric; }) || AquariumInquiryCore.metrics[0];
+                return React.createElement('section', { className: 'aquarium-inquiry', id: 'aquarium-paired-experiment', 'aria-labelledby': 'aquarium-paired-title' },
+                  React.createElement('div', { className: 'inquiry-tag' }, 'A fair test · two saved tank copies'),
+                  React.createElement('h3', { id: 'aquarium-paired-title' }, 'What changes when you change one thing?'),
+                  React.createElement('p', null, 'A keeps the saved setup. B changes one setting. Both use the aquarium simulation, advance together, and start with identical water, residents, plants, equipment condition and tank size. Trials leave your live tank and rewards unchanged.'),
+                  !saved && React.createElement('p', { role: 'status' }, baseline ? 'This older baseline contains readings only. Save a new baseline to create two complete tank copies.' : 'Save a baseline above to capture your complete starting tank.'),
+                  saved && !exp && React.createElement('div', null,
+                    React.createElement('p', null, 'Starting at saved hour ' + baseline.tick + '. A keeps ' + AquariumInquiryCore.formatFactor(option, baseValue) + '.'),
+                    React.createElement('label', { htmlFor: 'aquarium-trial-factor' }, 'One setting to change in B'),
+                    React.createElement('select', { id: 'aquarium-trial-factor', value: factor, onChange: function (event) { updMulti({ inquiryFactor: event.target.value, inquiryValue: undefined }); } }, options.map(function (item) { return React.createElement('option', { key: item.id, value: item.id }, item.label); })),
+                    React.createElement('label', { htmlFor: 'aquarium-trial-value' }, 'Tank B setting'),
+                    option.kind === 'plant' ? React.createElement('input', { id: 'aquarium-trial-value', type: 'number', min: 0, max: option.max, step: .01, value: value, 'aria-invalid': !AquariumInquiryCore.validateFactor(baseline, factor, value), 'aria-describedby': 'aquarium-trial-factor-hint', onChange: function (event) { upd('inquiryValue', event.target.value); } }) : React.createElement('select', { id: 'aquarium-trial-value', 'aria-describedby': 'aquarium-trial-factor-hint', value: String(value), onChange: function (event) { upd('inquiryValue', event.target.value); } }, (factor === 'lightsOn' ? [['true','Lights on'],['false','Lights off']] : [[0,'Level 0'],[1,'Level 1'],[2,'Level 2'],[3,'Level 3']]).map(function (option) { return React.createElement('option', { key: option[0], value: String(option[0]) }, option[1]); })),
+                    React.createElement('p', { id: 'aquarium-trial-factor-hint' }, option.hint),
+                    React.createElement('label', { htmlFor: 'aquarium-trial-prediction' }, 'Predict a reading and explain why'),
+                    React.createElement('textarea', { id: 'aquarium-trial-prediction', value: d.inquiryPrediction || '', maxLength: 1000, rows: 2, placeholder: 'I predict oxygen in B will… because…', onChange: function (event) { upd('inquiryPrediction', event.target.value); } }),
+                    React.createElement('div', { className: 'aquarium-inquiry-controls' }, React.createElement('button', { type: 'button', className: 'primary', disabled: !valid, onClick: startInquiryExperiment }, 'Create paired trial')),
+                    !valid && React.createElement('p', null, 'Choose a setting different from A and write a prediction to begin.')),
+                  exp && React.createElement('div', null,
+                    React.createElement('p', { role: 'status', 'aria-live': 'polite' }, 'Both tanks: ' + exp.elapsed + ' of 24 trial hours observed. Starting aquarium hour ' + (exp.baseline.simTick || 0) + '.'),
+                    React.createElement('p', null, 'Your prediction: ' + exp.prediction),
+                    React.createElement('div', { className: 'aquarium-inquiry-pair' }, ['a','b'].map(function (side) { var state = exp[side]; return React.createElement('article', { key: side, className: 'aquarium-inquiry-tank' + (side === 'b' ? ' changed' : '') }, React.createElement('h4', null, side === 'a' ? 'A · Original setup' : 'B · Changed setup'), React.createElement('p', null, side === 'a' ? (exp.baselineSetting || 'Saved settings retained') : changedLabel), React.createElement('p', null, (state.tankFish || []).length + ' residents · ' + (state.tankPlants || []).length + ' plant groups · model hour ' + state.simTick), React.createElement('p', null, 'Oxygen: ' + state.waterChem.dissolvedO2.toFixed(3) + ' mg/L')); })),
+                    React.createElement('div', { className: 'aquarium-inquiry-controls' },
+                      React.createElement('button', { type: 'button', className: 'primary', disabled: exp.elapsed >= 24, onClick: function () { advanceInquiryExperiment(1); } }, 'Observe both +1 h'),
+                      React.createElement('button', { type: 'button', disabled: exp.elapsed >= 24, onClick: function () { advanceInquiryExperiment(6); } }, 'Observe both +6 h'),
+                      React.createElement('button', { type: 'button', onClick: resetInquiryExperiment }, 'Replay from start'),
+                      React.createElement('button', { type: 'button', onClick: function () { upd('inquiryExperiment', null); } }, 'Set up another trial')),
+                    React.createElement('p', null, 'Settings are locked for this trial. Replay uses the same baseline and repeatable random events. Different biological outcomes can still lead to different later events.'),
+                    React.createElement('label', { htmlFor: 'aquarium-trial-metric' }, 'Reading to graph'),
+                    React.createElement('select', { id: 'aquarium-trial-metric', value: chartMetric[0], onChange: function (event) { upd('inquiryChartMetric', event.target.value); } }, AquariumInquiryCore.metrics.map(function (m) { return React.createElement('option', { key: m[0], value: m[0] }, m[1] + (m[2] ? ' (' + m[2] + ')' : '')); })),
+                    (function () { var points = exp.series, values = points.flatMap(function (point) { return [point.a[chartMetric[0]], point.b[chartMetric[0]]]; }); var low = Math.min.apply(Math, values) - .1, high = Math.max.apply(Math, values) + .1; var line = function (side) { return points.map(function (point) { return (36 + point.hour / Math.max(1,exp.elapsed) * 300).toFixed(2) + ',' + (125 - (point[side][chartMetric[0]]-low) / (high-low) * 100).toFixed(2); }).join(' '); }; return React.createElement('figure', null, React.createElement('svg', { className: 'aquarium-inquiry-chart', viewBox: '0 0 360 155', role: 'img', 'aria-label': chartMetric[1] + ' over ' + exp.elapsed + ' trial hours. A ' + exp.a.waterChem[chartMetric[0]].toFixed(3) + ', B ' + exp.b.waterChem[chartMetric[0]].toFixed(3) + ' ' + chartMetric[2] + '. Exact readings follow.' }, React.createElement('text', { x: 6, y: 18, fontSize: 10, fill: '#214c52' }, high.toFixed(2)), React.createElement('text', { x: 6, y: 127, fontSize: 10, fill: '#214c52' }, low.toFixed(2)), React.createElement('polyline', { points: line('a'), fill: 'none', stroke: '#246375', strokeWidth: 3 }), React.createElement('polyline', { points: line('b'), fill: 'none', stroke: '#946123', strokeWidth: 3, strokeDasharray: '6 4' }), React.createElement('text', { x: 36, y: 145, fontSize: 10, fill: '#214c52' }, '0 h'), React.createElement('text', { x: 300, y: 145, fontSize: 10, fill: '#214c52' }, exp.elapsed + ' h')), React.createElement('figcaption', null, chartMetric[1] + ' (' + (chartMetric[2] || 'unitless') + ') · A solid teal · B dashed brown. The vertical scale fits this trial.')); })(),
+                    React.createElement('div', { className: 'aquarium-inquiry-readings', 'aria-label': 'Paired tank readings' }, AquariumInquiryCore.metrics.map(function (m) { var a = exp.a.waterChem[m[0]], b = exp.b.waterChem[m[0]], initial = exp.baseline.waterChem[m[0]]; if (!Number.isFinite(a) || !Number.isFinite(b)) return null; return React.createElement('div', { key: m[0], className: 'aquarium-inquiry-reading' }, React.createElement('strong', null, m[1] + ' ' + m[2]), React.createElement('span', null, 'Start: ' + Number(initial).toFixed(3)), React.createElement('span', null, 'A: ' + a.toFixed(3) + ' · B: ' + b.toFixed(3)), React.createElement('span', null, 'B − A: ' + (b-a > 0 ? '+' : '') + (b-a).toFixed(3))); })),
+                    React.createElement('label', { htmlFor: 'aquarium-trial-reflection' }, 'Explain the evidence'),
+                    React.createElement('textarea', { id: 'aquarium-trial-reflection', rows: 3, maxLength: 2000, value: exp.reflection || '', placeholder: 'After … hours, A measured … and B measured … . This supports/changes my prediction because … . One limitation is … .', onChange: function (event) { var reflection = event.target.value; setLabToolData(function (prev) { var aq = prev._aquarium; return Object.assign({}, prev, { _aquarium: Object.assign({}, aq, { inquiryExperiment: Object.assign({}, aq.inquiryExperiment, { reflection: reflection }) }) }); }); } }),
+                    React.createElement('details', null, React.createElement('summary', null, 'Review and share your evidence'),
+                      React.createElement('p', null, 'Check your explanation: compare A and B at the same hour with values and units; connect the result to a model process; revisit your prediction and name a limitation.'),
+                      React.createElement('div', { className: 'aquarium-inquiry-controls' },
+                        React.createElement('button', { type: 'button', onClick: function () { downloadTrialEvidence('report'); } }, 'Download evidence report'),
+                        React.createElement('button', { type: 'button', onClick: function () { downloadTrialEvidence('csv'); } }, 'Export readings CSV'),
+                        React.createElement('button', { type: 'button', onClick: function () { downloadTrialEvidence('json'); } }, 'Export trial JSON')),
+                      React.createElement('p', null, 'The report includes your prediction, final comparisons and explanation. CSV includes every recorded hour with units. JSON also includes the complete saved setup and both trial states.')),
+                    React.createElement('small', null, 'Prediction, reflection and trial readings are saved with this aquarium. This is a simplified model experiment; its result does not establish a universal species care rule.'))
+                );
+              }
               function focusAquariumWorkspaceSection(sectionId) {
+                var panel = ['aquarium-care-actions','aquarium-stock-selection','aquarium-life-support','aquarium-habitat-studio','aquarium-selected-plant-profile'].includes(sectionId) ? 'decide' : sectionId === 'aquarium-systems-investigation' ? 'investigate' : 'observe';
+                upd('aquariumWorkspacePanel', panel);
+                requestAnimationFrame(function () {
                 var section = document.getElementById(sectionId);
                 if (!section) return;
                 var ancestor = section.parentElement;
@@ -22121,6 +22917,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 var focusTarget = section.tagName === 'DETAILS' ? section.querySelector('summary') : section;
                 if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus({ preventScroll: true });
                 section.scrollIntoView({ block: 'start' });
+                });
               }
               var tutorialActionTarget = {
                 habitat: { id: 'aquarium-tank-clock', label: 'Review your habitat' },
@@ -22168,8 +22965,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     React.createElement("button", { type: "button", onClick: function () { focusAquariumWorkspaceSection('aquarium-systems-investigation'); }, className: "min-h-[44px] rounded-lg border border-cyan-300 bg-white px-3 py-2 text-xs font-bold text-cyan-900" }, "Systems investigation")
                   )
                 ),
-
-                React.createElement("div", { id: "aquarium-tank-clock", tabIndex: -1, className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-3 border border-cyan-200/50" },
+React.createElement("div", { id: "aquarium-tank-clock", tabIndex: -1, className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-3 border border-cyan-200/50" },
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
@@ -22265,8 +23061,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   )
 
                 ),
-
-                React.createElement("div", {
+React.createElement("div", {
                   role: "status",
                   className: "rounded-xl px-3 py-2 border flex items-center gap-3 flex-wrap",
                   style: { background: 'linear-gradient(135deg,' + waterStatus.bg + ' 0%,rgba(255,255,255,0.85) 100%)', borderColor: waterStatus.color + '66', borderLeft: '4px solid ' + waterStatus.color }
@@ -22277,8 +23072,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   React.createElement("div", { className: "text-[0.6875rem] text-slate-700" }, React.createElement("strong", null, '📊 Bioload ' + loadPct + '%')),
                   React.createElement("div", { className: "w-full text-xs text-slate-700" }, careGuidance.length ? careGuidance.map(function (item) { return item.label; }).join(", ") + " need attention." : "One reading is a snapshot; observe a trend to establish stability.")
                 ),
-
-                React.createElement(AquariumLiveDisplay, {
+React.createElement(AquariumLiveDisplay, {
                   React: React, id: 'aquarium-live-tank', instanceKey: 'live-' + selectedTank, name: tank.name,
                   mode: aquariumViewMode, paused: aquariumVisualPaused, sceneOptions: aquariumSceneOptions,
                   lightLabel: aquariumSceneOptions.model.daylight ? 'Model: daylight' : aquariumSceneOptions.model.lightPhase === 'fault' ? 'Model: light unavailable' : aquariumSceneOptions.model.lightPhase === 'off' ? 'Model: lights off' : 'Model: dark period',
@@ -22761,191 +23555,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                   )
 
                 )),
-
-                React.createElement("section", { id: "aquarium-care-actions", tabIndex: -1, className: "space-y-2 rounded-xl border border-slate-200 bg-white p-3", "aria-labelledby": "aquarium-care-actions-title" }, React.createElement("h4", { id: "aquarium-care-actions-title", className: "text-sm font-black text-slate-900" }, "Care actions"),
-                  waterChem && React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/70 px-3 py-2" },
-                    React.createElement("label", { htmlFor: "aquarium-water-change-percent", className: "text-[0.6875rem] font-bold text-blue-800" }, "Water change:"),
-                    React.createElement("select", { id: "aquarium-water-change-percent", value: waterChangePercent, onChange: function(event) { upd('waterChangePercent', Number(event.target.value)); }, className: "rounded-lg border border-blue-500 bg-white px-2 py-1 text-[0.6875rem] font-bold text-blue-900", 'aria-label': __alloT('stem.aquarium.a11y_water_change_percentage', 'Water change percentage') },
-                      [10, 25, 50].map(function(percentOption) {
-                        return React.createElement("option", { key: percentOption, value: percentOption }, percentOption + "%");
-                      })
-                    ),
-                    React.createElement("span", { className: "text-[0.625rem] text-blue-900", 'aria-live': "polite" }, "Preview - NH3 " + (waterChem.ammonia * (1 - waterChangePercent / 100)).toFixed(2) + ", NO2 " + (waterChem.nitrite * (1 - waterChangePercent / 100)).toFixed(2) + ", NO3 " + (waterChem.nitrate * (1 - waterChangePercent / 100)).toFixed(1) + " ppm")
-                  ),
-                  React.createElement("div", { className: "flex flex-wrap gap-2" },
-
-                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.toggle_aquarium_simulation', "Toggle aquarium simulation"),
-
-                      onClick: function () {
-
-                        if (simRunning) {
-                          upd('simRunning', false);
-                          stopAquariumRuntime(false);
-                        } else {
-                          var speed = simSpeed || 1;
-                          updMulti({ simRunning: true, simSpeed: speed });
-                          startAquaAmbient();
-                          startAquaSimInterval(speed);
-                        }
-
-                      },
-                      className: "flex-1 py-2.5 font-bold rounded-xl text-sm transition-all shadow-md " + (simRunning ? "bg-red-700 text-white hover:bg-red-600 shadow-red-500/25" : "bg-gradient-to-r from-cyan-700 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-600 shadow-cyan-500/25")
-
-                    }, simRunning ? "\u23F8 Pause" : "\u25B6 Run Simulation"),
-
-                    React.createElement("button", { "aria-label": "Perform " + waterChangePercent + " percent water change",
-
-                      onClick: function() { doWaterChange(waterChangePercent); },
-
-                      className: "px-3 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-xl text-xs hover:from-blue-100 hover:to-blue-200 transition-all border border-blue-600"
-
-                    }, __alloT('stem.aquarium.water_2', "\uD83D\uDCA7 Water")),
-
-                    React.createElement("button", {
-                      type: "button",
-                      'aria-label': soundEnabled ? "Mute aquarium sounds" : "Enable aquarium sounds",
-                      'aria-pressed': soundEnabled,
-                      onClick: function () {
-                        if (soundEnabled) stopAquaAmbient(true);
-                        upd('soundEnabled', !soundEnabled);
-                      },
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (soundEnabled ? "bg-cyan-50 text-cyan-800 border-cyan-600" : "bg-slate-100 text-slate-700 border-slate-500")
-                    }, soundEnabled ? "\uD83D\uDD0A Sound" : "\uD83D\uDD07 Muted"),
-
-                    React.createElement("label", { className: "flex items-center gap-1 rounded-xl border border-cyan-300 bg-cyan-50 px-2 py-1 text-[0.625rem] font-bold text-cyan-900", title: "Aquarium sound volume" },
-                      React.createElement("span", { 'aria-hidden': "true" }, soundVolume + "%"),
-                      React.createElement("input", { type: "range", min: 0, max: 100, step: 5, value: soundVolume, onChange: function (event) { upd('soundVolume', Number(event.target.value)); }, 'aria-label': __alloT('stem.aquarium.a11y_aquarium_sound_volume', 'Aquarium sound volume'), className: "w-16 accent-cyan-600" })
-                    ),
-
-                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.flake', "Flake"),
-
-                      onClick: feedFish,
-                      disabled: tankFish.length === 0,
-
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-800 hover:from-amber-100 hover:to-amber-200 border-amber-600")
-
-                    }, __alloT('stem.aquarium.flake_2', "\uD83C\uDF7D\uFE0F Flake")),
-
-                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.live', "Live"),
-
-                      onClick: feedLive,
-
-                      disabled: tankFish.length === 0,
-
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-800 hover:from-red-100 hover:to-red-200 border-red-600")
-
-                    }, __alloT('stem.aquarium.live_2', "\uD83E\uDD90 Live"))
-
-                  ),
-                  React.createElement("div", { className: "flex gap-2" },
-
-                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.toggle_lights', "Toggle Lights"),
-
-                      onClick: toggleLights,
-
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (lightsOn ? "bg-gradient-to-r from-yellow-50 to-amber-50 text-amber-700 hover:from-yellow-100 hover:to-amber-100 border-amber-600" : "bg-gradient-to-r from-indigo-100 to-slate-100 text-indigo-700 hover:from-indigo-200 hover:to-slate-200 border-indigo-600")
-
-                    }, lightsOn ? "\uD83D\uDCA1 Lights On" : "\uD83C\uDF19 Lights Off"),
-
-                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.medicate_fish', "Medicate Fish"),
-
-                      onClick: function () { medicateFish(); },
-
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-600 animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-400")
-
-                    }, "\uD83D\uDC8A Medicate" + (Object.keys(fishSickness).length > 0 ? " (" + Object.keys(fishSickness).length + ")" : "")),
-
-                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.clean_glass', "Clean Glass"),
-
-                      onClick: cleanGlass,
-
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (algaeLevel > 30 ? "bg-gradient-to-r from-lime-50 to-green-50 text-green-700 hover:from-lime-100 hover:to-green-100 border-green-600" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-400")
-
-                    }, "\uD83E\uDDF9 Clean" + (algaeLevel > 15 ? " (" + Math.round(algaeLevel) + "%)" : ""))
-
-                  ),
-                  feedingLog && React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-200/60 animate-in slide-in-from-top duration-300" },
-
-                    React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
-
-                      React.createElement("span", { className: "text-sm" }, "\uD83C\uDF7D\uFE0F"),
-
-                      React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.aquarium.feeding_report', "Feeding Report")),
-
-                      React.createElement("button", { type: "button", 'aria-label': __alloT('stem.aquarium.a11y_close_feeding_report', 'Close feeding report'), onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[0.6875rem] text-slate-600" }, "\u2715")
-
-                    ),
-
-                    React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center mb-2" },
-
-                      React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
-
-                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.fish_fed', "Fish Fed")),
-
-                        React.createElement("div", { className: "text-sm font-bold text-amber-700" }, feedingLog.fishCount)
-
-                      ),
-
-                      React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
-
-                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.hunger', "Hunger \u2193")),
-
-                        React.createElement("div", { className: "text-sm font-bold text-green-600" }, "-" + feedingLog.avgHungerDrop + " avg")
-
-                      ),
-
-                      React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
-
-                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.nh', "NH\u2083 \u2191")),
-
-                        React.createElement("div", { className: "text-sm font-bold text-red-600" }, "+" + feedingLog.ammoniaAdded.toFixed(2))
-
-                      )
-
-                    ),
-
-                    feedingLog.overfedCount > 0 && React.createElement("div", { className: "bg-red-50 rounded-lg p-1.5 text-[0.6875rem] text-red-700 font-bold mb-1" },
-
-                      "\u26A0\uFE0F " + feedingLog.overfedCount + " fish already full! Excess food = extra ammonia waste."
-
-                    ),
-
-                    React.createElement("p", { className: "text-[0.6875rem] text-amber-700 italic" }, "\uD83D\uDCA1 " + feedingLog.tip)
-
-                  )),
-
-                React.createElement("section", {
-                  className: "rounded-xl border border-cyan-300 bg-white p-3 space-y-2",
-                  'aria-labelledby': "aquarium-care-decision",
-                  'data-aquarium-observation-loop': "true"
-                },
-                  React.createElement("h4", { id: "aquarium-care-decision", className: "text-sm font-black text-slate-900" }, __alloT('stem.aquarium.next_care_decision', 'Your next care decision')),
-                  React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, careNextAction),
-                  React.createElement("p", { className: "text-xs leading-relaxed text-slate-600" }, "Predict a change. Save the starting readings. Change one thing, observe +1 h, then compare the chemistry cards below."),
-                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
-                    React.createElement("button", {
-                      type: "button",
-                      onClick: function () {
-                        stopAquariumRuntime(false);
-                        updMulti({ simRunning: false, observationBaseline: { tank: selectedTank, tick: simTick, chemistry: Object.assign({}, waterChem) } });
-                        if (typeof announceToSR === 'function') announceToSR('Baseline readings saved. Change one thing, then observe one hour.');
-                      },
-                      className: "min-h-[44px] rounded-lg border border-cyan-700 bg-cyan-50 px-3 py-2 text-xs font-bold text-cyan-900"
-                    }, observationBaseline ? "Replace baseline" : "Save baseline"),
-                    React.createElement("span", { className: "text-xs text-slate-600" }, observationBaseline ? "Baseline: hour " + observationBaseline.tick + " / " + Math.max(0, simTick - observationBaseline.tick) + " hours since." : "Your baseline stays fixed while you observe."),
-                    React.createElement("button", {
-                      type: "button",
-                      onClick: function () {
-                        updMulti({ tutorialDismissed: false, tutorialPanelOpen: true, tutorialNotebookOpen: true });
-                        setTimeout(function () { var predictionInput = document.getElementById('aquarium-note-prediction'); if (predictionInput) predictionInput.focus(); }, 0);
-                      },
-                      className: "min-h-[44px] rounded-lg px-3 py-2 text-xs font-bold text-indigo-800 underline"
-                    }, "Open lesson notebook")
-                  ),
-                  React.createElement("p", { className: "text-xs text-slate-600" }, "Model note: bacteria start pre-seeded. Time is compressed and thresholds describe the chosen habitat; real species have different needs.")
-                ),
-
-                waterChem && React.createElement("div", { id: "aquarium-water-evidence", tabIndex: -1, className: "bg-gradient-to-br from-cyan-50 via-sky-50 to-blue-50 rounded-2xl p-4 border border-cyan-200/60 shadow-sm" },
+renderWorkspaceNavigation(),
+renderCareEvidence(),
+React.createElement('section', { id: 'aquarium-panel-observe', className: 'aquarium-workflow-panel space-y-3', hidden: workspacePanel !== 'observe', 'aria-label': 'observe workspace' }, waterChem && React.createElement("div", { id: "aquarium-water-evidence", tabIndex: -1, className: "bg-gradient-to-br from-cyan-50 via-sky-50 to-blue-50 rounded-2xl p-4 border border-cyan-200/60 shadow-sm" },
 
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
@@ -23141,8 +23753,234 @@ var d = (labToolData && labToolData._aquarium) || {};
                   )
 
                 ),
+(function() {
+                  var bioStatus = loadPct > 80 ? 'Critical' : loadPct > 60 ? 'Caution' : 'Safe';
+                  return React.createElement("div", {
+                    className: "bg-white rounded-xl p-3 border border-slate-400",
+                    role: "group",
+                    "aria-label": "Bioload " + bioStatus + " \u2014 " + currentLoad + " of " + maxLoad + " (" + loadPct + " percent)"
+                  },
 
-                React.createElement("div", { id: "aquarium-stock-selection", tabIndex: -1, className: "bg-white rounded-xl p-3 border border-slate-400" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-1" },
+
+                      React.createElement("span", { className: "text-xs font-bold text-slate-600" }, React.createElement("span", { "aria-hidden": "true" }, "\uD83D\uDC1F "), __alloT('stem.aquarium.bioload', "Bioload")),
+
+                      React.createElement("span", { className: "text-xs font-mono " + (loadPct > 80 ? 'text-red-600' : loadPct > 60 ? 'text-amber-600' : 'text-green-600') }, bioStatus + " \u2014 " + currentLoad + " / " + maxLoad + " (" + loadPct + "%)")
+
+                    ),
+
+                    React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden", "aria-hidden": "true" },
+
+                      React.createElement("div", { style: { width: Math.min(100, loadPct) + '%', transition: 'width 0.3s' }, className: "h-full rounded-full " + (loadPct > 80 ? 'bg-red-500' : loadPct > 60 ? 'bg-amber-400' : 'bg-green-500') })
+
+                    )
+
+                  );
+                })(),
+(() => {
+
+                  var health = getTankHealth();
+
+                  var scoreColor = health.score >= 80 ? 'text-green-600' : health.score >= 50 ? 'text-amber-600' : 'text-red-600';
+
+                  var scoreBg = health.score >= 80 ? 'from-green-50 to-emerald-50 border-green-200/60' : health.score >= 50 ? 'from-amber-50 to-orange-50 border-amber-200/60' : 'from-red-50 to-rose-50 border-red-200/60';
+
+                  var barColor = health.score >= 80 ? 'bg-green-500' : health.score >= 50 ? 'bg-amber-500' : 'bg-red-500';
+
+                  return React.createElement("div", { className: "bg-gradient-to-r " + scoreBg + " rounded-xl p-3 border shadow-sm" },
+
+                    React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+
+                      React.createElement("span", { className: "text-sm" }, health.score >= 80 ? '\uD83C\uDF1F' : health.score >= 50 ? '\u26A0\uFE0F' : '\uD83D\uDEA8'),
+
+                      React.createElement("span", { className: "text-xs font-bold " + scoreColor }, __alloT('stem.aquarium.tank_health', "Tank Health")),
+
+                      React.createElement("span", { className: "text-lg font-bold ml-auto " + scoreColor }, health.score + "/100")
+
+                    ),
+
+                    React.createElement("div", { className: "h-2.5 bg-white/50 rounded-full overflow-hidden mb-2" },
+
+                      React.createElement("div", { style: { width: health.score + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + barColor })
+
+                    ),
+
+                    React.createElement("div", { className: "space-y-1" },
+
+                      health.tips.map(function (tip, i) {
+
+                        return React.createElement("p", { key: i, className: "text-[0.6875rem] " + tip.color + " font-bold leading-relaxed" }, tip.icon + " " + tip.text);
+
+                      })
+
+                    )
+
+                  );
+
+                })(),
+eventLog.length > 0 && React.createElement("div", { role: "log", 'aria-live': "polite", 'aria-relevant': "additions text", 'aria-label': __alloT('stem.aquarium.a11y_aquarium_event_log', 'Aquarium event log'), className: "bg-slate-50 rounded-xl p-2 border border-slate-400 max-h-32 overflow-y-auto" },
+
+                  React.createElement("h4", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
+
+                  eventLog.slice().reverse().slice(0, 10).map(function (evt, i) {
+
+                    return React.createElement("p", { key: i, className: "text-[0.6875rem] text-slate-600" }, "[T" + evt.tick + "] " + evt.msg);
+
+                  })
+
+                )),
+React.createElement('section', { id: 'aquarium-panel-decide', className: 'aquarium-workflow-panel space-y-3', hidden: workspacePanel !== 'decide', 'aria-label': 'decide workspace' }, React.createElement("section", { id: "aquarium-care-actions", tabIndex: -1, className: "space-y-2 rounded-xl border border-slate-200 bg-white p-3", "aria-labelledby": "aquarium-care-actions-title" }, React.createElement("h4", { id: "aquarium-care-actions-title", className: "text-sm font-black text-slate-900" }, "Care actions"),
+                  waterChem && React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/70 px-3 py-2" },
+                    React.createElement("label", { htmlFor: "aquarium-water-change-percent", className: "text-[0.6875rem] font-bold text-blue-800" }, "Water change:"),
+                    React.createElement("select", { id: "aquarium-water-change-percent", value: waterChangePercent, onChange: function(event) { upd('waterChangePercent', Number(event.target.value)); }, className: "rounded-lg border border-blue-500 bg-white px-2 py-1 text-[0.6875rem] font-bold text-blue-900", 'aria-label': __alloT('stem.aquarium.a11y_water_change_percentage', 'Water change percentage') },
+                      [10, 25, 50].map(function(percentOption) {
+                        return React.createElement("option", { key: percentOption, value: percentOption }, percentOption + "%");
+                      })
+                    ),
+                    React.createElement("span", { className: "text-[0.625rem] text-blue-900", 'aria-live': "polite" }, "Preview - NH3 " + (waterChem.ammonia * (1 - waterChangePercent / 100)).toFixed(2) + ", NO2 " + (waterChem.nitrite * (1 - waterChangePercent / 100)).toFixed(2) + ", NO3 " + (waterChem.nitrate * (1 - waterChangePercent / 100)).toFixed(1) + " ppm")
+                  ),
+                  React.createElement("div", { className: "flex flex-wrap gap-2" },
+
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.toggle_aquarium_simulation', "Toggle aquarium simulation"),
+
+                      onClick: function () {
+
+                        if (simRunning) {
+                          upd('simRunning', false);
+                          stopAquariumRuntime(false);
+                        } else {
+                          var speed = simSpeed || 1;
+                          updMulti({ simRunning: true, simSpeed: speed });
+                          startAquaAmbient();
+                          startAquaSimInterval(speed);
+                        }
+
+                      },
+                      className: "flex-1 py-2.5 font-bold rounded-xl text-sm transition-all shadow-md " + (simRunning ? "bg-red-700 text-white hover:bg-red-600 shadow-red-500/25" : "bg-gradient-to-r from-cyan-700 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-600 shadow-cyan-500/25")
+
+                    }, simRunning ? "\u23F8 Pause" : "\u25B6 Run Simulation"),
+
+                    React.createElement("button", { "aria-label": "Perform " + waterChangePercent + " percent water change",
+
+                      onClick: function() { doWaterChange(waterChangePercent); },
+
+                      className: "px-3 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-xl text-xs hover:from-blue-100 hover:to-blue-200 transition-all border border-blue-600"
+
+                    }, __alloT('stem.aquarium.water_2', "\uD83D\uDCA7 Water")),
+
+                    React.createElement("button", {
+                      type: "button",
+                      'aria-label': soundEnabled ? "Mute aquarium sounds" : "Enable aquarium sounds",
+                      'aria-pressed': soundEnabled,
+                      onClick: function () {
+                        if (soundEnabled) stopAquaAmbient(true);
+                        upd('soundEnabled', !soundEnabled);
+                      },
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (soundEnabled ? "bg-cyan-50 text-cyan-800 border-cyan-600" : "bg-slate-100 text-slate-700 border-slate-500")
+                    }, soundEnabled ? "\uD83D\uDD0A Sound" : "\uD83D\uDD07 Muted"),
+
+                    React.createElement("label", { className: "flex items-center gap-1 rounded-xl border border-cyan-300 bg-cyan-50 px-2 py-1 text-[0.625rem] font-bold text-cyan-900", title: "Aquarium sound volume" },
+                      React.createElement("span", { 'aria-hidden': "true" }, soundVolume + "%"),
+                      React.createElement("input", { type: "range", min: 0, max: 100, step: 5, value: soundVolume, onChange: function (event) { upd('soundVolume', Number(event.target.value)); }, 'aria-label': __alloT('stem.aquarium.a11y_aquarium_sound_volume', 'Aquarium sound volume'), className: "w-16 accent-cyan-600" })
+                    ),
+
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.flake', "Flake"),
+
+                      onClick: feedFish,
+                      disabled: tankFish.length === 0,
+
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-800 hover:from-amber-100 hover:to-amber-200 border-amber-600")
+
+                    }, __alloT('stem.aquarium.flake_2', "\uD83C\uDF7D\uFE0F Flake")),
+
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.live', "Live"),
+
+                      onClick: feedLive,
+
+                      disabled: tankFish.length === 0,
+
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-800 hover:from-red-100 hover:to-red-200 border-red-600")
+
+                    }, __alloT('stem.aquarium.live_2', "\uD83E\uDD90 Live"))
+
+                  ),
+                  React.createElement("div", { className: "flex gap-2" },
+
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.toggle_lights', "Toggle Lights"),
+
+                      onClick: toggleLights,
+
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (lightsOn ? "bg-gradient-to-r from-yellow-50 to-amber-50 text-amber-700 hover:from-yellow-100 hover:to-amber-100 border-amber-600" : "bg-gradient-to-r from-indigo-100 to-slate-100 text-indigo-700 hover:from-indigo-200 hover:to-slate-200 border-indigo-600")
+
+                    }, lightsOn ? "\uD83D\uDCA1 Lights On" : "\uD83C\uDF19 Lights Off"),
+
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.medicate_fish', "Medicate Fish"),
+
+                      onClick: function () { medicateFish(); },
+
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-600 animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-400")
+
+                    }, "\uD83D\uDC8A Medicate" + (Object.keys(fishSickness).length > 0 ? " (" + Object.keys(fishSickness).length + ")" : "")),
+
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.clean_glass', "Clean Glass"),
+
+                      onClick: cleanGlass,
+
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (algaeLevel > 30 ? "bg-gradient-to-r from-lime-50 to-green-50 text-green-700 hover:from-lime-100 hover:to-green-100 border-green-600" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-400")
+
+                    }, "\uD83E\uDDF9 Clean" + (algaeLevel > 15 ? " (" + Math.round(algaeLevel) + "%)" : ""))
+
+                  ),
+                  feedingLog && React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-200/60 animate-in slide-in-from-top duration-300" },
+
+                    React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
+
+                      React.createElement("span", { className: "text-sm" }, "\uD83C\uDF7D\uFE0F"),
+
+                      React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.aquarium.feeding_report', "Feeding Report")),
+
+                      React.createElement("button", { type: "button", 'aria-label': __alloT('stem.aquarium.a11y_close_feeding_report', 'Close feeding report'), onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[0.6875rem] text-slate-600" }, "\u2715")
+
+                    ),
+
+                    React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center mb-2" },
+
+                      React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
+
+                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.fish_fed', "Fish Fed")),
+
+                        React.createElement("div", { className: "text-sm font-bold text-amber-700" }, feedingLog.fishCount)
+
+                      ),
+
+                      React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
+
+                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.hunger', "Hunger \u2193")),
+
+                        React.createElement("div", { className: "text-sm font-bold text-green-600" }, "-" + feedingLog.avgHungerDrop + " avg")
+
+                      ),
+
+                      React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
+
+                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.nh', "NH\u2083 \u2191")),
+
+                        React.createElement("div", { className: "text-sm font-bold text-red-600" }, "+" + feedingLog.ammoniaAdded.toFixed(2))
+
+                      )
+
+                    ),
+
+                    feedingLog.overfedCount > 0 && React.createElement("div", { className: "bg-red-50 rounded-lg p-1.5 text-[0.6875rem] text-red-700 font-bold mb-1" },
+
+                      "\u26A0\uFE0F " + feedingLog.overfedCount + " fish already full! Excess food = extra ammonia waste."
+
+                    ),
+
+                    React.createElement("p", { className: "text-[0.6875rem] text-amber-700 italic" }, "\uD83D\uDCA1 " + feedingLog.tip)
+
+                  )),
+React.createElement("div", { id: "aquarium-stock-selection", tabIndex: -1, className: "bg-white rounded-xl p-3 border border-slate-400" },
 
                   React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-1" },
                     React.createElement("div", null,
@@ -23264,8 +24102,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   )
 
                 ),
-
-                React.createElement("details", { id: "aquarium-life-support", className: "rounded-2xl border border-cyan-200 bg-white", "data-aquarium-disclosure": "aquarium-life-support" },
+React.createElement("details", { id: "aquarium-life-support", className: "rounded-2xl border border-cyan-200 bg-white", "data-aquarium-disclosure": "aquarium-life-support" },
                   React.createElement("summary", { className: "cursor-pointer p-3 text-sm font-black text-cyan-950" }, "Life support & maintenance", React.createElement("span", { className: "mt-1 block text-xs font-normal leading-relaxed text-slate-700" }, "Inspect filters, heating, lights and aeration; upgrade, service or repair equipment and review water-change records.")),
                   React.createElement("div", { className: "space-y-3 border-t border-cyan-100 p-2 sm:p-3" },
                     React.createElement("section", {
@@ -23403,8 +24240,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       }))
                   ))
                 ),
-
-                tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
+tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
                   React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" },
                     React.createElement("h4", { className: "text-xs font-bold text-slate-600" }, "\uD83E\uDE7A Individual Organism Care"),
@@ -23607,8 +24443,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   )
 
                 ),
-
-                React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-green-50 to-lime-50 rounded-2xl p-4 border border-emerald-200/60 shadow-sm" },
+React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-green-50 to-lime-50 rounded-2xl p-4 border border-emerald-200/60 shadow-sm" },
 
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
@@ -24035,8 +24870,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   )
 
                 ),
-
-                React.createElement("section", {
+React.createElement("section", {
                   className: "overflow-hidden rounded-2xl border border-teal-300/40 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 text-white shadow-lg",
                   id: "aquarium-habitat-studio", tabIndex: -1, 'aria-labelledby': "aquarium-habitat-studio-title"
                 },
@@ -24539,8 +25373,280 @@ var d = (labToolData && labToolData._aquarium) || {};
                     )
                   )
                 ),
+(function () {
 
-                React.createElement("details", { id: "aquarium-systems-investigation", className: "rounded-2xl border border-cyan-200 bg-white", "data-aquarium-disclosure": "aquarium-systems-investigation" },
+                  var breedableSpecies = [];
+
+                  var seenSpecies = {};
+
+                  tankFish.forEach(function (fId) {
+
+                    if (!seenSpecies[fId] && BREEDING_DATA[fId]) {
+
+                      seenSpecies[fId] = true;
+
+                      breedableSpecies.push(fId);
+
+                    }
+
+                  });
+
+                  if (breedableSpecies.length === 0) return null;
+
+                  var speciesList = SPECIES_BY_TANK[selectedTank] || [];
+
+                  var speciesPopCounts = {};
+
+                  tankFish.forEach(function (fId) { speciesPopCounts[fId] = (speciesPopCounts[fId] || 0) + 1; });
+
+                  var stratIcons = { livebearer: '\uD83E\uDD30', egg_layer: '\uD83E\uDD5A', egg_scatter: '\uD83C\uDF3F\uD83E\uDD5A', mouthbrooder: '\uD83D\uDC41\uFE0F', hermaphrodite: '\u2695\uFE0F' };
+
+                  var stratLabels = { livebearer: 'Livebearer', egg_layer: 'Egg Layer', egg_scatter: 'Egg Scatter', mouthbrooder: 'Mouthbrooder', hermaphrodite: 'Hermaphrodite' };
+
+                  return React.createElement("div", { className: "bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 rounded-2xl p-4 border border-pink-200/60 shadow-sm" },
+
+                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
+
+                      React.createElement("h4", { className: "text-xs font-bold text-pink-700" }, __alloT('stem.aquarium.breeding_status', "\uD83D\uDC9E Breeding Status")),
+
+                      React.createElement("span", { className: "text-[0.6875rem] text-pink-700 bg-pink-100/60 rounded-full px-2 py-0.5" }, "\uD83D\uDC23 " + totalFryBorn + " fry born")
+
+                    ),
+
+                    React.createElement("div", { className: "space-y-2" },
+
+                      breedableSpecies.map(function (sId) {
+
+                        var bData = BREEDING_DATA[sId];
+
+                        var sp = speciesList.find(function (x) { return x.id === sId; });
+
+                        if (!sp) return null;
+
+                        var pop = speciesPopCounts[sId] || 0;
+
+                        var bs = breedingState[sId];
+
+                        var isGestating = !!bs;
+
+                        var gestPct = isGestating ? Math.min(100, Math.round(((simTick - bs.startTick) / bData.gestationTicks) * 100)) : 0;
+
+                        var cooldownLeft = 0;
+
+                        if (!isGestating && breedingCooldowns[sId]) {
+
+                          var cooldownNeeded = Math.floor(bData.gestationTicks * 1.5);
+
+                          cooldownLeft = Math.max(0, cooldownNeeded - (simTick - breedingCooldowns[sId]));
+
+                        }
+
+                        var popOk = pop >= bData.minPop;
+
+                        var stressOk = averageCurrentFishState(fishStress, sId, 0) <= 50;
+
+                        var hungerOk = averageCurrentFishState(hungerLevels, sId, 50) <= 70;
+
+                        return React.createElement("div", { key: sId, className: "bg-white/80 rounded-xl p-2.5 border " + (isGestating ? "border-pink-300 shadow-pink-100 shadow-sm" : "border-pink-100") },
+
+                          React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+
+                            React.createElement("span", { className: "text-base" }, stratIcons[bData.type] || '\uD83D\uDC1F'),
+
+                            React.createElement("div", { className: "flex-1 min-w-0" },
+
+                              React.createElement("div", { className: "text-[0.6875rem] font-bold text-pink-800 truncate" }, sp.name),
+
+                              React.createElement("div", { className: "text-[0.6875rem] text-pink-400" }, stratLabels[bData.type] + " \u2022 Pop: " + pop + "/" + bData.minPop + " min")
+
+                            ),
+
+                            isGestating && React.createElement("span", { className: "text-[0.6875rem] font-mono text-pink-700 bg-pink-100 rounded-full px-1.5 py-0.5 animate-pulse" }, gestPct + "%")
+
+                          ),
+
+                          isGestating && React.createElement("div", { className: "mt-1" },
+
+                            React.createElement("div", { className: "h-2 bg-pink-100 rounded-full overflow-hidden" },
+
+                              React.createElement("div", { style: { width: gestPct + '%', transition: 'width 0.5s' }, className: "h-full rounded-full bg-gradient-to-r from-pink-400 to-rose-500" })
+
+                            ),
+
+                            React.createElement("div", { className: "flex justify-between mt-0.5" },
+
+                              React.createElement("span", { className: "text-[0.6875rem] text-pink-400" }, bs.stage === 'gestating' && bData.type === 'egg_layer' && bs.eggsLogged ? '\uD83E\uDD5A Eggs developing...' : '\u2764\uFE0F Gestating...'),
+
+                              React.createElement("span", { className: "text-[0.6875rem] text-pink-400" }, "Expected: " + bs.fryCount + " fry")
+
+                            )
+
+                          ),
+
+                          !isGestating && cooldownLeft > 0 && React.createElement("div", { className: "mt-1 text-[0.6875rem] text-slate-600 italic" }, "\u23F3 Cooldown: " + cooldownLeft + " ticks remaining"),
+
+                          !isGestating && cooldownLeft === 0 && React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap" },
+
+                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (popOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
+
+                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (stressOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
+
+                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
+
+                          )
+
+                        );
+
+                      })
+
+                    ),
+
+                    React.createElement("div", { className: "mt-2 text-[0.6875rem] text-pink-600/80 bg-pink-100/40 rounded-lg p-2 leading-relaxed" },
+
+                      "\uD83D\uDCA1 ",
+
+                      React.createElement("strong", null, __alloT('stem.aquarium.breeding_tip', "Breeding Tip: ")),
+
+                      __alloT('stem.aquarium.keep_water_clean_stress_low_and_fish_w', "Keep water clean, stress low, and fish well-fed. Plants provide hiding spots for fry, boosting survival. Predators in the tank will eat vulnerable fry!")
+
+                    )
+
+                  );
+
+                })(),
+aiEvent && !aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 border-blue-300/60 shadow-xl shadow-blue-500/10" },
+
+                  // Header bar with category color
+
+                  React.createElement("div", { className: "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2.5 flex items-center gap-2" },
+
+                    React.createElement("span", { className: "text-lg" }, aiEvent.icon || '\uD83E\uDD16'),
+
+                    React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title),
+
+                    aiEvent.category && React.createElement("span", { className: "text-[0.6875rem] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20 text-white/80" }, aiEvent.category === 'ai_generated' ? '\uD83E\uDD16 AI' : aiEvent.category),
+
+                    React.createElement("button", { type: "button", 'aria-label': __alloT('stem.aquarium.a11y_dismiss_aquarium_event', 'Dismiss aquarium event'), onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
+
+                  ),
+
+                  // Description
+
+                  React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-blue-50 to-white" },
+
+                    React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" }, aiEvent.desc),
+
+                    // Educational note
+
+                    aiEvent.educational && React.createElement("div", { className: "bg-indigo-50 rounded-lg p-2.5 mb-3 border border-indigo-100" },
+
+                      React.createElement("div", { className: "flex items-start gap-1.5" },
+
+                        React.createElement("span", { className: "text-xs" }, '\uD83C\uDF93'),
+
+                        React.createElement("p", { className: "text-[0.6875rem] text-indigo-700 leading-relaxed italic" }, aiEvent.educational)
+
+                      )
+
+                    ),
+
+                    // Choice buttons
+
+                    React.createElement("div", { className: "space-y-2" },
+
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.aquarium.what_do_you_do', '\u2696\uFE0F What do you do?')),
+
+                      (aiEvent.choices || []).map(function (choice, idx) {
+
+                        return React.createElement("button", { "aria-label": __alloT('stem.aquarium.resolve_a_i_event', "Resolve A I Event"),
+
+                          key: idx,
+
+                          onClick: function () { resolveAIEvent(idx); },
+
+                          className: "ai-event-choice w-full text-left px-3 py-2.5 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white hover:bg-blue-50/50 group"
+
+                        },
+
+                          React.createElement("div", { className: "flex items-center justify-between" },
+
+                            React.createElement("span", { className: "text-xs font-bold text-slate-700 group-hover:text-blue-700" }, choice.label),
+
+                            choice.xp > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700" }, '+' + choice.xp + ' XP')
+
+                          )
+
+                        );
+
+                      })
+
+                    )
+
+                  )
+
+                ),
+aiEvent && aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 shadow-lg " + (aiEvent.chosenXp >= 5 ? 'border-green-300 shadow-green-500/10' : aiEvent.chosenXp >= 3 ? 'border-blue-300 shadow-blue-500/10' : 'border-amber-300 shadow-amber-500/10') },
+
+                  React.createElement("div", { className: "px-4 py-2.5 flex items-center gap-2 " + (aiEvent.chosenXp >= 5 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : aiEvent.chosenXp >= 3 ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-gradient-to-r from-amber-500 to-orange-500') },
+
+                    React.createElement("span", { className: "text-lg" }, aiEvent.chosenXp >= 5 ? '\u2705' : aiEvent.chosenXp >= 3 ? '\uD83D\uDCA1' : '\u26A0\uFE0F'),
+
+                    React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title + ' — Outcome'),
+
+                    React.createElement("span", { style: { animation: 'xpPop 0.5s ease-out' }, className: "text-sm font-bold px-2 py-0.5 rounded-full bg-white/25 text-white" }, '+' + (aiEvent.chosenXp || 0) + ' XP'),
+
+                    React.createElement("button", { type: "button", 'aria-label': __alloT('stem.aquarium.a11y_dismiss_aquarium_event_outcome', 'Dismiss aquarium event outcome'), onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
+
+                  ),
+
+                  React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-slate-500 to-white" },
+
+                    React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, aiEvent.chosenOutcome)
+
+                  )
+
+                ),
+aiEventLoading && React.createElement("div", { className: "ai-event-card rounded-2xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 text-center" },
+
+                  React.createElement("div", { className: "flex items-center justify-center gap-2" },
+
+                    React.createElement("div", { className: "w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full", style: { animation: 'spin 1s linear infinite' } }),
+
+                    React.createElement("span", { className: "text-xs font-bold text-blue-600" }, __alloT('stem.aquarium.ai_is_analyzing_your_tank_conditions', '\uD83E\uDD16 AI is analyzing your tank conditions...'))
+
+                  )
+
+                )),
+React.createElement('section', { id: 'aquarium-panel-investigate', className: 'aquarium-workflow-panel space-y-3', hidden: workspacePanel !== 'investigate', 'aria-label': 'investigate workspace' }, React.createElement("section", {
+                  className: "rounded-xl border border-cyan-300 bg-white p-3 space-y-2",
+                  'aria-labelledby': "aquarium-care-decision",
+                  'data-aquarium-observation-loop': "true"
+                },
+                  React.createElement("h4", { id: "aquarium-care-decision", className: "text-sm font-black text-slate-900" }, __alloT('stem.aquarium.next_care_decision', 'Your next care decision')),
+                  React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, careNextAction),
+                  React.createElement("p", { className: "text-xs leading-relaxed text-slate-600" }, "Predict a change and save your starting tank. Run a paired trial below, or make one live care change in Decide and compare the water cards in Observe."),
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    React.createElement("button", {
+                      type: "button",
+                      onClick: function () {
+                        saveObservationBaseline();
+                        if (typeof announceToSR === 'function') announceToSR('Baseline readings saved. Change one thing, then observe one hour.');
+                      },
+                      className: "min-h-[44px] rounded-lg border border-cyan-700 bg-cyan-50 px-3 py-2 text-xs font-bold text-cyan-900"
+                    }, observationBaseline ? "Replace baseline" : "Save baseline"),
+                    React.createElement("span", { className: "text-xs text-slate-600" }, observationBaseline ? "Baseline: hour " + observationBaseline.tick + " / " + Math.max(0, simTick - observationBaseline.tick) + " hours since." : "Your baseline stays fixed while you observe."),
+                    React.createElement("button", {
+                      type: "button",
+                      onClick: function () {
+                        updMulti({ tutorialDismissed: false, tutorialPanelOpen: true, tutorialNotebookOpen: true });
+                        setTimeout(function () { var predictionInput = document.getElementById('aquarium-note-prediction'); if (predictionInput) predictionInput.focus(); }, 0);
+                      },
+                      className: "min-h-[44px] rounded-lg px-3 py-2 text-xs font-bold text-indigo-800 underline"
+                    }, "Open lesson notebook")
+                  ),
+                  React.createElement("p", { className: "text-xs text-slate-600" }, "Model note: bacteria start pre-seeded. Time is compressed and thresholds describe the chosen habitat; real species have different needs.")
+                ), renderInquiryWorkbench(),
+React.createElement("details", { id: "aquarium-systems-investigation", className: "rounded-2xl border border-cyan-200 bg-white", "data-aquarium-disclosure": "aquarium-systems-investigation" },
                   React.createElement("summary", { className: "cursor-pointer p-3 text-sm font-black text-cyan-950" }, "Systems investigation", React.createElement("span", { className: "mt-1 block text-xs font-normal leading-relaxed text-slate-700" }, "Trace matter and energy, inspect organism vitality, and compare a controlled intervention. Expand when you are ready to explain why the tank changed.")),
                   React.createElement("div", { className: "space-y-3 border-t border-cyan-100 p-2 sm:p-3" },
                     React.createElement("section", {
@@ -25051,217 +26157,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   )
                 ))
                 ),
-
-                (function () {
-
-                  var breedableSpecies = [];
-
-                  var seenSpecies = {};
-
-                  tankFish.forEach(function (fId) {
-
-                    if (!seenSpecies[fId] && BREEDING_DATA[fId]) {
-
-                      seenSpecies[fId] = true;
-
-                      breedableSpecies.push(fId);
-
-                    }
-
-                  });
-
-                  if (breedableSpecies.length === 0) return null;
-
-                  var speciesList = SPECIES_BY_TANK[selectedTank] || [];
-
-                  var speciesPopCounts = {};
-
-                  tankFish.forEach(function (fId) { speciesPopCounts[fId] = (speciesPopCounts[fId] || 0) + 1; });
-
-                  var stratIcons = { livebearer: '\uD83E\uDD30', egg_layer: '\uD83E\uDD5A', egg_scatter: '\uD83C\uDF3F\uD83E\uDD5A', mouthbrooder: '\uD83D\uDC41\uFE0F', hermaphrodite: '\u2695\uFE0F' };
-
-                  var stratLabels = { livebearer: 'Livebearer', egg_layer: 'Egg Layer', egg_scatter: 'Egg Scatter', mouthbrooder: 'Mouthbrooder', hermaphrodite: 'Hermaphrodite' };
-
-                  return React.createElement("div", { className: "bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 rounded-2xl p-4 border border-pink-200/60 shadow-sm" },
-
-                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
-
-                      React.createElement("h4", { className: "text-xs font-bold text-pink-700" }, __alloT('stem.aquarium.breeding_status', "\uD83D\uDC9E Breeding Status")),
-
-                      React.createElement("span", { className: "text-[0.6875rem] text-pink-700 bg-pink-100/60 rounded-full px-2 py-0.5" }, "\uD83D\uDC23 " + totalFryBorn + " fry born")
-
-                    ),
-
-                    React.createElement("div", { className: "space-y-2" },
-
-                      breedableSpecies.map(function (sId) {
-
-                        var bData = BREEDING_DATA[sId];
-
-                        var sp = speciesList.find(function (x) { return x.id === sId; });
-
-                        if (!sp) return null;
-
-                        var pop = speciesPopCounts[sId] || 0;
-
-                        var bs = breedingState[sId];
-
-                        var isGestating = !!bs;
-
-                        var gestPct = isGestating ? Math.min(100, Math.round(((simTick - bs.startTick) / bData.gestationTicks) * 100)) : 0;
-
-                        var cooldownLeft = 0;
-
-                        if (!isGestating && breedingCooldowns[sId]) {
-
-                          var cooldownNeeded = Math.floor(bData.gestationTicks * 1.5);
-
-                          cooldownLeft = Math.max(0, cooldownNeeded - (simTick - breedingCooldowns[sId]));
-
-                        }
-
-                        var popOk = pop >= bData.minPop;
-
-                        var stressOk = averageCurrentFishState(fishStress, sId, 0) <= 50;
-
-                        var hungerOk = averageCurrentFishState(hungerLevels, sId, 50) <= 70;
-
-                        return React.createElement("div", { key: sId, className: "bg-white/80 rounded-xl p-2.5 border " + (isGestating ? "border-pink-300 shadow-pink-100 shadow-sm" : "border-pink-100") },
-
-                          React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-
-                            React.createElement("span", { className: "text-base" }, stratIcons[bData.type] || '\uD83D\uDC1F'),
-
-                            React.createElement("div", { className: "flex-1 min-w-0" },
-
-                              React.createElement("div", { className: "text-[0.6875rem] font-bold text-pink-800 truncate" }, sp.name),
-
-                              React.createElement("div", { className: "text-[0.6875rem] text-pink-400" }, stratLabels[bData.type] + " \u2022 Pop: " + pop + "/" + bData.minPop + " min")
-
-                            ),
-
-                            isGestating && React.createElement("span", { className: "text-[0.6875rem] font-mono text-pink-700 bg-pink-100 rounded-full px-1.5 py-0.5 animate-pulse" }, gestPct + "%")
-
-                          ),
-
-                          isGestating && React.createElement("div", { className: "mt-1" },
-
-                            React.createElement("div", { className: "h-2 bg-pink-100 rounded-full overflow-hidden" },
-
-                              React.createElement("div", { style: { width: gestPct + '%', transition: 'width 0.5s' }, className: "h-full rounded-full bg-gradient-to-r from-pink-400 to-rose-500" })
-
-                            ),
-
-                            React.createElement("div", { className: "flex justify-between mt-0.5" },
-
-                              React.createElement("span", { className: "text-[0.6875rem] text-pink-400" }, bs.stage === 'gestating' && bData.type === 'egg_layer' && bs.eggsLogged ? '\uD83E\uDD5A Eggs developing...' : '\u2764\uFE0F Gestating...'),
-
-                              React.createElement("span", { className: "text-[0.6875rem] text-pink-400" }, "Expected: " + bs.fryCount + " fry")
-
-                            )
-
-                          ),
-
-                          !isGestating && cooldownLeft > 0 && React.createElement("div", { className: "mt-1 text-[0.6875rem] text-slate-600 italic" }, "\u23F3 Cooldown: " + cooldownLeft + " ticks remaining"),
-
-                          !isGestating && cooldownLeft === 0 && React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap" },
-
-                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (popOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
-
-                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (stressOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
-
-                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
-
-                          )
-
-                        );
-
-                      })
-
-                    ),
-
-                    React.createElement("div", { className: "mt-2 text-[0.6875rem] text-pink-600/80 bg-pink-100/40 rounded-lg p-2 leading-relaxed" },
-
-                      "\uD83D\uDCA1 ",
-
-                      React.createElement("strong", null, __alloT('stem.aquarium.breeding_tip', "Breeding Tip: ")),
-
-                      __alloT('stem.aquarium.keep_water_clean_stress_low_and_fish_w', "Keep water clean, stress low, and fish well-fed. Plants provide hiding spots for fry, boosting survival. Predators in the tank will eat vulnerable fry!")
-
-                    )
-
-                  );
-
-                })(),
-
-                (function() {
-                  var bioStatus = loadPct > 80 ? 'Critical' : loadPct > 60 ? 'Caution' : 'Safe';
-                  return React.createElement("div", {
-                    className: "bg-white rounded-xl p-3 border border-slate-400",
-                    role: "group",
-                    "aria-label": "Bioload " + bioStatus + " \u2014 " + currentLoad + " of " + maxLoad + " (" + loadPct + " percent)"
-                  },
-
-                    React.createElement("div", { className: "flex items-center justify-between mb-1" },
-
-                      React.createElement("span", { className: "text-xs font-bold text-slate-600" }, React.createElement("span", { "aria-hidden": "true" }, "\uD83D\uDC1F "), __alloT('stem.aquarium.bioload', "Bioload")),
-
-                      React.createElement("span", { className: "text-xs font-mono " + (loadPct > 80 ? 'text-red-600' : loadPct > 60 ? 'text-amber-600' : 'text-green-600') }, bioStatus + " \u2014 " + currentLoad + " / " + maxLoad + " (" + loadPct + "%)")
-
-                    ),
-
-                    React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden", "aria-hidden": "true" },
-
-                      React.createElement("div", { style: { width: Math.min(100, loadPct) + '%', transition: 'width 0.3s' }, className: "h-full rounded-full " + (loadPct > 80 ? 'bg-red-500' : loadPct > 60 ? 'bg-amber-400' : 'bg-green-500') })
-
-                    )
-
-                  );
-                })(),
-
-                (() => {
-
-                  var health = getTankHealth();
-
-                  var scoreColor = health.score >= 80 ? 'text-green-600' : health.score >= 50 ? 'text-amber-600' : 'text-red-600';
-
-                  var scoreBg = health.score >= 80 ? 'from-green-50 to-emerald-50 border-green-200/60' : health.score >= 50 ? 'from-amber-50 to-orange-50 border-amber-200/60' : 'from-red-50 to-rose-50 border-red-200/60';
-
-                  var barColor = health.score >= 80 ? 'bg-green-500' : health.score >= 50 ? 'bg-amber-500' : 'bg-red-500';
-
-                  return React.createElement("div", { className: "bg-gradient-to-r " + scoreBg + " rounded-xl p-3 border shadow-sm" },
-
-                    React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-
-                      React.createElement("span", { className: "text-sm" }, health.score >= 80 ? '\uD83C\uDF1F' : health.score >= 50 ? '\u26A0\uFE0F' : '\uD83D\uDEA8'),
-
-                      React.createElement("span", { className: "text-xs font-bold " + scoreColor }, __alloT('stem.aquarium.tank_health', "Tank Health")),
-
-                      React.createElement("span", { className: "text-lg font-bold ml-auto " + scoreColor }, health.score + "/100")
-
-                    ),
-
-                    React.createElement("div", { className: "h-2.5 bg-white/50 rounded-full overflow-hidden mb-2" },
-
-                      React.createElement("div", { style: { width: health.score + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + barColor })
-
-                    ),
-
-                    React.createElement("div", { className: "space-y-1" },
-
-                      health.tips.map(function (tip, i) {
-
-                        return React.createElement("p", { key: i, className: "text-[0.6875rem] " + tip.color + " font-bold leading-relaxed" }, tip.icon + " " + tip.text);
-
-                      })
-
-                    )
-
-                  );
-
-                })(),
-
-                React.createElement("details", {
+React.createElement("details", {
                   className: "rounded-xl border border-cyan-300 bg-gradient-to-br from-cyan-50 to-sky-50"
                 },
                   React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-cyan-800" }, __alloT('stem.aquarium.how_to_keep_this_tank_alive_click_to_t', "📜 How to keep this tank alive (click to toggle)")),
@@ -25293,114 +26189,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       __alloT('stem.aquarium.tip_click_any_chemistry_card_below_for', "Tip: click any chemistry card below for its safe range + 'what to do' guide. The cards turn amber or red when a value drifts out of the safe zone."))
                   )
                 ),
-
-                aiEvent && !aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 border-blue-300/60 shadow-xl shadow-blue-500/10" },
-
-                  // Header bar with category color
-
-                  React.createElement("div", { className: "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2.5 flex items-center gap-2" },
-
-                    React.createElement("span", { className: "text-lg" }, aiEvent.icon || '\uD83E\uDD16'),
-
-                    React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title),
-
-                    aiEvent.category && React.createElement("span", { className: "text-[0.6875rem] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20 text-white/80" }, aiEvent.category === 'ai_generated' ? '\uD83E\uDD16 AI' : aiEvent.category),
-
-                    React.createElement("button", { type: "button", 'aria-label': __alloT('stem.aquarium.a11y_dismiss_aquarium_event', 'Dismiss aquarium event'), onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
-
-                  ),
-
-                  // Description
-
-                  React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-blue-50 to-white" },
-
-                    React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" }, aiEvent.desc),
-
-                    // Educational note
-
-                    aiEvent.educational && React.createElement("div", { className: "bg-indigo-50 rounded-lg p-2.5 mb-3 border border-indigo-100" },
-
-                      React.createElement("div", { className: "flex items-start gap-1.5" },
-
-                        React.createElement("span", { className: "text-xs" }, '\uD83C\uDF93'),
-
-                        React.createElement("p", { className: "text-[0.6875rem] text-indigo-700 leading-relaxed italic" }, aiEvent.educational)
-
-                      )
-
-                    ),
-
-                    // Choice buttons
-
-                    React.createElement("div", { className: "space-y-2" },
-
-                      React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.aquarium.what_do_you_do', '\u2696\uFE0F What do you do?')),
-
-                      (aiEvent.choices || []).map(function (choice, idx) {
-
-                        return React.createElement("button", { "aria-label": __alloT('stem.aquarium.resolve_a_i_event', "Resolve A I Event"),
-
-                          key: idx,
-
-                          onClick: function () { resolveAIEvent(idx); },
-
-                          className: "ai-event-choice w-full text-left px-3 py-2.5 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white hover:bg-blue-50/50 group"
-
-                        },
-
-                          React.createElement("div", { className: "flex items-center justify-between" },
-
-                            React.createElement("span", { className: "text-xs font-bold text-slate-700 group-hover:text-blue-700" }, choice.label),
-
-                            choice.xp > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700" }, '+' + choice.xp + ' XP')
-
-                          )
-
-                        );
-
-                      })
-
-                    )
-
-                  )
-
-                ),
-
-                aiEvent && aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 shadow-lg " + (aiEvent.chosenXp >= 5 ? 'border-green-300 shadow-green-500/10' : aiEvent.chosenXp >= 3 ? 'border-blue-300 shadow-blue-500/10' : 'border-amber-300 shadow-amber-500/10') },
-
-                  React.createElement("div", { className: "px-4 py-2.5 flex items-center gap-2 " + (aiEvent.chosenXp >= 5 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : aiEvent.chosenXp >= 3 ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-gradient-to-r from-amber-500 to-orange-500') },
-
-                    React.createElement("span", { className: "text-lg" }, aiEvent.chosenXp >= 5 ? '\u2705' : aiEvent.chosenXp >= 3 ? '\uD83D\uDCA1' : '\u26A0\uFE0F'),
-
-                    React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title + ' — Outcome'),
-
-                    React.createElement("span", { style: { animation: 'xpPop 0.5s ease-out' }, className: "text-sm font-bold px-2 py-0.5 rounded-full bg-white/25 text-white" }, '+' + (aiEvent.chosenXp || 0) + ' XP'),
-
-                    React.createElement("button", { type: "button", 'aria-label': __alloT('stem.aquarium.a11y_dismiss_aquarium_event_outcome', 'Dismiss aquarium event outcome'), onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
-
-                  ),
-
-                  React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-slate-500 to-white" },
-
-                    React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, aiEvent.chosenOutcome)
-
-                  )
-
-                ),
-
-                aiEventLoading && React.createElement("div", { className: "ai-event-card rounded-2xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 text-center" },
-
-                  React.createElement("div", { className: "flex items-center justify-center gap-2" },
-
-                    React.createElement("div", { className: "w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full", style: { animation: 'spin 1s linear infinite' } }),
-
-                    React.createElement("span", { className: "text-xs font-bold text-blue-600" }, __alloT('stem.aquarium.ai_is_analyzing_your_tank_conditions', '\uD83E\uDD16 AI is analyzing your tank conditions...'))
-
-                  )
-
-                ),
-
-                aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradient-to-b from-indigo-50 to-slate-50 rounded-xl p-2.5 border border-indigo-200/60 max-h-36 overflow-y-auto" },
+aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradient-to-b from-indigo-50 to-slate-50 rounded-xl p-2.5 border border-indigo-200/60 max-h-36 overflow-y-auto" },
 
                   React.createElement("h4", { className: "text-[0.6875rem] font-bold text-indigo-500 mb-1.5 flex items-center gap-1" },
 
@@ -25436,19 +26225,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   })
 
-                ),
-
-                eventLog.length > 0 && React.createElement("div", { role: "log", 'aria-live': "polite", 'aria-relevant': "additions text", 'aria-label': __alloT('stem.aquarium.a11y_aquarium_event_log', 'Aquarium event log'), className: "bg-slate-50 rounded-xl p-2 border border-slate-400 max-h-32 overflow-y-auto" },
-
-                  React.createElement("h4", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
-
-                  eventLog.slice().reverse().slice(0, 10).map(function (evt, i) {
-
-                    return React.createElement("p", { key: i, className: "text-[0.6875rem] text-slate-600" }, "[T" + evt.tick + "] " + evt.msg);
-
-                  })
-
-                )
+                ))
 
               );
 

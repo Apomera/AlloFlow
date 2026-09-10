@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Sine-driven RC",
+    "ok": true,
+    "samples": 4859,
+    "steps": 2429,
+    "rejected": 18,
+    "elapsedMs": 7594.3138,
+    "errorUnit": "V",
+    "maxAbsoluteError": 0.004566847778643801
+  },
+  {
+    "name": "Sine-driven RL",
+    "ok": true,
+    "samples": 5287,
+    "steps": 2643,
+    "rejected": 20,
+    "elapsedMs": 10845.468299999999,
+    "errorUnit": "A",
+    "maxAbsoluteError": 0.00004564915527023594
+  }
+]

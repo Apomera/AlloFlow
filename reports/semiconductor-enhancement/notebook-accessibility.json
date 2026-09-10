@@ -1,0 +1,18 @@
+[
+  {
+    "variant": "empty notebook",
+    "violations": []
+  },
+  {
+    "variant": "same-lesson comparison",
+    "violations": []
+  },
+  {
+    "variant": "cross-lesson guard",
+    "violations": []
+  },
+  {
+    "variant": "legacy notebook",
+    "violations": []
+  }
+]

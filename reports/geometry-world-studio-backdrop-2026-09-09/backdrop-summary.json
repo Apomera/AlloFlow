@@ -1,0 +1,465 @@
+{
+  "pass": true,
+  "sources": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "sha256": "279e4ba4902a2ae44576d2824863f5e12848db1df50bb664a1d7a1cb5815c8b8",
+      "syntaxValid": true,
+      "mirrorMatches": true,
+      "browserMatches": true,
+      "changed": false
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "sha256": "9774475d49096b53957e101d0248fb477ca057a7ea384b6c1329666da41a8514",
+      "syntaxValid": true,
+      "mirrorMatches": true,
+      "browserMatches": true,
+      "changed": true
+    },
+    {
+      "name": "stem_tool_printlab.js",
+      "sha256": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742",
+      "syntaxValid": true,
+      "mirrorMatches": true,
+      "browserMatches": true,
+      "changed": false
+    }
+  ],
+  "tests": {
+    "total": 53,
+    "passed": 53,
+    "failed": 0,
+    "suites": 4,
+    "failures": [],
+    "evidence": [
+      "studio-backdrop-tests.json",
+      "backdrop-regression-tests.json"
+    ]
+  },
+  "browser": {
+    "before": true,
+    "after": true,
+    "errors": [],
+    "consoleErrors": [],
+    "failures": [],
+    "actualComposerLoaded": true,
+    "geometryPreserved": true,
+    "cameraRestored": true,
+    "callbackRestored": true,
+    "meadowRestore": {
+      "hook": true,
+      "background": true,
+      "fog": true,
+      "stage": false
+    },
+    "captures": [
+      {
+        "case": {
+          "q": "saver",
+          "v": "front",
+          "w": 844,
+          "h": 390
+        },
+        "before": "before-saver-front-844x390.png",
+        "after": "after-saver-front-844x390.png",
+        "poseUnchanged": true,
+        "renderCountsUnchanged": true,
+        "resourcesUnchanged": true,
+        "beforeSky": [
+          224,
+          218,
+          206
+        ],
+        "afterSky": [
+          241,
+          238,
+          232
+        ],
+        "beforeFloor": [
+          255,
+          251,
+          242
+        ],
+        "afterFloor": [
+          241,
+          238,
+          231
+        ],
+        "beforeHorizonStep": 13,
+        "afterHorizonStep": 2,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "composed": false
+      },
+      {
+        "case": {
+          "q": "saver",
+          "v": "side",
+          "w": 844,
+          "h": 390
+        },
+        "before": "before-saver-side-844x390.png",
+        "after": "after-saver-side-844x390.png",
+        "poseUnchanged": true,
+        "renderCountsUnchanged": true,
+        "resourcesUnchanged": true,
+        "beforeSky": [
+          224,
+          218,
+          206
+        ],
+        "afterSky": [
+          241,
+          238,
+          232
+        ],
+        "beforeFloor": [
+          255,
+          250,
+          241
+        ],
+        "afterFloor": [
+          240,
+          237,
+          230
+        ],
+        "beforeHorizonStep": 17,
+        "afterHorizonStep": 1,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "composed": false
+      },
+      {
+        "case": {
+          "q": "saver",
+          "v": "perspective",
+          "w": 1200,
+          "h": 820
+        },
+        "before": "before-saver-perspective-1200x820.png",
+        "after": "after-saver-perspective-1200x820.png",
+        "poseUnchanged": true,
+        "renderCountsUnchanged": true,
+        "resourcesUnchanged": true,
+        "beforeSky": [
+          224,
+          218,
+          206
+        ],
+        "afterSky": [
+          241,
+          238,
+          232
+        ],
+        "beforeFloor": [
+          255,
+          249,
+          240
+        ],
+        "afterFloor": [
+          239,
+          236,
+          229
+        ],
+        "beforeHorizonStep": 0,
+        "afterHorizonStep": 1,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "composed": false
+      },
+      {
+        "case": {
+          "q": "saver",
+          "v": "perspective",
+          "w": 390,
+          "h": 844
+        },
+        "before": "before-saver-perspective-390x844.png",
+        "after": "after-saver-perspective-390x844.png",
+        "poseUnchanged": true,
+        "renderCountsUnchanged": true,
+        "resourcesUnchanged": true,
+        "beforeSky": [
+          224,
+          218,
+          206
+        ],
+        "afterSky": [
+          241,
+          238,
+          232
+        ],
+        "beforeFloor": [
+          255,
+          249,
+          240
+        ],
+        "afterFloor": [
+          239,
+          236,
+          229
+        ],
+        "beforeHorizonStep": 0,
+        "afterHorizonStep": 1,
+        "render": {
+          "calls": 87,
+          "triangles": 502
+        },
+        "composed": false
+      },
+      {
+        "case": {
+          "q": "balanced",
+          "v": "front",
+          "w": 844,
+          "h": 390
+        },
+        "before": "before-balanced-front-844x390.png",
+        "after": "after-balanced-front-844x390.png",
+        "poseUnchanged": true,
+        "renderCountsUnchanged": true,
+        "resourcesUnchanged": true,
+        "beforeSky": [
+          224,
+          218,
+          206
+        ],
+        "afterSky": [
+          241,
+          238,
+          232
+        ],
+        "beforeFloor": [
+          255,
+          251,
+          242
+        ],
+        "afterFloor": [
+          241,
+          238,
+          231
+        ],
+        "beforeHorizonStep": 13,
+        "afterHorizonStep": 2,
+        "render": {
+          "calls": 129,
+          "triangles": 998
+        },
+        "composed": false
+      },
+      {
+        "case": {
+          "q": "detail",
+          "v": "front",
+          "w": 844,
+          "h": 390
+        },
+        "before": "before-detail-front-844x390.png",
+        "after": "after-detail-front-844x390.png",
+        "poseUnchanged": true,
+        "renderCountsUnchanged": true,
+        "resourcesUnchanged": true,
+        "beforeSky": [
+          241,
+          238,
+          232
+        ],
+        "afterSky": [
+          241,
+          238,
+          232
+        ],
+        "beforeFloor": [
+          255,
+          251,
+          242
+        ],
+        "afterFloor": [
+          241,
+          238,
+          231
+        ],
+        "beforeHorizonStep": 7,
+        "afterHorizonStep": 2,
+        "render": {
+          "calls": 130,
+          "triangles": 999
+        },
+        "composed": true
+      },
+      {
+        "case": {
+          "q": "detail",
+          "v": "side",
+          "w": 844,
+          "h": 390
+        },
+        "before": "before-detail-side-844x390.png",
+        "after": "after-detail-side-844x390.png",
+        "poseUnchanged": true,
+        "renderCountsUnchanged": true,
+        "resourcesUnchanged": true,
+        "beforeSky": [
+          241,
+          238,
+          232
+        ],
+        "afterSky": [
+          241,
+          238,
+          232
+        ],
+        "beforeFloor": [
+          255,
+          250,
+          241
+        ],
+        "afterFloor": [
+          240,
+          237,
+          230
+        ],
+        "beforeHorizonStep": 9,
+        "afterHorizonStep": 1,
+        "render": {
+          "calls": 130,
+          "triangles": 999
+        },
+        "composed": true
+      },
+      {
+        "case": {
+          "q": "detail",
+          "v": "perspective",
+          "w": 1200,
+          "h": 820
+        },
+        "before": "before-detail-perspective-1200x820.png",
+        "after": "after-detail-perspective-1200x820.png",
+        "poseUnchanged": true,
+        "renderCountsUnchanged": true,
+        "resourcesUnchanged": true,
+        "beforeSky": [
+          241,
+          238,
+          232
+        ],
+        "afterSky": [
+          241,
+          238,
+          232
+        ],
+        "beforeFloor": [
+          255,
+          249,
+          240
+        ],
+        "afterFloor": [
+          239,
+          236,
+          229
+        ],
+        "beforeHorizonStep": 0,
+        "afterHorizonStep": 0,
+        "render": {
+          "calls": 130,
+          "triangles": 999
+        },
+        "composed": true
+      }
+    ]
+  },
+  "png": {
+    "pass": true,
+    "exports": [
+      {
+        "stage": "before",
+        "quality": "saver",
+        "file": "before-saver-export.png",
+        "width": 2048,
+        "height": 785,
+        "sky": [
+          224,
+          218,
+          206
+        ],
+        "floor": [
+          255,
+          251,
+          242
+        ],
+        "contrast": 36
+      },
+      {
+        "stage": "before",
+        "quality": "detail",
+        "file": "before-detail-export.png",
+        "width": 2048,
+        "height": 785,
+        "sky": [
+          241,
+          238,
+          232
+        ],
+        "floor": [
+          255,
+          251,
+          242
+        ],
+        "contrast": 14
+      },
+      {
+        "stage": "after",
+        "quality": "saver",
+        "file": "after-saver-export.png",
+        "width": 2048,
+        "height": 785,
+        "sky": [
+          241,
+          238,
+          232
+        ],
+        "floor": [
+          241,
+          238,
+          231
+        ],
+        "contrast": 1
+      },
+      {
+        "stage": "after",
+        "quality": "detail",
+        "file": "after-detail-export.png",
+        "width": 2048,
+        "height": 785,
+        "sky": [
+          241,
+          238,
+          232
+        ],
+        "floor": [
+          241,
+          238,
+          231
+        ],
+        "contrast": 1
+      }
+    ]
+  },
+  "scope": {
+    "productionChanges": [
+      "stem_lab/stem_tool_geometryworld_builder.js",
+      "desktop/web-app/public/stem_lab/stem_tool_geometryworld_builder.js"
+    ],
+    "addedSceneObjects": 0,
+    "addedTextures": 0,
+    "blockMaterialsReplaced": false
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "pass": 12,
+  "scope": "Shared distance tracks and accessible force/distance comparison cards across all six stations",
+  "tests": {
+    "total": 804,
+    "passed": 804,
+    "failed": 0,
+    "files": 25
+  },
+  "browser": [
+    {
+      "folder": "pass12-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop12-lever",
+        "workshop12-pulley",
+        "workshop12-windlass",
+        "workshop12-ramp",
+        "workshop12-wedge",
+        "workshop12-screw",
+        "workshop12-lift-lever",
+        "workshop12-lever-reverse",
+        "workshop12-lever-equal",
+        "workshop12-screw-fine"
+      ]
+    },
+    {
+      "folder": "pass12-dark-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop12-lever",
+        "workshop12-pulley",
+        "workshop12-windlass",
+        "workshop12-ramp",
+        "workshop12-wedge",
+        "workshop12-screw",
+        "workshop12-lift-lever",
+        "workshop12-lever-reverse",
+        "workshop12-lever-equal",
+        "workshop12-screw-fine"
+      ]
+    },
+    {
+      "folder": "pass12-contrast-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop12-lever",
+        "workshop12-pulley",
+        "workshop12-windlass",
+        "workshop12-ramp",
+        "workshop12-wedge",
+        "workshop12-screw",
+        "workshop12-lift-lever",
+        "workshop12-lever-reverse",
+        "workshop12-lever-equal",
+        "workshop12-screw-fine"
+      ]
+    }
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "mirrorIdentical": true,
+  "publication": "Local changes only; deployment remains paused."
+}

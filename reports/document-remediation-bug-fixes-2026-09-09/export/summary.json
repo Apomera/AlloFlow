@@ -1,0 +1,65 @@
+{
+  "completedAt": "2026-09-10T02:06:51.821Z",
+  "issueClassesFixed": 4,
+  "reviewFindingNumbers": [
+    5,
+    10,
+    11,
+    13
+  ],
+  "files": [
+    {
+      "file": "dev-tools/document_export_at_acceptance.cjs",
+      "sha256": "1bb823da6503375243d25211d55d17b1de1a425c26071f614088abc2754fa590"
+    },
+    {
+      "file": "tests/e2e/document_export_review_fixes.spec.ts",
+      "sha256": "bfc299d2322f0b71a28b591aba0fe03e47fe532e503009699c931080aa4622b8"
+    },
+    {
+      "file": "docs/document-export-at-acceptance.md",
+      "sha256": "1678d87e29e8adaf4dc9db93f6b40a75ef9f390524104aabc137609ce15da068"
+    }
+  ],
+  "tests": {
+    "passed": 77,
+    "failed": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "file": "tests/e2e/document_export_review_fixes.spec.ts",
+        "passed": 37
+      },
+      {
+        "file": "tests/e2e/document_export_baseline_fidelity.spec.ts",
+        "passed": 20
+      },
+      {
+        "file": "tests/e2e/document_export_at_acceptance.spec.ts",
+        "passed": 4
+      },
+      {
+        "file": "tests/e2e/document_export_artifact_binding.spec.ts",
+        "passed": 10
+      },
+      {
+        "file": "tests/e2e/document_export_link_acceptance.spec.ts",
+        "passed": 4
+      },
+      {
+        "file": "tests/document_export_inspection_failures.test.js",
+        "passed": 2
+      }
+    ],
+    "reports": [
+      "review-fix-complete-tests.json",
+      "inspection-failure-tests.json"
+    ]
+  },
+  "sourceSyntaxCheck": "passed",
+  "originalReviewEvidenceModified": false,
+  "limitations": [
+    "Synthetic local Chromium and tagged-PDF tests; no human screen-reader session.",
+    "No deployment, live model calls, or production delivery verdict changes."
+  ]
+}

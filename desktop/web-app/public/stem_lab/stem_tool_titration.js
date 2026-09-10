@@ -1871,9 +1871,75 @@ function titrationBenchCSV(raw) {
   titrationBenchNotebook(raw).forEach(function(r){rows.push([r.id,r.preset,r.setup,r.volume,r.axis==='pH'?r.value:'',r.axis==='E'?r.value:'',r.indicator,r.observation,r.note]);});
   return '\uFEFF'+rows.map(function(row){return row.map(cell).join(',');}).join('\r\n')+'\r\n';
 }
+// Keep saved setups separate and preserve recording order, including repeated volumes.
+function titrationNotebookSeries(raw,selectedId) {
+  var records=titrationBenchNotebook(raw),groups=[];
+  records.forEach(function(r){var key=JSON.stringify([r.preset,r.setup,r.axis]),group=groups.find(function(g){return g.key===key;});if(!group){group={key:key,setup:r.setup,axis:r.axis,records:[]};groups.push(group);}group.records.push(r);});
+  var selected=records.find(function(r){return r.id===selectedId;})||records[records.length-1];
+  return {groups:groups,selected:selected||null,group:selected?groups.find(function(g){return g.records.some(function(r){return r.id===selected.id;});}):null};
+}
+function titrationNotebookPlotFrame(raw) {
+  var records=titrationBenchNotebook(raw);if(!records.length)return null;
+  var first=records[0];if(records.some(function(r){return r.preset!==first.preset||r.setup!==first.setup||r.axis!==first.axis;}))return null;
+  function range(values,minimum,floor){var low=Math.min.apply(null,values),high=Math.max.apply(null,values),pad=Math.max(minimum/2,(high-low)*0.12);low=floor===null?low-pad:Math.max(floor,low-pad);high+=pad;return isFinite(low)&&isFinite(high)&&isFinite(high-low)&&high>low?{low:low,high:high}:null;}
+  var volume=range(records.map(function(r){return r.volume;}),0.2,0),response=range(records.map(function(r){return r.value;}),first.axis==='E'?0.02:0.4,null);if(!volume||!response)return null;
+  var points=records.map(function(r){return {id:r.id,x:74+376*(r.volume-volume.low)/(volume.high-volume.low),y:218-176*(r.value-response.low)/(response.high-response.low)};});
+  return {points:points,volume:volume,response:response,axis:first.axis};
+}
+function titrationNotebookNearest(frame,x,y) {
+  if(!frame||!isFinite(x)||!isFinite(y)||x<74||x>450||y<42||y>218)return null;
+  var best=null,distance=Infinity;
+  frame.points.forEach(function(p){var d=(p.x-x)*(p.x-x)+(p.y-y)*(p.y-y);if(d<=distance){distance=d;best=p.id;}});return best;
+}
+function TitrationNotebookPlot(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=props.id;
+  var choice=React.useState(function(){var saved=titrationBenchNotebook(props.records);return saved.length?saved[saved.length-1].id:null;}),chosen=choice[0],setChosen=choice[1],selectRef=React.useRef(null);
+  React.useEffect(function(){if(selectRef.current)selectRef.current.focus();},[]);
+  var series=titrationNotebookSeries(props.records,chosen),r=series.selected,group=series.group;if(!r)return null;
+  var frame=titrationNotebookPlotFrame(group.records),index=group.records.findIndex(function(entry){return entry.id===r.id;}),point=frame&&frame.points.find(function(p){return p.id===r.id;});
+  var axis=r.axis==='E'?t('stem.titration.comparison_potential','Potential (V)'):'pH';
+  var describe=function(entry){return '#'+entry.id+' · '+entry.volume.toFixed(1)+' mL · '+props.response(entry);};
+  var selectedText=t('stem.titration.notebook_plot_selected','Selected saved reading')+' '+describe(r);
+  return h('section',{id:id,className:'titr-notebook-plot','data-titration-notebook-plot':true,'aria-labelledby':id+'-title',onKeyDown:function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();props.onClose();}}},
+    h('div',{className:'titr-notebook-plot-header'},h('div',null,h('h5',{id:id+'-title'},t('stem.titration.notebook_plot_title','Saved-reading plot')),h('p',null,t('stem.titration.notebook_plot_intro','Explore the observations you saved, one titration setup at a time.'))),h('button',{type:'button',className:'titr-immersive-button',onClick:props.onClose},t('stem.titration.notebook_plot_close','Close plot'))),
+    h('div',{className:'titr-notebook-plot-layout'},
+      h('div',{className:'titr-notebook-plot-chart'},
+        h('label',{htmlFor:id+'-setup'},t('stem.titration.notebook_plot_setup','Plot setup')),
+        h('select',{id:id+'-setup',value:group.key,onChange:function(e){var next=series.groups.find(function(g){return g.key===e.target.value;});if(next)setChosen(next.records[next.records.length-1].id);}},series.groups.map(function(g){return h('option',{key:g.key,value:g.key},g.setup+' · '+(g.axis==='E'?t('stem.titration.comparison_potential','Potential (V)'):'pH')+' · '+g.records.length+' '+t('stem.titration.notebook_plot_count','saved readings'));})),
+        h('p',{className:'titr-notebook-plot-setup'},group.setup+' · '+axis+' · '+group.records.length+' '+t('stem.titration.notebook_plot_count','saved readings')),
+        frame?h('svg',{viewBox:'0 0 480 292',role:'img','aria-label':selectedText+'. '+t('stem.titration.notebook_plot_points','Points show saved readings; no curve is fitted.'),'aria-describedby':id+'-help',onClick:function(e){var box=e.currentTarget.getBoundingClientRect(),next=titrationNotebookNearest(frame,(e.clientX-box.left)*480/box.width,(e.clientY-box.top)*292/box.height);if(next!==null)setChosen(next);}},
+          h('rect',{x:74,y:42,width:376,height:176,rx:8,fill:'#071422'}),
+          h('text',{x:74,y:24,fill:'#e2edf8',fontSize:14},axis),
+          [0,0.5,1].map(function(k){var y=218-176*k,x=74+376*k,v=frame.response.low+(frame.response.high-frame.response.low)*k,vol=frame.volume.low+(frame.volume.high-frame.volume.low)*k;return h('g',{key:k},h('line',{x1:74,x2:450,y1:y,y2:y,stroke:'#536e83',strokeWidth:1}),h('text',{x:64,y:y+5,textAnchor:'end',fontSize:13,fill:'#cbd5e1'},v.toFixed(r.axis==='E'?3:2)),h('line',{x1:x,x2:x,y1:218,y2:223,stroke:'#cbd5e1'}),h('text',{x:x,y:246,textAnchor:k===1?'end':k===0?'start':'middle',fontSize:13,fill:'#cbd5e1'},String(Number(vol.toFixed(2)))));}),
+          h('path',{d:'M74 '+point.y+' H'+point.x+' V218',fill:'none',stroke:'#fbbf24',strokeWidth:1.5,strokeDasharray:'5 4'}),
+          frame.points.map(function(p){return h('circle',{key:p.id,'data-notebook-point':p.id,cx:p.x,cy:p.y,r:5,fill:'#67e8f9',stroke:'#071422',strokeWidth:2});}),
+          h('circle',{'data-notebook-point-selected':r.id,cx:point.x,cy:point.y,r:9,fill:'#071422',stroke:'#fbbf24',strokeWidth:2.5}),
+          h('circle',{cx:point.x,cy:point.y,r:3,fill:'#fbbf24'}),
+          h('text',{x:262,y:278,textAnchor:'middle',fontSize:14,fill:'#cbd5e1'},t('stem.titration.bench_volume_axis','Titrant volume (mL)'))
+        ):h('p',null,t('stem.titration.notebook_plot_unavailable','These saved values cannot be plotted. Use the reading list to inspect them.')),
+        h('p',{id:id+'-help'},t('stem.titration.notebook_plot_help','Select a point or use the reading list. Overlapping points remain individually selectable in the list.')),
+        h('p',{className:'titr-notebook-plot-key'},h('span',{'aria-hidden':true},'● '),t('stem.titration.notebook_plot_points','Points show saved readings; no curve is fitted.'))
+      ),
+      h('div',{className:'titr-notebook-plot-detail'},
+        h('label',{htmlFor:id+'-reading'},t('stem.titration.notebook_plot_reading','Plot reading')),
+        h('select',{ref:selectRef,id:id+'-reading',value:String(r.id),onChange:function(e){setChosen(Number(e.target.value));}},group.records.map(function(entry){return h('option',{key:entry.id,value:String(entry.id)},describe(entry));})),
+        h('div',{className:'titr-immersive-switches'},h('button',{type:'button',className:'titr-immersive-button',disabled:index===0,onClick:function(){setChosen(group.records[index-1].id);}},t('stem.titration.notebook_plot_previous','Previous reading')),h('button',{type:'button',className:'titr-immersive-button',disabled:index===group.records.length-1,onClick:function(){setChosen(group.records[index+1].id);}},t('stem.titration.notebook_plot_next','Next reading'))),
+        h('div',{className:'titr-notebook-plot-value',role:'status','aria-atomic':true},h('strong',null,t('stem.titration.notebook_plot_selected','Selected saved reading')+' #'+r.id),h('p',null,r.volume.toFixed(1)+' mL'),h('p',null,props.response(r))),
+        h('p',null,r.indicator),h('p',null,r.observation),
+        r.note&&h('div',{className:'titr-notebook-plot-note'},h('strong',null,t('stem.titration.bench_student_note','Your observation')),h('p',null,r.note)),
+        h('div',{className:'titr-immersive-switches'},['a','b'].map(function(which){return h('button',{key:which,type:'button',className:'titr-immersive-button','aria-pressed':String(r.id)===(which==='a'?props.aId:props.bId),onClick:function(){props.onMark(which,r.id);}},which==='a'?t('stem.titration.bench_use_a','Use as A'):t('stem.titration.bench_use_b','Use as B'));})),
+        h('p',null,t('stem.titration.notebook_plot_note','Selection changes only what you inspect. Experiment readings and saved notes stay unchanged.'))
+      )
+    )
+  );
+}
+
 function TitrationBenchTools(props) {
   var React=props.React,h=React.createElement,t=props.t,id=React.useId();
   var doseState=React.useState('1'),dose=doseState[0],setDose=doseState[1];
+  var plotState=React.useState(false),plotOpen=plotState[0],setPlotOpen=plotState[1],plotToggle=React.useRef(null);
+  React.useEffect(function(){if(!props.records||!props.records.length)setPlotOpen(false);},[props.records]);
+  function closePlot(){setPlotOpen(false);if(plotToggle.current)plotToggle.current.focus();}
   var selections=React.useState({a:null,b:null}),selected=selections[0],setSelected=selections[1];
   var feedbackState=React.useState(''),feedback=feedbackState[0],setFeedback=feedbackState[1];
   var records=titrationBenchNotebook(props.records),amount=titrationBenchDose(dose,props.remaining);
@@ -1901,8 +1967,10 @@ function TitrationBenchTools(props) {
   );}
   var css='.titr-comparison-plot{margin-top:14px;border-top:1px solid #52657a;padding-top:12px}.titr-comparison-legend{display:flex;gap:20px;flex-wrap:wrap}.titr-comparison-a{color:#a5f3fc;font-weight:800}.titr-comparison-b{color:#fde68a;font-weight:800}.titr-comparison-rate{margin-top:12px;padding:10px;border:1px solid #52657a;border-radius:8px;background:#071422}.titr-comparison-rate strong{font-size:12px;color:#e2edf8}.titr-comparison-rate p:first-of-type{font-size:18px;font-weight:800;color:#ecfeff}.titr-bench-tools{padding:16px;border-top:1px solid #52657a;background:#0b1d2d}.titr-bench-tools h4{font-size:16px;font-weight:800;color:#e2edf8;margin:0 0 12px}.titr-bench-tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.titr-bench-tool-card{border:1px solid #52657a;border-radius:13px;padding:14px;min-width:0;background:#102538}.titr-bench-tool-card h5{font-size:14px;font-weight:800;margin:0 0 10px;color:#a5f3fc}.titr-bench-tools label{display:block;font-size:12px;font-weight:700;color:#e2edf8;margin:8px 0 5px}.titr-bench-tools textarea{resize:vertical;min-height:78px;line-height:1.5}.titr-bench-tools input,.titr-bench-tools select,.titr-bench-tools textarea{box-sizing:border-box;max-width:100%;width:100%;min-height:44px;border:1px solid #8193a7;border-radius:8px;background:#071422;color:#ecf5fc;padding:8px;font-size:13px}.titr-bench-tools :is(input,select,textarea):focus-visible{outline:3px solid #facc15;outline-offset:2px}.titr-bench-tools .titr-immersive-switches{margin-top:12px}.titr-bench-tools p{margin:8px 0 0}.titr-bench-tools .titr-tool-error{color:#fecaca}.titr-notebook{margin-top:12px}.titr-notebook ol{list-style:none;padding:0;margin:12px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;max-height:520px;overflow:auto}.titr-notebook li{border:1px solid #52657a;border-radius:10px;padding:12px;min-width:0;background:#071422;overflow-wrap:anywhere}.titr-notebook li[data-selected=true]{border-color:#67e8f9;box-shadow:inset 3px 0 #67e8f9}.titr-bench-tools a.titr-immersive-button{display:inline-flex;align-items:center;box-sizing:border-box;text-decoration:none}.titr-notebook .titr-note-count{font-variant-numeric:tabular-nums;text-align:right}.titr-notebook li strong{color:#a5f3fc;font-size:13px}.titr-notebook-readout{font-size:16px!important;font-weight:800;color:#ecfeff!important}.titr-comparison-result{margin-top:12px;padding:10px;border-left:3px solid #67e8f9;background:#071422;border-radius:6px}.titr-comparison-result strong{color:#ecfeff}@media(max-width:600px){.titr-comparison-plot svg text{font-size:16px}.titr-bench-tool-grid{grid-template-columns:minmax(0,1fr)}.titr-notebook ol{grid-template-columns:minmax(0,1fr)}}';
   css+='.titr-bench-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"heading heading" "dispenser comparison" "notebook comparison";gap:12px;align-items:start}.titr-bench-tools>h4{grid-area:heading;margin:0}.titr-bench-tool-grid{display:contents}.titr-bench-dispenser{grid-area:dispenser}.titr-bench-comparison{grid-area:comparison}.titr-bench-tools>.titr-notebook{grid-area:notebook;margin-top:0}.titr-comparison-setup{overflow-wrap:anywhere}.titr-comparison-plot svg{max-height:330px}@media(max-width:760px){.titr-bench-tools{grid-template-columns:minmax(0,1fr);grid-template-areas:"heading" "dispenser" "comparison" "notebook"}}';
-  return h('section',{className:'titr-bench-tools','data-titration-bench-tools':true,'aria-label':t('stem.titration.bench_tools','Bench tools')},
+  css+=".titr-bench-tools.has-plot{grid-template-areas:\"heading heading\" \"plot plot\" \"dispenser comparison\" \"notebook comparison\"}.titr-notebook-plot{grid-area:plot;min-width:0;padding:16px;border:1px solid #8193a7;border-radius:14px;background:#102a3d}.titr-notebook-plot-header{display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap}.titr-notebook-plot-header h5{font-size:16px;font-weight:800;margin:0;color:#fde68a}.titr-notebook-plot-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;margin-top:12px}.titr-notebook-plot-chart,.titr-notebook-plot-detail{min-width:0}.titr-notebook-plot svg{display:block;width:100%;height:auto;margin:12px 0;cursor:crosshair}.titr-notebook-plot-value{border-left:3px solid #fbbf24;border-radius:8px;background:#071422;padding:12px;margin-top:14px}.titr-notebook-plot-value strong{color:#fde68a;font-size:12px}.titr-notebook-plot-value p{font-size:22px;font-weight:800;color:#ecfeff;margin:4px 0 0;font-variant-numeric:tabular-nums}.titr-notebook-plot-key{color:#a5f3fc!important}.titr-notebook-plot-note{border-top:1px solid #52657a;margin-top:12px;padding-top:12px}.titr-notebook-plot-note strong{color:#e2edf8;font-size:12px}.titr-notebook-plot-note p{white-space:pre-wrap;overflow-wrap:anywhere}.titr-notebook-plot-detail>p{overflow-wrap:anywhere}.titr-notebook-plot-setup{display:none}@media(max-width:760px){.titr-bench-tools.has-plot{grid-template-columns:minmax(0,1fr);grid-template-areas:\"heading\" \"plot\" \"dispenser\" \"comparison\" \"notebook\"}.titr-notebook-plot-layout{grid-template-columns:minmax(0,1fr);gap:16px}.titr-notebook-plot-setup{display:block;overflow-wrap:anywhere}.titr-notebook-plot{padding:12px}.titr-notebook-plot svg text{font-size:18px}}@media(max-width:480px){.titr-notebook-plot svg text{font-size:24px}}";
+  return h('section',{className:'titr-bench-tools'+(plotOpen&&records.length?' has-plot':''),'data-titration-bench-tools':true,'aria-label':t('stem.titration.bench_tools','Bench tools')},
     h('style',null,css),h('h4',null,t('stem.titration.bench_tools','Bench tools')),
+    plotOpen&&records.length>0&&h(TitrationNotebookPlot,{React:React,t:t,id:id+'-plot',records:records,response:response,aId:aId,bId:bId,onMark:mark,onClose:closePlot}),
     h('div',{className:'titr-bench-tool-grid'},
       h('section',{className:'titr-bench-tool-card titr-bench-dispenser','aria-label':t('stem.titration.bench_dispenser','Custom-volume dispenser')},
         h('h5',null,t('stem.titration.bench_dispenser','Custom-volume dispenser')),
@@ -1932,6 +2000,7 @@ function TitrationBenchTools(props) {
       h('p',null,t('stem.titration.bench_notebook_help','Save displayed simulation readings to compare later. Readings stay in the notebook when you change setups; up to 40 can be kept.')),
       h('div',{className:'titr-immersive-switches'},
         h('button',{type:'button',className:'titr-immersive-button',disabled:records.length>=40,onClick:record},t('stem.titration.bench_save_reading','Save reading')),
+        h('button',{ref:plotToggle,type:'button',className:'titr-immersive-button',disabled:records.length===0,'aria-expanded':plotOpen&&records.length>0,'aria-controls':plotOpen&&records.length>0?id+'-plot':undefined,onClick:function(){if(plotOpen)closePlot();else setPlotOpen(true);}},t('stem.titration.notebook_plot_toggle','Plot readings')),
         records.length>0 && h('a',{className:'titr-immersive-button',href:'data:text/csv;charset=utf-8,'+encodeURIComponent(titrationBenchCSV(records)),download:'alloflow-titration-notebook.csv'},t('stem.titration.bench_download_csv','Download CSV')),
         h('button',{type:'button',className:'titr-immersive-button',disabled:records.length===0,onClick:function(){props.onRecords([]);setSelected({a:null,b:null});setFeedback(t('stem.titration.bench_notebook_cleared','Notebook cleared.'));}},t('stem.titration.bench_clear_notebook','Clear notebook'))
       ),
@@ -2039,6 +2108,53 @@ function titrationReadingWindow(raw) {
   var reading=Math.max(0,Math.min(50,Number(raw)||0)),low=Math.max(0,Math.min(47,Math.floor(reading)-1));
   return {reading:reading,low:low,high:low+3};
 }
+// Match the lab's 50 mL refill convention: an exact multiple is an empty fill.
+function titrationBurettePosition(raw) {
+  if(typeof raw!=='number'||!isFinite(raw)||raw<0||raw>150)return null;
+  var refills=Math.max(0,Math.ceil(raw/50)-1),reading=Number((raw-refills*50).toFixed(1));
+  return {volume:Number((refills*50+reading).toFixed(1)),refills:refills,reading:reading};
+}
+function titrationVolumeDifference(start,current) {
+  var a=titrationBurettePosition(start),b=titrationBurettePosition(current);if(!a||!b||b.volume<a.volume)return null;
+  var refills=b.refills-a.refills,total=Number((b.volume-a.volume).toFixed(1));
+  return {start:a,current:b,total:total,refills:refills,first:refills?Number((50-a.reading).toFixed(1)):total,full:Math.max(0,refills-1),last:refills?b.reading:0};
+}
+function TitrationVolumeMeasure(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=props.id,button=React.useRef(null),current=titrationBurettePosition(props.model.delivered),difference=titrationVolumeDifference(props.start,props.model.delivered),start=difference?difference.start:null;
+  React.useEffect(function(){if(button.current)button.current.focus();},[]);
+  var unit=function(value){return value.toFixed(1)+' mL';};
+  var clear=t('stem.titration.measure_clear','Clear start'),notSet=t('stem.titration.measure_not_set','Not set');
+  function scale(position,label,isCurrent){var level=position?32+position.reading/50*220:0,edge=props.model.redox?level:level-6,uid=id.replace(/[^a-zA-Z0-9]/g,'')+(isCurrent?'now':'start'),color=isCurrent?'#fbbf24':'#67e8f9';return h('figure',{className:'titr-measure-scale'+(isCurrent?' is-current':'')},
+    h('figcaption',null,h('strong',null,label),h('span',null,position?unit(position.reading):notSet)),
+    h('svg',{viewBox:'0 0 200 292',role:'img','aria-label':label+'. '+(position?unit(position.reading):notSet)},
+      h('defs',null,h('linearGradient',{id:uid,x1:'0',x2:'1'},h('stop',{offset:'0%',stopColor:'#bce7ff',stopOpacity:0.35}),h('stop',{offset:'45%',stopColor:'#5e9bb5',stopOpacity:0.05}),h('stop',{offset:'100%',stopColor:'#bce7ff',stopOpacity:0.3}))),
+      h('rect',{x:48,y:15,width:55,height:254,rx:10,fill:'url(#'+uid+')',stroke:'#bce7ff',strokeWidth:2}),
+      position&&position.reading<50&&h('path',{'data-measure-liquid':isCurrent?'current':'start',d:'M52 '+edge+' Q75.5 '+(edge+12)+' 99 '+edge+' V262 H52 Z',fill:props.model.redox?'#a855f7':'#69cddd',fillOpacity:props.model.redox?0.8:0.4,stroke:'#e2f6ff',strokeWidth:1}),
+      Array.from({length:51},function(_,i){var y=32+i/50*220;return h('g',{key:i},h('line',{x1:i%10===0?88:98,x2:112,y1:y,y2:y,stroke:'#dcecf6',strokeWidth:i%10===0?1.5:0.8}),i%10===0&&h('text',{x:124,y:y+6,fontSize:20,fill:'#e2edf8'},i));}),
+      position&&h('g',null,h('line',{'data-measure-level':isCurrent?'current':'start',x1:30,x2:114,y1:level,y2:level,stroke:color,strokeWidth:2,strokeDasharray:'4 3'}),h('path',{d:'M25 '+(level-5)+' L33 '+level+' L25 '+(level+5)+' Z',fill:color})),
+      h('text',{x:126,y:18,fontSize:17,fill:'#cbd5e1'},'mL'),
+      h('path',{d:'M57 24 V259',stroke:'#e2f4ff',strokeOpacity:0.35,strokeWidth:2})
+    )
+  );}
+  return h('section',{id:id,className:'titr-volume-measure','data-titration-volume-measure':true,'aria-labelledby':id+'-title',onKeyDown:function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();props.onClose();}}},
+    h('div',{className:'titr-measure-header'},h('div',null,h('h4',{id:id+'-title'},t('stem.titration.measure_title','Delivered-volume tracker')),h('p',null,t('stem.titration.measure_help','Set a start reading, then add titrant to measure the volume delivered since that mark.'))),h('button',{type:'button',className:'titr-immersive-button',onClick:props.onClose},t('stem.titration.measure_close','Close tracker'))),
+    h('div',{className:'titr-measure-layout'},
+      h('div',null,h('div',{className:'titr-measure-pair'},scale(start,t('stem.titration.measure_start','Start reading'),false),scale(current,t('stem.titration.measure_current','Current reading'),true)),h('p',{className:'titr-measure-caption'},t('stem.titration.measure_scale_note','Each scale shows one 50 mL fill. Read the numbered values; use the reading lens for the meniscus close-up.'))),
+      h('div',{className:'titr-measure-detail'},
+        h('div',{className:'titr-immersive-switches'},h('button',{ref:button,type:'button',className:'titr-immersive-button',onClick:props.onMark},t('stem.titration.measure_mark','Set start reading')),h('button',{type:'button',className:'titr-immersive-button',disabled:!start,onClick:props.onClear},clear)),
+        h('div',{className:'titr-measure-result',role:'status','aria-atomic':true},h('strong',null,t('stem.titration.measure_delivered','Delivered since start')),h('p',{'data-measure-total':true},difference?unit(difference.total):'—'),h('p',{className:'titr-measure-result-note'},difference?t('stem.titration.measure_live','Updates as you add titrant.'):t('stem.titration.measure_empty','Choose Set start reading to begin.'))),
+        difference&&h('div',{className:'titr-measure-calculation','data-measure-calculation':true},h('strong',null,t('stem.titration.measure_calculation','How the volume is counted')),
+          difference.refills===0?h('p',null,unit(current.reading)+' − '+unit(start.reading)+' = '+unit(difference.total)):h(React.Fragment,null,
+            h('p',null,t('stem.titration.measure_refills','Refills since start:')+' '+difference.refills),
+            h('ol',null,h('li',null,t('stem.titration.measure_first','From the starting fill:')+' '+unit(difference.first)),difference.full>0&&h('li',null,t('stem.titration.measure_full','Complete intervening fills:')+' '+difference.full+' × 50.0 mL'),h('li',null,t('stem.titration.measure_last','From the current fill:')+' '+unit(difference.last))),
+            h('p',null,t('stem.titration.measure_refill_note','A refill returns the burette scale to the top. Delivered volume continues to accumulate.')))),
+        h('div',{className:'titr-measure-add'},h('strong',null,t('stem.titration.bench_add','Add titrant at the bench')),h('div',{className:'titr-immersive-switches'},[0.1,0.5,1].map(function(amount){return h('button',{key:amount,type:'button',className:'titr-immersive-button',disabled:!props.canAdd,onClick:function(){props.onAdd(amount);}},'+'+amount+' mL');}))),
+        h('p',null,t('stem.titration.measure_mark_note','Setting or clearing a start mark does not add titrant or save a notebook reading. The mark is cleared if the setup changes or the volume moves below it.'))
+      )
+    )
+  );
+}
+
 function TitrationReadingLens(props) {
   var h=props.React.createElement,t=props.t,m=props.model,w=titrationReadingWindow(m.reading),y=function(v){return 36+(v-w.low)/3*210;},level=y(w.reading),empty=w.reading===50;
   var edge=m.redox?level:level-10,control=edge+20,path='M72 '+edge+' Q112 '+control+' 152 '+edge+' V258 H72 Z';
@@ -2095,6 +2211,42 @@ function TitrationApparatusDiagram(props) {
   );
 }
 
+function titrationColorPreviewValue(raw,max,redox) {
+  if((typeof raw!=='number'&&typeof raw!=='string')||(typeof raw==='string'&&!raw.trim()))return null;
+  var value=Number(raw),limit=Number(max),step=redox?0.1:0.01;
+  if(!isFinite(value)||!isFinite(limit)||limit<=0)return null;
+  return Number((Math.round(Math.max(0,Math.min(limit,value))/step+1e-9)*step).toFixed(2));
+}
+function TitrationColorExplorer(props) {
+  var h=props.React.createElement,t=props.t,c=props.reference,id=props.id;
+  var unit=function(v){return c.redox?v.toFixed(1)+' mL':'pH '+v.toFixed(2);};
+  var samples=c.redox?[0,c.equivalence,Math.min(c.max,c.equivalence+0.1)]:[c.low,(c.low+c.high)/2,c.high];
+  var stops=Array.from({length:71},function(_,i){return c.max*i/70;}).concat(samples).sort(function(a,b){return a-b;}).map(function(v){return c.colorAt(v)+' '+(v/c.max*100)+'%';});
+  function well(value,label,preview){return h('figure',{className:'titr-reference-well'+(preview?' is-reference':'')},
+    h('figcaption',null,h('strong',null,h('span',{'aria-hidden':true,style:{display:'inline',fontSize:'inherit',color:'inherit'}},preview?'◇ ':'▲ '),label),h('span',null,unit(value))),
+    h('svg',{viewBox:'0 0 128 128',role:'img','aria-label':label+'. '+unit(value)},
+      h('ellipse',{cx:64,cy:113,rx:43,ry:5,fill:'#061421',opacity:0.8}),
+      h('circle',{cx:64,cy:60,r:48,fill:'#e2ecf3',stroke:'#9eb5c5',strokeWidth:2}),
+      h('circle',{cx:64,cy:60,r:43,fill:'#fff',stroke:'#b5c9d8',strokeWidth:1.5}),
+      h('circle',{'data-explorer-sample':preview?'reference':'live',cx:64,cy:60,r:37,fill:c.colorAt(value),stroke:'#7996aa',strokeWidth:0.8}),
+      h('path',{d:'M34 45 A34 34 0 0 1 66 25',fill:'none',stroke:'#fff',strokeWidth:3,strokeLinecap:'round',opacity:0.65})
+    ));}
+  return h('section',{id:id,className:'titr-color-explorer','data-titration-color-explorer':true,'aria-labelledby':id+'-title',onKeyDown:function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();props.onClose();}}},
+    h('div',{className:'titr-explorer-header'},h('div',null,h('h4',{id:id+'-title'},t('stem.titration.color_explorer_title','Reference color preview')),h('p',null,c.label)),h('button',{type:'button',className:'titr-immersive-button',onClick:props.onClose},t('stem.titration.color_explorer_close','Close preview'))),
+    h('div',{className:'titr-explorer-layout'},
+      h('div',null,
+        h('p',{id:id+'-help'},t('stem.titration.color_explorer_help','Preview only: no titrant is added and no readings are saved.')),
+        h('label',{htmlFor:id+'-slider'},c.redox?t('stem.titration.color_reference_volume','Reference volume (mL)'):t('stem.titration.color_reference_ph','Reference pH')),
+        h('input',{ref:props.sliderRef,id:id+'-slider',type:'range',min:0,max:c.max,step:c.redox?0.1:0.01,value:props.value,'aria-valuetext':unit(props.value),'aria-describedby':id+'-help',style:{'--titr-reference-gradient':'linear-gradient(to right,'+stops.join(',')+')'},onChange:function(e){props.onChange(titrationColorPreviewValue(e.target.value,c.max,c.redox));}}),
+        h('div',{className:'titr-reference-scale','aria-hidden':true},h('span',null,unit(0)),h('span',null,unit(c.max))),
+        h('div',{className:'titr-immersive-switches',role:'group','aria-label':t('stem.titration.color_reference_values','Reference values')},samples.map(function(v,i){return h('button',{key:i,type:'button',className:'titr-immersive-button','aria-pressed':Math.abs(props.value-v)<0.0001,onClick:function(){props.onChange(titrationColorPreviewValue(v,c.max,c.redox));}},unit(v));})),
+        h('p',{className:'titr-reference-caption'},t('stem.titration.color_explorer_note','Compare the samples on white. The live sample follows your experiment; the reference stays at the value you choose.'))
+      ),
+      h('div',{className:'titr-reference-pair'},well(c.value,t('stem.titration.color_live_sample','Live color'),false),well(props.value,t('stem.titration.color_reference_sample','Reference color'),true))
+    )
+  );
+}
+
 // The color guide samples the existing chemistry color function. It has no endpoint model.
 function TitrationColorGuide(props) {
   var React=props.React,h=React.createElement,t=props.t,c=props.reference;
@@ -2109,11 +2261,12 @@ function TitrationColorGuide(props) {
     h('p',{className:'titr-color-name'},c.label),
     h('p',{className:'titr-trace-value'},c.readout),
     h('div',{className:'titr-color-observation'},h('span',{className:'titr-color-well','aria-hidden':true},h('span',{'data-color-current':true,style:{background:c.colorAt(c.value)}})),h('p',null,c.observation)),
-    h('svg',{viewBox:'0 0 260 145',role:'img','aria-label':c.label+'. '+range+'. '+c.readout,style:{display:'block',width:'100%',height:'auto'}},
+    h('svg',{viewBox:'0 0 260 145',role:'img','aria-label':c.label+'. '+range+'. '+c.readout+(props.preview!==null&&props.preview!==undefined?'. '+t('stem.titration.color_reference_sample','Reference color')+' '+unit(props.preview):''),style:{display:'block',width:'100%',height:'auto'}},
       h('defs',null,h('linearGradient',{id:id},anchors.map(function(v,i){return h('stop',{key:i,offset:(v/c.max*100)+'%',stopColor:c.colorAt(v)});}))),
       h('rect',{x:20,y:35,width:220,height:24,rx:5,fill:'#fff'}),
       h('rect',{x:20,y:35,width:220,height:24,rx:5,fill:'url(#'+id+')',stroke:'#cbd5e1',strokeWidth:1.5}),
       h('path',{'data-color-position':true,d:'M'+(x(c.value)-5)+' 22 L'+x(c.value)+' 30 L'+(x(c.value)+5)+' 22 Z',fill:'#67e8f9'}),
+      props.preview!==null&&props.preview!==undefined&&h('path',{'data-color-reference-position':true,d:'M'+x(props.preview)+' 3 l5 5 -5 5 -5 -5 Z',fill:'#fff',stroke:'#fbbf24',strokeWidth:1.5}),
       c.redox?h('g',null,h('line',{x1:x(c.equivalence),x2:x(c.equivalence),y1:31,y2:78,stroke:'#173e54',strokeWidth:4,strokeDasharray:'3 3'}),h('line',{'data-color-equivalence':true,x1:x(c.equivalence),x2:x(c.equivalence),y1:31,y2:78,stroke:'#fbbf24',strokeWidth:2,strokeDasharray:'3 3'})):!c.universal&&h('g',{stroke:'#fbbf24',fill:'#fde68a'},
         h('path',{d:'M'+x(c.low)+' 66 V75 H'+x(c.high)+' V66',fill:'none',strokeWidth:1.5}),
         h('text',{x:x(c.low),y:89,fontSize:10,textAnchor:'end',stroke:'none'},c.low.toFixed(1)),h('text',{x:x(c.high),y:89,fontSize:10,textAnchor:'start',stroke:'none'},c.high.toFixed(1))),
@@ -2121,16 +2274,804 @@ function TitrationColorGuide(props) {
       h('text',{x:130,y:136,fontSize:12,textAnchor:'middle',fill:'#cbd5e1'},c.redox?t('stem.titration.bench_volume_axis','Titrant volume (mL)'):'pH')
     ),
     h('p',{className:'titr-color-range'},range),
-    h('div',{className:'titr-color-samples',role:'group','aria-label':t('stem.titration.color_samples','Reference colors')},samples.map(function(v,i){return h('div',{key:i},h('span',{className:'titr-color-well','aria-hidden':true},h('span',{'data-color-sample':v,style:{background:c.colorAt(v)}})),h('p',null,unit(v)));})),
+    h('div',{className:'titr-color-samples',role:'group','aria-label':t('stem.titration.color_samples','Reference colors')},samples.map(function(v,i){return h('button',{key:i,type:'button','aria-label':t('stem.titration.color_preview_swatch','Preview')+' '+unit(v),'aria-pressed':props.preview!==null&&props.preview!==undefined&&Math.abs(props.preview-v)<0.0001,onClick:function(){props.onPreview(v);}},h('span',{className:'titr-color-well','aria-hidden':true},h('span',{'data-color-sample':v,style:{background:c.colorAt(v)}})),h('p',null,unit(v)));})),
     h('p',null,c.redox?t('stem.titration.color_redox_note','Self-indicating permanganate. Compare the color with the potential curve and added volume.'):t('stem.titration.color_indicator_note','Compare the color with the pH curve. A color change alone does not locate the equivalence point.')),
     h('p',null,t('stem.titration.color_white_note','Simulated colors shown on white; glass and lighting can change their appearance.'))
   );
 }
 
+function TitrationBenchViews(props) {
+  var h=props.React.createElement,t=props.t;
+  function picture(part){return h('svg',{viewBox:'0 0 112 90','aria-hidden':true,focusable:'false'},
+    h('ellipse',{cx:56,cy:79,rx:43,ry:6,fill:'#04121e'}),
+    part==='apparatus'?h('g',null,
+      h('path',{d:'M17 78 H92 M28 77 V12 M28 27 H61',fill:'none',stroke:'#8ea9bb',strokeWidth:4,strokeLinecap:'round'}),
+      h('rect',{x:57,y:7,width:10,height:43,rx:3,fill:'#29556c',stroke:'#d0eafa',strokeWidth:1.5}),
+      h('path',{d:'M58 21 H66 V48 H58 Z',fill:'#69cddd',opacity:0.65}),
+      h('path',{d:'M62 50 V57 M56 51 H68',stroke:'#d0eafa',strokeWidth:2}),
+      h('path',{d:'M55 58 H69 V65 L78 77 H46 L55 65 Z',fill:'#21475b',stroke:'#d0eafa',strokeWidth:1.5}),
+      h('path',{d:'M53 70 H71 L75 75 H49 Z',fill:'#67e8f9',opacity:0.6})
+    ):part==='flask'?h('g',null,
+      h('path',{d:'M17 77 H95 L99 83 H13 Z',fill:'#e2ecf3'}),
+      h('path',{d:'M43 12 H69 V32 L92 69 Q94 78 85 78 H27 Q18 78 20 69 L43 32 Z',fill:'#1b3f52',stroke:'#c5e8fa',strokeWidth:2}),
+      h('path',{d:'M31 51 H81 L89 70 Q90 74 84 75 H28 Q22 74 23 70 Z',fill:'#f9a8d4',opacity:0.85}),
+      h('ellipse',{cx:56,cy:51,rx:25,ry:4,fill:'#fbcfe8',stroke:'#e2f6ff',strokeWidth:1}),
+      h('path',{d:'M47 18 V34 L28 66',stroke:'#e2f4ff',strokeWidth:3,opacity:0.5,fill:'none'})
+    ):h('g',null,
+      h('rect',{x:36,y:6,width:22,height:67,rx:5,fill:'#244c60',stroke:'#c5e8fa',strokeWidth:2}),
+      h('path',{d:'M38 34 Q47 40 56 34 V70 H38 Z',fill:'#69cddd',opacity:0.55,stroke:'#e2f6ff',strokeWidth:1}),
+      [14,22,30,38,46,54,62,70].map(function(y,i){return h('line',{key:y,x1:i%2?52:47,x2:65,y1:y,y2:y,stroke:'#d0eafa',strokeWidth:1.4});}),
+      h('path',{d:'M23 37 H77',stroke:'#fbbf24',strokeDasharray:'4 3',strokeWidth:2}),
+      h('path',{d:'M47 73 V83 M36 75 H58',stroke:'#d0eafa',strokeWidth:3})
+    )
+  );}
+  var cards=[['apparatus',t('stem.titration.bench_full_apparatus','Full apparatus'),t('stem.titration.nav_apparatus_hint','Follow additions and the live curve.')],['flask',t('stem.titration.bench_flask_closeup','Flask close-up'),t('stem.titration.nav_flask_hint','Inspect the solution and compare colors.')],['burette',t('stem.titration.bench_burette_closeup','Burette close-up'),t('stem.titration.nav_burette_hint','Read the scale and track delivered volume.')]];
+  return h('div',{className:'titr-bench-views',role:'group','aria-label':t('stem.titration.bench_inspect','Inspect the apparatus')},cards.map(function(card){var active=props.focus===card[0],hint=props.id+'-'+card[0];return h('button',{key:card[0],type:'button',className:'titr-bench-view','data-bench-view':card[0],'aria-label':card[1],'aria-describedby':hint,'aria-pressed':active,onClick:function(){props.onInspect(card[0]);}},picture(card[0]),h('span',{className:'titr-bench-view-copy'},h('strong',null,card[1]),h('span',{id:hint},card[2])),h('span',{className:'titr-bench-view-check','aria-hidden':true},active?'✓':''));}));
+}
+
+// Equipment technique illustrations are independent of the live experiment state.
+// Integer tenths of a milligram avoid binary rounding drift in the weighing exercise.
+function titrationWeighingState(raw) {
+  raw = raw && typeof raw === 'object' ? raw : {};
+  var tare = raw.tareUnits === 23456 ? 23456 : 0;
+  var sample = tare && Number.isSafeInteger(raw.sampleUnits) ? Math.max(0,Math.min(20000,raw.sampleUnits)) : 0;
+  return {closed:raw.closed !== false,boat:raw.boat === true,tareUnits:tare,sampleUnits:sample,
+    recordedUnits:tare && Number.isSafeInteger(raw.recordedUnits) && raw.recordedUnits > 0 && raw.recordedUnits <= 20000 ? raw.recordedUnits : null};
+}
+function titrationWeighingTransition(raw, action) {
+  var s=titrationWeighingState(raw);action=action||{};
+  switch(action.type) {
+    case 'reset': return titrationWeighingState();
+    case 'shield': s.closed=!s.closed;break;
+    case 'boat': if(!s.closed)s.boat=!s.boat;break;
+    case 'tare': if(s.closed && s.boat && s.sampleUnits===0)s.tareUnits=23456;break;
+    case 'add': if(!s.closed && s.boat && s.tareUnits && [1000,100,10].indexOf(action.units)!==-1 && s.sampleUnits+action.units<=20000)s.sampleUnits+=action.units;break;
+    case 'record': if(s.closed && s.boat && s.tareUnits && s.sampleUnits>0)s.recordedUnits=s.sampleUnits;break;
+  }
+  return s;
+}
+function titrationWeighingReading(raw) {
+  var s=titrationWeighingState(raw),gross=s.boat?23456+s.sampleUnits:0;
+  return {gross:gross,tare:s.tareUnits,net:gross-s.tareUnits};
+}
+// Transfer trials keep a copy of a recorded mass; they never consume the weighing sample.
+function titrationTransferSource(weighing) {
+  var w=titrationWeighingState(weighing);
+  return w.recordedUnits!==null && w.recordedUnits===w.sampleUnits ? w.recordedUnits : null;
+}
+function titrationTransferState(raw) {
+  raw=raw && typeof raw==='object'?raw:{};
+  var source=Number.isSafeInteger(raw.sourceUnits) && raw.sourceUnits>0 && raw.sourceUnits<=20000?raw.sourceUnits:null;
+  var residue=Number.isSafeInteger(raw.residuePermille)?Math.max(0,Math.min(100,raw.residuePermille)):40;
+  var phase=source && ['poured','rinsed'].indexOf(raw.phase)!==-1?raw.phase:'ready';
+  var recorded=source && phase!=='ready' && (raw.recordedPhase==='poured' || (raw.recordedPhase==='rinsed' && phase==='rinsed'))?raw.recordedPhase:null;
+  return {sourceUnits:source,residuePermille:residue,phase:phase,recordedPhase:recorded};
+}
+function titrationTransferMass(raw,phaseOverride) {
+  var s=titrationTransferState(raw),source=s.sourceUnits||0,phase=phaseOverride||s.phase;
+  var dryResidue=Math.round(source*s.residuePermille/1000);
+  var remaining=phase==='ready'?source:phase==='rinsed'?0:dryResidue;
+  return {source:source,remaining:remaining,received:source-remaining,
+    dryBefore:source?23456+source:null,dryAfter:source && phase==='poured'?23456+remaining:null};
+}
+function titrationTransferTransition(raw,action,weighing) {
+  var s=titrationTransferState(raw);action=action||{};
+  if(action.type==='load') {
+    var source=titrationTransferSource(weighing);
+    if(source!==null)return {sourceUnits:source,residuePermille:s.residuePermille,phase:'ready',recordedPhase:null};
+  } else if(action.type==='restart') {
+    s.phase='ready';s.recordedPhase=null;
+  } else if(action.type==='residue' && s.phase==='ready' && Number.isSafeInteger(action.value) && action.value>=0 && action.value<=100) {
+    s.residuePermille=action.value;
+  } else if(action.type==='pour' && s.sourceUnits!==null && s.phase==='ready') {
+    s.phase='poured';
+  } else if(action.type==='rinse' && s.phase==='poured' && titrationTransferMass(s).remaining>0) {
+    s.phase='rinsed';
+  } else if(action.type==='record' && s.phase!=='ready' && s.sourceUnits!==null) {
+    s.recordedPhase=s.phase;
+  }
+  return s;
+}
+
+// Preparation volumes use integer hundredths of a milliliter; sample units remain 0.0001 g.
+function titrationPreparationSource(transfer) {
+  var s=titrationTransferState(transfer);
+  return s.recordedPhase!==null && s.recordedPhase===s.phase?titrationTransferMass(s).received:null;
+}
+function titrationPreparationState(raw) {
+  raw=raw && typeof raw==='object'?raw:{};
+  var source=Number.isSafeInteger(raw.sourceUnits)&&raw.sourceUnits>0&&raw.sourceUnits<=20000?raw.sourceUnits:null;
+  var phase=source && ['dissolved','filling','mixed'].indexOf(raw.phase)!==-1?raw.phase:'received';
+  var volume=phase==='filling'||phase==='mixed'?(Number.isSafeInteger(raw.volumeUnits)&&raw.volumeUnits>=9500&&raw.volumeUnits<=10100&&raw.volumeUnits%5===0?raw.volumeUnits:9500):0;
+  var eye=raw.eyeLevel===true;
+  if(phase==='mixed' && (volume!==10000 || !eye))phase='filling';
+  return {sourceUnits:source,phase:phase,volumeUnits:volume,eyeLevel:eye};
+}
+function titrationPreparationTransition(raw,action,transfer) {
+  var s=titrationPreparationState(raw);action=action||{};
+  if(action.type==='load') {
+    var source=titrationPreparationSource(transfer);
+    if(source!==null)return {sourceUnits:source,phase:'received',volumeUnits:0,eyeLevel:false};
+  } else if(action.type==='restart') {
+    s.phase='received';s.volumeUnits=0;s.eyeLevel=false;
+  } else if(s.sourceUnits!==null) {
+    if(action.type==='dissolve' && s.phase==='received')s.phase='dissolved';
+    else if(action.type==='transfer' && s.phase==='dissolved'){s.phase='filling';s.volumeUnits=9500;}
+    else if(action.type==='eye' && s.phase==='filling')s.eyeLevel=true;
+    else if(action.type==='add' && s.phase==='filling' && s.volumeUnits<=10000 && [5,100].indexOf(action.units)!==-1)s.volumeUnits+=action.units;
+    else if(action.type==='mix' && s.phase==='filling' && s.volumeUnits===10000 && s.eyeLevel)s.phase='mixed';
+  }
+  return s;
+}
+function titrationPreparationResult(raw) {
+  var s=titrationPreparationState(raw);
+  return s.sourceUnits!==null && s.phase==='mixed'?{massGrams:s.sourceUnits/10000,volumeMl:100,gramsPerLiter:s.sourceUnits/1000}:null;
+}
+
+function titrationAliquotSource(preparation) {
+  var s=titrationPreparationState(preparation);
+  return titrationPreparationResult(s)?s.sourceUnits:null;
+}
+function titrationAliquotState(raw) {
+  raw=raw&&typeof raw==='object'?raw:{};
+  var source=Number.isSafeInteger(raw.sourceUnits)&&raw.sourceUnits>0&&raw.sourceUnits<=20000?raw.sourceUnits:null;
+  var phase=source&&['conditioned','filled','adjusted','delivered','blown'].indexOf(raw.phase)!==-1?raw.phase:'ready';
+  // A completed delivery cannot be reconstructed without its alignment and wall-contact steps.
+  var eye=raw.eyeLevel===true,wall=raw.atWall===true;
+  if(['adjusted','delivered','blown'].indexOf(phase)!==-1&&!eye)phase='filled';
+  if(['delivered','blown'].indexOf(phase)!==-1&&!wall)phase='adjusted';
+  if(['adjusted','delivered','blown'].indexOf(phase)===-1)wall=false;
+  if(phase==='ready'||phase==='conditioned')eye=false;
+  return {sourceUnits:source,phase:phase,eyeLevel:eye,atWall:wall,recorded:raw.recorded===true&&(phase==='delivered'||phase==='blown')};
+}
+function titrationAliquotTransition(raw,action,preparation) {
+  var s=titrationAliquotState(raw);action=action||{};
+  if(action.type==='load') {
+    var source=titrationAliquotSource(preparation);
+    if(source!==null)return {sourceUnits:source,phase:'ready',eyeLevel:false,atWall:false,recorded:false};
+  } else if(action.type==='restart') {
+    s.phase='ready';s.eyeLevel=false;s.atWall=false;s.recorded=false;
+  } else if(s.sourceUnits!==null) {
+    if(action.type==='condition'&&s.phase==='ready')s.phase='conditioned';
+    else if(action.type==='fill'&&s.phase==='conditioned')s.phase='filled';
+    else if(action.type==='eye'&&s.phase==='filled')s.eyeLevel=true;
+    else if(action.type==='adjust'&&s.phase==='filled'&&s.eyeLevel)s.phase='adjusted';
+    else if(action.type==='wall'&&s.phase==='adjusted')s.atWall=true;
+    else if(action.type==='drain'&&s.phase==='adjusted'&&s.atWall)s.phase='delivered';
+    else if(action.type==='record'&&s.phase==='delivered')s.recorded=true;
+    else if(action.type==='blow'&&s.phase==='delivered')s.phase='blown';
+  }
+  return s;
+}
+function titrationAliquotResult(raw) {
+  var s=titrationAliquotState(raw);
+  return s.phase==='delivered'&&s.recorded?{volumeMl:25,gramsPerLiter:s.sourceUnits/1000,massGrams:s.sourceUnits/40000}:null;
+}
+
+// Progress is derived from each activity's own saved copy; upstream changes do not erase later records.
+function titrationPreparationProgress(data) {
+  data=data&&typeof data==='object'?data:{};
+  var w=titrationWeighingState(data.weighingPractice),tr=titrationTransferState(data.transferPractice),p=titrationPreparationState(data.preparationPractice),a=titrationAliquotState(data.aliquotPractice);
+  var weighed=titrationTransferSource(w),transferred=titrationPreparationSource(tr),prepared=titrationAliquotSource(p),pr=titrationPreparationResult(p),ar=titrationAliquotResult(a);
+  var stages=[
+    {id:'analytical-balance',status:weighed!==null?'complete':w.recordedUnits!==null?'attention':!w.closed||w.boat||w.tareUnits||w.sampleUnits?'active':'available',issue:w.recordedUnits!==null&&weighed===null?'weighing':null,value:weighed,unit:'g',sourceChanged:false},
+    {id:'weighing-boat',status:transferred!==null?'complete':tr.recordedPhase!==null?'attention':tr.sourceUnits!==null?'active':weighed!==null?'available':'pending',issue:tr.recordedPhase!==null&&transferred===null?'transfer':null,value:transferred,unit:'g',sourceChanged:tr.sourceUnits!==null&&tr.sourceUnits!==weighed},
+    {id:'volumetric-flask',status:pr?'complete':p.volumeUnits>10000?'attention':p.sourceUnits!==null?'active':transferred!==null?'available':'pending',issue:p.volumeUnits>10000?'preparation':null,value:pr?pr.gramsPerLiter:null,unit:'g/L',sourceChanged:p.sourceUnits!==null&&p.sourceUnits!==transferred},
+    {id:'pipette',status:ar?'complete':a.phase==='blown'?'attention':a.sourceUnits!==null?'active':prepared!==null?'available':'pending',issue:a.phase==='blown'?'aliquot':null,value:ar?ar.volumeMl:null,unit:'mL',sourceChanged:a.sourceUnits!==null&&a.sourceUnits!==prepared}
+  ];
+  var next=null;
+  ['attention','active','available'].some(function(status){next=stages.find(function(stage){return stage.status===status;});return !!next;});
+  return {stages:stages,completed:stages.filter(function(stage){return stage.status==='complete';}).length,nextId:next?next.id:'pipette'};
+}
+
+function titrationWeighingEquipment(t) {
+  return [
+    {id:'analytical-balance',icon:'\u2696',name:t('stem.titration.equip_balance_name','Analytical balance'),desc:t('stem.titration.equip_balance_desc','Separate container mass from sample mass.'),
+      technique:t('stem.titration.equip_balance_technique','Check that the balance is level, ready, and zeroed according to its instructions before starting.'),
+      study:[
+        {label:t('stem.titration.equip_balance_step1','Prepare the pan'),text:t('stem.titration.equip_balance_text1','Use a clean, suitable weighing vessel for powders. Place it centrally on the pan.')},
+        {label:t('stem.titration.equip_balance_step2','Tare the vessel'),text:t('stem.titration.equip_balance_text2','Close the draft shield and wait for stability, then tare the empty vessel. Tare subtracts its mass from the reading.')},
+        {label:t('stem.titration.equip_balance_step3','Read the sample'),text:t('stem.titration.equip_balance_text3','Add sample carefully, close the shield, and wait for a stable reading. Record the actual mass with its unit.')}
+      ],errors:[t('stem.titration.equip_balance_error','Reading before stability, spilling powder on the pan, or taring away some of the sample.')],
+      safetyNote:t('stem.titration.equip_balance_safety','Use the approved weighing method and clean up spills according to the lab procedure.'),source:'https://chemed.chem.purdue.edu/genchem/lab/equipment/analytical/instructions'},
+    {id:'weighing-boat',icon:'\u25B1',name:t('stem.titration.equip_boat_name','Weighing boat'),desc:t('stem.titration.equip_boat_desc','Contain a solid and account for its transfer.'),
+      technique:t('stem.titration.equip_boat_technique','Choose a clean, dry vessel compatible with the solid and any solvent used to rinse it.'),
+      study:[
+        {label:t('stem.titration.equip_boat_step1','Contain'),text:t('stem.titration.equip_boat_text1','Use the boat to keep solid off the balance pan. Measure sample mass separately from the container mass.')},
+        {label:t('stem.titration.equip_boat_step2','Transfer'),text:t('stem.titration.equip_boat_text2','Guide the solid into the receiving vessel without spilling. Some material may remain on the boat.')},
+        {label:t('stem.titration.equip_boat_step3','Account for residue'),text:t('stem.titration.equip_boat_text3','Follow the method: rinse compatible residue into the receiver, or determine the transferred mass by weighing before and after transfer.')}
+      ],errors:[t('stem.titration.equip_boat_error','Assuming all weighed solid reached the solution when some remains in the boat.')],
+      safetyNote:t('stem.titration.equip_boat_safety','Some solvents attack plastic boats. Check compatibility before rinsing.'),source:'https://chemtl.york.ac.uk/techniques/basic-techniques/weigh-measure/adding-material-to-a-flask'},
+    {id:'spatula',icon:'\u2571',name:t('stem.titration.equip_spatula_name','Spatula'),desc:t('stem.titration.equip_spatula_desc','Transfer solid in controlled portions.'),
+      technique:t('stem.titration.equip_spatula_technique','Use a clean, dry, compatible spatula and the portioning method specified for the reagent.'),
+      study:[
+        {label:t('stem.titration.equip_spatula_step1','Select'),text:t('stem.titration.equip_spatula_text1','Choose a suitable clean tool before taking a working portion of solid.')},
+        {label:t('stem.titration.equip_spatula_step2','Add gradually'),text:t('stem.titration.equip_spatula_text2','Use smaller portions as you approach the target. A scoop does not have a fixed mass; check the balance reading.')},
+        {label:t('stem.titration.equip_spatula_step3','Keep stock clean'),text:t('stem.titration.equip_spatula_text3','Do not return excess material to the stock container. Handle leftovers and clean the tool as directed.')}
+      ],errors:[t('stem.titration.equip_spatula_error','Cross-contaminating stock or treating scoop size as a calibrated measurement.')],
+      safetyNote:t('stem.titration.equip_spatula_safety','Avoid raising dust; follow the handling controls for the actual solid.'),source:'https://chemistry.ucdavis.edu/sites/g/files/dgvnsk196/files/inline-files/2B%20Student%20Lab%20Manual%20Spring%202026.pdf#page=172'}
+  ];
+}
+function TitrationWeighingIllustration(props) {
+  var h=props.React.createElement,s=titrationWeighingState(props.state),uid=props.id;
+  var grains=s.sampleUnits?Math.max(3,Math.min(25,Math.ceil(s.sampleUnits/250))):0;
+  return h('svg',{viewBox:'0 0 360 275',width:'100%',style:{display:'block',maxHeight:320},'aria-hidden':true,focusable:false,'data-weighing-illustration':true,'data-shield':s.closed?'closed':'open','data-boat':s.boat?'on':'off'},
+    h('defs',null,h('linearGradient',{id:uid+'-shield',x1:0,y1:0,x2:1,y2:1},h('stop',{offset:0,stopColor:'#a5e6ff',stopOpacity:0.15}),h('stop',{offset:1,stopColor:'#bde5f5',stopOpacity:0.04}))),
+    h('ellipse',{cx:180,cy:142,rx:149,ry:124,fill:'#102d41'}),
+    h('ellipse',{cx:180,cy:254,rx:134,ry:12,fill:'#020e1a'}),
+    h('path',{d:'M64 200 H274 L306 223 V249 H42 V223 Z',fill:'#29495f',stroke:'#9fbed0',strokeWidth:2}),
+    h('path',{d:'M64 200 H274 L306 223 H42 Z',fill:'#adc6d3',stroke:'#dcebf3',strokeWidth:2}),
+    h('path',{d:'M64 53 L100 27 H310 L274 53 Z M100 27 V179 L64 201 M310 27 V179 L274 201',fill:'none',stroke:'#7eabbe',strokeWidth:2}),
+    h('path',{d:'M64 53 H274 V201 H64 Z',fill:'url(#'+uid+'-shield)',stroke:'#a2d1e2',strokeWidth:2}),
+    h('path',{d:s.closed?'M274 53 L310 27 V179 L274 201 Z':'M298 53 L334 27 V179 L298 201 Z',fill:'url(#'+uid+'-shield)',stroke:s.closed?'#a2d1e2':'#6ee7b7',strokeWidth:2}),
+    h('path',{d:s.closed?'M292 94 V124':'M317 93 V123',stroke:s.closed?'#dbf3fc':'#6ee7b7',strokeWidth:5,strokeLinecap:'round'}),
+    h('path',{d:'M78 68 V183 M83 67 V98',stroke:'#c9eaf5',strokeWidth:2,opacity:0.5}),
+    h('ellipse',{cx:175,cy:191,rx:70,ry:16,fill:'#243e51',stroke:'#b8d0dc',strokeWidth:2}),
+    h('ellipse',{cx:175,cy:187,rx:69,ry:14,fill:'#cbdce4',stroke:'#e4f2f7',strokeWidth:2}),
+    s.boat && h('g',null,
+      h('path',{d:'M120 164 L177 148 L230 165 L218 185 L174 196 L131 183 Z',fill:'#e4eff3',stroke:'#97b6c6',strokeWidth:2}),
+      h('path',{d:'M134 166 L177 155 L216 167 L208 177 L175 186 L142 177 Z',fill:'#c2d6e0',stroke:'#fbfeff',strokeWidth:1.5}),
+      Array.from({length:grains},function(_,i){var x=154+(i*13%41),y=168+(i*7%12);return h('circle',{key:i,cx:x,cy:y-(i>15?7:0),r:2.5+(i%3)*0.5,fill:'#f9f6d1',stroke:'#c1b987',strokeWidth:0.6});})),
+    !s.closed && s.boat && s.tareUnits>0 && h('g',{transform:'rotate(-25 231 128)'},h('rect',{x:231,y:122,width:64,height:8,rx:4,fill:'#8baebe',stroke:'#d6e9f1'}),h('ellipse',{cx:231,cy:127,rx:15,ry:6,fill:'#d8e7ed',stroke:'#93b4c4'})),
+    h('rect',{x:82,y:230,width:92,height:12,rx:4,fill:'#082a31'}),h('rect',{x:89,y:233,width:76,height:6,rx:2,fill:s.closed?'#6ee7b7':'#fcd34d'}),
+    h('circle',{cx:254,cy:235,r:8,fill:'#153448',stroke:'#abc8d8'}),h('circle',{cx:254,cy:235,r:3,fill:'#6ee7b7'}));
+}
+function TitrationPreparationPath(props) {
+  var h=props.React.createElement,t=props.t,id=props.React.useId(),progress=titrationPreparationProgress(props.data);
+  var steps=[['analytical-balance',t('stem.titration.prep_weigh','Weigh a sample'),t('stem.titration.prep_weigh_hint','Practice tare, fine additions, and a stable reading.')],['weighing-boat',t('stem.titration.prep_transfer','Transfer the solid'),t('stem.titration.prep_transfer_hint','Account for the material left in the boat.')],['volumetric-flask',t('stem.titration.prep_volume','Prepare the solution'),t('stem.titration.prep_volume_hint','Dissolve, transfer rinsings, make to volume, and mix.')],['pipette',t('stem.titration.aliquot_path','Take an aliquot'),t('stem.titration.aliquot_path_hint','Deliver a measured portion with a volumetric pipette.')]];
+  var labels={complete:t('stem.titration.path_complete','Recorded'),attention:t('stem.titration.path_attention','Needs attention'),active:t('stem.titration.path_active','In progress'),available:t('stem.titration.path_available','Ready to start'),pending:t('stem.titration.path_pending','Needs an earlier record')};
+  var issues={weighing:t('stem.titration.path_weigh_changed','Sample changed after weighing. Update its record.'),transfer:t('stem.titration.path_transfer_changed','Rinsed after recording. Update the delivered mass.'),preparation:t('stem.titration.path_overshoot','Above the mark. Restart this preparation.'),aliquot:t('stem.titration.path_blowout','Tip liquid forced out. Restart pipetting.')};
+  var colors={complete:'#91d6b7',attention:'#e6c875',active:'#80d1ee',available:'#93b5c9',pending:'#9ab2c5'};
+  var next=steps.find(function(step){return step[0]===progress.nextId;});
+  var countText=t('stem.titration.path_count','{count} of {total} activities recorded').replace('{count}',String(progress.completed)).replace('{total}',String(steps.length));
+  function record(stage) {
+    if(stage.value===null)return null;
+    return stage.unit==='g'?(stage.value/10000).toFixed(4)+' g':stage.unit==='g/L'?stage.value.toFixed(3)+' g/L':stage.value.toFixed(2)+' mL';
+  }
+  return h('section',{'data-titration-preparation-path':true,'aria-label':t('stem.titration.prep_title','From solid to aliquot'),style:{padding:16,border:'1px solid #527f95',borderRadius:14,background:'#102c3d'}},
+    h('div',{style:{display:'flex',justifyContent:'space-between',gap:12,alignItems:'center',flexWrap:'wrap'}},h('div',null,
+      h('h4',{style:{margin:'0 0 7px',fontSize:17,color:'#e0f2fe'}},t('stem.titration.prep_title','From solid to aliquot')),
+      h('p',{'data-path-count':true,style:{margin:0,fontSize:12,color:'#c7e2f0'}},countText)),
+      h('button',{type:'button','data-path-continue':true,'aria-describedby':id+'-next',onClick:function(){props.onSelect(progress.nextId);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'10px 14px',border:'1px solid #9ed8c6',borderRadius:10,background:'#185345',color:'#e2fff1',fontSize:13,fontWeight:700}},progress.completed===steps.length?t('stem.titration.path_review','Review aliquot record'):t('stem.titration.path_continue','Continue practice'))),
+    h('div',{role:'progressbar','aria-label':t('stem.titration.path_progress','Activities with a current record'),'aria-valuemin':0,'aria-valuemax':steps.length,'aria-valuenow':progress.completed,'aria-valuetext':countText,style:{display:'flex',gap:5,margin:'14px 0 10px'}},progress.stages.map(function(stage){return h('span',{key:stage.id,'aria-hidden':true,style:{flex:1,height:5,borderRadius:4,background:stage.status==='complete'?'#6ee7b7':'#3b5b70'}});})),
+    h('p',{id:id+'-next',style:{fontSize:12,color:'#c4deec',lineHeight:1.6,margin:'0 0 14px'}},progress.completed===steps.length?t('stem.titration.path_all_recorded','Every activity has a current record. Choose a stage to review it.'):t('stem.titration.path_next','Suggested next activity')+': '+next[1]),
+    h('div',{style:{display:'flex',flexWrap:'wrap',gap:10}},steps.map(function(item,i){var stage=progress.stages[i],current=props.selected===item[0],value=record(stage);
+      return h('button',{key:item[0],type:'button','data-path-stage':item[0],'data-path-status':stage.status,'aria-current':current?'step':undefined,'aria-labelledby':id+'-'+i+'-title','aria-describedby':id+'-'+i+'-hint '+id+'-'+i+'-status'+(stage.sourceChanged?' '+id+'-'+i+'-source':''),onClick:function(){props.onSelect(item[0]);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{flex:'1 1 190px',minWidth:0,textAlign:'left',minHeight:132,padding:12,border:(current?'2px':'1px')+' solid '+(current?'#93e2ff':colors[stage.status]),borderRadius:10,background:current?'#193f53':'#123446',color:'#f1f5f9'}},
+        h('strong',{id:id+'-'+i+'-title',style:{display:'block',fontSize:13,marginBottom:9}},h('span',{'aria-hidden':true,style:{color:colors[stage.status],marginRight:8}},stage.status==='complete'?'✓':'0'+(i+1)),item[1]),
+        h('span',{id:id+'-'+i+'-status',style:{display:'block',fontSize:11,fontWeight:700,color:colors[stage.status],marginBottom:7}},labels[stage.status]),
+        h('span',{id:id+'-'+i+'-hint',style:{display:'block',fontSize:value?17:12,lineHeight:1.5,color:value?'#edfaff':'#c4dcea',fontVariantNumeric:'tabular-nums'}},stage.issue?issues[stage.issue]:value||item[2]),
+        stage.sourceChanged&&h('span',{id:id+'-'+i+'-source',style:{display:'block',fontSize:11,lineHeight:1.5,color:'#c4e4f4',marginTop:8}},t('stem.titration.path_saved_copy','Using an earlier source record')));
+    })),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bfd6e5',margin:'12px 0 0'}},t('stem.titration.path_copies','Each activity keeps its own sample copy. Changing an earlier activity does not replace later records. You can open any stage to review or restart it.')));
+}
+function TitrationRelatedEquipment(props) {
+  var h=props.React.createElement,t=props.t;
+  var pairs={'analytical-balance':['spatula','weighing-boat'],'weighing-boat':['analytical-balance','volumetric-flask'],'spatula':['analytical-balance','weighing-boat'],'volumetric-flask':['weighing-boat','pipette-filler'],'pipette-filler':['pipette','volumetric-flask'],'funnel':['stand-clamp','burette'],'stand-clamp':['funnel','burette'],'magnetic-stirrer':['erlenmeyer','ph-electrode'],'ph-electrode':['magnetic-stirrer','indicator']};
+  var ids=pairs[props.equipment.id]||[],items=props.catalogue.filter(function(eq){return ids.indexOf(eq.id)!==-1;});
+  return h('div',{role:'group','aria-label':t('stem.titration.equip_related','Related equipment'),'data-equipment-related':true,style:{paddingTop:12,marginTop:12,borderTop:'1px solid #35586e'}},
+    h('p',{style:{fontSize:12,color:'#bdd4e2',margin:'0 0 8px'}},t('stem.titration.equip_related','Related equipment')),
+    h('div',{style:{display:'flex',flexWrap:'wrap',gap:8}},items.map(function(eq){return h('button',{key:eq.id,type:'button',onClick:function(){props.onSelect(eq.id);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,border:'1px solid #678ba0',borderRadius:9,padding:'8px 12px',background:'#153448',color:'#d1fae5',fontSize:12}},eq.name);})));
+}
+function TitrationWeighingPractice(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId(),s=titrationWeighingState(props.state),reading=titrationWeighingReading(s);
+  var fmt=function(n){return (n/10000).toFixed(4)+' g';},within=Math.abs(s.sampleUnits-5000)<=20,hasCurrentRecord=s.recordedUnits!==null && s.recordedUnits===s.sampleUnits;
+  var next=!s.boat?(s.closed?t('stem.titration.weigh_next_open','Open the draft shield to place the boat.'):t('stem.titration.weigh_next_boat','Place the boat on the pan.')):!s.tareUnits?(s.closed?t('stem.titration.weigh_next_tare','Tare the empty boat to exclude its mass.'):t('stem.titration.weigh_next_close_tare','Close the shield before taring the empty boat.')):s.sampleUnits===0?(s.closed?t('stem.titration.weigh_next_open_add','Open the shield to add sample with the spatula.'):t('stem.titration.weigh_next_add','Add a coarse portion, then use smaller additions near the target.')):!s.closed?t('stem.titration.weigh_next_close','Close the shield before recording a mass.'):hasCurrentRecord?t('stem.titration.weigh_next_transfer','Mass recorded. Study how to transfer the sample without losing material.'):t('stem.titration.weigh_next_record','Record the stable sample mass, even if it differs from the target.');
+  function button(label,action,disabled,primary){return h('button',{type:'button',disabled:!!disabled,onClick:function(){props.onAction(action);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{scrollMarginTop:150,minHeight:44,padding:'9px 12px',border:'1px solid '+(disabled?'#385366':primary?'#6ee7b7':'#64879c'),borderRadius:9,background:disabled?'#152a39':primary?'#164b42':'#193b50',color:disabled?'#94a8b8':'#e1f7ee',fontSize:12,cursor:disabled?'not-allowed':'pointer'}},label);}
+  function stat(label,value){return h('div',{style:{flex:'1 1 90px',minWidth:0,padding:10,border:'1px solid #35576c',borderRadius:9}},h('dt',{style:{fontSize:11,color:'#b7d0df'}},label),h('dd',{style:{margin:'4px 0 0',fontSize:15,color:'#e0f2fe',fontVariantNumeric:'tabular-nums'}},fmt(value)));}
+  return h('section',{'data-titration-weighing-practice':true,'aria-labelledby':id+'-title',style:{padding:16,border:'1px solid #58748c',borderRadius:16,background:'#0b2030'}},
+    h('div',{style:{display:'flex',justifyContent:'space-between',gap:12,alignItems:'center',flexWrap:'wrap'}},
+      h('div',null,h('p',{style:{margin:'0 0 4px',fontSize:11,fontWeight:700,color:'#bae6fd',letterSpacing:'0.06em'}},t('stem.titration.weigh_badge','HANDS-ON PRACTICE')),
+        h('h4',{id:id+'-title',style:{margin:0,fontSize:20,color:'#f0f9ff'}},t('stem.titration.weigh_title','Weigh a sample'))),button(t('stem.titration.weigh_reset','Restart practice'),{type:'reset'},false,false)),
+    h('p',{style:{fontSize:12,lineHeight:1.6,color:'#c2d8e5',margin:'10px 0 16px'}},t('stem.titration.weigh_goal','Aim for 0.5000 g. The practice target band is ±0.0020 g; it is not the balance uncertainty.')),
+        h('div',{role:'status','aria-atomic':true,'data-weighing-readout':true,style:{position:'sticky',top:8,zIndex:3,boxShadow:'0 5px 16px rgba(0,0,0,0.24)',border:'1px solid '+(s.closed?'#4a927e':'#bca86b'),borderRadius:10,padding:14,marginBottom:16,background:'#08202a'}},
+          h('p',{style:{fontSize:11,color:'#bcdbdf',margin:0}},t('stem.titration.weigh_display','Balance display')),
+          h('strong',{'data-weighing-display':true,style:{display:'block',fontFamily:'ui-monospace,Consolas,monospace',fontSize:30,fontVariantNumeric:'tabular-nums',color:s.closed?'#a7f3d0':'#fde68a',margin:'4px 0'}},fmt(reading.net)),
+          h('span',{style:{fontSize:12,color:s.closed?'#a7f3d0':'#fde68a'}},s.closed?t('stem.titration.weigh_stable','Stable in this model'):t('stem.titration.weigh_unstable','Shield open · do not record'))),
+    h('div',{style:{display:'flex',flexWrap:'wrap',gap:20,alignItems:'flex-start'}},
+      h('div',{style:{flex:'1 1 230px',minWidth:0}},
+        h('div',{style:{background:'#071725',border:'1px solid #34566b',borderRadius:12}},h(TitrationWeighingIllustration,{React:React,state:s,id:id})),
+        h('dl',{style:{display:'flex',flexWrap:'wrap',gap:6,margin:'10px 0 0'}},stat(t('stem.titration.weigh_gross','Gross on pan'),reading.gross),stat(t('stem.titration.weigh_tare','Tare offset'),reading.tare),stat(t('stem.titration.weigh_net','Net display'),reading.net)),
+        h('p',{style:{fontSize:11,lineHeight:1.5,color:'#bad1e0',margin:'8px 0 0'}},t('stem.titration.weigh_equation','Net = gross − tare. Removing a tared boat leaves a negative reading.'))),
+      h('div',{style:{flex:'1.2 1 260px',minWidth:0}},
+        h('p',{id:id+'-next','aria-live':'polite',style:{margin:'0 0 14px',padding:12,borderLeft:'3px solid #6ee7b7',background:'#123d3c',borderRadius:6,color:'#d1fae5',fontSize:13,lineHeight:1.6}},next),
+        h('div',{role:'group','aria-label':t('stem.titration.weigh_setup','Prepare the balance'),'aria-describedby':id+'-next',style:{display:'flex',flexWrap:'wrap',gap:8}},
+          button(s.closed?t('stem.titration.weigh_open','Open draft shield'):t('stem.titration.weigh_close','Close draft shield'),{type:'shield'},false,false),
+          button(s.boat?t('stem.titration.weigh_remove','Remove boat'):s.sampleUnits?t('stem.titration.weigh_return','Return loaded boat'):t('stem.titration.weigh_place','Place empty boat'),{type:'boat'},s.closed,false),
+          button(t('stem.titration.weigh_tare_button','Tare empty boat'),{type:'tare'},!s.closed||!s.boat||s.sampleUnits>0||s.tareUnits>0,true)),
+        h('p',{style:{fontSize:12,color:'#c8dce7',margin:'16px 0 8px'}},t('stem.titration.weigh_additions','Spatula additions · use smaller portions near the target')),
+        h('div',{role:'group','aria-label':t('stem.titration.weigh_additions','Spatula additions · use smaller portions near the target'),'aria-describedby':id+'-next',style:{display:'flex',flexWrap:'wrap',gap:8}},[1000,100,10].map(function(amount){return h(React.Fragment,{key:amount},button('+ '+fmt(amount),{type:'add',units:amount},s.closed||!s.boat||!s.tareUnits||s.sampleUnits+amount>20000,false));})),
+        h('div',{style:{margin:'16px 0',padding:12,border:'1px solid #45677e',borderRadius:10}},
+          h('p',{style:{margin:'0 0 6px',fontSize:11,color:'#bdd4e2'}},(s.boat?t('stem.titration.weigh_sample_in_boat','Sample in boat'):t('stem.titration.weigh_boat_off_pan','Boat off pan'))+': '+fmt(s.sampleUnits)),
+          h('p',{style:{margin:'0 0 8px',fontSize:12,color:'#dcebf3'}},s.sampleUnits===0?t('stem.titration.weigh_empty','No sample added'):within?t('stem.titration.weigh_within','Within the practice target band'):s.sampleUnits<5000?t('stem.titration.weigh_below','Below the practice target band'):t('stem.titration.weigh_above','Above the practice target band')),
+          h('div',{'aria-hidden':true,style:{position:'relative',height:10,borderRadius:6,background:'#304c61',margin:'10px 0'}},h('div',{style:{height:'100%',width:(s.sampleUnits/Math.max(10000,s.sampleUnits)*100)+'%',background:within?'#6ee7b7':'#7dd3fc',borderRadius:6}}),h('span',{style:{position:'absolute',left:(5000/Math.max(10000,s.sampleUnits)*100)+'%',top:-4,height:18,borderLeft:'2px solid #fde68a'}})),
+          h('div',{'aria-hidden':true,style:{display:'flex',justifyContent:'space-between',fontSize:11,color:'#bdd4e2'}},h('span',null,'0.0000 g'),h('span',null,fmt(Math.max(10000,s.sampleUnits))))),
+        button(t('stem.titration.weigh_record','Record mass'),{type:'record'},!s.closed||!s.boat||!s.tareUnits||s.sampleUnits===0||hasCurrentRecord,true),
+        s.recordedUnits!==null && h('div',{'data-weighing-record':true,style:{marginTop:12,padding:12,background:'#123a36',border:'1px solid #507f6e',borderRadius:10,color:'#d1fae5',fontSize:13,lineHeight:1.6}},
+          h('strong',null,t('stem.titration.weigh_recorded','Recorded sample mass')+': '+fmt(s.recordedUnits)),
+          h('p',{style:{margin:'5px 0 0',fontSize:12}},hasCurrentRecord?t('stem.titration.weigh_transfer_hint','Next, check how much of this sample reaches the receiver.'):t('stem.titration.weigh_record_stale','Sample changed. Close the shield and record the new mass.')),
+          h('button',{type:'button',onClick:function(){props.onSelect('weighing-boat');},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'8px 10px',marginTop:8,border:'1px solid #72ac9c',borderRadius:8,background:'#18483f',color:'#d1fae5',fontSize:12}},t('stem.titration.weigh_transfer','Study sample transfer'))))),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#b5cede',margin:'16px 0 0'}},t('stem.titration.weigh_model_note','Practice model: fixed additions, a 2 g sample limit, and immediate stability with the shield closed. Real scoops vary; wait for the instrument stability indicator. Four decimals show display resolution, not guaranteed accuracy.')),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#b5cede',margin:'6px 0 0'}},t('stem.titration.weigh_scope','Progress stays while you browse equipment. Restart clears this practice record. This exercise does not change the live titration or its notebook.')));
+}
+
+
+function TitrationTransferIllustration(props) {
+  var h=props.React.createElement,s=titrationTransferState(props.state),m=titrationTransferMass(s),id=props.id;
+  var wet=s.phase==='rinsed',poured=s.phase!=='ready';
+  function grains(units,cx,cy,width,height,key) {
+    var count=units?Math.max(1,Math.round(30*units/Math.max(1,m.source))):0;
+    return h('g',{key:key},Array.from({length:count},function(_,i){return h('circle',{key:i,cx:cx+(i*17%width),cy:cy+(i*7%height),r:2.7+(i%3)*0.4,fill:'#fff0a6',stroke:'#ad985d',strokeWidth:0.65});}));
+  }
+  return h('svg',{viewBox:'0 0 460 285',width:'100%',style:{display:'block',maxHeight:345},'aria-hidden':true,focusable:false,'data-transfer-diagram':s.phase},
+    h('defs',null,h('linearGradient',{id:id+'-glass',x1:'0%',y1:'0%',x2:'100%',y2:'0%'},h('stop',{offset:0,stopColor:'#c4eaff',stopOpacity:0.18}),h('stop',{offset:0.5,stopColor:'#d9f3ff',stopOpacity:0.03}),h('stop',{offset:1,stopColor:'#c4eaff',stopOpacity:0.16}))),
+    h('ellipse',{cx:232,cy:145,rx:204,ry:124,fill:'#112f43'}),
+    h('path',{d:'M24 255 H436 M45 264 H415',stroke:'#476a82',strokeWidth:1}),
+    h('ellipse',{cx:327,cy:247,rx:82,ry:9,fill:'#031220'}),
+    h('ellipse',{cx:116,cy:245,rx:86,ry:9,fill:'#031220',opacity:poured?0.35:0.8}),
+    wet&&h('path',{d:'M270 197 Q327 214 386 197 V231 Q327 253 270 231 Z',fill:'#38bdf8',fillOpacity:0.3,stroke:'#7dd3fc',strokeWidth:1.3}),
+    h('path',{d:'M267 127 V231 Q327 257 389 231 V127',fill:'url(#'+id+'-glass)',stroke:'#b9d8e9',strokeWidth:2.5}),
+    h('ellipse',{cx:328,cy:127,rx:61,ry:13,fill:'none',stroke:'#b9d8e9',strokeWidth:2}),
+    h('path',{d:'M280 147 V225 M286 145 V181',stroke:'#e1f4ff',strokeWidth:3,opacity:0.5}),
+    grains(m.received,295,222,56,12,'receiver'),
+    h('g',{transform:poured?'translate(113 -106) rotate(24 121 174)':undefined},
+      h('path',{d:'M43 188 L116 161 L208 188 L191 218 L121 239 L62 218 Z',fill:'#dae8ef',stroke:'#9ebfcf',strokeWidth:2}),
+      h('path',{d:'M66 190 L118 171 L187 190 L176 207 L121 224 L78 207 Z',fill:'#b9d1df',stroke:'#f3fbff',strokeWidth:1.6}),
+      grains(m.remaining,96,193,56,15,'boat')),
+    poured&&h('path',{d:'M309 115 Q325 120 327 146 M319 137 L327 146 L332 135',fill:'none',stroke:wet?'#7dd3fc':'#6ee7b7',strokeWidth:3,strokeLinecap:'round'}),
+    wet&&h('g',null,
+      h('path',{d:'M195 38 L215 66 M202 35 L221 63',stroke:'#d8e9f2',strokeWidth:3}),
+      h('ellipse',{cx:190,cy:25,rx:9,ry:16,transform:'rotate(-35 190 25)',fill:'#486d84',stroke:'#b9d5e3',strokeWidth:2}),
+      h('path',{d:'M220 72 L225 80 M228 85 L233 93',stroke:'#7dd3fc',strokeWidth:3,strokeLinecap:'round'})),
+    poured&&m.remaining>0&&h('circle',{cx:216,cy:88,r:25,fill:'none',stroke:'#fde68a',strokeWidth:2,strokeDasharray:'4 5'}));
+}
+function TitrationTransferPractice(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId(),s=titrationTransferState(props.state),m=titrationTransferMass(s);
+  var latest=titrationTransferSource(props.weighing),current=s.recordedPhase===s.phase,saved=s.recordedPhase?titrationTransferMass(s,s.recordedPhase):null;
+  var fmt=function(units){return (units/10000).toFixed(4)+' g';};
+  var phaseLabel=s.phase==='ready'?t('stem.titration.transfer_ready','Ready to pour'):s.phase==='poured'?t('stem.titration.transfer_dry','After dry transfer'):t('stem.titration.transfer_wet','After model rinse');
+  var next=saved&&current?(s.phase==='poured'&&m.remaining>0?t('stem.titration.transfer_next_dry_recorded','Dry transfer recorded. Continue with this delivered mass, or rinse the residue and record the updated result.'):t('stem.titration.transfer_next_recorded','Transfer recorded. Continue to solution preparation with the delivered mass.')):s.sourceUnits===null?t('stem.titration.transfer_next_load','Load a current recorded mass from the weighing activity to begin.'):s.phase==='ready'?t('stem.titration.transfer_next_pour','Choose a model residue setting, then pour the solid into the receiver.'):s.phase==='poured' && m.remaining>0?t('stem.titration.transfer_next_compare','Compare the dry masses to find how much arrived. Record this result, or rinse the remaining solid into the receiver.'):t('stem.titration.transfer_next_finish','All of the model sample is in the receiver. Record the transfer before continuing to solution preparation.');
+  function button(label,action,disabled,primary) {
+    return h('button',{type:'button',disabled:!!disabled,onClick:function(){props.onAction(action);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'9px 12px',borderRadius:9,border:'1px solid '+(disabled?'#3a576c':primary?'#73c9b3':'#7594a8'),background:disabled?'#152d3e':primary?'#154d43':'#193c51',color:disabled?'#97afc0':'#e0f5ed',fontSize:12,scrollMarginTop:140,cursor:disabled?'not-allowed':'pointer'}},label);
+  }
+  function massCard(label,units,color,key) {
+    return h('div',{key:key,style:{flex:'1 1 115px',minWidth:0,padding:12,border:'1px solid '+color,borderRadius:10,background:'#0c2433'}},
+      h('dt',{style:{fontSize:11,color:'#c2d8e5'}},label),h('dd',{'data-transfer-mass':key,style:{margin:'5px 0 0',fontSize:19,color:'#eff9ff',fontVariantNumeric:'tabular-nums'}},fmt(units)));
+  }
+  return h('section',{'data-titration-transfer-practice':true,'aria-labelledby':id+'-title',style:{padding:16,border:'1px solid #557e92',borderRadius:16,background:'#0a2232'}},
+    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}},
+      h('div',null,h('p',{style:{margin:'0 0 4px',fontSize:11,fontWeight:700,color:'#a7f3d0',letterSpacing:'0.06em'}},t('stem.titration.transfer_badge','FOLLOW THE SAMPLE')),
+        h('h4',{id:id+'-title',style:{margin:0,fontSize:20,color:'#f0f9ff'}},t('stem.titration.transfer_title','Transfer the sample'))),
+      button(t('stem.titration.transfer_restart','Restart transfer'),{type:'restart'},s.sourceUnits===null,false)),
+    h('p',{style:{fontSize:12,color:'#c0d6e4',lineHeight:1.6,margin:'10px 0 14px'}},t('stem.titration.transfer_intro','Explore how residue changes the mass delivered to a receiver. The exercise keeps a copy of your recorded sample.')),
+    h('div',{style:{padding:12,border:'1px solid #45677d',borderRadius:10,background:'#113044',marginBottom:16}},
+      h('p',{'data-transfer-source':true,style:{margin:'0 0 10px',fontSize:12,color:'#e0edf5'}},latest===null?t('stem.titration.transfer_no_record','No current weighing record. Record the sample mass on the balance first.'):t('stem.titration.transfer_available','Current weighing record')+': '+fmt(latest)),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:8}},button(t('stem.titration.transfer_load','Use recorded sample'),{type:'load'},latest===null,true),
+        h('button',{type:'button',onClick:function(){props.onSelect('analytical-balance');},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'8px 12px',border:'1px solid #678a9e',borderRadius:9,background:'#183c50',color:'#d8f5ee',fontSize:12}},t('stem.titration.transfer_weighing','Back to weighing'))),
+      s.sourceUnits!==null&&h('p',{style:{fontSize:11,lineHeight:1.5,color:latest===s.sourceUnits?'#bcd2df':'#fde68a',margin:'10px 0 0'}},latest===s.sourceUnits?t('stem.titration.transfer_reload_note','Loading a sample starts a new transfer; navigating between guides keeps this trial.'):t('stem.titration.transfer_source_changed','The weighing record has changed or is unavailable. This trial still uses its original sample')+': '+fmt(s.sourceUnits))),
+    h('div',{style:{display:'flex',flexWrap:'wrap',gap:20,alignItems:'flex-start'}},
+      h('div',{style:{flex:'1.15 1 250px',minWidth:0}},
+        h('figure',{style:{margin:0,border:'1px solid #3f6479',borderRadius:12,background:'#071925',overflow:'hidden'}},
+          h(TitrationTransferIllustration,{React:React,id:id,state:s}),h('figcaption',{style:{padding:'0 12px 12px',fontSize:12,color:'#bae6fd',textAlign:'center'}},s.sourceUnits===null?t('stem.titration.transfer_empty_scene','Load a sample to begin'):phaseLabel)),
+        h('dl',{'aria-live':'polite','aria-atomic':true,style:{display:'flex',flexWrap:'wrap',gap:8,margin:'12px 0 0'}},
+          massCard(t('stem.titration.transfer_starting_mass','Starting solid'),m.source,'#456e88','source'),
+          massCard(t('stem.titration.transfer_received','Solid in receiver'),m.received,'#599f8b','received'),
+          massCard(t('stem.titration.transfer_residue','Solid left in boat'),m.remaining,'#a89457','residue')),
+        h('p',{style:{fontSize:11,color:'#c1d8e7',lineHeight:1.5,margin:'10px 0 0'}},t('stem.titration.transfer_conservation','Starting solid = solid in receiver + solid left in boat. Rinse liquid is not counted as sample mass.'))),
+      h('div',{style:{flex:'1 1 250px',minWidth:0}},
+        h('p',{id:id+'-next','aria-live':'polite',style:{margin:'0 0 16px',padding:12,borderLeft:'3px solid #6ee7b7',borderRadius:6,background:'#12403d',color:'#d1fae5',fontSize:13,lineHeight:1.6}},next),
+        h('label',{htmlFor:id+'-residue',style:{display:'block',fontSize:12,color:'#e3eff7',fontWeight:700}},t('stem.titration.transfer_residue_setting','Residue left by a dry pour (model setting)')),
+        h('div',{style:{display:'flex',alignItems:'center',gap:12,margin:'8px 0'}},h('input',{id:id+'-residue',type:'range',min:0,max:100,step:1,value:s.residuePermille,disabled:s.phase!=='ready','aria-valuetext':(s.residuePermille/10).toFixed(1)+'%','aria-describedby':id+'-residue-help',onChange:function(e){props.onAction({type:'residue',value:Number(e.target.value)});},style:{flex:1,minWidth:0,minHeight:44,accentColor:'#6ee7b7'}}),h('strong',{'aria-hidden':true,style:{fontSize:15,color:'#fde68a',fontVariantNumeric:'tabular-nums'}},(s.residuePermille/10).toFixed(1)+'%')),
+        h('p',{id:id+'-residue-help',style:{fontSize:11,color:'#b8d0df',lineHeight:1.5,margin:'0 0 14px'}},s.phase==='ready'?t('stem.titration.transfer_setting_hint','Choose 0–10% before pouring. This is an example setting, not a prediction for a real powder.'):t('stem.titration.transfer_setting_locked','Restart the transfer to compare a different residue setting.')),
+        h('div',{role:'group','aria-label':t('stem.titration.transfer_actions','Transfer actions'),'aria-describedby':id+'-next',style:{display:'flex',flexWrap:'wrap',gap:8}},
+          button(t('stem.titration.transfer_pour','Pour the solid'),{type:'pour'},s.sourceUnits===null||s.phase!=='ready',true),
+          button(t('stem.titration.transfer_rinse','Rinse residue into receiver'),{type:'rinse'},s.phase!=='poured'||m.remaining===0,false),
+          button(t('stem.titration.transfer_record','Record transfer'),{type:'record'},s.phase==='ready'||s.sourceUnits===null||current,false)),
+        s.phase!=='ready'&&h('div',{'data-transfer-difference':true,style:{marginTop:16,padding:12,border:'1px solid #597289',borderRadius:10,background:'#132c40'}},
+          h('h5',{style:{fontSize:13,margin:'0 0 10px',color:'#e7f3fa'}},t('stem.titration.transfer_difference','Weighing by difference')),
+          s.phase==='poured'?h(React.Fragment,null,
+            h('p',{style:{margin:'0 0 6px',fontSize:12,color:'#cadfea'}},t('stem.titration.transfer_before','Dry boat + sample before')+': '+fmt(m.dryBefore)),
+            h('p',{style:{margin:'0 0 10px',fontSize:12,color:'#cadfea'}},t('stem.titration.transfer_after','Dry boat + residue after')+': '+fmt(m.dryAfter)),
+            h('strong',{'data-transfer-equation':true,style:{display:'block',fontSize:15,color:'#a7f3d0',lineHeight:1.6,fontVariantNumeric:'tabular-nums'}},(m.dryBefore/10000).toFixed(4)+' − '+(m.dryAfter/10000).toFixed(4)+' = '+fmt(m.received)),
+            h('p',{style:{margin:'8px 0 0',fontSize:11,color:'#bfd5e3',lineHeight:1.5}},t('stem.titration.transfer_difference_note','These are model dry masses. The same boat mass cancels, leaving the mass delivered.'))):
+            h('p',{style:{margin:0,fontSize:12,lineHeight:1.6,color:'#fde68a'}},t('stem.titration.transfer_wet_warning','The boat is now wet. Do not use its wet mass as the dry after-transfer measurement; rinse liquid would change that reading.'))),
+        saved&&h('div',{'data-transfer-record':true,style:{marginTop:14,padding:12,border:'1px solid '+(current?'#518c7b':'#a9914f'),borderRadius:10,background:'#12362f',color:'#d1fae5',fontSize:12,lineHeight:1.6}},
+          h('strong',{style:{fontSize:14}},t('stem.titration.transfer_recorded','Recorded delivered mass')+': '+fmt(saved.received)),
+          h('p',{style:{margin:'4px 0 0'}},s.recordedPhase==='poured'?t('stem.titration.transfer_method_dry','Method: dry weighing by difference'):t('stem.titration.transfer_method_rinse','Method: complete rinse in this model')),
+          !current&&h('p',{style:{color:'#fde68a',margin:'8px 0 0'}},t('stem.titration.transfer_record_stale','The received mass changed after rinsing. Record the transfer again to update this result.')),
+          current&&h('button',{type:'button',onClick:function(){props.onSelect('volumetric-flask');},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'8px 12px',marginTop:10,border:'1px solid #71a895',borderRadius:9,background:'#194a40',color:'#d1fae5',fontSize:12}},t('stem.titration.transfer_continue','Continue to solution preparation'))))),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bdd3e1',margin:'16px 0 0'}},t('stem.titration.transfer_model_note','Illustrative model: no spills, masses rounded to 0.0001 g, and a complete rinse in one action. In a real procedure, use compatible solvent and rinse as directed; one rinse is not a guarantee of complete transfer.')),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bdd3e1',margin:'6px 0 0'}},t('stem.titration.transfer_preparation_note','Dissolve the solid and transfer it with its rinsings before making up the final solution volume. This exercise does not change the live titration or its notebook.')));
+}
+
+function TitrationPreparationSample(props) {
+  var h=props.React.createElement,t=props.t,s=titrationTransferState(props.state);
+  if(s.recordedPhase===null)return null;
+  var current=s.recordedPhase===s.phase,m=titrationTransferMass(s,s.recordedPhase);
+  return h('aside',{'data-titration-preparation-sample':true,'aria-label':t('stem.titration.transfer_preparation_record','Transfer record for preparation'),style:{padding:16,border:'1px solid '+(current?'#579a86':'#aa955f'),borderRadius:12,background:'#123632',color:'#d9f4e9'}},
+    h('h4',{style:{margin:'0 0 8px',fontSize:15}},t('stem.titration.transfer_preparation_record','Transfer record for preparation')),
+    current?h('div',null,
+      h('strong',{style:{display:'block',fontSize:20,fontVariantNumeric:'tabular-nums'}},t('stem.titration.transfer_delivered_mass','Delivered solid mass')+': '+(m.received/10000).toFixed(4)+' g'),
+      h('p',{style:{fontSize:12,lineHeight:1.6,margin:'8px 0'}},t('stem.titration.transfer_use_delivered','Use the mass that reached the receiver when calculating concentration. It can differ from the original weighed mass.'))):
+      h('p',{style:{fontSize:12,lineHeight:1.6,color:'#fde68a'}},t('stem.titration.transfer_update_before_prepare','The transfer changed after recording. Update its record before using a mass for solution preparation.')),
+    h('button',{type:'button',onClick:function(){props.onSelect('weighing-boat');},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'8px 12px',border:'1px solid #74aa99',borderRadius:9,background:'#184a40',color:'#d1fae5',fontSize:12}},t('stem.titration.transfer_review','Review transfer')));
+}
+
+function TitrationPreparationIllustration(props) {
+  var h=props.React.createElement,s=titrationPreparationState(props.state),id=props.id,t=props.t;
+  var filled=s.phase==='filling'||s.phase==='mixed',complete=s.phase==='mixed';
+  var difference=10000-s.volumeUnits;
+  // Deliberately exaggerate near-mark differences in the labeled teaching close-up.
+  var zoomOffset=difference===0?0:(difference>0?1:-1)*Math.min(difference>0?70:29,4*Math.sqrt(Math.abs(difference)));
+  var enlarged=props.closeup&&filled,y=filled?145-(s.volumeUnits-9500)*0.12:235,zoomY=filled?114+zoomOffset:230;
+  var outline='M126 37 V129 C75 153 65 232 113 245 H183 C231 232 221 153 170 129 V37 Z';
+  return h('svg',{viewBox:props.closeup&&filled?'260 38 190 235':'0 0 460 290',width:'100%','aria-hidden':true,focusable:false,'data-preparation-diagram':s.phase,'data-preparation-view':props.closeup&&filled?'meniscus':'flask',style:{display:'block',maxHeight:360}},
+    h('defs',null,h('clipPath',{id:id+'-flask'},h('path',{d:outline})),
+      h('linearGradient',{id:id+'-glass',x1:0,y1:0,x2:1,y2:0},h('stop',{offset:0,stopColor:'#d9f4ff',stopOpacity:0.23}),h('stop',{offset:0.5,stopColor:'#d9f4ff',stopOpacity:0.02}),h('stop',{offset:1,stopColor:'#d9f4ff',stopOpacity:0.18}))),
+    !enlarged&&h('ellipse',{cx:230,cy:147,rx:217,ry:131,fill:'#102e43'}),
+    !enlarged&&h('path',{d:'M23 259 H439',stroke:'#446d86'}),h('ellipse',{cx:148,cy:254,rx:70,ry:7,fill:'#031422'}),
+    filled&&h('path',{d:'M68 '+(y-7)+' Q148 '+(y+7)+' 230 '+(y-7)+' V252 H68 Z',clipPath:'url(#'+id+'-flask)',fill:'#38bdf8',fillOpacity:0.35,stroke:'#a5eaf7',strokeWidth:2}),
+    h('path',{d:outline,fill:'url(#'+id+'-glass)',stroke:'#bbdfef',strokeWidth:2.5}),h('ellipse',{cx:148,cy:37,rx:22,ry:5,fill:'#0d2333',stroke:'#caeafa',strokeWidth:2}),
+    h('path',{d:'M136 48 V127 M106 171 Q92 208 110 226',fill:'none',stroke:'#f0f9ff',strokeWidth:4,opacity:0.6,strokeLinecap:'round'}),
+    h('path',{d:'M120 85 H176',stroke:'#fda4af',strokeWidth:3}),
+    h('text',{x:148,y:207,textAnchor:'middle',fill:'#e0f2fe',fontSize:17,fontWeight:700},'100 mL'),
+    complete&&h('g',null,h('path',{d:'M120 22 H176 L167 39 H129 Z',fill:'#d9e9f2',stroke:'#a7c9dc',strokeWidth:2}),h('path',{d:'M68 133 Q38 181 64 219 M53 213 L65 221 L68 206',stroke:'#6ee7b7',strokeWidth:3,fill:'none'})),
+    !filled&&h('g',null,h('path',{d:'M288 170 V222 Q326 238 364 222 V170',fill:'url(#'+id+'-glass)',stroke:'#bddcec',strokeWidth:2}),h('ellipse',{cx:326,cy:170,rx:38,ry:9,fill:'none',stroke:'#bddcec',strokeWidth:2}),
+      s.phase==='dissolved'&&h('path',{d:'M291 198 Q326 209 361 198 V220 Q326 234 291 220 Z',fill:'#38bdf8',fillOpacity:0.35}),
+      s.phase==='received'&&s.sourceUnits!==null&&Array.from({length:13},function(_,i){return h('circle',{key:i,cx:305+(i*13%41),cy:217+(i*7%10),r:2.7,fill:'#fde68a'});}),
+      h('text',{x:326,y:151,textAnchor:'middle',fill:'#c9e4f2',fontSize:12},s.phase==='dissolved'?t('stem.titration.preparation_dissolved','Dissolved sample'):t('stem.titration.preparation_receiver','Sample receiver'))),
+    filled&&h('g',null,
+      !enlarged&&h('path',{d:'M180 85 L265 57 M181 91 L265 227',stroke:'#527e98',strokeWidth:1,strokeDasharray:'4 5'}),
+      h('rect',{x:266,y:44,width:179,height:196,rx:14,fill:'#081d2c',stroke:'#668ea5',strokeWidth:1.5}),
+      h('text',{x:355,y:64,textAnchor:'middle',fill:'#c9e4f2',fontSize:11},t('stem.titration.preparation_neck','Meniscus close-up')),
+      h('path',{d:'M288 76 V222 H350 V76',fill:'url(#'+id+'-glass)',stroke:'#bbdfef',strokeWidth:2}),
+      h('path',{d:'M290 '+(zoomY-9)+' Q319 '+(zoomY+9)+' 348 '+(zoomY-9)+' V221 H290 Z',fill:'#38bdf8',fillOpacity:0.4,stroke:'#a5eaf7',strokeWidth:2}),
+      h('path',{d:'M280 114 H356',stroke:'#fda4af',strokeWidth:2.5}),
+      h('path',{d:s.eyeLevel?'M353 114 H381':'M352 103 L381 85',stroke:s.eyeLevel?'#6ee7b7':'#fde68a',strokeWidth:1.5,strokeDasharray:'4 4'}),
+      h('g',{'data-preparation-eye':s.eyeLevel?'level':'above',transform:'translate(0 '+(s.eyeLevel?0:-29)+')'},h('path',{d:'M382 114 Q400 94 421 114 Q400 134 382 114 Z',fill:'none',stroke:s.eyeLevel?'#6ee7b7':'#fde68a',strokeWidth:2}),h('circle',{cx:401,cy:114,r:5,fill:s.eyeLevel?'#6ee7b7':'#fde68a'})),
+      h('text',{x:355,y:263,textAnchor:'middle',fill:'#c9e4f2',fontSize:11},t('stem.titration.preparation_schematic','Schematic view'))));
+}
+function TitrationPreparationPractice(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId(),s=titrationPreparationState(props.state),latest=titrationPreparationSource(props.transfer),result=titrationPreparationResult(s);
+  var zoomState=React.useState(false),neckOnly=zoomState[0],setNeckOnly=zoomState[1];
+  var filling=s.phase==='filling',over=s.volumeUnits>10000,atMark=s.volumeUnits===10000;
+  var next=s.sourceUnits===null?t('stem.titration.preparation_next_load','Use a current transfer record to begin preparing a solution.'):s.phase==='received'?t('stem.titration.preparation_next_dissolve','Dissolve the delivered sample in a suitable portion of solvent before making up the final volume.'):s.phase==='dissolved'?t('stem.titration.preparation_next_transfer','Transfer the solution and all receiver and funnel rinsings into the volumetric flask. Keep below the mark.'):over?t('stem.titration.preparation_next_over','The meniscus is above the mark. Restart this practice preparation; removing mixed solution does not restore the intended concentration.'):result?t('stem.titration.preparation_next_done','Preparation recorded. Use the delivered mass and final solution volume to calculate mass concentration.'):!s.eyeLevel?t('stem.titration.preparation_next_eye','Align your eye with the mark, then bring the bottom of the clear meniscus to it.'):atMark?t('stem.titration.preparation_next_mix','The bottom of the meniscus meets the mark. Stopper securely and mix by repeated inversion.'):t('stem.titration.preparation_next_fill','Add solvent carefully. Switch to the smaller model additions near the mark.');
+  function button(label,type,disabled,units) {return h('button',{type:'button',disabled:!!disabled,onClick:function(){props.onAction({type:type,units:units});},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',borderRadius:9,border:'1px solid '+(disabled?'#466175':'#83b5c7'),background:disabled?'#172e40':'#174858',color:disabled?'#a3b8c7':'#e2f8ff',fontSize:12,cursor:disabled?'not-allowed':'pointer'}},label);}
+  var phaseText=s.phase==='received'?t('stem.titration.preparation_phase_received','1 · Dissolve'):s.phase==='dissolved'?t('stem.titration.preparation_phase_dissolved','2 · Transfer and rinse'):s.phase==='mixed'?t('stem.titration.preparation_phase_mixed','4 · Mixed and recorded'):t('stem.titration.preparation_phase_filling','3 · Make to the mark');
+  return h('section',{'data-titration-preparation-practice':true,'aria-labelledby':id+'-title',style:{padding:16,border:'1px solid #628aa0',borderRadius:16,background:'#0a2232'}},
+    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}},h('div',null,h('p',{style:{margin:'0 0 5px',fontSize:11,fontWeight:700,color:'#a5f3fc',letterSpacing:'0.06em'}},t('stem.titration.preparation_badge','MAKE TO VOLUME')),h('h4',{id:id+'-title',style:{margin:0,fontSize:20,color:'#eff9ff'}},t('stem.titration.preparation_title','Prepare a 100 mL solution'))),button(t('stem.titration.preparation_restart','Restart preparation'),'restart',s.sourceUnits===null)),
+    h('p',{style:{fontSize:12,lineHeight:1.6,color:'#c5dfed'}},t('stem.titration.preparation_intro','Practice the order of preparation and learn why the final solution volume matters. This trial keeps a copy of your delivered sample mass.')),
+    h('div',{style:{display:'flex',flexWrap:'wrap',gap:8,alignItems:'center',padding:12,margin:'12px 0 16px',borderRadius:10,border:'1px solid #52758a',background:'#103347'}},
+      button(t('stem.titration.preparation_load','Use delivered sample'),'load',latest===null),
+      h('button',{type:'button',onClick:function(){props.onSelect('weighing-boat');},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',borderRadius:9,border:'1px solid #83b5c7',background:'#174858',color:'#e2f8ff',fontSize:12}},t('stem.titration.preparation_back','Back to sample transfer')),
+      h('p',{'data-preparation-source':true,style:{margin:0,fontSize:12,color:'#d7eefa',flex:'1 1 180px'}},latest===null?t('stem.titration.preparation_no_source','A current recorded transfer is needed to load a sample.'):t('stem.titration.preparation_available','Available delivered mass')+': '+(latest/10000).toFixed(4)+' g')),
+    s.sourceUnits!==null&&h('p',{style:{fontSize:11,lineHeight:1.6,color:s.sourceUnits===latest?'#bed8e8':'#fde68a'}},s.sourceUnits===latest?t('stem.titration.preparation_reload_note','Loading again starts a new preparation. Navigating between equipment keeps this trial.'):t('stem.titration.preparation_source_changed','The transfer record has changed or is unavailable. This preparation still uses its original delivered mass.')),
+    h('div',{style:{display:'flex',flexWrap:'wrap',alignItems:'flex-start',gap:18}},
+      h('div',{style:{flex:'1.1 1 270px',minWidth:0}},
+        h('figure',{style:{margin:0,border:'1px solid #547b92',borderRadius:12,background:'#071a28',overflow:'hidden'}},h(TitrationPreparationIllustration,{React:React,t:t,state:s,id:id,closeup:neckOnly}),h('figcaption',{style:{fontSize:12,color:'#c9e9fa',padding:'0 12px 12px',textAlign:'center'}},s.sourceUnits===null?t('stem.titration.preparation_empty','Load a delivered sample to begin'):phaseText)),
+        (filling||result)&&h('button',{type:'button','aria-pressed':neckOnly,onClick:function(){setNeckOnly(!neckOnly);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,marginTop:10,padding:'9px 12px',border:'1px solid #83b5c7',borderRadius:9,background:neckOnly?'#c5f5ff':'#174858',color:neckOnly?'#07313d':'#e2f8ff',fontSize:12}},t('stem.titration.preparation_zoom','Enlarge meniscus')),
+        h('dl',{'aria-live':'polite','aria-atomic':true,style:{display:'flex',flexWrap:'wrap',gap:8,margin:'12px 0'}},[
+          [t('stem.titration.preparation_sample_mass','Sample mass'),s.sourceUnits===null?'—':(s.sourceUnits/10000).toFixed(4)+' g','mass'],
+          [t('stem.titration.preparation_model_volume','Model flask volume'),s.volumeUnits?(s.volumeUnits/100).toFixed(2)+' mL':'—','volume']
+        ].map(function(item){return h('div',{key:item[2],style:{flex:'1 1 130px',padding:12,border:'1px solid #52788f',borderRadius:10,background:'#102e41'}},h('dt',{style:{fontSize:11,color:'#c4ddea'}},item[0]),h('dd',{'data-preparation-reading':item[2],style:{margin:'6px 0 0',fontSize:19,color:'#edfaff',fontVariantNumeric:'tabular-nums'}},item[1]));})),
+        h('p',{style:{fontSize:11,color:'#bdd8e8',lineHeight:1.6}},t('stem.titration.preparation_volume_note','The close-up exaggerates small differences from the mark. The extra volume readout is a teaching aid; a real flask has one calibration mark, not a graduated scale.'))),
+      h('div',{style:{flex:'1 1 250px',minWidth:0}},
+        h('p',{id:id+'-next','aria-live':'polite','data-preparation-next':true,style:{margin:'0 0 14px',padding:12,borderLeft:'3px solid '+(over?'#fde68a':'#67e8f9'),borderRadius:6,background:over?'#403719':'#123b48',color:over?'#fef3c7':'#d4f7ff',fontSize:13,lineHeight:1.6}},next),
+        h('div',{role:'group','aria-label':t('stem.titration.preparation_actions','Solution preparation actions'),'aria-describedby':id+'-next',style:{display:'flex',flexWrap:'wrap',gap:8}},
+          button(t('stem.titration.preparation_dissolve','Dissolve the sample'),'dissolve',s.sourceUnits===null||s.phase!=='received'),
+          button(t('stem.titration.preparation_transfer','Transfer solution and rinsings'),'transfer',s.phase!=='dissolved'),
+          button(t('stem.titration.preparation_align','Align eye with the mark'),'eye',!filling||s.eyeLevel||over),
+          button(t('stem.titration.preparation_coarse','Add 1.00 mL (model)'),'add',!filling||over,100),
+          button(t('stem.titration.preparation_fine','Add 0.05 mL (model)'),'add',!filling||over,5),
+          button(t('stem.titration.preparation_mix','Stopper and mix'),'mix',!filling||!atMark||!s.eyeLevel)),
+        filling&&h('p',{'data-preparation-level':true,style:{fontSize:13,color:over?'#fde68a':atMark?'#a7f3d0':'#bae6fd',lineHeight:1.6,margin:'14px 0'}},over?t('stem.titration.preparation_above','Above the mark — preparation needs restarting.'):atMark?t('stem.titration.preparation_at','At the mark — stop adding solvent.'):t('stem.titration.preparation_below','Below the mark — more solvent is needed.')),
+        result&&h('div',{'data-preparation-result':true,style:{padding:14,marginTop:16,border:'1px solid #67a98e',borderRadius:12,background:'#123d32',color:'#d1fae5'}},
+          h('h5',{style:{margin:'0 0 10px',fontSize:15}},t('stem.titration.preparation_recorded','Prepared solution record')),
+          h('p',{style:{fontSize:12,margin:'0 0 6px'}},t('stem.titration.preparation_concentration','Mass concentration')),
+          h('strong',{style:{fontSize:25,fontVariantNumeric:'tabular-nums'}},result.gramsPerLiter.toFixed(3)+' g/L'),
+          h('p',{style:{fontSize:12,lineHeight:1.6}},result.massGrams.toFixed(4)+' g ÷ 0.10000 L = '+result.gramsPerLiter.toFixed(3)+' g/L'),
+          h('p',{style:{fontSize:11,lineHeight:1.6,marginBottom:0}},t('stem.titration.preparation_mass_not_molar','This is mass per solution volume. Molar concentration also requires the solute’s molar mass.')),
+          h('button',{type:'button',onClick:function(){props.onSelect('pipette');},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',marginTop:12,border:'1px solid #8bc5b0',borderRadius:9,background:'#194b3f',color:'#d1fae5',fontSize:12}},t('stem.titration.aliquot_continue','Practice a 25 mL aliquot'))))),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bfd9e8',margin:'16px 0 0'}},t('stem.titration.preparation_model_note','Illustrative model: the sample dissolves completely, transfer with rinsings is complete, and the flask starts at 95.00 mL. Fixed additions, liquid heights, and mixing in one action are simplified. Real drop sizes, solubility, temperature, and mixing requirements depend on the procedure.')),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bfd9e8',margin:'8px 0 0'}},t('stem.titration.preparation_method_note','Follow the reviewed procedure and the flask’s calibration temperature. Make up to the final solution volume, not by adding 100 mL of solvent. These practice results do not change the live titration.')));
+}
+
+function titrationAliquotEquipment(t) {
+  return {id:'pipette',name:t('stem.titration.volumetric_pipette','Volumetric Pipette'),icon:'\uD83E\uDDEA',
+    desc:t('stem.titration.aliquot_equip_desc','Transfer one calibrated volume of solution.'),
+    technique:t('stem.titration.aliquot_equip_technique','This exercise uses a 25 mL non-blow-out volumetric pipette. Condition it with the solution, fill above the mark with a filler, set the meniscus at eye level, and deliver vertically against the receiving wall. Follow the specified drain and waiting times; leave retained tip liquid in place.'),
+    errors:[t('stem.titration.aliquot_equip_error1','Skipping solution conditioning or setting the meniscus from the wrong viewing height.'),t('stem.titration.aliquot_equip_error2','Forcing retained liquid out of this non-blow-out pipette or ignoring its drain instructions.')],
+    safetyNote:t('stem.titration.aliquot_equip_safety','Never mouth pipette. Use a compatible filler and support the glass near its top when fitting it. Other pipette types have different delivery instructions; check their markings.')};
+}
+function TitrationAliquotIllustration(props) {
+  var h=props.React.createElement,t=props.t,s=titrationAliquotState(props.state),id=props.id;
+  var transfer=['adjusted','delivered','blown'].indexOf(s.phase)!==-1,delivered=s.phase==='delivered'||s.phase==='blown',loaded=s.phase==='filled'||s.phase==='adjusted';
+  var px=transfer?(s.atWall?363:329):123,top=s.phase==='filled'?67:84.5,detail=props.closeup;
+  var outline='M'+(px-4)+' 51 V117 C'+(px-28)+' 125 '+(px-28)+' 169 '+(px-4)+' 177 L'+(px-2)+' 242 L'+(px+2)+' 242 L'+(px+4)+' 177 C'+(px+28)+' 169 '+(px+28)+' 125 '+(px+4)+' 117 V51 Z';
+  return h('svg',{viewBox:detail?'202 14 202 125':'0 0 460 320',width:'100%','aria-hidden':true,focusable:false,'data-aliquot-diagram':s.phase,'data-aliquot-view':detail?'detail':'bench',style:{display:'block',maxHeight:375}},
+    h('defs',null,h('linearGradient',{id:id+'-glass',x1:0,y1:0,x2:1,y2:0},h('stop',{offset:0,stopColor:'#c4ebfa',stopOpacity:0.23}),h('stop',{offset:0.5,stopColor:'#d1f4ff',stopOpacity:0.03}),h('stop',{offset:1,stopColor:'#c4ebfa',stopOpacity:0.19})),h('clipPath',{id:id+'-pipette'},h('path',{d:outline}))),
+    !detail&&h('g',null,
+      h('ellipse',{cx:230,cy:170,rx:215,ry:140,fill:'#102e43'}),h('path',{d:'M24 292 H436',stroke:'#4d7892'}),
+      h('ellipse',{cx:123,cy:283,rx:64,ry:8,fill:'#031322'}),h('ellipse',{cx:329,cy:283,rx:61,ry:8,fill:'#031322'}),
+      h('path',{d:'M72 212 Q123 225 174 212 V267 Q123 288 72 267 Z',fill:'#38bdf8',fillOpacity:s.sourceUnits?0.3:0}),
+      h('path',{d:'M68 184 V269 Q123 291 178 269 V184',fill:'url(#'+id+'-glass)',stroke:'#bddff0',strokeWidth:2}),h('ellipse',{cx:123,cy:184,rx:55,ry:11,fill:'none',stroke:'#bddff0',strokeWidth:2}),
+      h('path',{d:'M213 238 V272 Q237 283 261 272 V238',fill:'url(#'+id+'-glass)',stroke:'#bddff0',strokeWidth:1.5}),h('ellipse',{cx:237,cy:238,rx:24,ry:5,fill:'none',stroke:'#bddff0',strokeWidth:1.5}),
+      s.sourceUnits!==null&&s.phase!=='ready'&&h('path',{d:'M216 260 Q237 268 258 260 V271 Q237 280 216 271 Z',fill:'#38bdf8',fillOpacity:0.3}),
+      h('text',{x:237,y:312,textAnchor:'middle',fill:'#cce9f7',fontSize:11},t('stem.titration.aliquot_waste','Rinse waste')),
+      h('path',{d:'M292 201 V265 Q329 283 366 265 V201',fill:'url(#'+id+'-glass)',stroke:'#bddff0',strokeWidth:2}),h('ellipse',{cx:329,cy:201,rx:37,ry:7,fill:'none',stroke:'#bddff0',strokeWidth:2}),
+      delivered&&h('path',{d:'M295 246 Q329 256 363 246 V264 Q329 280 295 264 Z',fill:'#38bdf8',fillOpacity:0.4,stroke:'#99def5',strokeWidth:1.5}),
+      loaded&&h('path',{d:'M'+(px-35)+' '+top+' Q'+px+' '+(top+7)+' '+(px+35)+' '+top+' V244 H'+(px-35)+' Z',clipPath:'url(#'+id+'-pipette)',fill:'#38bdf8',fillOpacity:0.65}),
+      h('path',{d:outline,fill:'url(#'+id+'-glass)',stroke:'#d3eafa',strokeWidth:2}),h('path',{d:'M'+(px-12)+' 88 H'+(px+12),stroke:'#fda4af',strokeWidth:2.5}),
+      h('path',{d:'M'+(px-12)+' 49 V37 C'+(px-29)+' 11 '+(px+29)+' 11 '+(px+12)+' 37 V49 Z',fill:'#197168',stroke:'#83d6c2',strokeWidth:2}),
+      s.phase==='delivered'&&h('path',{'data-aliquot-retained':true,d:'M'+(px-2)+' 229 Q'+px+' 225 '+(px+2)+' 229 V238 Q'+px+' 242 '+(px-2)+' 238 Z',fill:'#7dd3fc'}),
+      s.atWall&&h('circle',{cx:px,cy:239,r:13,fill:'none',stroke:s.phase==='blown'?'#fde68a':'#6ee7b7',strokeWidth:1.5,strokeDasharray:'3 4'}),
+      h('text',{x:123,y:312,textAnchor:'middle',fill:'#cce9f7',fontSize:12},t('stem.titration.aliquot_working','Working solution')),
+      h('text',{x:329,y:312,textAnchor:'middle',fill:'#cce9f7',fontSize:12},t('stem.titration.aliquot_receiver','Aliquot receiver'))),
+    h('g',{transform:!detail&&transfer?'translate(-177 0)':undefined},h('rect',{x:207,y:18,width:190,height:116,rx:12,fill:'#071c2b',stroke:'#6e98af',strokeWidth:1.5}),
+      delivered?h('g',null,
+        h('path',{d:'M246 31 V80 L253 111 L260 80 V31',fill:'url(#'+id+'-glass)',stroke:'#c9e8f5',strokeWidth:2}),
+        s.phase==='delivered'&&h('path',{d:'M250 89 Q253 85 256 89 L254 107 H252 Z',fill:'#7dd3fc'}),
+        h('path',{d:s.phase==='blown'?'M250 108 L245 120 M257 109 L264 122':'M264 100 H279',stroke:s.phase==='blown'?'#fde68a':'#7dd3fc',strokeWidth:2}),
+        h('text',{x:292,y:58,fill:'#cfe8f5',fontSize:11},t('stem.titration.aliquot_tip_detail','Tip detail')),
+        h('text',{x:292,y:84,fill:s.phase==='blown'?'#fde68a':'#a7f3d0',fontSize:11},s.phase==='blown'?t('stem.titration.aliquot_tip_forced','Liquid forced out'):t('stem.titration.aliquot_tip_retained','Liquid retained'))):h('g',null,
+        h('path',{d:'M231 32 V120 H278 V32',fill:'url(#'+id+'-glass)',stroke:'#c9e8f5',strokeWidth:2}),
+        loaded&&h('path',{d:'M233 '+(s.phase==='filled'?50:77)+' Q254 '+(s.phase==='filled'?66:93)+' 276 '+(s.phase==='filled'?50:77)+' V119 H233 Z',fill:'#38bdf8',fillOpacity:0.4,stroke:'#a5e8fa',strokeWidth:1.5}),
+        h('path',{d:'M225 85 H285',stroke:'#fda4af',strokeWidth:2}),
+        h('path',{d:s.eyeLevel?'M286 85 H320':'M286 75 L320 61',stroke:s.eyeLevel?'#6ee7b7':'#fde68a',strokeDasharray:'4 4',strokeWidth:1.5}),
+        h('g',{'data-aliquot-eye':s.eyeLevel?'level':'above',transform:'translate(0 '+(s.eyeLevel?0:-24)+')'},h('path',{d:'M322 85 Q340 66 359 85 Q340 104 322 85 Z',fill:'none',stroke:s.eyeLevel?'#6ee7b7':'#fde68a',strokeWidth:2}),h('circle',{cx:340,cy:85,r:4,fill:s.eyeLevel?'#6ee7b7':'#fde68a'})),
+        h('text',{x:303,y:123,textAnchor:'middle',fill:'#cde8f6',fontSize:10},t('stem.titration.aliquot_mark_detail','Set the lower meniscus at the mark')))));
+}
+function TitrationAliquotPractice(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId(),s=titrationAliquotState(props.state),latest=titrationAliquotSource(props.preparation),r=titrationAliquotResult(s);
+  var zoom=React.useState(false),detail=zoom[0],setDetail=zoom[1],delivered=s.phase==='delivered',blown=s.phase==='blown';
+  var stepsView=React.useState(false),allSteps=stepsView[0],setAllSteps=stepsView[1],actionsRef=React.useRef(null),resultRef=React.useRef(null),guidanceRef=React.useRef(null),focusNext=React.useRef(false);
+  React.useEffect(function(){if(!focusNext.current)return;focusNext.current=false;var target=actionsRef.current&&actionsRef.current.querySelector('button:not([disabled])');if(!target)target=resultRef.current||guidanceRef.current;if(target)target.focus();},[s.phase,s.eyeLevel,s.atWall,s.recorded,allSteps]);
+  var next=s.sourceUnits===null?t('stem.titration.aliquot_next_load','Finish and mix a preparation, then load its solution to begin.'):s.phase==='ready'?t('stem.titration.aliquot_next_condition','Condition a clean pipette with a small working portion of the solution. Collect the rinse as waste; do not return it to the stock.'):s.phase==='conditioned'?t('stem.titration.aliquot_next_fill','Use the fitted pipette filler to draw solution above the mark. Keep liquid out of the filler.'):s.phase==='filled'?!s.eyeLevel?t('stem.titration.aliquot_next_eye','Keep the pipette vertical and bring your eye level with its calibration mark.'):t('stem.titration.aliquot_next_adjust','Release excess solution to a suitable waste receiver until the bottom of the meniscus meets the mark.'):s.phase==='adjusted'?!s.atWall?t('stem.titration.aliquot_next_wall','Move to the receiving vessel. Keep the pipette vertical and place its tip against the inside wall.'):t('stem.titration.aliquot_next_drain','Allow gravity drainage and follow the pipette’s specified waiting time before withdrawing the tip along the wall.'):blown?t('stem.titration.aliquot_next_blown','Forcing out the retained liquid adds more than the calibrated delivery. The actual extra volume is not modeled, so the 25 mL result is no longer valid.'):r?t('stem.titration.aliquot_next_recorded','Aliquot recorded. Taking a well-mixed portion changes the amount of solute, while its concentration stays the same.'):t('stem.titration.aliquot_next_record','The calibrated delivery is complete. Leave the retained tip liquid in this non-blow-out pipette and record the aliquot.');
+  function button(label,type,disabled,caution){var isStep=['condition','fill','eye','adjust','wall','drain','record'].indexOf(type)!==-1;if(isStep&&!allSteps&&disabled)return null;return h('button',{type:'button',disabled:!!disabled,onClick:function(){if((isStep&&!allSteps)||type==='blow'||(type==='restart'&&blown))focusNext.current=true;props.onAction({type:type});},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',border:'1px solid '+(disabled?'#4c6577':caution?'#d5b571':'#7cacc1'),borderRadius:9,background:disabled?'#162e40':caution?'#493b1b':'#15475a',color:disabled?'#a3b9c9':caution?'#fef3c7':'#e0f5ff',fontSize:12,cursor:disabled?'not-allowed':'pointer'}},label);}
+  function link(label,target){return h('button',{type:'button',onClick:function(){props.onSelect(target);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',border:'1px solid #7cacc1',borderRadius:9,background:'#15475a',color:'#e0f5ff',fontSize:12}},label);}
+  var phase=s.phase==='ready'?t('stem.titration.aliquot_phase_ready','1 · Condition'):s.phase==='conditioned'?t('stem.titration.aliquot_phase_conditioned','2 · Fill with a filler'):s.phase==='filled'?t('stem.titration.aliquot_phase_filled','3 · Set the meniscus'):s.phase==='adjusted'?t('stem.titration.aliquot_phase_adjusted','4 · Deliver by gravity'):blown?t('stem.titration.aliquot_phase_blown','Delivery needs restarting'):r?t('stem.titration.aliquot_result','Recorded aliquot'):t('stem.titration.aliquot_phase_delivered','5 · Leave the tip liquid and record');
+  return h('section',{'data-titration-aliquot-practice':true,onKeyDown:function(e){if(e.key==='Escape'){e.stopPropagation();props.onClose();}},'aria-labelledby':id+'-title',style:{padding:16,border:'1px solid #628ba2',borderRadius:16,background:'#0a2232'}},
+    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}},h('div',null,h('p',{style:{fontSize:11,letterSpacing:'0.06em',fontWeight:700,margin:'0 0 5px',color:'#a5f3fc'}},t('stem.titration.aliquot_badge','TAKE A MEASURED PORTION')),h('h4',{id:id+'-title',style:{margin:0,fontSize:20,color:'#edfaff'}},t('stem.titration.aliquot_title','Deliver a 25 mL aliquot'))),button(t('stem.titration.aliquot_restart','Restart pipetting'),'restart',s.sourceUnits===null)),
+    h('p',{style:{fontSize:12,lineHeight:1.6,color:'#c5dfea'}},t('stem.titration.aliquot_intro','Practise with a standard non-blow-out volumetric pipette calibrated to deliver 25 mL. An aliquot is a measured portion of a well-mixed solution.')),
+    h('div',{style:{display:'flex',alignItems:'center',flexWrap:'wrap',gap:8,padding:12,border:'1px solid #547d94',borderRadius:10,background:'#123447',margin:'12px 0'}},button(t('stem.titration.aliquot_load','Use prepared solution'),'load',latest===null),link(t('stem.titration.aliquot_back','Back to preparation'),'volumetric-flask'),
+      h('p',{'data-aliquot-source':true,style:{flex:'1 1 170px',fontSize:12,margin:0,color:'#d5edf8'}},latest===null?t('stem.titration.aliquot_no_source','A completed, mixed preparation is needed.'):t('stem.titration.aliquot_available','Prepared concentration')+': '+(latest/1000).toFixed(3)+' g/L')),
+    s.sourceUnits!==null&&h('p',{style:{fontSize:11,lineHeight:1.6,color:latest===s.sourceUnits?'#bed8e8':'#fde68a'}},latest===s.sourceUnits?t('stem.titration.aliquot_snapshot_note','This exercise uses a copy of the prepared solution. Loading again starts a new pipetting trial.'):t('stem.titration.aliquot_source_changed','The preparation has changed or is unavailable. This trial keeps its original concentration until you load again.')),
+    h('div',{style:{display:'flex',flexWrap:'wrap',gap:18,alignItems:'flex-start'}},
+      h('div',{style:{flex:'1.1 1 270px',minWidth:0}},
+        h('figure',{style:{margin:0,border:'1px solid #567e95',borderRadius:12,overflow:'hidden',background:'#071a28'}},h(TitrationAliquotIllustration,{React:React,t:t,state:s,id:id,closeup:detail}),h('figcaption',{style:{fontSize:12,color:'#c6e8f8',padding:'8px 12px 12px',textAlign:'center'}},s.sourceUnits===null?t('stem.titration.aliquot_empty','Load a prepared solution to begin'):phase)),
+        h('button',{type:'button','aria-pressed':detail,onClick:function(){setDetail(!detail);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,marginTop:10,padding:'9px 12px',border:'1px solid #7cacc1',borderRadius:9,background:detail?'#c5f5ff':'#15475a',color:detail?'#07313d':'#e0f5ff',fontSize:12}},t('stem.titration.aliquot_zoom','Enlarge technique detail')),
+        h('dl',{'aria-live':'polite','aria-atomic':true,style:{display:'flex',flexWrap:'wrap',gap:8,margin:'12px 0'}},[[t('stem.titration.aliquot_working_c','Working concentration'),s.sourceUnits===null?'—':(s.sourceUnits/1000).toFixed(3)+' g/L','concentration'],[t('stem.titration.aliquot_delivered','Calibrated delivery'),blown?t('stem.titration.aliquot_invalid','Invalid'):delivered?'25.00 mL':'—','volume']].map(function(item){return h('div',{key:item[2],style:{flex:'1 1 140px',minWidth:0,padding:12,border:'1px solid #54778f',borderRadius:10,background:'#102e41'}},h('dt',{style:{fontSize:11,color:'#c4ddea'}},item[0]),h('dd',{'data-aliquot-reading':item[2],style:{margin:'6px 0 0',fontSize:19,color:'#ecf9ff',fontVariantNumeric:'tabular-nums'}},item[1]));})),
+        (delivered||blown)&&h('p',{style:{fontSize:12,lineHeight:1.6,color:blown?'#fde68a':'#c3e9f5'}},blown?t('stem.titration.aliquot_blown_note','Extra liquid was forced into the receiver. Do not use the nominal 25 mL value for this delivery.'):t('stem.titration.aliquot_retained_note','The retained liquid is already accounted for in this pipette’s delivery calibration. Do not subtract it from 25 mL or force it out.'))),
+      h('div',{style:{flex:'1 1 250px',minWidth:0}},h('p',{'aria-live':'polite',id:id+'-next',ref:guidanceRef,tabIndex:-1,className:'focus-visible:ring-2 focus-visible:ring-cyan-200','data-aliquot-next':true,style:{padding:12,margin:'0 0 14px',borderLeft:'3px solid '+(blown?'#fde68a':'#67e8f9'),borderRadius:6,background:blown?'#403719':'#123b48',color:blown?'#fef3c7':'#d4f7ff',fontSize:13,lineHeight:1.6}},next),
+        blown&&button(t('stem.titration.aliquot_recover','Start over with this solution'),'restart',false),
+        h('button',{type:'button','aria-pressed':allSteps,onClick:function(){setAllSteps(!allSteps);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'8px 10px',margin:'10px 0',border:'1px solid #769cb2',borderRadius:9,background:allSteps?'#c5f5ff':'#14374a',color:allSteps?'#07313d':'#d4edf9',fontSize:12}},t('stem.titration.path_show_steps','Show all technique steps')),
+        (allSteps||(s.sourceUnits!==null&&!blown&&!r))&&h('div',{ref:actionsRef,role:'group','aria-label':t('stem.titration.aliquot_actions','Aliquot preparation actions'),'aria-describedby':id+'-next',style:{display:'flex',flexWrap:'wrap',gap:8,marginTop:blown?12:0}},
+          button(t('stem.titration.aliquot_condition','Condition with solution'),'condition',s.sourceUnits===null||s.phase!=='ready'),
+          button(t('stem.titration.aliquot_fill','Fill above the mark'),'fill',s.phase!=='conditioned'),
+          button(t('stem.titration.aliquot_eye','Align eye with the mark'),'eye',s.phase!=='filled'||s.eyeLevel),
+          button(t('stem.titration.aliquot_adjust','Set the meniscus'),'adjust',s.phase!=='filled'||!s.eyeLevel),
+          button(t('stem.titration.aliquot_wall','Place tip against receiver wall'),'wall',s.phase!=='adjusted'||s.atWall),
+          button(t('stem.titration.aliquot_drain','Drain and wait (model)'),'drain',s.phase!=='adjusted'||!s.atWall),
+          button(t('stem.titration.aliquot_record','Record aliquot'),'record',!delivered||s.recorded)),
+        blown&&s.recorded&&h('p',{'data-aliquot-stale':true,style:{fontSize:12,lineHeight:1.6,color:'#fde68a'}},t('stem.titration.aliquot_record_invalid','Your earlier record is no longer valid after blowing out the tip. Restart to record a new aliquot.')),
+        r&&h('div',{ref:resultRef,tabIndex:-1,'data-aliquot-result':true,className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{padding:14,marginTop:16,border:'1px solid #6aa88e',borderRadius:12,background:'#123d32',color:'#d1fae5'}},h('h5',{style:{fontSize:15,margin:'0 0 10px'}},t('stem.titration.aliquot_result','Recorded aliquot')),
+          h('strong',{style:{display:'block',fontSize:22}},'25.00 mL'),h('p',{style:{fontSize:13,lineHeight:1.6}},t('stem.titration.aliquot_same_c','Same concentration as the prepared solution')+': '+r.gramsPerLiter.toFixed(3)+' g/L'),
+          h('p',{style:{fontSize:12,lineHeight:1.6}},t('stem.titration.aliquot_solute','Calculated solute mass')+': '+parseFloat(r.massGrams.toFixed(6))+' g'),
+          h('p',{style:{fontSize:11,lineHeight:1.6,marginBottom:0}},r.gramsPerLiter.toFixed(3)+' g/L × 0.02500 L = '+parseFloat(r.massGrams.toFixed(6))+' g')),
+        delivered&&h('div',{style:{padding:12,marginTop:14,border:'1px solid #9e874e',borderRadius:10,background:'#302d1d'}},h('p',{style:{fontSize:12,lineHeight:1.6,color:'#fef3c7',margin:'0 0 10px'}},t('stem.titration.aliquot_mistake_hint','Explore a technique error: see what happens if the retained liquid is forced out.')),button(t('stem.titration.aliquot_blow','Try blowing out the tip'),'blow',false,true)))),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bed9e8',margin:'16px 0 0'}},t('stem.titration.aliquot_model_note','Illustrative model: conditioning, drainage, and the specified wait each finish in one action. Working-solution use, rinse waste, and retained-liquid volumes are not tracked. Vessel shapes and liquid levels are schematic. The prepared solution and live titration are unchanged.')),
+    h('div',{style:{display:'flex',flexWrap:'wrap',gap:8,marginTop:12}},h('button',{type:'button',onClick:props.onClose,className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',border:'1px solid #7cacc1',borderRadius:9,background:'#15475a',color:'#e0f5ff',fontSize:12}},t('stem.titration.aliquot_close','Back to equipment')),link(t('stem.titration.aliquot_filler_guide','Study the pipette filler'),'pipette-filler'),h('a',{href:'https://chemed.chem.purdue.edu/genchem/lab/equipment/pipet/use.html',target:'_blank',rel:'noopener noreferrer',className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{display:'inline-flex',alignItems:'center',minHeight:44,padding:'8px 4px',fontSize:12,color:'#bae6fd',textDecoration:'underline'}},t('stem.titration.aliquot_reference','Pipetting technique reference'))));
+}
+
+function titrationAdditionalEquipment(t) {
+  var general = 'https://spots.augusta.edu/smyers1/Chemistry2810/GENERALPROCEDURES.html';
+  var burette = 'https://www2.chem.wisc.edu/deptfiles/genchem/lab/labdocs/modules/buret/bretfill.htm';
+  return [
+    { id: 'volumetric-flask', icon: '\u2697', name: t('stem.titration.equip_flask_name', 'Volumetric flask'),
+      desc: t('stem.titration.equip_flask_desc', 'Prepare a solution to one calibrated volume.'),
+      technique: t('stem.titration.equip_flask_technique', 'A volumetric flask is calibrated to contain its marked volume, not to deliver that volume when poured.'),
+      study: [
+        { label: t('stem.titration.equip_flask_step1', 'Transfer'), text: t('stem.titration.equip_flask_text1', 'Transfer the dissolved solute and its rinsings into the flask. Keep the liquid below the calibration mark.') },
+        { label: t('stem.titration.equip_flask_step2', 'Make to the mark'), text: t('stem.titration.equip_flask_text2', 'At the specified temperature, add solvent dropwise. View the bottom of the clear meniscus at eye level against the single mark.') },
+        { label: t('stem.titration.equip_flask_step3', 'Mix'), text: t('stem.titration.equip_flask_text3', 'Stopper securely and invert repeatedly to mix the entire solution before taking an aliquot.') }
+      ],
+      errors: [t('stem.titration.equip_flask_error', 'Overshooting the mark changes the concentration; removing some mixed solution does not correct it.')],
+      safetyNote: t('stem.titration.equip_flask_safety', 'Follow the reviewed preparation procedure; a volumetric flask is not a heating vessel.'), source: general },
+    { id: 'pipette-filler', icon: '\u25C9', name: t('stem.titration.equip_filler_name', 'Pipette filler'),
+      desc: t('stem.titration.equip_filler_desc', 'Control aspiration without mouth pipetting.'),
+      technique: t('stem.titration.equip_filler_technique', 'Use a compatible filler and follow its controls; bulb and lever designs differ.'),
+      study: [
+        { label: t('stem.titration.equip_filler_step1', 'Fit the filler'), text: t('stem.titration.equip_filler_text1', 'Support the pipette near its top when fitting the filler. Do not force glass into a tight adapter.') },
+        { label: t('stem.titration.equip_filler_step2', 'Draw and adjust'), text: t('stem.titration.equip_filler_text2', 'Draw solution above the mark, then adjust the meniscus to it. Keep liquid out of the filler.') },
+        { label: t('stem.titration.equip_filler_step3', 'Deliver'), text: t('stem.titration.equip_filler_text3', 'Let a standard volumetric pipette drain by gravity against the receiving wall. Follow its drain time; do not blow out its retained tip liquid.') }
+      ],
+      errors: [t('stem.titration.equip_filler_error', 'Drawing liquid into the bulb or forcing the final liquid out.')],
+      safetyNote: t('stem.titration.equip_filler_safety', 'Never mouth pipette.'), source: 'https://shop.brand.de/media/import/1/27/32406/42485/42534/42546/GA_macro.pdf#page=27' },
+    { id: 'funnel', icon: '\u25BD', name: t('stem.titration.equip_funnel_name', 'Filling funnel'),
+      desc: t('stem.titration.equip_funnel_desc', 'Fill the burette, then remove the funnel.'),
+      technique: t('stem.titration.equip_funnel_technique', 'A funnel is a filling aid; it does not stay in place during a measured titration.'),
+      study: [
+        { label: t('stem.titration.equip_funnel_step1', 'Prepare'), text: t('stem.titration.equip_funnel_text1', 'Secure the burette, close its stopcock, and place a waste beaker underneath.') },
+        { label: t('stem.titration.equip_funnel_step2', 'Fill slowly'), text: t('stem.titration.equip_funnel_text2', 'Allow air to escape around the funnel stem. Watch the burette level and avoid overfilling.') },
+        { label: t('stem.titration.equip_funnel_step3', 'Remove'), text: t('stem.titration.equip_funnel_text3', 'Remove the funnel before taking the initial reading. Later drips would change the volume after that reading.') }
+      ],
+      errors: [t('stem.titration.equip_funnel_error', 'Leaving the funnel in the burette during titration.')],
+      safetyNote: t('stem.titration.equip_funnel_safety', 'Fill at a safe working height.'), source: burette },
+    { id: 'stand-clamp', icon: '\u22A5', name: t('stem.titration.equip_stand_name', 'Stand and clamp'),
+      desc: t('stem.titration.equip_stand_desc', 'Support the burette above the receiving flask.'),
+      technique: t('stem.titration.equip_stand_technique', 'Set up a stable support before filling the burette.'),
+      study: [
+        { label: t('stem.titration.equip_stand_step1', 'Set the base'), text: t('stem.titration.equip_stand_text1', 'Place the stand on a level bench, away from its edge.') },
+        { label: t('stem.titration.equip_stand_step2', 'Secure the glass'), text: t('stem.titration.equip_stand_text2', 'Use a suitable burette clamp. Support the glass while adjusting the grip; do not overtighten.') },
+        { label: t('stem.titration.equip_stand_step3', 'Align'), text: t('stem.titration.equip_stand_text3', 'Keep the burette vertical, with its tip above the flask opening and room to swirl.') }
+      ],
+      errors: [t('stem.titration.equip_stand_error', 'Loose grips, unstable bases, or a burette leaning sideways.')],
+      safetyNote: t('stem.titration.equip_stand_safety', 'Check the support before adding reagent.'), source: burette },
+    { id: 'magnetic-stirrer', icon: '\u27F3', name: t('stem.titration.equip_stirrer_name', 'Magnetic stirrer'),
+      desc: t('stem.titration.equip_stirrer_desc', 'Mix evenly with a magnetic stir bar.'),
+      technique: t('stem.titration.equip_stirrer_technique', 'Gentle mixing distributes each addition through the analyte. A deep vortex is not the goal.'),
+      study: [
+        { label: t('stem.titration.equip_stirrer_step1', 'Place the bar'), text: t('stem.titration.equip_stirrer_text1', 'With stirring off, place a clean stir bar in the flask and center it on the plate.') },
+        { label: t('stem.titration.equip_stirrer_step2', 'Mix gently'), text: t('stem.titration.equip_stirrer_text2', 'Increase stirring gradually until the solution mixes without splashing. Keep any probe clear of the moving bar.') },
+        { label: t('stem.titration.equip_stirrer_step3', 'Finish'), text: t('stem.titration.equip_stirrer_text3', 'Switch stirring off before moving the vessel or recovering the bar. Handle the solution as directed by the lab procedure.') }
+      ],
+      errors: [t('stem.titration.equip_stirrer_error', 'Excessive speed can cause splashing or make the stir bar lose its smooth rotation.')],
+      safetyNote: t('stem.titration.equip_stirrer_safety', 'On a combined hotplate and stirrer, heating is a separate control. Leave it off unless the procedure requires it.'),
+      source: 'https://chemed.chem.purdue.edu/genchem/lab/techniques/titration/perform.html' },
+    { id: 'ph-electrode', icon: '\u2316', name: t('stem.titration.equip_probe_name', 'pH electrode'),
+      desc: t('stem.titration.equip_probe_desc', 'Measure acidity and follow a potentiometric endpoint.'),
+      technique: t('stem.titration.equip_probe_technique', 'Use the instructions for the actual electrode and meter. This illustration does not calibrate the simulated pH signal.'),
+      study: [
+        { label: t('stem.titration.equip_probe_step1', 'Calibrate'), text: t('stem.titration.equip_probe_text1', 'Calibrate with fresh buffer portions spanning the expected pH range. Rinse between buffers; never return used buffer to its bottle.') },
+        { label: t('stem.titration.equip_probe_step2', 'Measure'), text: t('stem.titration.equip_probe_text2', 'Immerse the sensing region as specified. Keep the tip clear of the vessel and stir bar, then wait for a stable reading.') },
+        { label: t('stem.titration.equip_probe_step3', 'Rinse and store'), text: t('stem.titration.equip_probe_text3', 'Rinse with deionized water and store in the manufacturer-specified solution. Do not use deionized water for long-term storage of this glass pH electrode.') }
+      ],
+      errors: [t('stem.titration.equip_probe_error', 'Using the electrode to stir, contaminating calibration buffers, or letting the glass bulb dry out.')],
+      safetyNote: t('stem.titration.equip_probe_safety', 'The sensing bulb is fragile. Secure the electrode before starting a stirrer.'),
+      source: 'https://www.vernier.com/blog/answers-to-the-top-five-questions-about-ph-sensor-care/' }
+  ].concat(titrationWeighingEquipment(t));
+}
+
+function TitrationEquipmentIllustration(props) {
+  var h = props.React.createElement, kind = props.kind, phase = props.phase, uid = props.id;
+  if (kind === 'analytical-balance') return h('div',{'data-equipment-diagram':kind,'data-equipment-phase':phase},h(TitrationWeighingIllustration,{React:props.React,id:uid,state:{closed:phase>0,boat:phase>0,tareUnits:phase>0?23456:0,sampleUnits:phase===2?5000:0}}));
+  var glass = {fill:'url(#'+uid+'-glass)',stroke:'#b8d8e9',strokeWidth:2};
+  function path(d, extra) { return h('path',Object.assign({d:d},glass,extra)); }
+  function line(x1,y1,x2,y2,extra) { return h('line',Object.assign({x1:x1,y1:y1,x2:x2,y2:y2,stroke:'#a8c8dc',strokeWidth:2,strokeLinecap:'round'},extra)); }
+  function water(d) { return h('path',{d:d,fill:'#38bdf8',fillOpacity:0.38,stroke:'#7dd3fc',strokeWidth:1.5}); }
+  function ring(x,y,r) { return h('circle',{cx:x,cy:y,r:r,fill:'none',stroke:'#6ee7b7',strokeWidth:2,strokeDasharray:'4 5'}); }
+  function beaker(x,y,w,height,fillLevel) { return h('g',null,
+    water('M'+(x+3)+' '+(y+height-fillLevel)+' h'+(w-6)+' v'+(fillLevel-4)+' h-'+(w-6)+' Z'),
+    path('M'+x+' '+y+' v'+(height-8)+' q0 8 8 8 h'+(w-16)+' q8 0 8 -8 v-'+(height-8),{fill:'none'}),
+    line(x+8,y+10,x+8,y+height-12,{stroke:'#f0f9ff',strokeWidth:3,opacity:0.5})); }
+  function tube(x,top,bottom,fillTop) { return h('g',null,
+    h('rect',Object.assign({x:x-7,y:top,width:14,height:bottom-top,rx:3},glass)),
+    h('rect',{x:x-4,y:fillTop,width:8,height:bottom-fillTop,fill:'#38bdf8',opacity:0.5}),
+    Array.from({length:9},function(_,i){return line(x-6,top+15+i*12,x+(i%2?0:4),top+15+i*12,{key:i,stroke:'#d6e7f4',strokeWidth:1});}),
+    line(x,bottom,x,bottom+17),line(x-13,bottom+5,x+13,bottom+5,{stroke:'#6ee7b7',strokeWidth:5})); }
+  var scene;
+  if (kind === 'volumetric-flask') {
+    scene = h('g',{transform:phase===2?'rotate(-23 145 148)':undefined},
+      phase===2?h('path',{d:'M70 45 L220 109 V240 H70 Z',fill:'#38bdf8',fillOpacity:0.38,stroke:'#7dd3fc',strokeWidth:1.5,clipPath:'url(#'+uid+'-flask)'}):water(phase===0?'M108 144 Q91 195 117 212 H173 Q199 195 182 144 Z':'M137 77 Q145 83 153 77 L153 117 Q194 141 193 181 Q193 214 172 214 H118 Q97 214 97 181 Q96 141 137 117 Z'),
+      path('M135 42 L135 116 C88 141 83 216 118 218 H172 C207 216 202 141 155 116 L155 42 Z'),
+      h('ellipse',{cx:145,cy:43,rx:10,ry:3,fill:'#143448',stroke:'#d9edf7',strokeWidth:2}),
+      line(130,80,160,80,{stroke:'#fb7185',strokeWidth:2}),line(141,51,141,111,{stroke:'#f0f9ff',strokeWidth:3,opacity:0.6}),
+      h('path',{d:'M109 161 Q99 187 112 201',fill:'none',stroke:'#e0f2fe',strokeWidth:4,strokeLinecap:'round',opacity:0.6}),
+      phase===1 && h('g',null,line(166,80,245,80,{stroke:'#6ee7b7',strokeDasharray:'4 4'}),ring(145,80,25),h('path',{d:'M230 80 Q249 61 268 80 Q249 99 230 80 Z',fill:'none',stroke:'#cbd5e1',strokeWidth:1.5}),h('circle',{cx:249,cy:80,r:5,fill:'#6ee7b7'})),
+      phase===2 && h('g',null,h('rect',{x:132,y:30,width:26,height:12,rx:3,fill:'#e2e8f0'}),h('rect',{x:138,y:40,width:14,height:13,fill:'#94a3b8'}),h('path',{d:'M212 116 A70 70 0 0 1 215 183 M210 176 L215 185 L224 178',fill:'none',stroke:'#6ee7b7',strokeWidth:3})));
+  } else if (kind === 'pipette-filler') {
+    var px = phase===2?185:145;
+    scene = h('g',null,
+      beaker(phase===2?110:106,165,78,58,phase===1?35:phase===2?18:4),
+      h('path',{d:'M'+px+' 35 C'+(px-29)+' 35 '+(px-29)+' 73 '+px+' 78 C'+(px+29)+' 73 '+(px+29)+' 35 '+px+' 35 Z',fill:'#0d6e65',stroke:'#6ee7b7',strokeWidth:2}),
+      h('rect',{x:px-5,y:74,width:10,height:14,rx:3,fill:'#cbd5e1'}),
+      path('M'+(px-3)+' 87 V119 C'+(px-16)+' 126 '+(px-16)+' 148 '+(px-3)+' 155 L'+(px-2)+' 198 L'+(px+2)+' 198 L'+(px+3)+' 155 C'+(px+16)+' 148 '+(px+16)+' 126 '+(px+3)+' 119 V87 Z'),
+      phase===1 && h('path',{d:'M'+(px-1)+' 108 V122 C'+(px-13)+' 129 '+(px-13)+' 145 '+(px-1)+' 154 L'+px+' 195 L'+(px+1)+' 154 C'+(px+13)+' 145 '+(px+13)+' 129 '+(px+1)+' 122 V108 Z',fill:'#38bdf8',opacity:0.6}),
+      line(px-8,108,px+8,108,{stroke:'#fb7185'}),
+      phase===1 && h('path',{d:'M104 161 V105 L98 113 M104 105 L110 113',stroke:'#6ee7b7',strokeWidth:3,fill:'none'}),
+      phase===2 && h('path',{d:'M215 115 V166 L209 158 M215 166 L221 158',stroke:'#6ee7b7',strokeWidth:3,fill:'none'}),ring(px,phase===0?80:phase===1?108:196,phase===0?20:16));
+  } else if (kind === 'funnel') {
+    var fx=phase===2?231:145,fy=phase===2?127:29;
+    scene=h('g',null,
+      h('g',{opacity:0.55},line(73,64,73,231,{strokeWidth:5}),line(48,233,97,233,{strokeWidth:5}),line(73,108,145,108,{strokeWidth:4}),h('path',{d:'M135 100 Q153 96 154 108 Q153 120 135 116',fill:'none',stroke:'#a8c8dc',strokeWidth:3})),
+      tube(145,65,179,phase===0?166:84),beaker(112,205,66,29,8),
+      h('g',null,path('M'+(fx-23)+' '+fy+' H'+(fx+23)+' L'+(fx+3)+' '+(fy+27)+' V'+(fy+44)+' H'+(fx-3)+' V'+(fy+27)+' Z'),h('ellipse',{cx:fx,cy:fy,rx:23,ry:4,fill:'#193e52',stroke:'#b8d8e9',strokeWidth:2}),phase===1&&water('M'+(fx-15)+' '+(fy+9)+' H'+(fx+15)+' L'+fx+' '+(fy+27)+' Z')),
+      phase===2?h('g',null,ring(145,66,20),h('path',{d:'M179 91 L214 109 M202 108 L214 109 L209 98',stroke:'#6ee7b7',strokeWidth:3,fill:'none'})):ring(145,phase===0?184:55,22));
+  } else if (kind === 'stand-clamp') {
+    scene=h('g',null,h('path',{d:'M48 220 L193 220 L213 236 H36 Z',fill:'#31495d',stroke:'#7e9eb4',strokeWidth:2}),
+      line(66,39,66,219,{stroke:'#acc3d0',strokeWidth:8}),line(63,40,63,213,{stroke:'#edf6fb',strokeWidth:2}),
+      line(67,90,149,90,{stroke:phase===1?'#6ee7b7':'#829bad',strokeWidth:7}),
+      phase>0&&h('g',null,tube(152,39,154,67),h('path',{d:'M140 80 Q157 71 163 81 M140 100 Q157 109 163 99',fill:'none',stroke:'#6ee7b7',strokeWidth:5,strokeLinecap:'round'})),
+      phase===2&&h('g',null,water('M129 202 H175 L187 222 H117 Z'),path('M141 181 H163 V194 L190 225 H114 L141 194 Z'),line(152,173,152,187,{stroke:'#6ee7b7',strokeDasharray:'3 3',strokeWidth:1})),
+      ring(phase===0?115:152,phase===0?225:phase===1?90:178,phase===0?29:23));
+  } else if (kind === 'magnetic-stirrer') {
+    scene=h('g',null,
+      h('path',{d:'M66 181 L230 181 L247 204 V233 H51 V204 Z',fill:'#244158',stroke:'#8cacc1',strokeWidth:2}),
+      h('path',{d:'M66 181 H230 L247 204 H51 Z',fill:'#d9e7ed',stroke:'#8cacc1',strokeWidth:2}),
+      h('circle',{cx:214,cy:218,r:8,fill:'#0f2737',stroke:'#9cbccc',strokeWidth:1.5}),line(214,218,phase===1?220:210,phase===1?215:212,{stroke:'#6ee7b7'}),
+      h('rect',{x:73,y:214,width:36,height:9,rx:3,fill:phase===1?'#6ee7b7':'#506578'}),
+      water('M115 119 H185 L223 186 Q150 205 77 186 Z'),
+      path('M132 56 H168 V87 L226 187 Q150 211 74 187 L132 87 Z'),
+      h('ellipse',{cx:150,cy:57,rx:18,ry:4,fill:'#17364a',stroke:'#b8d8e9',strokeWidth:2}),
+      h('rect',{x:129,y:182,width:42,height:8,rx:4,fill:'#f8fafc',stroke:'#bdd4e0',transform:phase===1?'rotate(-15 150 186)':undefined}),
+      phase===1 && h('g',null,h('path',{d:'M111 150 C107 127 182 123 187 146 M181 137 L187 146 L195 138 M187 163 C174 184 115 179 109 159 M105 170 L109 159 L120 165',fill:'none',stroke:'#6ee7b7',strokeWidth:2.5,strokeLinecap:'round'})),
+      phase!==1 && ring(phase===0?150:214,phase===0?186:218,phase===0?28:17));
+  } else if (kind === 'weighing-boat') {
+    scene=h('g',null,phase>0&&beaker(177,184,77,47,phase===2?19:7),
+      h('g',{transform:phase>0?'rotate(26 151 146)':undefined},
+        h('path',{d:'M77 130 L148 108 L222 130 L203 164 L149 181 L94 160 Z',fill:'#dfeaf0',stroke:'#9bbccb',strokeWidth:2}),
+        h('path',{d:'M96 134 L149 118 L204 133 L192 150 L149 164 L108 149 Z',fill:'#b9cedb',stroke:'#f1f9ff',strokeWidth:1.5}),
+        phase>0&&Array.from({length:phase===1?9:3},function(_,i){return h('circle',{key:i,cx:149+i*6,cy:138+(i%2)*5,r:3,fill:'#fff4b0',stroke:'#b9a964',strokeWidth:0.7});})),
+      phase===1&&h('path',{d:'M204 161 L216 178 L210 172 M216 178 L217 169',stroke:'#6ee7b7',strokeWidth:2.5,fill:'none'}),
+      phase===2&&h('g',null,h('path',{d:'M211 68 L186 111 M216 71 L191 114',stroke:'#cfe6f1',strokeWidth:3}),h('ellipse',{cx:217,cy:62,rx:9,ry:14,transform:'rotate(29 217 62)',fill:'#41697f',stroke:'#9cbccd',strokeWidth:2}),h('path',{d:'M186 122 L181 132 M181 136 L176 146 M202 164 L210 180',stroke:'#7dd3fc',strokeWidth:3,strokeLinecap:'round'})),
+      ring(phase===0?149:phase===1?213:176,phase===0?145:phase===1?174:147,phase===0?35:20));
+  } else if (kind === 'spatula') {
+    scene=h('g',null,
+      phase===2&&h('g',null,h('rect',{x:47,y:101,width:72,height:112,rx:8,fill:'#254e59',stroke:'#93bdc9',strokeWidth:2}),h('rect',{x:45,y:87,width:76,height:19,rx:5,fill:'#91a9b8'}),h('rect',{x:57,y:134,width:51,height:48,rx:4,fill:'#d4e6ec'}),h('path',{d:'M69 158 L78 167 L98 144',fill:'none',stroke:'#126253',strokeWidth:4})),
+      phase!==0&&h('path',{d:phase===1?'M110 204 L168 181 L237 204 L219 224 H128 Z':'M150 220 L195 204 L263 220 L249 236 H163 Z',fill:'#d9e7ee',stroke:'#98b8ca',strokeWidth:2}),
+      h('g',{transform:phase===0?'rotate(-35 146 126)':phase===1?'rotate(-28 200 137)':'rotate(-53 219 148)'},h('rect',{x:106,y:117,width:123,height:11,rx:5,fill:'#8daabb',stroke:'#deedf6',strokeWidth:2}),h('ellipse',{cx:108,cy:123,rx:24,ry:11,fill:'#d8e7ee',stroke:'#8eaebf',strokeWidth:2}),phase===1&&h('path',{d:'M91 122 Q108 104 125 122 Z',fill:'#fff2b1',stroke:'#c7b873'})),
+      phase===1&&h('g',null,h('circle',{cx:143,cy:186,r:3,fill:'#fff2b1'}),h('circle',{cx:154,cy:198,r:4,fill:'#fff2b1'}),h('path',{d:'M178 177 V195 M173 190 L178 195 L183 190',stroke:'#6ee7b7',strokeWidth:2,fill:'none'})),
+      phase===0&&ring(115,142,35));
+  } else {
+    var ex=phase===2?158:151;
+    scene=h('g',null,
+      phase===2?h('g',null,h('rect',{x:130,y:149,width:56,height:74,rx:8,fill:'#0d514d',stroke:'#6ee7b7',strokeWidth:2}),h('rect',{x:135,y:138,width:46,height:16,rx:4,fill:'#94a3b8'}),h('rect',{x:137,y:176,width:42,height:31,rx:3,fill:'#d6efea'})):
+        beaker(102,139,98,84,57),
+      h('path',{d:'M'+ex+' 50 C'+ex+' 15 234 14 241 53',fill:'none',stroke:'#738ea6',strokeWidth:5}),
+      h('rect',{x:ex-10,y:46,width:20,height:71,rx:6,fill:'#344f64',stroke:'#aecbde',strokeWidth:2}),
+      h('rect',{x:ex-5,y:115,width:10,height:64,rx:2,fill:'#d0e1e9',stroke:'#e7f5ff',strokeWidth:1.5}),
+      h('circle',{cx:ex,cy:183,r:8,fill:'#91d4ea',stroke:'#e0f2fe',strokeWidth:2}),
+      phase===0&&h('g',null,beaker(36,162,40,61,34),beaker(223,162,40,61,34),ring(ex,183,21)),
+      phase===1&&h('g',null,h('rect',{x:135,y:213,width:32,height:6,rx:3,fill:'#f1f5f9'}),line(181,191,181,206,{stroke:'#6ee7b7'}),line(177,191,185,191,{stroke:'#6ee7b7'}),line(177,206,185,206,{stroke:'#6ee7b7'})),
+      phase===2&&ring(ex,183,18));
+  }
+  return h('svg',{viewBox:'0 0 300 260',width:'100%','aria-hidden':true,focusable:false,'data-equipment-diagram':kind,'data-equipment-phase':phase,style:{display:'block',maxHeight:300}},
+    h('defs',null,h('clipPath',{id:uid+'-flask'},h('path',{d:'M135 42 L135 116 C88 141 83 216 118 218 H172 C207 216 202 141 155 116 L155 42 Z'})),h('linearGradient',{id:uid+'-glass',x1:'0%',y1:'0%',x2:'100%',y2:'0%'},h('stop',{offset:'0%',stopColor:'#bfe9ff',stopOpacity:0.2}),h('stop',{offset:'35%',stopColor:'#e0f2fe',stopOpacity:0.04}),h('stop',{offset:'100%',stopColor:'#bfe9ff',stopOpacity:0.15}))),
+    h('ellipse',{cx:150,cy:137,rx:116,ry:105,fill:'#102d41',opacity:0.65}),
+    h('path',{d:'M18 238 H282 M44 246 H256',stroke:'#46657b',strokeWidth:1,opacity:0.6}),
+    h('ellipse',{cx:150,cy:234,rx:97,ry:8,fill:'#020d17',opacity:0.5}),scene);
+}
+
+function TitrationEquipmentStudy(props) {
+  var React=props.React,h=React.createElement,t=props.t,eq=props.equipment;
+  var stepState=React.useState(0),step=stepState[0],setStep=stepState[1];
+  var id='titration-equipment-study-'+React.useId().replace(/:/g,''),active=eq.study[step];
+  return h('section',{'data-titration-equipment-study':eq.id,'aria-labelledby':id+'-title',style:{border:'1px solid #40657a',borderRadius:16,background:'#0a1d2d',padding:16},onKeyDown:function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();props.onClose();}}},
+    h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}},
+      h('div',null,h('p',{style:{margin:'0 0 4px',fontSize:11,color:'#a7f3d0',fontWeight:700,letterSpacing:'0.06em'}},t('stem.titration.equip_walkthrough','TECHNIQUE WALKTHROUGH')),
+        h('h4',{id:id+'-title',style:{margin:0,fontSize:19,color:'#f0f9ff'}},eq.name)),
+      h('button',{type:'button',onClick:props.onClose,className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'8px 12px',border:'1px solid #69879b',borderRadius:9,color:'#e2e8f0',fontSize:12,background:'#163246'}},t('stem.titration.equip_back','Back to equipment'))),
+    h('div',{style:{display:'flex',flexWrap:'wrap',gap:20,alignItems:'center',marginTop:16}},
+      h('div',{style:{flex:'1 1 220px',minWidth:0,borderRadius:12,background:'#071724',border:'1px solid #2d4d63',overflow:'hidden'}},
+        h(TitrationEquipmentIllustration,{React:React,kind:eq.id,phase:step,id:id}),
+        h('p',{'aria-hidden':true,style:{margin:0,padding:'0 12px 12px',fontSize:12,color:'#bae6fd',textAlign:'center'}},String(step+1).padStart(2,'0')+' / '+String(eq.study.length).padStart(2,'0')+' \u00b7 '+active.label)),
+      h('div',{style:{flex:'1.35 1 260px',minWidth:0}},
+        h('div',{role:'group','aria-label':t('stem.titration.equip_steps','Illustrated technique steps'),style:{display:'flex',flexDirection:'column',gap:8}},eq.study.map(function(s,i){
+          return h('button',{key:i,type:'button','aria-pressed':step===i,'aria-controls':id+'-description',onClick:function(){setStep(i);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{display:'flex',alignItems:'center',gap:12,textAlign:'left',padding:'10px 12px',minHeight:48,borderRadius:10,border:'1px solid '+(step===i?'#6ee7b7':'#486579'),background:step===i?'#123d39':'#122b3f',color:step===i?'#d1fae5':'#e2e8f0',fontSize:13,fontWeight:step===i?700:500}},
+            h('span',{'aria-hidden':true,style:{display:'inline-flex',alignItems:'center',justifyContent:'center',flex:'0 0 26px',height:26,borderRadius:8,background:step===i?'#6ee7b7':'#29465a',color:step===i?'#052e25':'#d8e9f3',fontWeight:700}},i+1),s.label);
+        })),
+        h('p',{id:id+'-description','aria-live':'polite','aria-atomic':true,style:{fontSize:13,lineHeight:1.65,color:'#e2e8f0',margin:'14px 0 0'}},active.text),
+        h('button',{type:'button','aria-controls':id+'-description',onClick:function(){setStep(function(old){return (old+1)%eq.study.length;});},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'8px 12px',marginTop:12,border:'1px solid #618598',borderRadius:9,background:'#17384b',color:'#d1fae5',fontSize:12}},step===eq.study.length-1?t('stem.titration.equip_review_steps','Review from start'):t('stem.titration.equip_next_step','Next step')))),
+    h('p',{style:{fontSize:12,lineHeight:1.6,color:'#b9cddd',margin:'16px 0 8px'}},t('stem.titration.equip_illustration_note','Illustrated guide. Selecting a step does not operate equipment or change your experiment. Follow your reviewed lab procedure and equipment instructions.')),
+    h('a',{href:eq.source,target:'_blank',rel:'noopener noreferrer',className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{display:'inline-flex',alignItems:'center',minHeight:44,color:'#a7f3d0',fontSize:12,textDecoration:'underline',textUnderlineOffset:3}},t('stem.titration.equip_source','Read the technique reference (opens a new tab)')),
+    h(TitrationRelatedEquipment,{React:React,t:t,equipment:eq,catalogue:props.catalogue,onSelect:props.onSelect}));
+}
+
 function TitrationExperimentBench(props) {
   var React=props.React, h=React.createElement, t=props.t;
   var inspectorId=React.useId();
-  var previewState=React.useState(null),previewMs=previewState[0],setPreviewMs=previewState[1];
+  var measureState=React.useState(false),measureOpen=measureState[0],setMeasureOpen=measureState[1],markState=React.useState(null),measureStart=markState[0],setMeasureStart=markState[1],measureToggle=React.useRef(null),measureId=inspectorId+'-measure';
+  React.useEffect(function(){setMeasureStart(null);},[props.setup,props.currentReading.preset]);
+  React.useEffect(function(){if(measureStart!==null&&props.model.delivered<measureStart)setMeasureStart(null);},[props.model.delivered,measureStart]);
+  function closeMeasure(){setMeasureOpen(false);if(measureToggle.current)measureToggle.current.focus();}
+  var previewState=React.useState(null),previewMs=previewState[0],setPreviewMs=previewState[1],additionToggle=React.useRef(null),additionSlider=React.useRef(null),additionFocusPending=React.useRef(false);
+  React.useEffect(function(){if(previewMs!==null&&additionFocusPending.current&&additionSlider.current){additionFocusPending.current=false;additionSlider.current.focus();}},[previewMs]);
+  function closeAddition(){additionFocusPending.current=false;setPreviewMs(null);if(additionToggle.current)additionToggle.current.focus();}
+  var colorState=React.useState(null),colorPreview=colorState[0],setColorPreview=colorState[1],colorExplorerId=inspectorId+'-colors';
+  var colorToggle=React.useRef(null),colorSlider=React.useRef(null),colorFocusPending=React.useRef(false);
+  React.useEffect(function(){setColorPreview(null);colorFocusPending.current=false;},[props.setup,props.colorReference.identity]);
+  React.useEffect(function(){if(colorPreview!==null&&colorFocusPending.current&&colorSlider.current){colorFocusPending.current=false;colorSlider.current.focus();}},[colorPreview]);
+  function openColors(value){setMeasureOpen(false);setFocus('flask');setMonitorOpen(true);if(focus!=='flask')reset();setPreviewMs(null);setColorPreview(titrationColorPreviewValue(value,props.colorReference.max,props.colorReference.redox));if(colorSlider.current)colorSlider.current.focus();else colorFocusPending.current=true;}
+  function closeColors(){colorFocusPending.current=false;setColorPreview(null);if(colorToggle.current)colorToggle.current.focus();}
   React.useEffect(function(){setPreviewMs(null);},[props.model.pulse,props.model.delivered,props.model.color,props.model.redox,props.setup,props.view]);
   var host=React.useRef(null), viewer=React.useRef(null), drag=React.useRef(null);
   var motionState=React.useState(function(){return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);}), systemReduced=motionState[0], setSystemReduced=motionState[1];
@@ -2171,10 +3112,13 @@ function TitrationExperimentBench(props) {
   function rotate(y,x){setOrbit(function(o){return {rotY:o.rotY+y,rotX:Math.max(-20,Math.min(65,o.rotX+x)),zoom:o.zoom};});}
   function zoom(delta){setOrbit(function(o){return Object.assign({},o,{zoom:Math.max(0.6,Math.min(1.8,o.zoom+delta))});});}
   function reset(){setOrbit({rotY:24,rotX:8,zoom:1});}
-  function inspect(part){setPreviewMs(null);setFocus(part);reset();}
+  function inspect(part){additionFocusPending.current=false;setMeasureOpen(false);setPreviewMs(null);setColorPreview(null);colorFocusPending.current=false;setFocus(part);reset();}
   var previewPhase=previewMs<620?t('stem.titration.inspector_release','Drop release'):previewMs<850?t('stem.titration.inspector_impact','Impact'):previewMs<1720?t('stem.titration.inspector_mix','Mixing'):t('stem.titration.inspector_settled','Settled');
   var btn=function(label,action,pressed,key){return h('button',{key:key,type:'button',onClick:action,'aria-label':label,'aria-pressed':pressed,className:'titr-immersive-button'},label);};
   var css='@keyframes titrationDiagramRipple{0%{opacity:.48;transform:scale(.13)}100%{opacity:0;transform:scale(1)}}.titr-color-guide{gap:10px}.titr-color-name{font-weight:700}.titr-color-observation{display:flex;gap:12px;align-items:center}.titr-color-well{display:block;flex-shrink:0;width:48px;height:48px;border-radius:50%;border:2px solid #b6cddd;background:#fff;padding:4px;box-shadow:0 2px 6px #071422}.titr-color-well>span{display:block;width:100%;height:100%;border-radius:50%;border:1px solid #8c9cad}.titr-color-samples{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;text-align:center}.titr-color-samples .titr-color-well{margin:0 auto 6px;width:38px;height:38px}.titr-color-range{padding:8px;border:1px dashed #fbbf24;border-radius:8px}.titr-color-guide p.titr-color-range{color:#fde68a}@media(max-width:760px){.titr-color-observation,.titr-color-samples{margin:12px 0}.titr-color-guide .titr-color-name{margin-top:8px}}@keyframes titrationDiagramDrop{0%{opacity:1;transform:translateY(0)}99%{opacity:1}100%{opacity:0;transform:translateY(var(--titr-drop-distance))}}@keyframes titrationDiagramBloom{0%{opacity:0;transform:scale(.55)}8%{opacity:.8}100%{opacity:0;transform:scale(2.4)}}.titr-apparatus-diagram{height:clamp(390px,55vw,580px);min-width:0;background:radial-gradient(ellipse at 45% 45%,#153448,#071422 75%)}.titr-reading-lens svg{max-width:260px;margin:0 auto}.titr-addition-inspector{padding:14px 16px;background:#263041;border-top:1px solid #8193a7}.titr-addition-inspector h4{font-size:14px;font-weight:800;color:#fde68a;margin:0 0 6px}.titr-addition-inspector label{display:block;color:#f1f5f9;font-size:12px;margin-top:10px}.titr-addition-inspector input{width:100%;min-height:44px;accent-color:#fbbf24}.titr-addition-inspector input:focus-visible{outline:3px solid #facc15;outline-offset:2px}.titr-addition-inspector .titr-immersive-switches{margin-top:8px}.titr-preview-badge{position:absolute;z-index:2;top:12px;left:12px;max-width:calc(100% - 24px);padding:8px 12px;border:1px solid #fbbf24;border-radius:8px;background:#152338;color:#fde68a;font-size:12px;font-weight:800;pointer-events:none}.titr-immersive{background:#0b1d2d;color:#e2edf8;border:1px solid #52657a;border-radius:18px;overflow:hidden}.titr-immersive-header,.titr-immersive-controls{padding:14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.titr-immersive h3{font-size:17px;font-weight:800;margin:0;color:#f1f5f9}.titr-immersive p{font-size:12px;line-height:1.6;margin:0;color:#cbd5e1}.titr-immersive .titr-immersive-button{min-height:44px;padding:8px 12px;border:1px solid #8193a7;background:#132d42;color:#ecf5fc;border-radius:9px;font-size:12px;font-weight:700}.titr-immersive .titr-immersive-button[aria-pressed=true]{background:#a5f3fc;color:#083344;border-color:#a5f3fc}.titr-immersive .titr-immersive-button:disabled{opacity:.5;cursor:not-allowed}.titr-immersive-button:focus-visible,.titr-immersive-stage:focus-visible{outline:3px solid #facc15;outline-offset:-3px}.titr-immersive-stage{height:clamp(390px,55vw,580px);position:relative;touch-action:pan-y;cursor:grab;background:#071422}.titr-immersive-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:1px;background:#52657a;border-top:1px solid #52657a}.titr-immersive-stat{padding:13px 16px;background:#102538;min-width:0}.titr-immersive-stat dt{font-size:11px;color:#cbd5e1;margin-bottom:4px}.titr-immersive-stat dd{font-size:22px;font-weight:800;color:#ecfeff;margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.titr-immersive-caption{padding:0 14px 14px}.titr-immersive-switches{display:flex;gap:8px;flex-wrap:wrap}.titr-immersive-workspace{display:grid;grid-template-columns:minmax(0,1fr)}.titr-immersive-workspace.with-trace{grid-template-columns:minmax(0,1fr) 260px}.titr-immersive-trace{padding:18px 12px;background:#102538;border-left:1px solid #52657a;min-width:0;display:flex;flex-direction:column;gap:13px;justify-content:center}.titr-immersive-trace h4{font-size:14px;font-weight:800;color:#a5f3fc;margin:0}.titr-immersive-trace .titr-trace-value{font-size:22px;font-weight:800;color:#ecfeff;font-variant-numeric:tabular-nums}.titr-trace-equivalence{padding:10px;border:1px dashed #fbbf24;border-radius:9px}.titr-trace-equivalence strong{display:block;color:#fde68a;font-size:15px;margin-top:4px}@media(max-width:760px){.titr-immersive-workspace.with-trace{grid-template-columns:minmax(0,1fr)}.titr-immersive-trace{border-left:0;border-top:1px solid #52657a;display:block}.titr-immersive-trace svg{max-width:340px;margin:8px auto}.titr-immersive-trace p{margin-top:8px}}.titr-immersive-inspector{padding:14px 16px;background:#102a3d;border-top:1px solid #52657a;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}.titr-immersive-inspector strong{display:block;font-size:13px;color:#a5f3fc;margin-bottom:5px}.titr-immersive-inspector p{font-size:12px;line-height:1.6}.titr-immersive-focus{padding:10px 14px;border-top:1px solid #52657a;background:#102538}.titr-immersive-focus button{flex:1}.titr-immersive-focus button[aria-pressed=true]::before{content:"✓ ";}@media(max-width:480px){.titr-immersive-inspector{grid-template-columns:minmax(0,1fr);gap:10px}.titr-immersive-stat:last-child{grid-column:1/-1}}@media(forced-colors:active){.titr-immersive .titr-immersive-button[aria-pressed=true]{outline:2px solid Highlight}}';
+  css+='.titr-color-samples button{min-height:44px;width:100%;padding:5px 2px;border:1px solid #8193a7;border-radius:9px;background:#132d42;color:#e2edf8;cursor:pointer}.titr-color-samples button[aria-pressed=true]{border-color:#fbbf24;box-shadow:inset 0 0 0 1px #fbbf24}.titr-color-samples button p{margin:0}.titr-color-samples button:focus-visible{outline:3px solid #facc15;outline-offset:2px}.titr-color-explorer{padding:16px;border-top:1px solid #8193a7;border-bottom:1px solid #8193a7;background:#102a3d}.titr-explorer-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.titr-color-explorer h4{font-size:16px;font-weight:800;color:#fde68a;margin:0 0 5px}.titr-explorer-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center}.titr-color-explorer label{display:block;font-size:13px;font-weight:700;color:#e2edf8;margin:16px 0 6px}.titr-color-explorer input[type=range]{display:block;appearance:none;width:100%;min-height:44px;background:transparent;cursor:pointer}.titr-color-explorer input[type=range]::-webkit-slider-runnable-track{height:14px;background:var(--titr-reference-gradient),#fff;border:1px solid #b6cddd;border-radius:20px}.titr-color-explorer input[type=range]::-webkit-slider-thumb{appearance:none;width:24px;height:24px;margin-top:-6px;background:#fbbf24;border:3px solid #071422;border-radius:50%;box-shadow:0 0 0 1px #fbbf24}.titr-color-explorer input[type=range]::-moz-range-track{height:14px;background:var(--titr-reference-gradient),#fff;border:1px solid #b6cddd;border-radius:20px}.titr-color-explorer input[type=range]::-moz-range-thumb{width:20px;height:20px;background:#fbbf24;border:3px solid #071422;border-radius:50%}.titr-color-explorer input:focus-visible{outline:3px solid #facc15;outline-offset:2px}.titr-reference-scale{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:12px;margin-bottom:12px}.titr-reference-caption{margin-top:12px!important}.titr-reference-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.titr-reference-well{margin:0;padding:12px 8px 0;text-align:center;border:1px solid #668397;border-radius:14px;background:#0b1d2d;min-width:0}.titr-reference-well.is-reference{border-color:#fbbf24}.titr-reference-well strong{display:block;font-size:13px;color:#a5f3fc}.titr-reference-well.is-reference strong{color:#fde68a}.titr-reference-well figcaption span{display:block;font-size:18px;font-weight:800;color:#ecfeff;margin-top:6px}.titr-reference-well svg{display:block;width:100%;max-width:170px;margin:0 auto}.titr-color-guide{gap:8px}@media(max-width:760px){.titr-explorer-layout{grid-template-columns:minmax(0,1fr);gap:16px}.titr-color-explorer{padding:14px}.titr-reference-pair{gap:8px}.titr-reference-well figcaption span{font-size:16px}}';
+  css+=".titr-volume-measure{padding:16px;border-top:1px solid #8193a7;border-bottom:1px solid #8193a7;background:#102a3d}.titr-measure-header{display:flex;justify-content:space-between;gap:12px;align-items:start;flex-wrap:wrap;margin-bottom:16px}.titr-measure-header h4{font-size:16px;font-weight:800;color:#fde68a;margin:0 0 6px}.titr-measure-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px;align-items:start}.titr-measure-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.titr-measure-scale{margin:0;padding:12px 4px 0;border:1px solid #668397;border-radius:14px;background:#0b1d2d;min-width:0}.titr-measure-scale.is-current{border-color:#fbbf24}.titr-measure-scale figcaption{padding:0 8px;text-align:center}.titr-measure-scale strong{display:block;font-size:13px;color:#a5f3fc}.titr-measure-scale.is-current strong{color:#fde68a}.titr-measure-scale figcaption span{display:block;font-size:20px;font-weight:800;color:#ecfeff;margin-top:6px}.titr-measure-scale svg{display:block;width:100%;max-width:200px;margin:0 auto}.titr-measure-caption{margin-top:12px!important}.titr-measure-detail{min-width:0;display:flex;flex-direction:column;gap:16px}.titr-measure-result{padding:14px;border-left:3px solid #fbbf24;border-radius:9px;background:#071422}.titr-measure-result strong{font-size:13px;color:#fde68a}.titr-measure-result p[data-measure-total]{font-size:30px;font-weight:800;color:#ecfeff;margin-top:4px;line-height:1.3}.titr-measure-calculation{padding:12px;border:1px solid #668397;border-radius:10px;background:#0b1d2d}.titr-measure-calculation strong,.titr-measure-add>strong{font-size:13px;color:#a5f3fc}.titr-measure-calculation ol{padding-left:20px;margin:8px 0;color:#e2edf8;font-size:13px;line-height:1.8}.titr-measure-calculation p{margin-top:8px}.titr-measure-add .titr-immersive-switches{margin-top:8px}@media(max-width:760px){.titr-measure-layout{grid-template-columns:minmax(0,1fr);gap:16px}.titr-volume-measure{padding:14px}.titr-measure-pair{gap:8px}.titr-measure-scale figcaption span{font-size:18px}}";
+  css+=".titr-bench-navigation{padding:14px;border-top:1px solid #52657a;background:#102538}.titr-bench-views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.titr-bench-view{position:relative;display:flex;align-items:center;gap:10px;min-width:0;padding:12px 24px 12px 8px;border:1px solid #8193a7;border-radius:13px;background:#0b1d2d;color:#e2edf8;text-align:left;cursor:pointer}.titr-bench-view svg{display:block;width:82px;flex:0 0 82px}.titr-bench-view-copy{min-width:0}.titr-bench-view-copy strong{display:block;font-size:14px;line-height:1.35;color:#ecfeff}.titr-bench-view-copy>span{display:block;font-size:12px;line-height:1.5;color:#cbd5e1;margin-top:5px}.titr-bench-view[aria-pressed=true]{background:#12384b;border-color:#67e8f9;box-shadow:inset 0 0 0 1px #67e8f9}.titr-bench-view-check{position:absolute;top:8px;right:8px;font-size:15px;font-weight:800;color:#a5f3fc}.titr-bench-view:focus-visible{outline:3px solid #facc15;outline-offset:2px}.titr-bench-view:hover{border-color:#c5e8fa}.titr-bench-aids{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid #52657a}.titr-bench-aids strong{font-size:13px;color:#fde68a}.titr-bench-aids p{margin-top:4px}.titr-bench-monitor{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}.titr-bench-aids button[aria-expanded=true]{background:#fbbf24;color:#172638;border-color:#fbbf24}@media(max-width:1050px) and (min-width:601px){.titr-bench-view{flex-direction:column;align-items:start}.titr-bench-view svg{width:74px;flex-basis:auto}}@media(max-width:600px){.titr-bench-views{grid-template-columns:minmax(0,1fr);gap:8px}.titr-bench-view{padding:8px 25px 8px 8px;gap:12px}.titr-bench-view svg{width:65px;flex-basis:65px}.titr-bench-aids>.titr-immersive-switches{width:100%}.titr-bench-aids button{flex:1 1 120px}.titr-bench-view-copy>span{margin-top:3px}}@media(forced-colors:active){.titr-bench-view[aria-pressed=true],.titr-bench-aids button[aria-expanded=true]{outline:2px solid Highlight}.titr-bench-view svg{forced-color-adjust:none}}";
   return h('section',{className:'titr-immersive','data-titration-immersive':true,'aria-label':t('stem.titration.immersive_title','Interactive titration bench')},
     h('style',null,css),
     h('div',{className:'titr-immersive-header'},h('div',null,
@@ -2184,20 +3128,27 @@ function TitrationExperimentBench(props) {
       btn(t('stem.titration.bench_3d','3D bench'),function(){props.onView('3d');},props.view!=='diagram'),
       btn(t('stem.titration.bench_diagram','2D diagram'),function(){props.onView('diagram');},props.view==='diagram')
     )),
-    (diagram||status==='ready') && h('div',{className:'titr-immersive-focus titr-immersive-switches',role:'group','aria-label':t('stem.titration.bench_inspect','Inspect the apparatus')},
-      btn(t('stem.titration.bench_full_apparatus','Full apparatus'),function(){inspect('apparatus');},focus==='apparatus'),
-      btn(t('stem.titration.bench_flask_closeup','Flask close-up'),function(){inspect('flask');},focus==='flask'),
-      btn(t('stem.titration.bench_burette_closeup','Burette close-up'),function(){inspect('burette');},focus==='burette'),
-      btn(focus==='burette'?t('stem.titration.reading_lens','Reading lens'):focus==='flask'?t('stem.titration.color_guide','Color guide'):t('stem.titration.bench_live_curve','Live curve'),function(){setMonitorOpen(!monitorOpen);},monitorOpen),
-      !diagram && btn(t('stem.titration.inspector_toggle','Inspect addition'),function(){if(previewMs!==null)setPreviewMs(null);else {setFocus('flask');reset();setPreviewMs(650);}},previewMs!==null)
+    (diagram||status==='ready') && h('div',{className:'titr-bench-navigation','data-titration-bench-navigation':true},
+      h(TitrationBenchViews,{React:React,t:t,id:inspectorId+'-views',focus:focus,onInspect:inspect}),
+      h('div',{className:'titr-bench-aids',role:'group','aria-label':t('stem.titration.nav_aids','Bench aids')},
+        h('div',null,h('strong',null,t('stem.titration.nav_aids','Bench aids')),h('p',null,t('stem.titration.nav_aids_hint','Each aid opens its matching close-up.'))),
+        h('div',{className:'titr-immersive-switches'},
+          h('button',{ref:colorToggle,type:'button',className:'titr-immersive-button','aria-expanded':colorPreview!==null,'aria-controls':colorPreview!==null?colorExplorerId:undefined,onClick:function(){if(colorPreview!==null)closeColors();else openColors(props.colorReference.redox?Math.min(props.colorReference.max,props.colorReference.equivalence+0.1):(props.colorReference.low+props.colorReference.high)/2);}},t('stem.titration.color_explore','Explore colors')),
+          h('button',{ref:measureToggle,type:'button',className:'titr-immersive-button','aria-expanded':measureOpen,'aria-controls':measureOpen?measureId:undefined,onClick:function(){if(measureOpen)closeMeasure();else {inspect('burette');setMonitorOpen(true);setMeasureOpen(true);}}},t('stem.titration.measure_toggle','Measure volume')),
+          !diagram&&h('button',{ref:additionToggle,type:'button',className:'titr-immersive-button','aria-expanded':previewMs!==null,'aria-controls':previewMs!==null?inspectorId+'-addition':undefined,onClick:function(){if(previewMs!==null)closeAddition();else {inspect('flask');setMonitorOpen(true);additionFocusPending.current=true;setPreviewMs(650);}}},t('stem.titration.inspector_toggle','Inspect addition'))
+        )
+      ),
+      h('div',{className:'titr-bench-monitor'},btn(focus==='burette'?t('stem.titration.reading_lens','Reading lens'):focus==='flask'?t('stem.titration.color_guide','Color guide'):t('stem.titration.bench_live_curve','Live curve'),function(){setMonitorOpen(!monitorOpen);},monitorOpen),h('p',null,monitorOpen?t('stem.titration.nav_panel_shown','Companion panel shown'):t('stem.titration.nav_panel_hidden','Companion panel hidden')))
     ),
-    props.view!=='diagram' && status==='ready' && previewMs!==null && h('section',{className:'titr-addition-inspector','data-titration-addition-inspector':true,'aria-labelledby':inspectorId+'-title'},
+    props.view!=='diagram' && status==='ready' && previewMs!==null && h('section',{id:inspectorId+'-addition',className:'titr-addition-inspector','data-titration-addition-inspector':true,'aria-labelledby':inspectorId+'-title',onKeyDown:function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeAddition();}}},
       h('h4',{id:inspectorId+'-title'},t('stem.titration.inspector_title','Static addition inspector')),
       h('p',{id:inspectorId+'-help'},t('stem.titration.inspector_help','Step through an illustrative mixing cue for the current setup. No titrant is added and recorded readings stay unchanged. The timeline is illustrative, not a measurement of reaction speed.')),
       h('label',{htmlFor:inspectorId+'-time'},t('stem.titration.inspector_timeline','Visual timeline')+' · '+previewPhase),
-      h('input',{id:inspectorId+'-time',type:'range',min:0,max:1800,step:50,value:previewMs,'aria-label':t('stem.titration.inspector_timeline','Visual timeline'),'aria-valuetext':previewPhase,'aria-describedby':inspectorId+'-help',onChange:function(e){setPreviewMs(Number(e.target.value));}}),
-      h('div',{className:'titr-immersive-switches'},[[0,t('stem.titration.inspector_release','Drop release')],[650,t('stem.titration.inspector_impact','Impact')],[1100,t('stem.titration.inspector_mix','Mixing')],[1800,t('stem.titration.inspector_settled','Settled')]].map(function(step){return btn(step[1],function(){setPreviewMs(step[0]);},previewMs===step[0],step[0]);}),btn(t('stem.titration.inspector_exit','Return to live view'),function(){setPreviewMs(null);}))
+      h('input',{ref:additionSlider,id:inspectorId+'-time',type:'range',min:0,max:1800,step:50,value:previewMs,'aria-label':t('stem.titration.inspector_timeline','Visual timeline'),'aria-valuetext':previewPhase,'aria-describedby':inspectorId+'-help',onChange:function(e){setPreviewMs(Number(e.target.value));}}),
+      h('div',{className:'titr-immersive-switches'},[[0,t('stem.titration.inspector_release','Drop release')],[650,t('stem.titration.inspector_impact','Impact')],[1100,t('stem.titration.inspector_mix','Mixing')],[1800,t('stem.titration.inspector_settled','Settled')]].map(function(step){return btn(step[1],function(){setPreviewMs(step[0]);},previewMs===step[0],step[0]);}),btn(t('stem.titration.inspector_exit','Return to live view'),closeAddition))
     ),
+    (diagram||status==='ready')&&focus==='burette'&&measureOpen&&h(TitrationVolumeMeasure,{React:React,t:t,id:measureId,model:props.model,start:measureStart,onMark:function(){setMeasureStart(props.model.delivered);},onClear:function(){setMeasureStart(null);},onClose:closeMeasure,onAdd:props.onAdd,canAdd:props.canAdd}),
+    (diagram||status==='ready')&&focus==='flask'&&colorPreview!==null&&h(TitrationColorExplorer,{React:React,t:t,id:colorExplorerId,reference:props.colorReference,value:colorPreview,onChange:setColorPreview,onClose:closeColors,sliderRef:colorSlider}),
     props.view!=='diagram' && h('div',{className:'titr-immersive-workspace'+(monitorOpen && status==='ready'?' with-trace':''),style:status==='failed'?{display:'none'}:undefined},
     h('div',{ref:host,className:'titr-immersive-stage',role:'img',tabIndex:0,'aria-label':(previewMs!==null?t('stem.titration.inspector_static','Static illustration')+'. '+previewPhase+'. ':'')+(focus==='flask'?t('stem.titration.bench_flask_closeup','Flask close-up'):focus==='burette'?t('stem.titration.bench_burette_closeup','Burette close-up'):t('stem.titration.bench_full_apparatus','Full apparatus'))+'. '+props.description,
       'aria-keyshortcuts':'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
@@ -2207,9 +3158,9 @@ function TitrationExperimentBench(props) {
       onPointerMove:function(e){if(!drag.current)return;rotate((e.clientX-drag.current.x)*0.4,(e.clientY-drag.current.y)*0.25);drag.current={x:e.clientX,y:e.clientY};},
       onPointerUp:function(){drag.current=null;},onPointerCancel:function(){drag.current=null;},onLostPointerCapture:function(){drag.current=null;}
     },previewMs!==null && h('span',{className:'titr-preview-badge','aria-hidden':true},t('stem.titration.inspector_static','Static illustration')+' · '+previewPhase)),
-      monitorOpen && status==='ready' && (focus==='burette'?h(TitrationReadingLens,{React:React,t:t,model:props.model}):focus==='flask'?h(TitrationColorGuide,{React:React,t:t,reference:props.colorReference}):h(TitrationBenchTrace,{React:React,t:t,curve:props.curve}))
+      monitorOpen && status==='ready' && (focus==='burette'?h(TitrationReadingLens,{React:React,t:t,model:props.model}):focus==='flask'?h(TitrationColorGuide,{React:React,t:t,reference:props.colorReference,preview:colorPreview,onPreview:openColors}):h(TitrationBenchTrace,{React:React,t:t,curve:props.curve}))
     ),
-    diagram && h('div',{className:'titr-immersive-workspace'+(monitorOpen?' with-trace':'')},h(TitrationApparatusDiagram,{React:React,t:t,model:Object.assign({},props.model,{animating:props.model.animating&&!systemReduced}),focus:focus}),monitorOpen&&(focus==='burette'?h(TitrationReadingLens,{React:React,t:t,model:props.model}):focus==='flask'?h(TitrationColorGuide,{React:React,t:t,reference:props.colorReference}):h(TitrationBenchTrace,{React:React,t:t,curve:props.curve}))),
+    diagram && h('div',{className:'titr-immersive-workspace'+(monitorOpen?' with-trace':'')},h(TitrationApparatusDiagram,{React:React,t:t,model:Object.assign({},props.model,{animating:props.model.animating&&!systemReduced}),focus:focus}),monitorOpen&&(focus==='burette'?h(TitrationReadingLens,{React:React,t:t,model:props.model}):focus==='flask'?h(TitrationColorGuide,{React:React,t:t,reference:props.colorReference,preview:colorPreview,onPreview:openColors}):h(TitrationBenchTrace,{React:React,t:t,curve:props.curve}))),
     props.view!=='diagram' && status!=='ready' && h('p',{role:'status',className:'titr-immersive-caption'},status==='failed'?t('stem.titration.bench_fallback','3D is unavailable. The diagram and experiment controls below still work.'):t('stem.titration.bench_loading','Loading the 3D bench. The diagram remains available below.')),
     (diagram||status==='ready') && h(React.Fragment,null,
       h('div',{className:'titr-immersive-controls',role:'group','aria-label':t('stem.titration.bench_add','Add titrant at the bench')},
@@ -2516,10 +3467,7 @@ var labEquipment = [
     technique: 'Swirl gently (don\'t shake!) after each addition. A white tile underneath helps detect color changes. Rinse walls with distilled water from a wash bottle to ensure all analyte reacts.',
     errors: ['Violent shaking (splashes analyte out)', 'Not rinsing walls (loses analyte)', 'Using a beaker instead (harder to swirl, easier to spill)'],
     safetyNote: 'Hot glass looks the same as cold glass. Always use tongs for heated flasks.' },
-  { id: 'pipette', name: __alloT('stem.titration.volumetric_pipette', 'Volumetric Pipette'), icon: '\uD83E\uDDEA', desc: __alloT('stem.titration.measures_exact_volumes_of_analyte', 'Measures exact volumes of analyte.'),
-    technique: 'Use a pipette filler (NEVER mouth pipette!). Rinse with the solution when the procedure requires it. Fill above the calibration mark, adjust the meniscus to the mark, deliver by gravity, wait the specified drain time, touch the tip to the receiving wall, and do not blow out a TD pipette.',
-    errors: ['Mouth pipetting (extremely dangerous!)', 'Not rinsing with solution first', 'Blowing out the last drop', 'Air bubbles in the pipette'],
-    safetyNote: '\u26D4 NEVER mouth pipette. This is the #1 lab safety violation. Even "safe" solutions may be contaminated. Always use a pipette filler or bulb.' },
+  titrationAliquotEquipment(__alloT),
   { id: 'indicator', name: __alloT('stem.titration.ph_indicator', 'pH Indicator'), icon: '\uD83C\uDFA8', desc: __alloT('stem.titration.changes_color_to_signal_the_endpoint', 'Changes color to signal the endpoint.'),
     technique: 'Add only 2-3 drops. Too much indicator acts as a weak acid/base itself and shifts the endpoint! Choose an indicator whose transition range includes the equivalence pH.',
     errors: ['Adding too much indicator', 'Choosing wrong indicator for the titration type', 'Confusing endpoint with equivalence point'],
@@ -2528,7 +3476,7 @@ var labEquipment = [
     technique: 'Use distilled water to rinse the inner flask walls so all analyte stays in the reaction mixture. Do not squirt water into the burette or its tip; if a hanging exterior drop must be transferred, follow the reviewed technique. Always label the bottle.',
     errors: ['Using tap water instead of distilled (introduces ions)', 'Adding too much rinse water (dilutes but doesn\'t affect moles)'],
     safetyNote: 'Never store anything other than distilled water in a wash bottle. Label everything!' }
-];
+].concat(titrationAdditionalEquipment(__alloT));
 
 // ── Titration Challenge Questions ──
 var challengeQuestions = [
@@ -2631,6 +3579,15 @@ var gCapacityRemaining = Math.max(0, BURETTE.CAPACITY_ML - gFinalTrue);
 var gFlaskPH = unknownPH(gUnknown.spec, gUnknown.flaskConc, gVb);
 var showEquipGuide = d.showEquipGuide || false;
 var selectedEquip = d.selectedEquip || null;
+function selectEquipment(id) {
+  if(id && !labEquipment.some(function(eq){return eq.id===id;}))return;
+  upd('selectedEquip',id);
+  if(id){
+    focusTitrationRegion('titration-equipment-detail-'+id);
+    var chosen=labEquipment.find(function(eq){return eq.id===id;});
+    if(typeof awardStemXP==='function')awardStemXP('equip-'+id,5,'Studied '+chosen.name);
+  }
+}
 // The dilution calculator divides by C₁, so a stored 0 — or a cleared field, since
 // Number('') is 0 and not NaN — printed "measure Infinity mL of stock solution with a
 // pipette" and a water-to-add of -Infinity. The RAW value has to be judged before it
@@ -4525,7 +5482,7 @@ return React.createElement("div", {
     onNotebook: function(records){upd('benchNotebook',records);},
     currentReading: {preset:presetId,setup:preset.acidName+' + '+preset.baseName,axis:yAxis.mode,value:Number(yAxis.readout(currentY)),volume:Number(volumeAdded.toFixed(1)),observation:indicatorStatus,indicator:isPotentiometric?'KMnO₄':indicator.label},
     curve: { points: curveData, volume: volumeAdded, value: currentY, maxVolume: curveMaxVol, equivalence: Veq, min: yAxis.min, max: yAxis.max, tick: yAxis.tick, label: yAxis.label, readout: yAxis.speech(currentY), description: volumeAdded.toFixed(1) + ' mL. ' + yAxis.speech(currentY) + '. ' + indicatorStatus },
-    colorReference: {redox:isPotentiometric,universal:indicatorId==='universal',label:isPotentiometric?'KMnO₄':indicator.label,low:indicator.low,high:indicator.high,max:isPotentiometric?curveMaxVol:14,value:isPotentiometric?volumeAdded:currentPH,equivalence:Veq,readout:yAxis.speech(currentY),observation:indicatorStatus,colorAt:isPotentiometric?function(v){return getRedoxFlaskColor(redoxFraction(v));}:getIndicatorColor},
+    colorReference: {identity:isPotentiometric?presetId:indicatorId,redox:isPotentiometric,universal:indicatorId==='universal',label:isPotentiometric?'KMnO₄':indicator.label,low:indicator.low,high:indicator.high,max:isPotentiometric?curveMaxVol:14,value:isPotentiometric?volumeAdded:currentPH,equivalence:Veq,readout:yAxis.speech(currentY),observation:indicatorStatus,colorAt:isPotentiometric?function(v){return getRedoxFlaskColor(redoxFraction(v));}:getIndicatorColor},
     model: { reading: physicalBuretteReading, delivered: volumeAdded, fill: flaskFillFrac, color: currentColor, redox: isPotentiometric, contrast: !!ctx.isContrast, animating: additionAnimating, pulse: d.additionPulse || 0,
       flashColor: endpointBloomColor, flashHold: endpointBloomHold },
     description: __alloT('stem.titration.burette_flask', 'BURETTE & FLASK') + '. ' + volumeAdded.toFixed(1) + ' mL. ' + yAxis.speech(currentY) + '. ' + indicatorStatus,
@@ -6170,11 +7127,14 @@ return React.createElement("div", {
   // EQUIPMENT GUIDE TAB
   // ══════════════════════════════════════════════
   labTab === 'equipment' && React.createElement("div", {
+    'data-titration-equipment-guide': true,
     className: "rounded-2xl p-5 border space-y-4",
     style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(34,197,94,0.3)' })
   },
     React.createElement("h3", { className: "text-sm font-black text-emerald-400 mb-2" }, __alloT('stem.titration.lab_equipment_proper_technique', "\uD83D\uDD2C Lab Equipment & Proper Technique")),
     React.createElement("p", { className: "text-xs text-slate-200 mb-3" }, __alloT('stem.titration.master_the_correct_technique_for_each_', "Master the correct technique for each piece of equipment. Good technique = accurate results + safe lab work.")),
+
+    React.createElement(TitrationPreparationPath,{React:React,t:__alloT,data:d,selected:selectedEquip,onSelect:selectEquipment}),
 
     // \u2500\u2500 Why the tolerances differ: the glassware bench \u2500\u2500
     // The list below teaches technique. This teaches the number that sits beside every
@@ -6320,7 +7280,7 @@ return React.createElement("div", {
           beaker.toFixed(2) + __alloT('stem.titration.bench_punchline_e', ' mm film you could not see, let alone read. That is the entire reason you titrate from a burette and not out of a beaker.'))
       );
     })(),
-    React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
+    React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" },
       labEquipment.map(function(eq) {
         var isSelected = selectedEquip === eq.id;
         return React.createElement("button", {
@@ -6330,13 +7290,7 @@ return React.createElement("div", {
           "aria-controls": "titration-equipment-detail-" + eq.id,
           "aria-labelledby": "titration-equipment-name-" + eq.id,
           "aria-describedby": "titration-equipment-description-" + eq.id,
-          onClick: function() {
-            upd('selectedEquip', isSelected ? null : eq.id);
-            if (!isSelected) {
-              focusTitrationRegion('titration-equipment-detail-' + eq.id);
-              if (typeof awardStemXP === 'function') awardStemXP('equip-' + eq.id, 5, 'Studied ' + eq.name);
-            }
-          },
+          onClick: function() { selectEquipment(isSelected ? null : eq.id); },
           className: "min-h-[44px] text-left p-3 rounded-xl border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 " +
             (isSelected ? "bg-emerald-900/30 border-emerald-500/50 ring-1 ring-emerald-500/30" : "transition-colors bg-slate-800/40 border-slate-700 hover:border-slate-500")
         },
@@ -6364,6 +7318,15 @@ return React.createElement("div", {
         role: "region", "aria-labelledby": "titration-equipment-name-" + eq.id,
         className: "space-y-3 animate-in fade-in duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
       },
+        eq.id === 'analytical-balance' && React.createElement(TitrationWeighingPractice,{React:React,t:__alloT,state:d.weighingPractice,onAction:function(action){upd('weighingPractice',titrationWeighingTransition(d.weighingPractice,action));},onSelect:selectEquipment}),
+        eq.id === 'weighing-boat' && React.createElement(TitrationTransferPractice,{React:React,t:__alloT,state:d.transferPractice,weighing:d.weighingPractice,onAction:function(action){upd('transferPractice',titrationTransferTransition(d.transferPractice,action,d.weighingPractice));},onSelect:selectEquipment}),
+        eq.id === 'volumetric-flask' && React.createElement(TitrationPreparationSample,{React:React,t:__alloT,state:d.transferPractice,onSelect:selectEquipment}),
+        eq.id === 'volumetric-flask' && React.createElement(TitrationPreparationPractice,{React:React,t:__alloT,state:d.preparationPractice,transfer:d.transferPractice,onAction:function(action){upd('preparationPractice',titrationPreparationTransition(d.preparationPractice,action,d.transferPractice));},onSelect:selectEquipment}),
+        eq.id === 'pipette' && React.createElement(TitrationAliquotPractice,{React:React,t:__alloT,state:d.aliquotPractice,preparation:d.preparationPractice,onAction:function(action){upd('aliquotPractice',titrationAliquotTransition(d.aliquotPractice,action,d.preparationPractice));},onSelect:selectEquipment,onClose:function(){upd('selectedEquip',null);focusTitrationRegion('titration-equipment-button-pipette');}}),
+        eq.study && React.createElement(TitrationEquipmentStudy, { key: eq.id, React: React, t: __alloT, equipment: eq, catalogue:labEquipment, onSelect:selectEquipment, onClose: function() {
+          upd('selectedEquip', null);
+          focusTitrationRegion('titration-equipment-button-' + eq.id);
+        } }),
         // Technique
         React.createElement("div", { className: "rounded-xl p-4 border border-emerald-800/30 bg-emerald-950/20" },
           React.createElement("h5", { className: "text-xs font-bold text-emerald-400 mb-2" }, __alloT('stem.titration.correct_technique', "\u2705 Correct Technique")),

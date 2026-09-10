@@ -2899,11 +2899,18 @@
     const conceptItem = findLatest('concept-sort');
     const adventureItem = findLatest('adventure');
     let context = '';
+    let traceOffset = 0;
+    const record = (resource, kind) => {
+      if (context.length <= traceOffset) return;
+      if (typeof deps?.trace === 'function') deps.trace({ id: resource?.id ?? null, title: resource?.title || kind, type: resource?.type || 'source-input', kind, start: traceOffset, end: context.length, text: context.slice(traceOffset) });
+      traceOffset = context.length;
+    };
     if (analysisItem && analysisItem.data) {
       const concepts = Array.isArray(analysisItem.data.concepts) ? analysisItem.data.concepts.join(', ') : 'N/A';
       const level = typeof analysisItem.data.readingLevel === 'object' ? analysisItem.data.readingLevel.range : analysisItem.data.readingLevel;
       context += '\n--- CONTEXT: ANALYSIS ---\nKey Concepts: ' + concepts + '\nDetected Reading Level: ' + level + '\n';
     }
+    record(analysisItem, 'Analysis summary');
     if (alignmentItem && alignmentItem.data && alignmentItem.data.reports && alignmentItem.data.reports[0]) {
       const std = alignmentItem.data.reports[0].standard;
       const breakdown = alignmentItem.data.reports[0].standardBreakdown ? JSON.stringify(alignmentItem.data.reports[0].standardBreakdown) : 'N/A';
@@ -2911,6 +2918,7 @@
     } else if (targetStandards && targetStandards.length > 0) {
       context += '\n--- CONTEXT: STANDARDS ---\nTarget Standard(s): ' + targetStandards.join(', ') + '\n';
     }
+    record(alignmentItem?.data?.reports?.[0] ? alignmentItem : null, 'Target standards');
     if (primaryTextItem) {
       const text = _alloArtifactTextForContext(primaryTextItem);
       const profile = _alloInstructionalTextForExport(primaryTextItem);
@@ -2930,6 +2938,7 @@
     } else {
       context += '\n--- CONTEXT: PRIMARY TEXT NOT AVAILABLE ---\nDo not describe a supplemental or unspecified adapted text as the core or primary text.\n';
     }
+    record(primaryTextItem || (analysisItem && _alloArtifactTextForContext(analysisItem) ? analysisItem : null), inputText || primaryTextItem || analysisItem ? 'Source text excerpt' : 'Source availability guidance');
     const adaptedSupportItem = supplementalTextItem
       || (!primaryTextItem && simplifiedItem && simplifiedItem !== analysisItem ? simplifiedItem : null);
     if (adaptedSupportItem && adaptedSupportItem !== primaryTextItem) {
@@ -2942,29 +2951,37 @@
           + text.substring(0, 1600) + (text.length > 1600 ? '...' : '') + '\n';
       }
     }
+    record(adaptedSupportItem, 'Adapted text excerpt');
     if (glossaryItem && glossaryItem.data) {
       const terms = glossaryItem.data.map(function(t) { return t.term; }).join(', ');
       context += '\n--- CONTEXT: VOCABULARY (Glossary) ---\nKey Terms: ' + terms + '\n';
     }
+    record(glossaryItem, 'Vocabulary terms');
     if (imageItem && imageItem.data && imageItem.data.prompt) {
       context += '\n--- CONTEXT: VISUAL SUPPORT ---\nAvailable Image: "' + imageItem.data.prompt + '". Use this for the Hook or Visual Anchor.\n';
     }
+    record(imageItem, 'Visual support summary');
     if (quizItem && quizItem.data && quizItem.data.questions) {
       context += '\n--- CONTEXT: ASSESSMENT (Exit Ticket) ---\nHas ' + quizItem.data.questions.length + ' Multiple Choice Questions and ' + ((quizItem.data.reflections && quizItem.data.reflections.length) || 0) + ' Reflection prompts. Use this for Closure.\n';
     }
+    record(quizItem, 'Assessment summary');
     if (scaffoldItem && scaffoldItem.data) {
       const type = scaffoldItem.data.mode === 'list' ? 'Sentence Starters' : 'Paragraph Frame';
       context += '\n--- CONTEXT: WRITING SCAFFOLDS ---\nType: ' + type + '. Use this for Independent Practice.\n';
     }
+    record(scaffoldItem, 'Writing scaffold summary');
     if (timelineItem && timelineItem.data) {
-      context += '\n--- CONTEXT: SEQUENCE BUILDER ACTIVITY ---\n' + timelineItem.data.length + ' Events available for sequencing. Use for Guided Practice.\n';
+      context += '\n--- CONTEXT: SEQUENCE BUILDER ACTIVITY ---\n' + (Array.isArray(timelineItem.data) ? timelineItem.data.length : (timelineItem.data.items?.length || 0)) + ' Events available for sequencing. Use for Guided Practice.\n';
     }
+    record(timelineItem, 'Sequence summary');
     if (conceptItem && conceptItem.data) {
       context += '\n--- CONTEXT: CONCEPT SORT ---\nCategories: ' + conceptItem.data.categories.map(function(c) { return c.label; }).join(', ') + '. Use for Guided Practice.\n';
     }
+    record(conceptItem, 'Concept sort summary');
     if (adventureItem) {
       context += '\n--- CONTEXT: ADVENTURE MODE ---\nInteractive roleplay available. Use for Engagement/Hook.\n';
     }
+    record(adventureItem, 'Adventure availability');
     return context;
   };
 

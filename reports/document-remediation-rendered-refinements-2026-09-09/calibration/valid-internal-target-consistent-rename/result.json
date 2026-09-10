@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\valid-internal-target-consistent-rename\\source.html",
+    "sha256": "933e46131db2d74f54b344dc297d0cb1675e25fdab1bae6327f4cb7095b87c05",
+    "bytes": 409
+  },
+  "candidate": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\valid-internal-target-consistent-rename\\candidate.html",
+    "sha256": "9175e600b96f1b0cc50821e2a38d4a2449ae2aaee39445aedeaaf21a54ad81d6",
+    "bytes": 425
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 17384.12169999999,
+  "status": "passed",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0
+    }
+  },
+  "checks": [
+    {
+      "id": "same-target-content",
+      "sourceSelector": "#jump",
+      "candidateSelector": "#jump",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "targetText",
+          "status": "passed",
+          "source": "Fee schedule",
+          "candidate": "Fee schedule"
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

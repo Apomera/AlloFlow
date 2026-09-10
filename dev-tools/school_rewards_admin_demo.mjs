@@ -1,6 +1,11 @@
 // Local presentation server: actual Apps Script business logic, simulated Google
 // services, fictional records only. Never connects to Google, email, or a printer.
 import http from 'node:http';
+import { randomUUID } from 'node:crypto';
+import { captureReceiptMail, readReceiptMail } from './school_store_demo_mail.mjs';
+import { demoMailClientScript } from './school_store_demo_mail_ui.mjs';
+import { prepareUnifiedDemo } from './school_store_unified_demo_seed.mjs';
+import { unifiedDemoToolbar, unifiedDemoClientScript } from './school_store_unified_demo_ui.mjs';
 import { designDemoAsset } from './print_lab_review_page.mjs';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -10,6 +15,9 @@ const portal = readFileSync(new URL('../apps_script/school_rewards/Portal.html',
 const identities = { admin: ADMIN, staff: STAFF, cashier: CASHIER, student: STUDENT };
 const allowed = new Set([
   'getSchoolRewardsBootstrap', 'getSchoolRewardsPrintBootstrap', 'setSchoolRewardsLanguage',
+  'adminConfigureSchoolRewardsClassLinks', 'getSchoolRewardsAlloFlowLinkContext',
+  'previewSchoolRewardsAlloFlowLinks', 'applySchoolRewardsAlloFlowLinks',
+  'listSchoolRewardsAlloFlowLinkedClasses', 'resolveSchoolRewardsAlloFlowLearner',
   'awardSchoolRewardsPoints', 'awardSchoolRewardsPointsBatch', 'reverseSchoolRewardsEntry',
   'checkoutSchoolRewardsOrder', 'refundSchoolRewardsOrder', 'getSchoolRewardsIntegrityReport',
   'getSchoolRewardsReconciliation', 'verifySchoolRewardsAuditChain', 'getSchoolRewardsCapacity',
@@ -88,20 +96,33 @@ const toolbar = `<aside class="demo-bar" aria-label="Local admin demo">
 <p><a href="/sample.stl" download="admin-demo-token.stl">Download sample STL</a> · <a href="/sample-handoff.json" download="admin-demo-token.alloflow-print.json">Download matching review handoff</a></p>
 <p>The role selector is a simulator. Real Google sign-in, deployment sharing, mail delivery and printer operation require a separate live acceptance check.</p></details></aside>`;
 
-function html() {
+function html({ unified = false, metadata = null, generation = '' } = {}) {
   const bridge = `<script>
   var demoRole=new URL(location.href).searchParams.get('role')||'staff';
+  var demoUnified=${unified ? 'true' : 'false'},demoGeneration=${JSON.stringify(generation)};
   if(!['admin','staff','cashier','student'].includes(demoRole))demoRole='staff';
+  // Mirror the allowlisted, non-sensitive Index entry hint in this fictional host.
+  if(['admin','staff'].includes(demoRole)&&(new URL(location.href).searchParams.get('view')==='recognition'||demoUnified&&new URL(location.href).searchParams.get('demoStep')==='recognize'))document.body.setAttribute('data-school-rewards-view','recognition');
+  // A restarted/reset fixture must not inherit a pending request from an older ledger.
+  if(demoUnified){try{if(sessionStorage.getItem('allo_unified_demo_generation')!==demoGeneration){Object.keys(sessionStorage).filter(function(key){return key.indexOf('alloflow_school_rewards_')===0}).forEach(function(key){sessionStorage.removeItem(key)});sessionStorage.setItem('allo_unified_demo_generation',demoGeneration)}}catch(error){}}
   document.getElementById('demo-role').value=demoRole;
   document.getElementById('demo-role').onchange=function(){location.href='/?role='+encodeURIComponent(this.value)};
-  document.getElementById('demo-reset').onclick=async function(){if(!confirm('Reset only the fictional demo records?'))return;var r=await fetch('/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});if(r.ok){sessionStorage.clear();location.reload()}else alert('Demo reset failed. Please try again.')};
-  var script={};Object.defineProperty(script,'run',{get:function(){var success,failure,runner;runner=new Proxy({},{get:function(_,name){if(name==='withSuccessHandler')return function(fn){success=fn;return runner};if(name==='withFailureHandler')return function(fn){failure=fn;return runner};return function(argument){fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:demoRole,name:name,argument:argument})}).then(function(r){return r.json()}).then(function(out){if(!out.ok){var e=new Error(out.error);e.code=out.code;throw e}success(out.result)}).catch(function(e){if(failure)failure(e)})}}});return runner}});window.google={script:script};
+  document.getElementById('demo-reset').onclick=async function(){if(!confirm('Reset only the fictional demo records?'))return;try{var r=await fetch('/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({demoGeneration:demoGeneration})});if(!r.ok)throw Error();if(demoUnified){Object.keys(sessionStorage).filter(function(key){return key.indexOf('alloflow_school_rewards_')===0||key==='allo_unified_demo_generation'}).forEach(function(key){sessionStorage.removeItem(key)});location.href='/'}else{sessionStorage.clear();location.reload()}}catch(error){alert('Demo reset was not confirmed. Reload this tab before trying again.')}};
+  var script={};Object.defineProperty(script,'run',{get:function(){var success,failure,runner;runner=new Proxy({},{get:function(_,name){if(name==='withSuccessHandler')return function(fn){success=fn;return runner};if(name==='withFailureHandler')return function(fn){failure=fn;return runner};return function(argument){fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:demoRole,name:name,argument:argument,demoGeneration:demoGeneration})}).then(function(r){return r.json()}).then(function(out){if(!out.ok){var e=new Error(out.error);e.code=out.code;throw e}success(out.result)}).catch(function(e){if(failure)failure(e)})}}});return runner}});window.google={script:script};
   </script>`;
-  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>School Store + Print Lab — Local Admin Demo</title><style>.demo-bar{font:15px/1.5 system-ui,sans-serif;padding:16px 24px;background:#12344a;color:#fff;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.demo-bar label{color:#fff}.demo-bar select,.demo-bar button{min-height:44px;border-radius:6px;padding:6px 12px;background:#fff;color:#12344a;border:1px solid #bacbd7}.demo-bar details{width:100%}.demo-bar summary{cursor:pointer;font-weight:700;min-height:32px}.demo-bar a{color:#bae6fd;text-decoration:underline}.demo-bar li{margin:6px 0}@media(forced-colors:active){.demo-bar{background:Canvas;color:CanvasText;border:1px solid CanvasText}.demo-bar a{color:LinkText}}</style></head><body>' + toolbar + bridge + portal + '</body></html>';
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + (unified ? 'AlloFlow — Guided Demo' : 'School Store + Print Lab — Local Admin Demo') + '</title><style>.demo-bar{font:15px/1.5 system-ui,sans-serif;padding:16px 24px;background:#12344a;color:#fff;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.demo-bar label{color:#fff}.demo-bar select,.demo-bar button{min-height:44px;border-radius:6px;padding:6px 12px;background:#fff;color:#12344a;border:1px solid #bacbd7}.demo-bar details{width:100%}.demo-bar summary{cursor:pointer;font-weight:700;min-height:32px}.demo-bar a{color:#bae6fd;text-decoration:underline}.demo-bar li{margin:6px 0}@media(forced-colors:active){.demo-bar{background:Canvas;color:CanvasText;border:1px solid CanvasText}.demo-bar a{color:LinkText}}</style></head><body' + (unified ? ' data-demo-generation="' + generation + '"' : '') + '>' + (unified ? unifiedDemoToolbar(metadata) : toolbar) + bridge + portal + (unified ? '<script>' + unifiedDemoClientScript() + '</script><script>' + demoMailClientScript() + '</script>' : '') + '</body></html>';
 }
 
-export async function createDemoServer({ port = 0 } = {}) {
-  let repo = seed();
+export async function createDemoServer({ port = 0, unified = false } = {}) {
+  unified = unified === true;
+  let repo, metadata, generation, capturedMail;
+  function resetRepository() {
+    const nextRepo = seed();
+    const nextMetadata = unified ? prepareUnifiedDemo(nextRepo) : null;
+    // Publish a complete fixture together; a failed seed leaves the old one intact.
+    repo = nextRepo; metadata = nextMetadata; generation = unified ? randomUUID() : ''; capturedMail = new Map();
+  }
+  resetRepository();
   // Use the same serializer and preflight as Print Lab; no hand-written payload.
   const vm = await import('node:vm');
   const { webcrypto } = await import('node:crypto');
@@ -129,21 +150,34 @@ export async function createDemoServer({ port = 0 } = {}) {
       catch { json(503, { ok: false, error: 'Build the local tool-preview stylesheet before opening the design demo.' }); return; }
       json(404, { ok: false, error: 'Not found' }); return;
     }
-    if (req.method === 'GET' && url.pathname === '/') { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(html()); return; }
+    if (req.method === 'GET' && url.pathname === '/') { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(html({ unified, metadata, generation })); return; }
+    if (unified && req.method === 'GET' && url.pathname === '/demo-manifest.json') {
+      res.setHeader('Content-Disposition', 'attachment; filename="fictional-class.alloflow-store.json"');
+      json(200, metadata.manifest); return;
+    }
     if (req.method === 'GET' && ['/sample.stl', '/sample-handoff.json'].includes(url.pathname)) {
       res.writeHead(200, { 'Content-Type': url.pathname.endsWith('.stl') ? 'model/stl' : 'application/json', 'Content-Disposition': 'attachment' });
       res.end(url.pathname.endsWith('.stl') ? sampleStl : handoffJson); return;
     }
-    if (req.method !== 'POST' || !['/rpc', '/reset'].includes(url.pathname)) { json(404, { ok: false, error: 'Not found' }); return; }
+    if (req.method !== 'POST' || !['/rpc', '/reset', ...(unified ? ['/demo-receipt-email'] : [])].includes(url.pathname)) { json(404, { ok: false, error: 'Not found' }); return; }
     if (req.headers.origin !== 'http://' + host || !/^application\/json(?:;|$)/i.test(req.headers['content-type'] || '')) { json(403, { ok: false, error: 'Use the local demo page' }); return; }
     try {
       let size = 0, chunks = [];
       for await (const chunk of req) { size += chunk.length; if (size > 6 * 1024 * 1024) { json(413, { ok: false, error: 'Demo request is too large' }); return; } chunks.push(chunk); }
       const input = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-      if (url.pathname === '/reset') { repo = seed(); json(200, { ok: true }); return; }
+      if (unified && (!input || input.demoGeneration !== generation)) { json(409, { ok: false, code: 'demo_reset', error: 'This fictional demo was reset or restarted. Reload this tab before continuing.' }); return; }
+      if (url.pathname === '/reset') { resetRepository(); json(200, { ok: true }); return; }
+      if (url.pathname === '/demo-receipt-email') {
+        if (!Object.hasOwn(identities, input.role)) { json(403, { ok: false, error: 'Use a supported simulated role.' }); return; }
+        repo.setActive(identities[input.role]);
+        const message = readReceiptMail(repo, input, capturedMail);
+        json(message ? 200 : 404, message ? { ok: true, message } : { ok: false, error: 'No captured demo email is available for this receipt.' }); return;
+      }
       if (!Object.hasOwn(identities, input.role) || !allowed.has(input.name)) { json(403, { ok: false, error: 'This action is unavailable in the demo' }); return; }
       repo.setActive(identities[input.role]);
-      json(200, { ok: true, result: repo.call(input.name, input.argument) });
+      const beforeMail = repo.mail.length, result = repo.call(input.name, input.argument);
+      if (unified) captureReceiptMail(repo, result, beforeMail, capturedMail);
+      json(200, { ok: true, result });
     } catch (error) { json(400, { ok: false, code: error.code || 'demo_error', error: error.message }); }
   });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); });
@@ -151,8 +185,9 @@ export async function createDemoServer({ port = 0 } = {}) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const { server, url } = await createDemoServer({ port: Number(process.env.SCHOOL_STORE_DEMO_PORT || 8767) });
-  console.log('Fictional School Store + Print Lab demo: ' + url);
+  const { server, url } = await createDemoServer({ port: Number(process.env.SCHOOL_STORE_DEMO_PORT || 8767), unified: !process.argv.includes('--legacy') });
+  console.log('AlloFlow fictional demo: ' + url);
+  console.log('Use this one page: prepared class -> recognize -> student balance -> shop. --legacy opens the advanced original walkthrough.');
   console.log('Actual store logic with in-memory Google substitutes. No real mail, records, or printer access. Ctrl+C stops it.');
   process.on('SIGINT', () => server.close(() => process.exit(0)));
 }

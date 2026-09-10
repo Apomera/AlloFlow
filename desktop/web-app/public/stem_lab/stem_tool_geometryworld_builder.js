@@ -153,6 +153,17 @@
     var data = ctx && ctx.toolData && ctx.toolData.geometryWorld;
     return data && data.builderPrintContext || {};
   }
+  function setBuilderPrintScale(ctx, value) {
+    // Form input is deliberately stricter than legacy scale normalization: an
+    // unfinished or invalid draft must never silently change a saved scale.
+    var numeric = typeof value === 'number' || (typeof value === 'string' && value.trim() !== '');
+    var unitMm = numeric ? Number(value) : NaN;
+    if (!isFinite(unitMm) || unitMm < 0.01 || unitMm > 1000) {
+      return {ok:false,error:'Enter a scale from 0.01 to 1,000 millimeters per block.'};
+    }
+    patchGeometryState(ctx, {builderPrintContext:Object.assign({},printContext(ctx),{unitMm:unitMm})});
+    return {ok:true,value:unitMm};
+  }
   function compareBlocks(a, b) {
     return a.y - b.y || a.x - b.x || a.z - b.z || a.shape.localeCompare(b.shape) || a.type.localeCompare(b.type) || a.rotation - b.rotation;
   }
@@ -560,6 +571,35 @@
     blocks.sort(compareBlocks);
     return { schema: EDITABLE_WORLD_SCHEMA, title: 'Geometry World editable build', coordinateSystem: 'x-right,y-up,z-depth', blocks: blocks };
   }
+  // A portable creation contains the fresh retained selection, including any
+  // disconnected parts the student kept selected. Centering changes the file
+  // coordinates only; the live world, materials and rotations stay untouched.
+  function selectedEditableWorld(engine) {
+    if (!engine) return { ok:false, error:'Open the 3D world before saving a creation.' };
+    if (engine._showcaseExporting) return { ok:false, error:'Wait for the Showcase image to finish saving.' };
+    var selected = selectionMeasurement(engine);
+    if (!selected || !selected.measurement || !Array.isArray(selected.measurement.blocks) || !selected.measurement.blocks.length) return { ok:false, error:'Select a creation before saving an editable file.' };
+    var blocks = [], minX=Infinity, maxX=-Infinity, minY=Infinity, minZ=Infinity, maxZ=-Infinity;
+    for (var i=0; i<selected.measurement.blocks.length; i++) {
+      var mesh=engine.blocks[keyFor(selected.measurement.blocks[i])], p=gridPosition(mesh), data=mesh && mesh.userData;
+      if (!p || !isStudentBlock(data)) return { ok:false, error:'The selected creation changed. Select it again before saving.' };
+      blocks.push({x:p.x,y:p.y,z:p.z,type:data.blockType || 'stone',shape:data.shape || 'cube',rotation:data.rotation == null ? 0 : data.rotation});
+      minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);minZ=Math.min(minZ,p.z);maxZ=Math.max(maxZ,p.z);
+    }
+    var offsetX=-Math.floor((minX+maxX)/2), offsetZ=-Math.floor((minZ+maxZ)/2), offsetY=1-minY;
+    blocks.forEach(function(block){block.x+=offsetX;block.y+=offsetY;block.z+=offsetZ;});
+    return normalizeEditableWorld({schema:EDITABLE_WORLD_SCHEMA,title:'Geometry World selected creation',coordinateSystem:'x-right,y-up,z-depth',blocks:blocks});
+  }
+  function saveSelectedEditableWorld(ctx) {
+    var checked;
+    try {
+      checked=selectedEditableWorld(window[ENGINE_KEY]);
+      if (!checked.ok) { announce(ctx,checked.error,'error');return false; }
+      downloadBlob(new Blob([JSON.stringify(checked.value,null,2)],{type:'application/json'}),'geometry-world-selected-creation-editable.json');
+    } catch (error) { announce(ctx,error && error.message ? error.message : 'The editable creation could not be saved.','error');return false; }
+    announce(ctx,'Saved '+checked.summary.blockCount+' selected block'+(checked.summary.blockCount===1?'':'s')+' as an editable AlloFlow creation, centered above the sandbox floor.','success');
+    return true;
+  }
   function saveEditableWorld(ctx) {
     var engine = window[ENGINE_KEY];
     if (!engine) { announce(ctx, 'Open the 3D world before saving.', 'info'); return; }
@@ -567,6 +607,9 @@
     if (!checked.ok) { announce(ctx, checked.error, 'error'); return; }
     downloadBlob(new Blob([JSON.stringify(checked.value, null, 2)], { type: 'application/json' }), safeFilePart((engine._currentLesson && engine._currentLesson.title) || 'geometry-world') + '-editable.json');
     announce(ctx, 'Saved ' + checked.summary.blockCount + ' editable student block' + (checked.summary.blockCount === 1 ? '' : 's') + ' with shapes and rotations.', 'success');
+  }
+  function firstBlockGuidance(touchActive) {
+    return 'Aim at the ground and ' + (touchActive ? 'tap Place' : 'press B') + ' to add your first block.';
   }
   function startSandboxMode(ctx) {
     var engine = window[ENGINE_KEY];
@@ -583,37 +626,236 @@
       measureHistory: [], score: 0, totalQ: 0, answeredNpcs: {}
     });
     if (engine.logEvent) engine.logEvent('sandbox_open', { source: 'geometry_world_builder' });
-    announce(ctx, 'Free Build Sandbox opened. Aim at the ground and place blocks to begin.', 'success');
+    var workspace = typeof document !== 'undefined' && document.getElementById('geoworld-fs-workspace');
+    announce(ctx, 'Free Build Sandbox opened. ' + firstBlockGuidance(!!(workspace && workspace.getAttribute('data-touch-active') === 'true')), 'success');
     focusWorldSurface(50);
     return true;
   }
-  function restoreEditableWorld(engine, candidate) {
-    if (!engine || typeof engine.loadLesson !== 'function' || typeof engine.placeBlock !== 'function') return { ok: false, error: 'The Geometry World engine is not ready.' };
-    var checked = normalizeEditableWorld(candidate);
-    if (!checked.ok) return checked;
-    engine.loadLesson(FREE_BUILD_LESSON);
-    var available = Math.max(0, MAX_BLOCKS - Object.keys(engine.blocks || {}).length);
-    if (checked.value.blocks.length > available) return { ok: false, error: 'The sandbox does not have enough safe block capacity for this file.' };
-    var placedCount = 0;
-    checked.value.blocks.forEach(function (block) {
-      var key = keyFor(block);
-      engine.placeBlock(block.x, block.y, block.z, block.type, block.shape, block.rotation);
-      if (engine.blocks[key] && isStudentBlock(engine.blocks[key].userData)) placedCount += 1;
+  // Keep the entire workspace before the confirmed replacement. A lesson's
+  // definitions do not describe every live block, so record the actual roles too.
+  function captureEditableImportRecovery(ctx, engine) {
+    var saved = captureProject(ctx || {}, engine, 'editable-import-recovery');
+    saved.state = copyLocal(ctx && ctx.toolData && ctx.toolData.geometryWorld || {});
+    saved.blocks = Object.keys(engine.blocks || {}).map(function(key) {
+      var mesh=engine.blocks[key], p=gridPosition(mesh), u=mesh && mesh.userData;
+      if (!p || !u) throw new Error('The current workspace could not be backed up.');
+      return Object.assign({},p,{type:u.blockType,shape:u.shape || 'cube',rotation:u.rotation || 0,
+        lessonBlock:!!u._lessonBlock,measurementLayer:u._measurementLayer});
     });
-    if (placedCount !== checked.value.blocks.length) return { ok: false, error: 'Geometry World could not restore every validated block.' };
-    engine.blocksPlaced = placedCount;
-    engine._undoStack = [];
-    engine._redoStack = [];
-    return { ok: true, value: checked.value, summary: checked.summary, placedCount: placedCount };
+    saved.engineState = {};
+    ['completionTriggered','completionProgress','_predictionState','_progressKey','_historyRevision',
+      '_placingLessonBlocks','_measurementLayer','_replayingHistory','_entryAnim','_viewPreset',
+      '_fillTruncated','_playerBlockCount'].forEach(function(key) {
+      saved.engineState[key] = {present:Object.prototype.hasOwnProperty.call(engine,key),
+        value:engine[key] === undefined ? undefined : copyLocal(engine[key])};
+    });
+    saved.cameraProjection = engine.camera ? {fov:engine.camera.fov,near:engine.camera.near,far:engine.camera.far,
+      zoom:engine.camera.zoom,up:engine.camera.up && engine.camera.up.toArray()} : null;
+    saved.velocity = engine.velocity && engine.velocity.toArray ? engine.velocity.toArray() : null;
+    saved.sessionLog = Array.isArray(engine.sessionLog) ? copyLocal(engine.sessionLog) : null;
+    var editable = normalizeEditableWorld(editableWorld(engine));
+    saved.editableWorld = editable.ok && editableWorldByteLength(JSON.stringify(editable.value)) <= MAX_EDITABLE_WORLD_BYTES ? editable.value : null;
+    saved.schema = 'alloflow-geometry-world-recovery/1';
+    return saved;
+  }
+  function restoredBlockMatches(engine, block, studentOnly) {
+    var mesh=engine.blocks && engine.blocks[keyFor(block)], u=mesh && mesh.userData, p=gridPosition(mesh);
+    return !!(p && u && p.x===block.x && p.y===block.y && p.z===block.z &&
+      u.blockType===block.type && (u.shape || 'cube')===block.shape && (u.rotation || 0)===block.rotation &&
+      (studentOnly ? isStudentBlock(u) : !!u._lessonBlock===block.lessonBlock && u._measurementLayer===block.measurementLayer));
+  }
+  function restoreEditableImportRecovery(ctx, engine, saved) {
+    // Rebuild the actual saved cells instead of recreating lesson fills and then
+    // colliding with them. loadLesson still owns NPC/environment lifecycle.
+    engine.loadLesson(Object.assign({},saved.lesson,{ground:null,structures:[]}));
+    if (Object.keys(engine.blocks || {}).length) throw new Error('The recovery workspace was not empty.');
+    engine._currentLesson = saved.lesson;
+    engine._replayingHistory = true;
+    try { saved.blocks.forEach(function(block) {
+      engine._placingLessonBlocks=block.lessonBlock;
+      engine._measurementLayer=block.measurementLayer;
+      var placed=engine.placeBlock(block.x,block.y,block.z,block.type,block.shape,block.rotation);
+      var mesh=engine.blocks && engine.blocks[keyFor(block)];
+      if (placed===null || !mesh || !mesh.userData) throw new Error('A previous block could not be recovered.');
+      // Older workspace blocks may predate explicit measurement-layer tagging.
+      if (block.measurementLayer===undefined) delete mesh.userData._measurementLayer;
+      if (!restoredBlockMatches(engine,block,false)) throw new Error('A previous block was not recovered exactly.');
+    }); } finally {
+      ['_placingLessonBlocks','_measurementLayer','_replayingHistory'].forEach(function(key) {
+        var field=saved.engineState[key];
+        if (field.present) engine[key]=field.value; else delete engine[key];
+      });
+    }
+    if (Object.keys(engine.blocks).length!==saved.blocks.length) throw new Error('The recovered block count did not match.');
+    if (engine.refreshAllAO) engine.refreshAllAO();
+    if (engine.refreshLandscape) engine.refreshLandscape(saved.lesson.ground);
+    engine._undoStack=copyLocal(saved.undo); engine._redoStack=copyLocal(saved.redo);
+    engine.blocksPlaced=saved.blocksPlaced; engine._sessionXP=saved.sessionXP; engine._blockMilestones=copyLocal(saved.milestones);
+    engine._builderSelection=copyLocal(saved.selection || null);
+    Object.keys(saved.engineState).forEach(function(key) {
+      var field=saved.engineState[key];
+      if (field.present) engine[key]=field.value===undefined ? undefined : copyLocal(field.value); else delete engine[key];
+    });
+    if (saved.cameraProjection && engine.camera) {
+      ['fov','near','far','zoom'].forEach(function(key){engine.camera[key]=saved.cameraProjection[key];});
+      if (saved.cameraProjection.up && engine.camera.up) engine.camera.up.fromArray(saved.cameraProjection.up);
+      if (engine.camera.updateProjectionMatrix) engine.camera.updateProjectionMatrix();
+    }
+    if (saved.camera && engine.camera) engine.camera.position.fromArray(saved.camera);
+    if (saved.cameraQuaternion && engine.camera) {
+      engine.camera.quaternion.fromArray(saved.cameraQuaternion);
+      if(engine.euler) engine.euler.setFromQuaternion(engine.camera.quaternion);
+    }
+    if (isFinite(saved.yaw)) engine.yaw=saved.yaw;
+    if (isFinite(saved.pitch)) engine.pitch=saved.pitch;
+    engine.flyMode=saved.flyMode;
+    if (saved.velocity && engine.velocity && engine.velocity.fromArray) engine.velocity.fromArray(saved.velocity);
+    if (saved.sessionLog && Array.isArray(engine.sessionLog)) {
+      engine.sessionLog.length=0;
+      saved.sessionLog.forEach(function(event){engine.sessionLog.push(copyLocal(event));});
+    }
+    // Restore Geometry World state only, including print scale/check and lesson
+    // progress. Keys added by loadLesson must not survive an unsuccessful import.
+    var state={};
+    ['totalQ','score','answeredNpcs','npcFollowUpStep','npcChatHistory','worldActive','blocksPlaced',
+      'measureResult','measureHistory','volumePrediction','volumeEstimateCommitment','volumeEstimateObservedTargets',
+      'volumeEstimateCommitError','predictionStrategy','predictionReason','predictionResult','predictionRevision',
+      'predictionRevisionResult','predictionReflection','viewPreset','layerFocus','placementPreview'].forEach(function(key){state[key]=saved.state[key];});
+    patchGeometryState(ctx,Object.assign(state,saved.state));
+  }
+  function restoreEditableWorld(engine, candidate, ctx) {
+    if (!engine || typeof engine.loadLesson !== 'function' || typeof engine.placeBlock !== 'function') return { ok: false, error: 'The Geometry World engine is not ready.' };
+    var checked=normalizeEditableWorld(candidate);
+    if (!checked.ok) return checked;
+    if (engine._showcaseExporting) return {ok:false,error:'Wait for the Showcase image to finish saving.'};
+    var saved, presentation=engine._showcase;
+    // End Showcase before capturing the building camera. Its event handler may
+    // still hold React state from the old overlay until the next render.
+    if (presentation) {
+      try {
+        if (typeof engine.endShowcase!=='function') throw new Error('Showcase cannot return to building yet.');
+        engine.endShowcase();
+        if (engine._showcase) throw new Error('Showcase did not return to building.');
+      } catch (_) { return {ok:false,error:'Return to building before opening an editable world. No blocks were changed.'}; }
+      patchGeometryState(ctx,{showcaseActive:false,showcaseSaving:false,sandboxDockCollapsed:!!presentation.collapsed});
+    }
+    try {
+      saved=captureEditableImportRecovery(ctx,engine);
+      if (presentation) {
+        saved.state.showcaseActive=false;saved.state.showcaseSaving=false;
+        saved.state.sandboxDockCollapsed=!!presentation.collapsed;
+      }
+    } catch (_) { return {ok:false,error:'The current workspace could not be backed up. No blocks were changed.'}; }
+    try {
+      engine.loadLesson(FREE_BUILD_LESSON);
+      var available=Math.max(0,MAX_BLOCKS-Object.keys(engine.blocks || {}).length);
+      if (checked.value.blocks.length>available) throw new Error('The sandbox does not have enough safe block capacity for this file.');
+      checked.value.blocks.forEach(function(block) {
+        var placed=engine.placeBlock(block.x,block.y,block.z,block.type,block.shape,block.rotation);
+        if (placed===null || !restoredBlockMatches(engine,block,true)) throw new Error('Geometry World could not restore every validated block.');
+      });
+      engine.blocksPlaced=checked.value.blocks.length;
+      engine._undoStack=[]; engine._redoStack=[];
+      return {ok:true,value:checked.value,summary:checked.summary,placedCount:checked.value.blocks.length};
+    } catch (error) {
+      var message=error && error.message ? error.message : 'The editable world could not be opened.';
+      try {
+        restoreEditableImportRecovery(ctx,engine,saved);
+        return {ok:false,restored:true,error:message+' Your previous workspace was restored.'};
+      } catch (recoveryError) {
+        ['_placingLessonBlocks','_measurementLayer','_replayingHistory'].forEach(function(key) {
+          var field=saved.engineState[key];
+          if (field.present) engine[key]=field.value; else delete engine[key];
+        });
+        // Keep the earliest complete backup even if another import is attempted.
+        if (!engine._editableImportRecovery) engine._editableImportRecovery=saved;
+        return {ok:false,restored:false,recovery:engine._editableImportRecovery,
+          error:message+' The previous workspace could not be fully restored. Download its backup below before continuing.'};
+      }
+    }
   }
   function selectionMeasurement(engine) {
     var selected = engine && engine._builderSelection;
-    if (!selected || !selected.blocks || !engine.measureStructure) return null;
+    if (!selected || !Array.isArray(selected.blocks) || !engine.blocks || typeof engine.measureStructure !== 'function') return null;
     var seed = selected.blocks.find(function(p) { var mesh = engine.blocks[keyFor(p)]; return mesh && isStudentBlock(mesh.userData); });
     if (!seed) { engine._builderSelection = null; return null; }
     var measurement = engine.measureStructure(seed.x, seed.y, seed.z, selected.blocks);
     if (measurement && measurement.isComplete !== false) engine._builderSelection = {blocks:measurement.blocks.slice()};
     return measurement && measurement.isComplete !== false ? { engine: engine, gp: seed, measurement: measurement } : null;
+  }
+  // A complete component can change only through a retained cell or its frontier.
+  // Save field tuples after measuring; idle polls compare primitives without
+  // rebuilding/sorting a world snapshot or walking the connected component.
+  function blockMeasurementTuple(engine, key) {
+    var mesh = engine.blocks[key], u = mesh && mesh.userData, p = u && u.gridPos;
+    return [key, !!mesh, !!u, p && p.x, p && p.y, p && p.z,
+      u && u.shape, u && u.rotation, u && u.blockType, u && u.volume,
+      u && u._measurementLayer, u && u._lessonBlock];
+  }
+  function blockMeasurementSignature(engine, keys) {
+    return JSON.stringify(keys.slice().sort().map(function(key) { return blockMeasurementTuple(engine,key); }));
+  }
+  function selectionRefreshSnapshot(engine) {
+    var selected = engine && engine._builderSelection;
+    if (!selected || !Array.isArray(selected.blocks) || !engine.blocks) return null;
+    var frontier = Object.create(null), members = Object.create(null);
+    var directions = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+    var keys = selected.blocks.map(keyFor).sort();
+    keys.forEach(function(key) { members[key] = true; });
+    selected.blocks.forEach(function(p) {
+      frontier[keyFor(p)] = true;
+      directions.forEach(function(d) { frontier[(p.x+d[0])+','+(p.y+d[1])+','+(p.z+d[2])] = true; });
+    });
+    // Missing cells matter: filling one can attach an entire remote build.
+    // Each disconnected retained part contributes its own six-face frontier.
+    var frontierKeys = Object.keys(frontier).sort();
+    return {engine:engine,measure:engine.measureStructure,keys:keys,members:members,
+      frontier:frontierKeys.map(function(key) { return blockMeasurementTuple(engine,key); })};
+  }
+  function selectionRefreshUnchanged(engine, saved) {
+    var selected = engine && engine._builderSelection;
+    if (!saved || saved.engine !== engine || saved.measure !== engine.measureStructure || !engine.blocks ||
+      !selected || !Array.isArray(selected.blocks) || selected.blocks.length !== saved.keys.length) return false;
+    var seen = Object.create(null);
+    for (var i=0;i<selected.blocks.length;i++) {
+      var key = keyFor(selected.blocks[i]);
+      if (!saved.members[key] || seen[key]) return false;
+      seen[key] = true;
+    }
+    for (var j=0;j<saved.frontier.length;j++) {
+      var row = saved.frontier[j], mesh = engine.blocks[row[0]], u = mesh && mesh.userData, p = u && u.gridPos;
+      if (row[1] !== !!mesh || row[2] !== !!u || row[3] !== (p && p.x) || row[4] !== (p && p.y) || row[5] !== (p && p.z) ||
+        row[6] !== (u && u.shape) || row[7] !== (u && u.rotation) || row[8] !== (u && u.blockType) || row[9] !== (u && u.volume) ||
+        row[10] !== (u && u._measurementLayer) || row[11] !== (u && u._lessonBlock)) return false;
+    }
+    return true;
+  }
+  function polledSelectionMeasurement(engine, cache) {
+    if (selectionRefreshUnchanged(engine,cache.current)) return cache.current.result;
+    var result = selectionMeasurement(engine);
+    // A truncated/null measurement has no proven complete frontier; retry it.
+    if (!result) { cache.current = null; return null; }
+    // The fresh measurement normalizes removals and expands connected cells.
+    cache.current = selectionRefreshSnapshot(engine);
+    cache.current.result = result;
+    return result;
+  }
+  // Closing the inspector hides its result, not the outlined selection. Cache
+  // this render-only fallback; the existing selection refresh still discovers
+  // newly connected blocks. Live block metadata invalidates edits/removals.
+  function retainedSelectionSummary(engine, cache) {
+    var selected = engine && engine._builderSelection;
+    if (!selected || !Array.isArray(selected.blocks) || !engine.blocks) { cache.current = null; return null; }
+    var signature = selected.blocks.map(function(p) {
+      var mesh = engine.blocks[keyFor(p)], u = mesh && mesh.userData;
+      return keyFor(p) + ':' + (u ? [u.shape,u.rotation,u.blockType,u.volume,u._measurementLayer,u._lessonBlock].join(':') : 'missing');
+    }).join('|');
+    var saved = cache.current;
+    if (saved && saved.engine === engine && saved.signature === signature) return saved.measurement;
+    var result = selectionMeasurement(engine);
+    var measurement = result ? result.measurement : null;
+    cache.current = { engine:engine, signature:signature, measurement:measurement };
+    return measurement;
   }
   function copyLocal(value) { return JSON.parse(JSON.stringify(value)); }
   // The complete project stays in this browser only, outside exported model metadata.
@@ -626,7 +868,7 @@
       blocks.push(Object.assign({}, p, { type:u.blockType, shape:u.shape || 'cube', rotation:u.rotation || 0 }));
     });
     return { id:id, blocks:blocks, lesson:copyLocal(engine._currentLesson || FREE_BUILD_LESSON),
-      state:copyLocal(ctx.toolData && ctx.toolData.geometryWorld || {}),
+      state:Object.assign(copyLocal(ctx.toolData && ctx.toolData.geometryWorld || {}), { actionFeedback:'' }),
       selection:engine._builderSelection && copyLocal(engine._builderSelection),
       undo:copyLocal(engine._undoStack || []), redo:copyLocal(engine._redoStack || []),
       blocksPlaced:engine.blocksPlaced || 0, sessionXP:engine._sessionXP || 0, milestones:copyLocal(engine._blockMilestones || {}),
@@ -648,7 +890,7 @@
     if (engine.velocity) engine.velocity.set(0,0,0);
     var context = pending.printContext || {};
     var selected = selectionMeasurement(engine);
-    patchGeometryState(ctx, Object.assign({}, saved.state, { worldActive:true, showLessonIntro:false,
+    patchGeometryState(ctx, Object.assign({}, saved.state, { worldActive:true, showLessonIntro:false, actionFeedback:'',
       showGameSettings:false, builderPanel:'build', measureResult:selected ? selected.measurement : null,
       builderPrintContext:{unitMm:printUnit(context.unitMm), aiUse:context.aiUse || 'NONE', aiDisclosure:String(context.aiDisclosure || '').slice(0,500)} }));
     delete window.__alloGeometryWorldReturnProject;
@@ -674,14 +916,432 @@
     }
     return { engine: engine, measurement: measurement, gp: gp };
   }
+  // Use only the lowest world-space vertices: raised spans should not paint a
+  // false contact beneath an arch. These polygons are presentation data only.
+  function studioGroundFootprints(meshes, baseY, poppingMeshes) {
+    var THREE=window.THREE, footprints=[];
+    if(!THREE || !isFinite(baseY))return footprints;
+    function cross(a,b,c){return (b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x);}
+    (meshes || []).forEach(function(mesh){
+      var positions=mesh && mesh.geometry && mesh.geometry.getAttribute('position');
+      if(!positions)return;
+      mesh.updateWorldMatrix(true,false);
+      var matrix=mesh.matrixWorld;
+      // Placement animation changes display scale only. Grounding follows the
+      // finished block using a temporary matrix, without touching the live mesh.
+      if(poppingMeshes && poppingMeshes.indexOf(mesh)!==-1){
+        matrix=new THREE.Matrix4().compose(mesh.position,mesh.quaternion,new THREE.Vector3(1,1,1));
+        if(mesh.parent)matrix.premultiply(mesh.parent.matrixWorld);
+      }
+      var points=[],seen={};
+      for(var i=0;i<positions.count;i++){
+        var point=new THREE.Vector3().fromBufferAttribute(positions,i).applyMatrix4(matrix);
+        if(Math.abs(point.y-baseY)>0.025)continue;
+        var key=Math.round(point.x*100000)+','+Math.round(point.z*100000);
+        if(!seen[key]){seen[key]=true;points.push({x:point.x,z:point.z});}
+      }
+      if(points.length<3)return;
+      points.sort(function(a,b){return a.x-b.x || a.z-b.z;});
+      var lower=[],upper=[];
+      points.forEach(function(point){while(lower.length>1 && cross(lower[lower.length-2],lower[lower.length-1],point)<=0)lower.pop();lower.push(point);});
+      points.slice().reverse().forEach(function(point){while(upper.length>1 && cross(upper[upper.length-2],upper[upper.length-1],point)<=0)upper.pop();upper.push(point);});
+      lower.pop();upper.pop();var hull=lower.concat(upper);
+      if(hull.length>2)footprints.push(hull);
+    });
+    return footprints;
+  }
+  function studioContactMap(footprints, box) {
+    var width=Math.max(1.8,box.max.x-box.min.x+0.9),depth=Math.max(1.8,box.max.z-box.min.z+0.9),size=384;
+    var canvas=document.createElement('canvas'),mask=document.createElement('canvas');
+    canvas.width=canvas.height=mask.width=mask.height=size;
+    var context=canvas.getContext('2d'),ink=mask.getContext('2d');
+    var centerX=(box.min.x+box.max.x)/2,centerZ=(box.min.z+box.max.z)/2;
+    ink.fillStyle='rgb(49,55,45)';
+    footprints.forEach(function(points){
+      ink.beginPath();points.forEach(function(point,i){var x=((point.x-centerX)/width+0.5)*size,y=((point.z-centerZ)/depth+0.5)*size;if(i)ink.lineTo(x,y);else ink.moveTo(x,y);});ink.closePath();ink.fill();
+    });
+    // Two soft scales retain the support silhouette without a hard decal edge.
+    context.filter='blur(10px)';context.globalAlpha=0.55;context.drawImage(mask,0,0);
+    context.filter='blur(2px)';context.globalAlpha=0.28;context.drawImage(mask,0,0);
+    context.filter='none';context.globalAlpha=1;
+    return {canvas:canvas,width:width,depth:depth};
+  }
+
+  // Fit an exact transformed Box3 into an asymmetric clear screen rectangle.
+  // The returned pose uses world-up (0,1,0); the caller retains a normal
+  // perspective projection and applies camera.lookAt(result.target).
+  // No camera, box, rect, construction mesh or selection state is mutated.
+  function fitCreationCamera(box, camera, rect, minCameraY) {
+    var THREE = window.THREE;
+    if (!THREE || !box || !box.min || !box.max || !camera) return null;
+    var bounds = [box.min.x,box.min.y,box.min.z,box.max.x,box.max.y,box.max.z];
+    if (!bounds.every(function(value){return typeof value === 'number' && isFinite(value);}) || box.min.x > box.max.x || box.min.y > box.max.y || box.min.z > box.max.z) return null;
+    var aspect = Number(camera.aspect);
+    var fov = typeof camera.getEffectiveFOV === 'function' ? Number(camera.getEffectiveFOV()) : Number(camera.fov);
+    if (!isFinite(aspect) || aspect <= 0 || !isFinite(fov) || fov <= 0 || fov >= 179.9) return null;
+    var tanY = Math.tan(fov * Math.PI / 360), tanX = tanY * aspect;
+    if (!isFinite(tanX) || !isFinite(tanY) || tanX <= 0 || tanY <= 0) return null;
+    var input = rect || {left:-0.9,right:0.9,bottom:-0.85,top:0.85};
+    var values = [input.left,input.right,input.bottom,input.top];
+    if (!values.every(function(value){return typeof value === 'number' && isFinite(value);})) return null;
+    var left=Math.max(-1,input.left),right=Math.min(1,input.right),bottom=Math.max(-1,input.bottom),top=Math.min(1,input.top);
+    if (right <= left || top <= bottom) return null;
+    var cx=(left+right)/2,cy=(bottom+top)/2,hx=(right-left)*0.48,hy=(top-bottom)*0.48;
+    var safe={left:cx-hx,right:cx+hx,bottom:cy-hy,top:cy+hy};
+    var center=new THREE.Vector3((box.min.x+box.max.x)/2,(box.min.y+box.max.y)/2,(box.min.z+box.max.z)/2);
+    var horizontal=Math.sqrt(1.25*1.25+1.55*1.55),baseElevation=Math.atan2(0.72,horizontal);
+    // Moving the frame upward on screen lowers the camera. Raise the bearing
+    // enough that increasing fit distance still raises its physical height.
+    // The remaining-angle cap also supports unusually wide effective FOVs.
+    var requiredElevation=Math.atan(Math.max(0,cy)*tanY);
+    var lift=Math.min(Math.PI/18,(Math.PI/2-requiredElevation)*0.5);
+    var elevation=Math.max(baseElevation,requiredElevation+lift),cosElevation=Math.cos(elevation);
+    var direction=new THREE.Vector3(1.25/horizontal*cosElevation,Math.sin(elevation),1.55/horizontal*cosElevation);
+    var rightAxis=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),direction).normalize();
+    var upAxis=new THREE.Vector3().crossVectors(direction,rightAxis).normalize();
+    var near=Number(camera.near);if(!isFinite(near) || near<=0)near=0.1;
+    var nearClearance=Math.max(0.05,near*0.5),distance=near+nearClearance,corners=[];
+    [box.min.x,box.max.x].forEach(function(x){[box.min.y,box.max.y].forEach(function(y){[box.min.z,box.max.z].forEach(function(z){
+      var relative=new THREE.Vector3(x,y,z).sub(center),px=relative.dot(rightAxis),py=relative.dot(upAxis),pz=relative.dot(direction);
+      corners.push(pz);
+      distance=Math.max(distance,pz+near+nearClearance,pz+Math.abs(px+cx*pz*tanX)/(hx*tanX),pz+Math.abs(py+cy*pz*tanY)/(hy*tanY));
+    });});});
+    var floor=typeof minCameraY === 'number' && isFinite(minCameraY) ? minCameraY : 2.8;
+    var heightSlope=direction.y-cx*tanX*rightAxis.y-cy*tanY*upAxis.y;
+    if (!isFinite(heightSlope) || heightSlope<=0) return null;
+    distance=Math.max(distance,(floor-center.y)/heightSlope);
+    distance+=Math.max(0.00001,distance*0.0000001);
+    if (!isFinite(distance)) return null;
+    var shift=rightAxis.clone().multiplyScalar(-cx*distance*tanX).addScaledVector(upAxis,-cy*distance*tanY);
+    var target=center.clone().add(shift),position=target.clone().addScaledVector(direction,distance);
+    var depthNear=Infinity,depthFar=-Infinity;
+    corners.forEach(function(depth){depthNear=Math.min(depthNear,distance-depth);depthFar=Math.max(depthFar,distance-depth);});
+    var diagonal=new THREE.Vector3().subVectors(box.max,box.min).length(),oldFar=Number(camera.far);
+    var far=Math.max(isFinite(oldFar) && oldFar>near ? oldFar : 200,depthFar+Math.max(10,diagonal*0.05));
+    if (![position.x,position.y,position.z,target.x,target.y,target.z,far,depthNear,depthFar].every(isFinite)) return null;
+    return {position:position,target:target,far:far,depthNear:depthNear,depthFar:depthFar,rect:safe};
+  }
+  function creationFocusRect(engine) {
+    var canvas=engine.renderer && engine.renderer.domElement,area=canvas && canvas.getBoundingClientRect();
+    if(!area || !area.width || !area.height)return {left:-0.72,right:0.72,bottom:-0.65,top:0.65};
+    var margin=14,w=area.width,h=area.height,obstacles=[],xs=[margin,w-margin],ys=[margin,h-margin];
+    var root=canvas.closest && canvas.closest('#geoworld-fs-workspace');
+    if(root)root.querySelectorAll('.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-touch-actions,.gw-touch-joystick,.gw-touch-look-panel,.gwe-builder-dock,.gwe-focus-return').forEach(function(node){
+      var style=window.getComputedStyle(node),r=node.getBoundingClientRect();
+      if(style.display==='none' || style.visibility==='hidden' || !r.width || !r.height)return;
+      var box={left:Math.max(margin,r.left-area.left-10),right:Math.min(w-margin,r.right-area.left+10),top:Math.max(margin,r.top-area.top-10),bottom:Math.min(h-margin,r.bottom-area.top+10)};
+      if(box.left>=box.right || box.top>=box.bottom)return;
+      obstacles.push(box);xs.push(box.left,box.right);ys.push(box.top,box.bottom);
+    });
+    xs=xs.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
+    ys=ys.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
+    var best=null,score=-1;
+    for(var l=0;l<xs.length-1;l++)for(var r=l+1;r<xs.length;r++){
+      if(xs[r]-xs[l]<Math.min(40,w*0.12))continue;
+      for(var t=0;t<ys.length-1;t++)for(var b=t+1;b<ys.length;b++){
+        var rw=xs[r]-xs[l],rh=ys[b]-ys[t];if(rh<Math.min(40,h*0.12))continue;
+        if(obstacles.some(function(o){return xs[l]<o.right && xs[r]>o.left && ys[t]<o.bottom && ys[b]>o.top;}))continue;
+        var offset=Math.abs((xs[l]+xs[r])/2-w/2)/w+Math.abs((ys[t]+ys[b])/2-h/2)/h;
+        var candidate=rw*rh*(1-offset*0.15);
+        if(candidate>score){score=candidate;best={left:xs[l],right:xs[r],top:ys[t],bottom:ys[b]};}
+      }
+    }
+    if(!best)best={left:w*0.25,right:w*0.75,top:h*0.3,bottom:h*0.65};
+    return {left:best.left/w*2-1,right:best.right/w*2-1,bottom:1-best.bottom/h*2,top:1-best.top/h*2};
+  }
+  function creationGeometryBounds(engine, blocks) {
+    var THREE=window.THREE,box=new THREE.Box3();
+    (blocks || []).forEach(function(p){
+      var mesh=engine.blocks[keyFor(p)];if(!mesh || !isStudentBlock(mesh.userData) || !mesh.geometry)return;
+      mesh.updateMatrixWorld(true);if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();
+      if(mesh.geometry.boundingBox){
+        var matrix=mesh.matrixWorld;
+        if(engine._popBlocks && engine._popBlocks.indexOf(mesh)!==-1){
+          matrix=new THREE.Matrix4().compose(mesh.position,mesh.quaternion,new THREE.Vector3(1,1,1));
+          if(mesh.parent)matrix.premultiply(mesh.parent.matrixWorld);
+        }
+        box.union(mesh.geometry.boundingBox.clone().applyMatrix4(matrix));
+      }
+    });
+    return box;
+  }
+  function selectionNeedsReview(check) {
+    return !check || !!check.error || check.components !== 1 || check.openEdges !== 0 || check.nonManifoldEdges !== 0;
+  }
+  function createSelectionFrame(box, check) {
+    var THREE=window.THREE;
+    if(!THREE || !box || box.isEmpty())return null;
+    var size=box.getSize(new THREE.Vector3()),extent=Math.max(size.x,size.y,size.z);
+    if(!isFinite(extent) || extent<=0)return null;
+    var low=[box.min.x,box.min.y,box.min.z],high=[box.max.x,box.max.y,box.max.z];
+    if(!low.concat(high).every(function(n){return isFinite(n);}))return null;
+    var lengths=[size.x,size.y,size.z].map(function(n){return Math.min(n*0.2,extent*0.06);}),vertices=[];
+    for(var corner=0;corner<8;corner++){
+      var point=[corner&1?high[0]:low[0],corner&2?high[1]:low[1],corner&4?high[2]:low[2]];
+      for(var axis=0;axis<3;axis++){
+        var end=point.slice();end[axis]+=(corner&(1<<axis)?-1:1)*lengths[axis];
+        vertices.push(point[0],point[1],point[2],end[0],end[1],end[2]);
+      }
+    }
+    var geometry=new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+    var review=selectionNeedsReview(check),color=new THREE.Color(review?0xf1c67d:0xd4e8ca).convertSRGBToLinear();
+    var material=new THREE.LineBasicMaterial({color:color,transparent:true,opacity:0.82,depthTest:false,depthWrite:false,toneMapped:false});
+    var frame=new THREE.LineSegments(geometry,material);
+    frame.name='gwe-selection-frame';frame.renderOrder=998;
+    frame.userData.gwDecorative=true;frame.userData.gwSelectionFrame=true;frame.userData.needsReview=review;
+    frame.raycast=function(){};
+    return frame;
+  }
+  function focusSelectedBuild(ctx) {
+    var selected=selectionMeasurement(window[ENGINE_KEY]) || aimedStudentMeasurement(ctx,false),THREE=window.THREE;
+    if(!selected || !THREE)return false;
+    var engine=selected.engine,camera=engine.camera;
+    if(!camera || !camera.isPerspectiveCamera || engine._showcase || engine._destroyed)return false;
+    var initialBox=creationGeometryBounds(engine,selected.measurement.blocks);if(initialBox.isEmpty())return false;
+    if(engine._guidedTour && engine.stopGuidedTour)engine.stopGuidedTour(false);
+    try{if(document.pointerLockElement && document.exitPointerLock)document.exitPointerLock();}catch(_){}
+    if(engine.releaseInput)engine.releaseInput();if(engine.velocity)engine.velocity.set(0,0,0);engine.isLocked=false;engine._entryAnim=null;engine._viewPresetAnim=null;
+    engine._builderSelection={blocks:selected.measurement.blocks.slice()};
+    var state=engine._creationFocus;
+    if(!state){
+      state={position:camera.position.clone(),quaternion:camera.quaternion.clone(),up:camera.up.clone(),fov:camera.fov,far:camera.far,
+        fog:engine.scene.fog, fogNear:engine.scene.fog && engine.scene.fog.near,fogFar:engine.scene.fog && engine.scene.fog.far,
+        lesson:engine._currentLesson,collapsed:!!((ctx.toolData.geometryWorld || {}).sandboxDockCollapsed),frames:[],manual:false,transition:null,lastPosition:camera.position.clone(),lastQuaternion:camera.quaternion.clone()};
+      engine._creationFocus=state;
+    }
+    state.manual=false;state.returning=false;state.lastPosition.copy(camera.position);state.lastQuaternion.copy(camera.quaternion);
+    state.frames.forEach(function(id){window.cancelAnimationFrame(id);});state.frames=[];
+    function syncCamera(){state.lastPosition.copy(camera.position);state.lastQuaternion.copy(camera.quaternion);if(engine.euler)engine.euler.setFromQuaternion(camera.quaternion);camera.updateMatrixWorld(true);}
+    function restoreProjection(){camera.fov=state.fov;camera.far=state.far;camera.up.copy(state.up);camera.updateProjectionMatrix();if(engine.scene.fog===state.fog && state.fog){state.fog.near=state.fogNear;state.fog.far=state.fogFar;}}
+    engine.disposeCreationFocus=function(){
+      if(engine._creationFocus!==state)return;
+      state.frames.forEach(function(id){window.cancelAnimationFrame(id);});state.frames=[];
+      restoreProjection();engine._creationFocus=null;engine.updateCreationFocus=null;engine.fitCreationFocus=null;engine.restoreCreationView=null;engine.disposeCreationFocus=null;
+      patchGeometryState(ctx,{creationFocusAvailable:false});
+    };
+    function transitionTo(position,quaternion,returning,animate){
+      var reduced=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      state.returning=!!returning;state.manual=false;
+      state.transition={from:camera.position.clone(),to:position.clone(),fromQuaternion:camera.quaternion.clone(),toQuaternion:quaternion.clone(),elapsed:0,duration:animate && !reduced?0.5:0};
+      if(!state.transition.duration)engine.updateCreationFocus(0);
+    }
+    engine.updateCreationFocus=function(dt){
+      if(engine._creationFocus!==state)return;
+      if(engine._destroyed || engine._guidedTour || engine._entryAnim || engine._viewPresetAnim){engine.disposeCreationFocus();return;}
+      var held=Object.keys(engine.moveState || {}).some(function(key){return engine.moveState[key];}) || Object.keys(engine.lookState || {}).some(function(key){return engine.lookState[key];});
+      var touch=engine._touchMoveVec || {},poseChanged=state.lastPosition.distanceToSquared(camera.position)>0.00000001 || Math.abs(state.lastQuaternion.dot(camera.quaternion))<0.99999999;
+      if(held || Math.abs(touch.x || 0)+Math.abs(touch.z || 0)>0.001 || poseChanged){
+        state.manual=true;state.transition=null;state.lastPosition.copy(camera.position);state.lastQuaternion.copy(camera.quaternion);
+        if(state.returning)engine.disposeCreationFocus();
+        return;
+      }
+      var animation=state.transition;if(!animation)return;
+      animation.elapsed+=dt;var t=animation.duration?Math.min(1,animation.elapsed/animation.duration):1,ease=1-Math.pow(1-t,3);
+      camera.position.copy(animation.from).lerp(animation.to,ease);camera.quaternion.copy(animation.fromQuaternion).slerp(animation.toQuaternion,ease);syncCamera();
+      if(t===1){state.transition=null;if(state.returning){
+        engine.disposeCreationFocus();patchGeometryState(ctx,{sandboxDockCollapsed:state.collapsed});
+        window.requestAnimationFrame(function(){
+          if(engine._destroyed || window[ENGINE_KEY]!==engine || engine._currentLesson!==state.lesson)return;
+          var control=document.querySelector(state.collapsed?'.gwe-collapse':'.gwe-focus-action');
+          if(control)control.focus({preventScroll:true});
+        });
+      }}
+    };
+    engine.fitCreationFocus=function(animate){
+      if(engine._creationFocus!==state || state.manual || state.returning || engine._showcase)return false;
+      var live=engine._builderSelection,box=creationGeometryBounds(engine,live && live.blocks);if(box.isEmpty())return false;
+      var ground=engine._currentLesson && engine._currentLesson.ground,groundY=ground && typeof ground.y==='number' && isFinite(ground.y)?ground.y:0;
+      var rect=creationFocusRect(engine),fit=fitCreationCamera(box,camera,rect,groundY+2.8);if(!fit)return false;
+      state.rect=rect;state.bounds=box.clone();state.frame=fit;
+      camera.far=Math.max(state.far,fit.far);camera.updateProjectionMatrix();
+      if(engine.scene.fog===state.fog && state.fog){state.fog.near=Math.max(state.fogNear,fit.depthFar+2);state.fog.far=Math.max(state.fogFar,state.fog.near+80);}
+      camera.up.set(0,1,0);var view=camera.clone();view.position.copy(fit.position);view.lookAt(fit.target);
+      transitionTo(fit.position,view.quaternion,false,!!animate);return true;
+    };
+    engine.restoreCreationView=function(){
+      if(engine._creationFocus!==state || state.returning)return false;
+      try{if(document.pointerLockElement && document.exitPointerLock)document.exitPointerLock();}catch(_){}
+      if(engine.releaseInput)engine.releaseInput();if(engine.velocity)engine.velocity.set(0,0,0);engine.isLocked=false;
+      state.frames.forEach(function(id){window.cancelAnimationFrame(id);});state.frames=[];
+      transitionTo(state.position,state.quaternion,true,true);
+      announce(ctx,'Returning to your previous view.','info');return true;
+    };
+    if(engine.clearDimensionAnnotations)engine.clearDimensionAnnotations();
+    if(engine.clearSelectionAnnotations)engine.clearSelectionAnnotations();
+    patchGeometryState(ctx,{creationFocusAvailable:true,sandboxDockCollapsed:true,measureResult:null,builderPanel:'build',hudPanel:'',showGameSettings:false});
+    state.frames.push(window.requestAnimationFrame(function(){state.frames.push(window.requestAnimationFrame(function(){
+      if(engine._creationFocus!==state || engine._destroyed)return;
+      if(!engine.fitCreationFocus(true)){engine.disposeCreationFocus();return;}
+      focusWorldSurface(0);announce(ctx,'Creation framed. Keep building, or choose Previous view to return.','success');
+    }));}));
+    return true;
+  }
+
+  // r128 clears a Color background directly and applies fog after its material
+  // encoding chunk. Keep both in the active render target's output space.
+  // Own only this Studio callback and these two environment Color objects.
+  function installStudioBackdropColorSync(scene, displayHex) {
+    var THREE=window.THREE;
+    if(!THREE || !scene)return function(){};
+    var display=new THREE.Color(displayHex===undefined?0xf1eee8:displayHex),linear=display.clone().convertSRGBToLinear();
+    var background=scene.background,fog=scene.fog,previous=scene.onBeforeRender,active=true;
+    function syncStudioBackdrop(renderer,renderScene,camera,renderTarget) {
+      var result=typeof previous==='function'?previous.apply(this,arguments):undefined;
+      if(!active)return result;
+      var target=arguments.length>3?renderTarget:renderer && renderer.getRenderTarget?renderer.getRenderTarget():null;
+      var encoding=target?(target.texture && target.texture.encoding):renderer && renderer.outputEncoding;
+      var color=encoding===THREE.sRGBEncoding?display:linear;
+      if(scene.background===background && background && background.isColor)background.copy(color);
+      if(scene.fog===fog && fog && fog.color && fog.color.isColor)fog.color.copy(color);
+      return result;
+    }
+    scene.onBeforeRender=syncStudioBackdrop;
+    return function() {
+      if(!active)return;
+      active=false;
+      if(scene.onBeforeRender===syncStudioBackdrop)scene.onBeforeRender=previous;
+    };
+  }
+
+  // Keep the Studio floor's projected shadow soft in world units. This local
+  // r128 replacement changes only PCFSoft sampling; construction materials,
+  // other shadow modes and the shared shader library remain untouched.
+  function configureStudioFloorShadow(material, shadowCamera, worldRadius) {
+    var shadowRadius=worldRadius===undefined?0.14:worldRadius;
+    if(typeof shadowRadius!=='number' || !isFinite(shadowRadius) || shadowRadius<=0)return false;
+    var THREE=window.THREE;
+    if(!THREE || !material || material.isMeshStandardMaterial!==true || !shadowCamera)return false;
+    var extents=[shadowCamera.left,shadowCamera.right,shadowCamera.bottom,shadowCamera.top];
+    if(!extents.every(function(value){return typeof value==='number' && isFinite(value);}))return false;
+    var width=shadowCamera.right-shadowCamera.left,height=shadowCamera.top-shadowCamera.bottom;
+    if(!isFinite(width) || !isFinite(height) || width<=0 || height<=0)return false;
+    var include='#include <shadowmap_pars_fragment>',soft='#elif defined( SHADOWMAP_TYPE_PCF_SOFT )',vsm='#elif defined( SHADOWMAP_TYPE_VSM )';
+    var chunk=THREE.ShaderChunk && THREE.ShaderChunk.shadowmap_pars_fragment;
+    var standard=THREE.ShaderLib && THREE.ShaderLib.standard && THREE.ShaderLib.standard.fragmentShader;
+    if(typeof chunk!=='string' || typeof standard!=='string' || standard.indexOf(include)<0)return false;
+    var begin=chunk.indexOf(soft),end=chunk.indexOf(vsm,begin+soft.length);
+    if(begin<0 || end<0 || chunk.indexOf(soft,begin+soft.length)>=0)return false;
+    var taps=[];
+    for(var i=0;i<16;i++){
+      var angle=i*Math.PI*(3-Math.sqrt(5)),radius=Math.sqrt((i+0.5)/16);
+      taps.push('texture2DCompare( shadowMap, shadowCoord.xy + gweStudioShadowSpread * vec2('+(Math.cos(angle)*radius).toFixed(6)+', '+(Math.sin(angle)*radius).toFixed(6)+'), shadowCoord.z )');
+    }
+    var body='\n shadow = (\n'+taps.join(' +\n')+'\n ) * 0.0625;\n';
+    var replacement='uniform vec2 gweStudioShadowSpread;\n'+chunk.slice(0,begin)+soft+body+chunk.slice(end);
+    var spread={value:new THREE.Vector2(shadowRadius/width,shadowRadius/height)};
+    material.onBeforeCompile=function(shader){
+      if(!shader || typeof shader.fragmentShader!=='string' || shader.fragmentShader.indexOf(include)<0 || !shader.uniforms)return;
+      shader.uniforms.gweStudioShadowSpread=spread;
+      shader.fragmentShader=shader.fragmentShader.replace(include,replacement);
+    };
+    material.customProgramCacheKey=function(){return 'gwe-studio-floor-vogel16-v1';};
+    material.needsUpdate=true;
+    return true;
+  }
+
+  // Measure only the persistent presentation controls. File panels, PNG buffer
+  // sizes and the hidden building HUD do not change the model composition.
+  function showcaseCompositionRect(engine) {
+    var canvas=engine && engine.renderer && engine.renderer.domElement,area=null;
+    if(canvas && typeof canvas.getBoundingClientRect==='function')area=canvas.getBoundingClientRect();
+    var measured=!!(area && area.width>0 && area.height>0);
+    var width=measured?area.width:Number(canvas && (canvas.clientWidth || canvas.width)) || 800;
+    var height=measured?area.height:Number(canvas && (canvas.clientHeight || canvas.height)) || 600;
+    if(!isFinite(width) || width<=0)width=800;if(!isFinite(height) || height<=0)height=600;
+    var origin={left:measured?area.left:0,top:measured?area.top:0,width:width,height:height};
+    var margin=Math.min(12,width*0.04,height*0.04),gap=10;
+    var pixels={left:margin,right:width-margin,top:margin,bottom:height-margin},observed=false;
+    var workspace=canvas && canvas.closest && canvas.closest('#geoworld-fs-workspace');
+    var overlay=workspace && workspace.querySelector && workspace.querySelector('.gwe-showcase');
+    if(measured && overlay && overlay.querySelectorAll)overlay.querySelectorAll('.gwe-showcase-caption,.gwe-showcase-tools,.gwe-showcase-orbit').forEach(function(node){
+      var style=window.getComputedStyle?window.getComputedStyle(node):null,r=node.getBoundingClientRect();
+      if(style && (style.display==='none' || style.visibility==='hidden') || !r.width || !r.height)return;
+      var left=r.left-origin.left,right=r.right-origin.left,top=r.top-origin.top,bottom=r.bottom-origin.top;
+      if(right<=0 || left>=width || bottom<=0 || top>=height)return;
+      observed=true;
+      if(node.classList.contains('gwe-showcase-caption'))pixels.top=Math.max(pixels.top,bottom+gap);
+      else if(node.classList.contains('gwe-showcase-tools'))pixels.bottom=Math.min(pixels.bottom,top-gap);
+      else if((left+right)/2<width/2)pixels.left=Math.max(pixels.left,right+gap);
+      else pixels.right=Math.min(pixels.right,left-gap);
+    });
+    // A first/no-DOM fit stays usable until the committed controls are measured.
+    if(!observed || pixels.right<=pixels.left || pixels.bottom<=pixels.top){
+      pixels={left:width*0.12,right:width*0.88,top:height*0.2,bottom:height*0.78};observed=false;
+    }
+    pixels.left=Math.max(0,pixels.left);pixels.right=Math.min(width,pixels.right);pixels.top=Math.max(0,pixels.top);pixels.bottom=Math.min(height,pixels.bottom);
+    return {rect:{left:pixels.left/width*2-1,right:pixels.right/width*2-1,bottom:1-pixels.bottom/height*2,top:1-pixels.top/height*2},pixelRect:pixels,canvasRect:origin,fallback:!observed};
+  }
+  // Fit perspective depth into an offset rectangle without changing the chosen
+  // bearing. A ground constraint raises the parallel view only when necessary.
+  function fitShowcaseCamera(box,camera,rect,bearing,screenUp,minCameraY) {
+    var THREE=window.THREE;
+    if(!THREE || !box || !box.min || !box.max || !camera || !bearing || !screenUp)return null;
+    var coordinates=[box.min.x,box.min.y,box.min.z,box.max.x,box.max.y,box.max.z];
+    if(!coordinates.every(function(n){return typeof n==='number' && isFinite(n);}) || box.min.x>box.max.x || box.min.y>box.max.y || box.min.z>box.max.z)return null;
+    var aspect=Number(camera.aspect),fov=Number(camera.getEffectiveFOV?camera.getEffectiveFOV():camera.fov);
+    if(!isFinite(aspect) || aspect<=0 || !isFinite(fov) || fov<=0 || fov>=179.9)return null;
+    var direction=bearing.clone().normalize(),right=new THREE.Vector3().crossVectors(screenUp,direction).normalize(),up=new THREE.Vector3().crossVectors(direction,right).normalize();
+    if(![direction.x,direction.y,direction.z,right.x,right.y,right.z,up.x,up.y,up.z].every(isFinite) || direction.lengthSq()<0.99 || right.lengthSq()<0.99)return null;
+    rect=rect || {left:-0.8,right:0.8,bottom:-0.6,top:0.7};
+    if(![rect.left,rect.right,rect.bottom,rect.top].every(function(n){return typeof n==='number' && isFinite(n);}))return null;
+    var left=Math.max(-1,rect.left),rightEdge=Math.min(1,rect.right),bottom=Math.max(-1,rect.bottom),top=Math.min(1,rect.top);
+    if(rightEdge<=left || top<=bottom)return null;
+    var cx=(left+rightEdge)/2,cy=(bottom+top)/2,hx=(rightEdge-left)*0.48,hy=(top-bottom)*0.48;
+    var safe={left:cx-hx,right:cx+hx,bottom:cy-hy,top:cy+hy},tanY=Math.tan(fov*Math.PI/360),tanX=tanY*aspect;
+    var near=Number(camera.near);if(!isFinite(near) || near<=0)near=0.1;
+    var clearance=Math.max(0.05,near*0.5),distance=near+clearance,upperDistance=Infinity,corners=[];
+    var center=box.getCenter(new THREE.Vector3());
+    [box.min.x,box.max.x].forEach(function(x){[box.min.y,box.max.y].forEach(function(y){[box.min.z,box.max.z].forEach(function(z){
+      var point=new THREE.Vector3(x,y,z).sub(center),px=point.dot(right),py=point.dot(up),pz=point.dot(direction);
+      corners.push({x:px,y:py,z:pz});
+      distance=Math.max(distance,pz+near+clearance,pz+Math.abs(px+cx*pz*tanX)/(hx*tanX),pz+Math.abs(py+cy*pz*tanY)/(hy*tanY));
+    });});});
+    function constrain(slope,amount){
+      if(Math.abs(slope)<1e-10){if(amount>1e-8)upperDistance=-Infinity;}
+      else if(slope>0)distance=Math.max(distance,amount/slope);
+      else upperDistance=Math.min(upperDistance,amount/slope);
+    }
+    var floor=typeof minCameraY==='number' && isFinite(minCameraY)?minCameraY:-Infinity;
+    var heightSlope=direction.y-cx*tanX*right.y;
+    if(isFinite(floor)){
+      if(Math.abs(up.y)>1e-10){
+        var groundConstant=(floor-center.y)/up.y,groundSlope=-heightSlope/up.y;
+        corners.forEach(function(point){
+          if(up.y>0)constrain(-groundSlope-safe.bottom*tanY,groundConstant-point.y-safe.bottom*tanY*point.z);
+          else constrain(groundSlope+safe.top*tanY,point.y+safe.top*tanY*point.z-groundConstant);
+        });
+      }else constrain(heightSlope,floor-center.y);
+    }
+    distance+=Math.max(0.00001,distance*1e-7);
+    if(!isFinite(distance) || distance>upperDistance+1e-7)return null;
+    var sx=-cx*distance*tanX,sy=-cy*distance*tanY;
+    if(isFinite(floor) && Math.abs(up.y)>1e-10){
+      var groundShift=(floor-center.y-distance*direction.y-sx*right.y)/up.y;
+      sy=up.y>0?Math.max(sy,groundShift):Math.min(sy,groundShift);
+    }
+    var shift=right.clone().multiplyScalar(sx).addScaledVector(up,sy),target=center.clone().add(shift),position=target.clone().addScaledVector(direction,distance);
+    var depthNear=Infinity,depthFar=-Infinity;corners.forEach(function(point){depthNear=Math.min(depthNear,distance-point.z);depthFar=Math.max(depthFar,distance-point.z);});
+    var diagonal=box.getSize(new THREE.Vector3()).length(),oldFar=Number(camera.far),far=Math.max(isFinite(oldFar)?oldFar:200,depthFar+Math.max(10,diagonal*0.05));
+    if(![position.x,position.y,position.z,target.x,target.y,target.z,depthNear,depthFar,far].every(isFinite))return null;
+    return {position:position,target:target,distance:distance,far:far,depthNear:depthNear,depthFar:depthFar,rect:safe};
+  }
+  function scheduleShowcaseLayoutFit(engine) {
+    var session=engine && engine._showcase;
+    if(!session || !engine.fitShowcase)return;
+    if(session.fitFrame!=null && window.cancelAnimationFrame)window.cancelAnimationFrame(session.fitFrame);
+    if(!window.requestAnimationFrame){engine.fitShowcase();return;}
+    session.fitFrame=window.requestAnimationFrame(function(){session.fitFrame=null;if(engine._showcase===session && !engine._destroyed && engine.fitShowcase)engine.fitShowcase();});
+    return function(){if(session.fitFrame!=null && window.cancelAnimationFrame)window.cancelAnimationFrame(session.fitFrame);session.fitFrame=null;};
+  }
   function showcaseBuild(ctx) {
     var selected = selectionMeasurement(window[ENGINE_KEY]) || aimedStudentMeasurement(ctx, false);
     var THREE = window.THREE;
     if (!selected || !THREE) return;
     var engine = selected.engine, camera = engine.camera;
     if (!camera || engine._showcase) return;
-    var box = new THREE.Box3();
-    selected.measurement.blocks.forEach(function(p){box.expandByObject(engine.blocks[keyFor(p)]);});
+    if(engine.disposeCreationFocus)engine.disposeCreationFocus();
+    var box = creationGeometryBounds(engine,selected.measurement.blocks);
     if (box.isEmpty()) return;
     if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
     try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (_) {}
@@ -690,6 +1350,7 @@
       collapsed:!!(ctx.toolData.geometryWorld || {}).sandboxDockCollapsed, hidden:[]};
     selected.measurement.blocks.forEach(function(p){var mesh=engine.blocks[keyFor(p)];saved.hidden.push([mesh,mesh.visible]);mesh.visible=true;});
     [engine._dimLines,engine._selectionGlows,engine._layerGhosts,engine._angleHelpers,engine._netHelpers,[engine._rulerLine,engine._rulerLabel,engine._ghostMesh,engine._highlightMesh,engine._hoverGlowMesh].filter(Boolean)].forEach(function(list){(list || []).forEach(function(o){saved.hidden.push([o,o.visible]);o.visible=false;});});
+    if(engine._builderSelectionFrame)engine._builderSelectionFrame.visible=false;
     engine._showcase = saved; engine.isLocked=false;engine._touchActive=false;engine._entryAnim=null;engine._viewPresetAnim=null;
     engine._touchLookId=null;engine._touchLookStart=null;engine._touchMoveId=null;engine._touchMoveStart=null;engine._touchMoveVec={x:0,z:0};
     if(engine.velocity)engine.velocity.set(0,0,0);
@@ -701,6 +1362,7 @@
     function disposeStudioLook() {
       var studio=saved.studio;if(!studio)return;
       saved.studio=null;
+      if(studio.releaseBackdropColorSync)studio.releaseBackdropColorSync();
       engine.scene.background=studio.background;engine.scene.fog=studio.fog;
       studio.hidden.forEach(function(entry){entry[0].visible=entry[1];});
       studio.effects.forEach(function(entry){entry[0].enabled=entry[1];});
@@ -726,38 +1388,48 @@
       // Isolate the creation while retaining each exact visibility for Meadow.
       engine.scene.children.slice().forEach(function(object){
         if(selectedIds[object.id] || object===camera)return;
+        // The current selection frame has its own lifecycle; never restore a stale one.
+        if(object===engine._builderSelectionFrame){object.visible=false;return;}
         studio.hidden.push([object,object.visible]);object.visible=false;
       });
       saved.studio=studio;suspendStudioBloom(studio);
       var ivory=studioColor(0xf1eee8),floorY=box.min.y-0.015;
       engine.scene.background=ivory;
       engine.scene.fog=new THREE.Fog(ivory,55,145);
+      studio.releaseBackdropColorSync=installStudioBackdropColorSync(engine.scene,0xf1eee8);
       var floorGeometry=new THREE.PlaneGeometry(600,600);
-      var floorMaterial=new THREE.MeshStandardMaterial({color:studioColor(0xc6c3c0),roughness:0.98,metalness:0});
+      var floorMaterial=new THREE.MeshStandardMaterial({color:studioColor(0xb8b8b7),roughness:0.98,metalness:0});
       var floor=new THREE.Mesh(floorGeometry,floorMaterial);floor.name='gwe-studio-floor';
       floor.rotation.x=-Math.PI/2;floor.position.set(center.x,floorY,center.z);floor.receiveShadow=true;
       floor.raycast=function(){};studio.floor=floor;studio.group.add(floor);studio.resources.push(floorGeometry,floorMaterial);
-      // A restrained contact shadow keeps Saver grounded when shadow maps are off.
-      var contactCanvas=document.createElement('canvas');contactCanvas.width=contactCanvas.height=128;
-      var contactContext=contactCanvas.getContext('2d');
-      var gradient=contactContext.createRadialGradient(64,64,9,64,64,64);
-      gradient.addColorStop(0,'rgba(61,48,31,0.7)');gradient.addColorStop(0.45,'rgba(61,48,31,0.4)');gradient.addColorStop(1,'rgba(61,48,31,0)');
-      contactContext.fillStyle=gradient;contactContext.fillRect(0,0,128,128);
-      var contactTexture=new THREE.CanvasTexture(contactCanvas);contactTexture.encoding=THREE.sRGBEncoding;
-      var contactGeometry=new THREE.PlaneGeometry(Math.max(1.8,(box.max.x-box.min.x)*1.25+0.8),Math.max(1.8,(box.max.z-box.min.z)*1.25+0.8));
-      var contactMaterial=new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,opacity:0.22,depthWrite:false,toneMapped:false});
+      // A broad, almost imperceptible pool of light gives the seamless stage
+      // depth. It is a two-triangle decoration, never a presentation pedestal.
+      var poolCanvas=document.createElement('canvas');poolCanvas.width=poolCanvas.height=128;
+      var poolContext=poolCanvas.getContext('2d'),poolGradient=poolContext.createRadialGradient(64,64,0,64,64,64);
+      poolGradient.addColorStop(0,'rgba(255,250,237,0.48)');poolGradient.addColorStop(0.45,'rgba(255,250,237,0.22)');poolGradient.addColorStop(1,'rgba(255,250,237,0)');
+      poolContext.fillStyle=poolGradient;poolContext.fillRect(0,0,128,128);
+      var poolTexture=new THREE.CanvasTexture(poolCanvas);poolTexture.encoding=THREE.sRGBEncoding;poolTexture.generateMipmaps=false;poolTexture.minFilter=poolTexture.magFilter=THREE.LinearFilter;
+      var poolGeometry=new THREE.PlaneGeometry(Math.max(8,(box.max.x-box.min.x)*3.2),Math.max(8,(box.max.z-box.min.z)*3.2));
+      var poolMaterial=new THREE.MeshBasicMaterial({map:poolTexture,transparent:true,opacity:0.22,depthWrite:false,toneMapped:false});
+      var pool=new THREE.Mesh(poolGeometry,poolMaterial);pool.name='gwe-studio-light-pool';pool.rotation.x=-Math.PI/2;pool.position.set(center.x,floorY+0.002,center.z);pool.raycast=function(){};
+      studio.group.add(pool);studio.resources.push(poolGeometry,poolMaterial,poolTexture);
+      var footprints=studioGroundFootprints(selectedMeshes,box.min.y,engine._popBlocks),contactMap=studioContactMap(footprints,box);
+      var contactTexture=new THREE.CanvasTexture(contactMap.canvas);contactTexture.encoding=THREE.sRGBEncoding;contactTexture.generateMipmaps=false;contactTexture.minFilter=contactTexture.magFilter=THREE.LinearFilter;
+      var contactGeometry=new THREE.PlaneGeometry(contactMap.width,contactMap.depth);
+      var contactMaterial=new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,opacity:0.075,depthWrite:false,toneMapped:false});
       var contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.name='gwe-studio-contact-shadow';contact.rotation.x=-Math.PI/2;
       contact.position.set(center.x,floorY+0.004,center.z);contact.raycast=function(){};studio.group.add(contact);
-      studio.resources.push(contactGeometry,contactMaterial,contactTexture);
-      floor.onBeforeRender=function(){suspendStudioBloom(studio);contactMaterial.opacity=engine.renderer.shadowMap.enabled?0.07:0.28;};
+      studio.contactFootprints=footprints;studio.resources.push(contactGeometry,contactMaterial,contactTexture);
+      floor.onBeforeRender=function(){suspendStudioBloom(studio);contactMaterial.opacity=engine.renderer.shadowMap.enabled?0.075:0.22;};
       var studioRadius=Math.max(2,radius),target=new THREE.Object3D();target.position.copy(center);studio.group.add(target);
-      var key=new THREE.DirectionalLight(0xfff1df,1.1);key.name='gwe-studio-key';
-      key.position.set(center.x-studioRadius*1.1,center.y+studioRadius*2,center.z+studioRadius*1.6);key.target=target;key.castShadow=true;
+      var key=new THREE.DirectionalLight(0xfff1df,1.0);key.name='gwe-studio-key';
+      key.position.set(center.x-studioRadius*0.95,center.y+studioRadius*3.4,center.z+studioRadius*1.2);key.target=target;key.castShadow=true;
       key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=key.shadow.camera.bottom=-studioRadius*1.4;key.shadow.camera.right=key.shadow.camera.top=studioRadius*1.4;
       key.shadow.camera.near=0.1;key.shadow.camera.far=studioRadius*6+10;key.shadow.bias=-0.00035;key.shadow.normalBias=0.025;
-      var fill=new THREE.DirectionalLight(0xe8efff,0.22);fill.name='gwe-studio-fill';fill.position.set(center.x+studioRadius*2,center.y+studioRadius,center.z-studioRadius);fill.target=target;
+      configureStudioFloorShadow(floorMaterial,key.shadow.camera,Math.min(0.14,radius*0.03));
+      var fill=new THREE.DirectionalLight(0xe8efff,0.3);fill.name='gwe-studio-fill';fill.position.set(center.x+studioRadius*2,center.y+studioRadius,center.z-studioRadius);fill.target=target;
       var rim=new THREE.DirectionalLight(0xffffff,0.25);rim.name='gwe-studio-rim';rim.position.set(center.x-studioRadius,center.y+studioRadius,center.z-studioRadius*2);rim.target=target;
-      var hemi=new THREE.HemisphereLight(0xfffaef,0x9b907c,0.6);hemi.name='gwe-studio-ambient';
+      var hemi=new THREE.HemisphereLight(0xfffaef,0x9b907c,0.64);hemi.name='gwe-studio-ambient';
       studio.lights=[key,fill,rim,hemi];studio.lights.forEach(function(light){studio.group.add(light);});
       engine.scene.add(studio.group);saved.look='studio';
     }
@@ -771,8 +1443,6 @@
     };
 
     var perspectiveDirection=new THREE.Vector3(1.25,0.72,1.55).normalize(),direction=perspectiveDirection.clone();
-    var corners=[];
-    [box.min.x,box.max.x].forEach(function(x){[box.min.y,box.max.y].forEach(function(y){[box.min.z,box.max.z].forEach(function(z){corners.push(new THREE.Vector3(x,y,z).sub(center));});});});
     engine.setShowcaseView=function(view){
       if(!engine._showcase || ['perspective','front','side','top'].indexOf(view)===-1)return;
       saved.view=view;
@@ -789,39 +1459,41 @@
       engine.fitShowcase();patchGeometryState(ctx,{showcaseView:'perspective'});
     };
     engine.fitShowcase=function(){
+      if(engine._showcase!==saved || engine._destroyed)return false;
+      if(engine._showcaseExporting){saved.fitPending=true;return false;}
+      saved.fitPending=false;
       camera.fov=42;camera.updateProjectionMatrix();
-      camera.up.set(0,saved.view==='top'?0:1,saved.view==='top'?-1:0);
-      var canvas=engine.renderer.domElement,width=canvas.clientWidth || canvas.width || 800,height=canvas.clientHeight || canvas.height || 600;
-      // Fit every bounding corner, including perspective depth, inside the clear
-      // area between the caption, view controls and orbit buttons.
-      var tangent=Math.tan(camera.fov*Math.PI/360),safeX=Math.max(0.35,(width-128)/width),safeY=Math.max(0.25,(height-320)/height);
-      var right=new THREE.Vector3().crossVectors(camera.up,direction).normalize(),viewUp=new THREE.Vector3().crossVectors(direction,right).normalize();
-      var distance=radius*0.4+0.5;
-      corners.forEach(function(point){var depth=point.dot(direction);distance=Math.max(distance,depth+Math.abs(point.dot(right))/(tangent*camera.aspect*safeX),depth+Math.abs(point.dot(viewUp))/(tangent*safeY));});
-      distance*=1.08;
-      camera.far=Math.max(saved.far,distance+radius*2+10);camera.updateProjectionMatrix();
-      if(saved.fog && engine.scene.fog){engine.scene.fog.near=Math.max(saved.fog.near,distance+radius);engine.scene.fog.far=Math.max(saved.fog.far,engine.scene.fog.near+Math.max(80,radius));}
+      var viewUp=new THREE.Vector3(0,saved.view==='top'?0:1,saved.view==='top'?-1:0);
+      var composition=showcaseCompositionRect(engine),ground=engine._currentLesson && engine._currentLesson.ground;
+      var groundY=ground && typeof ground.y==='number' && isFinite(ground.y)?ground.y:0;
+      var minCameraY=Math.max(groundY+0.15,box.min.y+0.03);
+      var fit=fitShowcaseCamera(box,camera,composition.rect,direction,viewUp,minCameraY);if(!fit)return false;
+      camera.up.copy(viewUp);camera.far=Math.max(saved.far,fit.far);camera.updateProjectionMatrix();
+      camera.position.copy(fit.position);camera.lookAt(fit.target);
+      if(engine.euler)engine.euler.setFromQuaternion(camera.quaternion);camera.updateMatrixWorld(true);
+      if(saved.fog && engine.scene.fog){engine.scene.fog.near=Math.max(saved.fog.near,fit.depthFar+2);engine.scene.fog.far=Math.max(saved.fog.far,engine.scene.fog.near+Math.max(80,radius));}
       if(saved.studio && saved.studio.floor){
-        // Every visible point before full fog is at most this distance from the
-        // camera. Add the camera-to-creation distance to bound both floor axes.
-        // This keeps the perimeter beyond the fog at any aspect or view angle,
-        // without adding triangles or changing any printable geometry.
+        var tangent=Math.tan(camera.getEffectiveFOV()*Math.PI/360);
         var fogDepth=engine.scene.fog && isFinite(engine.scene.fog.far)?engine.scene.fog.far:camera.far;
         var fogCornerDistance=fogDepth*Math.sqrt(1+tangent*tangent*(1+camera.aspect*camera.aspect));
-        var floorHalf=Math.max(300,distance+fogCornerDistance+radius+10);
+        // The stage remains centered on the creation, including an offset view.
+        var floorHalf=Math.max(300,camera.position.distanceTo(center)+fogCornerDistance+radius+10);
         saved.studio.floor.scale.set(floorHalf/300,floorHalf/300,1);
       }
-      camera.position.copy(center).addScaledVector(direction,distance);
-      camera.lookAt(center);if(engine.euler)engine.euler.setFromQuaternion(camera.quaternion);camera.updateMatrixWorld(true);
+      var area=composition.canvasRect,rect=fit.rect;
+      saved.composition={rect:rect,pixelRect:{left:(rect.left+1)*area.width/2,right:(rect.right+1)*area.width/2,top:(1-rect.top)*area.height/2,bottom:(1-rect.bottom)*area.height/2},canvasRect:area,fallback:composition.fallback,position:fit.position.clone(),target:fit.target.clone(),depthNear:fit.depthNear,depthFar:fit.depthFar,bounds:box.clone(),minCameraY:minCameraY,view:saved.view};
+      return true;
     };
     engine.endShowcase=function(){
       var previous=engine._showcase;if(!previous)return;
+      if(previous.fitFrame!=null && window.cancelAnimationFrame)window.cancelAnimationFrame(previous.fitFrame);previous.fitFrame=null;
       disposeStudioLook();
       camera.position.copy(previous.position);camera.quaternion.copy(previous.quaternion);camera.up.copy(previous.up);camera.fov=previous.fov;camera.far=previous.far;camera.updateProjectionMatrix();
       if(previous.fog && engine.scene.fog){engine.scene.fog.near=previous.fog.near;engine.scene.fog.far=previous.fog.far;}
       if(engine.euler)engine.euler.setFromQuaternion(camera.quaternion);
       previous.hidden.forEach(function(entry){entry[0].visible=entry[1];});
       engine._showcase=null;engine.fitShowcase=null;engine.rotateShowcase=null;engine.endShowcase=null;engine.setShowcaseLook=null;engine.setShowcaseView=null;engine.disposeShowcaseLook=null;
+      if(engine._builderSelectionFrame && engine._builderSelectionFrame.parent && !engine._destroyed)engine._builderSelectionFrame.visible=true;
       patchGeometryState(ctx,{showcaseActive:false,sandboxDockCollapsed:previous.collapsed});focusWorldSurface(30);
     };
     engine.fitShowcase();
@@ -909,7 +1581,10 @@
       announce(ctx,'Image saved at '+result.width+' by '+result.height+' pixels.','success');return true;
     }).catch(function(){announce(ctx,'The image could not be saved. Your view is unchanged; try again.','error');return false;}).finally(function(){
       engine._showcaseExporting=false;
-      if(window[ENGINE_KEY]===engine && !engine._destroyed)patchGeometryState(ctx,{showcaseSaving:false});
+      if(window[ENGINE_KEY]===engine && !engine._destroyed){
+        patchGeometryState(ctx,{showcaseSaving:false});
+        if(engine._showcase && engine._showcase.fitPending)scheduleShowcaseLayoutFit(engine);
+      }
     });
   }
 
@@ -922,9 +1597,38 @@
     if (dockBody) dockBody.scrollTop = 0;
     announce(ctx, 'Measured ' + selected.measurement.count + ' connected student block' + (selected.measurement.count === 1 ? '' : 's') + '.', 'success');
   }
+  // STL does not carry units. Convert a copy to millimetres, retaining face
+  // normals, triangle attributes and the original block-unit handoff bytes.
+  function scaleStlForDownload(buffer, unitMm) {
+    if (!buffer || buffer.byteLength < 84) throw new Error('The selected STL is incomplete.');
+    var sourceView=new DataView(buffer), count=sourceView.getUint32(80,true);
+    if (84+count*50 !== buffer.byteLength) throw new Error('The selected STL triangle data is incomplete.');
+    unitMm=printUnit(unitMm);
+    var copy=buffer.slice(0), view=new DataView(copy), header='Geometry World; coordinates in mm; '+unitMm+' mm per block', headerBytes=new Uint8Array(copy,0,80);
+    headerBytes.fill(0);for(var hi=0;hi<Math.min(80,header.length);hi++)headerBytes[hi]=header.charCodeAt(hi);
+    for(var triangle=0;triangle<count;triangle++){
+      for(var coordinate=12;coordinate<48;coordinate+=4){var offset=84+triangle*50+coordinate;view.setFloat32(offset,view.getFloat32(offset,true)*unitMm,true);}
+    }
+    return copy;
+  }
+  function selectedBuildStlDownload(ctx) {
+    var engine=window[ENGINE_KEY];
+    if (engine && engine._showcaseExporting) { announce(ctx,'Wait for the Showcase image to finish saving.','info');return false; }
+    var bundle, unitMm=printUnit(printContext(ctx).unitMm);
+    try {
+      var selected=selectionMeasurement(engine);
+      if (!selected) { announce(ctx,'Select a creation before downloading its STL.','info');return false; }
+      bundle=buildGeometryWorldStl(engine,selected.measurement.blocks,{title:'Geometry World selected build'});
+      downloadBlob(new Blob([scaleStlForDownload(bundle.buffer,unitMm)],{type:'model/stl'}),'geometry-world-selected-build-mm.stl');
+    } catch(error) { announce(ctx,error && error.message ? error.message : 'The selected STL could not be saved.','error');return false; }
+    announce(ctx,'Downloaded '+bundle.blockCount+' selected block'+(bundle.blockCount===1?'':'s')+' in millimeters at '+unitMm+' mm per block. Import the STL at 100% scale.','success');
+    return true;
+  }
   function openSelectedBuildInPrintLab(ctx) {
-    var selected = selectionMeasurement(window[ENGINE_KEY]) || aimedStudentMeasurement(ctx, false);
-    if (!selected) return;
+    var engine=window[ENGINE_KEY];
+    if (engine && engine._showcaseExporting) { announce(ctx,'Wait for the Showcase image to finish saving.','info');return false; }
+    var selected = selectionMeasurement(engine) || (!(engine && engine._showcase) && aimedStudentMeasurement(ctx, false));
+    if (!selected) { if(engine && engine._showcase)announce(ctx,'Select a creation before opening Print Lab.','info');return false; }
     var eng = selected.engine;
     var measurement = selected.measurement;
     if (!measurement || measurement.isComplete === false) { announce(ctx, 'The selected build could not be measured completely.', 'error'); return; }
@@ -934,7 +1638,22 @@
     eng._builderSelection = { blocks:measurement.blocks.slice() };
     var projectId = 'gw-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
     var context = printContext(ctx);
-    window.__alloGeometryWorldReturnProject = captureProject(ctx, eng, projectId);
+    var navigating=ctx && typeof ctx.setStemLabTool === 'function', presentation=eng._showcase;
+    // Finish presentation synchronously before capturing the editable return
+    // project. React state may still describe Showcase in this event handler.
+    if (navigating && presentation) {
+      try {
+        if (typeof eng.endShowcase !== 'function') throw new Error('Return to building before opening Print Lab.');
+        eng.endShowcase();
+        if (eng._showcase) throw new Error('Showcase could not return to the building view.');
+      } catch(error) { announce(ctx,error && error.message ? error.message : 'The building view could not be restored.','error');return false; }
+    }
+    var project=captureProject(ctx,eng,projectId);
+    if (navigating) {
+      project.state.showcaseActive=false;project.state.showcaseSaving=false;
+      if (presentation) project.state.sandboxDockCollapsed=!!presentation.collapsed;
+    }
+    window.__alloGeometryWorldReturnProject = project;
     window.__alloPrintLabPendingHandoff = {
       schema: 'alloflow-print-source/1',
       id: projectId, projectId: projectId, coordinateSystem: 'z-up',
@@ -948,12 +1667,16 @@
       summary: { blockCount: bundle.blockCount, triangleCount: bundle.triangleCount, shapedCount: bundle.shapedCount, dimensions: bundle.dimensions }
     };
     if (eng.logEvent) eng.logEvent('print_lab_handoff', { blocks: bundle.blockCount, triangles: bundle.triangleCount, shapedBlocks: bundle.shapedCount });
-    if (ctx && typeof ctx.setStemLabTool === 'function') {
+    if (navigating) {
       announce(ctx, 'Selected build prepared locally. Opening Print Lab.', 'success');
       ctx.setStemLabTool('printLab');
     } else {
-      downloadBlob(new Blob([bundle.buffer], { type: 'model/stl' }), 'geometry-world-selected-build.stl');
-      announce(ctx, 'Print Lab navigation is unavailable here, so the selected STL was downloaded instead.', 'info');
+      // The Print Lab handoff carries block units plus an explicit scale. A
+      // standalone STL has no unit metadata, so apply that scale to a copy of
+      // its vertices before download. Keep the handoff and source unchanged.
+      var unitMm=printUnit(context.unitMm),downloadBuffer=scaleStlForDownload(bundle.buffer,unitMm);
+      downloadBlob(new Blob([downloadBuffer], { type: 'model/stl' }), 'geometry-world-selected-build-mm.stl');
+      announce(ctx, 'Print Lab navigation is unavailable here. The STL was downloaded in millimeters at '+unitMm+' mm per block. Import it at 100% scale.', 'info');
     }
   }
 
@@ -1010,7 +1733,14 @@
 
   window.StemLab = window.StemLab || {};
   window.StemLab.geometryWorldBuilderPure = {
+    studioGroundFootprints:studioGroundFootprints, studioContactMap:studioContactMap,
+    installStudioBackdropColorSync:installStudioBackdropColorSync,
+    configureStudioFloorShadow:configureStudioFloorShadow,
+    showcaseCompositionRect:showcaseCompositionRect, fitShowcaseCamera:fitShowcaseCamera,
     showcaseExportSize:showcaseExportSize, captureShowcaseImage:captureShowcaseImage, saveShowcaseImage:saveShowcaseImage,
+    fitCreationCamera:fitCreationCamera, creationFocusRect:creationFocusRect, creationGeometryBounds:creationGeometryBounds, focusSelectedBuild:focusSelectedBuild,
+    createSelectionFrame:createSelectionFrame, selectionNeedsReview:selectionNeedsReview,
+    setBuilderPrintScale:setBuilderPrintScale,
     MAX_BLOCKS: MAX_BLOCKS,
     MAX_EDITABLE_WORLD_BYTES: MAX_EDITABLE_WORLD_BYTES,
     MAX_EDITABLE_BLOCKS: MAX_EDITABLE_BLOCKS,
@@ -1022,6 +1752,8 @@
     axisPlane: axisPlane,
     faceSignature: faceSignature,
     editableWorld: editableWorld,
+    selectedEditableWorld:selectedEditableWorld, saveSelectedEditableWorld:saveSelectedEditableWorld,
+    selectedBuildStlDownload:selectedBuildStlDownload, scaleStlForDownload:scaleStlForDownload,
     normalizeEditableWorld: normalizeEditableWorld,
     parseEditableWorldText: parseEditableWorldText,
     restoreEditableWorld: restoreEditableWorld,
@@ -1034,7 +1766,7 @@
     defaultPrintEnvelope: defaultPrintEnvelope,
     sanitizeSourceBlock: sanitizeSourceBlock,
     restorePendingEditableBuild: restorePendingEditableBuild,
-    captureProject:captureProject, restoreProject:restoreProject, selectionMeasurement:selectionMeasurement,
+    captureProject:captureProject, restoreProject:restoreProject, selectionMeasurement:selectionMeasurement, polledSelectionMeasurement:polledSelectionMeasurement,
     openSelectedBuildInPrintLab:openSelectedBuildInPrintLab, worldToStl:worldToStl, printUnit:printUnit
   };
 
@@ -1053,18 +1785,29 @@
       ".gwe-builder-dock{position:absolute;top:118px;right:12px;z-index:43;display:flex;flex-direction:column;box-sizing:border-box;width:min(346px,calc(100% - 24px));max-height:calc(100% - 130px);overflow:hidden;border:1px solid #9ab4a65e;border-radius:20px;background:#112d2bf5;box-shadow:0 18px 48px #0b211f38,inset 0 1px #ffffff0d;color:#f5f0e5;backdrop-filter:blur(16px)}.gwe-builder-dock[data-collapsed=\"true\"]{width:auto}.gwe-builder-head{position:relative;z-index:2;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px 12px;background:#173b35;border-bottom:1px solid #c5d9cd22}.gwe-builder-title{display:flex;min-width:0;align-items:center;gap:11px}.gwe-builder-icon{display:grid;width:40px;height:40px;flex:0 0 auto;place-items:center;border:1px solid #d4e8ca42;border-radius:12px;background:#d4e8ca0c;color:#d4e8ca}.gwe-builder-eyebrow{color:#b8cdbf;font-size:10px;font-weight:650;letter-spacing:.1em;text-transform:uppercase}.gwe-builder-name{margin-top:3px;color:#f5f0e5;font-size:16px;font-weight:750;letter-spacing:-.025em}.gwe-collapse{display:grid;min-width:44px;min-height:44px;place-items:center;border:1px solid #a4bbaa55;border-radius:12px;background:#112d2b66;color:#f5f0e5;font-size:15px;font-weight:650;cursor:pointer}.gwe-collapse:hover{background:#2b5044}.gwe-builder-dock[data-collapsed=\"true\"] .gwe-builder-head{padding:6px}.gwe-builder-dock[data-collapsed=\"true\"] .gwe-builder-icon{border:0;background:transparent}",
       ".gwe-workflow{display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:6px;list-style:none;margin:0;padding:11px 16px 0;color:#b8cdbf}.gwe-workflow li{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600}.gwe-workflow li+li:before{content:\"\";display:block;width:13px;height:1px;margin-right:3px;background:#9cb8a94d}.gwe-workflow span{display:grid;place-items:center;width:20px;height:20px;border:1px solid #9cb8a95e;border-radius:50%;font-size:10px}.gwe-workflow li[aria-current=\"step\"]{color:#f5f0e5}.gwe-workflow li[aria-current=\"step\"] span{border-color:#d4e8ca;background:#d4e8ca;color:#112d2b}",
       ".gwe-builder-body{display:flex;flex:1 1 auto;min-height:0;flex-direction:column;gap:15px;padding:15px;overflow:auto;overscroll-behavior:contain;scrollbar-color:#658576 #173b35;scrollbar-width:thin}.gwe-builder-intro{margin:0;color:#c5d6ca;font-size:12px;line-height:1.6}.gwe-section-title{margin:0 0 8px;color:#f5f0e5;font-size:13px;font-weight:700;letter-spacing:-.01em}.gwe-selection{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gwe-selection-card{min-width:0;padding:10px 11px;border:1px solid #aac4b329;border-radius:12px;background:#d4e8ca07}.gwe-selection-label{display:block;color:#b5cabb;font-size:11px;font-weight:500}.gwe-selection-value{display:block;margin-top:5px;overflow:hidden;color:#f5f0e5;font-size:12px;font-weight:650;text-overflow:ellipsis;white-space:nowrap}.gwe-measure-summary{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:8px}.gwe-metric{min-width:0;padding:12px 6px;border:1px solid #b4cdb42b;border-radius:12px;background:#d4e8ca0a;text-align:center}.gwe-metric strong{display:block;color:#f5f0e5;font-size:20px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.04em}.gwe-metric:last-child strong{font-size:17px;line-height:24px}.gwe-metric span{display:block;margin-top:4px;color:#b8cdbf;font-size:11px;font-weight:500}",
-      ".gwe-builder-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gwe-builder-actions button{min-width:0;min-height:44px;padding:9px 10px;border:1px solid #a1bea44f;border-radius:12px;background:#1c4037;color:#f5f0e5;font-size:12px;font-weight:650;line-height:1.3;cursor:pointer}.gwe-builder-actions button:hover{background:#2a5042;border-color:#c1d6b97d}.gwe-builder-actions button:disabled{opacity:.55;cursor:wait}.gwe-builder-actions .gwe-primary{border-color:#d4e8ca;background:#d4e8ca;color:#112d2b}.gwe-builder-actions .gwe-primary:hover{background:#e3efdc;border-color:#e3efdc}.gwe-builder-quick-actions{flex:0 0 auto;padding:11px 15px 14px;border-bottom:1px solid #b9d1bf26;background:#112d2b}.gwe-builder-quick-actions button{min-height:48px;font-size:12px}.gwe-builder-actions .gwe-showcase-action{background:#f5f0e5;color:#173b35;border-color:#f5f0e5}.gwe-builder-actions .gwe-showcase-action:hover{background:#fffaf0}.gwe-builder-actions .gwe-clear-selection{grid-column:1/-1;justify-self:start;min-height:36px;padding:4px 2px;border:0;background:transparent;color:#bacfc0;font-weight:500;text-decoration:underline;text-underline-offset:3px}.gwe-builder-actions .gwe-clear-selection:hover{color:#fff}.gwe-builder-note{margin:0;color:#bfd2c4;font-size:12px;line-height:1.6}.gwe-builder-note[data-gwe-not-student]{padding:10px;border:1px solid #d9b27588;border-radius:10px;background:#4d3d21;color:#fff0cc}",
+      ".gwe-current-tools .gwe-selection-card{padding:9px 10px}.gwe-current-tools .gwe-selection-value{white-space:normal;overflow-wrap:anywhere;line-height:1.4}.gwe-tool-rotation{display:block;margin-top:4px;color:#bfd3c3;font-size:11px;font-variant-numeric:tabular-nums}.gwe-match-actions{margin-top:9px}.gwe-match-actions .gwe-match-block{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:9px;min-height:44px}.gwe-match-block svg{flex:0 0 auto}.gwe-match-block kbd{margin-left:auto;display:grid;place-items:center;min-width:22px;height:22px;border:1px solid #bad0bd55;border-radius:5px;font:600 11px system-ui;background:#d4e8ca0a;color:inherit}.gwe-match-block span{flex:1;text-align:left}.gwe-match-note{margin:7px 0 0;color:#bfd2c4;font-size:11px;line-height:1.5}.theme-contrast .gwe-tool-rotation,[data-stem-theme=\"contrast\"] .gwe-tool-rotation,.theme-contrast .gwe-match-note,[data-stem-theme=\"contrast\"] .gwe-match-note{color:#fff}.theme-contrast .gwe-match-block kbd,[data-stem-theme=\"contrast\"] .gwe-match-block kbd{background:#000;border-color:#00ff00}",
+      ".gwe-focus-return{position:absolute;top:118px;left:12px;z-index:44;display:flex;align-items:center;gap:12px;max-width:calc(100% - 24px);box-sizing:border-box;padding:6px 6px 6px 13px;border:1px solid #a9c4ad66;border-radius:16px;background:#173b35f5;box-shadow:0 8px 24px #112d2b33;color:#d4e8ca}.gwe-focus-return span{font-size:12px;font-weight:600}.gwe-focus-return button{min-height:44px;padding:8px 12px;border:1px solid #d4e8ca;border-radius:11px;background:#d4e8ca;color:#173b35;font-size:12px;font-weight:700;cursor:pointer}.gwe-focus-return button:hover{background:#f5f0e5}.gwe-focus-return button:focus-visible{outline:3px solid #f1d094;outline-offset:3px}.gwe-builder-actions .gwe-focus-action{grid-column:1/-1;min-height:48px;background:#d4e8ca;color:#173b35;border-color:#d4e8ca}.gwe-builder-actions .gwe-focus-action:hover{background:#e7f0de}@media(max-width:900px){.gwe-focus-return{top:106px;flex-direction:column;align-items:stretch;gap:4px;max-width:calc(50% - 18px);padding:7px 8px}.gwe-focus-return span{font-size:11px;text-align:center}.gwe-focus-return button{min-width:0;padding:8px 9px;font-size:11px}}",
+      ".gwe-builder-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gwe-builder-actions button{min-width:0;min-height:44px;padding:9px 10px;border:1px solid #a1bea44f;border-radius:12px;background:#1c4037;color:#f5f0e5;font-size:12px;font-weight:650;line-height:1.3;cursor:pointer}.gwe-builder-actions button:hover{background:#2a5042;border-color:#c1d6b97d}.gwe-builder-actions button:disabled{opacity:.55;cursor:wait}.gwe-builder-actions .gwe-primary{border-color:#d4e8ca;background:#d4e8ca;color:#112d2b}.gwe-builder-actions .gwe-primary:hover{background:#e3efdc;border-color:#e3efdc}.gwe-builder-quick-actions{flex:0 0 auto;padding:11px 15px 14px;border-bottom:1px solid #b9d1bf26;background:#112d2b}.gwe-builder-quick-actions button{min-height:48px;font-size:12px}.gwe-builder-actions .gwe-showcase-action{background:#f5f0e5;color:#173b35;border-color:#f5f0e5}.gwe-builder-actions .gwe-showcase-action:hover{background:#fffaf0}.gwe-builder-actions .gwe-clear-selection{grid-column:1/-1;justify-self:start;min-height:44px;padding:4px 2px;border:0;background:transparent;color:#bacfc0;font-weight:500;text-decoration:underline;text-underline-offset:3px}.gwe-builder-actions .gwe-clear-selection:hover{color:#fff}.gwe-builder-note{margin:0;color:#bfd2c4;font-size:12px;line-height:1.6}.gwe-builder-note[data-gwe-not-student]{padding:10px;border:1px solid #d9b27588;border-radius:10px;background:#4d3d21;color:#fff0cc}",
       ".gwe-print-ready{padding:13px;border:1px solid #aecda447;border-radius:14px;background:#244c3b66}.gwe-print-ready[data-fit=\"false\"]{border-color:#d7ae6988;background:#4d3d21}.gwe-print-ready-heading{display:flex;gap:8px;justify-content:space-between;align-items:center}.gwe-print-ready-label{color:#c8dec0;font-size:11px;font-weight:600}.gwe-fit-badge{flex:0 0 auto;padding:4px 7px;border-radius:6px;background:#d4e8ca;color:#173b35;font-size:10px;font-weight:750}.gwe-print-ready[data-fit=\"false\"] .gwe-fit-badge{background:#f1d094;color:#3b2e19}.gwe-print-ready strong{display:block;margin-top:8px;color:#f5f0e5;font-size:19px;font-weight:650;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.gwe-print-ready p{margin:7px 0 0;color:#d3e1d0;font-size:12px;line-height:1.6}.gwe-print-ready[data-fit=\"false\"] p{color:#fae8c3}.gwe-print-ready .gwe-print-scale{font-size:11px;color:#b9ceb7}.gwe-print-ready[data-fit=\"false\"] .gwe-print-scale{color:#fae8c3}.gwe-details{border-top:1px solid #c2d7bb30}.gwe-print-ready .gwe-details{margin-top:11px}.gwe-details summary{display:flex;min-height:44px;align-items:center;justify-content:space-between;gap:8px;list-style:none;color:#e2ebdc;font-size:12px;font-weight:600;cursor:pointer}.gwe-details summary::-webkit-details-marker{display:none}.gwe-details summary:after{content:\"+\";font-size:19px;font-weight:400}.gwe-details[open]>summary:after{content:\"−\"}.gwe-details .gwe-print-ready-basis{margin:7px 0 0;color:#c4d8be;font-size:12px;line-height:1.6}.gwe-print-ready[data-fit=\"false\"] .gwe-details .gwe-print-ready-basis{color:#fae8c3}.gwe-details .gwe-builder-note{margin-top:8px}.gwe-connection-check{padding:12px 13px;border:1px solid #abc69b40;border-radius:12px;background:#d4e8ca08}.gwe-connection-check[data-connected=\"false\"]{border-color:#d9b27588;background:#4d3d21}.gwe-connection-check strong{color:#e5eddb;font-size:13px;font-weight:650}.gwe-connection-check p{margin:6px 0 0;color:#c6d7c6;font-size:12px;line-height:1.6}.gwe-connection-check[data-connected=\"false\"] p{color:#fae8c3}.gwe-workspace-options{padding-top:2px}.gwe-workspace-options>.gwe-builder-actions{padding:2px 0 8px}",
-      ".gwe-recovery{padding:12px;border:1px solid #a9c7b069;border-radius:12px;background:#234b3c}.gwe-recovery[data-state=\"error\"]{border-color:#eab1a0;background:#552d29}.gwe-recovery strong{display:block;color:#fff5e6;font-size:13px}.gwe-recovery p{margin:6px 0 0;color:#deead7;font-size:12px;line-height:1.6}.gwe-recovery[data-state=\"error\"] p{color:#ffe4da}.gwe-recovery-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.gwe-recovery-actions button{min-height:44px;padding:8px;border:1px solid #c6d7b965;border-radius:10px;background:#173b35;color:#f5f0e5;font-size:12px;font-weight:650;cursor:pointer}.gwe-recovery-actions .gwe-replace{background:#f1d094;border-color:#f1d094;color:#3b2e19}",
+      ".gwe-scale-editor{margin:12px 0 14px;padding:12px;border:1px solid #9eb99d55;border-radius:13px;background:#123b31}.gwe-scale-editor-title{display:block;color:#e8f0dd;font-size:12px;font-weight:700;margin-bottom:8px}.gwe-scale-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px}.gwe-scale-editor button{box-sizing:border-box;min-width:0;min-height:44px;padding:8px;border:1px solid #abc3a76b;border-radius:9px;background:#244b3e;color:#f3f4e9;font:inherit;font-size:12px;font-weight:650;cursor:pointer}.gwe-scale-editor button:hover{background:#355f4b}.gwe-scale-presets button[aria-pressed=\"true\"]{background:#d7e7bf;color:#143b2c;border-color:#d7e7bf;box-shadow:inset 0 0 0 1px #a4c17d}.gwe-scale-editor label{display:block;margin-bottom:6px;color:#e8f0dd;font-size:11px;font-weight:650}.gwe-scale-custom{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}.gwe-scale-custom input{box-sizing:border-box;min-width:0;width:100%;min-height:44px;padding:8px 10px;border:1px solid #b3c9ab;border-radius:9px;background:#fbfcf4;color:#183d2f;font:inherit;font-size:16px;font-variant-numeric:tabular-nums}.gwe-scale-custom input[aria-invalid=\"true\"]{border:2px solid #f4b49c}.gwe-scale-custom button{background:#d7e7bf;color:#143b2c;border-color:#d7e7bf}.gwe-scale-custom button:hover{background:#e7f0d5;color:#143b2c}.gwe-scale-editor .gwe-scale-help{margin:9px 0 0;font-size:11px;line-height:1.5;color:#c7d9c2}.gwe-scale-editor .gwe-scale-error{margin:8px 0 0;font-size:12px;color:#ffd3c2}.gwe-scale-editor :is(input,button):focus-visible{outline:3px solid #f1d094;outline-offset:2px}.theme-contrast .gwe-scale-editor,[data-stem-theme=\"contrast\"] .gwe-scale-editor{background:#000;border:2px solid #0ff}.theme-contrast .gwe-scale-editor :is(span,label,p),[data-stem-theme=\"contrast\"] .gwe-scale-editor :is(span,label,p){color:#fff}.theme-contrast .gwe-scale-editor :is(input,button),[data-stem-theme=\"contrast\"] .gwe-scale-editor :is(input,button){background:#000;color:#0f0;border:2px solid #0f0}.theme-contrast .gwe-scale-presets button[aria-pressed=\"true\"],[data-stem-theme=\"contrast\"] .gwe-scale-presets button[aria-pressed=\"true\"]{background:#0f0;color:#000}.theme-contrast .gwe-scale-custom input[aria-invalid=\"true\"],[data-stem-theme=\"contrast\"] .gwe-scale-custom input[aria-invalid=\"true\"]{border-color:#ff0}",
+      ".gwe-creation-summary[data-selected=\"true\"]{padding:15px;border:1px solid #d8e5c9;border-radius:16px;background:linear-gradient(145deg,#eef3e6,#dce8d1);color:#173b35;box-shadow:0 8px 26px #061c1612}.gwe-selected-heading{display:flex;align-items:center;gap:10px}.gwe-selected-emblem{width:32px;height:32px;flex:0 0 32px;color:#56784b}.gwe-selected-eyebrow{display:block;font-size:9px;font-weight:750;letter-spacing:.12em;text-transform:uppercase;color:#59734f}.gwe-selected-heading h3{margin:3px 0 0;font-size:18px;line-height:1.2;font-weight:750;letter-spacing:-.025em;color:#173b35}.gwe-selected-metrics{display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin-top:13px}.gwe-selected-metrics .gwe-metric{min-width:0;padding:11px 7px;border:1px solid #8fa78240;border-radius:11px;background:#fffef570}.gwe-selected-metrics .gwe-metric strong{font-size:22px;line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:#173b35;overflow-wrap:anywhere}.gwe-selected-metrics .gwe-metric span{color:#526b4d}.gwe-creation-summary .gwe-selection-scope{margin:10px 0 0;font-size:11px;line-height:1.5;color:#526b4d}@media(max-width:420px){.gwe-creation-summary[data-selected=\"true\"]{padding:12px}}.theme-contrast .gwe-creation-summary[data-selected=\"true\"],[data-stem-theme=\"contrast\"] .gwe-creation-summary[data-selected=\"true\"]{background:#000;border:2px solid #0ff;color:#fff}.theme-contrast .gwe-selected-metrics .gwe-metric,[data-stem-theme=\"contrast\"] .gwe-selected-metrics .gwe-metric{background:#000;border-color:#0ff}.theme-contrast .gwe-creation-summary :is(h3,span,strong,p),[data-stem-theme=\"contrast\"] .gwe-creation-summary :is(h3,span,strong,p){color:#fff}",
+      ".gwe-recovery{padding:12px;border:1px solid #a9c7b069;border-radius:12px;background:#234b3c}.gwe-recovery[data-state=\"error\"]{border-color:#eab1a0;background:#552d29}.gwe-recovery strong{display:block;color:#fff5e6;font-size:13px}.gwe-recovery p{margin:6px 0 0;color:#deead7;font-size:12px;line-height:1.6}.gwe-recovery[data-state=\"error\"] p{color:#ffe4da}.gwe-recovery-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.gwe-recovery-actions button{min-height:44px;padding:8px;border:1px solid #c6d7b965;border-radius:10px;background:#173b35;color:#f5f0e5;font-size:12px;font-weight:650;cursor:pointer}.gwe-recovery[data-state=\"backup\"] .gwe-recovery-actions{grid-template-columns:1fr}.gwe-recovery-actions .gwe-recovery-download{width:100%;box-sizing:border-box;min-height:44px;white-space:normal;background:#d4e8ca;border-color:#d4e8ca;color:#173b35;font-size:13px;line-height:1.35}.gwe-recovery-actions .gwe-replace{background:#f1d094;border-color:#f1d094;color:#3b2e19}",
       ".gwe-backdrop{position:absolute;inset:0;z-index:210;display:flex;box-sizing:border-box;align-items:center;justify-content:center;padding:20px;background:#0b231ec4;backdrop-filter:blur(8px)}.gwe-launcher{box-sizing:border-box;width:min(760px,100%);max-height:calc(100% - 8px);overflow:auto;border:1px solid #fff9ebad;border-radius:26px;background:#f5f0e5;box-shadow:0 28px 90px #0b211f70;color:#173b35}.gwe-launcher-hero{position:relative;overflow:hidden;padding:30px 28px 24px;border-bottom:1px solid #173b351c;background:linear-gradient(115deg,#f5f0e5 60%,#e4e9d7)}.gwe-launcher-kicker{position:relative;margin:0;color:#526a52;font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}.gwe-launcher h2{position:relative;max-width:540px;margin:10px 0 0;color:#173b35;font-size:30px;font-weight:750;letter-spacing:-.04em;line-height:1.15}.gwe-launcher-subtitle{position:relative;max-width:575px;margin:13px 0 0;color:#526458;font-size:14px;line-height:1.65}.gwe-launcher-art{position:absolute;top:-10px;right:-20px;width:200px;height:200px;color:#73876d;opacity:.15;transform:rotate(-8deg);pointer-events:none}.gwe-feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:22px 28px}.gwe-feature{padding:16px 14px;border:1px solid #58724b26;border-radius:15px;background:#fffaf044}.gwe-feature-icon{display:grid;width:30px;height:30px;place-items:center;border:1px solid #5b785144;border-radius:50%;color:#526a43;font-size:12px;font-weight:700}.gwe-feature strong{display:block;margin-top:13px;color:#173b35;font-size:14px;font-weight:750;letter-spacing:-.015em}.gwe-feature p{margin:8px 0 0;color:#576458;font-size:12px;line-height:1.65}.gwe-reset-note{margin:0 28px;padding:13px 14px;border:1px solid #a886503b;border-radius:12px;background:#eae0c666;color:#66552f;font-size:12px;line-height:1.6}.gwe-launcher-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px;padding:22px 28px 26px}.gwe-launcher-actions button{min-height:46px;padding:10px 15px;border:1px solid #173b3544;border-radius:12px;background:#fffaf066;color:#173b35;font-size:12px;font-weight:650;cursor:pointer}.gwe-launcher-actions button:hover{background:#e5e9d7}.gwe-launcher-actions .gwe-open{border-color:#173b35;background:#173b35;color:#f5f0e5}.gwe-launcher-actions .gwe-open:hover{background:#2a5042}.gwe-builder-dock :is(button,summary):focus-visible,.gwe-launcher button:focus-visible,.gwe-free-build-launch:focus-visible{outline:3px solid #e8c884;outline-offset:2px}.gwe-launcher button:focus-visible{outline-color:#406647}",
       "#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-inventory-panel{display:none!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-builder-panel=\"build\"] .gw-measure-card{display:none!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-measure-card{right:calc(12px + min(346px,calc(100% - 24px)) + 10px)!important;width:min(430px,calc(100% - 24px - min(346px,calc(100% - 24px)) - 22px))!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-builder-panel=\"measure\"] .gwe-builder-dock{top:auto;bottom:184px;max-height:64px;z-index:152}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-builder-panel=\"measure\"] .gwe-builder-icon{display:none}",
-      "@media(max-width:800px){.gwe-free-build-launch{top:108px;right:7px}.gwe-builder-dock{top:auto;bottom:16px;right:7px;max-height:42%}.gwe-builder-dock[data-collapsed=\"true\"]{bottom:184px;left:auto;max-height:64px}.gwe-builder-dock[data-collapsed=\"true\"] .gwe-builder-icon{display:none}.gwe-builder-head{padding:10px 13px}.gwe-builder-quick-actions{padding:9px 13px 11px}.gwe-workflow{padding:9px 14px 0}.gwe-builder-body{padding:13px;gap:13px}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"]:has(.gwe-builder-dock[data-collapsed=\"false\"]) :is(.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-touch-controls){visibility:hidden}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-measure-card{right:6px!important;width:calc(100% - 12px)!important;max-height:calc(100% - 270px)!important;overflow:auto!important;top:8px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-coordinate-hud{top:8px;bottom:auto!important;left:8px;max-width:calc(100% - 90px);z-index:21}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-coordinate-hud summary{min-height:32px;display:flex;align-items:center;cursor:pointer;font-size:12px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-action-bar{left:8px!important;right:8px!important;width:auto!important;transform:none!important;flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto;max-width:none!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-action-bar button{min-height:44px;flex-shrink:0;font-size:12px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"] .gwe-builder-dock[data-collapsed=\"true\"]{left:50%;right:auto;transform:translateX(-50%);bottom:197px;width:auto}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"] .gw-action-bar{left:8px!important;right:auto!important;width:140px!important;bottom:262px!important;flex-wrap:wrap!important;justify-content:flex-start!important;gap:4px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"] .gw-measure-card{max-height:calc(100% - 542px)!important}.gwe-backdrop{padding:12px}.gwe-launcher{border-radius:20px}.gwe-launcher-hero{padding:23px 20px 20px}.gwe-launcher h2{font-size:26px}.gwe-feature-grid{padding:17px 20px}.gwe-reset-note{margin:0 20px}.gwe-launcher-actions{padding:18px 20px 20px}}",
+      "@media(max-width:800px){.gwe-free-build-launch{top:108px;right:7px}.gwe-builder-dock{top:auto;bottom:16px;right:7px;max-height:42%}.gwe-builder-dock[data-collapsed=\"true\"]{bottom:184px;left:auto;max-height:64px}.gwe-builder-dock[data-collapsed=\"true\"] .gwe-builder-icon{display:none}.gwe-builder-head{padding:10px 13px}.gwe-builder-quick-actions{padding:9px 13px 11px}.gwe-workflow{padding:9px 14px 0}.gwe-builder-body{padding:13px;gap:13px}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"]:has(.gwe-builder-dock[data-collapsed=\"false\"]) :is(.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-touch-controls){visibility:hidden}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-measure-card{right:6px!important;width:calc(100% - 12px)!important;max-height:calc(100% - 270px)!important;overflow:auto!important;top:8px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-coordinate-hud{top:8px;bottom:auto!important;left:8px;max-width:calc(100% - 90px);z-index:21}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-coordinate-hud summary{min-height:32px;display:flex;align-items:center;cursor:pointer;font-size:12px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-action-bar{left:8px!important;right:8px!important;width:auto!important;transform:none!important;flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto;max-width:none!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-action-bar button{min-height:44px;flex-shrink:0;font-size:12px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"] .gwe-builder-dock[data-collapsed=\"true\"]{left:50%;right:auto;transform:translateX(-50%);bottom:197px;width:auto}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"] .gw-action-bar{left:8px!important;right:auto!important;width:140px!important;bottom:262px!important;flex-wrap:wrap!important;justify-content:flex-start!important;gap:4px!important}.gwe-backdrop{padding:12px}.gwe-launcher{border-radius:20px}.gwe-launcher-hero{padding:23px 20px 20px}.gwe-launcher h2{font-size:26px}.gwe-feature-grid{padding:17px 20px}.gwe-reset-note{margin:0 20px}.gwe-launcher-actions{padding:18px 20px 20px}}",
+      "@media(max-width:800px) and (min-height:620px) and (orientation:portrait){#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"][data-builder-panel=\"build\"] .gw-action-bar.gw-action-bar{left:8px!important;right:8px!important;bottom:132px!important;width:auto!important;max-width:none!important;flex-wrap:nowrap!important;gap:3px!important;padding:3px!important;overflow-x:auto;overflow-y:hidden;border-radius:13px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"][data-builder-panel=\"build\"] .gw-action-bar button{flex:1 0 auto;min-width:44px;min-height:44px;padding:6px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"][data-builder-panel=\"build\"] .gw-utility-content{gap:4px}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"][data-builder-panel=\"build\"] .gw-touch-actions.gw-touch-actions{bottom:190px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"][data-builder-panel=\"build\"] .gw-touch-joystick{bottom:198px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"][data-builder-panel=\"build\"] .gwe-builder-dock[data-collapsed=\"true\"]{bottom:204px}}",
       "@media(max-width:520px){.gwe-builder-dock{left:7px;right:7px;width:auto}.gwe-builder-dock[data-collapsed=\"true\"]{left:auto}.gwe-builder-name{font-size:16px}.gwe-workflow{justify-content:space-around}.gwe-feature-grid{grid-template-columns:1fr;gap:9px}.gwe-feature{display:grid;grid-template-columns:30px 1fr;column-gap:12px;padding:12px}.gwe-feature-icon{grid-row:1/3}.gwe-feature strong{margin:0;font-size:13px}.gwe-feature p{margin:5px 0 0;font-size:12px}.gwe-launcher h2{font-size:25px}.gwe-launcher-subtitle{font-size:13px}.gwe-launcher-actions{display:grid;grid-template-columns:1fr 1fr}.gwe-launcher-actions button:first-child{grid-column:1/-1}.gwe-launcher-actions .gwe-open{grid-column:2}.gwe-reset-note{font-size:12px}}",
       ".theme-contrast .gwe-builder-dock,[data-stem-theme=\"contrast\"] .gwe-builder-dock,.theme-contrast .gwe-launcher,[data-stem-theme=\"contrast\"] .gwe-launcher{border:2px solid #00ffff;background:#000;color:#fff}.theme-contrast :is(.gwe-builder-head,.gwe-builder-quick-actions,.gwe-launcher-hero,.gwe-selection-card,.gwe-metric,.gwe-print-ready,.gwe-connection-check,.gwe-feature,.gwe-reset-note),[data-stem-theme=\"contrast\"] :is(.gwe-builder-head,.gwe-builder-quick-actions,.gwe-launcher-hero,.gwe-selection-card,.gwe-metric,.gwe-print-ready,.gwe-connection-check,.gwe-feature,.gwe-reset-note){background:#000;border-color:#00ffff}.theme-contrast :is(.gwe-builder-dock,.gwe-launcher) :is(p,span,strong,h2,summary,.gwe-section-title,.gwe-builder-name,.gwe-builder-eyebrow),[data-stem-theme=\"contrast\"] :is(.gwe-builder-dock,.gwe-launcher) :is(p,span,strong,h2,summary,.gwe-section-title,.gwe-builder-name,.gwe-builder-eyebrow){color:#fff}.theme-contrast :is(.gwe-builder-dock,.gwe-launcher) button,[data-stem-theme=\"contrast\"] :is(.gwe-builder-dock,.gwe-launcher) button{border:2px solid #00ff00;background:#000;color:#00ff00}.theme-contrast .gwe-fit-badge,[data-stem-theme=\"contrast\"] .gwe-fit-badge{background:#000;border:1px solid #00ffff}.theme-contrast .gwe-workflow li[aria-current=\"step\"] span,[data-stem-theme=\"contrast\"] .gwe-workflow li[aria-current=\"step\"] span{background:#000;border-color:#00ffff}.theme-contrast .gwe-launcher-art,[data-stem-theme=\"contrast\"] .gwe-launcher-art{display:none}@media(prefers-reduced-motion:reduce){.gwe-free-build-launch,.gwe-builder-dock,.gwe-launcher,.gwe-builder-dock button,.gwe-launcher button{transition:none!important;animation:none!important}}"
       ,'.gw-root .gwe-showcase[role="dialog"]{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;z-index:205!important}.gwe-showcase{position:absolute;inset:0;z-index:205;background:linear-gradient(180deg,rgba(4,18,27,.18),transparent 22%,transparent 74%,rgba(4,18,27,.24));display:flex;align-items:flex-end;justify-content:center;padding:24px;box-sizing:border-box}.gwe-showcase-orbit{position:absolute;top:50%;width:44px;height:44px;border:1px solid #d3e5df99;border-radius:50%;background:#0c2438dd;color:#fff;font-size:25px;cursor:pointer;box-shadow:0 6px 20px #06192733}.gwe-showcase-orbit-left{left:20px}.gwe-showcase-orbit-right{right:20px}.gwe-showcase-orbit:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.gwe-showcase-caption{position:absolute;top:26px;left:28px;color:#fff;text-shadow:0 2px 16px #102b40}.gwe-showcase-caption span{font-size:10px;letter-spacing:.22em;font-weight:800}.gwe-showcase-caption strong{display:block;margin-top:6px;font-size:28px;font-weight:800;letter-spacing:-.03em}.gwe-showcase-tools{display:flex;gap:8px;padding:7px;border:1px solid #ffffff55;border-radius:16px;background:#0c2438e8;box-shadow:0 12px 36px #06192755;backdrop-filter:blur(12px)}.gwe-showcase-tools button{min-height:44px;padding:10px 18px;border:1px solid #a5cad055;border-radius:10px;background:transparent;color:#fff;font-size:13px;font-weight:800;cursor:pointer}.gwe-showcase-actions button:last-child{background:#d4e8ca;color:#173b35}.gwe-showcase-tools button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}#geoworld-fs-workspace[data-showcase-active="true"] .gw-toolbar{visibility:hidden}#geoworld-fs-workspace[data-showcase-active="true"] .gwe-builder-dock,#geoworld-fs-workspace[data-showcase-active="true"] .gw-hotbar,#geoworld-fs-workspace[data-showcase-active="true"] .gw-action-bar,#geoworld-fs-workspace[data-showcase-active="true"] .gw-shape-tray,#geoworld-fs-workspace[data-showcase-active="true"] .gw-coordinate-hud,#geoworld-fs-workspace[data-showcase-active="true"] .gw-touch-controls,#geoworld-fs-workspace[data-showcase-active="true"] .gw-crosshair,#geoworld-fs-workspace[data-showcase-active="true"] .gw-measure-card,#geoworld-fs-workspace[data-showcase-active="true"] .gw-viewport-control{visibility:hidden!important}@media(max-width:520px){.gwe-showcase{padding:16px}.gwe-showcase-caption{top:20px;left:20px}.gwe-showcase-caption strong{font-size:24px}}'
       ,".gwe-showcase-looks{display:inline-flex;gap:3px;margin-top:14px;padding:4px;border:1px solid #c8ded466;border-radius:999px;background:#0c2438dc;box-shadow:0 6px 18px #102b4022;text-shadow:none}.gwe-showcase-looks button{min-height:44px;min-width:92px;padding:8px 18px;border:0;border-radius:999px;background:transparent;color:#e5f0ec;font-size:12px;font-weight:800;cursor:pointer}.gwe-showcase-looks button[aria-pressed=\"true\"]{background:#d5f2e8;color:#123c39}.gwe-showcase-looks button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.gw-root[data-showcase-active=\"true\"][data-showcase-look=\"studio\"]{background:#f1eee8!important}.gwe-showcase[data-look=\"studio\"]{background:linear-gradient(180deg,rgba(241,238,232,.15),transparent 24%,transparent 78%,rgba(86,68,44,.08))}.gwe-showcase[data-look=\"studio\"] button:focus-visible{outline-color:#245049}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-caption{color:#3d372e;text-shadow:none}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-looks{border-color:#8e7c5e44;background:#faf7f1ed;box-shadow:0 5px 16px #69523714}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-looks button{color:#665c4d}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-looks button[aria-pressed=\"true\"]{background:#245049;color:#f5fbf7}@media(max-width:520px){.gwe-showcase-looks{margin-top:12px}.gwe-showcase-looks button{min-width:88px;padding:8px 16px}}"
       ,".gwe-showcase-tools{flex-direction:column;gap:6px;max-width:100%;background:#112d2bef;border-color:#c6d7bd55}.gwe-showcase-actions{display:flex;gap:8px}.gwe-showcase-actions button{flex:1 1 auto;white-space:nowrap}.gwe-showcase-views{display:grid;grid-template-columns:1.65fr 1fr 1fr 1fr;gap:3px;padding:3px;border-radius:11px;background:#f5f0e509}.gwe-showcase-views button{min-width:0;min-height:44px;padding:7px 8px;border:0;border-radius:8px;color:#cfddc8;font-size:11px;font-weight:650;white-space:nowrap}.gwe-showcase-views button[aria-pressed=\"true\"]{background:#d4e8ca;color:#173b35}.gwe-showcase-views button:hover{box-shadow:inset 0 0 0 1px #bfd2b555}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-tools{background:#faf7f1ed;border-color:#8e7c5e44;box-shadow:0 10px 32px #69523721}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-tools button{color:#245049;border-color:#8e7c5e44}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-views{background:#2450490a}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-views button[aria-pressed=\"true\"],.gwe-showcase[data-look=\"studio\"] .gwe-showcase-actions button:last-child{background:#245049;color:#f5fbf7}@media(max-width:520px){.gwe-showcase-tools{width:min(296px,100%);box-sizing:border-box;padding:6px}.gwe-showcase-actions button{padding:9px 10px;font-size:12px}.gwe-showcase-views button{padding:6px 4px}}.theme-contrast .gwe-showcase-tools,[data-stem-theme=\"contrast\"] .gwe-showcase-tools{background:#000!important;border:2px solid #00ffff!important}.theme-contrast .gwe-showcase-tools button,[data-stem-theme=\"contrast\"] .gwe-showcase-tools button{color:#00ff00!important;border:1px solid #00ff00!important;background:#000!important}.theme-contrast .gwe-showcase-views button[aria-pressed=\"true\"],[data-stem-theme=\"contrast\"] .gwe-showcase-views button[aria-pressed=\"true\"]{background:#00ff00!important;color:#000!important}"
-      ,'.gwe-showcase-tools button:disabled{opacity:.65;cursor:progress}'
+      ,".gwe-showcase-caption{top:24px;left:28px}.gwe-showcase-caption>span{font-size:9px;letter-spacing:.2em;color:#e0eddb}.gwe-showcase-caption strong{font-size:30px;font-weight:700;letter-spacing:-.035em}.gwe-showcase-meta{margin:6px 0 0;color:#e0eddb;font-size:12px;line-height:1.35;font-variant-numeric:tabular-nums}.gwe-showcase-looks{margin-top:10px;background:#173b35e8;border-color:#d4e8ca55;box-shadow:0 4px 16px #112d2b1a}.gwe-showcase-looks button{font-weight:650}.gwe-showcase-looks button[aria-pressed=\"true\"]{background:#d4e8ca;color:#112d2b}.gwe-showcase-orbit{display:grid;place-items:center;background:#173b35dc;color:#f5f0e5;border-color:#d4e8ca66;box-shadow:0 4px 18px #112d2b1f;transition:background .16s,border-color .16s}.gwe-showcase-orbit:hover{background:#2a5042;border-color:#f5f0e5}.gwe-showcase-tools{border-radius:18px;padding:8px;box-shadow:0 12px 32px #112d2b24}.gwe-showcase-actions button{font-weight:650}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-caption>span{color:#686b58}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-caption strong{color:#243c32}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-meta{color:#55624f}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-orbit{background:#faf7f1de;color:#245049;border-color:#6b80694d;box-shadow:0 4px 16px #34453312}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-orbit:hover{background:#fffdf7;border-color:#2450498c}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-tools{background:#faf8f0ef;border-color:#73866a40;box-shadow:0 8px 28px #34453314}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-looks{border-color:#73866a40;background:#faf8f0ed}.theme-contrast .gwe-showcase-caption>span,.theme-contrast .gwe-showcase-meta,[data-stem-theme=\"contrast\"] .gwe-showcase-caption>span,[data-stem-theme=\"contrast\"] .gwe-showcase-meta{color:#00ff00!important;background:#000}.theme-contrast .gwe-showcase-orbit,[data-stem-theme=\"contrast\"] .gwe-showcase-orbit{color:#00ff00!important;background:#000!important;border:2px solid #00ffff!important}@media(max-width:520px){.gwe-showcase-caption{top:20px;left:20px}.gwe-showcase-caption strong{font-size:25px}.gwe-showcase-meta{display:none}.gwe-showcase-tools{padding:6px}.gwe-showcase-orbit-left{left:16px}.gwe-showcase-orbit-right{right:16px}}@media(prefers-reduced-motion:reduce){.gwe-showcase-orbit{transition:none}}"
+      ,".gwe-showcase[data-look=\"meadow\"] .gwe-showcase-caption{isolation:isolate;text-shadow:none}.gwe-showcase[data-look=\"meadow\"] .gwe-showcase-caption:before{content:\"\";position:absolute;inset:-8px -10px;z-index:-1;border:1px solid #c5d9c133;border-radius:18px;background:#173b35;box-shadow:0 8px 24px #112d2b24}.theme-contrast .gwe-showcase[data-look=\"meadow\"] .gwe-showcase-caption:before,[data-stem-theme=\"contrast\"] .gwe-showcase[data-look=\"meadow\"] .gwe-showcase-caption:before{background:#000;border-color:#00ffff}"
+      ,".gwe-showcase-tools button:disabled,.gwe-showcase-tools button[aria-disabled=\"true\"]{opacity:.65;cursor:progress}"
+      ,".gwe-print-dimensions{margin-top:11px}.gwe-print-axes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.gwe-print-axis{min-width:0;padding:9px 7px;border:1px solid #bdd0b52e;border-radius:9px;background:#112d2b38}.gwe-print-axis-label{display:block;color:#cfddc8;font-size:10px;font-weight:550}.gwe-print-ready .gwe-print-axis strong{margin-top:4px;font-size:18px;line-height:1.2;letter-spacing:-.02em;overflow-wrap:anywhere}.gwe-print-axis small{display:block;margin-top:2px;color:#bdcfb8;font-size:10px}.gwe-print-axis[data-over=\"true\"]{border-color:#f1c67d99;background:#f1c67d12}.gwe-print-ready .gwe-print-axis[data-over=\"true\"] strong{color:#f4d69f}.gwe-print-axis-note{display:block;margin-top:5px;color:#f4d69f;font-size:9px;font-weight:650}.gwe-assistive-copy{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap}.theme-contrast .gwe-print-axis,[data-stem-theme=\"contrast\"] .gwe-print-axis{background:#000;border-color:#fff}.theme-contrast .gwe-print-axis[data-over=\"true\"],[data-stem-theme=\"contrast\"] .gwe-print-axis[data-over=\"true\"]{border:2px dashed #ffff00}.theme-contrast .gwe-print-axis small,[data-stem-theme=\"contrast\"] .gwe-print-axis small{color:#fff}"
+      ,"#geoworld-fs-workspace[data-builder-panel=\"measure\"][data-measurement-expanded=\"true\"] .gwe-builder-dock[data-collapsed=\"true\"]{visibility:hidden;pointer-events:none}"
+      ,".gwe-showcase-tools{width:min(430px,100%);box-sizing:border-box}.gwe-showcase-actions{display:grid;grid-template-columns:1.2fr .85fr 1fr}.gwe-showcase-actions button{min-width:0;padding:9px 8px;white-space:normal;font-size:12px}.gwe-showcase-files-backdrop{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:flex-end;padding:20px;box-sizing:border-box;background:#08251d55}.gwe-showcase-files{display:flex;flex-direction:column;width:408px;max-width:100%;max-height:100%;box-sizing:border-box;border:1px solid #a5b9a7;border-radius:22px;background:#f8f6ee;color:#173b35;box-shadow:0 24px 70px #09251d55;text-shadow:none}.gwe-showcase-files:focus{outline:none}.gwe-files-header{flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 18px 15px;border-bottom:1px solid #2b534323}.gwe-files-eyebrow{font-size:9px;font-weight:750;letter-spacing:.18em;color:#536c58}.gwe-files-header h2{margin:5px 0 4px;font-size:25px;line-height:1.15;letter-spacing:-.035em;font-weight:750}.gwe-files-header p{margin:0;color:#566c5d;font-size:12px}.gwe-showcase-files button{box-sizing:border-box;min-height:44px;padding:9px 12px;border:1px solid #9ab09d;border-radius:10px;background:#fffdf7;color:#1c4a3b;font:inherit;font-size:12px;font-weight:650;cursor:pointer}.gwe-showcase-files button:hover{background:#e5ecdd;border-color:#477858}.gwe-showcase-files button:focus-visible,.gwe-showcase-files .gwe-recovery:focus{outline:3px solid #8e6229;outline-offset:2px}.gwe-showcase-files button:disabled{opacity:.6;cursor:wait}.gwe-showcase-files .gwe-files-close{flex:0 0 44px;width:44px;padding:0;font-size:24px}.gwe-files-body{display:flex;flex-direction:column;gap:12px;min-height:0;padding:15px 18px 18px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#92a58e #f8f6ee}.gwe-file-card{padding:15px;border:1px solid #9db09d66;border-radius:15px;background:#fffef9}.gwe-file-heading{display:flex;align-items:center;gap:10px}.gwe-file-icon{width:27px;height:27px;flex:0 0 27px;color:#537856}.gwe-file-card h3{margin:0;font-size:15px;line-height:1.3;letter-spacing:-.015em}.gwe-file-card p{margin:9px 0 12px;color:#506858;font-size:12px;line-height:1.55}.gwe-file-card>button{width:100%}.gwe-file-actions{display:grid;grid-template-columns:1fr 1.2fr;gap:7px}.gwe-showcase-files .gwe-file-primary{background:#24533e;color:#f8f6ee;border-color:#24533e}.gwe-showcase-files .gwe-file-primary:hover{background:#33654b}.gwe-file-card .gwe-file-note{margin:9px 0 0;font-size:11px;line-height:1.5}.gwe-file-import{border-style:dashed;background:#eef1e7}.gwe-file-photo{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:4px}.gwe-file-photo strong,.gwe-file-photo span{display:block;font-size:12px}.gwe-file-photo span{margin-top:4px;font-size:11px;color:#566c5d}.gwe-file-status{margin:0;padding:10px;border-radius:10px;background:#dde9d5;font-size:12px;line-height:1.5}.gwe-showcase-files .gwe-recovery{margin-top:12px;background:#f8f6ee;border-color:#9ab09d;color:#173b35}.gwe-showcase-files .gwe-recovery p,.gwe-showcase-files .gwe-recovery strong{color:#173b35}.gwe-showcase-files .gwe-recovery[data-state=\"error\"]{background:#fff0df;border-color:#ac703c}.gwe-showcase-files .gwe-recovery-actions{display:flex;flex-wrap:wrap;gap:7px}.gwe-showcase-files .gwe-replace{background:#6a422e;color:#fff9ee;border-color:#6a422e}@media(max-width:520px){.gwe-showcase-tools{width:min(320px,100%)}.gwe-showcase-actions button{padding:8px 5px;font-size:11px}.gwe-showcase-files-backdrop{padding:10px;justify-content:center}.gwe-files-header{padding:16px 14px 12px}.gwe-files-header h2{font-size:23px}.gwe-files-body{padding:12px 14px 14px}.gwe-file-card{padding:12px}}@media(max-height:500px){.gwe-showcase-files-backdrop{padding:8px}.gwe-files-header{padding:10px 14px}.gwe-files-header h2{font-size:21px}.gwe-files-body{padding:10px 14px}}.theme-contrast .gwe-showcase-files,[data-stem-theme=\"contrast\"] .gwe-showcase-files{background:#000;color:#fff;border:2px solid #0ff}.theme-contrast .gwe-showcase-files :is(.gwe-files-header,.gwe-files-body,.gwe-file-card,.gwe-recovery,.gwe-file-status),[data-stem-theme=\"contrast\"] .gwe-showcase-files :is(.gwe-files-header,.gwe-files-body,.gwe-file-card,.gwe-recovery,.gwe-file-status){background:#000;color:#fff;border-color:#0ff}.theme-contrast .gwe-showcase-files :is(p,span,strong,h2,h3,svg),[data-stem-theme=\"contrast\"] .gwe-showcase-files :is(p,span,strong,h2,h3,svg){color:#fff}.theme-contrast .gwe-showcase-files button,[data-stem-theme=\"contrast\"] .gwe-showcase-files button{background:#000;color:#0f0;border:2px solid #0f0}"
+      ,".gwe-showcase-orbit{transform:translateY(-50%)}@media(max-height:500px){.gwe-showcase{padding:12px 16px}.gwe-showcase-caption{top:12px;left:20px;right:20px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px}.gwe-showcase-caption>span,.gwe-showcase-meta{display:none}.gwe-showcase-caption strong{margin:0;font-size:23px;line-height:1.2}.gwe-showcase-looks{margin:0;padding:3px}.gwe-showcase-looks button{min-width:80px;padding:8px 12px;font-size:11px}.gwe-showcase-tools{padding:6px}.gwe-showcase-views button{padding:6px 5px}.gwe-showcase-actions button{padding:8px 7px;font-size:11px}}@media(max-height:500px) and (min-width:740px){.gwe-showcase-tools{flex-direction:row;gap:10px;width:min(780px,100%);padding:7px 9px;border-radius:16px}.gwe-showcase-views{flex:1.05 1 0;min-width:0}.gwe-showcase-actions{flex:1.2 1 0;min-width:0;gap:6px}.gwe-showcase-actions button{font-size:12px}}"
     ].join('');
     document.head.appendChild(style);
   }
@@ -1075,7 +1818,7 @@
     var controls = Array.prototype.slice.call(event.currentTarget.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'));
     if (!controls.length) return;
     var first = controls[0], last = controls[controls.length - 1];
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === event.currentTarget)) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }
 
@@ -1101,43 +1844,117 @@
       var data = (ctx.toolData && ctx.toolData.geometryWorld) || {};
       var isSandbox = data.activeLesson === 'builderSandbox';
       var hasPendingReturn = !!window.__alloGeometryWorldPendingBuild;
+      var currentPrintUnit = printUnit(printContext(ctx).unitMm);
       var base = originalRender(ctx);
       var launcherFocusRef = React.useRef('');
+      var retainedMeasurementRef = React.useRef(null);
       var editableInputRef = React.useRef(null);
-      var editableReadTokenRef = React.useRef(0);
+      var editableReadTokenRef = React.useRef(0), editableApplyFailedRef = React.useRef(false), editableErrorRef = React.useRef(null);
+      var showcaseFilesRef = React.useRef(null), showcaseFilesTriggerRef = React.useRef(null), showcaseFilesWasOpen = React.useRef(false);
+      var editableRecoveryRef = React.useRef(null), editableOpenRef = React.useRef(null), showcaseFileChooseRef = React.useRef(null);
+      var _showcaseFilesOpen = React.useState(false), showcaseFilesOpen = _showcaseFilesOpen[0], setShowcaseFilesOpen = _showcaseFilesOpen[1];
+      var _showcaseFileNotice = React.useState(''), showcaseFileNotice = _showcaseFileNotice[0], setShowcaseFileNotice = _showcaseFileNotice[1];
       var _editablePreview = React.useState(null), editablePreview = _editablePreview[0], setEditablePreview = _editablePreview[1];
       var _editableError = React.useState(''), editableError = _editableError[0], setEditableError = _editableError[1];
       var _editableBusy = React.useState(false), editableBusy = _editableBusy[0], setEditableBusy = _editableBusy[1];
+      var _hasStudentBuild = React.useState(null), hasStudentBuild = _hasStudentBuild[0], setHasStudentBuild = _hasStudentBuild[1];
 
+      var _scaleDraft=React.useState(String(currentPrintUnit)), scaleDraft=_scaleDraft[0], setScaleDraft=_scaleDraft[1];
+      var _scaleError=React.useState(''), scaleError=_scaleError[0], setScaleError=_scaleError[1];
+      var _printScaleExpanded=React.useState(null), printScaleExpanded=_printScaleExpanded[0], setPrintScaleExpanded=_printScaleExpanded[1];
+      var scaleInputRef=React.useRef(null);
+      React.useEffect(function(){setScaleDraft(String(currentPrintUnit));setScaleError('');},[currentPrintUnit]);
       var liveBuilderCtx = React.useRef(ctx); liveBuilderCtx.current = ctx;
       React.useEffect(function () {
-        var previousEngine=null, signature='', outline=null;
-        function clearOutline(){if(outline){if(outline.parent)outline.parent.remove(outline);outline.geometry.dispose();outline.material.dispose();outline=null;}}
+        var previousEngine=null, signature='', selectedBlockKeys='', outline=null, outlineOwner=null, selectionPollCache={current:null}, selectionPollResult=null;
+        var previousStudentPresence = null;
+        function measurementKeys(measurement){return measurement && Array.isArray(measurement.blocks)?measurement.blocks.map(keyFor).sort().join('|'):'';}
+        function clearOutline(){
+          if(!outline)return;
+          if(outlineOwner){
+            if(outlineOwner._builderSelectionFrame===outline)delete outlineOwner._builderSelectionFrame;
+            var showcase=outlineOwner._showcase;
+            if(showcase){
+              showcase.hidden=(showcase.hidden || []).filter(function(entry){return entry[0]!==outline;});
+              if(showcase.studio)showcase.studio.hidden=(showcase.studio.hidden || []).filter(function(entry){return entry[0]!==outline;});
+            }
+          }
+          if(outline.parent)outline.parent.remove(outline);
+          outline.geometry.dispose();outline.material.dispose();outline=null;outlineOwner=null;
+        }
         function refresh(){
           var eng=window[ENGINE_KEY];
+          // Reuse this refresh and the engine's cached array. Lifetime placement
+          // totals cannot identify an empty build after Undo, Break or Clear.
+          var guidanceData = (liveBuilderCtx.current.toolData || {}).geometryWorld || {};
+          var studentPresence = guidanceData.activeLesson === 'builderSandbox' && guidanceData.worldActive && eng && typeof eng.getBlocksArr === 'function'
+            ? eng.getBlocksArr().some(function(mesh) { return isStudentBlock(mesh && mesh.userData); }) : null;
+          if (studentPresence !== previousStudentPresence) {
+            previousStudentPresence = studentPresence;
+            setHasStudentBuild(studentPresence);
+          }
           if(eng && !eng._showcase && (liveBuilderCtx.current.toolData.geometryWorld || {}).showcaseActive)patchGeometryState(liveBuilderCtx.current,{showcaseActive:false});
+          if(!!(eng && eng._creationFocus)!==!!((liveBuilderCtx.current.toolData.geometryWorld || {}).creationFocusAvailable))patchGeometryState(liveBuilderCtx.current,{creationFocusAvailable:!!(eng && eng._creationFocus)});
           if(outline)outline.visible=!(eng && eng._showcase);
-          if(eng!==previousEngine){if(previousEngine && previousEngine.disposeShowcaseLook)previousEngine.disposeShowcaseLook();clearOutline();signature='';previousEngine=eng;}
-          var selected=selectionMeasurement(eng);
-          if(!selected){clearOutline();if(signature){signature='';patchGeometryState(liveBuilderCtx.current,{builderPrintCheck:null});}return;}
+          if(eng!==previousEngine){if(previousEngine && previousEngine.disposeShowcaseLook)previousEngine.disposeShowcaseLook();if(previousEngine && previousEngine.disposeCreationFocus)previousEngine.disposeCreationFocus();clearOutline();signature='';selectedBlockKeys='';previousEngine=eng;}
+          var selected=polledSelectionMeasurement(eng,selectionPollCache);
+          if(selected && selected===selectionPollResult)return;
+          selectionPollResult=selected;
+          if(!selected){
+            clearOutline();
+            if(signature){
+              var visibleData=(liveBuilderCtx.current.toolData || {}).geometryWorld || {},invalidPatch={builderPrintCheck:null};
+              // Only dismiss the vanished selection's own inspector. An M-key
+              // measurement of a different build or the ground remains valid.
+              if(selectedBlockKeys && measurementKeys(visibleData.measureResult)===selectedBlockKeys){invalidPatch.measureResult=null;invalidPatch.builderPanel='build';}
+              signature='';selectedBlockKeys='';patchGeometryState(liveBuilderCtx.current,invalidPatch);
+            }
+            return;
+          }
           var m=selected.measurement;
-          var next=m.blocks.map(function(p){var u=eng.blocks[keyFor(p)].userData;return keyFor(p)+':'+u.shape+':'+u.rotation+':'+u.blockType;}).sort().join('|');
+          var next=blockMeasurementSignature(eng,m.blocks.map(keyFor));
           if(next===signature)return;
+          var previousBlockKeys=selectedBlockKeys;selectedBlockKeys=measurementKeys(m);
           signature=next;eng._builderSelection={blocks:m.blocks.slice()};
           var check=null;
           try{var bundle=buildGeometryWorldStl(eng,m.blocks);check={components:bundle.connectedComponents,triangles:bundle.triangleCount,nonManifoldEdges:bundle.topology.nonManifoldEdges,openEdges:bundle.topology.openEdges};}catch(error){check={error:error.message};}
           if(window.THREE && eng.scene){
-            clearOutline();var box=new window.THREE.Box3();m.blocks.forEach(function(p){box.expandByObject(eng.blocks[keyFor(p)]);});
-            outline=new window.THREE.Box3Helper(box,check && (check.components>1 || check.nonManifoldEdges) ? 0xfbbf24 : 0x22d3ee);
-            outline.material.depthTest=false;outline.material.transparent=true;outline.material.opacity=0.85;outline.renderOrder=998;outline.visible=!eng._showcase;eng.scene.add(outline);
+            clearOutline();
+            // Ignore temporary placement-pop scale and decorative mesh children.
+            outline=createSelectionFrame(creationGeometryBounds(eng,m.blocks),check);
+            if(outline){outlineOwner=eng;eng._builderSelectionFrame=outline;outline.visible=!eng._showcase;eng.scene.add(outline);}
           }
-          patchGeometryState(liveBuilderCtx.current,{measureResult:m,builderPrintCheck:check});
+          var currentData=(liveBuilderCtx.current.toolData || {}).geometryWorld || {};
+          var refreshPatch={builderPrintCheck:check};
+          // Refresh this selection's visible inspector. Keep closed and unrelated
+          // measurements intact as the selected creation changes underneath them.
+          var visibleKeys=measurementKeys(currentData.measureResult);
+          if(visibleKeys && (visibleKeys===previousBlockKeys || visibleKeys===selectedBlockKeys))refreshPatch.measureResult=m;
+          patchGeometryState(liveBuilderCtx.current,refreshPatch);
         }
         var timer=setInterval(refresh,250);refresh();
-        return function(){clearInterval(timer);if(previousEngine && previousEngine.disposeShowcaseLook)previousEngine.disposeShowcaseLook();clearOutline();};
+        return function(){clearInterval(timer);if(previousEngine && previousEngine.disposeShowcaseLook)previousEngine.disposeShowcaseLook();if(previousEngine && previousEngine.disposeCreationFocus)previousEngine.disposeCreationFocus();clearOutline();};
       },[]);
 
       React.useEffect(function () { return function () { editableReadTokenRef.current += 1; }; }, []);
+      React.useEffect(function () {
+        if(data.showcaseActive)return scheduleShowcaseLayoutFit(window[ENGINE_KEY]);
+      },[data.showcaseActive]);
+      React.useEffect(function () {
+        if (!data.showcaseActive) {
+          if (showcaseFilesWasOpen.current) { editableReadTokenRef.current += 1; setEditablePreview(null); if(!editableApplyFailedRef.current)setEditableError(''); setEditableBusy(false); }
+          showcaseFilesWasOpen.current = false; setShowcaseFilesOpen(false); return;
+        }
+        var target = showcaseFilesOpen ? showcaseFilesRef.current : showcaseFilesWasOpen.current ? showcaseFilesTriggerRef.current : null;
+        if (target && target.focus) target.focus();
+        showcaseFilesWasOpen.current = showcaseFilesOpen;
+      }, [data.showcaseActive, showcaseFilesOpen]);
+      React.useEffect(function () {
+        if (showcaseFilesOpen && editablePreview && editableRecoveryRef.current) editableRecoveryRef.current.focus();
+      }, [showcaseFilesOpen, editablePreview]);
+      React.useEffect(function () {
+        if (editableError && !data.showcaseActive && editableErrorRef.current) editableErrorRef.current.focus();
+      }, [editableError, data.showcaseActive]);
 
       React.useEffect(function () {
         if (!isSandbox && !hasPendingReturn) return undefined;
@@ -1161,8 +1978,11 @@
       var engine = window[ENGINE_KEY];
       var material = BLOCK_TYPES[Math.max(0, Math.min(BLOCK_TYPES.length - 1, Number(data.selectedBlock) || 0))];
       var shape = BLOCK_SHAPES[Math.max(0, Math.min(BLOCK_SHAPES.length - 1, Number(data.selectedShape) || 0))];
-      var currentPrintUnit = printUnit(printContext(ctx).unitMm);
-      var measured = data.measureResult && data.measureResult.isComplete !== false ? data.measureResult : null;
+      // The dock describes the creation Send and Showcase will use; the core
+      // inspector can independently display a ground or another measurement.
+      var retainedMeasured = retainedSelectionSummary(engine, retainedMeasurementRef);
+      var hasRetainedSelection = !!(retainedMeasured && retainedMeasured.isComplete !== false && Array.isArray(retainedMeasured.blocks) && retainedMeasured.blocks.length && measurementIsStudentBuild(engine,retainedMeasured));
+      var measured = retainedMeasured || (data.measureResult && data.measureResult.isComplete !== false ? data.measureResult : null);
       // M measures whatever the crosshair rests on, the ground included. The
       // sandbox floor is a 25 x 25 x 1 'structure' that would otherwise be quoted
       // as a 125 x 125 x 5 mm print that fits, when Send would refuse it.
@@ -1171,6 +1991,11 @@
       var placed = engine && isFinite(engine.blocksPlaced) ? engine.blocksPlaced : (Number(data.blocksPlaced) || 0);
       var launcherOpen = !!data.showSandboxLauncher;
       var collapsed = !!data.sandboxDockCollapsed;
+      function applyPrintScale(value) {
+        var result=setBuilderPrintScale(liveBuilderCtx.current,value);
+        if (!result.ok) {setScaleError(result.error);if(scaleInputRef.current)scaleInputRef.current.focus();return;}
+        setScaleDraft(String(result.value));setScaleError('');
+      }
       function returnLauncherFocus() {
         if (typeof document === 'undefined') return;
         var key = launcherFocusRef.current;
@@ -1192,6 +2017,7 @@
         announce(ctx, 'Guided lesson picker ready. Choose a lesson and start when you are ready.', 'info');
       }
       function chooseEditableWorld(event) {
+        if (window[ENGINE_KEY] && window[ENGINE_KEY]._showcaseExporting) { event.target.value = ''; return; }
         var file = event.target.files && event.target.files[0];
         event.target.value = '';
         if (!file) return;
@@ -1211,26 +2037,100 @@
         }).then(function () { if (editableReadTokenRef.current === token) setEditableBusy(false); });
       }
       function cancelEditablePreview() {
+        editableApplyFailedRef.current = false;
         editableReadTokenRef.current += 1;
         setEditableBusy(false); setEditablePreview(null); setEditableError('');
+      }
+      function cancelEditableImport() {
+        cancelEditablePreview();
+        var target = showcaseFilesOpen ? showcaseFileChooseRef.current : editableOpenRef.current;
+        if (target && target.focus) target.focus();
       }
       function confirmEditableRestore() {
         if (!editablePreview || !editablePreview.value) return;
         var liveEngine = window[ENGINE_KEY];
-        var result = restoreEditableWorld(liveEngine, editablePreview.value);
-        if (!result.ok) { setEditableError(result.error); announce(ctx, result.error, 'error'); return; }
-        patchGeometryState(ctx, { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', measureResult: null, measureHistory: [], blocksPlaced: result.placedCount });
+        if (liveEngine && liveEngine._showcaseExporting) return;
+        var result = restoreEditableWorld(liveEngine, editablePreview.value, ctx);
+        if (!result.ok) {
+          editableApplyFailedRef.current=true;setEditablePreview(null);setEditableError(result.error);
+          if (!liveEngine || !liveEngine._showcase) patchGeometryState(ctx,{sandboxDockCollapsed:false,builderPanel:'build',hudPanel:'inventory'});
+          announce(ctx,result.error,'error');return;
+        }
+        patchGeometryState(ctx, { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', builderPanel:'build', showcaseActive:false, showcaseSaving:false, actionFeedback:'', sandboxDockCollapsed:false, builderPrintContext:null, builderPrintCheck:null, measureResult: null, measureHistory: [], blocksPlaced: result.placedCount });
         if (liveEngine.logEvent) liveEngine.logEvent('editable_world_open', { blocks: result.placedCount, schema: EDITABLE_WORLD_SCHEMA });
         cancelEditablePreview();
         announce(ctx, 'Opened ' + result.value.title + ' with ' + result.placedCount + ' student block' + (result.placedCount === 1 ? '' : 's') + '. The previous sandbox was replaced only after confirmation.', 'success');
         focusWorldSurface(50);
       }
 
+      function downloadEditableRecovery() {
+        var eng=window[ENGINE_KEY], backup=eng && eng._editableImportRecovery;
+        if (!backup) return;
+        var editable=backup.editableWorld;
+        downloadBlob(new Blob([JSON.stringify(editable || backup)],{type:'application/json'}),editable ? 'geometry-world-previous-build-editable.json' : 'geometry-world-workspace-recovery.json');
+        announce(ctx,editable ? 'Saved the previous student build as an editable AlloFlow file.' : 'Saved the complete workspace recovery details. This recovery file is not an editable-world import.','success');
+      }
+      function renderEditableRecovery() {
+        var backupEngine=window[ENGINE_KEY], backup=backupEngine && backupEngine._editableImportRecovery;
+        return h(React.Fragment, null,
+          backup && h('section', {className:'gwe-recovery','data-state':'backup','aria-label':'Previous workspace backup'},
+            h('strong',null,'Previous workspace backup'),
+            h('p',null,backup.editableWorld ? 'Your previous student build is still available as an editable AlloFlow file. Download it before leaving Geometry World.' : 'The previous workspace is outside the editable-file limits. Save its full recovery details before leaving Geometry World; this file cannot be opened by the editable-world importer.'),
+            h('div',{className:'gwe-recovery-actions'},
+              h('button',{type:'button',className:'gwe-recovery-download',onClick:downloadEditableRecovery},backup.editableWorld ? 'Download previous build' : 'Download recovery details')
+            )
+          ),
+          editableError && h('div', { className: 'gwe-recovery', 'data-state': 'error', role: 'alert', ref:editableErrorRef, tabIndex:-1 }, h('strong', null, 'File not opened'), h('p', null, editableError)),
+          editablePreview && h('section', { className: 'gwe-recovery', 'data-state': 'preview', 'aria-labelledby': 'gwe-recovery-title', ref:editableRecoveryRef, tabIndex:-1 },
+            h('strong', { id: 'gwe-recovery-title' }, 'Ready to open: ' + editablePreview.value.title),
+            h('p', null, editablePreview.summary.blockCount + ' student block' + (editablePreview.summary.blockCount === 1 ? '' : 's') + ' - bounds ' + editablePreview.summary.bounds.width + ' x ' + editablePreview.summary.bounds.depth + ' x ' + editablePreview.summary.bounds.height + '. Current world is unchanged.'),
+            h('p', null, 'Replacing starts from the blank sandbox floor and treats the loaded blocks as a new baseline. This cannot be undone inside Geometry World.'),
+            h('div', { className: 'gwe-recovery-actions' },
+              h('button', { type: 'button', onClick: cancelEditableImport }, 'Cancel'),
+              h('button', { type: 'button', className: 'gwe-replace', disabled:!!data.showcaseSaving, onClick: confirmEditableRestore }, 'Replace current sandbox')
+            )
+          )
+        );
+      }
+      function closeShowcaseFiles() {
+        cancelEditablePreview(); setShowcaseFilesOpen(false); setShowcaseFileNotice('');
+      }
+      function openShowcaseFiles() {
+        var eng = window[ENGINE_KEY]; if (!eng || eng._showcaseExporting) return;
+        cancelEditablePreview(); setShowcaseFileNotice(''); setShowcaseFilesOpen(true);
+      }
+      function chooseShowcaseFile() {
+        var eng = window[ENGINE_KEY]; if (!eng || eng._showcaseExporting || editableBusy) return;
+        if (editableInputRef.current) editableInputRef.current.click();
+      }
+      function fileIcon(kind) {
+        var paths = { edit:'M5 3h10l4 4v14H5ZM14 3v5h5M9 12l-2 3 2 3M15 12l2 3-2 3', print:'M4 8l8-5 8 5v9l-8 5-8-5ZM4 8l8 5 8-5M12 13v9', open:'M3 7h7l2 3h9l-3 10H3ZM3 7V4h7l2 3h7v3' };
+        return h('svg',{className:'gwe-file-icon',viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':'true',focusable:'false'},h('path',{d:paths[kind]}));
+      }
+      function renderCurrentTools() {
+        return h('section', {key:'gwe-current-tools',className:'gwe-current-tools','aria-label':'Current block choices'},
+            h('h3', {className:'gwe-section-title'}, 'Building with'),
+            h('div', { className: 'gwe-selection' },
+              h('div', { className: 'gwe-selection-card' }, h('span', { className: 'gwe-selection-label' }, 'Material'), h('span', { className: 'gwe-selection-value' }, material.emoji + ' ' + material.name)),
+              h('div', { className: 'gwe-selection-card' }, h('span', { className: 'gwe-selection-label' }, 'Shape'), h('span', { className: 'gwe-selection-value' }, shape.emoji + ' ' + shape.name), h('span', {className:'gwe-tool-rotation'}, ((Number(data.blockRotation) || 0) * 90) + '\u00B0 rotation'))
+            ),
+            h('div', {className:'gwe-builder-actions gwe-match-actions'},
+              h('button', {type:'button',className:'gwe-match-block','aria-label':'Match aimed block','aria-keyshortcuts':'I',title:'Aim at a block to reuse its material, shape, and rotation (I)',onClick:function(){var live=window[ENGINE_KEY];if(live && live.matchAimedBlock)live.matchAimedBlock();}},
+                h('svg',{viewBox:'0 0 24 24',width:20,height:20,fill:'none',stroke:'currentColor',strokeWidth:1.6,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':'true',focusable:'false'},h('path',{d:'M14 5l5 5M12 7l5 5M3 21l4-1 12-12a3 3 0 0 0-4-4L3 16v5ZM3 16l5 5'})),
+                h('span',null,'Match aimed block'),h('kbd',{'aria-hidden':'true'},'I'))
+            ),
+            h('p',{className:'gwe-match-note'},'Aim at a block to reuse its material, shape, and rotation.')
+          );
+      }
       var additions = [];
+      if (isSandbox && data.worldActive) additions.push(h('input', {key:'gwe-editable-file',ref:editableInputRef,type:'file',accept:'.json,application/json',onChange:chooseEditableWorld,style:{display:'none'},tabIndex:-1,'aria-hidden':'true'}));
       if (!isSandbox && !launcherOpen) additions.push(h('button', {
         key: 'gwe-launch', type: 'button', className: 'gwe-free-build-launch', onClick: openLauncher,
         'aria-haspopup': 'dialog', 'aria-controls': 'gwe-sandbox-launcher', 'aria-expanded': 'false', 'data-gwe-focus-return': 'lesson-launcher'
       }, h('span', { 'aria-hidden': 'true' }, '\u2728'), h('span', null, 'Free Build', h('small', { style: { display: 'block' } }, 'Sandbox studio'))));
+
+      if(isSandbox && data.worldActive && data.creationFocusAvailable && engine && engine._creationFocus && !engine._showcase)additions.push(h('div',{key:'gwe-focus-return',className:'gwe-focus-return','aria-label':'Creation camera'},
+        h('span',null,'Creation framed'),h('button',{type:'button',onClick:function(){if(engine.restoreCreationView)engine.restoreCreationView();}},'Previous view')));
 
       if (isSandbox && data.worldActive) additions.push(h('aside', {
         key: 'gwe-dock', className: 'gwe-builder-dock', 'data-collapsed': collapsed ? 'true' : 'false',
@@ -1249,14 +2149,27 @@
           h('li', null, h('span', {'aria-hidden':'true'}, '3'), 'Print Lab')
         ),
         !collapsed && h('div', {className:'gwe-builder-actions gwe-builder-quick-actions'},
-          h('button',{type:'button','aria-label':'Select and measure aimed build',onClick:function(){measureSelectedBuild(ctx);}},'Select build'),
+          h('button',{type:'button','aria-label':'Select and measure aimed build',onClick:function(){measureSelectedBuild(ctx);}},hasRetainedSelection ? 'Select another build' : 'Select build'),
           h('button',{type:'button',className:'gwe-primary','aria-label':'Send selected build to Print Lab',onClick:function(){openSelectedBuildInPrintLab(ctx);}},'Send to Print Lab')
         ),
         !collapsed && h('div', { className: 'gwe-builder-body' },
-          h('p', { className: 'gwe-builder-intro' }, measuredIsStudentBuild
-            ? 'Your outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.'
-            : 'Aim at a block you placed, then choose Select build to inspect your creation.'),
-          h('section', {'aria-label':'Your creation'},
+          h('p', { className: 'gwe-builder-intro' + (hasRetainedSelection ? ' gwe-assistive-copy' : ''), 'data-gwe-build-guidance': hasRetainedSelection ? 'selected' : hasStudentBuild === false ? 'empty' : 'select' }, hasRetainedSelection
+            ? 'Your selection stays outlined as you look around.'
+            : hasStudentBuild === false
+              ? firstBlockGuidance(base.props['data-touch-active'] === 'true') + ' Then choose Select build to inspect your creation.'
+              : 'Aim at a block you placed, then choose Select build to inspect your creation.'),
+          !hasRetainedSelection && renderCurrentTools(),
+          hasRetainedSelection ? h('section',{key:'gwe-creation-summary',className:'gwe-creation-summary','data-selected':'true','aria-label':'Selected creation'},
+            h('div',{className:'gwe-selected-heading'},
+              h('span',{className:'gwe-selected-emblem','aria-hidden':'true'},studioCubeMark(h)),
+              h('div',null,h('span',{className:'gwe-selected-eyebrow'},'Outlined selection'),h('h3',null,'Selected creation'))
+            ),
+            h('div',{className:'gwe-selected-metrics','aria-label':'Selected build summary'},
+              h('div',{className:'gwe-metric'},h('strong',null,measured.count),h('span',null,'Blocks selected')),
+              h('div',{className:'gwe-metric'},h('strong',null,measured.L+'×'+measured.W+'×'+measured.H),h('span',null,'Block bounds'))
+            ),
+            h('p',{className:'gwe-selection-scope'},'Showcase and Print Lab use these blocks.')
+          ) : h('section', {key:'gwe-creation-summary',className:'gwe-creation-summary','data-selected':'false','aria-label':'Your creation'},
             h('h3', {className:'gwe-section-title'}, 'Your creation'),
             h('div', { className: 'gwe-measure-summary', 'aria-label': 'Build summary' },
               h('div', { className: 'gwe-metric' }, h('strong', null, placed), h('span', null, 'Placed')),
@@ -1266,23 +2179,47 @@
           ),
           measured && !measuredIsStudentBuild && h('p', { className: 'gwe-builder-note', 'data-gwe-not-student': 'true', role: 'status' },
             'That measurement was the ground or a lesson structure. Aim at a block you placed to size a print.'),
-          measured && h('div', { className: 'gwe-builder-actions', 'aria-label':'Inspect selected creation' },
+          measured && h('div', { key:'gwe-inspect-actions',className: 'gwe-builder-actions', 'aria-label':'Inspect selected creation' },
+            measuredIsStudentBuild && h('button',{type:'button',className:'gwe-focus-action',onClick:function(){focusSelectedBuild(ctx);},title:'Frame your creation and keep editing'},'Focus creation'),
             h('button',{type:'button',className:'gwe-showcase-action',onClick:function(){showcaseBuild(ctx);}},'Showcase creation'),
-            h('button', {type:'button', onClick:function(){patchGeometryState(ctx,{builderPanel:'measure',sandboxDockCollapsed:true,hudPanel:''});}}, 'Explore measurements'),
+            h('button', {type:'button', onClick:function(){patchGeometryState(ctx,{measureResult:measured,builderPanel:'measure',sandboxDockCollapsed:true,hudPanel:''});}}, 'Explore measurements'),
             engine && engine._builderSelection && h('button', {type:'button',className:'gwe-clear-selection', onClick:function(){engine._builderSelection=null;patchGeometryState(ctx,{measureResult:null,builderPanel:'build'});}}, 'Clear selection')
           ),
-          printEnvelope && h('section', { className: 'gwe-print-ready', 'data-fit': printEnvelope.fits ? 'true' : 'false', 'aria-label':'Print Lab block envelope' },
+          printEnvelope && h('section', { key:'gwe-print-ready',className: 'gwe-print-ready', 'data-fit': printEnvelope.fits ? 'true' : 'false', 'aria-label':'Print Lab block envelope' },
             h('div', {className:'gwe-print-ready-heading'},
               h('span', { className: 'gwe-print-ready-label' }, 'Print Lab block envelope'),
               h('span', {className:'gwe-fit-badge'}, printEnvelope.fits ? 'Fits profile' : 'Review size')
             ),
-            h('strong', {role:'status'}, printEnvelope.label),
-            h('p', {className:'gwe-print-scale'}, currentPrintUnit + ' mm per block \u00B7 ' + printEnvelope.profileLabel),
-            h('details', {className:'gwe-details', open:printEnvelope.fits ? undefined : true},
-              h('summary', null, 'Printer profile & scale'),
+            h('div', {className:'gwe-print-dimensions',role:'status'},
+              h('span',{className:'gwe-assistive-copy'},'Width, depth, height: '+printEnvelope.label+'.'+(printEnvelope.over.length?' '+listDimensions(printEnvelope.over)+(printEnvelope.over.length===1?' exceeds':' exceed')+' the printer bed.':'')),
+              h('div',{className:'gwe-print-axes','aria-hidden':'true'},
+                [['width','Width'],['depth','Depth'],['height','Height']].map(function(axis){
+                  var over=printEnvelope.over.indexOf(axis[0])!==-1;
+                  return h('div',{key:axis[0],className:'gwe-print-axis','data-axis':axis[0],'data-over':over?'true':'false'},
+                    h('span',{className:'gwe-print-axis-label'},axis[1]),h('strong',null,printEnvelope[axis[0]+'Mm']),h('small',null,'mm'),
+                    over && h('span',{className:'gwe-print-axis-note'},'Over limit'));
+                })
+              )
+            ),
+            h('p', {className:'gwe-print-scale'}, currentPrintUnit + ' mm per block \u00B7 Bed ' + printEnvelope.profileLabel),
+            h('details', {className:'gwe-details', open:printScaleExpanded===null ? !printEnvelope.fits : printScaleExpanded,onToggle:function(event){setPrintScaleExpanded(event.currentTarget.open);}},
+              h('summary', null, 'Adjust print size'),
+              h('form',{className:'gwe-scale-editor',noValidate:true,'aria-label':'Print scale',onSubmit:function(event){event.preventDefault();applyPrintScale(scaleDraft);}},
+                h('span',{className:'gwe-scale-editor-title'},'Choose a block size'),
+                h('div',{className:'gwe-scale-presets',role:'group','aria-label':'Quick print scales'},
+                  [5,10,20].map(function(unit){return h('button',{key:unit,type:'button','aria-label':'Use '+unit+' millimeters per block','aria-pressed':currentPrintUnit===unit,onClick:function(){applyPrintScale(unit);}},unit+' mm');})
+                ),
+                h('label',{htmlFor:'gwe-print-scale-value'},'Millimeters per block'),
+                h('div',{className:'gwe-scale-custom'},
+                  h('input',{ref:scaleInputRef,id:'gwe-print-scale-value',type:'number',inputMode:'decimal',min:0.01,max:1000,step:'any',value:scaleDraft,'aria-invalid':scaleError?'true':undefined,'aria-describedby':'gwe-print-scale-help'+(scaleError?' gwe-print-scale-error':''),onChange:function(event){setScaleDraft(event.target.value);setScaleError('');}}),
+                  h('button',{type:'submit'},'Apply scale')
+                ),
+                h('p',{id:'gwe-print-scale-help',className:'gwe-scale-help'},'Sets the physical size of STL exports and the model sent to Print Lab.'),
+                scaleError && h('p',{id:'gwe-print-scale-error',className:'gwe-scale-error',role:'alert'},scaleError)
+              ),
               h('p', null, printEnvelope.fits
                 ? 'Fits the ' + printEnvelope.profileLabel + ' printer profile at ' + currentPrintUnit + ' mm per block. Advisory preflight is still required.'
-                : 'The ' + listDimensions(printEnvelope.over) + (printEnvelope.over.length === 1 ? ' dimension is' : ' dimensions are') + ' larger than the ' + printEnvelope.profileLabel + ' printer profile at ' + currentPrintUnit + ' mm per block. Reduce the build or choose a smaller scale in Print Lab.'),
+                : 'The ' + listDimensions(printEnvelope.over) + (printEnvelope.over.length === 1 ? ' dimension is' : ' dimensions are') + ' larger than the ' + printEnvelope.profileLabel + ' printer profile at ' + currentPrintUnit + ' mm per block. Choose a smaller block size above, or reduce the build.'),
               h('p', { className: 'gwe-print-ready-basis' }, printEnvelope.usingSavedProfile
                 ? 'Measured from whole blocks against the printer profile saved in Print Lab. Print Lab measures the exported mesh, so a build made of wedges can report a slightly smaller envelope there.'
                 : 'Measured from whole blocks against Print Lab\u2019s default printer profile. Set a school printer in Print Lab to check against the real bed.'),
@@ -1290,23 +2227,16 @@
               h('p', { className: 'gwe-builder-note' }, 'Print Lab scale: ' + currentPrintUnit + ' mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.')
             )
           ),
-          data.builderPrintCheck && h('div', {className:'gwe-connection-check', role:'status', 'data-connected':data.builderPrintCheck.components===1 && !data.builderPrintCheck.nonManifoldEdges ? 'true':'false'},
-            h('strong',null,data.builderPrintCheck.error ? 'Check this selection' : data.builderPrintCheck.components>1 ? data.builderPrintCheck.components+' separate pieces' : data.builderPrintCheck.nonManifoldEdges ? 'Touching edges need review' : 'One joined piece'),
-            h('p',null,data.builderPrintCheck.error || (data.builderPrintCheck.components>1 ? 'Some shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.' : data.builderPrintCheck.nonManifoldEdges ? 'Some surfaces meet only along an edge. Add a connecting block or review the highlighted creation in Print Lab.' : 'The selected shapes share surfaces. Print Lab will check the exported mesh and physical scale.'))
+          data.builderPrintCheck && h('div', {key:'gwe-connection-check',className:'gwe-connection-check', role:'status', 'data-connected':selectionNeedsReview(data.builderPrintCheck) ? 'false':'true'},
+            h('strong',null,data.builderPrintCheck.error ? 'Check this selection' : data.builderPrintCheck.components>1 ? data.builderPrintCheck.components+' separate pieces' : data.builderPrintCheck.nonManifoldEdges ? 'Touching edges need review' : data.builderPrintCheck.openEdges ? 'Open surfaces need review' : selectionNeedsReview(data.builderPrintCheck) ? 'Review this selection' : 'One joined piece'),
+            h('p',null,data.builderPrintCheck.error || (data.builderPrintCheck.components>1 ? 'Some shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.' : data.builderPrintCheck.nonManifoldEdges ? 'Some surfaces meet only along an edge. Add a connecting block or review the highlighted creation in Print Lab.' : data.builderPrintCheck.openEdges ? 'The selected mesh has open edges. Review its surfaces in Print Lab before preparing a print.' : selectionNeedsReview(data.builderPrintCheck) ? 'The selection check is incomplete. Open Print Lab to inspect the exported mesh.' : 'The selected shapes share surfaces. Print Lab will check the exported mesh and physical scale.'))
           ),
-          h('section', {'aria-label':'Current block choices'},
-            h('h3', {className:'gwe-section-title'}, 'Building with'),
-            h('div', { className: 'gwe-selection' },
-              h('div', { className: 'gwe-selection-card' }, h('span', { className: 'gwe-selection-label' }, 'Material'), h('span', { className: 'gwe-selection-value' }, material.emoji + ' ' + material.name)),
-              h('div', { className: 'gwe-selection-card' }, h('span', { className: 'gwe-selection-label' }, 'Shape / rotation'), h('span', { className: 'gwe-selection-value' }, shape.emoji + ' ' + shape.name + ' - ' + ((Number(data.blockRotation) || 0) * 90) + '\u00B0'))
-            )
-          ),
+          hasRetainedSelection && renderCurrentTools(),
           h('section', {'aria-label':'Keep your work'},
             h('h3', {className:'gwe-section-title'}, 'Keep your work'),
             h('div', { className: 'gwe-builder-actions' },
               h('button', { type: 'button', onClick: function () { saveEditableWorld(ctx); } }, '\uD83D\uDCBE Save editable world'),
-              h('button', { type: 'button', disabled: editableBusy, onClick: function () { if (editableInputRef.current) editableInputRef.current.click(); } }, editableBusy ? 'Checking file...' : '\uD83D\uDCC2 Open editable world'),
-              h('input', { ref: editableInputRef, type: 'file', accept: '.json,application/json', onChange: chooseEditableWorld, style: { display: 'none' }, tabIndex: -1, 'aria-hidden': 'true' })
+              h('button', { ref:editableOpenRef, type: 'button', disabled: editableBusy, onClick: function () { if (editableInputRef.current) editableInputRef.current.click(); } }, editableBusy ? 'Checking file...' : '\uD83D\uDCC2 Open editable world')
             )
           ),
           h('details', {className:'gwe-details gwe-workspace-options'},
@@ -1316,16 +2246,7 @@
               h('button', { type: 'button', onClick: openLauncher, 'aria-haspopup': 'dialog', 'aria-controls': 'gwe-sandbox-launcher', 'data-gwe-focus-return': 'sandbox-dock' }, '\u2728 Start a fresh sandbox')
             )
           ),
-          editableError && h('div', { className: 'gwe-recovery', 'data-state': 'error', role: 'alert' }, h('strong', null, 'File not opened'), h('p', null, editableError)),
-          editablePreview && h('section', { className: 'gwe-recovery', 'data-state': 'preview', 'aria-labelledby': 'gwe-recovery-title' },
-            h('strong', { id: 'gwe-recovery-title' }, 'Ready to open: ' + editablePreview.value.title),
-            h('p', null, editablePreview.summary.blockCount + ' student block' + (editablePreview.summary.blockCount === 1 ? '' : 's') + ' - bounds ' + editablePreview.summary.bounds.width + ' x ' + editablePreview.summary.bounds.depth + ' x ' + editablePreview.summary.bounds.height + '. Current world is unchanged.'),
-            h('p', null, 'Replacing starts from the blank sandbox floor and treats the loaded blocks as a new baseline. This cannot be undone inside Geometry World.'),
-            h('div', { className: 'gwe-recovery-actions' },
-              h('button', { type: 'button', onClick: cancelEditablePreview }, 'Cancel'),
-              h('button', { type: 'button', className: 'gwe-replace', onClick: confirmEditableRestore }, 'Replace current sandbox')
-            )
-          )
+          renderEditableRecovery()
         )
       ));
 
@@ -1354,20 +2275,56 @@
         )
       ));
 
-      if(data.showcaseActive) additions.push(h('section', {key:'gwe-showcase',className:'gwe-showcase','data-look':data.showcaseLook || 'meadow','data-view':data.showcaseView || 'perspective',role:'dialog','aria-modal':'true','aria-label':'Showcase creation',onKeyDown:function(event){if(event.key==='ArrowLeft' || event.key==='ArrowRight'){event.preventDefault();var eng=window[ENGINE_KEY];if(eng && eng.rotateShowcase)eng.rotateShowcase(event.key==='ArrowLeft' ? -1:1);}trapDialogKeys(event,function(){var eng=window[ENGINE_KEY];if(eng && eng.endShowcase)eng.endShowcase();});event.stopPropagation();}},
-        h('div',{className:'gwe-showcase-caption'},h('span',null,'GEOMETRY WORLD'),h('strong',null,'Made by you.'),
+      if(data.showcaseActive) additions.push(h('section', {key:'gwe-showcase',className:'gwe-showcase','data-files-open':showcaseFilesOpen?'true':'false','data-look':data.showcaseLook || 'meadow','data-view':data.showcaseView || 'perspective',role:'dialog','aria-modal':'true','aria-label':'Showcase creation',onKeyDown:function(event){if(event.key==='ArrowLeft' || event.key==='ArrowRight'){event.preventDefault();var eng=window[ENGINE_KEY];if(eng && eng.rotateShowcase)eng.rotateShowcase(event.key==='ArrowLeft' ? -1:1);}trapDialogKeys(event,function(){var eng=window[ENGINE_KEY];if(eng && eng.endShowcase)eng.endShowcase();});event.stopPropagation();}},
+        h('div',{className:'gwe-showcase-caption',inert:showcaseFilesOpen?'':undefined,'aria-hidden':showcaseFilesOpen?'true':undefined},h('span',null,'GEOMETRY WORLD / SHOWCASE'),h('strong',null,'Made by you.'),
+          measured && h('p',{className:'gwe-showcase-meta','aria-label':'Creation dimensions'},measured.count+' block'+(measured.count===1?'':'s')+' \u00B7 '+measured.L+' \u00D7 '+measured.W+' \u00D7 '+measured.H+' units'),
           h('div',{className:'gwe-showcase-looks',role:'group','aria-label':'Scene look'},
             ['meadow','studio'].map(function(look){return h('button',{key:look,type:'button','aria-pressed':(data.showcaseLook || 'meadow')===look,onClick:function(){var eng=window[ENGINE_KEY];if(eng && eng.setShowcaseLook)eng.setShowcaseLook(look);}},look==='meadow'?'Meadow':'Studio');})
           )
         ),
-        [-1,1].map(function(step){var label=step<0 ? 'Rotate view left':'Rotate view right';return h('button',{key:label,type:'button',className:'gwe-showcase-orbit gwe-showcase-orbit-'+(step<0 ? 'left':'right'),'aria-label':label,title:label,onClick:function(){var eng=window[ENGINE_KEY];if(eng && eng.rotateShowcase)eng.rotateShowcase(step);}},step<0 ? '\u21B6':'\u21B7');}),
-        h('div',{className:'gwe-showcase-tools'},
+        [-1,1].map(function(step){var label=step<0 ? 'Rotate view left':'Rotate view right';return h('button',{key:label,type:'button',inert:showcaseFilesOpen?'':undefined,'aria-hidden':showcaseFilesOpen?'true':undefined,className:'gwe-showcase-orbit gwe-showcase-orbit-'+(step<0 ? 'left':'right'),'aria-label':label,title:label,onClick:function(){var eng=window[ENGINE_KEY];if(eng && eng.rotateShowcase)eng.rotateShowcase(step);}},h('svg',{viewBox:'0 0 24 24',width:24,height:24,fill:'none','aria-hidden':'true',focusable:'false'},h('path',{d:step<0?'M14 6 8 12l6 6':'M10 6l6 6-6 6',stroke:'currentColor',strokeWidth:1.7,strokeLinecap:'round',strokeLinejoin:'round'})));}),
+        h('div',{className:'gwe-showcase-tools',inert:showcaseFilesOpen?'':undefined,'aria-hidden':showcaseFilesOpen?'true':undefined},
           h('div',{className:'gwe-showcase-views',role:'group','aria-label':'Camera view'},
             ['perspective','front','side','top'].map(function(view){return h('button',{key:view,type:'button','aria-pressed':(data.showcaseView || 'perspective')===view,onClick:function(){var eng=window[ENGINE_KEY];if(eng && eng.setShowcaseView)eng.setShowcaseView(view);}},view.charAt(0).toUpperCase()+view.slice(1));})
           ),
           h('div',{className:'gwe-showcase-actions'},
           h('button',{id:'gwe-showcase-close',type:'button',onClick:function(){var eng=window[ENGINE_KEY];if(eng && eng.endShowcase)eng.endShowcase();}},'Back to building'),
-          h('button',{type:'button','aria-label':'Save image','aria-busy':!!data.showcaseSaving,disabled:!!data.showcaseSaving,title:'Save a high-resolution PNG',onClick:function(){saveShowcaseImage(ctx);}},data.showcaseSaving?'Saving image...':'Save image')
+          h('button',{type:'button','aria-label':'Save image','aria-busy':!!data.showcaseSaving,'aria-disabled':!!data.showcaseSaving,title:'Save a high-resolution PNG',onClick:function(){saveShowcaseImage(ctx);}},data.showcaseSaving?'Saving image...':'Save image'),
+          h('button',{ref:showcaseFilesTriggerRef,id:'gwe-showcase-files-trigger',type:'button','aria-expanded':showcaseFilesOpen,'aria-controls':'gwe-showcase-files',disabled:!!data.showcaseSaving,onClick:openShowcaseFiles},'Use & export')
+          )
+        ),
+        showcaseFilesOpen && h('div',{className:'gwe-showcase-files-backdrop',onClick:function(event){if(event.target===event.currentTarget)closeShowcaseFiles();}},
+          h('section',{id:'gwe-showcase-files',className:'gwe-showcase-files',ref:showcaseFilesRef,tabIndex:-1,role:'region','aria-labelledby':'gwe-showcase-files-title',onKeyDown:function(event){event.stopPropagation();trapDialogKeys(event,closeShowcaseFiles);}},
+            h('header',{className:'gwe-files-header'},
+              h('div',null,h('span',{className:'gwe-files-eyebrow'},'KEEP CREATING'),h('h2',{id:'gwe-showcase-files-title'},'Use your creation'),h('p',null,(measured ? measured.count+' block'+(measured.count===1?'':'s')+' · ' : '')+'Selected creation')),
+              h('button',{type:'button',className:'gwe-files-close','aria-label':'Close import and export',onClick:closeShowcaseFiles},'×')
+            ),
+            h('div',{className:'gwe-files-body'},
+              h('section',{className:'gwe-file-card'},
+                h('div',{className:'gwe-file-heading'},fileIcon('edit'),h('h3',null,'Edit in AlloFlow')),
+                h('p',null,'Keep this creation’s blocks, materials, shapes, and rotations in an editable Geometry World file.'),
+                h('button',{type:'button',disabled:!!data.showcaseSaving,onClick:function(){if(saveSelectedEditableWorld(ctx))setShowcaseFileNotice('Editable creation downloaded. Open this JSON in Geometry World to build on it.');}},'Download editable JSON')
+              ),
+              h('section',{className:'gwe-file-card'},
+                h('div',{className:'gwe-file-heading'},fileIcon('print'),h('h3',null,'Prepare a 3D print')),
+                h('p',null,'STL in millimeters · '+currentPrintUnit+' mm per block. Open Print Lab to review size and printability.'),
+                h('div',{className:'gwe-file-actions'},
+                  h('button',{type:'button',disabled:!!data.showcaseSaving,onClick:function(){if(selectedBuildStlDownload(ctx))setShowcaseFileNotice('STL downloaded in millimeters. Import it into your slicer at 100% scale.');}},'Download STL'),
+                  h('button',{type:'button',className:'gwe-file-primary',disabled:!!data.showcaseSaving,onClick:function(){openSelectedBuildInPrintLab(ctx);}},'Open in Print Lab')
+                ),
+                h('p',{className:'gwe-file-note'},'STL contains geometry. Choose the physical filament in Print Lab or your slicer.')
+              ),
+              h('section',{className:'gwe-file-card gwe-file-import'},
+                h('div',{className:'gwe-file-heading'},fileIcon('open'),h('h3',null,'Open an editable model')),
+                h('p',null,'Choose an AlloFlow Geometry World JSON file. Review it before replacing the current sandbox.'),
+                h('button',{ref:showcaseFileChooseRef,type:'button',disabled:editableBusy || !!data.showcaseSaving,onClick:chooseShowcaseFile},editableBusy?'Checking file...':'Choose editable JSON'),
+                renderEditableRecovery()
+              ),
+              h('div',{className:'gwe-file-photo'},h('div',null,h('strong',null,'Keep a picture'),h('span',null,'High-resolution PNG')),
+                h('button',{type:'button',disabled:!!data.showcaseSaving,'aria-busy':!!data.showcaseSaving,onClick:function(){saveShowcaseImage(ctx);}},data.showcaseSaving?'Saving image...':'Save image')
+              ),
+              showcaseFileNotice && h('p',{className:'gwe-file-status',role:'status','aria-live':'polite'},showcaseFileNotice)
+            )
           )
         )
       ));

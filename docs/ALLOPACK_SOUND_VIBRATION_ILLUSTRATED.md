@@ -1,3 +1,17 @@
+# Sound and Vibration — cartoon revision (September 8, 2026)
+
+All 25 images have now been replaced and integrated as clearly drawn cartoons. The edition includes diverse students, a child using a wheelchair actively playing a drum, and broader examples: shaker, ruler, clapping, paper, barred instrument, ukulele, bell, rain, bird and zipper alongside the original drum, guitar and voice activities. Habitats is paused.
+
+The current pack contains 14 resources and 582,614 characters. Selected originals are the 25 files ending in -cartoon-v2.png in allopacks/media/sound_vibration_grade1/. The current manifest contains prompts and pixel-reviewed descriptions; manifest-realistic-v1.json preserves the previous selections. Built-in image generation produced 27 candidates for this revision; two were replaced for incorrect string count or hand anatomy. All 25 selected images have updated descriptions and hashes. Captions and labels remain editable native text.
+
+Current verification: 604 tests passed across 13 suites after this rebuild. These check embedded file correspondence, hashes, descriptions, source content and answer preservation, and artifact validity. Native offline component QA rendered all 3 anchor images and all 6 sort images in both teacher and student views. The separate catalog browser check was blocked by automatic approval-review timeouts on launch and one retry; it must be rerun. The historical integration and collection import evidence below applies ONLY to the former realistic edition. No live publication occurred. Educator review remains pending.
+
+Run node dev-tools/qa_sound_vibration_illustrated.cjs when the browser check can launch again. Rebuild with node dev-tools/build_sound_vibration_illustrated.cjs. Existing anchor/teacher-sort views use decorative image treatment, and student-sort uses card text as alt; stored image descriptions are not consistently consumed by those components.
+
+---
+
+## Historical record: previous realistic edition
+
 # Sound and Vibration — illustrated edition
 
 Completed September 8, 2026.

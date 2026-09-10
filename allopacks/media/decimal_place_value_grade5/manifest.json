@@ -1,0 +1,446 @@
+{
+  "slug": "decimal_place_value_grade5",
+  "prefix": "dpv",
+  "title": "Same Digits, Different Values — Decimals",
+  "groups": [
+    "Parts of the same whole",
+    "Compare and rename",
+    "Check a representation",
+    "Explain with evidence"
+  ],
+  "lessonTitles": [
+    "Ribbon comparison",
+    "Parts of a whole",
+    "Equivalent shading",
+    "A zero changes place",
+    "Agree on the whole",
+    "Locate a tiny part",
+    "Compare carefully",
+    "Explain your reasoning"
+  ],
+  "note": "Exact grids represent amounts; cartoons provide context only and are not scale drawings. In the sorting pictures, all ten small hundred-grids together form one whole of 1,000 equal cells. Enlarge images to inspect single cells. Colored cells are read left to right within each small grid, then through the top row of grids before the bottom row.",
+  "status": "complete",
+  "provider": "Built-in image generation and deterministic SVG diagrams",
+  "style": "Text-free cartoons and mathematically exact diagrams",
+  "assets": [
+    {
+      "id": "dpv-term-1",
+      "kind": "term",
+      "index": 0,
+      "prompt": "Exact diagram specification: A ten-part bar with six shaded parts",
+      "caption": "Six tenths of one whole.",
+      "alt": "A bar is divided into ten equal sections, with six shaded teal.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-term-1-diagram.png",
+      "vectorFile": "dpv-term-1.svg",
+      "math": {
+        "cells": 10,
+        "shaded": 6
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-term-2",
+      "kind": "term",
+      "index": 1,
+      "prompt": "Use case: scientific-educational. Square text-free 2D cartoon classroom illustration, clean outlines, flat colors, minimal shading, uncluttered composition. Students are age appropriate with clearly cartoon faces and hands, never photorealistic. No text, letters, digits, logos, watermark, number scales, charts or mathematical symbols. A cartoon student considers a blank number tile",
+      "caption": "A digit is a written symbol; the app supplies the word and examples.",
+      "alt": "A cartoon student studies a blank square tile while classmates sit behind them.",
+      "status": "visual-review-passed",
+      "method": "built-in-imagegen",
+      "file": "dpv-term-2-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-ae3aa01f-9817-4160-95ab-79c0ea10fdc3.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-term-3",
+      "kind": "term",
+      "index": 2,
+      "prompt": "Exact diagram specification: Four blank place cells with a dark dot between the first two",
+      "caption": "The dot separates ones from tenths; the blank boxes represent places.",
+      "alt": "Four blank boxes appear in a row, with a dark dot between the first and second boxes.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-term-3-diagram.png",
+      "vectorFile": "dpv-term-3.svg",
+      "math": {},
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-term-4",
+      "kind": "term",
+      "index": 3,
+      "prompt": "Exact diagram specification: One of ten equal bar sections shaded",
+      "caption": "One tenth of the pictured whole.",
+      "alt": "One of ten equal sections in a long bar is shaded teal.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-term-4-diagram.png",
+      "vectorFile": "dpv-term-4.svg",
+      "math": {
+        "cells": 10,
+        "shaded": 1
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-term-5",
+      "kind": "term",
+      "index": 4,
+      "prompt": "Exact diagram specification: One cell shaded in a ten-by-ten grid",
+      "caption": "One hundredth of the pictured whole.",
+      "alt": "A square contains one hundred equal cells; only the upper-left cell is shaded teal.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-term-5-diagram.png",
+      "vectorFile": "dpv-term-5.svg",
+      "math": {
+        "cells": 100,
+        "shaded": 1
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-term-6",
+      "kind": "term",
+      "index": 5,
+      "prompt": "Exact diagram specification: One of 1,000 equal cells shaded across ten hundred-grids",
+      "caption": "Together, these ten grids form one whole; one cell is one thousandth.",
+      "alt": "Ten small hundred-cell grids share one enclosing frame. A single cell in the first grid is shaded teal.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-term-6-diagram.png",
+      "vectorFile": "dpv-term-6.svg",
+      "math": {
+        "cells": 1000,
+        "shaded": 1
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-term-7",
+      "kind": "term",
+      "index": 6,
+      "prompt": "Exact diagram specification: Same-size bars show the same half using different partitions",
+      "caption": "Different partitions can show equal amounts.",
+      "alt": "Two same-length bars are half shaded; the upper bar has ten sections and the lower has twenty.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-term-7-diagram.png",
+      "vectorFile": "dpv-term-7.svg",
+      "math": {
+        "cells": 30,
+        "shaded": 15
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-term-8",
+      "kind": "term",
+      "index": 7,
+      "prompt": "Exact diagram specification: Aligned strips of different lengths within equal whole outlines",
+      "caption": "Compare amounts using the same whole.",
+      "alt": "Two equal outlined bars share a starting edge; teal shading extends farther in the upper bar.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-term-8-diagram.png",
+      "vectorFile": "dpv-term-8.svg",
+      "math": {
+        "cells": 40,
+        "shaded": 21
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-term-9",
+      "kind": "term",
+      "index": 8,
+      "prompt": "Exact diagram specification: One complete reference bar beside two matching outlines",
+      "caption": "Choose what counts as one whole before interpreting the parts.",
+      "alt": "Three same-sized bars appear; the top is fully shaded, the middle half shaded, and the bottom unshaded.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-term-9-diagram.png",
+      "vectorFile": "dpv-term-9.svg",
+      "math": {
+        "cells": 4,
+        "shaded": 2
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-anchor-1",
+      "kind": "anchor",
+      "index": 0,
+      "prompt": "Exact diagram specification: Equal whole squares show one tenth and ten hundredths",
+      "caption": "One tenth equals ten hundredths of the same whole.",
+      "alt": "Two equal squares show equal shaded areas: one vertical strip out of ten on the left and one row of ten small cells on the right.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-anchor-1-diagram.png",
+      "vectorFile": "dpv-anchor-1.svg",
+      "math": {
+        "cells": 110,
+        "shaded": 11
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-anchor-2",
+      "kind": "anchor",
+      "index": 1,
+      "prompt": "Exact diagram specification: Equal whole bars show six tenths and forty-five hundredths",
+      "caption": "Six tenths exceeds forty-five hundredths.",
+      "alt": "Aligned whole bars have teal shading covering six tenths above and forty-five hundredths below.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-anchor-2-diagram.png",
+      "vectorFile": "dpv-anchor-2.svg",
+      "math": {
+        "cells": 110,
+        "shaded": 51
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-anchor-3",
+      "kind": "anchor",
+      "index": 2,
+      "prompt": "Exact diagram specification: Equal grids compare sixty hundredths with six hundredths",
+      "caption": "Six tenths and six hundredths have different values.",
+      "alt": "Two equal hundred-cell grids have sixty shaded cells on the left and six on the right.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-anchor-3-diagram.png",
+      "vectorFile": "dpv-anchor-3.svg",
+      "math": {
+        "cells": 200,
+        "shaded": 66
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-sort-1",
+      "kind": "sort",
+      "index": 0,
+      "prompt": "Exact diagram specification: Ten hundred-grids form one whole with 500 of 1000 cells shaded",
+      "caption": "0.5",
+      "alt": "Ten hundred-cell grids form one whole; 500 cells are shaded teal and 500 remain white.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-sort-1-diagram.png",
+      "vectorFile": "dpv-sort-1.svg",
+      "math": {
+        "cells": 1000,
+        "shaded": 500
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-sort-2",
+      "kind": "sort",
+      "index": 1,
+      "prompt": "Exact diagram specification: Ten hundred-grids form one whole with 500 of 1000 cells shaded",
+      "caption": "0.5",
+      "alt": "Ten hundred-cell grids form one whole; 500 cells are shaded teal and 500 remain white.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-sort-2-diagram.png",
+      "vectorFile": "dpv-sort-2.svg",
+      "math": {
+        "cells": 1000,
+        "shaded": 500
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-sort-3",
+      "kind": "sort",
+      "index": 2,
+      "prompt": "Exact diagram specification: Ten hundred-grids form one whole with 50 of 1000 cells shaded",
+      "caption": "0.05",
+      "alt": "Ten hundred-cell grids form one whole; 50 cells are shaded teal and 950 remain white.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-sort-3-diagram.png",
+      "vectorFile": "dpv-sort-3.svg",
+      "math": {
+        "cells": 1000,
+        "shaded": 50
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-sort-4",
+      "kind": "sort",
+      "index": 3,
+      "prompt": "Exact diagram specification: Ten hundred-grids form one whole with 499 of 1000 cells shaded",
+      "caption": "0.499",
+      "alt": "Ten hundred-cell grids form one whole; 499 cells are shaded teal and 501 remain white.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-sort-4-diagram.png",
+      "vectorFile": "dpv-sort-4.svg",
+      "math": {
+        "cells": 1000,
+        "shaded": 499
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-sort-5",
+      "kind": "sort",
+      "index": 4,
+      "prompt": "Exact diagram specification: Ten hundred-grids form one whole with 510 of 1000 cells shaded",
+      "caption": "0.51",
+      "alt": "Ten hundred-cell grids form one whole; 510 cells are shaded teal and 490 remain white.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-sort-5-diagram.png",
+      "vectorFile": "dpv-sort-5.svg",
+      "math": {
+        "cells": 1000,
+        "shaded": 510
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-sort-6",
+      "kind": "sort",
+      "index": 5,
+      "prompt": "Exact diagram specification: Ten hundred-grids form one whole with 605 of 1000 cells shaded",
+      "caption": "0.605",
+      "alt": "Ten hundred-cell grids form one whole; 605 cells are shaded teal and 395 remain white.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-sort-6-diagram.png",
+      "vectorFile": "dpv-sort-6.svg",
+      "math": {
+        "cells": 1000,
+        "shaded": 605
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-lesson-1",
+      "kind": "lesson",
+      "index": 0,
+      "prompt": "Use case: scientific-educational. Square text-free 2D cartoon classroom illustration, clean outlines, flat colors, minimal shading, uncluttered composition. Students are age appropriate with clearly cartoon faces and hands, never photorealistic. No text, letters, digits, logos, watermark, number scales, charts or mathematical symbols. Two cartoon ten-year-old students at a craft table, a dark-brown-skinned child with braids and a tan-skinned child with straight dark hair. They align two flat ribbons of different lengths at one edge on a plain mat. No rulers, no scales, no markings.",
+      "caption": "A craft question starts the comparison. Use the exact diagrams to check the values.",
+      "alt": "Two cartoon students align a longer red ribbon and a shorter blue ribbon on a green craft mat.",
+      "status": "visual-review-passed",
+      "method": "built-in-imagegen",
+      "file": "dpv-lesson-1-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-92046111-3a23-4546-a1c8-e801d8105695.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-lesson-2",
+      "kind": "lesson",
+      "index": 1,
+      "prompt": "Exact diagram specification: Two identical whole squares show six tenths and sixty hundredths.",
+      "caption": "Six tenths equals sixty hundredths when the whole is the same.",
+      "alt": "Two equal whole squares show six shaded columns out of ten on the left and sixty shaded cells out of one hundred on the right.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-lesson-2-diagram.png",
+      "vectorFile": "dpv-lesson-2.svg",
+      "math": {
+        "cells": 110,
+        "shaded": 66
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-lesson-3",
+      "kind": "lesson",
+      "index": 2,
+      "prompt": "Exact diagram specification: Two equal ten-by-ten grids both half shaded",
+      "caption": "0.50 and 0.500 name the same half; adding a trailing fractional zero preserves value.",
+      "alt": "Two equal hundred-cell squares are each shaded halfway, despite separate positions on the page.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-lesson-3-diagram.png",
+      "vectorFile": "dpv-lesson-3.svg",
+      "math": {
+        "cells": 200,
+        "shaded": 100
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-lesson-4",
+      "kind": "lesson",
+      "index": 3,
+      "prompt": "Exact diagram specification: Two equal grids show six tenths and six hundredths",
+      "caption": "0.6 and 0.06 differ. A zero inserted in another place can change value.",
+      "alt": "Equal hundred-cell squares show sixty teal cells on the left and six blue cells on the right.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-lesson-4-diagram.png",
+      "vectorFile": "dpv-lesson-4.svg",
+      "math": {
+        "cells": 200,
+        "shaded": 66
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-lesson-5",
+      "kind": "lesson",
+      "index": 4,
+      "prompt": "Use case: scientific-educational. Square text-free 2D cartoon classroom illustration, clean outlines, flat colors, minimal shading, uncluttered composition. Students are age appropriate with clearly cartoon faces and hands, never photorealistic. No text, letters, digits, logos, watermark, number scales, charts or mathematical symbols. A pale-skinned ten-year-old cartoon child with auburn hair and glasses using a manual wheelchair and a brown-skinned classmate compare two identical blank rectangular mats at an accessible table. Both participate. No rulers or numbers.",
+      "caption": "Agree on the same whole and unit before comparing parts.",
+      "alt": "A cartoon child using a wheelchair and a brown-skinned classmate point to matching blue mats at an accessible table.",
+      "status": "visual-review-passed",
+      "method": "built-in-imagegen",
+      "file": "dpv-lesson-5-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-da9aedb7-35ef-42a9-a9f0-13fd6173db58.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-lesson-6",
+      "kind": "lesson",
+      "index": 5,
+      "prompt": "Exact diagram specification: One highlighted cell among ten hundred-grids",
+      "caption": "All ten hundred-grids together are one whole. A single cell represents 0.001.",
+      "alt": "One teal cell stands out among ten hundred-cell grids enclosed in one frame.",
+      "status": "visual-review-passed",
+      "method": "deterministic-svg",
+      "file": "dpv-lesson-6-diagram.png",
+      "vectorFile": "dpv-lesson-6.svg",
+      "math": {
+        "cells": 1000,
+        "shaded": 1
+      },
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-lesson-7",
+      "kind": "lesson",
+      "index": 6,
+      "prompt": "Use case: scientific-educational. Square text-free 2D cartoon classroom illustration, clean outlines, flat colors, minimal shading, uncluttered composition. Students are age appropriate with clearly cartoon faces and hands, never photorealistic. No text, letters, digits, logos, watermark, number scales, charts or mathematical symbols. A cartoon ten-year-old student with medium-brown skin and short curls uses a magnifying glass to inspect a plain unmarked ribbon on a craft mat. Blank notebook nearby. No invented grid or numbers.",
+      "caption": "Compare greatest places first. Use precise representations when values are close.",
+      "alt": "A brown-skinned cartoon student examines a red ribbon with a magnifying glass beside a blank notebook.",
+      "status": "visual-review-passed",
+      "method": "built-in-imagegen",
+      "file": "dpv-lesson-7-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-87783433-1bb0-46c6-a892-de1142458c86.png",
+      "reviewedAt": "2026-09-09"
+    },
+    {
+      "id": "dpv-lesson-8",
+      "kind": "lesson",
+      "index": 7,
+      "prompt": "Use case: scientific-educational. Square text-free 2D cartoon classroom illustration, clean outlines, flat colors, minimal shading, uncluttered composition. Students are age appropriate with clearly cartoon faces and hands, never photorealistic. No text, letters, digits, logos, watermark, number scales, charts or mathematical symbols. Two cartoon ten-year-old students, a light-brown-skinned child with a teal headscarf and a dark-brown-skinned child with short hair, discuss ribbon lengths beside blank paper and colored pencils. No writing or symbols.",
+      "caption": "Explain the order using place value; counting written digits is not a comparison rule.",
+      "alt": "Two cartoon students, one wearing a teal headscarf, discuss red and yellow ribbons beside blank paper and pencils.",
+      "status": "visual-review-passed",
+      "method": "built-in-imagegen",
+      "file": "dpv-lesson-8-cartoon.png",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-bdb3fd97-8b61-4993-9076-a3b62ba2ef66.png",
+      "reviewedAt": "2026-09-09"
+    }
+  ]
+}

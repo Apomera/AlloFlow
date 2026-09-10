@@ -1,0 +1,1 @@
+module.exports={...require('../cell-observation-refinement/playwright.config.cjs'),testMatch:['cell-dish-controls.spec.ts','cell-observation-refinement.spec.ts','cell-explanation-refinement.spec.ts'],outputDir:'./browser-results'};

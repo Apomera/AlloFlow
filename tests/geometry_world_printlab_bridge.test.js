@@ -122,7 +122,7 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
       expect(source).toContain("engine.logEvent('print_lab_return'");
       expect(source).toContain("EDITABLE_WORLD_SCHEMA = 'alloflow-geometry-world/2'");
       expect(source).toContain('function parseEditableWorldText(text, declaredBytes)');
-      expect(source).toContain('function restoreEditableWorld(engine, candidate)');
+      expect(source).toContain('function restoreEditableWorld(engine, candidate, ctx)');
       expect(source).toContain('Replace current sandbox');
       expect(source).toContain('MAX_EDITABLE_WORLD_BYTES');
     });
@@ -472,7 +472,7 @@ describe('Geometry World bridge runtime behavior', () => {
     expect(pure.normalizeEditableWorld(Object.assign({}, validWorld, { blocks: [{ x: 0, y: 0, z: 0, type: 'grass', shape: 'cube', rotation: 0 }] }))).toMatchObject({ ok: false });
 
     const engine = {
-      blocks: { old: { userData: { blockType: 'wood', _measurementLayer: 'student' } } },
+      blocks: { '-3,1,7': { userData: { blockType: 'wood', shape: 'cube', rotation: 0, gridPos: { x: -3, y: 1, z: 7 }, _measurementLayer: 'student' } } },
       loadLesson: vi.fn(function (lesson) {
         this.blocks = {};
         this._currentLesson = lesson;
@@ -488,7 +488,7 @@ describe('Geometry World bridge runtime behavior', () => {
     const rejected = pure.restoreEditableWorld(engine, Object.assign({}, validWorld, { schema: 'unknown' }));
     expect(rejected.ok).toBe(false);
     expect(engine.loadLesson).not.toHaveBeenCalled();
-    expect(engine.blocks).toHaveProperty('old');
+    expect(engine.blocks).toHaveProperty('-3,1,7');
 
     const restored = pure.restoreEditableWorld(engine, checked.value);
     expect(restored).toMatchObject({ ok: true, placedCount: 2 });

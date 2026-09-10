@@ -1,0 +1,14 @@
+[
+  {
+    "file": "doc_pipeline_module.js",
+    "mirror": "desktop/web-app/public/doc_pipeline_module.js",
+    "sha256": "C79C4F2A9C159B09E7A4CD916A56B91D6704DC0E0D78DF0C781E4F264438BD4C",
+    "matched": true
+  },
+  {
+    "file": "view_pdf_audit_module.js",
+    "mirror": "desktop/web-app/public/view_pdf_audit_module.js",
+    "sha256": "813538F4CD594E863F5A91799FD31B70A81DC29740649534BFBEA558B8D786B6",
+    "matched": true
+  }
+]

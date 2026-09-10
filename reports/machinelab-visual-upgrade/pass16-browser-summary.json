@@ -1,0 +1,48 @@
+{
+  "browser": {
+    "pass16-light": {
+      "scenarios": 12,
+      "checks": [
+        "Keyboard focus toggle and held camera pose: pulley 390",
+        "Keyboard focus toggle and held camera pose: wedge 390",
+        "Keyboard focus toggle and held camera pose: pulley 320",
+        "Keyboard focus toggle and held camera pose: wedge 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest and retains focus preference"
+      ],
+      "errors": [],
+      "overflow": false
+    },
+    "pass16-dark": {
+      "scenarios": 12,
+      "checks": [
+        "Keyboard focus toggle and held camera pose: pulley 390",
+        "Keyboard focus toggle and held camera pose: wedge 390",
+        "Keyboard focus toggle and held camera pose: pulley 320",
+        "Keyboard focus toggle and held camera pose: wedge 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest and retains focus preference"
+      ],
+      "errors": [],
+      "overflow": false
+    },
+    "pass16-contrast": {
+      "scenarios": 12,
+      "checks": [
+        "Keyboard focus toggle and held camera pose: pulley 390",
+        "Keyboard focus toggle and held camera pose: wedge 390",
+        "Keyboard focus toggle and held camera pose: pulley 320",
+        "Keyboard focus toggle and held camera pose: wedge 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest and retains focus preference"
+      ],
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "mirrorIdentical": true,
+  "sourceSha256": "0398fd8b79d922da6e916750e58e508c2d89a4e466e4b9e06d1e05bd5b079651"
+}

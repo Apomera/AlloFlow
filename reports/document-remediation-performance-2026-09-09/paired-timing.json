@@ -1,0 +1,73 @@
+{
+  "node": "v24.11.1",
+  "measuredAt": "2026-09-09T04:24:10.001Z",
+  "baselineFunctionsSha256": "16530305d3b94b0649e4623334d185ec2e73ea557f05b8c38dc15462fb6a4bb7",
+  "currentSourceSha256": "d1c3088e7ac9e8a61f1e9992ba615a21d94510dddeccaa99a7f6ebc6c34f67bd",
+  "currentFunctionsSha256": "ee2c4d6d5dcc80567cd6143a4f10918a94783cb8e5ec85d2aab42b58ebe4ca63",
+  "methodology": "Same-process jsdom; alternating order; one warmup and three measured trials per size; synthetic repeated mixed content.",
+  "results": [
+    {
+      "blocks": 10,
+      "inputBytes": 3166,
+      "samplesMs": {
+        "baseline": [
+          138.45729999999458,
+          118.88870000000315,
+          55.8637000000017
+        ],
+        "current": [
+          222.41599999999744,
+          201.4475999999995,
+          110.09679999999935
+        ]
+      },
+      "medianMs": {
+        "baseline": 118.88870000000315,
+        "current": 201.4475999999995
+      },
+      "ratio": 0.5901718362492452
+    },
+    {
+      "blocks": 100,
+      "inputBytes": 31336,
+      "samplesMs": {
+        "baseline": [
+          486.7644,
+          437.3857999999964,
+          682.2785999999978
+        ],
+        "current": [
+          581.4542999999976,
+          601.9291000000012,
+          478.91049999999814
+        ]
+      },
+      "medianMs": {
+        "baseline": 486.7644,
+        "current": 581.4542999999976
+      },
+      "ratio": 0.8371498843503299
+    },
+    {
+      "blocks": 400,
+      "inputBytes": 125236,
+      "samplesMs": {
+        "baseline": [
+          4768.965499999991,
+          4446.986899999989,
+          3018.625800000009
+        ],
+        "current": [
+          3267.4465999999957,
+          1306.8696000000054,
+          1326.4247999999934
+        ]
+      },
+      "medianMs": {
+        "baseline": 4446.986899999989,
+        "current": 1326.4247999999934
+      },
+      "ratio": 3.3526113956856136
+    }
+  ]
+}

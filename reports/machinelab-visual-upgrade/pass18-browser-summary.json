@@ -1,0 +1,42 @@
+{
+  "browser": {
+    "pass18-light": {
+      "scenarios": 9,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: lever 390",
+        "Keyboard and held camera pose: lever 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "pass18-dark": {
+      "scenarios": 9,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: lever 390",
+        "Keyboard and held camera pose: lever 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "pass18-contrast": {
+      "scenarios": 9,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: lever 390",
+        "Keyboard and held camera pose: lever 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    }
+  },
+  "mirrorIdentical": true,
+  "sourceSha256": "e3e6fc7e72053bd21c41e5031aa69eff1c7304f8a62708ec4d951e88732eb642"
+}

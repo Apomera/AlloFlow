@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "All presets render their model precipitation type and remain still when paused",
+    "Light and dark anatomy views pass accessibility checks",
+    "Reduced motion keeps the rendered chamber stable",
+    "Phone layouts retain scene and controls without horizontal overflow"
+  ],
+  "presets": [
+    "gentleRain",
+    "summerStorm",
+    "mountainSnow",
+    "virga",
+    "freezingRain",
+    "hailstorm"
+  ],
+  "errors": []
+}

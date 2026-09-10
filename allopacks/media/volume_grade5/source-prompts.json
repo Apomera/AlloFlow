@@ -1,0 +1,56 @@
+[
+  {
+    "key": "sand",
+    "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. An open rectangular wooden sandbox filled with pale sand to a visible level below its rim, with one small scoop resting beside it. Show depth as well as the top surface, three-quarter view. No children.",
+    "alt": "A wooden sandbox holds pale sand below its rim, with a small scoop beside it.",
+    "status": "pending"
+  },
+  {
+    "key": "garden",
+    "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A rectangular raised wooden garden bed filled with dark soil visibly below its rim, a few small seedlings emerging. Three-quarter view shows the soil mass and the tall side walls. Isolate the bed.",
+    "alt": "A raised wooden bed contains dark soil and a few small seedlings.",
+    "status": "pending"
+  },
+  {
+    "key": "tank",
+    "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A transparent rectangular aquarium on a plain plinth, containing clear blue water below the rim, visible flat water surface and glass edges. No fish, no plants, no gravel, no decorations, no equipment. Focus on the inside space occupied by water.",
+    "alt": "A clear rectangular tank contains blue water below its top edge, with no objects inside.",
+    "status": "pending"
+  },
+  {
+    "key": "carpet",
+    "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. An empty rectangular room corner seen from above at an angle. A teal carpet covers most of the floor with a short remaining section rolled back at one edge exposing the floor underneath. No furniture. Focus on surface coverage.",
+    "alt": "Teal carpet covers most of an empty room's floor, with one edge rolled back.",
+    "status": "pending"
+  },
+  {
+    "key": "paint",
+    "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A single flat rectangular interior wall being covered with ochre paint, a broad nearly complete painted area and a small unpainted patch. A paint roller rests in a tray below the wall. No people, no room clutter. Focus on surface coverage.",
+    "alt": "An ochre painted wall has an unpainted patch, with a roller and paint tray below.",
+    "status": "pending"
+  },
+  {
+    "key": "window",
+    "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. One plain rectangular wooden window frame holding one single large pale-blue glass pane, no mullions or subdivisions. A faint reflection makes the whole glass surface visible. Flat front view on cream ground.",
+    "alt": "A wooden rectangular window frame surrounds one pale-blue glass pane.",
+    "status": "pending"
+  },
+  {
+    "key": "fence",
+    "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. Overhead oblique view of a plain rectangular grassy yard enclosed by a continuous low wooden fence on all four sides. No trees, no house, no person. Make the outside boundary clear and the interior simple.",
+    "alt": "A low wooden fence surrounds all four sides of a rectangular grassy yard.",
+    "status": "pending"
+  },
+  {
+    "key": "ribbon",
+    "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. A rectangular closed plain gift box in a three-quarter overhead view. Exactly one narrow coral ribbon band wraps HORIZONTALLY around the four side walls at mid-height. The top face is completely plain with NO ribbon, no bow. Focus on the single perimeter loop. No second band, no cross.",
+    "alt": "A coral ribbon forms a single horizontal band around the side walls of a plain rectangular box.",
+    "status": "pending"
+  },
+  {
+    "key": "mirror",
+    "prompt": "Square educational hand-printed illustration, gentle linocut and layered ink texture on warm cream paper. Restrained teal, ochre, coral and brown palette, clear broad silhouettes, subtle print grain, generous margins, not photorealistic, not glossy 3D. No text, letters, numerals, measurements, logos, labels or watermarks. No people. One simple concept-focused composition. One rectangular mirror seen straight-on, with a continuous thick ochre trim border on all four sides. The interior is plain pale blue with a subtle reflection. No people or furniture reflected.",
+    "alt": "Ochre trim forms a border around all four sides of a rectangular mirror.",
+    "status": "pending"
+  }
+]

@@ -45,7 +45,7 @@ const KNOWN_GLOBALS = new Set([
   // filtered by hand. escape/unescape are deprecated but still real globals.
   'NaN', 'Infinity', 'undefined', 'escape', 'unescape',
   'Math', 'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean', 'Date', 'RegExp', 'Map', 'Set',
-  'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Proxy', 'Reflect', 'Error', 'TypeError', 'RangeError',
+  'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Proxy', 'Reflect', 'Error', 'TypeError', 'RangeError', 'SyntaxError',
   'Function', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'encodeURIComponent', 'decodeURIComponent',
   'encodeURI', 'decodeURI', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval',
   'requestAnimationFrame', 'cancelAnimationFrame', 'queueMicrotask', 'structuredClone',
@@ -61,7 +61,7 @@ const KNOWN_GLOBALS = new Set([
   'Uint8Array', 'Uint8ClampedArray', 'Int8Array', 'Uint16Array', 'Int16Array', 'Uint32Array', 'Int32Array',
   'Float32Array', 'Float64Array', 'ArrayBuffer', 'DataView', 'BigInt', 'Intl', 'performance', 'crypto',
   'DOMParser', 'XMLSerializer', 'Node', 'Element', 'HTMLElement', 'Image', 'Audio', 'Event', 'CustomEvent',
-  'KeyboardEvent', 'MouseEvent', 'SpeechSynthesisUtterance', 'speechSynthesis',
+  'KeyboardEvent', 'MouseEvent', 'PointerEvent', 'SpeechSynthesisUtterance', 'speechSynthesis',
   'MutationObserver', 'IntersectionObserver', 'ResizeObserver', 'getComputedStyle', 'matchMedia',
   'MediaRecorder', 'MediaStream', 'MediaSource',
   'localStorage', 'sessionStorage', 'indexedDB', 'IDBKeyRange', 'alert', 'confirm', 'prompt', 'btoa', 'AudioContext',

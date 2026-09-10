@@ -1,6 +1,7 @@
 'use strict';
 const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
+const reportDate=process.argv[2]||'2026-09-08';assert(/^\d{4}-\d{2}-\d{2}$/.test(reportDate),'Use a YYYY-MM-DD report date');
 async function main(){
 const files=['allopacks','allopacks/illustrated'].flatMap(dir=>fs.readdirSync(path.join(root,dir)).filter(f=>f.endsWith('.allopack.json')).sort().map(f=>dir+'/'+f));
 const browser=await chromium.launch({headless:true});
@@ -26,7 +27,7 @@ assert(result.loads[0].success,file+': '+JSON.stringify(result.toasts));assert.e
 for(let i=0;i<pack.history.length;i++)for(const key of Object.keys(pack.history[i]))assert.deepEqual(result.history[i][key],pack.history[i][key],file+': '+pack.history[i].id+': '+key);
 rows.push({file,resources:pack.history.length,status:'passed'});
 }
-assert.deepEqual(errors,[]);const report={date:'2026-09-08',scope:'Offline production JSON bridge, MiscHandlers and history hydration; original resource fields preserved. Not a signed-in community-library or full-view rendering test.',files:rows.length,resources:rows.reduce((n,r)=>n+r.resources,0),results:rows};
-fs.mkdirSync(path.join(root,'docs','allopack-quality-2026-09-08'),{recursive:true});fs.writeFileSync(path.join(root,'docs','allopack-quality-2026-09-08','imports.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({files:report.files,resources:report.resources,status:'passed'}));
+assert.deepEqual(errors,[]);const report={date:reportDate,scope:'Offline production JSON bridge, MiscHandlers and history hydration; original resource fields preserved. Not a signed-in community-library or full-view rendering test.',files:rows.length,resources:rows.reduce((n,r)=>n+r.resources,0),results:rows};
+fs.mkdirSync(path.join(root,'docs','allopack-quality-'+reportDate),{recursive:true});fs.writeFileSync(path.join(root,'docs','allopack-quality-'+reportDate,'imports.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({files:report.files,resources:report.resources,status:'passed'}));
 }finally{await browser.close();}}
 main().catch(e=>{console.error(e);process.exitCode=1;});

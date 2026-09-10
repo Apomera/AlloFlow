@@ -81,3 +81,27 @@ See [SPATIAL_GUIDE_AND_3D.md](SPATIAL_GUIDE_AND_3D.md) for the implemented view 
 ## Optional 3D eye pilot
 
 The next pass implements the optional schematic eye viewer. See [EYE_3D_PILOT.md](EYE_3D_PILOT.md) for the entry point, scope, screenshots, and verification.
+
+## 3D reference to evidence handoff
+
+See [EYE_3D_EVIDENCE_FOLLOWUP.md](EYE_3D_EVIDENCE_FOLLOWUP.md) for the structure-directory handoff, existing-note review, return to the selected 3D structure, and verification.
+
+## Specimen-wide observation review
+
+See [OBSERVATION_REVIEW.md](OBSERVATION_REVIEW.md) for the cross-layer review list, missing-note and low-confidence filters, accessible note navigation, and verification.
+
+## Observation summary export
+
+See [OBSERVATION_SUMMARY_EXPORT.md](OBSERVATION_SUMMARY_EXPORT.md) for the filter-aware text preview, copy/download controls, fallback selection, and verification added September 9.
+
+## Search saved observations
+
+See [OBSERVATION_SEARCH.md](OBSERVATION_SEARCH.md) for searching names, layers, and student notes, combined filters, search-scoped exports, and verification.
+
+## Specimen framing and inspector hierarchy
+
+See [VISUAL_FRAMING.md](VISUAL_FRAMING.md) for geometry-aware 3D eye framing, Fit specimen, the simplified structure inspector, and verification.
+
+## Circulatory-pump comparison diagrams
+
+See [PUMP_COMPARISON_DIAGRAMS.md](PUMP_COMPARISON_DIAGRAMS.md) for specimen-specific SVG diagrams, explicit scientific limits, references, and verification.

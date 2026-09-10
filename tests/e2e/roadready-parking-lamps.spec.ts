@@ -1,0 +1,33 @@
+import { test, expect } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_roadready.js', toolId: 'roadReady', width: 1100, height: 780, appStyles: true, preScripts: ['stem_lab/stem_lab_module.js'], probes: "window.__testHooks={};document.documentElement.classList.add('theme-dark');" });
+test.beforeAll(async () => { await harness.start(); }); test.afterAll(async () => { await harness.stop(); }); test.afterEach(async ({ page }) => { await harness.destroy(page); });
+for (const view of ['parking', 'tightParallel']) test(view + ' lamps follow Reverse, brake hold, Drive and securing', async ({ page }) => {
+  await harness.mount(page, { roadReady: { view, reducedMotion: true, badges: { park_master: true } } }, undefined, { expectCanvas: false });
+  const y = view === 'parking' ? 167.5 : 163.5;
+  await page.evaluate(y => Object.assign((window as any).__testHooks.parking.carRef.current, { x: 285, y, heading: -Math.PI / 2, speed: 0, steering: 0 }), y);
+  const response = page.getByLabel('Car response');
+  const lamps = () => page.evaluate(y => {
+    const ctx = document.querySelector('canvas')!.getContext('2d')!;
+    return { reverse: Array.from(ctx.getImageData(278, Math.floor(y + 23), 1, 1).data).slice(0, 3), brake: Array.from(ctx.getImageData(274, Math.floor(y + 24), 1, 1).data).slice(0, 3) };
+  }, y);
+  await page.keyboard.press('g');
+  await expect(response).toContainText('Stopped · R');
+  await expect.poll(async () => (await lamps()).reverse).toEqual([255, 255, 255]);
+  await page.keyboard.down(' ');
+  await expect(response).toContainText('Brake held · R');
+  await expect.poll(async () => (await lamps()).brake).toEqual([251, 113, 133]);
+  await page.keyboard.up(' ');
+  await expect(response).toContainText('Stopped · R');
+  await expect.poll(async () => (await lamps()).brake).not.toEqual([251, 113, 133]);
+  await page.keyboard.press('f');
+  await expect(response).toContainText('Stopped · D');
+  await expect.poll(async () => (await lamps()).reverse).not.toEqual([255, 255, 255]);
+  await page.keyboard.press('g');
+  await expect.poll(async () => (await lamps()).reverse).toEqual([255, 255, 255]);
+  await page.getByRole('button', { name: 'Park + parking brake', exact: true }).click();
+  await expect(response).toContainText('Park secured · P');
+  await expect.poll(async () => (await lamps()).reverse).not.toEqual([255, 255, 255]);
+  await expect.poll(async () => (await lamps()).brake).not.toEqual([251, 113, 133]);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});

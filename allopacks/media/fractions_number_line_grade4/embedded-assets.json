@@ -1,0 +1,290 @@
+[
+  {
+    "id": "fn-term-1",
+    "kind": "term",
+    "file": "fn-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 4 equal parts, the first 3 teal. Below, a dot marks 3 of 4 equal intervals from the left unit endpoint.",
+    "altHash": "img-54z-9ee59968"
+  },
+  {
+    "id": "fn-term-2",
+    "kind": "term",
+    "file": "fn-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 4 equal parts, the first 3 teal. Below, a dot marks 3 of 4 equal intervals from the left unit endpoint.",
+    "altHash": "img-54z-9ee59968"
+  },
+  {
+    "id": "fn-term-3",
+    "kind": "term",
+    "file": "fn-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four equal unshaded strip parts sit above a line with five ticks spanning one whole.",
+    "altHash": "img-4er-e2eefe3a"
+  },
+  {
+    "id": "fn-term-4",
+    "kind": "term",
+    "file": "fn-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two aligned number lines have two and four equal intervals. Both dots lie halfway along the same whole, joined by a dashed vertical guide.",
+    "altHash": "img-6ez-07eb2c84"
+  },
+  {
+    "id": "fn-term-5",
+    "kind": "term",
+    "file": "fn-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 4 equal parts, the first 4 teal. Below, a dot marks 4 of 4 equal intervals from the left unit endpoint.",
+    "altHash": "img-5c3-b8a156f9"
+  },
+  {
+    "id": "fn-term-6",
+    "kind": "term",
+    "file": "fn-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal strip and an ochre strip have the same length and height, with aligned ends.",
+    "altHash": "img-313-4b29b42a"
+  },
+  {
+    "id": "fn-term-7",
+    "kind": "term",
+    "file": "fn-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 4 equal parts, the first 1 teal. Below, a dot marks 1 of 4 equal intervals from the left unit endpoint.",
+    "altHash": "img-50j-eef699dc"
+  },
+  {
+    "id": "fn-term-8",
+    "kind": "term",
+    "file": "fn-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 2 equal parts, the first 1 teal. Below, a dot marks 1 of 2 equal intervals from the left unit endpoint.",
+    "altHash": "img-4g3-71caeb0f"
+  },
+  {
+    "id": "fn-term-9",
+    "kind": "term",
+    "file": "fn-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four equal unshaded strip parts sit above a line with five ticks spanning one whole.",
+    "altHash": "img-4er-e2eefe3a"
+  },
+  {
+    "id": "fn-term-10",
+    "kind": "term",
+    "file": "fn-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Aligned lines divide the same whole into fourths and eighths. The first eighth dot is left of the first fourth dot.",
+    "altHash": "img-6f3-7c02f38a"
+  },
+  {
+    "id": "fn-anchor-1",
+    "kind": "anchor",
+    "file": "fn-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four equal unshaded strip parts sit above a line with five ticks spanning one whole.",
+    "altHash": "img-4er-e2eefe3a"
+  },
+  {
+    "id": "fn-anchor-2",
+    "kind": "anchor",
+    "file": "fn-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 4 equal parts, the first 3 teal. Below, a dot marks 3 of 4 equal intervals from the left unit endpoint.",
+    "altHash": "img-54z-9ee59968"
+  },
+  {
+    "id": "fn-anchor-3",
+    "kind": "anchor",
+    "file": "fn-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two aligned number lines have two and four equal intervals. Both dots lie halfway along the same whole, joined by a dashed vertical guide.",
+    "altHash": "img-6ez-07eb2c84"
+  },
+  {
+    "id": "fn-anchor-4",
+    "kind": "anchor",
+    "file": "fn-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Aligned lines divide the same whole into fourths and eighths. The first eighth dot is left of the first fourth dot.",
+    "altHash": "img-6f3-7c02f38a"
+  },
+  {
+    "id": "fn-anchor-5",
+    "kind": "anchor",
+    "file": "fn-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two adjacent wholes are split into four parts each. Five parts are teal; the dot is one fourth past the middle whole boundary.",
+    "altHash": "img-5xr-63fdc700"
+  },
+  {
+    "id": "fn-sort-1",
+    "kind": "sort",
+    "file": "fn-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 4 equal parts, the first 1 teal. Below, a dot marks 1 of 4 equal intervals from the left unit endpoint.",
+    "altHash": "img-50j-eef699dc"
+  },
+  {
+    "id": "fn-sort-2",
+    "kind": "sort",
+    "file": "fn-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 4 equal parts, the first 2 teal. Below, a dot marks 2 of 4 equal intervals from the left unit endpoint.",
+    "altHash": "img-53n-317eadac"
+  },
+  {
+    "id": "fn-sort-3",
+    "kind": "sort",
+    "file": "fn-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 4 equal parts, the first 3 teal. Below, a dot marks 3 of 4 equal intervals from the left unit endpoint.",
+    "altHash": "img-54z-9ee59968"
+  },
+  {
+    "id": "fn-sort-4",
+    "kind": "sort",
+    "file": "fn-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 8 equal parts, the first 1 teal. Below, a dot marks 1 of 8 equal intervals from the left unit endpoint.",
+    "altHash": "img-5pr-59c882c5"
+  },
+  {
+    "id": "fn-sort-5",
+    "kind": "sort",
+    "file": "fn-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 8 equal parts, the first 4 teal. Below, a dot marks 4 of 8 equal intervals from the left unit endpoint.",
+    "altHash": "img-60n-63b94e02"
+  },
+  {
+    "id": "fn-sort-6",
+    "kind": "sort",
+    "file": "fn-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 8 equal parts, the first 7 teal. Below, a dot marks 7 of 8 equal intervals from the left unit endpoint.",
+    "altHash": "img-62n-a88bca49"
+  },
+  {
+    "id": "fn-sort-7",
+    "kind": "sort",
+    "file": "fn-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 3 equal parts, the first 1 teal. Below, a dot marks 1 of 3 equal intervals from the left unit endpoint.",
+    "altHash": "img-4p3-e76115a8"
+  },
+  {
+    "id": "fn-sort-8",
+    "kind": "sort",
+    "file": "fn-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 3 equal parts, the first 2 teal. Below, a dot marks 2 of 3 equal intervals from the left unit endpoint.",
+    "altHash": "img-4t7-43247d8b"
+  },
+  {
+    "id": "fn-sort-9",
+    "kind": "sort",
+    "file": "fn-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 6 equal parts, the first 3 teal. Below, a dot marks 3 of 6 equal intervals from the left unit endpoint.",
+    "altHash": "img-5ev-ec143313"
+  },
+  {
+    "id": "fn-lesson-1",
+    "kind": "lesson",
+    "file": "fn-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four equal unshaded strip parts sit above a line with five ticks spanning one whole.",
+    "altHash": "img-4er-e2eefe3a"
+  },
+  {
+    "id": "fn-lesson-2",
+    "kind": "lesson",
+    "file": "fn-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 4 equal parts, the first 3 teal. Below, a dot marks 3 of 4 equal intervals from the left unit endpoint.",
+    "altHash": "img-54z-9ee59968"
+  },
+  {
+    "id": "fn-lesson-3",
+    "kind": "lesson",
+    "file": "fn-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two aligned number lines have two and four equal intervals. Both dots lie halfway along the same whole, joined by a dashed vertical guide.",
+    "altHash": "img-6ez-07eb2c84"
+  },
+  {
+    "id": "fn-lesson-4",
+    "kind": "lesson",
+    "file": "fn-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Aligned lines divide the same whole into fourths and eighths. The first eighth dot is left of the first fourth dot.",
+    "altHash": "img-6f3-7c02f38a"
+  },
+  {
+    "id": "fn-lesson-5",
+    "kind": "lesson",
+    "file": "fn-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A strip has 2 equal parts, the first 1 teal. Below, a dot marks 1 of 2 equal intervals from the left unit endpoint.",
+    "altHash": "img-4g3-71caeb0f"
+  },
+  {
+    "id": "fn-lesson-6",
+    "kind": "lesson",
+    "file": "fn-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two adjacent wholes are split into four parts each. Five parts are teal; the dot is one fourth past the middle whole boundary.",
+    "altHash": "img-5xr-63fdc700"
+  },
+  {
+    "id": "fn-lesson-7",
+    "kind": "lesson",
+    "file": "fn-lesson-7.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A blank paper strip lies above an unmarked wooden straightedge; a pencil, teal tape roll and blank coral cards sit nearby in a paper collage.",
+    "altHash": "img-185f-06d8b103"
+  },
+  {
+    "id": "fn-lesson-8",
+    "kind": "lesson",
+    "file": "fn-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A two-whole line has fourth-sized steps and a dot one step past the middle. A bracket spans the first whole.",
+    "altHash": "img-6b7-6be93560"
+  }
+]

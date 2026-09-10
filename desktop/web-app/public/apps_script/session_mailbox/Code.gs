@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 20;
+var VERSION = 21;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -779,6 +779,31 @@ function validConceptQuestAction(value, uid) {
     && value.answerIndex >= 0 && value.answerIndex <= 5
     && typeof value.submittedAt === 'number' && isFinite(value.submittedAt) && value.submittedAt > 0;
 }
+function validConnectedEscapeAction(value, attemptId) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = ['attemptId', 'requestId', 'nodeId', 'kind', 'value'];
+  return Object.keys(value).every(function(key) { return allowed.indexOf(key) !== -1; })
+    && ['__proto__', 'constructor', 'prototype'].indexOf(value.requestId) === -1
+    && ['constructor', 'prototype'].indexOf(value.nodeId) === -1
+    && value.attemptId === attemptId && typeof value.attemptId === 'string' && /^[A-Za-z0-9_-]{1,160}$/.test(value.attemptId)
+    && typeof value.requestId === 'string' && /^[A-Za-z0-9_-]{1,160}$/.test(value.requestId)
+    && typeof value.nodeId === 'string' && /^[a-z][a-z0-9_-]{0,39}$/.test(value.nodeId)
+    && ['interact', 'hint'].indexOf(value.kind) !== -1
+    && typeof value.value === 'string' && /^[0-9,]{0,40}$/.test(value.value);
+}
+function validLessonBoardAction(value, state) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var keys = Object.keys(value), allowed = ['attemptId', 'turn', 'requestId', 'kind', 'targetId', 'value'];
+  if (keys.length !== 6 || keys.some(function(key) { return allowed.indexOf(key) < 0; })) return false;
+  var all = state.teamProgress && state.teamProgress.All || {}, run = all.boardRuns && all.boardRuns[state.attemptId] || {};
+  var step = run.steps && run.steps['t' + run.turn] || {};
+  if (value.attemptId !== state.attemptId || typeof value.attemptId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(value.attemptId)
+    || typeof value.turn !== 'number' || value.turn % 1 !== 0 || value.turn !== run.turn || value.turn < 0 || value.turn >= 48
+    || typeof value.requestId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(value.requestId) || ['__proto__','constructor','prototype'].indexOf(value.requestId) >= 0
+    || typeof value.targetId !== 'string' || !/^[a-z][a-z0-9_-]{0,39}$/.test(value.targetId) || ['constructor','prototype'].indexOf(value.targetId) >= 0 || typeof value.value !== 'string') return false;
+  return step.phase === 'choose' && value.kind === 'vote' && value.value === ''
+    || step.phase === 'answer' && value.kind === 'answer' && value.targetId === step.targetId && /^[0-9,]{1,24}$/.test(value.value);
+}
 function participantCanPatchSession(updates, uid, sessionData) {
   var keys = Object.keys(updates);
   var rosterRoot = 'roster.' + uid;
@@ -811,6 +836,21 @@ function participantCanPatchSession(updates, uid, sessionData) {
   var escapeTeamLeaf = 'escapeRoomState.teams.' + uid;
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
+    if (questState.mode === 'lesson-board' && pathStarts(key, 'escapeRoomState')) {
+      if (questState.isActive !== true || !sessionData.roster || !Object.prototype.hasOwnProperty.call(sessionData.roster, uid)) return false;
+      if (key === escapeTeamLeaf && updates[key] === 'All') continue;
+      if (key === 'escapeRoomState.teamProgress.All.boardActions.' + uid && questState.isPaused !== true
+        && questState.teams && questState.teams[uid] === 'All' && validLessonBoardAction(updates[key], questState)) continue;
+      return false;
+    }
+    if (questState.mode === 'connected-room' && pathStarts(key, 'escapeRoomState')) {
+      if (questState.isActive !== true || !sessionData.roster || !sessionData.roster[uid]) return false;
+      if (key === escapeTeamLeaf && updates[key] === 'All') continue;
+      if (key === 'escapeRoomState.teamProgress.All.connectedActions.' + uid
+          && questState.isPaused !== true && questState.teams && questState.teams[uid] === 'All'
+          && validConnectedEscapeAction(updates[key], questState.attemptId)) continue;
+      return false;
+    }
     var isQuestCollectionPatch = false;
     for (var q = 0; q < questCollectionRoots.length; q++) {
       if (pathStarts(key, questCollectionRoots[q])) { isQuestCollectionPatch = true; break; }

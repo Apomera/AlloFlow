@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "awardBalance": 80,
+  "reservedPoints": 15,
+  "storeBalance": 70,
+  "storeAvailable": 55,
+  "stock": 4,
+  "fulfilledBalance": 55,
+  "refundedBalance": 70,
+  "exactAssetDownload": true,
+  "postSaveRefreshLocksQuote": true,
+  "crossOriginRejected": true,
+  "mobile": {
+    "page": 390,
+    "viewport": 390
+  },
+  "pageErrors": []
+}

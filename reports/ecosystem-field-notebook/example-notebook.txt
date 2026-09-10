@@ -1,0 +1,37 @@
+ECOSYSTEM FIELD NOTEBOOK
+Illustrative food-web model. Biomass indices are not animal counts; time units are modeled.
+Each observation stores its original paired sample and setup. Notes are separate observations, not statistical replicates.
+
+OBSERVATION 1 — Red foxes — time 24.0
+Disturbance: Remove Red foxes; event time: 8.0
+Starting capacity: 160; starting cover: 0%
+Starting community: Meadow plants=110; Rabbits=35; Meadow voles=28; Red foxes=9; Barn owls=6; Caterpillars=0 (excluded); Blue tits=0 (excluded)
+Prediction before run: Removing foxes may increase grazing.
+Group | Baseline | Experiment | Difference (experiment minus baseline)
+Meadow plants | 159.47365 | 141.87135 | -17.602303
+Rabbits | 0.68579147 | 27.672127 | 26.986336
+Meadow voles | 0.0013369922 | 0.28839182 | 0.28705483
+Red foxes | 3.5174599 | 0.0000000 | -3.5174599
+Barn owls | 1.6526565 | 1.8170774 | 0.16442091
+Caterpillars | 0.0000000 | 0.0000000 | 0.0000000
+Blue tits | 0.0000000 | 0.0000000 | 0.0000000
+Sample capacity: baseline 160; experiment 160
+Sample refuge cover: baseline 0%; experiment 0%
+Explanation: Fox biomass is zero; prey and plants respond indirectly.
+
+OBSERVATION 2 — Rabbits — time 24.0
+Disturbance: Restore refuge cover by 40 percentage points (maximum 80%); event time: 8.0
+Starting capacity: 160; starting cover: 10%
+Starting community: Meadow plants=110; Rabbits=35; Meadow voles=28; Red foxes=9; Barn owls=6; Caterpillars=0 (excluded); Blue tits=0 (excluded)
+Prediction before run: Removing foxes may increase grazing.
+Group | Baseline | Experiment | Difference (experiment minus baseline)
+Meadow plants | 159.12713 | 156.32993 | -2.7972001
+Rabbits | 1.1632363 | 5.3669783 | 4.2037419
+Meadow voles | 0.0042824900 | 0.10249799 | 0.098215502
+Red foxes | 3.6742658 | 3.7709462 | 0.096680442
+Barn owls | 1.6573850 | 1.6638112 | 0.0064262072
+Caterpillars | 0.0000000 | 0.0000000 | 0.0000000
+Blue tits | 0.0000000 | 0.0000000 | 0.0000000
+Sample capacity: baseline 160; experiment 160
+Sample refuge cover: baseline 10%; experiment 50%
+Explanation: Refuge cover rose from 10% to 50%.

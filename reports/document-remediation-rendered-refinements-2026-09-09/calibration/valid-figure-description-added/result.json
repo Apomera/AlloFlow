@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\valid-figure-description-added\\source.html",
+    "sha256": "72203f5d8776bd0680d5cb4c0bc84eb48443c5f8e399563cf58c630856935f3c",
+    "bytes": 288
+  },
+  "candidate": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\valid-figure-description-added\\candidate.html",
+    "sha256": "3c77549e97afa6eec1e6dffa01c61dc3242b59a8f9d6074bb44deec719e9904d",
+    "bytes": 319
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 490.0356000000029,
+  "status": "passed",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0
+    }
+  },
+  "checks": [
+    {
+      "id": "figure",
+      "sourceSelector": "#figure",
+      "candidateSelector": "#figure",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "name",
+          "status": "passed",
+          "source": "",
+          "candidate": "Triangle with three equal sides"
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": false,
+          "candidate": true
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

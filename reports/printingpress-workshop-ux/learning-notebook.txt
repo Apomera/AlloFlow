@@ -1,0 +1,8 @@
+Print-run notebook
+Completed impressions: 1
+Most recent proofs (up to 12)
+
+#1 — PRINT — Hands-on — 2026-09-10T05:41:48.406Z — Prediction: It will stay mirror-reversed
+
+My observations
+I predicted a mirrored print. My proof reads PRINT normally. The screw turned and lowered the platen.

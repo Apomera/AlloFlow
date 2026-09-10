@@ -88,7 +88,7 @@ test.describe('raptor flight continuity', () => {
     expect(result.resting.raptorPosition).toEqual(result.landed.raptorPosition);
     expect(result.resting.wingFold).toBeGreaterThan(0.99);expect(result.resting.wingRestSpan).toBeLessThan(0.34);
     expect(result.resting.touchdownActive).toBe(false);
-    expect(result.resting.visualGroundClearance).toBeGreaterThan(0.24);expect(result.resting.visualGroundClearance).toBeLessThan(0.27);
+    expect(result.resting.visualGroundClearance).toBeCloseTo(result.resting.footSupportClearance,2);expect(result.resting.footSurfaceClearance).toBeGreaterThanOrEqual(0);expect(result.resting.footSurfaceClearance).toBeLessThan(0.012);
     expect(result.resting.airflowOverlayVisible).toBe(false);expect(result.resting.speedOverlayVisible).toBe(false);
     await page.getByRole('button',{name:'Scenic view',exact:true}).click();
     await page.evaluate(()=>(window as any).advanceFlight(0));
@@ -120,6 +120,7 @@ test.describe('raptor flight continuity', () => {
 
   test('retains a stable bird and working view controls with reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect.poll(() => page.locator('[data-raptor-canvas]').evaluate((c: any) => c._rhSnapshot().reducedMotion)).toBe(true);
     const result = await page.evaluate(() => {
       const canvas = document.querySelector('[data-raptor-canvas=true]') as any;
       const step = (window as any).advanceFlight;

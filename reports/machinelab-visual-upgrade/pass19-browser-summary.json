@@ -1,0 +1,38 @@
+{
+  "light": {
+    "scenarios": 13,
+    "errors": [],
+    "overflow": false,
+    "checks": [
+      "Keyboard and held camera pose: pulley 390",
+      "Keyboard and held camera pose: pulley 320",
+      "Reduced motion holds half stroke",
+      "Old timer cannot interrupt newer run",
+      "Next station starts at rest"
+    ]
+  },
+  "dark": {
+    "scenarios": 13,
+    "errors": [],
+    "overflow": false,
+    "checks": [
+      "Keyboard and held camera pose: pulley 390",
+      "Keyboard and held camera pose: pulley 320",
+      "Reduced motion holds half stroke",
+      "Old timer cannot interrupt newer run",
+      "Next station starts at rest"
+    ]
+  },
+  "contrast": {
+    "scenarios": 13,
+    "errors": [],
+    "overflow": false,
+    "checks": [
+      "Keyboard and held camera pose: pulley 390",
+      "Keyboard and held camera pose: pulley 320",
+      "Reduced motion holds half stroke",
+      "Old timer cannot interrupt newer run",
+      "Next station starts at rest"
+    ]
+  }
+}

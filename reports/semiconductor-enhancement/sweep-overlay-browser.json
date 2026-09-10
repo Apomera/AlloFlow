@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "checks": [
+    "two saved sweep selections",
+    "shared axes",
+    "changed conditions",
+    "unmodified simulation and snapshots",
+    "exact shared input table",
+    "logarithmic scale",
+    "missing samples",
+    "solar primary curve",
+    "incompatible output guard",
+    "mobile overflow",
+    "six WCAG variants"
+  ],
+  "errors": []
+}

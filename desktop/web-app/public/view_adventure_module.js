@@ -117,6 +117,11 @@ function AdventureSettingsSurface({
       [data-adventure-settings] textarea.as-control{resize:vertical;min-height:100px}
       [data-adventure-settings] .as-help{display:block;font-size:12px;font-weight:400;color:var(--as-muted);margin:6px 0 0;line-height:1.6}
       [data-adventure-settings] .as-check{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:10px 0;cursor:pointer;font-size:13px;font-weight:600}
+      [data-adventure-settings] .as-episode-mode{border:0;padding:0;margin:0 0 16px;min-width:0}
+      [data-adventure-settings] .as-episode-mode legend{font-size:13px;font-weight:600;margin-bottom:6px}
+      [data-adventure-settings] .as-option{display:flex;align-items:center;gap:10px;min-height:44px;padding:10px;border:1px solid var(--as-line);border-radius:8px;background:var(--as-bg);font-size:13px;font-weight:600;cursor:pointer}
+      [data-adventure-settings] .as-option:has(input:checked){border:2px solid var(--as-accent);padding:9px}
+      [data-adventure-settings] .as-option input{width:20px;height:20px;margin:0;accent-color:var(--as-accent);flex-shrink:0}
       [data-adventure-settings] .as-check input{width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:var(--as-accent)}
       [data-adventure-settings] input:disabled,[data-adventure-settings] select:disabled,[data-adventure-settings] textarea:disabled{cursor:not-allowed;color:var(--as-muted);opacity:1;background:var(--as-wash)}
       [data-adventure-settings] .as-button{min-height:44px;padding:8px 12px;border:1px solid var(--as-line);border-radius:8px;background:var(--as-bg);color:var(--as-accent);font-size:13px;font-weight:600;cursor:pointer}
@@ -157,6 +162,7 @@ function AdventureEpisodeSettings({
 }) {
   const label = (key, fallback) => adventureSetupText(t, key, fallback);
   const limit = adventureSetupLimit(state);
+  const previousLength = React.useRef(limit ?? 12);
   const disabled = locked || typeof onChange !== 'function';
   const update = (key, value) => {
     if (!disabled) onChange(previous => ({
@@ -166,18 +172,48 @@ function AdventureEpisodeSettings({
   };
   return /*#__PURE__*/React.createElement(AdventureSettingsSurface, {
     theme: theme
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("fieldset", {
+    className: "as-episode-mode",
+    disabled: disabled,
+    "aria-describedby": id + '-hint'
+  }, /*#__PURE__*/React.createElement("legend", null, label('episode_format', 'Episode format')), /*#__PURE__*/React.createElement("div", {
     className: "as-grid"
   }, /*#__PURE__*/React.createElement("label", {
+    className: "as-option"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "radio",
+    name: id + '-format',
+    checked: limit !== null,
+    disabled: disabled,
+    onChange: () => update('episodeTurnLimit', previousLength.current)
+  }), label('set_length', 'Set-length episode')), /*#__PURE__*/React.createElement("label", {
+    className: "as-option"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "radio",
+    name: id + '-format',
+    checked: limit === null,
+    disabled: disabled,
+    onChange: () => {
+      if (!disabled) {
+        previousLength.current = limit ?? previousLength.current;
+        update('episodeTurnLimit', null);
+      }
+    }
+  }), label('open', 'Open-ended')))), /*#__PURE__*/React.createElement("div", {
+    className: "as-grid"
+  }, limit !== null && /*#__PURE__*/React.createElement("label", {
     className: "as-field",
     htmlFor: id
   }, label('length', 'Episode length'), /*#__PURE__*/React.createElement("select", {
     className: "as-control",
     "aria-label": label('length', 'Episode length'),
     id: id,
-    value: limit == null ? 'open' : String(limit),
+    value: String(limit),
     disabled: disabled,
-    onChange: e => update('episodeTurnLimit', e.target.value === 'open' ? null : Number(e.target.value))
+    onChange: e => {
+      previousLength.current = Number(e.target.value);
+      update('episodeTurnLimit', previousLength.current);
+    }
   }, /*#__PURE__*/React.createElement("option", {
     value: "6"
   }, label('short', 'Short · 6 decisions')), /*#__PURE__*/React.createElement("option", {
@@ -186,9 +222,7 @@ function AdventureEpisodeSettings({
     value: "20"
   }, label('long', 'Long · 20 decisions')), limit != null && ![6, 12, 20].includes(limit) && /*#__PURE__*/React.createElement("option", {
     value: String(limit)
-  }, limit, " ", label('decisions', 'decisions')), /*#__PURE__*/React.createElement("option", {
-    value: "open"
-  }, label('open', 'Open-ended')))), !freeResponse && /*#__PURE__*/React.createElement("label", {
+  }, limit, " ", label('decisions', 'decisions')))), !freeResponse && /*#__PURE__*/React.createElement("label", {
     className: "as-field",
     htmlFor: id + '-choices'
   }, label('choices', 'Choices per decision'), /*#__PURE__*/React.createElement("select", {
@@ -202,8 +236,9 @@ function AdventureEpisodeSettings({
     key: count,
     value: count
   }, count))))), /*#__PURE__*/React.createElement("p", {
-    className: "as-help"
-  }, label('length_hint', 'Length counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.')), includeFinale && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+    className: "as-help",
+    id: id + '-hint'
+  }, limit === null ? state.enableAutoClimax ? label('open_with_finale_hint', 'No fixed decision limit. A final challenge can still end the story; turn it off below to keep exploring. Energy depletion can end a run earlier.') : label('open_without_finale_hint', 'No fixed decision limit and no automatic final challenge. Energy depletion can still end a run.') : label('length_hint', 'Length counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.')), includeFinale && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
     className: "as-check"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
@@ -321,7 +356,7 @@ function AdventureSetupFields(props) {
     className: "as-title"
   }, label('essential_setup', 'Essential setup')), /*#__PURE__*/React.createElement("div", {
     className: "as-grid"
-  }, field('input-mode', label('adventure.interaction_mode', 'Interaction mode'), props.adventureInputMode || 'choice', 'setAdventureInputMode', modes, 'allowModeSwitch'), field('language', label('adventure.language_label', 'Adventure language'), props.adventureLanguageMode || 'English', 'setAdventureLanguageMode', languageOptions, 'allowLanguageSwitch', label('translation_hint', 'Story language follows this control; the translation language follows Universal Settings.')), /*#__PURE__*/React.createElement("label", {
+  }, field('input-mode', label('adventure.interaction_mode', 'Interaction mode'), props.adventureInputMode || 'choice', 'setAdventureInputMode', modes, 'allowModeSwitch'), languageOptions.length > 1 && field('language', label('adventure.language_label', 'Adventure language'), props.adventureLanguageMode || 'English', 'setAdventureLanguageMode', languageOptions, 'allowLanguageSwitch', label('translation_hint', 'Story language follows this control; the translation language follows Universal Settings.')), /*#__PURE__*/React.createElement("label", {
     className: "as-field",
     htmlFor: id + '-response'
   }, label('response_format', 'Student responses'), /*#__PURE__*/React.createElement("select", {
@@ -335,7 +370,17 @@ function AdventureSetupFields(props) {
     value: "choice"
   }, label('response_choices', 'Choose from suggestions')), /*#__PURE__*/React.createElement("option", {
     value: "written"
-  }, label('response_written', 'Write or dictate'))))), /*#__PURE__*/React.createElement("div", {
+  }, label('response_written', 'Write or dictate'))))), props.isTeacherMode && languageOptions.length === 1 && typeof props.openUniversalSettings === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "as-button",
+    style: {
+      marginTop: 12
+    },
+    disabled: locked(),
+    onClick: () => {
+      if (!locked()) props.openUniversalSettings('languages');
+    }
+  }, label('add_languages', 'Add languages in Universal Settings')), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 16
     }
@@ -497,7 +542,7 @@ function AdventureSetupFields(props) {
     className: "as-summary",
     role: "region",
     "aria-label": label('setup_summary', 'Setup summary')
-  }, /*#__PURE__*/React.createElement("strong", null, label('setup_summary', 'Setup summary'), ": "), modes.find(option => option[0] === props.adventureInputMode)?.[1] || modes[0][1], ' · ', limit == null ? label('open', 'Open-ended') : limit + ' ' + label('decisions', 'decisions'), ' · ', props.adventureFreeResponseEnabled ? label('response_written', 'Write or dictate') : (state.choiceCount || 6) + ' ' + label('suggested_choices', 'suggested choices'), ' · ', languageOptions.find(option => option[0] === props.adventureLanguageMode)?.[1] || props.adventureLanguageMode));
+  }, /*#__PURE__*/React.createElement("strong", null, label('setup_summary', 'Setup summary'), ": "), modes.find(option => option[0] === props.adventureInputMode)?.[1] || modes[0][1], ' · ', limit == null ? label('open', 'Open-ended') : limit + ' ' + label('decisions', 'decisions'), ' · ', props.adventureFreeResponseEnabled ? label('response_written', 'Write or dictate') : (state.choiceCount || 6) + ' ' + label('suggested_choices', 'suggested choices'), ' · ', languageOptions.find(option => option[0] === props.adventureLanguageMode)?.[1] || props.adventureLanguageMode || languageOptions[0][1]));
 }
 function adventureSettingsText(t, key, fallback) {
   const value = t('adventure.learning_settings.' + key);

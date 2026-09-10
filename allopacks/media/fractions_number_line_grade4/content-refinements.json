@@ -1,0 +1,98 @@
+[
+  {
+    "resourceId": "fr-anchor",
+    "path": "data.title",
+    "from": "A FRACTION IS A PLACE, NOT A SLICE",
+    "to": "FRACTIONS ARE NUMBERS WITH PLACES"
+  },
+  {
+    "resourceId": "fr-anchor",
+    "path": "data.sections.0.bullets.2",
+    "from": "A bigger bottom number means smaller pieces",
+    "to": "For the same whole, more equal parts means each unit fraction is smaller"
+  },
+  {
+    "resourceId": "fr-anchor",
+    "path": "data.sections.0.iconPrompt",
+    "from": "a line from 0 to 1 with four evenly spaced tick marks",
+    "to": "A number line with four equal intervals and five boundary ticks, including the endpoints"
+  },
+  {
+    "resourceId": "fr-anchor",
+    "path": "data.sections.3.bullets.1",
+    "from": "More pieces means smaller pieces",
+    "to": "For the same whole, more equal parts means smaller unit fractions"
+  },
+  {
+    "resourceId": "fr-reading",
+    "path": "data",
+    "from": "## The Space Between 0 and 1\n\nCount out loud: 1, 2, 3, 4. Easy. Now count what is *between* 1 and 2.\n\nThere is a whole world in there, and fractions are how we name the places inside it.\n\nStart with a number line. Put 0 at the left and 1 at the right. That whole trip from 0 to 1 is the **whole**, and every fraction in this lesson is a piece of it. Cut it into two equal pieces and you get **halves**. Now cut the same space into **4 equal pieces** instead. The cuts land on new places, and each place has a name: one-fourth, two-fourths, three-fourths. Written as numbers: 1/4, 2/4, 3/4. One single piece of that size is called a **unit** fraction, so 1/4 is one unit of a fourth.\n\nThe bottom number — the **denominator** — tells you *how many equal pieces the whole was cut into*. The top number — the **numerator** — tells you *how many of those pieces you counted from zero*.\n\nSo 3/4 is not a pizza. It is a **location**. Walk three of the four steps from 0 toward 1 and stop. That is where 3/4 lives.\n\nHere is where the number line earns its keep. Look at 2/4. Now look at 1/2. They land on the exact same spot. Same location, two names. That is what **equivalent fractions** means — different words, same place, like a friend who goes by a nickname.\n\nThe number line also fixes the most common fraction mistake. When you **compare** two fractions, you are really asking which one sits farther from 0. Which is bigger, 1/4 or 1/8? Many people say 1/8, because 8 is bigger than 4. But look: cutting the space into 8 pieces makes each piece *smaller*. So 1/8 sits closer to 0, and 1/4 is bigger. **More pieces means smaller pieces.** The number line shows you that instantly, and it never lies.\n\nOne more thing. Fractions do not stop at 1. Keep going: 5/4 is one step past 1. Fractions are just numbers, and the number line goes on forever in both directions. Once you see fractions as places instead of slices, they stop being a special weird topic and become ordinary numbers — which is exactly what they are.",
+    "to": "## The Space Between 0 and 1\n\nCount out loud: 1, 2, 3, 4. Easy. Now count what is *between* 1 and 2.\n\nThere is a whole world in there, and fractions are how we name the places inside it.\n\nStart with a number line. Put 0 at the left and 1 at the right. That whole trip from 0 to 1 is the **whole**, and this distance sets the size of one whole. Fractions greater than 1 extend beyond it. Cut it into two equal pieces and you get **halves**. Now cut the same space into **4 equal pieces** instead. The cuts land on new places, and each place has a name: one-fourth, two-fourths, three-fourths. Written as numbers: 1/4, 2/4, 3/4. One single piece of that size is called a **unit** fraction, so 1/4 is one unit of a fourth.\n\nThe bottom number — the **denominator** — tells you *how many equal pieces the whole was cut into*. The top number — the **numerator** — tells you *how many of those pieces you counted from zero*.\n\nA picture of equal pizza slices can model 3/4, and 3/4 is also a number with a **location**. Walk three of the four steps from 0 toward 1 and stop. That is where 3/4 lives.\n\nHere is where the number line earns its keep. Look at 2/4. Now look at 1/2. They land on the exact same spot. Same location, two names. That is what **equivalent fractions** means — different words, same place, like a friend who goes by a nickname.\n\nThe number line also fixes the most common fraction mistake. When you **compare** two fractions, you are really asking which one sits farther to the right. For these positive fractions, that also means farther from 0. Which is bigger, 1/4 or 1/8? Many people say 1/8, because 8 is bigger than 4. But look: cutting the space into 8 pieces makes each piece *smaller*. So 1/8 sits closer to 0, and 1/4 is bigger. **For the same whole, more equal pieces means smaller unit fractions.** The number line shows you that instantly, and it never lies.\n\nOne more thing. Fractions do not stop at 1. Keep going: 5/4 is one step past 1. Fractions are just numbers, and the number line goes on forever in both directions. Once you see fractions as places instead of slices, they stop being a special weird topic and become ordinary numbers — which is exactly what they are."
+  },
+  {
+    "resourceId": "fr-faq",
+    "path": "data.1.answer",
+    "from": "Yes! Same location on the number line, two ways of writing it. Decimals are just fractions where the denominator is always 10, 100, 1000, and so on.",
+    "to": "Yes! They name the same location. A terminating decimal can be written as a fraction with a denominator of 10, 100, 1000, and so on: 0.5 = 5/10 = 1/2. Some fractions have repeating decimals, such as 1/3 = 0.333..., which does not terminate."
+  },
+  {
+    "resourceId": "fr-faq",
+    "path": "data.4.question",
+    "from": "What is the biggest fraction between 0 and 1?",
+    "to": "What is the biggest fraction strictly between 0 and 1?"
+  },
+  {
+    "resourceId": "fr-faq",
+    "path": "data.4.answer",
+    "from": "There is no biggest one, and that is the wild part. You can always get closer to 1: 99/100, then 999/1000, forever. Between any two fractions there is always another.",
+    "to": "There is no greatest fraction strictly less than 1 and greater than 0. Given any fraction there, the halfway value between it and 1 is another, larger fraction still below 1. Between any two distinct fractions there is another fraction."
+  },
+  {
+    "resourceId": "fr-frames",
+    "path": "data.items.4.text",
+    "from": "When the denominator gets bigger, each piece gets ____, because ____.",
+    "to": "For the same whole, when the denominator gets bigger, each unit fraction gets ____, because ____."
+  },
+  {
+    "resourceId": "fr-math",
+    "path": "data.problems.1.realWorld",
+    "from": "Sharing one candy bar with 4 friends versus 8 friends — bigger group, smaller share.",
+    "to": "Share one candy bar equally among 4 people, or an identical bar equally among 8 people. Each person in the group of 4 gets the larger share."
+  },
+  {
+    "resourceId": "fr-memory",
+    "path": "data.sourceExcerpt",
+    "from": "The bottom number, the denominator, tells you how many equal pieces the whole was cut into. The top number, the numerator, tells you how many of those pieces you counted from zero. 2/4 and 1/2 land on the exact same spot. More pieces means smaller pieces.",
+    "to": "The bottom number, the denominator, tells you how many equal pieces the whole was cut into. The top number, the numerator, tells you how many of those pieces you counted from zero. 2/4 and 1/2 land on the exact same spot. For the same whole, more equal pieces means smaller unit fractions."
+  },
+  {
+    "resourceId": "fr-memory",
+    "path": "data.cards.1.target",
+    "from": "More pieces means smaller pieces: 1/8 is smaller than 1/4",
+    "to": "For the same whole, more equal parts means smaller unit fractions: 1/8 is smaller than 1/4"
+  },
+  {
+    "resourceId": "fr-memory",
+    "path": "data.cards.1.mapping",
+    "from": "The rhyme puts the trap and the fix in one breath. A bigger bottom means a smaller piece. That is the opposite of what your whole-number brain expects.",
+    "to": "The rhyme compares equal shares of the same whole. A larger denominator makes each unit fraction smaller; do not apply the shortcut to fractions with different numerators."
+  },
+  {
+    "resourceId": "fr-memory",
+    "path": "data.cards.0.hookFact.text",
+    "from": "3/4 is not a pizza. It is a location: walk three of the four steps from 0 toward 1 and stop.",
+    "to": "3/4 is a number with a location: walk three fourth-sized steps from 0 and stop. Equal slices can also model that amount."
+  },
+  {
+    "resourceId": "fr-challenge",
+    "path": "data.brief.lockedLessonFacts.2",
+    "from": "More pieces means smaller pieces: 1/8 is closer to 0 than 1/4.",
+    "to": "For the same whole, more equal pieces means smaller unit fractions: 1/8 is closer to 0 than 1/4."
+  },
+  {
+    "resourceId": "fr-quiz",
+    "path": "data.questions.3.question",
+    "from": "The reading says 3/4 is a location, not a pizza slice. What does that mean?",
+    "to": "What does it mean to describe 3/4 as a location on the number line?"
+  }
+]

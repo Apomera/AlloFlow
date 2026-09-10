@@ -1,0 +1,11 @@
+const fs=require('node:fs'),path=require('node:path');
+let source=fs.readFileSync('reports/geometry-world-studio-backdrop-2026-09-09/verify-backdrop-browser.cjs','utf8');
+const old=source.match(/    const cases=\[.*?\];/)[0];
+const cases=[{q:'saver',v:'front',w:844,h:390},{q:'saver',v:'perspective',w:1200,h:820},{q:'saver',v:'perspective',w:390,h:844},{q:'balanced',v:'front',w:844,h:390},{q:'balanced',v:'perspective',w:1200,h:820},{q:'balanced',v:'perspective',w:390,h:844},{q:'detail',v:'front',w:844,h:390},{q:'detail',v:'side',w:844,h:390},{q:'detail',v:'perspective',w:1200,h:820},{q:'detail',v:'perspective',w:390,h:844},{q:'detail',v:'top',w:1200,h:820},{q:'detail',v:'perspective',w:844,h:390}];
+source=source.replace(old,'    const cases='+JSON.stringify(cases)+';');
+source=source.replace("if(c.v==='front'&&['saver','detail'].includes(c.q)){","if(c.v==='front'&&['saver','detail'].includes(c.q)||c.q==='detail'&&c.v==='perspective'&&c.w===1200){");
+source=source.replace("file=stage+'-'+c.q+'-export.png'","file=stage+'-'+c.q+(c.v==='perspective'?'-perspective':'')+'-export.png'");
+source=source.replace('return {composed,quality:',"return {floorProgramKey:e._showcase.studio.floor.material.customProgramCacheKey(),shadowType:r.shadowMap.type,shadowMap:e._showcase.studio.lights[0].shadow.mapSize.toArray(),composed,quality:");
+fs.writeFileSync(path.join(__dirname,'verify-softlight-browser.cjs'),source);
+fs.copyFileSync('reports/geometry-world-studio-backdrop-2026-09-09/check-export-pixels.py',path.join(__dirname,'check-export-pixels.py'));
+console.log('Prepared 12-view matched Studio shadow harness, including perspective PNG exports.');

@@ -91,6 +91,7 @@ function mountTool(cfg, bucket) {
   React.act(function () { root.render(React.createElement(Comp)); });
   return {
     container: container,
+    toolData: toolData,
     rerender: function () { React.act(function () { bump(); }); },
     unmount: function () { React.act(function () { root.unmount(); }); container.remove(); },
   };
@@ -126,6 +127,37 @@ describe('Geometry World world-surface accessibility', () => {
     delete window[ENGINE_KEY + '_failed'];
     document.body.innerHTML = '';
   });
+
+  it('uses native shape buttons and resets a newly chosen shape to zero degrees', () => {
+    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, selectedShape: 1, blockRotation: 3 });
+    const shapes = Array.from(m.container.querySelectorAll('.gw-shape-item'));
+    expect(shapes).toHaveLength(4);
+    shapes.forEach(button => { expect(button.tagName).toBe('BUTTON'); expect(button.type).toBe('button'); });
+    React.act(() => { shapes[3].click(); });
+    expect(window[ENGINE_KEY]._placeState.selectedShape).toBe(3);
+    expect(window[ENGINE_KEY]._placeState.blockRotation).toBe(0);
+    expect(m.container.querySelector('.gw-action-feedback').textContent).toBe('Quarter wedge · 0°');
+    expect(m.container.querySelectorAll('.gw-shape-item[aria-pressed="true"]')).toHaveLength(1);
+    m.unmount();
+  }, 20000);
+
+  it('keeps keyboard focus on the native rotation button while its angle changes', () => {
+    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, selectedShape: 2, blockRotation: 3 });
+    const rotate = m.container.querySelector('.gw-shape-rotate');
+    expect(rotate.tagName).toBe('BUTTON');
+    expect(rotate.getAttribute('aria-keyshortcuts')).toBe('R');
+    expect(rotate.hasAttribute('aria-pressed')).toBe(false);
+    rotate.focus();
+    React.act(() => { rotate.click(); });
+    expect(window[ENGINE_KEY]._placeState.blockRotation).toBe(0);
+    expect(document.activeElement).toBe(rotate);
+    expect(rotate.getAttribute('aria-label')).toContain('0 degrees');
+    React.act(() => { rotate.click(); });
+    expect(m.container.querySelector('.gw-action-feedback').textContent).toBe('Half (horizontal) · 90°');
+    expect(document.activeElement).toBe(rotate);
+    m.unmount();
+    expect(m.toolData.geometryWorld.actionFeedback).toBe('');
+  }, 20000);
 
   it('does not label the interactive world surface as an image', () => {
     const m = mountTool(cfg, { _introShownOnce: true, worldActive: true });

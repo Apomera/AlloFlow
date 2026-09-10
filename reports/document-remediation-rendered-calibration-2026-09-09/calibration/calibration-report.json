@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "kind": "synthetic-rendered-fidelity-calibration",
+  "measuredAt": "2026-09-09T22:25:52.263Z",
+  "browserVersion": "148.0.7778.96",
+  "corpusSha256": "252f63c85acd3a606112f951c413369348077f64c4b2e55448436d48651a8da4",
+  "implementationSha256": "8493b6671b3715bdba1048f4419f011c3e06c1ab7578270fc5637a036fbd95e3",
+  "total": 20,
+  "matched": 20,
+  "metrics": {
+    "harmfulCases": 14,
+    "validRepairs": 5,
+    "falseAccepts": 0,
+    "falseRejections": 0,
+    "falseAcceptanceRate": 0,
+    "falseRejectionRate": 0,
+    "unexpectedlyUnavailable": 0
+  },
+  "humanMetrics": null,
+  "humanValidation": "not-run",
+  "results": [
+    {
+      "id": "valid-table-header-correction",
+      "category": "semantic-correction",
+      "expected": "passed",
+      "actual": "passed",
+      "matched": true,
+      "durationMs": 2666.6186,
+      "evidence": "valid-table-header-correction/result.json",
+      "sourceSha256": "67e6003e84156a930178921b9d73fe131b69da1a2e3ed773fc2d1325c9077e36",
+      "candidateSha256": "0142969edd5d2600e21aa735b5aa2e488080747d9913903a105e0270f8906880"
+    },
+    {
+      "id": "valid-equivalent-label-association",
+      "category": "semantic-correction",
+      "expected": "passed",
+      "actual": "passed",
+      "matched": true,
+      "durationMs": 7503.330499999999,
+      "evidence": "valid-equivalent-label-association/result.json",
+      "sourceSha256": "5af1a4de26960cc39ffbc3ca2b8df9386d1a569e9a1098856d98e5564509b9c2",
+      "candidateSha256": "1b69a5816d10d9777adcb20d5215728ec622881147d4a68f7c4887d23bc2e772"
+    },
+    {
+      "id": "valid-fieldset-first-legend-exception",
+      "category": "forms",
+      "expected": "passed",
+      "actual": "passed",
+      "matched": true,
+      "durationMs": 14184.662199999999,
+      "evidence": "valid-fieldset-first-legend-exception/result.json",
+      "sourceSha256": "a1c7a9c1f977bc98eee35fdf1aeaa9840a35312fbe5f9f9e0c0729e958cc64d3",
+      "candidateSha256": "b0802f04b3fa75535849295950f5382b07c090404ebab9c410112d72e33c9f52"
+    },
+    {
+      "id": "valid-internal-target-consistent-rename",
+      "category": "navigation",
+      "expected": "passed",
+      "actual": "passed",
+      "matched": true,
+      "durationMs": 9313.733,
+      "evidence": "valid-internal-target-consistent-rename/result.json",
+      "sourceSha256": "933e46131db2d74f54b344dc297d0cb1675e25fdab1bae6327f4cb7095b87c05",
+      "candidateSha256": "9175e600b96f1b0cc50821e2a38d4a2449ae2aaee39445aedeaaf21a54ad81d6"
+    },
+    {
+      "id": "valid-inherited-language-equivalence",
+      "category": "multilingual",
+      "expected": "passed",
+      "actual": "passed",
+      "matched": true,
+      "durationMs": 14182.1619,
+      "evidence": "valid-inherited-language-equivalence/result.json",
+      "sourceSha256": "53886469b23f8d8e890e946478b1f671515670ec29a311e1b42f69b56c12f246",
+      "candidateSha256": "e670f15440cc524f65bb4e6a93f0dcc4d1552d3dcbe643b631ac94ab2d58525e"
+    },
+    {
+      "id": "css-cascade-hides-instruction",
+      "category": "rendered-visibility",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 16710.2518,
+      "evidence": "css-cascade-hides-instruction/result.json",
+      "sourceSha256": "e7b9b16be4416a51b1a4eb81e97bd6a186773b05e612682ceeb32878edf873ca",
+      "candidateSha256": "d1a55716b04a0e51c7e8a01282d7cdbea95bb4f5aa9d8d4e1544ce5dd36fcb14"
+    },
+    {
+      "id": "desktop-media-query-hides-instruction",
+      "category": "rendered-visibility",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 2309.4149000000034,
+      "evidence": "desktop-media-query-hides-instruction/result.json",
+      "sourceSha256": "a2309ee1508e6f8e4bd4fbb3e0cc274a3f4f34b1f48dd2517f6530f4bbc442a6",
+      "candidateSha256": "831260fa3b1354d07aa74b0c04aa7204f2df8e24ddc533d6ce23b296234c8060"
+    },
+    {
+      "id": "duplicate-text-hidden-at-required-location",
+      "category": "source-location",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 3209.4128000000055,
+      "evidence": "duplicate-text-hidden-at-required-location/result.json",
+      "sourceSha256": "9c606efc860102d7d9c1a71a1f580c82b67c22cff9bb396c4564c79fe8c5bba1",
+      "candidateSha256": "74a3a62dd8ed83fcb4141812b71c2998b22aa68b50930887a81374bd19b40c88"
+    },
+    {
+      "id": "aria-label-overrides-visible-field-label",
+      "category": "accessible-name",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 3267.2435000000114,
+      "evidence": "aria-label-overrides-visible-field-label/result.json",
+      "sourceSha256": "5af1a4de26960cc39ffbc3ca2b8df9386d1a569e9a1098856d98e5564509b9c2",
+      "candidateSha256": "c89332f8442d3465922ea8841b8aad98c71bc8f7fc131deef0594aef7058ddef"
+    },
+    {
+      "id": "aria-labelledby-overrides-label-and-aria-label",
+      "category": "accessible-name",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 14586.052500000005,
+      "evidence": "aria-labelledby-overrides-label-and-aria-label/result.json",
+      "sourceSha256": "61c05f261c0fdd3fd3e2adf1a5fd9eba9327a30151b157d2087165a381fee29e",
+      "candidateSha256": "11912ecbac9646f261d1e94d6bc0fe5237e24f9761366d260f1e35c816fc41ca"
+    },
+    {
+      "id": "fieldset-inherits-disabled-state",
+      "category": "forms",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 8477.075100000016,
+      "evidence": "fieldset-inherits-disabled-state/result.json",
+      "sourceSha256": "4c46cea6733e9d1711c331e7a25157065fe5a0ea75282cf0811d6d58cb9e5e7f",
+      "candidateSha256": "8e66f4db0343d1c484503df2020ff7c458807028936880cde603eb2cbe1fd8da"
+    },
+    {
+      "id": "checkbox-selected-choice-changed",
+      "category": "forms",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 1441.9683999999834,
+      "evidence": "checkbox-selected-choice-changed/result.json",
+      "sourceSha256": "ffe1f6adfababd06836d83c8dd8ae039fcfe22449c4542e982e0aa1cf09f636f",
+      "candidateSha256": "17036ec31b9054dbfe90429641716e94279e18993a3490cd4608b6cf9c06c944"
+    },
+    {
+      "id": "select-default-choice-changed",
+      "category": "forms",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 845.6434000000008,
+      "evidence": "select-default-choice-changed/result.json",
+      "sourceSha256": "b7a045b8431fc25d5ab9469e34b694e895859d3200e92a25d7147eb919a1c98a",
+      "candidateSha256": "d523d127fdc885d6440cd377b6a89a68f57090afe00fbb2298714471cf4ff7cc"
+    },
+    {
+      "id": "internal-target-id-reassigned",
+      "category": "navigation",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 907.5179000000062,
+      "evidence": "internal-target-id-reassigned/result.json",
+      "sourceSha256": "db8e476ca0dff86c63fe39f89e74afcaff29c11d2273bcc09986c953b4402b85",
+      "candidateSha256": "7353768746b0e50f97fd36816a3e705b3e993c4b8d6f9544ccfc4df1f74b94fc"
+    },
+    {
+      "id": "math-spoken-description-changed",
+      "category": "math",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 1298.1135000000068,
+      "evidence": "math-spoken-description-changed/result.json",
+      "sourceSha256": "0e8f220167714484b746774efaff1fe404920c1e49953465e2bfa966032b9587",
+      "candidateSha256": "93e4c50b30beed12957c97396bf161146129065fb34dcae102ed973e5d9a5de4"
+    },
+    {
+      "id": "math-visible-operator-changed",
+      "category": "math",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 881.8185999999987,
+      "evidence": "math-visible-operator-changed/result.json",
+      "sourceSha256": "0e8f220167714484b746774efaff1fe404920c1e49953465e2bfa966032b9587",
+      "candidateSha256": "6a4c6304ec11bac19ae9790516d2563f737903e2c3ab4047278b0808d1e7cccd"
+    },
+    {
+      "id": "inherited-language-changed",
+      "category": "multilingual",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 1253.3113000000012,
+      "evidence": "inherited-language-changed/result.json",
+      "sourceSha256": "53886469b23f8d8e890e946478b1f671515670ec29a311e1b42f69b56c12f246",
+      "candidateSha256": "24597aa289990f12591af87effc71d84d0c127d30cb277325c7f9dffb876f7e9"
+    },
+    {
+      "id": "right-to-left-reading-direction-changed",
+      "category": "multilingual",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 1405.4891999999818,
+      "evidence": "right-to-left-reading-direction-changed/result.json",
+      "sourceSha256": "deae758f70aea8b7a30980368f55a7d4f06aa79b472b99d88a3726a3e4a106ed",
+      "candidateSha256": "0bdc03a4cfb8ed7127956492fa588250726fbdcb7a04790b33c9428e80956211"
+    },
+    {
+      "id": "data-table-role-removed",
+      "category": "semantic-regression",
+      "expected": "review-required",
+      "actual": "review-required",
+      "matched": true,
+      "durationMs": 2609.556100000016,
+      "evidence": "data-table-role-removed/result.json",
+      "sourceSha256": "2b78f9624893e6b6489091dc69d269e38699a35545e3c873bf25334f239aaf81",
+      "candidateSha256": "35303acd0a921a41f47a0e834db56dbd93b11db12cb9d93fd83e09e3a7179d0a"
+    },
+    {
+      "id": "external-stylesheet-is-unavailable",
+      "category": "unavailable-resource",
+      "expected": "unavailable",
+      "actual": "unavailable",
+      "matched": true,
+      "durationMs": 1890.833099999989,
+      "evidence": "external-stylesheet-is-unavailable/result.json",
+      "sourceSha256": "f67b8ed199a2f487ee0e1f22d1d3c58a98515c2992e0282cc77b6bae9b022811",
+      "candidateSha256": "f67b8ed199a2f487ee0e1f22d1d3c58a98515c2992e0282cc77b6bae9b022811"
+    }
+  ],
+  "limitations": [
+    "Authored synthetic HTML pairs are not a representative production error-rate estimate.",
+    "No PDF OCR accuracy, real model output quality, or screen-reader usability was measured.",
+    "Selected checkpoints assess only the named properties; external-resource and script-dependent cases remain unavailable."
+  ]
+}

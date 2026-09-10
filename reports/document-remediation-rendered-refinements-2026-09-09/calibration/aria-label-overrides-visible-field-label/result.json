@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\aria-label-overrides-visible-field-label\\source.html",
+    "sha256": "5af1a4de26960cc39ffbc3ca2b8df9386d1a569e9a1098856d98e5564509b9c2",
+    "bytes": 369
+  },
+  "candidate": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-rendered-refinements-2026-09-09\\calibration\\aria-label-overrides-visible-field-label\\candidate.html",
+    "sha256": "c89332f8442d3465922ea8841b8aad98c71bc8f7fc131deef0594aef7058ddef",
+    "bytes": 399
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 1566.3922999999922,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0
+    }
+  },
+  "checks": [
+    {
+      "id": "account-spoken-label",
+      "sourceSelector": "#account",
+      "candidateSelector": "#account",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "name",
+          "status": "failed",
+          "source": "Account number",
+          "candidate": "Shipping address"
+        },
+        {
+          "property": "role",
+          "status": "passed",
+          "source": "textbox",
+          "candidate": "textbox"
+        },
+        {
+          "property": "value",
+          "status": "passed",
+          "source": "0012",
+          "candidate": "0012"
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

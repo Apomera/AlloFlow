@@ -1,0 +1,10 @@
+const fs = require('node:fs');
+const file = 'dev-tools/calibrate_rendered_fidelity.cjs';
+let s = fs.readFileSync(file,'utf8');
+s = s.replace("  const summary = { schemaVersion", "  const changed = changedInputs();\r\n  const summary = { schemaVersion");
+s = s.replace('evidence: { complete: changedInputs().length === 0, changedInputs: changedInputs() }', 'evidence: { complete: changed.length === 0, changedInputs: changed }');
+fs.writeFileSync(file,s);
+const doc = 'docs/rendered-document-fidelity.md';
+let d = fs.readFileSync(doc,'utf8');
+d = d.replace('Unexpectedly unavailable cases are separate from false rejections. Human metrics remain null.', 'Unexpectedly unavailable cases are separate from false rejections. The runner hashes the loaded input files and actual fixture payload before inspection and verifies those files at completion. Changed inputs make calibration evidence incomplete and return a nonzero CLI exit code. Human metrics remain null.');
+fs.writeFileSync(doc,d);

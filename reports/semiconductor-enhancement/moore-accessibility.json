@@ -1,0 +1,34 @@
+[
+  {
+    "variant": "log all",
+    "violations": []
+  },
+  {
+    "variant": "linear all",
+    "violations": []
+  },
+  {
+    "variant": "linear single-die",
+    "violations": []
+  },
+  {
+    "variant": "log single-die",
+    "violations": []
+  },
+  {
+    "variant": "annual reference",
+    "violations": []
+  },
+  {
+    "variant": "four-year reference",
+    "violations": []
+  },
+  {
+    "variant": "scenario only",
+    "violations": []
+  },
+  {
+    "variant": "historical gap",
+    "violations": []
+  }
+]

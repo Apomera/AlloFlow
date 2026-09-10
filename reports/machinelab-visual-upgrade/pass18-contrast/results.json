@@ -1,0 +1,29 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "lever-2-1-50",
+    "lever-2-1-100",
+    "lever-2-2-50",
+    "lever-2-2-100",
+    "lever-4-0.2-50",
+    "lever-4-0.2-100",
+    "lever-0.2-4-50",
+    "lever-0.2-4-100",
+    "lever-rear"
+  ],
+  "checks": [
+    "Keyboard and held camera pose: lever 390",
+    "Keyboard and held camera pose: lever 320",
+    "Reduced motion holds half stroke",
+    "Old timer cannot interrupt newer run",
+    "Next station starts at rest"
+  ]
+}

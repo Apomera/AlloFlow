@@ -1,0 +1,37 @@
+{
+  "surfaces": [
+    {
+      "surface": "shipped-classroom-helper",
+      "width": 1280,
+      "result": "passed",
+      "googleRequestsMocked": 5
+    },
+    {
+      "surface": "shipped-classroom-helper",
+      "width": 390,
+      "result": "passed",
+      "googleRequestsMocked": 5
+    },
+    {
+      "surface": "actual-apps-script-portal",
+      "width": 1280,
+      "result": "passed"
+    },
+    {
+      "surface": "actual-apps-script-portal",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "surface": "shipped-practice-page",
+      "width": 1280,
+      "result": "passed"
+    },
+    {
+      "surface": "shipped-practice-page",
+      "width": 390,
+      "result": "passed"
+    }
+  ],
+  "errors": []
+}

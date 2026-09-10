@@ -69,3 +69,13 @@ Changes are local; no deployment or commit was performed.
 - [Interactive learning: seven resources](../../docs/main-24-interactive-refinements-2026-09-08.md)
 - [Studios, planning, and alignment: six resources](../../docs/main-24-studios-refinements-2026-09-08.md)
 - Root integration covers Writing Scaffolds, STEAM entry, Assignment Directions & Goals, and Preview/Package/Deliver, plus host wiring and cache versions.
+
+
+## Subsequent focused follow-up
+
+[Additional organizer refinements](../main-24-followup-2026-09-08/REVIEW.md) repair connection targets after concept removal and validate AI layout coordinates. That follow-up passed 90 targeted assertions; its counts are separate from the earlier review above.
+
+
+## Approved continuation completed
+
+[Saved-map synchronization and planning provenance](../map-planning-refinements-2026-09-08/REVIEW.md) are implemented, with 190 passing targeted checks and nine browser cases. These follow-up counts are separate from the earlier review above.

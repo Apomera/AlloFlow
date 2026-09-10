@@ -1,0 +1,190 @@
+{
+  "checks": [
+    "Actual preparation controls produce a mixed source; conditioning, filler use, eye alignment, meniscus setting, wall contact, and drainage gates lead to a 25 mL record at unchanged concentration; detail zoom and forced-colors keyboard use preserve data.",
+    "Blowout invalidates the nominal volume and prior record; restart is available beside the error; source changes never overwrite the trial silently; loading new solution updates the result; filler-guide navigation, close, and Escape retain progress and return focus.",
+    "Corrupt state cannot create a record; scoped desktop/mobile accessibility and overflow checks pass; the live titration is unchanged and unmount produces no page errors."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "no-source",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "no-source",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "loaded",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "loaded",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "conditioned",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "conditioned",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "filled",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "filled",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "adjusted",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "adjusted",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "meniscus-detail",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "meniscus-detail",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "wall-contact",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "wall-contact",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "delivered",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "delivered",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "recorded",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "recorded",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "retained-tip-detail",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "retained-tip-detail",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "blown-out",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "blown-out",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "source-unavailable",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "source-unavailable",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "reloaded-source",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "reloaded-source",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "corrupt-state-recovery",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "corrupt-state-recovery",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "whole-equipment",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "whole-equipment",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

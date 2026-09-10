@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "checks": [
+    "three NPN regions",
+    "shared schematic/3D/probe values",
+    "reverse and same-node probes",
+    "view settings outside undo",
+    "sensor polarity",
+    "loaded divider",
+    "undo/redo",
+    "parameter edit",
+    "CSV download",
+    "three predictions and wrong-answer explanation",
+    "prediction invalidation after edit",
+    "workspace persistence",
+    "keyboard controls",
+    "390/320 px overflow",
+    "keyboard diagram and plot scroll"
+  ],
+  "axeViolations": 0
+}

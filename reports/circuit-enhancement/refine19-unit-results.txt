@@ -1,0 +1,233 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_active_electronics.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > normalizes bounded physical settings without mutating the saved state
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > has no base or collector current at input 0 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > has no base or collector current at input 0.3 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > has no base or collector current at input 0.7 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > matches a hand-calculated forward-active operating point
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > limits collector current at saturation while base current keeps increasing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > remains continuous at the active-to-saturated boundary
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > solves a loaded equal-resistor divider and accounts for current in both legs
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > keeps a cutoff divider unloaded while its own supply current continues flowing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > reverses sensor response by swapping the two divider elements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > conserves current and power throughout the manual input range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > conserves current and power throughout the light input range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+············stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > conserves current and power throughout the dark input range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > includes base input dissipation inside the transistor power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > provides consistent reversed and same-node voltmeter readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > exports the actual sweep and leaves the input state unchanged
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > renders the manual experiment with probes and declared model bounds
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > renders the light experiment with probes and declared model bounds
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_electronics.test.js > active NPN and loaded sensor experiments > renders the dark experiment with probes and declared model bounds
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·······stdout | tests/circuit_active_refinements.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > freezes a reference while calculating signed live changes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > distinguishes matching settings and a change with no lamp-current effect
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > identifies multiple simultaneous physical edits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores view, probe, and inactive sensor settings for a manual experiment
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores the unused manual input when comparing sensor experiments
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > allows overlaid light/dark responses but separates manual and light axes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores unsupported reference data null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores unsupported reference data {}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores unsupported reference data {"version":2,"design":{}}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores unsupported reference data {"version":1,"design":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores unsupported reference data {"version":1,"design":[]}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > exports enough settings to reproduce every manual operating point
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > exports enough settings to reproduce every light operating point
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > exports enough settings to reproduce every dark operating point
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > renders frozen reference evidence, shared-axis curves, and accessible node controls
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > explains why a reference with a different input axis is hidden
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+················stdout | tests/circuit_mixed_network.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > solves branch voltage drops and conserves current and power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > isolates an open switch to its branch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > changes topology when a part moves between branches
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > measures internal junctions and signed cross-branch voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > keeps floating absolute voltages unknown but resolves a floating resistor differential
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > limits LED current using resistance in the same branch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > reports shorts without turning absent branches into wires
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > retains source-off semantics
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > preserves the simple solver
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_mixed_network.test.js > mixed branch networks > renders the schematic and connection editor accessibly
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··········stdout | tests/circuit_passive_time.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > matches the analytic RC step and its time constant
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > releases capacitor energy with negative branch current and zero source power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > charges parallel RC paths independently while summing source current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > shares series capacitor charge according to capacitance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > models RL startup and stored-current release with winding resistance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > satisfies the RLC differential equations for damping case {"R":10,"L":0.1,"C":0.0001}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > satisfies the RLC differential equations for damping case {"R":20,"L":0.1,"C":0.001}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > satisfies the RLC differential equations for damping case {"R":200,"L":0.1,"C":0.001}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > handles an exactly critically damped branch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > keeps a strongly overdamped response finite across long and short times
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > matches AC impedance and phase for a capacitor branch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > captures resonance and reactive voltages above source amplitude
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > conserves instantaneous power and exposes matching probe voltages
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > refuses unsupported nonlinear, interrupted, or almost resistance-free paths
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > does not mutate the equilibrium solution while sampling
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > limits unresolved waveform windows and exports real numeric samples
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > resolves fast startup in a window set by a much slower branch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_passive_time.test.js > passive circuit time and AC engine > renders the calculated scope and preserves DC as the default
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··················stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all twelve SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····
+
+ Test Files  5 passed (5)
+      Tests  67 passed (67)
+   Start at  01:04:51
+   Duration  6.53s (transform 56ms, setup 102ms, import 208ms, tests 2.16s, environment 3.46s)
+

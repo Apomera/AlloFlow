@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-08",
+  "distinctAssertions": 190,
+  "passed": 190,
+  "testFiles": 10,
+  "sourceReports": [
+    "behavior-default.json",
+    "related.json"
+  ],
+  "browserCases": 9,
+  "browserErrors": 0,
+  "axeViolations": 0,
+  "modules": [
+    {
+      "file": "utils_pure_module.js",
+      "sha256": "bfbed0c1ad6290f510ed2b25b6ac0895fc05407c3bfea215ba01d6ff9a5ff207"
+    },
+    {
+      "file": "concept_map_handlers_module.js",
+      "sha256": "81f8f77811db3a463e6d69d3684f4a8aeccd29861333f6a82dd9ef83dd76d81c"
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "sha256": "6a50d6e8557b1c4aec41bb3e189183d46c4286d8825cf97cdb87af9a5906fcf5"
+    },
+    {
+      "file": "view_lesson_plan_module.js",
+      "sha256": "af4df13a4abced9c7297c27eafc24f09740bc4b0f65cd94e1a4cda665ac55cf1"
+    },
+    {
+      "file": "export_handlers_module.js",
+      "sha256": "4743b95665da38a59906339b065fcb486c814aab1f6c4d2b4b3b9abbaa1cf0ac"
+    }
+  ],
+  "hostFiles": 3
+}

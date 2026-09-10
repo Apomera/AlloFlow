@@ -85,7 +85,7 @@ describe('dissection reference workbench', () => {
     const state = { exploredOrgans: { 'frog|heart': true, 'frog|lungs': true }, organNotes: { 'frog|heart': 'Visible between the lungs.' }, organConfidence: { 'frog|heart': 2 } };
     const host = render('frog', 'heart', state);
     expect(host.querySelector('[data-note-handoff]').textContent).toContain('Note and confidence recorded');
-    expect(host.querySelector('[data-note-handoff] button').textContent).toBe('Continue notes: Lungs');
+    expect([...host.querySelectorAll('[data-note-handoff] button')].map(button => button.textContent)).toContain('Continue notes: Lungs');
     expect(render('frog', 'heart').querySelector('[data-note-handoff] button')).toBeNull();
   });
   it('shows the actual missing evidence component in the directory', () => {
@@ -308,3 +308,194 @@ describe('optional 3D eye reference study', () => {
   });
 });
 
+
+describe('3D evidence handoff', () => {
+  it('routes an uninspected locked structure to the directory, not an evidence note', () => {
+    const panel = render('sheepEye', null, { activeLayer: 'skin', eyeStudyMode: true }).querySelector('[data-eye-handoff]');
+    expect(panel.textContent).toContain('This layer is still locked');
+    expect(panel.textContent).toContain('Not yet inspected in 2D');
+    expect(panel.textContent).toContain('Find in 2D: Crystalline Lens');
+    expect(panel.textContent).not.toContain('Review my evidence note');
+  });
+  it('offers note review only for an inspected structure in an available layer', () => {
+    const panel = render('sheepEye', 'lens', { eyeStudyMode: true,
+      exploredOrgans: { 'sheepEye|lens': true }, organNotes: { 'sheepEye|lens': 'Curved and translucent.' }, organConfidence: { 'sheepEye|lens': 2 }
+    }).querySelector('[data-eye-handoff]');
+    expect(panel.textContent).toContain('Review my evidence note');
+    expect(panel.querySelector('[data-eye-record-status]').textContent).toBe('Note and confidence recorded');
+  });
+  it('does not bypass a layer lock using an old observation', () => {
+    const panel = render('sheepEye', null, { activeLayer: 'skin', eyeStudyMode: true,
+      exploredOrgans: { 'sheepEye|lens': true }
+    }).querySelector('[data-eye-handoff]');
+    expect(panel.textContent).toContain('Previously inspected in 2D');
+    expect(panel.textContent).toContain('This layer is still locked');
+    expect(panel.textContent).not.toContain('Review my evidence note');
+  });
+  it.each([['cornea', 'cornea'], ['missing', 'lens'], [null, 'lens']])('restores only a modeled return selection: %s', (saved, expected) => {
+    const panel = render('sheepEye', null, { eyeStudyMode: true, _eyeStudyReturnPart: saved }).querySelector('[data-eye-study]');
+    expect(panel.querySelector('[data-eye-part="' + expected + '"]').getAttribute('aria-pressed')).toBe('true');
+  });
+  it.each([[{}, true], [{ practicalMode: true }, false], [{ quizMode: true }, false], [{ _eyeStudyReturnPart: 'lens' }, false]])('scopes the return link to the matching note outside assessment: %o', (extra, visible) => {
+    const host = render('sheepEye', 'cornea', { _eyeStudyReturnPart: 'cornea', exploredOrgans: { 'sheepEye|cornea': true }, ...extra });
+    expect(host.textContent.includes('Return to 3D study: Cornea')).toBe(visible);
+  });
+});
+
+describe('specimen-wide observation review', () => {
+  const entries = { 'sheepEye|cornea': true, 'sheepEye|lens': true, 'frog|heart': true, 'sheepEye|missing': true };
+  const notes = { 'sheepEye|lens': 'A curved translucent structure.', 'sheepEye|retina': 'Uninspected draft.' };
+  function review(extra = {}) { return render('sheepEye', null, { activeLayer: 'skin', exploredOrgans: entries, organNotes: notes, organConfidence: { 'sheepEye|lens': 1 }, ...extra }).querySelector('[data-observation-review]'); }
+  it('includes only inspected structures of the current specimen, across layers', () => {
+    const panel = review();
+    expect([...panel.querySelectorAll('[data-observation-entry]')].map(el => el.dataset.observationEntry)).toEqual(['cornea','lens']);
+    expect(panel.textContent).not.toContain('Uninspected draft');
+    expect(panel.querySelector('[data-observation-review-count]').textContent).toBe('2 of 2 inspected structures shown.');
+    expect(panel.textContent).toContain('not accuracy scores');
+  });
+  it('shows a locked saved note without offering a navigation bypass', () => {
+    const item = review().querySelector('[data-observation-entry="lens"]');
+    expect(item.querySelector('[data-observation-locked]')).not.toBeNull();
+    expect(item.querySelector('.diss-observation-review__note').textContent).toBe(notes['sheepEye|lens']);
+    expect(item.querySelector('button')).toBeNull();
+  });
+  it('offers cross-layer note review when the layer is already available', () => {
+    expect(review({ revealedLayers: { skin: true } }).querySelector('[data-observation-entry="lens"] button').textContent).toBe('Review note: Crystalline Lens');
+  });
+  it('filters missing records independently of low confidence', () => {
+    const panel = review({ _observationReviewFilter: 'unfinished' });
+    expect(panel.querySelectorAll('[data-observation-entry]')).toHaveLength(1);
+    expect(panel.querySelector('[data-observation-entry]').dataset.observationEntry).toBe('cornea');
+    expect(panel.querySelector('[data-observation-filter="unfinished"]').getAttribute('aria-pressed')).toBe('true');
+  });
+  it('identifies low confidence without treating it as missing documentation', () => {
+    const panel = review({ _observationReviewFilter: 'uncertain' });
+    expect(panel.querySelectorAll('[data-observation-entry]')).toHaveLength(1);
+    expect(panel.textContent).toContain('Note and confidence recorded');
+    expect(panel.textContent).toContain('What feature or relationship');
+  });
+  it.each([0,4,-1,'invalid'])('treats invalid confidence %s as unrecorded', confidence => {
+    const panel = review({ _observationReviewFilter: 'unfinished', organConfidence: { 'sheepEye|lens': confidence } });
+    expect(panel.querySelectorAll('[data-observation-entry]')).toHaveLength(2);
+    expect(panel.querySelector('[data-observation-entry="lens"]').textContent).toContain('Add a confidence rating');
+  });
+  it('explains empty and filtered-empty states', () => {
+    expect(review({ exploredOrgans: {} }).textContent).toContain('Inspect a visible structure');
+    expect(review({ _observationReviewFilter: 'uncertain', organConfidence: {} }).textContent).toContain('No observations match this filter');
+    expect(review({ _observationReviewFilter: 'stale' }).querySelectorAll('[data-observation-entry]')).toHaveLength(2);
+  });
+  it.each([{ quizMode: true },{ practicalMode: true },{ flashcardMode: true },{ compareMode: true },{ eyeStudyMode: true }])('hides saved evidence during other activities: %o', extra => {
+    expect(review(extra)).toBeNull();
+  });
+});
+
+describe('observation summary preview', () => {
+  const note = '  I observed a curved face.\nSecond line: α <not a tag> & details.  ';
+  function summary(extra = {}) { return render('sheepEye', null, { activeLayer: 'skin',
+    exploredOrgans: { 'sheepEye|cornea': true, 'sheepEye|lens': true, 'frog|heart': true, 'sheepEye|missing': true },
+    organNotes: { 'sheepEye|lens': note, 'sheepEye|retina': 'Uninspected draft', 'frog|heart': 'Other specimen' },
+    organConfidence: { 'sheepEye|lens': 1 }, ...extra }); }
+  it('preserves student note text and keeps reference functions out of the export', () => {
+    const field = summary().querySelector('#diss-observation-summary');
+    expect(field.readOnly).toBe(true);
+    expect(field.value).toContain(note);
+    expect(field.value).not.toContain(specimens.sheepEye.organs.organs.find(org => org.id === 'lens').fn);
+    expect(field.value).not.toContain('Uninspected draft');
+    expect(field.value).not.toContain('Other specimen');
+    expect(field.value).toContain('Scope: All inspected · 2 of 2 inspected structures');
+    expect(field.value).toContain('Review prompts (not recorded evidence)');
+  });
+  it('labels missing evidence and a locked layer honestly', () => {
+    const text = summary().querySelector('#diss-observation-summary').value;
+    expect(text).toContain('[No evidence note recorded]');
+    expect(text).toContain('Confidence: Not recorded');
+    expect(text).toContain('Currently locked; saved note only');
+    expect(text).toContain('does not verify identification accuracy or mastery');
+  });
+  it.each([['uncertain', 'Low confidence', 'Crystalline Lens', '1. Cornea'], ['unfinished', 'Needs notes', 'Cornea', 'Crystalline Lens']])('exports only the %s filter', (filter, label, included, absent) => {
+    const text = summary({ _observationReviewFilter: filter }).querySelector('#diss-observation-summary').value;
+    expect(text).toContain('Scope: ' + label + ' · 1 of 2 inspected structures');
+    expect(text).toContain(included);
+    expect(text).not.toContain(absent);
+  });
+  it.each([{ exploredOrgans: {} }, { _observationReviewFilter: 'uncertain', organConfidence: {} }, { quizMode: true }, { practicalMode: true }])('does not offer empty or assessment exports: %o', extra => {
+    expect(summary(extra).querySelector('[data-observation-export]')).toBeNull();
+  });
+});
+
+describe('observation search', () => {
+  function search(query, extra = {}) { return render('sheepEye', null, { activeLayer: 'skin', _observationReviewSearch: query,
+    exploredOrgans: { 'sheepEye|cornea': true, 'sheepEye|lens': true, 'frog|heart': true },
+    organNotes: { 'sheepEye|lens': 'Café: two curved faces. Behind the iris.', 'sheepEye|retina': 'Uninspected secret', 'frog|heart': 'Foreign secret' },
+    organConfidence: { 'sheepEye|lens': 1 }, ...extra }).querySelector('[data-observation-review]'); }
+  it.each(['LENS curved', 'INTERNAL iris', 'cafe faces', 'café—FACES'])('matches all normalized words across names, layers and notes: %s', query => {
+    const panel = search(query);
+    expect(panel.querySelectorAll('[data-observation-entry]')).toHaveLength(1);
+    expect(panel.querySelector('[data-observation-entry]').dataset.observationEntry).toBe('lens');
+    expect(panel.querySelector('[data-observation-note-match]')).not.toBeNull();
+    expect(panel.querySelector('[data-observation-filter="all"]').textContent).toBe('All inspected (1)');
+    expect(panel.querySelector('[data-observation-filter="unfinished"]').textContent).toBe('Needs notes (0)');
+  });
+  it('keeps search independent from the 2D reference directory', () => {
+    const panel = search('cornea', { organSearch: 'unrelated' });
+    expect(panel.querySelector('[data-observation-entry]').dataset.observationEntry).toBe('cornea');
+    expect(panel.querySelector('[data-observation-note-match]')).toBeNull();
+  });
+  it.each(['secret', 'curved cornea', 'notpresent'])('excludes uninspected drafts, other specimens and partial multiword matches: %s', query => {
+    const panel = search(query);
+    expect(panel.querySelectorAll('[data-observation-entry]')).toHaveLength(0);
+    expect(panel.querySelector('[data-observation-export]')).toBeNull();
+    expect(panel.querySelector('[data-observation-review-empty]').textContent).toContain('Clear the search or choose another filter');
+  });
+  it('intersects search with review filters and accurately labels export scope', () => {
+    const panel = search('  curved faces  ', { _observationReviewFilter: 'uncertain' });
+    const text = panel.querySelector('#diss-observation-summary').value;
+    expect(text).toContain('Scope: Low confidence · 1 of 2');
+    expect(text).toContain('Search: "curved faces" (structure names, layers, and student notes)');
+    expect(text).not.toContain('1. Cornea');
+    expect(panel.querySelector('[data-observation-entry="lens"] button')).toBeNull();
+    expect(search('curved', { _observationReviewFilter: 'unfinished' }).querySelector('[data-observation-export]')).toBeNull();
+  });
+  it.each(['??? ---', '', null, 42])('treats empty or invalid query %s safely', query => {
+    const panel = search(query);
+    expect(panel.querySelectorAll('[data-observation-entry]')).toHaveLength(2);
+    expect(panel.querySelector('#diss-observation-summary').value).not.toContain('Search:');
+  });
+});
+
+describe('circulatory pump comparison diagrams', () => {
+  function panel(extra = {}) { return render('frog', 'heart', { compareMode: true, ...extra }).querySelector('#diss-comparison-panel'); }
+  it.each([['frog',2,1],['pig',2,2],['perch',1,1]])('draws the stated main chamber count for %s', (specimen, atria, ventricles) => {
+    const figure = panel().querySelector('[data-pump-diagram="' + specimen + '"]');
+    expect(figure.querySelectorAll('[data-pump-unit="atrium"]')).toHaveLength(atria);
+    expect(figure.querySelectorAll('[data-pump-unit="ventricle"]')).toHaveLength(ventricles);
+    expect(figure.querySelector('svg').getAttribute('role')).toBe('img');
+    expect(figure.querySelector('svg').getAttribute('aria-label').length).toBeGreaterThan(60);
+    expect(figure.querySelector('figcaption').textContent.length).toBeGreaterThan(30);
+  });
+  it('shows five paired vessel symbols rather than five vertebrate hearts', () => {
+    const figure = panel().querySelector('[data-pump-diagram="earthworm"]');
+    expect(figure.querySelectorAll('[data-pump-pair]')).toHaveLength(5);
+    expect(figure.querySelectorAll('[data-pump-pair] path')).toHaveLength(10);
+    expect(figure.querySelectorAll('[data-pump-unit="ventricle"]')).toHaveLength(0);
+    expect(figure.querySelector('svg').getAttribute('aria-label')).toContain('five pairs');
+  });
+  it('distinguishes the crayfish outward-flow route from chamber diagrams', () => {
+    const figure = panel().querySelector('[data-pump-diagram="crayfish"]');
+    expect(figure.querySelectorAll('[data-pump-unit]')).toHaveLength(3);
+    expect(figure.querySelector('[data-pump-unit="sinuses"]').getAttribute('stroke-dasharray')).toBe('5 4');
+    expect(figure.querySelector('figcaption').textContent).toContain('Gills and the return route are omitted');
+  });
+  it('names fetal omissions and makes color and shape limits explicit', () => {
+    const host = panel();
+    expect(host.querySelector('[data-pump-diagram="pig"] figcaption').textContent).toContain('Fetal shunts and placental circulation are not drawn');
+    expect(host.querySelector('[data-comparison-visual-key]').textContent).toContain('not oxygen levels');
+    expect(host.querySelector('.diss-comparison-sources').querySelectorAll('a[rel="noopener noreferrer"]')).toHaveLength(4);
+  });
+  it('does not attach pump diagrams to other comparison groups', () => {
+    expect(render('frog','lungs',{ compareMode: true }).querySelector('[data-pump-diagram]')).toBeNull();
+  });
+  it.each([{ quizMode: true }, { practicalMode: true }])('hides comparison references if an assessment retains a stale compare flag: %o', extra => {
+    expect(panel(extra)).toBeNull();
+  });
+});

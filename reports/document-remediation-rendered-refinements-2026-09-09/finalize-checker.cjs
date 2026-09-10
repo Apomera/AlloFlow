@@ -1,0 +1,11 @@
+'use strict';
+const fs = require('node:fs');
+const file = 'dev-tools/rendered_document_fidelity.cjs';
+let s = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+const replace = (before, after) => { if (!s.includes(before)) throw Error('Anchor missing: ' + before); s = s.replace(before, after); };
+replace('video[poster],audio[src],iframe', 'video[poster],audio[src],track[src],iframe');
+replace("      const value = el.getAttribute('href') || el.getAttribute('src') || el.getAttribute('data') || el.getAttribute('poster') || '';\n      return value && !value.startsWith('data:');", "      return ['href', 'src', 'data', 'poster'].some(attribute => {\n        const value = (el.getAttribute(attribute) || '').trim();\n        return value && !/^data:/i.test(value);\n      });");
+replace("return { id: c.id, status: 'unavailable', source: before, candidate: after };", "return { id: c.id, sourceSelector: c.sourceSelector, candidateSelector: c.candidateSelector, status: 'unavailable', source: before, candidate: after };");
+replace("  if (hash(fs.readFileSync(sourcePath)) !== report.source.sha256 || hash(fs.readFileSync(candidatePath)) !== report.candidate.sha256) {\n    report.status = 'unavailable'; report.coverage.complete = false; report.artifactChanged = true;\n  }", "  for (const profile of report.profiles || []) { profile.source = { ...report.source }; profile.candidate = { ...report.candidate }; }\n  let stable = false;\n  try { stable = hash(fs.readFileSync(sourcePath)) === report.source.sha256 && hash(fs.readFileSync(candidatePath)) === report.candidate.sha256; } catch { /* Missing files cannot retain complete coverage. */ }\n  if (!stable) {\n    for (const item of [report, ...(report.profiles || [])]) {\n      item.status = 'unavailable'; item.coverage.complete = false; item.artifactChanged = true;\n      item.coverage.reasons = [...(item.coverage.reasons || []), 'artifact-changed-or-missing'];\n    }\n  }");
+replace("  console.log(JSON.stringify({ pairs:", "  fs.writeFileSync(path.join(output, 'review.html'), require('./rendered_fidelity_review.cjs').renderReview({ reports }));\n  console.log(JSON.stringify({ pairs:");
+fs.writeFileSync(file, s.replace(/\n/g, '\r\n'));

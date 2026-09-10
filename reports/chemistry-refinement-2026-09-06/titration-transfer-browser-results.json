@@ -1,0 +1,166 @@
+{
+  "checks": [
+    "Actual balance controls create a recorded sample; load, dry pour, difference calculation, record, rinse, stale-record handling, updated preparation mass, and focus handoffs work without changing the weighing record.",
+    "Stale weighing records cannot start trials; existing transfer snapshots persist until reloaded; restart retains the chosen sample and residue setting; zero residue permits dry recording without adding mass through a fake rinse; forced-colors keyboard controls work.",
+    "Corrupt saved state recovers, the whole equipment panel has no scoped accessibility violations or overflow at desktop and phone widths, Escape returns focus, and the live experiment remains unchanged."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "no-record",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "no-record",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "loaded",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "loaded",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dry-pour",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dry-pour",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dry-record",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dry-record",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "prepare-dry",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "prepare-dry",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "rinsed-stale-record",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "rinsed-stale-record",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "prepare-stale",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "prepare-stale",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "rinsed-record",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "rinsed-record",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "prepare-rinsed",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "prepare-rinsed",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "weighing-record-stale",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "weighing-record-stale",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "zero-residue",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "zero-residue",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "corrupt-state-recovery",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "corrupt-state-recovery",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "whole-equipment",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "whole-equipment",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

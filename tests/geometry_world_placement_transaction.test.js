@@ -35,7 +35,7 @@ function fixture() {
     logEvent: (type, data) => events.push({ type, data }),
     raycaster: { setFromCamera() {}, intersectObjects(objects) { return objects.length ? hits : []; } }
   };
-  const helperNames = ['placementCellForHit', 'getPlacementEligibility', 'placementForHit', 'publishPlacementPreview', 'getBlocksArr'];
+  const helperNames = ['_disposeBlockMesh', 'placementCellForHit', 'getPlacementEligibility', 'placementForHit', 'publishPlacementPreview', 'getBlocksArr'];
   const historyStart = source.indexOf('        var MAX_UNDO = 200;');
   const historyEnd = source.indexOf('        // ── Ambient occlusion', historyStart);
   const wrapperStart = source.indexOf('        var origPlace = engine.placeBlock;');
@@ -192,6 +192,7 @@ describe('preview and history use the same eligibility', () => {
     f.engine._undoStack = [{ action: 'remove', x: 0, y: 1, z: 0, type: 'stone', shape: 'cube', rotation: 0 }];
     f.engine._redoStack = [{ action: 'unrelated' }];
     const before = snapshot(f); expect(f.engine.undo()).toBe(false); expect(snapshot(f)).toEqual(before);
+    expect(f.updates).toEqual([]);
   });
 
   it('failed redo re-placement keeps both history stacks', () => {
@@ -199,6 +200,7 @@ describe('preview and history use the same eligibility', () => {
     f.engine._undoStack = [{ action: 'unrelated' }];
     f.engine._redoStack = [{ action: 'place', x: 0, y: 1, z: 0, type: 'stone', shape: 'halfA', rotation: 1 }];
     const before = snapshot(f); expect(f.engine.redo()).toBe(false); expect(snapshot(f)).toEqual(before);
+    expect(f.updates).toEqual([]);
   });
 
   it('successful redo preserves the remaining redo actions and exact shape rotation', () => {
@@ -232,5 +234,60 @@ describe('measurement and placement feedback coexist', () => {
     expect(f.engine._ghostMesh.visible).toBe(false);
     expect(f.engine._placementPreview.code).toBe('no_target');
     expect(f.updates.at(-1).value).toBeNull();
+  });
+});
+
+
+describe('history changes publish an immediate UI revision', () => {
+  it('publishes once after successful undo and redo of an actual wrapped placement', () => {
+    const f = fixture();
+    f.engine.placeBlock(2, 1, 3, 'stone', 'quarter', 3);
+    expect(f.updates).toEqual([]);
+    expect(f.engine.undo()).toBe(true);
+    expect(f.engine.blocks['2,1,3']).toBeUndefined();
+    expect(f.engine._undoStack).toHaveLength(0); expect(f.engine._redoStack).toHaveLength(1);
+    expect(f.updates).toEqual([{ key: 'historyRevision', value: 1 }]);
+    expect(f.engine.redo()).toBe(true);
+    expect(f.engine.blocks['2,1,3'].userData).toMatchObject({ shape: 'quarter', rotation: 3 });
+    expect(f.engine._undoStack).toHaveLength(1); expect(f.engine._redoStack).toHaveLength(0);
+    expect(f.updates).toEqual([{ key: 'historyRevision', value: 1 }, { key: 'historyRevision', value: 2 }]);
+  });
+
+  it('publishes once after restoring and redoing a removed block', () => {
+    const f = fixture();
+    const action = { action: 'remove', x: 1, y: 2, z: 3, type: 'stone', shape: 'halfA', rotation: 2 };
+    f.engine._undoStack = [action];
+    expect(f.engine.undo()).toBe(true);
+    expect(f.engine.blocks['1,2,3'].rotation.y).toBe(Math.PI);
+    expect(f.engine.redo()).toBe(true);
+    expect(f.engine.blocks['1,2,3']).toBeUndefined();
+    expect(f.updates).toEqual([{ key: 'historyRevision', value: 1 }, { key: 'historyRevision', value: 2 }]);
+  });
+
+  it('leaves empty history and missing removal targets unpublished and unchanged', () => {
+    const f = fixture();
+    expect(f.engine.undo()).toBe(false); expect(f.engine.redo()).toBe(false);
+    expect(f.updates).toEqual([]);
+    f.engine._undoStack = [{ action: 'place', x: 0, y: 1, z: 0 }];
+    f.engine._redoStack = [{ action: 'remove', x: 1, y: 1, z: 0 }];
+    const before = snapshot(f);
+    expect(f.engine.undo()).toBe(false); expect(f.engine.redo()).toBe(false);
+    expect(snapshot(f)).toEqual(before);
+    expect(f.updates).toEqual([]);
+    expect(f.engine._historyRevision).toBeUndefined();
+  });
+
+  it('disposes undo geometry without disposing the shared block-edge material', () => {
+    const f = fixture(), mesh = f.engine.placeBlock(0, 1, 0, 'stone');
+    const shared = new THREE.LineBasicMaterial(); shared.userData.gwSharedBlockEdge = true;
+    const outline = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), shared); mesh.add(outline);
+    const geometryDisposed = vi.fn(), outlineDisposed = vi.fn(), materialDisposed = vi.fn(), sharedDisposed = vi.fn();
+    mesh.geometry.addEventListener('dispose', geometryDisposed);
+    mesh.material.addEventListener('dispose', materialDisposed);
+    outline.geometry.addEventListener('dispose', outlineDisposed);
+    shared.addEventListener('dispose', sharedDisposed);
+    expect(f.engine.undo()).toBe(true);
+    expect(geometryDisposed).toHaveBeenCalledTimes(1); expect(outlineDisposed).toHaveBeenCalledTimes(1);
+    expect(materialDisposed).toHaveBeenCalledTimes(1); expect(sharedDisposed).not.toHaveBeenCalled();
   });
 });

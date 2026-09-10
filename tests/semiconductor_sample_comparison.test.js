@@ -1,0 +1,25 @@
+import {beforeAll,describe,it,expect} from 'vitest';
+import {loadTool,renderTool,resetStemLab} from './helpers/stem_widgets_smoke_harness.js';
+let c;beforeAll(()=>{resetStemLab();loadTool('stem_lab/stem_tool_semiconductor.js','semiconductor');c=window.__SemiconductorCore;});
+const run=(a,b,extra={})=>({version:1,workspace:'transistor',field:'gateVoltage',xLabel:'Gate voltage',xUnit:'V',output:{label:'Current',unit:'mA',scale:'linear'},points:[{x:0,y:a},{x:1,y:b}],...extra});
+describe('Sweep comparisons',()=>{
+it('calculates signed difference, ratio and relative change from unrounded values',()=>{const r=c.sweepCompare(run(2,5),0,1).rows[0];expect(r.delta).toBe(3);expect(r.ratio).toBe(2.5);expect(r.percent).toBe(150);});
+it('supports reverse selection with B minus A direction',()=>{const r=c.sweepCompare(run(2,5),1,0).rows[0];expect(r.delta).toBe(-3);expect(r.ratio).toBe(.4);expect(r.percent).toBe(-60);});
+it('handles a decrease to zero as minus 100 percent',()=>{const r=c.sweepCompare(run(3,0),0,1).rows[0];expect(r.ratio).toBe(0);expect(r.percent).toBe(-100);});
+it.each([0,3])('withholds relative change from a zero reference to %s',b=>{const r=c.sweepCompare(run(0,b),0,1).rows[0];expect(r.delta).toBe(b);expect(r.ratio).toBeNull();expect(r.percent).toBeNull();expect(r.reason).toContain('A is zero');});
+it.each([[-2,-5],[-2,1],[2,-1]])('uses differences for signed readings %j',(a,b)=>{const r=c.sweepCompare(run(a,b),0,1).rows[0];expect(r.delta).toBe(b-a);expect(r.percent).toBeNull();expect(r.reason).toContain('Signed values');});
+it.each([null,undefined,NaN,Infinity])('does not turn unavailable readings into zero: %s',value=>{const r=c.sweepCompare(run(value,5),0,1).rows[0];expect(r.a).toBeNull();expect(r.delta).toBeNull();expect(r.ratio).toBeNull();expect(r.reason).toContain('outside the model');});
+it('rejects identical samples and invalid indices',()=>{for(const indices of [[0,0],[-1,1],[0,2],[.5,1],['0',1]])expect(c.sweepCompare(run(2,3),...indices).error).toBeTruthy();expect(c.sweepCompare(null,0,1).error).toBeTruthy();});
+it('preserves precision when rounded values appear equal',()=>{const r=c.sweepCompare(run(1.000001,1.000002),0,1).rows[0];expect(r.delta).toBeCloseTo(.000001,12);expect(r.delta).not.toBe(0);});
+it('withholds overflowed relative change and difference',()=>{const r=c.sweepCompare(run(Number.MIN_VALUE,1e308),0,1).rows[0];expect(r.ratio).toBeNull();expect(r.percent).toBeNull();expect(c.sweepCompare(run(-1e308,1e308),0,1).rows[0].delta).toBeNull();});
+it('compares the solar reference separately in the same units',()=>{const r=run(0,0,{reference:{label:'Available maximum',unit:'W'},points:[{x:0,y:0,reference:1},{x:1,y:0,reference:2}]});const rows=c.sweepCompare(r,0,1).rows;expect(rows).toHaveLength(2);expect(rows[0].ratio).toBeNull();expect(rows[1].delta).toBe(1);expect(rows[1].percent).toBe(100);});
+it('deep copies selected samples without changing the run',()=>{const r=run(1,2),before=JSON.stringify(r),comparison=c.sweepCompare(r,0,1);comparison.a.y=55;expect(JSON.stringify(r)).toBe(before);});
+it('adds comparison evidence to notebook exports without losing sample identities',()=>{const r=run(1,2),cmp=c.sweepCompare(r,1,0),rows=c.sweepComparisonEvidence(r,cmp);expect(rows[0][1]).toContain('Sample 2');expect(rows[1][1]).toContain('Sample 1');expect(rows[3][1]).toContain('B − A: -1');const saved=c.capture({subtool:'transistor'},'Comparison',rows,{guidedObservation:'My explanation remains independent.'});expect(c.notebookMarkdown(c.notebookEntries([saved]))).toContain('My explanation remains independent');});
+it('omits invalid and hidden comparisons from notebook evidence',()=>{expect(c.sweepComparisonEvidence(run(1,2),null)).toEqual([]);expect(c.sweepComparisonEvidence(run(1,2),c.sweepCompare(run(1,2),0,0))).toEqual([]);});
+});
+describe('Comparison learning surface',()=>{
+const mat={silicon:{name:'Si',bandGap:1.12,ni:1.5e10}};
+it('keeps the comparison collapsed by default',()=>{const r=c.sweepRun({subtool:'bandgap'},{},mat);const html=renderTool('semiconductor',{semiconductor:{subtool:'bandgap',experimentSweeps:{bandgap:{run:r}}}});expect(html).toContain('Compare two samples');expect(html).not.toContain('Comparison sample A');});
+it('explains logarithmic distances without changing a learner explanation',()=>{const r=c.sweepRun({subtool:'bandgap'},{output:'intrinsic'},mat);const html=renderTool('semiconductor',{semiconductor:{subtool:'bandgap',experimentSweeps:{bandgap:{run:r,comparisonOpen:true,note:'My original explanation'}}}});expect(html).toContain('equal vertical distances represent equal ratios');expect(html).toContain('My original explanation');expect(html).toContain('not the shape of the whole curve');});
+it('renders a useful instruction for a duplicate pair',()=>{const r=c.sweepRun({subtool:'bandgap'},{},mat);const html=renderTool('semiconductor',{semiconductor:{subtool:'bandgap',experimentSweeps:{bandgap:{run:r,comparisonOpen:true,compareA:3,compareB:3}}}});expect(html).toContain('Choose different samples');});
+});

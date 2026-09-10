@@ -48,6 +48,9 @@ function modulePaths(source) {
         if (file && /^[a-zA-Z0-9_./-]+\.js$/.test(file) && !file.split('/').includes('..')) files.add(file);
       }
     }
+    // Lazy plugin manifests bypass literal loadModule calls; compact them too.
+    if (node.type === 'StringLiteral' && /^(stem_lab|sel_hub|arcade)\/[a-zA-Z0-9_./-]+\.js$/.test(node.value)
+      && !node.value.split('/').includes('..')) files.add(node.value);
     for (const [key, value] of Object.entries(node)) {
       if (['loc', 'comments', 'leadingComments', 'trailingComments', 'innerComments'].includes(key)) continue;
       if (Array.isArray(value)) value.forEach(visit);

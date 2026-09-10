@@ -1,0 +1,281 @@
+[
+  {
+    "id": "ap-term-1",
+    "kind": "term",
+    "file": "ap-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A gold dashed outline traces all four sides of an otherwise empty rectangle.",
+    "altHash": "img-bwv-6579a3b6"
+  },
+  {
+    "id": "ap-term-2",
+    "kind": "term",
+    "file": "ap-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular region is completely covered by five rows of eight equal square tiles.",
+    "altHash": "img-6p7-f0399023"
+  },
+  {
+    "id": "ap-term-3",
+    "kind": "term",
+    "file": "ap-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A horizontal gold segment spans the long side beneath a rectangle, with end marks.",
+    "altHash": "img-3vj-6c5c59f1"
+  },
+  {
+    "id": "ap-term-4",
+    "kind": "term",
+    "file": "ap-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A vertical gold segment spans the shorter side beside a rectangle, with end marks.",
+    "altHash": "img-3v7-b69a2a2c"
+  },
+  {
+    "id": "ap-term-5",
+    "kind": "term",
+    "file": "ap-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A four-sided shape has a small right-angle marker at each corner.",
+    "altHash": "img-3z3-3360c4ae"
+  },
+  {
+    "id": "ap-term-6",
+    "kind": "term",
+    "file": "ap-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A square outline has right-angle marks and matching single tick marks on all four sides.",
+    "altHash": "img-4lb-68d212b3"
+  },
+  {
+    "id": "ap-term-7",
+    "kind": "term",
+    "file": "ap-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One filled square with four equal sides represents a single area tile.",
+    "altHash": "img-3ir-f44d7db9"
+  },
+  {
+    "id": "ap-term-8",
+    "kind": "term",
+    "file": "ap-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular tiled region contains three rows of four equal squares.",
+    "altHash": "img-4l3-5aa29379"
+  },
+  {
+    "id": "ap-term-9",
+    "kind": "term",
+    "file": "ap-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangle has one horizontal gold measuring segment and one vertical teal segment.",
+    "altHash": "img-3tb-c0cf6fef"
+  },
+  {
+    "id": "ap-term-10",
+    "kind": "term",
+    "file": "ap-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular object sits above a row of seven equal reference blocks.",
+    "altHash": "img-4rf-d2a89e2e"
+  },
+  {
+    "id": "ap-anchor-1",
+    "kind": "anchor",
+    "file": "ap-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A dashed gold path follows the four edges of a rectangle.",
+    "altHash": "img-bwv-6579a3b6"
+  },
+  {
+    "id": "ap-anchor-2",
+    "kind": "anchor",
+    "file": "ap-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four rows of five square tiles fill a rectangular region.",
+    "altHash": "img-4wv-3aabc88e"
+  },
+  {
+    "id": "ap-anchor-3",
+    "kind": "anchor",
+    "file": "ap-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An empty gold-bordered rectangle appears beside a fully tiled square.",
+    "altHash": "img-4r3-5635d64c"
+  },
+  {
+    "id": "ap-anchor-4",
+    "kind": "anchor",
+    "file": "ap-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A six-by-six square and a ten-by-two rectangle use the same-sized tiles and highlighted outside edges.",
+    "altHash": "img-7j3-0ad2c8ce"
+  },
+  {
+    "id": "ap-sort-1",
+    "kind": "sort",
+    "file": "ap-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A green rectangular yard is enclosed by a wooden fence along all four outside edges.",
+    "altHash": "img-7d7-26dd5b9b"
+  },
+  {
+    "id": "ap-sort-2",
+    "kind": "sort",
+    "file": "ap-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A red carpet roll is partly unrolled across the floor of an empty room.",
+    "altHash": "img-6uv-90ccbd43"
+  },
+  {
+    "id": "ap-sort-3",
+    "kind": "sort",
+    "file": "ap-sort-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A blank rectangular wooden picture frame stands on a workbench beside four trim strips.",
+    "altHash": "img-6e7-5f9c3322"
+  },
+  {
+    "id": "ap-sort-4",
+    "kind": "sort",
+    "file": "ap-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A paint roller sits beside a rectangular wall with much of its surface painted teal.",
+    "altHash": "img-4av-ff82fd8a"
+  },
+  {
+    "id": "ap-sort-5",
+    "kind": "sort",
+    "file": "ap-sort-5.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Three partly unrolled sod rolls extend green grass across a patch of bare soil.",
+    "altHash": "img-8mr-7091ef07"
+  },
+  {
+    "id": "ap-sort-6",
+    "kind": "sort",
+    "file": "ap-sort-6.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Purple ribbon forms a continuous border around a blank poster, with a matching ribbon spool nearby.",
+    "altHash": "img-5gj-628472f4"
+  },
+  {
+    "id": "ap-sort-7",
+    "kind": "sort",
+    "file": "ap-sort-7.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Square tiles cover part of a kitchen floor, with untiled ground and a stack of tiles beside them.",
+    "altHash": "img-csv-5c943c6f"
+  },
+  {
+    "id": "ap-sort-8",
+    "kind": "sort",
+    "file": "ap-sort-8.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A string of round bulbs follows the visible roof edges of a small house.",
+    "altHash": "img-c0f-8f2b8eb6"
+  },
+  {
+    "id": "ap-sort-9",
+    "kind": "sort",
+    "file": "ap-sort-9.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A teal sheet partly covers a rectangular box top, with a matching paper roll beside it.",
+    "altHash": "img-59r-dc920074"
+  },
+  {
+    "id": "ap-lesson-1",
+    "kind": "lesson",
+    "file": "ap-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five rows of eight square tiles form a yard with its outer boundary highlighted gold.",
+    "altHash": "img-7q7-86d3f625"
+  },
+  {
+    "id": "ap-lesson-2",
+    "kind": "lesson",
+    "file": "ap-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Forty equal square tiles completely fill an eight-column, five-row rectangle.",
+    "altHash": "img-7sz-a41d5d5d"
+  },
+  {
+    "id": "ap-lesson-3",
+    "kind": "lesson",
+    "file": "ap-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangle has measuring segments along its horizontal and vertical directions.",
+    "altHash": "img-40v-c7dbc3dc"
+  },
+  {
+    "id": "ap-lesson-4",
+    "kind": "lesson",
+    "file": "ap-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One square tile appears beside a rectangle made from six tiles of exactly the same size.",
+    "altHash": "img-3xz-4c770e50"
+  },
+  {
+    "id": "ap-lesson-5",
+    "kind": "lesson",
+    "file": "ap-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two tiled shapes have highlighted borders: a six-by-six square and a ten-by-two rectangle.",
+    "altHash": "img-7j3-0ad2c8ce"
+  },
+  {
+    "id": "ap-lesson-6",
+    "kind": "lesson",
+    "file": "ap-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A six-by-six tiled square covers more space than a ten-by-two tiled rectangle at the same scale.",
+    "altHash": "img-7of-4873b888"
+  },
+  {
+    "id": "ap-lesson-7",
+    "kind": "lesson",
+    "file": "ap-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A seven-by-seven tiled square has its outside edges highlighted gold.",
+    "altHash": "img-7u3-8d4f0afe"
+  },
+  {
+    "id": "ap-lesson-8",
+    "kind": "lesson",
+    "file": "ap-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An eleven-by-one strip and an eight-by-four rectangle use matching tile sizes and gold outside borders.",
+    "altHash": "img-753-d43b9ba7"
+  }
+]
