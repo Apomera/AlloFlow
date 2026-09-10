@@ -122,6 +122,29 @@ window.SelHub = window.SelHub || {
     ]
   };
 
+  // ── Weekly review record helpers ──
+  function goalReviewSnapshot(goals, now) {
+    var start = now - 7 * 86400000;
+    return (goals || []).map(function(goal) {
+      var steps = goal.steps || [];
+      var done = steps.filter(function(step) { return step.done; });
+      var dated = done.filter(function(step) { return typeof step.completedAt === 'number' && isFinite(step.completedAt) && step.completedAt > 0; });
+      var recent = dated.filter(function(step) { return step.completedAt >= start && step.completedAt <= now; });
+      return { goalId: goal.id, text: goal.text || 'Unnamed goal', progress: goal.progress || 0, stepsComplete: recent.length, totalSteps: steps.length, totalComplete: done.length, undatedComplete: done.length - dated.length };
+    });
+  }
+
+  function goalReviewRating(value) {
+    return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 5 ? value : null;
+  }
+
+  function goalReviewRatingText(checkins) {
+    var ratings = (checkins || []).map(function(entry) { return goalReviewRating(entry.rating); }).filter(function(value) { return value != null; });
+    if (!ratings.length) return 'No weekly ratings recorded.';
+    var average = ratings.reduce(function(sum, value) { return sum + value; }, 0) / ratings.length;
+    return 'Average recorded rating: ' + average.toFixed(1) + '/5 from ' + ratings.length + ' rated check-in' + (ratings.length === 1 ? '' : 's') + '. This is not a measure of learning or wellbeing.';
+  }
+
   // ── SMART criteria for the builder ──
   var SMART_LABELS = {
     S: { label: 'Specific', desc: 'What exactly will you do?', emoji: '\uD83C\uDFAF', placeholder: { elementary: 'I will...', middle: 'I will specifically...', high: 'The precise action I\'ll take is...' } },
@@ -773,7 +796,7 @@ window.SelHub = window.SelHub || {
           var showCelebrationGoalId = null;
           var next = goals.map(function(g) {
             if (g.id !== goalId) return g;
-            var steps = g.steps.map(function(s, i) { return i === stepIdx ? Object.assign({}, s, { done: !s.done }) : s; });
+            var steps = g.steps.map(function(s, i) { return i === stepIdx ? Object.assign({}, s, { done: !s.done, completedAt: s.done ? null : Date.now() }) : s; });
             var doneCount = steps.filter(function(s) { return s.done; }).length;
             var progress = steps.length > 0 ? Math.round((doneCount / steps.length) * 100) : 0;
             var oldProgress = g.progress || 0;
@@ -1034,33 +1057,28 @@ window.SelHub = window.SelHub || {
 
         // ── Weekly Check-in helpers ──
         var getWeekProgressSummary = function() {
-          var oneWeekAgo = Date.now() - 7 * 86400000;
-          var progressGoals = [];
-          goals.forEach(function(g) {
-            var recentSteps = (g.steps || []).filter(function(s) { return s.done; });
-            if (recentSteps.length > 0) {
-              progressGoals.push({ text: g.text, progress: g.progress, stepsComplete: recentSteps.length, totalSteps: (g.steps || []).length });
-            }
-          });
-          return progressGoals;
+          return goalReviewSnapshot(goals, Date.now());
         };
 
         var saveWeeklyCheckin = function() {
-          var summary = getWeekProgressSummary();
+          var reviewNow = Date.now();
+          var summary = goalReviewSnapshot(goals, reviewNow);
           var checkin = {
+            summaryVersion: 2, periodStart: reviewNow - 7 * 86400000, periodEnd: reviewNow,
             id: 'wci-' + Date.now(),
             date: Date.now(),
             weekOf: new Date().toISOString().slice(0, 10),
             progressSummary: summary,
             obstacles: weeklyDraft.obstacles || '',
             focus: weeklyDraft.focus || '',
-            rating: weeklyDraft.rating || 0
+            support: weeklyDraft.support || '',
+            rating: goalReviewRating(weeklyDraft.rating)
           };
           var newCheckins = weeklyCheckins.concat([checkin]);
           sfxComplete();
           if (awardXP) awardXP(10);
           if (addToast) addToast('\uD83D\uDCDD Weekly check-in saved! +10 XP', 'success');
-          upd({ weeklyCheckins: newCheckins, weeklyDraft: { obstacles: '', focus: '', rating: 0 } });
+          upd({ weeklyCheckins: newCheckins, weeklyDraft: { obstacles: '', support: '', focus: '', rating: null }, weeklyNotice: 'Review added to this activity. Use the Hub save/export controls to keep a project copy.' });
         };
 
         var updateWeeklyDraft = function(field, value) {
@@ -2029,120 +2047,58 @@ window.SelHub = window.SelHub || {
             ) : null,
 
             // ── WEEKLY CHECK-IN TAB ──
-            tab === 'checkin' ? h('div', null,
-              h('div', { style: { fontSize: 14, fontWeight: 'bold', color: _goaFg('#a5b4fc'), marginBottom: 4 } }, '\uD83D\uDCDD Weekly Check-In'),
-              h('p', { style: { fontSize: 11, color: _goaFg('#94a3b8'), marginBottom: 14, lineHeight: 1.5 } },
-                band === 'elementary' ? 'Look back at your week! What did you work on? What will you do next?' :
-                band === 'middle' ? 'Take a few minutes to reflect on your week. Honest reflection builds self-awareness.' :
-                'Structured weekly review: assess progress, acknowledge obstacles, and set intentions for next week.'
-              ),
-
-              // Section 1: Auto-populated progress summary
-              h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' } },
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _goaFg('#34d399'), marginBottom: 8 } }, '\u2705 Goals I Made Progress On This Week'),
-                (function() {
-                  var summary = getWeekProgressSummary();
-                  if (summary.length === 0) {
-                    return h('p', { style: { fontSize: 11, color: _goaFg('#94a3b8'), fontStyle: 'italic' } }, 'No goal progress recorded this week yet. Keep going!');
-                  }
-                  return h('div', null,
-                    summary.map(function(g, gi) {
-                      return h('div', { key: gi, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', marginBottom: 4, borderRadius: 6, background: 'rgba(52,211,153,0.06)' } },
-                        h('span', { style: { fontSize: 12 } }, '\uD83C\uDFAF'),
-                        h('span', { style: { flex: 1, fontSize: 11, color: _goaFg('#e2e8f0') } }, g.text),
-                        h('span', { style: { fontSize: 10, color: _goaFg('#34d399'), fontWeight: 'bold' } }, g.stepsComplete + '/' + g.totalSteps + ' steps'),
-                        h('span', { style: { fontSize: 10, color: _goaFg('#94a3b8') } }, g.progress + '%')
-                      );
-                    })
+            tab === 'checkin' ? h('section', { 'aria-label': 'Weekly goal review', style: { color: _goaFg('#e2e8f0'), overflowWrap: 'anywhere', fontSize: 14, lineHeight: 1.6 } },
+              h('h3', { style: { fontSize: 18, margin: '0 0 8px' } }, 'Weekly goal review'),
+              h('p', null, 'Reflect on what fit, what got in the way, and what you might change. Writing and ratings are optional. You can think, draw, speak, sign, or use AAC away from this form; only what you save here becomes a review.'),
+              h('p', { role: 'status', 'aria-live': 'polite' }, d.weeklyNotice || ''),
+              h('div', { role: 'region', 'aria-label': 'Goal step records', style: { padding: 14, borderRadius: 12, border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), marginBottom: 16 } },
+                h('h4', { style: { margin: '0 0 8px', fontSize: 16 } }, 'Step records from the last 7 days'),
+                h('p', null, 'Only currently checked steps with a completion date in the last 7 days count here. Older undated steps stay in the overall count. Records do not capture every kind of progress or support you needed.'),
+                goals.length === 0 ? h('p', null, 'No goals recorded yet. You can still reflect or plan a small next step.') : h('ul', { style: { paddingLeft: 20 } }, getWeekProgressSummary().map(function(goal) {
+                  return h('li', { key: goal.goalId, style: { marginBottom: 12 } }, h('strong', null, goal.text),
+                    h('div', null, goal.stepsComplete + (goal.stepsComplete === 1 ? ' step' : ' steps') + ' dated in the last 7 days; ' + goal.totalComplete + ' of ' + goal.totalSteps + ' steps checked overall.'),
+                    goal.undatedComplete > 0 && h('div', null, goal.undatedComplete + (goal.undatedComplete === 1 ? ' checked step has' : ' checked steps have') + ' no completion date and ' + (goal.undatedComplete === 1 ? 'is' : 'are') + ' not assigned to this week.')
                   );
-                })()
+                }))
               ),
-
-              // Section 2: Obstacles text input
-              h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.12)' } },
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _goaFg('#f87171'), marginBottom: 8 } }, '\uD83E\uDEA8 What Obstacles Did I Face?'),
-                h('textarea', { value: weeklyDraft.obstacles || '', 'aria-label': 'Weekly obstacles', onChange: function(e) { updateWeeklyDraft('obstacles', e.target.value); }, placeholder: band === 'elementary' ? 'What was hard this week? What got in the way?' : 'Describe any challenges, distractions, or setbacks you faced this week...', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(239,68,68,0.15)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
+              h('details', { style: { marginBottom: 16 } },
+                h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700 } }, 'Try a fictional example'),
+                h('p', null, 'A learner planned to read in a busy room. They tried one page, then asked for a quieter place and an audio version. Next time, they could start with a short section and check whether those supports help. Changing a plan or asking for support can be a useful next step.')
               ),
-
-              // Section 3: Next week focus
-              h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)' } },
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _goaFg('#818cf8'), marginBottom: 8 } }, '\uD83C\uDFAF What Will I Focus On Next Week?'),
-                h('textarea', { value: weeklyDraft.focus || '', 'aria-label': 'Next week focus', onChange: function(e) { updateWeeklyDraft('focus', e.target.value); }, placeholder: band === 'elementary' ? 'What do you want to work on next week?' : 'Set your intention: what specific goal or step will you prioritize?', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
-              ),
-
-              // Section 4: Star rating
-              h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)', textAlign: 'center' } },
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _goaFg('#fbbf24'), marginBottom: 10 } }, '\u2B50 Rate Your Week'),
-                h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 6 } },
-                  [1, 2, 3, 4, 5].map(function(star) {
-                    var filled = (weeklyDraft.rating || 0) >= star;
-                    return h('button', { 'aria-label': 'Rate this week', key: star, onClick: function() { updateWeeklyDraft('rating', star); sfxClick(); }, style: { background: 'none', border: 'none', fontSize: 28, cursor: 'pointer', color: filled ? _goaFg('#fbbf24') : '#334155', transition: 'transform 0.15s', padding: 2 } }, filled ? '\u2B50' : '\u2606');
-                  })
-                ),
-                h('div', { style: { fontSize: 10, color: _goaFg('#94a3b8') } },
-                  (weeklyDraft.rating || 0) === 0 ? 'Tap a star to rate' :
-                  (weeklyDraft.rating || 0) <= 2 ? 'Tough week \u2014 that\u2019s okay! Next week is a fresh start.' :
-                  (weeklyDraft.rating || 0) <= 3 ? 'Solid week! Room to grow.' :
-                  (weeklyDraft.rating || 0) <= 4 ? 'Great week! You\u2019re building momentum!' :
-                  'Amazing week! You\u2019re unstoppable!'
-                )
-              ),
-
-              // Weekly check-in streak / count
-              weeklyCheckins.length > 0 ? h('div', { style: { padding: '10px 14px', marginBottom: 14, borderRadius: 10, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' } },
-                h('span', { style: { fontSize: 14 } }, '\uD83D\uDCCA'),
-                h('span', { style: { fontSize: 11, color: _goaFg('#c4b5fd') } }, 'You\u2019ve completed ' + weeklyCheckins.length + ' weekly check-in' + (weeklyCheckins.length !== 1 ? 's' : '') + '!'),
-                weeklyCheckins.length >= 4 ? h('span', { style: { fontSize: 10, color: _goaFg('#a855f7'), fontWeight: 'bold', marginLeft: 4 } }, '\uD83C\uDFC6 Consistent Reviewer!') : null
-              ) : null,
-
-              // Average weekly rating
-              weeklyCheckins.length >= 2 ? (function() {
-                var totalRating = 0;
-                weeklyCheckins.forEach(function(ci) { totalRating += (ci.rating || 0); });
-                var avgRating = (totalRating / weeklyCheckins.length).toFixed(1);
-                return h('div', { style: { padding: '8px 14px', marginBottom: 14, borderRadius: 8, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)', textAlign: 'center' } },
-                  h('span', { style: { fontSize: 10, color: _goaFg('#fbbf24') } }, '\u2B50 Average weekly rating: ' + avgRating + '/5 across ' + weeklyCheckins.length + ' weeks')
+              [
+                { key: 'obstacles', label: 'What got in the way? (optional)', hint: 'You can name a barrier in the task or environment. You do not need to share personal details.' },
+                { key: 'support', label: 'What helped, or what support could help? (optional)', hint: 'For example: a model, more time, a quieter space, accessible materials, or help from someone you choose.' },
+                { key: 'focus', label: 'What might I try or change next? (optional)', hint: 'Choose a small step, adjust the plan, ask for support, or take a break.' }
+              ].map(function(field) {
+                return h('div', { key: field.key, style: { marginBottom: 16 } },
+                  h('label', { htmlFor: 'goal-weekly-' + field.key, style: { display: 'block', fontWeight: 700 } }, field.label),
+                  h('p', { id: 'goal-weekly-' + field.key + '-help', style: { margin: '4px 0 8px' } }, field.hint),
+                  h('textarea', { id: 'goal-weekly-' + field.key, 'aria-describedby': 'goal-weekly-' + field.key + '-help', value: weeklyDraft[field.key] || '', onChange: function(event) { updateWeeklyDraft(field.key, event.target.value); }, rows: 3, style: { width: '100%', boxSizing: 'border-box', minHeight: 80, padding: 12, borderRadius: 10, border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), background: _goaHC ? '#000000' : '#0f172a', color: _goaFg('#e2e8f0'), font: 'inherit', fontSize: 16, resize: 'vertical' } })
                 );
-              })() : null,
-
-              // Save button
-              h('button', { 'aria-label': 'Save weekly check-in', onClick: function() {
-                if (!weeklyDraft.rating) {
-                  if (addToast) addToast('Please rate your week before saving.', 'warning');
-                  return;
-                }
-                saveWeeklyCheckin();
-              }, style: { width: '100%', padding: '12px 20px', borderRadius: 10, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontSize: 13, fontWeight: 'bold', cursor: 'pointer', marginBottom: 20 } }, '\u2705 Save Weekly Check-In'),
-
-              // Past check-ins
-              weeklyCheckins.length > 0 ? h('div', { style: { marginTop: 8 } },
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _goaFg('#94a3b8'), marginBottom: 10 } }, '\uD83D\uDCC5 Past Weekly Check-Ins (' + weeklyCheckins.length + ')'),
-                weeklyCheckins.slice().reverse().map(function(ci, idx) {
-                  var dateStr = new Date(ci.date).toLocaleDateString();
-                  var stars = '';
-                  for (var si = 0; si < 5; si++) { stars += si < (ci.rating || 0) ? '\u2B50' : '\u2606'; }
-                  return h('div', { key: ci.id || idx, style: { padding: 12, marginBottom: 8, borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.10)' } },
-                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } },
-                      h('span', { style: { fontSize: 11, fontWeight: 'bold', color: _goaFg('#a5b4fc') } }, 'Week of ' + (ci.weekOf || dateStr)),
-                      h('span', { style: { fontSize: 12 } }, stars)
-                    ),
-                    ci.progressSummary && ci.progressSummary.length > 0 ? h('div', { style: { marginBottom: 6 } },
-                      h('div', { style: { fontSize: 10, fontWeight: 'bold', color: _goaFg('#34d399'), marginBottom: 3 } }, 'Progress:'),
-                      ci.progressSummary.map(function(ps, psi) {
-                        return h('div', { key: psi, style: { fontSize: 10, color: _goaFg('#94a3b8'), paddingLeft: 8 } }, '\u2022 ' + ps.text + ' (' + ps.progress + '%)');
-                      })
-                    ) : null,
-                    ci.obstacles ? h('div', { style: { marginBottom: 4 } },
-                      h('span', { style: { fontSize: 10, fontWeight: 'bold', color: _goaFg('#f87171') } }, 'Obstacles: '),
-                      h('span', { style: { fontSize: 10, color: _goaFg('#94a3b8') } }, ci.obstacles)
-                    ) : null,
-                    ci.focus ? h('div', null,
-                      h('span', { style: { fontSize: 10, fontWeight: 'bold', color: _goaFg('#818cf8') } }, 'Next  '),
-                      h('span', { style: { fontSize: 10, color: _goaFg('#94a3b8') } }, ci.focus)
-                    ) : null
+              }),
+              h('label', { htmlFor: 'goal-weekly-rating', style: { display: 'block', fontWeight: 700 } }, 'How did the week feel to you? (optional)'),
+              h('select', { id: 'goal-weekly-rating', value: goalReviewRating(weeklyDraft.rating) || '', onChange: function(event) { updateWeeklyDraft('rating', event.target.value ? Number(event.target.value) : null); }, style: { width: '100%', minHeight: 44, padding: 10, borderRadius: 8, font: 'inherit', fontSize: 16, background: _goaHC ? '#000000' : '#0f172a', color: _goaFg('#e2e8f0'), border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b') } },
+                h('option', { value: '' }, 'Not recorded'),
+                ['Very difficult', 'Difficult', 'Mixed or in between', 'Mostly positive', 'Very positive'].map(function(label, index) { return h('option', { key: index, value: index + 1 }, (index + 1) + ' - ' + label); })
+              ),
+              h('p', null, 'Your rating describes your experience. There is no preferred answer, and a missing rating is not zero.'),
+              h('button', { 'aria-label': 'Save weekly review', onClick: saveWeeklyCheckin, style: { width: '100%', minHeight: 44, padding: 12, borderRadius: 10, border: 'none', background: _goaHC ? '#ffff00' : '#4338ca', color: _goaHC ? '#000000' : '#ffffff', font: 'inherit', fontWeight: 700, cursor: 'pointer' } }, 'Save weekly review'),
+              h('p', null, 'Saving adds a review to this activity. Use the Hub save/export controls to keep a project copy. Sharing is your choice.'),
+              weeklyCheckins.length > 0 && h('details', { 'aria-label': 'Saved weekly goal reviews' },
+                h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700 } }, 'Saved reviews (' + weeklyCheckins.length + ')'),
+                h('p', null, goalReviewRatingText(weeklyCheckins)),
+                weeklyCheckins.slice().reverse().map(function(review, index) {
+                  return h('article', { key: review.id || index, 'aria-label': 'Saved goal review ' + (weeklyCheckins.length - index), style: { padding: 12, margin: '12px 0', border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), borderRadius: 10 } },
+                    h('h4', { style: { fontSize: 16, margin: 0 } }, 'Saved ' + new Date(review.date).toLocaleString()),
+                    h('p', null, review.summaryVersion === 2 ? 'Record window: ' + new Date(review.periodStart).toLocaleString() + ' – ' + new Date(review.periodEnd).toLocaleString() : 'Earlier review: its saved progress is an overall snapshot; completion dates were not tracked.'),
+                    h('p', null, 'Rating: ' + (goalReviewRating(review.rating) == null ? 'Not recorded' : review.rating + ' / 5')),
+                    (review.progressSummary || []).map(function(goal, i) { return h('p', { key: i }, h('strong', null, goal.text + ': '), review.summaryVersion === 2 ? goal.stepsComplete + (goal.stepsComplete === 1 ? ' step' : ' steps') + ' in the recorded window; ' + goal.totalComplete + ' of ' + goal.totalSteps + ' checked overall; ' + goal.undatedComplete + ' undated.' : (goal.progress || 0) + '% overall progress recorded at that time.'); }),
+                    review.obstacles && h('p', null, h('strong', null, 'Barriers: '), review.obstacles),
+                    review.support && h('p', null, h('strong', null, 'Support: '), review.support),
+                    review.focus && h('p', null, h('strong', null, 'Next step or change: '), review.focus)
                   );
                 })
-              ) : null
+              )
             ) : null,
 
             // ── PROGRESS TAB ──
@@ -2237,10 +2193,7 @@ window.SelHub = window.SelHub || {
                 h('div', null,
                   h('div', { style: { fontSize: 11, fontWeight: 'bold', color: _goaFg('#a5b4fc') } }, weeklyCheckins.length + ' Weekly Check-In' + (weeklyCheckins.length !== 1 ? 's' : '') + ' Completed'),
                   (function() {
-                    var totalR = 0;
-                    weeklyCheckins.forEach(function(c) { totalR += (c.rating || 0); });
-                    var avgR = weeklyCheckins.length > 0 ? (totalR / weeklyCheckins.length).toFixed(1) : '0';
-                    return h('div', { style: { fontSize: 10, color: _goaFg('#94a3b8') } }, 'Average rating: ' + avgR + '/5 \u2B50');
+                    return h('div', { style: { fontSize: 14, color: _goaFg('#94a3b8') } }, goalReviewRatingText(weeklyCheckins));
                   })()
                 )
               ) : null,

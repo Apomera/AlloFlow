@@ -547,6 +547,89 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     return page.getByRole('region', { name: 'Journal writing and saved entries', exact: true });
   }
 
+  async function openGoalReview(data = {}, width = 1280, theme = '') {
+    await mount(width, theme);
+    await page.evaluate(data => {
+      window.__alloflowSelToolData = { goals_tool: { tab: 'checkin', ...data } };
+      window.dispatchEvent(new Event('alloflow-sel-tooldata-restored'));
+    }, data);
+    await page.locator('[data-sel-tool-card-id="goals"]').click();
+    return page.getByRole('region', { name: 'Weekly goal review', exact: true });
+  }
+
+  it('goal review saves without a rating and preserves support and dated snapshots on restore', async () => {
+    const now = Date.now();
+    const goal = { id: 'review-goal', text: 'Read a short section', category: 'academic', steps: [{ text: 'Earlier step', done: true }, { text: 'Recent step', done: true, completedAt: now - 1000 }], progress: 100, completed: true };
+    const region = await openGoalReview({ goals: [goal] });
+    expect(await region.getByRole('region', { name: 'Goal step records' }).innerText()).toContain('1 step dated in the last 7 days; 2 of 2 steps checked overall.');
+    await region.getByRole('textbox', { name: 'What got in the way? (optional)', exact: true }).fill('The fictional room was noisy.');
+    await region.getByRole('textbox', { name: 'What helped, or what support could help? (optional)', exact: true }).fill('Try an audio version in a quieter space.');
+    await region.getByRole('textbox', { name: 'What might I try or change next? (optional)', exact: true }).fill('Try a shorter section.');
+    await region.getByRole('button', { name: 'Save weekly review', exact: true }).click();
+    expect(await region.getByRole('status').innerText()).toContain('Review added');
+    const saved = await page.evaluate(() => window.__alloflowSelToolData.goals_tool);
+    expect(saved.weeklyCheckins).toHaveLength(1);
+    expect(saved.weeklyCheckins[0]).toMatchObject({ rating: null, support: 'Try an audio version in a quieter space.', summaryVersion: 2 });
+    expect(saved.weeklyCheckins[0].periodEnd - saved.weeklyCheckins[0].periodStart).toBe(7 * 86400000);
+    expect(saved.weeklyCheckins[0].progressSummary[0]).toMatchObject({ stepsComplete: 1, undatedComplete: 1 });
+    expect(saved.goals[0].steps[0].completedAt).toBeUndefined();
+    await openGoalReview(JSON.parse(JSON.stringify(saved)));
+    const history = page.locator('details[aria-label="Saved weekly goal reviews"]');
+    await history.locator(':scope > summary').focus(); await page.keyboard.press('Enter');
+    expect(await history.innerText()).toContain('Rating: Not recorded');
+    expect(await history.innerText()).toContain('Try an audio version in a quieter space.');
+  }, 120000);
+
+  it('goal review records and clears step dates through keyboard completion', async () => {
+    await openGoalReview({ tab: 'goals', expandedGoalId: 'dates', goals: [{ id: 'dates', text: 'Try two steps', category: 'personal', steps: [{ text: 'Try an example', done: false }, { text: 'Reflect later', done: false }], progress: 0, completed: false }] });
+    const step = page.getByRole('button', { name: 'Mark complete: Try an example', exact: true });
+    await step.focus(); await page.keyboard.press('Enter');
+    let data = await page.evaluate(() => window.__alloflowSelToolData.goals_tool);
+    expect(data.goals[0].steps[0].completedAt).toBeGreaterThan(0);
+    await page.locator('#goal-tab-checkin').click();
+    expect(await page.getByRole('region', { name: 'Goal step records' }).innerText()).toContain('1 step dated in the last 7 days');
+    await page.locator('#goal-tab-goals').click();
+    await page.getByRole('button', { name: 'Mark incomplete: Try an example', exact: true }).click();
+    data = await page.evaluate(() => window.__alloflowSelToolData.goals_tool);
+    expect(data.goals[0].steps[0]).toMatchObject({ done: false, completedAt: null });
+    await page.locator('#goal-tab-checkin').click();
+    expect(await page.getByRole('region', { name: 'Goal step records' }).innerText()).toContain('0 steps dated in the last 7 days');
+  }, 120000);
+
+  it('goal review retains legacy snapshots and excludes missing ratings from both averages', async () => {
+    const region = await openGoalReview({ weeklyCheckins: [{ id: 'old', date: Date.now(), rating: 4, progressSummary: [{ text: 'Older goal', progress: 50 }] }, { id: 'missing', date: Date.now(), rating: 0 }] });
+    await region.getByRole('combobox').selectOption('2');
+    await region.getByRole('button', { name: 'Save weekly review', exact: true }).click();
+    const history = region.locator('details[aria-label="Saved weekly goal reviews"]');
+    await history.locator(':scope > summary').click();
+    expect(await history.innerText()).toContain('3.0/5 from 2 rated check-ins');
+    expect(await history.innerText()).toContain('completion dates were not tracked');
+    expect(await history.innerText()).toContain('50% overall progress recorded at that time.');
+    await page.locator('#goal-tab-progress').click();
+    expect(await page.getByText(/Average recorded rating: 3.0/).count()).toBe(1);
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it.each(['', 'theme-dark', 'theme-contrast'])('goal review and saved history fit a phone in %s', async theme => {
+    const region = await openGoalReview({ goals: [{ id: 'phone-goal', text: 'A fictional learner practices with an example', steps: [{ done: true }] }] }, 320, theme);
+    await region.getByRole('textbox', { name: 'What helped, or what support could help? (optional)', exact: true }).fill('A model and more time.');
+    await region.getByRole('button', { name: 'Save weekly review', exact: true }).click();
+    await region.locator('details[aria-label="Saved weekly goal reviews"] > summary').click();
+    await page.addScriptTag({ path: path.join(root, 'node_modules/axe-core/axe.min.js') });
+    const audit = await region.evaluate(async node => {
+      const result = await window.axe.run(node, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'select-name', 'label-content-name-mismatch'] } });
+      return result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ html: n.html, summary: n.failureSummary })) }));
+    });
+    fs.writeFileSync(path.join(reports, (theme || 'light') + '-goal-review-axe.json'), JSON.stringify(audit, null, 2));
+    expect(audit).toEqual([]);
+    expect(await region.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+    expect(await region.locator('button:visible, summary:visible, select:visible').evaluateAll(nodes => nodes.every(node => node.getBoundingClientRect().height >= 44))).toBe(true);
+    await region.getByRole('textbox', { name: 'What helped, or what support could help? (optional)', exact: true }).scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-goal-review-phone.png') });
+    await region.locator('details[aria-label="Saved weekly goal reviews"]').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-goal-history-phone.png') });
+  }, 120000);
+
   it('calendar keeps dates visible, reads individual records, and handles year boundaries', async () => {
     await openJournal({ activeTab: 'calendar', calYear: 2025, calMonth: 11, earnedBadges: { calendar_viewer: true, weekly_reviewer: true }, checkIns: [
       { timestamp: new Date(2025, 11, 7, 9).getTime(), mood: 1, energy: null, thoughts: 'Private detail not in the calendar list' },

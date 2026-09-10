@@ -1,0 +1,31 @@
+{
+  "pass": "eighth - optional goal review and dated step records",
+  "regressions_passed": 100,
+  "focused_data_tests_passed": 6,
+  "browser_workflows_passed": 6,
+  "browser_unrelated_filtered_out": 49,
+  "tool_renders_passed": 72,
+  "audits": {
+    "light-goal-review-axe.json": [],
+    "theme-contrast-goal-review-axe.json": [],
+    "theme-dark-goal-review-axe.json": []
+  },
+  "visual_review": [
+    "theme-contrast-goal-review-phone.png",
+    "theme-dark-goal-history-phone.png"
+  ],
+  "sha256": "584202e7f60ae3ad998039dffc5ecce6cc64dda3dce41542441a8685094c383a",
+  "mirrors_identical": true,
+  "syntax": "passed",
+  "scoped_whitespace": "passed",
+  "logs": [
+    "reports/sel-hub-goal-review-browser.log",
+    "reports/sel-hub-goal-review-browser-final.log",
+    "reports/sel-hub-goal-review-regression.log",
+    "reports/sel-hub-goal-review-render.log",
+    "reports/sel-hub-goal-review-render-final.log"
+  ],
+  "validation_sequence": "100 existing tests passed before final label and singular-wording polish; all six browser workflows and six data tests passed again after that polish. Final 72-tool render smoke passed.",
+  "limits": "Isolated Chromium harness with simulated host callbacks. No classroom, real assistive-technology, packaged Desktop or broader goal template/AI/analytics validation.",
+  "deployed": false
+}
