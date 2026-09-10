@@ -19,7 +19,7 @@ for (const file of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 
 }
 const strings = JSON.parse(fs.readFileSync('ui_strings.js', 'utf8'));
 strings.lesson_board = strings.lesson_board || {};
-for (const file of ['lesson_board_ui.jsx', 'lesson_board_source.jsx', 'lesson_board_review.jsx', 'lesson_board_authoring.jsx']) {
+for (const file of ['lesson_board_ui.jsx', 'lesson_board_source.jsx', 'lesson_board_review.jsx', 'lesson_board_authoring.jsx', 'lesson_board_library.jsx']) {
   traverse(parser.parse(fs.readFileSync(file, 'utf8'), { sourceType: 'module', plugins: ['jsx'] }), {
     CallExpression({ node }) {
       if (node.callee.name === 'tr' && node.arguments[1]?.type === 'StringLiteral' && node.arguments[2]?.type === 'StringLiteral') strings.lesson_board[node.arguments[1].value] = node.arguments[2].value;

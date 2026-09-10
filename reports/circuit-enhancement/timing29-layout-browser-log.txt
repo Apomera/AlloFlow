@@ -1,0 +1,231 @@
+{
+  "catalog": [
+    {
+      "id": "bridge",
+      "label": "Balanced bridge",
+      "fallback": 0,
+      "loadMs": 119
+    },
+    {
+      "id": "shared",
+      "label": "Shared series resistor",
+      "fallback": 0,
+      "loadMs": 113
+    },
+    {
+      "id": "sources",
+      "label": "Two voltage sources",
+      "fallback": 0,
+      "loadMs": 78
+    },
+    {
+      "id": "current",
+      "label": "Current-driven load",
+      "fallback": 0,
+      "loadMs": 151
+    },
+    {
+      "id": "rc-charge",
+      "label": "RC charging",
+      "fallback": 0,
+      "loadMs": 238
+    },
+    {
+      "id": "rl-start",
+      "label": "RL startup",
+      "fallback": 0,
+      "loadMs": 136
+    },
+    {
+      "id": "rlc-ring",
+      "label": "RLC ringing",
+      "fallback": 0,
+      "loadMs": 264
+    },
+    {
+      "id": "bridge-settle",
+      "label": "Bridge settling",
+      "fallback": 0,
+      "loadMs": 180
+    },
+    {
+      "id": "sine-filter",
+      "label": "Sine-wave filter",
+      "fallback": 0,
+      "loadMs": 321
+    },
+    {
+      "id": "pulse-smooth",
+      "label": "Pulse smoothing",
+      "fallback": 0,
+      "loadMs": 193
+    },
+    {
+      "id": "triangle-current",
+      "label": "Triangle-current drive",
+      "fallback": 0,
+      "loadMs": 152
+    },
+    {
+      "id": "switch-hold",
+      "label": "Charge, disconnect, hold",
+      "fallback": 0,
+      "loadMs": 131
+    },
+    {
+      "id": "switch-discharge",
+      "label": "Charge then discharge",
+      "fallback": 0,
+      "loadMs": 180
+    },
+    {
+      "id": "switch-flyback",
+      "label": "Inductor flyback",
+      "fallback": 0,
+      "loadMs": 187
+    },
+    {
+      "id": "diode-half-wave",
+      "label": "Half-wave rectifier",
+      "fallback": 0,
+      "loadMs": 222
+    },
+    {
+      "id": "diode-bridge",
+      "label": "Full-wave bridge rectifier",
+      "fallback": 0,
+      "loadMs": 219
+    },
+    {
+      "id": "diode-filter",
+      "label": "Rectifier with smoothing",
+      "fallback": 0,
+      "loadMs": 495
+    },
+    {
+      "id": "diode-flyback",
+      "label": "Diode flyback path",
+      "fallback": 0,
+      "loadMs": 165
+    },
+    {
+      "id": "controlled-amplifier",
+      "label": "Voltage-controlled amplifier",
+      "fallback": 0,
+      "loadMs": 183
+    },
+    {
+      "id": "controlled-current",
+      "label": "Voltage-to-current control",
+      "fallback": 0,
+      "loadMs": 191
+    },
+    {
+      "id": "controlled-sense",
+      "label": "Current sensing and gain",
+      "fallback": 0,
+      "loadMs": 228
+    },
+    {
+      "id": "controlled-feedback",
+      "label": "Finite-gain feedback",
+      "fallback": 0,
+      "loadMs": 314
+    },
+    {
+      "id": "opamp-buffer",
+      "label": "Op-amp voltage follower",
+      "fallback": 0,
+      "loadMs": 263
+    },
+    {
+      "id": "opamp-inverting",
+      "label": "Inverting amplifier",
+      "fallback": 0,
+      "loadMs": 252
+    },
+    {
+      "id": "opamp-clipping",
+      "label": "Gain meets the output limits",
+      "fallback": 0,
+      "loadMs": 144
+    },
+    {
+      "id": "opamp-filter",
+      "label": "Active low-pass filter",
+      "fallback": 0,
+      "loadMs": 469
+    },
+    {
+      "id": "opamp-bandwidth",
+      "label": "Bandwidth and phase lag",
+      "fallback": 0,
+      "loadMs": 675
+    },
+    {
+      "id": "opamp-gain-bandwidth",
+      "label": "Gain trades for bandwidth",
+      "fallback": 0,
+      "loadMs": 748
+    },
+    {
+      "id": "opamp-slew",
+      "label": "When a sine wave becomes a ramp",
+      "fallback": 0,
+      "loadMs": 271
+    },
+    {
+      "id": "opamp-startup",
+      "label": "Slew, settle, and reach a DC level",
+      "fallback": 0,
+      "loadMs": 242
+    }
+  ],
+  "dense": [
+    {
+      "width": 1280,
+      "side": "Left perspective",
+      "tilt": 35
+    },
+    {
+      "width": 1280,
+      "side": "Left perspective",
+      "tilt": 70
+    },
+    {
+      "width": 1280,
+      "side": "Right perspective",
+      "tilt": 35
+    },
+    {
+      "width": 1280,
+      "side": "Right perspective",
+      "tilt": 70
+    },
+    {
+      "width": 320,
+      "side": "Left perspective",
+      "tilt": 35
+    },
+    {
+      "width": 320,
+      "side": "Left perspective",
+      "tilt": 70
+    },
+    {
+      "width": 320,
+      "side": "Right perspective",
+      "tilt": 35
+    },
+    {
+      "width": 320,
+      "side": "Right perspective",
+      "tilt": 70
+    }
+  ],
+  "scenarios": [
+    "VCCS sensing links and units; adding a CCVS, editing its sensed source, measured transresistance output and reconstructible downloaded CSV",
+    "All example label clearances and routed branches; 16-part all-node desktop/phone layouts at both perspective and tilt extremes; disabled tilt in flat mode"
+  ],
+  "errors": []
+}

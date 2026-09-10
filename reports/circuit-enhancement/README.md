@@ -625,3 +625,37 @@ Browser checks passed clipping and linear recovery, synchronized board/scope sta
 - [Controlled-source/camera regression](opamp28-controlled-browser-log.txt)
 - [Diode browser regression](opamp28-diodes-browser-log.txt)
 - [Model-aware waveform CSV](opamp28-time-response.csv)
+
+
+## Twenty-ninth pass: op-amp bandwidth, slew rate, and continuous timing state
+
+- Added optional one-pole bandwidth and symmetric slew-rate limits to the connected op-amp model. Timing settings include gain-bandwidth product (10 Hz–100 MHz), maximum output slope (0.000001–1000 V/µs), and starting output voltage. Existing designs retain their finite-gain, output-limited algebraic behavior. Disabling timing retains its settings; DC equilibrium remains independent of timing and starting output.
+- Added four investigations: **Bandwidth and phase lag**, **Gain trades for bandwidth**, **When a sine wave becomes a ramp**, and **Slew, settle, and reach a DC level**. Predictions connect closed-loop bandwidth, noise gain, sinusoidal slope, and the transition from a straight slew-limited ramp to a curved settling tail. A timing toggle enables direct comparison with the existing idealized response; halve/double shortcuts support slew-rate experiments.
+- Added exact/logarithmic timing controls and an open-loop pole readout. Scope and inspector cards distinguish Responding, Slewing up, Slewing down, and output-voltage limiting using both words and color. Signed output slope and the configured slew limit use V/µs. The projected op-amp package follows the selected sample, with cyan response, purple slew, and amber output-limit cues. DC cards explain that timing is inactive in that analysis.
+- Extended the simultaneous circuit solve with a continuous output-voltage state for each timed amplifier. Initial and post-switch constraint solves hold its output A − B at the configured or carried value. Switch-event cards explain that output remains continuous while its slope and current can change. Invalid starting values outside the configured output window produce a repairable diagnosis with no trace or export. Amplifier timing does not invent stored electrical energy; actual external capacitors and inductors retain their own energy accounting.
+- Integrated timing through adaptive backward Euler with step doubling. State-error estimates use the existing relative tolerance of 2e−5 and a voltage absolute tolerance of 1e−7 V. Starting steps and steps after source knots/switch events are bounded by 1/(32π GBW); accepted half-steps also limit amplifier excursion to 1/64 of its output window. These sampling guards help resolve short ramps. The existing four-amplifier, 16-component, 8-node, and 4000-attempt limits remain; a failed run suppresses partial results.
+- Appended timing enablement, GBW, slew rate, starting output, active timing state, local model slope, and actual integration-step slope to CSV. Configuration slew uses V/µs; both exported slope measurements use V/s. Initial and event constraint snapshots leave integration slope blank. CSV identifies adaptive integration for timed-amplifier circuits even when no capacitor or inductor is present.
+
+The implemented model is τ = A/(2π GBW), with du/dt = clamp((A × (V+ − V−) − u)/τ, −SR, +SR), projected onto the configured output window; u is output voltage A − B and SR is converted to V/s. Each implicit step uses gain AΔt/(τ + Δt), offset u_previous τ/(τ + Δt), and output bounds intersected with u_previous ± SRΔt. Region candidates are checked against that same step law. This is a teaching model, not a commercial-part fit. The approximate bandwidth/noise-gain relationship follows [Analog Devices MT-033](https://www.analog.com/media/en/training-seminars/tutorials/MT-033.pdf); the sinusoidal slope relation 2πfVp and slew distortion are explained in [MT-045](https://www.analog.com/media/en/training-seminars/tutorials/MT-045.pdf). No external simulator code was incorporated.
+
+Remaining model limits: one pole, internally powered zero-impedance output, hard configured voltage limits, and ideal sensing inputs. There are no physical supply terminals, output-current limit, input common-mode restrictions, offset/bias currents, additional poles, internal overload-storage recovery, comparator hysteresis/delay, or general AC stability analysis. A finite return slope after clipping is not a model of internal saturation storage. The board remains projected SVG. See the [updated coverage roadmap](circuitjs-parity-roadmap.md).
+
+Verification: **319 tests passed across seventeen files**, including **19 new timing cases**. Checked trajectories include follower startup across 10 Hz/1 kHz/1 MHz GBW, sinusoidal amplitude/phase for noise gains 1 and 10, positive/negative slew-limited startup with settling tails, both voltage limits, external capacitor current/energy, floating differential output, a timed/static amplifier cascade, and exact switch continuity with a slope reversal. Analytical acceptance bounds are 1 mV for the tested startup trajectories, 2 mV for sine responses, and 3 mV for slew-limited steps. An independent RK4 reference with steps no greater than 50 ns checks the distorted sine within 12 mV. These bounds apply to the tested examples, not every allowed circuit. Current balance and signed power balance are checked alongside the responses.
+
+Browser checks passed timing enable/disable, retained settings, undo, gain-bandwidth changes, signed rising/falling slew states, board/scope synchronization, removal of slew distortion by doubling the limit, starting-output editing, DC/time semantics, invalid-start recovery, CSV metadata, and exact before/after switch output continuity. Scoped axe reported zero violations at 1280, 390, and 320 px; there was no horizontal page overflow or page error. Earlier op-amp and diode browser suites also passed. All **30 bundled examples** passed routing and label-clearance checks without routing fallback, alongside dense 16-part/all-node camera checks. Browser validation uses the isolated local React circuit host. Desktop board/scope and phone controls were visually reviewed. JavaScript syntax, source/public byte parity, and scoped whitespace checks passed. Code outside the connected workspace is preserved apart from the timing CSS addition. Temporary staging scripts and backups were removed.
+
+- [Slew-limited response and signed slope](timing29-slew-scope.jpg)
+- [Live timing state on the projected board](timing29-slew-board.jpg)
+- [Bandwidth and phase lag](timing29-bandwidth-scope.jpg)
+- [Gain and bandwidth investigation](timing29-gain-bandwidth-scope.jpg)
+- [Startup ramp and settling](timing29-startup-scope.jpg)
+- [Phone timing controls](timing29-controls-320.jpg)
+- [Phone scope](timing29-scope-320.jpg)
+- [Switch-event output continuity](timing29-switch-continuity.jpg)
+- [319-test regression](timing29-regression-results.txt)
+- [Timing interaction and accessibility checks](timing29-browser-results.json)
+- [All examples and dense layouts](timing29-control27-layout-qa/control27-layout-browser-results.json)
+- [Earlier op-amp browser regression](timing29-opamp-browser-log.txt)
+- [Earlier diode browser regression](timing29-diodes-browser-log.txt)
+- [Timing-aware waveform CSV](timing29-waveform.csv)
+- [Source integrity checks](timing29-integrity.json)

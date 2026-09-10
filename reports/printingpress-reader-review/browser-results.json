@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "checks": [
+    "planning recovery",
+    "keyboard proof toggle",
+    "plain text safety",
+    "check invalidation",
+    "view switching",
+    "focus return",
+    "design export from text mode",
+    "planning excluded from output",
+    "print visibility",
+    "responsive layout",
+    "WCAG A/AA"
+  ],
+  "sizes": [
+    1280,
+    390,
+    320
+  ],
+  "accessibility": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ],
+  "errors": []
+}

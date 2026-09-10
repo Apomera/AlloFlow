@@ -1,0 +1,36 @@
+{
+  "pass": 29,
+  "checkedAt": "2026-09-10T14:48:44.521Z",
+  "sourceSha256": "28ed1a21c8e0524428dbfa5732ad01c808cbe55644cafdff1a1658d74e54e929",
+  "sourcePublicByteParity": true,
+  "javascriptSyntax": true,
+  "scopedGitDiffWhitespace": true,
+  "newTestWhitespace": true,
+  "sourceOutsideConnectedWorkspacePreservedExceptTimingCss": true,
+  "regression": {
+    "files": 17,
+    "tests": 319,
+    "newTimingTests": 19
+  },
+  "browser": {
+    "host": "Isolated local React 18 circuit host with Playwright Chromium",
+    "timingScenarios": 5,
+    "previousOpampPassed": true,
+    "previousDiodesPassed": true,
+    "catalogExamples": 30,
+    "catalogRoutingFallbacks": 0,
+    "axeWidths": [
+      1280,
+      390,
+      320
+    ],
+    "scopedAxeViolations": 0,
+    "pageErrors": 0
+  },
+  "visualReview": [
+    "timing29-slew-scope.jpg",
+    "timing29-slew-board.jpg",
+    "timing29-scope-320.jpg",
+    "timing29-controls-320.jpg"
+  ]
+}

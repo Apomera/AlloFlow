@@ -128,7 +128,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain('updateMolecularLens(f, waterView, t);');
     expect(source).toContain("? 'gas-far-apart' : molecularPhase === 'solid'");
     expect(source).toContain("? 'solid-open-lattice' : 'liquid-close-disordered';");
-    expect(source).toContain("canvasEl.dataset.molecularLens = 'schematic-h2o-not-to-scale';");
+    expect(source).toContain("canvasEl.dataset.molecularLens = molecularLens.visible ? 'schematic-h2o-not-to-scale' : 'hidden';");
 
     expect(source).toContain("className: 'wc-pilot-micro'");
     expect(source).toContain("'Molecular lens - schematic H2O'");

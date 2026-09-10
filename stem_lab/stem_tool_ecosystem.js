@@ -791,7 +791,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           function terrainColor(x, z) {
             var shade = 0.5 + 0.5 * Math.sin(x * 0.64 + z * 0.8) * Math.cos(z * 0.65);
             var clearing = Math.exp(-(x*x/130+z*z/95));
-            var c = new T.Color('#514d37').lerp(new T.Color('#69734c'),shade).lerp(new T.Color('#91a967'),clearing*0.85).convertSRGBToLinear();
+            var c = new T.Color('#4b4835').lerp(new T.Color('#626a46'),shade).lerp(new T.Color('#7f8a57'),clearing*0.85).convertSRGBToLinear();
             terrainColors.push(c.r, c.g, c.b);
           }
           terrainColor(0, 0);
@@ -812,12 +812,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           terrainGeometry.setAttribute('position', new T.Float32BufferAttribute(terrainPositions, 3));
           terrainGeometry.setAttribute('color', new T.Float32BufferAttribute(terrainColors, 3));
           terrainGeometry.setIndex(terrainIndices); terrainGeometry.computeVertexNormals();
-          var groundPixels=new Uint8Array(128*128*4), groundSeed=813;
-          for(var gp=0;gp<128*128;gp++){groundSeed=(groundSeed*1664525+1013904223)>>>0;var grain=190+(groundSeed%66);groundPixels[gp*4]=grain;groundPixels[gp*4+1]=grain;groundPixels[gp*4+2]=grain;groundPixels[gp*4+3]=255;}
-          var groundTexture=new T.DataTexture(groundPixels,128,128,T.RGBAFormat);groundTexture.wrapS=groundTexture.wrapT=T.RepeatWrapping;groundTexture.magFilter=T.LinearFilter;groundTexture.needsUpdate=true;textures.push(groundTexture);
+          var groundPixels=new Uint8Array(256*256*4), groundSeed=813;
+          for(var gp=0;gp<256*256;gp++){groundSeed=(groundSeed*1664525+1013904223)>>>0;var gx=(gp%256)*Math.PI*2/256,gz=Math.floor(gp/256)*Math.PI*2/256;var grain=Math.round(218+10*Math.sin(gx*3+Math.sin(gz*2))*Math.cos(gz*4)+6*Math.cos(gx*11+gz*7)+(groundSeed%19)-9);groundPixels[gp*4]=grain;groundPixels[gp*4+1]=grain;groundPixels[gp*4+2]=grain;groundPixels[gp*4+3]=255;}
+          var groundTexture=new T.DataTexture(groundPixels,256,256,T.RGBAFormat);groundTexture.wrapS=groundTexture.wrapT=T.RepeatWrapping;groundTexture.magFilter=T.LinearFilter;groundTexture.needsUpdate=true;textures.push(groundTexture);
           var terrainUV=[];for(var uvIndex=0;uvIndex<terrainPositions.length;uvIndex+=3)terrainUV.push(terrainPositions[uvIndex]/4,terrainPositions[uvIndex+2]/4);
           terrainGeometry.setAttribute('uv',new T.Float32BufferAttribute(terrainUV,2));
-          var terrainMaterial = new T.MeshStandardMaterial({ vertexColors: true, map:groundTexture, roughness: 1 }); materials.push(terrainMaterial);
+          var terrainMaterial = new T.MeshStandardMaterial({ vertexColors: true, map:groundTexture, bumpMap:groundTexture, bumpScale:0.012, roughness: 1 }); materials.push(terrainMaterial);
           var terrain = new T.Mesh(terrainGeometry, terrainMaterial); terrain.receiveShadow = true; scene.add(terrain);
 
           var disc = geometry(new T.CircleGeometry(1, 32));
@@ -934,9 +934,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               var t=segment/11,prior=(segment-1)/11,r=t*0.68,pr=prior*0.68;
               var cy=Math.sin(t*Math.PI*0.78)*0.66,py=Math.sin(prior*Math.PI*0.78)*0.66;
               fernQuad([[ux*pr+vx*0.009,py,uz*pr+vz*0.009],[ux*r+vx*0.009,cy,uz*r+vz*0.009],[ux*r-vx*0.009,cy,uz*r-vz*0.009],[ux*pr-vx*0.009,py,uz*pr-vz*0.009]],0.5);
-              var span=Math.sin(t*Math.PI)*0.20;
-              [-1,1].forEach(function(side){var cx=ux*r,cz=uz*r;
-                fernQuad([[cx,cy,cz],[cx+vx*side*span*0.6-ux*0.025,cy+0.025,cz+vz*side*span*0.6-uz*0.025],[cx+vx*side*span-ux*0.07,cy-0.025,cz+vz*side*span-uz*0.07],[cx+vx*side*span*0.45-ux*0.075,cy-0.02,cz+vz*side*span*0.45-uz*0.075]],0.34+0.15*t+(side===1?0.08:0));
+              var span=Math.sin(t*Math.PI)*0.23;
+              [-1,1].forEach(function(side){
+                // Tapered, slightly folded leaflets leave gaps along the rachis.
+                // A ridged fan adds depth without transparent foliage layers.
+                var base=fernVertices.length/3,outline=[[0,0]];
+                for(var edge=1;edge<=4;edge++)outline.push([edge/5,Math.sin(edge/5*Math.PI)*(edge%2?0.016:0.012)]);
+                outline.push([1,0]);
+                for(var edge=4;edge>=1;edge--)outline.push([edge/5,-Math.sin(edge/5*Math.PI)*(edge%2?0.016:0.012)]);
+                outline.push([0.45,0]);
+                outline.forEach(function(point,i){var u=point[0],w=point[1],travel=u*span;
+                  fernVertices.push(ux*r+vx*side*travel-ux*u*0.06+ux*w,cy+Math.sin(u*Math.PI)*0.024-u*u*0.045+(i===10?0.008:0),uz*r+vz*side*travel-uz*u*0.06+uz*w);
+                  var shade=0.29+0.1*t+0.09*u+(side===1?0.03:0)+(i===10?0.04:0),color=new T.Color(shade*0.75,shade,shade*0.48).convertSRGBToLinear();fernColors.push(color.r,color.g,color.b);
+                });
+                for(var face=0;face<10;face++)fernIndices.push(base+10,base+face,base+(face+1)%10);
               });
             }
           }
@@ -956,17 +967,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var shadeFactor=1-canopyShade*(0.23+0.1*Math.sin(shadeX*3.2)*Math.sin(shadeZ*2.5));
             terrainShade.setXYZ(shadeVertex,terrainShade.getX(shadeVertex)*shadeFactor,terrainShade.getY(shadeVertex)*shadeFactor,terrainShade.getZ(shadeVertex)*shadeFactor);
           }terrainShade.needsUpdate=true;
-          // Five curved leaves per tuft, grouped in irregular patches. A low
-          // central layer preserves visibility of small animals and food plants.
-          var grassPositions=[],grassIndices=[];
-          for(var blade=0;blade<5;blade++){
-            var ba=blade*2.39996, ux=Math.cos(ba),uz=Math.sin(ba),vx=-uz,vz=ux, base=grassPositions.length/3;
-            var bladeHeight=0.22+(blade%3)*0.065;
-            [[-0.018,0,0],[0.018,0,0],[-0.014,bladeHeight*0.55,0.07],[0.014,bladeHeight*0.55,0.07],[0,bladeHeight,0.16]].forEach(function(q){grassPositions.push(vx*q[0]+ux*q[2],q[1],vz*q[0]+uz*q[2]);});
-            grassIndices.push(base,base+1,base+2,base+1,base+3,base+2,base+2,base+3,base+4);
+          // Seven narrow blades bend continuously and fade from shaded bases
+          // to lighter tips. Instancing preserves the existing tuft draw call.
+          var grassPositions=[],grassIndices=[],grassColors=[];
+          for(var blade=0;blade<7;blade++){
+            var ba=blade*2.39996,ux=Math.cos(ba),uz=Math.sin(ba),vx=-uz,vz=ux,base=grassPositions.length/3;
+            var bladeHeight=0.19+(blade%4)*0.045,bend=0.10+(blade%3)*0.04;
+            for(var level=0;level<=4;level++){
+              var t=level/5,width=(0.010+(blade%3)*0.0015)*Math.pow(1-t,0.75),forward=bend*t*t,vertical=bladeHeight*(t-0.18*t*t),brightness=0.66+0.34*t;
+              [-1,1].forEach(function(side){grassPositions.push(vx*width*side+ux*forward,vertical,vz*width*side+uz*forward);grassColors.push(brightness,brightness,brightness*(1-0.12*t));});
+              if(level<4){var at=base+level*2;grassIndices.push(at,at+1,at+2,at+1,at+3,at+2);}
+            }
+            grassPositions.push(ux*bend,bladeHeight*0.82,uz*bend);grassColors.push(1,1,0.88);grassIndices.push(base+8,base+9,base+10);
           }
-          var groundBladeGeometry=geometry(new T.BufferGeometry());groundBladeGeometry.setAttribute('position',new T.Float32BufferAttribute(grassPositions,3));groundBladeGeometry.setIndex(grassIndices);groundBladeGeometry.computeVertexNormals();
-          var groundBladeMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide});materials.push(groundBladeMaterial);
+          var groundBladeGeometry=geometry(new T.BufferGeometry());groundBladeGeometry.setAttribute('position',new T.Float32BufferAttribute(grassPositions,3));groundBladeGeometry.setAttribute('color',new T.Float32BufferAttribute(grassColors,3));groundBladeGeometry.setIndex(grassIndices);groundBladeGeometry.computeVertexNormals();
+          var groundBladeMaterial=new T.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:T.DoubleSide});materials.push(groundBladeMaterial);
           var groundBlades=new T.InstancedMesh(groundBladeGeometry,groundBladeMaterial,2400);groundBlades.receiveShadow=true;scene.add(groundBlades);
           for(var grass=0;grass<2400;grass++){
             var patch=grass%64,pa=patch*2.39996,pr=2+Math.sqrt((patch+0.5)/64)*15;

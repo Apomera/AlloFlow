@@ -1,0 +1,24 @@
+{
+  "scenarios": [
+    "Bandwidth loss and phase lag, idealized comparison, retained timing settings, gain-bandwidth editing and undo",
+    "Rising/falling slew states, signed output slope, board synchronization and removal of slew distortion by increasing the limit",
+    "Starting output, finite ramp and settling, distinct DC/time semantics, invalid starting-output diagnosis and recovery",
+    "Gain-bandwidth investigation and reconstructible waveform metadata with explicit timing state and slope units",
+    "Desktop/phone timing accessibility and output continuity with a slope change at an exact switch event"
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_opamp.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > normalizes positive gain and bounded limits without mutating the source or swapping reversed limits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a finite-gain follower at gain 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a finite-gain follower at gain 10
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a finite-gain follower at gain 100000
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a finite-gain follower at gain 1000000
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input -10
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input -5
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input -1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input 5
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves and validates follower clipping at input 10
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > respects asymmetric limits and a floating output reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > does not confuse control common mode with the defined differential input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > diagnoses an unknown input rather than selecting a rail
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > rejects an invalid output window {"lower":5,"upper":5}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > rejects an invalid output window {"lower":12,"upper":-12}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a single-ended output window and merges the coincident boundary solutions
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > rejects contradictory ideal output drive instead of displaying the unclipped source result
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > diagnoses multiple positive-feedback equilibria without choosing an arbitrary latch state
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > solves a resistor-ratio inverting amplifier using finite gain
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > checks four amplifiers together and gives a bounded-work diagnostic for five
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > supports sensing the actual output branch current with a controlled current source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > combines amplifier output limiting with nonlinear diode conduction
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > returns from both output limits during a sine wave and satisfies the clamped law at every frame
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·························stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > matches a finite-gain active RC filter analytical startup
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > exports reproducible limits, signed error, clipping state and remaining headroom
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp.test.js > finite-gain op-amp networks > renders output-limited controls, board state, and explicit model boundaries
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_opamp_timing.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > normalizes timing limits without enabling old designs or mutating input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > keeps the DC solution independent of timing and starting output
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > matches a follower startup at GBW 10 Hz
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > matches a follower startup at GBW 1000 Hz
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > matches a follower startup at GBW 1000000 Hz
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > matches sinusoidal amplitude and phase for noise gain 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > matches sinusoidal amplitude and phase for noise gain 10
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > matches a slew-limited step of 3 V, including its settling tail
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > matches a slew-limited step of -3 V, including its settling tail
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > matches an independent small-step RK4 reference for a slew-distorted sine
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > holds output within both voltage limits while respecting the slew bound
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > uses a configured starting output only in time response
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > rejects an out-of-window starting output without silently clipping it
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > preserves output across an exact switch event and changes its slope
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > retains explicit timing settings when disabled and restores algebraic behavior
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > exports timing settings, active mode and actual integration slope in SI units
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > drives an external capacitor while preserving its actual energy and charge current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > combines timed and idealized amplifiers in one connected solve
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_opamp_timing.test.js > op-amp bandwidth and slew dynamics > retains floating differential output state without inventing an absolute reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·
+
+ Test Files  2 passed (2)
+      Tests  47 passed (47)
+   Start at  10:36:15
+   Duration  6.69s (transform 51ms, setup 51ms, import 134ms, tests 4.84s, environment 1.35s)
+

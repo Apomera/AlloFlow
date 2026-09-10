@@ -679,6 +679,7 @@
       ,'.wc-pilot-mission-hint{grid-column:1/-1;min-width:0;border-top:1px solid #94a3b8;margin-top:6px;color:#0c4a6e}.wc-pilot-mission-hint>summary{min-height:44px;padding:11px 0;font-size:13px;font-weight:750;cursor:pointer;line-height:1.5}.wc-pilot-hint-body{padding:0 12px 12px;border-left:3px solid #0284c7;margin-bottom:6px}.wc-pilot-mission-hint .wc-pilot-hint-body p{margin:6px 0;font-size:13px;line-height:1.55;color:#0c4a6e}.wc-pilot-hint-step{font-weight:750}.wc-pilot-hint-realign{padding:9px 12px;margin:10px 0;background:#fffbeb;border:1px solid #b45309;border-radius:8px}.wc-pilot-mission-hint .wc-pilot-hint-realign p{color:#78350f}.wc-pilot-mission-hint summary:focus-visible{outline:3px solid #b45309;outline-offset:2px}.wc-pilot-root.is-dark .wc-pilot-mission-hint,.wc-pilot-root.is-dark .wc-pilot-mission-hint .wc-pilot-hint-body p{color:#e0f2fe}.wc-pilot-root.is-dark .wc-pilot-hint-realign{background:#3b2e17}.wc-pilot-root.is-dark .wc-pilot-mission-hint .wc-pilot-hint-realign p{color:#fef3c7}.wc-pilot-root.is-dark .wc-pilot-mission-hint summary:focus-visible{outline-color:#fde68a}.theme-contrast .wc-pilot-mission-hint,.theme-contrast .wc-pilot-mission-hint p,.theme-contrast .wc-pilot-hint-realign{color:#ffff00!important;background:#000!important;border-color:#ffff00!important}@media(forced-colors:active){.wc-pilot-mission-hint,.wc-pilot-mission-hint p,.wc-pilot-hint-body,.wc-pilot-hint-realign{color:CanvasText!important;background:Canvas!important;border-color:CanvasText!important}}'
       ,'.wc-pilot-hint-goal{min-height:44px;max-width:100%;padding:8px 12px;border:1px solid #075985;border-radius:8px;background:#075985;color:#fff;font:inherit;font-size:13px;font-weight:750;cursor:pointer}.wc-pilot-hint-goal:focus-visible{outline:3px solid #b45309;outline-offset:3px}.wc-pilot-root.is-dark .wc-pilot-hint-goal{background:#bae6fd;color:#082f49}.wc-pilot-root.is-dark .wc-pilot-hint-goal:focus-visible{outline-color:#fde68a}.theme-contrast .wc-pilot-hint-goal{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}@media(forced-colors:active){.wc-pilot-hint-goal{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}'
       ,'.wc-pilot-review-btn{justify-self:start;min-height:44px;padding:8px 12px;margin-top:8px;border:1px solid #075985;border-radius:8px;background:#075985;color:#fff;font:inherit;font-size:13px;font-weight:750;cursor:pointer;max-width:100%}.wc-pilot-review-btn:focus-visible{outline:3px solid #b45309;outline-offset:3px}.wc-pilot-review-btn:disabled{opacity:.5;cursor:default}.wc-pilot-notice-actions{display:flex;flex-wrap:wrap;gap:8px;position:sticky;bottom:0;background:#08283c;padding-top:8px;box-shadow:0 -5px 10px #08283c}.wc-pilot-notice .wc-pilot-notice-actions .wc-pilot-btn{position:static;box-shadow:none;flex:1 1 160px;white-space:normal}.wc-pilot-notice .wc-pilot-review-context{padding:8px 10px;background:#12394f;border-left:3px solid #7dd3fc;border-radius:4px;color:#e0f2fe;font-size:12px}.wc-pilot-root.is-dark .wc-pilot-review-btn{background:#bae6fd;color:#082f49}.wc-pilot-root.is-dark .wc-pilot-review-btn:focus-visible{outline-color:#fde68a}.theme-contrast .wc-pilot-review-btn,.theme-contrast .wc-pilot-notice-actions,.theme-contrast .wc-pilot-review-context{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}@media(forced-colors:active){.wc-pilot-review-btn{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-pilot-notice-actions,.wc-pilot-review-context{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}'
+      ,'.wc-pilot-stage{container-type:inline-size}.wc-pilot-stage[data-learning-pause=true] .wc-pilot-canvas{min-height:640px}.wc-pilot-energy-key{display:block;font-size:11px;line-height:1.5;font-weight:500;margin-top:5px;color:#e0f2fe}@container(min-width:900px){.wc-pilot-stage .wc-pilot-notice{left:auto;right:16px;transform:none;width:350px}.wc-pilot-stage .wc-pilot-notice-evidence{grid-template-columns:1fr}}'
       ,'.wc-pilot-notice{display:flex;flex-direction:column;overflow:hidden}.wc-pilot-notice-reading{min-height:0;overflow:auto;scrollbar-gutter:stable;padding-right:3px}.wc-pilot-notice-reading:focus-visible{outline:2px solid #fde68a;outline-offset:-2px}.wc-pilot-notice-actions{position:static;flex-shrink:0;box-shadow:none}.wc-pilot-stage[data-recorded-review=true] .wc-pilot-canvas{height:760px}@media(max-width:700px){.wc-pilot-stage[data-recorded-review=true] .wc-pilot-canvas{height:900px}}'
       ,'.wc-pilot-review-nav{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;flex-shrink:0;padding-top:10px;border-top:1px solid #47758b;margin-top:8px}.wc-pilot-review-nav>span{font-size:12px;font-weight:750;color:#e0f2fe;white-space:nowrap}.wc-pilot-review-nav button{min-height:44px;min-width:0;padding:7px 8px;border:1px solid #7dd3fc;border-radius:8px;background:#12394f;color:#e0f2fe;font:inherit;font-size:12px;font-weight:750;cursor:pointer}.wc-pilot-review-nav button:disabled{opacity:.5;cursor:default}.wc-pilot-review-nav button:focus-visible,.wc-pilot-notice h3:focus-visible{outline:3px solid #fde68a;outline-offset:2px}.theme-contrast .wc-pilot-review-nav,.theme-contrast .wc-pilot-review-nav button{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}@media(forced-colors:active){.wc-pilot-review-nav{border-color:CanvasText}.wc-pilot-review-nav button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-pilot-review-nav>span{color:CanvasText!important}}'
     ].join('');
@@ -2878,7 +2879,7 @@
     rain: { id: 'rain', label: 'Raindrop', stage: 'precipitation', tint: 0x60a5fa,
       science: 'You collided and merged with enough droplets that gravity beat the updraft. A raindrop is roughly a million cloud droplets, which is why clouds can hang around for hours before it rains.' },
     snow: { id: 'snow', label: 'Snowflake', stage: 'precipitation', tint: 0xf0f9ff,
-      science: 'You fell through air that stayed below freezing the whole way down, so you never melted. Every branch grew in the same conditions at the same moment, which is what makes a snowflake symmetrical.' },
+      science: 'You are falling as solid ice. This enlarged crystal with six branches is one example; real snow has many shapes and can contain joined crystals. Temperature and moisture shape crystal growth. In this model, entering air above freezing melts you into rain.' },
     runoff: { id: 'runoff', label: 'Surface runoff', stage: 'collection', tint: 0x22d3ee,
       science: 'You landed faster than the ground could absorb you, so you are flowing downhill over the surface toward a stream. Runoff carries sediment and whatever the land surface holds.' },
     soil: { id: 'soil', label: 'Soil water', stage: 'infiltration', tint: 0xa3e635,
@@ -3399,7 +3400,7 @@
       var f = WC_PILOT_FORMS[id];
       if (f._enLabel == null) { f._enLabel = f.label; f._enScience = f.science; }
       f.label = t('stem.watercycle.pilot_form_' + id + (id === 'cloud' ? '_label_v2' : '_label'), f._enLabel);
-      f.science = t('stem.watercycle.pilot_form_' + id + (id === 'ice' ? '_science_v2' : '_science'), f._enScience);
+      f.science = t('stem.watercycle.pilot_form_' + id + (id === 'ice' || id === 'snow' ? '_science_v2' : '_science'), f._enScience);
     });
   }
 
@@ -13132,6 +13133,25 @@ const d = labToolData.waterCycle || {};
             rainField.visible = false;
             scene.add(rainField);
 
+            // A small six-branched sprite stays distinguishable from liquid
+            // droplets. It is an illustrative crystal, not a habit forecast.
+            function makePilotSnowTexture() {
+              var cv = document.createElement('canvas'); cv.width = cv.height = 128;
+              var ctx = cv.getContext('2d');
+              ctx.translate(64, 64);
+              ctx.strokeStyle = '#f0f9ff'; ctx.lineWidth = 3.2; ctx.lineJoin = 'miter';
+              ctx.shadowColor = '#bae6fd'; ctx.shadowBlur = 2;
+              for (var armIndex = 0; armIndex < 6; armIndex++) {
+                ctx.save(); ctx.rotate(armIndex * Math.PI / 3);
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(52, 0);
+                ctx.moveTo(24, 0); ctx.lineTo(36, -14);
+                ctx.moveTo(24, 0); ctx.lineTo(36, 14);
+                ctx.moveTo(39, 0); ctx.lineTo(48, -9);
+                ctx.moveTo(39, 0); ctx.lineTo(48, 9);
+                ctx.stroke(); ctx.restore();
+              }
+              return new THREE.CanvasTexture(cv);
+            }
             var SNOW_CRYSTAL_COUNT = 76;
             var snowFieldPos = new Float32Array(SNOW_CRYSTAL_COUNT * 3);
             var snowFieldSeed = new Float32Array(SNOW_CRYSTAL_COUNT * 3);
@@ -13146,9 +13166,10 @@ const d = labToolData.waterCycle || {};
             var snowFieldGeo = new THREE.BufferGeometry();
             snowFieldGeo.setAttribute('position', new THREE.BufferAttribute(snowFieldPos, 3));
             var snowField = new THREE.Points(snowFieldGeo, new THREE.PointsMaterial({
-              color: 0xf8fafc, size: 2.6, map: makeDotTexture('rgba(255,255,255,1)', 'rgba(207,250,254,0.72)'),
+              color: 0xf8fafc, size: 3.6, map: makePilotSnowTexture(), alphaTest: 0.06,
               transparent: true, opacity: 0.88, depthWrite: false, sizeAttenuation: true
             }));
+            snowField.name = 'pilot-snow-field';
             snowField.frustumCulled = false;
             snowField.visible = false;
             scene.add(snowField);
@@ -13158,6 +13179,7 @@ const d = labToolData.waterCycle || {};
               size: 5.2, map: nucTex, transparent: true, depthWrite: false,
               blending: THREE.AdditiveBlending, sizeAttenuation: true
             }));
+            nuclei.name = 'pilot-condensation-nuclei';
             scene.add(nuclei);
 
             // ── Free cloud droplets to coalesce with ────────────────────────
@@ -13171,12 +13193,81 @@ const d = labToolData.waterCycle || {};
             }
             var dropGeo = new THREE.BufferGeometry();
             dropGeo.setAttribute('position', new THREE.BufferAttribute(dropPos, 3));
-            var dropTex = makeDotTexture('rgba(255,255,255,1)', 'rgba(186,230,253,0.7)');
+            // A small shaded bead, with a rim and highlight rather than an
+            // additive glow. Droplets remain enlarged teaching markers.
+            var dropTextureCanvas = document.createElement('canvas');
+            dropTextureCanvas.width = dropTextureCanvas.height = 128;
+            var dropContext = dropTextureCanvas.getContext('2d');
+            var dropGradient = dropContext.createRadialGradient(43, 37, 2, 64, 64, 57);
+            dropGradient.addColorStop(0, 'rgba(245,253,255,0.96)');
+            dropGradient.addColorStop(0.3, 'rgba(213,242,251,0.8)');
+            dropGradient.addColorStop(0.8, 'rgba(81,152,179,0.66)');
+            dropGradient.addColorStop(0.94, 'rgba(191,229,242,0.8)');
+            dropGradient.addColorStop(1, 'rgba(191,229,242,0)');
+            dropContext.fillStyle = dropGradient; dropContext.fillRect(0, 0, 128, 128);
+            dropContext.fillStyle = 'rgba(255,255,255,0.92)';
+            dropContext.beginPath(); dropContext.ellipse(45, 38, 11, 6, -0.7, 0, Math.PI * 2); dropContext.fill();
+            var dropTex = new THREE.CanvasTexture(dropTextureCanvas);
             var freeDrops = new THREE.Points(dropGeo, new THREE.PointsMaterial({
               size: 3.1, map: dropTex, transparent: true, depthWrite: false,
-              blending: THREE.AdditiveBlending, sizeAttenuation: true
+              blending: THREE.NormalBlending, sizeAttenuation: true
             }));
+            freeDrops.name = 'pilot-collectible-droplets';
+            // Prevent a bead just in front of the eye from filling the scene.
+            // The limit is expressed in CSS pixels and follows renderer density.
+            var dropletPixelCap = { value: 14 * renderer.getPixelRatio() };
+            freeDrops.material.onBeforeCompile = function(shader) {
+              shader.uniforms.pilotDropletPixelCap = dropletPixelCap;
+              shader.vertexShader = 'uniform float pilotDropletPixelCap;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <logdepthbuf_vertex>',
+                'gl_PointSize = min(gl_PointSize, pilotDropletPixelCap);\n#include <logdepthbuf_vertex>');
+            };
             scene.add(freeDrops);
+
+            // Reuse two beads for visual receipts of actual credited collisions.
+            // The cue never changes particle paths, collision radii, or mass.
+            var collectionCueGroup = new THREE.Group();
+            collectionCueGroup.name = 'pilot-collection-cues';
+            var collectionCues = [], collectionCueNext = 0;
+            var collectionViewDirection = new THREE.Vector3(), collectionCameraDelta = new THREE.Vector3();
+            for (var cueIndex = 0; cueIndex < 2; cueIndex++) {
+              var cueSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: dropTex, color: 0x0284c7, transparent: true, opacity: 0, depthWrite: false, depthTest: false, fog: false
+              }));
+              cueSprite.visible = false; cueSprite.renderOrder = 10; cueSprite.scale.set(1.6, 1.6, 1.6);
+              collectionCueGroup.add(cueSprite);
+              collectionCues.push({ sprite: cueSprite, start: new THREE.Vector3(), startedAt: -1 });
+            }
+            scene.add(collectionCueGroup);
+            function beginCollectionCue(x, y, z) {
+              var cue = collectionCues[collectionCueNext];
+              collectionCueNext = (collectionCueNext + 1) % collectionCues.length;
+              cue.start.set(x, y, z); cue.startedAt = sim.elapsed;
+              cue.sprite.position.copy(cue.start); cue.sprite.visible = true;
+            }
+            function updateCollectionCues() {
+              var active = false;
+              camera.getWorldDirection(collectionViewDirection);
+              collectionCues.forEach(function(cue) {
+                if (!cue.sprite.visible) return;
+                var progress = Math.max(0, (sim.elapsed - cue.startedAt) / 0.48);
+                if (progress >= 1) { cue.sprite.visible = false; return; }
+                active = true;
+                var ease = progress * progress * (3 - 2 * progress);
+                cue.sprite.position.copy(cue.start).lerp(parcel.position, motionReduced ? 1 : ease);
+                cue.sprite.material.opacity = motionReduced ? 0.6 : (1 - progress) * 0.95;
+                if (input.cameraMode === 'water') {
+                  // The parcel sits behind the eye in Water view. A small receipt
+                  // in the teaching lens confirms the same counted collision.
+                  cue.sprite.position.copy(camera.position).addScaledVector(collectionViewDirection, 14);
+                }
+                var cueDepth = collectionCameraDelta.copy(cue.sprite.position).sub(camera.position).dot(collectionViewDirection);
+                var cueSizeLimit = 36 * Math.tan(camera.fov * Math.PI / 360) * Math.max(0.001, cueDepth)
+                  / Math.max(1, canvasEl.clientHeight || H);
+                cue.sprite.scale.setScalar(Math.min(motionReduced ? 1.6 : 1.6 - progress * 0.7, cueSizeLimit));
+              });
+              canvasEl.dataset.collectionCue = active ? 'active' : 'hidden';
+            }
 
             // ── Ambient cumulus ─────────────────────────────────────────────
             // Built from overlapping soft billboards rather than spheres: a
@@ -13270,6 +13361,7 @@ const d = labToolData.waterCycle || {};
             // phase change would drop frames at exactly the moment the learner is
             // meant to be noticing the change.
             var parcel = new THREE.Group();
+            parcel.name = 'pilot-water-parcel';
             scene.add(parcel);
 
             var liquidMesh = new THREE.Mesh(
@@ -13327,16 +13419,91 @@ const d = labToolData.waterCycle || {};
             rainMesh.scale.set(1.12, 0.82, 1.12);
             parcel.add(rainMesh);
 
-            var snowMesh = new THREE.Group();
-            for (var si = 0; si < 6; si++) {
-              var arm = new THREE.Mesh(
-                new THREE.BoxGeometry(6.4, 0.5, 0.9),
-                new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.35, emissive: 0x93c5fd, emissiveIntensity: 0.22 })
-              );
-              arm.rotation.y = (si * Math.PI) / 3;
-              snowMesh.add(arm);
+            // A small shared sky-color environment defines the curved surface.
+            // It is illustrative lighting, not a reflection of scene objects.
+            var parcelReflectionCanvas = document.createElement('canvas');
+            parcelReflectionCanvas.width = 256; parcelReflectionCanvas.height = 128;
+            var parcelReflectionContext = parcelReflectionCanvas.getContext('2d');
+            var parcelSkyGradient = parcelReflectionContext.createLinearGradient(0, 0, 0, 128);
+            parcelSkyGradient.addColorStop(0, '#5b829e');
+            parcelSkyGradient.addColorStop(0.38, '#b4d4e2');
+            parcelSkyGradient.addColorStop(0.49, '#eef5f4');
+            parcelSkyGradient.addColorStop(0.55, '#4c8396');
+            parcelSkyGradient.addColorStop(1, '#123b51');
+            parcelReflectionContext.fillStyle = parcelSkyGradient;
+            parcelReflectionContext.fillRect(0, 0, 256, 128);
+            var parcelSunGlow = parcelReflectionContext.createRadialGradient(178, 35, 1, 178, 35, 24);
+            parcelSunGlow.addColorStop(0, 'rgba(255,250,225,1)');
+            parcelSunGlow.addColorStop(0.18, 'rgba(255,250,225,0.75)');
+            parcelSunGlow.addColorStop(1, 'rgba(255,250,225,0)');
+            parcelReflectionContext.fillStyle = parcelSunGlow;
+            parcelReflectionContext.fillRect(145, 5, 65, 60);
+            var parcelReflectionTexture = new THREE.CanvasTexture(parcelReflectionCanvas);
+            parcelReflectionTexture.mapping = THREE.EquirectangularReflectionMapping;
+            parcelReflectionTexture.encoding = THREE.sRGBEncoding;
+            [liquidMesh, dropletMesh, rainMesh, iceMesh].forEach(function(mesh) {
+              mesh.material.envMap = parcelReflectionTexture;
+              mesh.material.envMapIntensity = 0.7;
+              mesh.material.ior = mesh === iceMesh ? 1.31 : 1.333;
+            });
+            liquidMesh.material.transmission = 0.48;
+            liquidMesh.name = 'pilot-liquid-parcel';
+            dropletMesh.name = 'pilot-cloud-droplet';
+            rainMesh.name = 'pilot-rain-parcel';
+            iceMesh.name = 'pilot-ice-parcel';
+
+            // Representative branched snow crystal. Natural snow includes many
+            // habits and aggregates; the parcel shape is enlarged for inspection.
+            // All six arms and the central plate share one extruded geometry.
+            var snowArmOutline = [
+              [0.8,-0.23],[2.5,-0.23],[3.5,-1.65],[3.8,-1.65],[3,-0.23],
+              [4.2,-0.23],[5.05,-1.4],[5.35,-1.4],[4.7,-0.23],[6.1,-0.23],
+              [7.3,0],[6.1,0.23],[4.7,0.23],[5.35,1.4],[5.05,1.4],
+              [4.2,0.23],[3,0.23],[3.8,1.65],[3.5,1.65],[2.5,0.23],[0.8,0.23]
+            ];
+            var snowShapes = [];
+            for (var crystalArm = 0; crystalArm < 6; crystalArm++) {
+              var crystalAngle = crystalArm * Math.PI / 3;
+              var crystalShape = new THREE.Shape();
+              snowArmOutline.forEach(function(point, pointIndex) {
+                var x = point[0] * Math.cos(crystalAngle) - point[1] * Math.sin(crystalAngle);
+                var y = point[0] * Math.sin(crystalAngle) + point[1] * Math.cos(crystalAngle);
+                if (pointIndex === 0) crystalShape.moveTo(x, y); else crystalShape.lineTo(x, y);
+              });
+              crystalShape.closePath(); snowShapes.push(crystalShape);
             }
+            var snowCore = new THREE.Shape();
+            for (var corner = 0; corner < 6; corner++) {
+              var cornerAngle = corner * Math.PI / 3;
+              var cx = Math.cos(cornerAngle) * 1.12, cy = Math.sin(cornerAngle) * 1.12;
+              if (corner === 0) snowCore.moveTo(cx, cy); else snowCore.lineTo(cx, cy);
+            }
+            snowCore.closePath(); snowShapes.push(snowCore);
+            var snowGeometry = new THREE.ExtrudeGeometry(snowShapes, {
+              depth: 0.28, steps: 1, bevelEnabled: true, bevelSegments: 1,
+              bevelSize: 0.055, bevelThickness: 0.06, curveSegments: 1
+            });
+            snowGeometry.translate(0, 0, -0.14);
+            snowGeometry.rotateX(-Math.PI / 2);
+            snowGeometry.scale(0.72, 0.72, 0.72);
+            var snowCrystalMaterial = new THREE.MeshPhysicalMaterial({
+              color: 0xe0f2fe, roughness: 0.24, metalness: 0, clearcoat: 0.8,
+              clearcoatRoughness: 0.12, envMap: parcelReflectionTexture, envMapIntensity: 0.75,
+              emissive: 0x256080, emissiveIntensity: 0.12, ior: 1.31
+            });
+            var snowMesh = new THREE.Group();
+            snowMesh.name = 'pilot-snow-parcel';
+            snowMesh.rotation.set(0.55, 0.25, 0);
+            var snowCrystalBody = new THREE.Mesh(snowGeometry, snowCrystalMaterial);
+            snowCrystalBody.name = 'pilot-snow-crystal-body';
+            snowMesh.add(snowCrystalBody);
+            var snowCrystalEdges = new THREE.LineSegments(new THREE.EdgesGeometry(snowGeometry, 24),
+              new THREE.LineBasicMaterial({color: 0xf0f9ff, transparent: true, opacity: 0.48, depthWrite: false}));
+            snowMesh.add(snowCrystalEdges);
             parcel.add(snowMesh);
+            var iceEdges = new THREE.LineSegments(new THREE.EdgesGeometry(iceMesh.geometry, 24),
+              new THREE.LineBasicMaterial({color: 0xe0f2fe, transparent: true, opacity: 0.5, depthWrite: false}));
+            iceMesh.add(iceEdges);
 
             // The culmination. When the learner becomes a cloud, they get a real
             // cumulus centred on themselves, and the camera pulls back to show it.
@@ -13378,17 +13545,18 @@ const d = labToolData.waterCycle || {};
             var MOLECULE_COUNT = 18;
             var WATER_BOND_ANGLE_RAD = 104.5 * Math.PI / 180;
             var molecularLens = new THREE.Group();
-            var molecularOxygenGeometry = new THREE.SphereGeometry(0.82, 12, 9);
-            var molecularHydrogenGeometry = new THREE.SphereGeometry(0.44, 10, 7);
+            molecularLens.name = 'pilot-molecular-lens';
+            var molecularOxygenGeometry = new THREE.SphereGeometry(0.82, 20, 14);
+            var molecularHydrogenGeometry = new THREE.SphereGeometry(0.44, 16, 12);
             var molecularOxygenMaterial = new THREE.MeshStandardMaterial({
-              color: 0xef4444, roughness: 0.28, metalness: 0.02,
+              color: 0xc93542, roughness: 0.34, metalness: 0,
               emissive: 0x7f1d1d, emissiveIntensity: 0.16,
-              transparent: true, opacity: 0.86, depthWrite: false
+              transparent: false, opacity: 1, depthWrite: true
             });
             var molecularHydrogenMaterial = new THREE.MeshStandardMaterial({
               color: 0xf8fafc, roughness: 0.2, metalness: 0.01,
               emissive: 0x93c5fd, emissiveIntensity: 0.08,
-              transparent: true, opacity: 0.9, depthWrite: false
+              transparent: false, opacity: 1, depthWrite: true
             });
             var molecularOxygenField = new THREE.InstancedMesh(
               molecularOxygenGeometry, molecularOxygenMaterial, MOLECULE_COUNT
@@ -13450,8 +13618,8 @@ const d = labToolData.waterCycle || {};
               var moleculeScale = waterViewActive ? 1 : 0.7;
               molecularLens.position.copy(parcel.position);
               molecularLens.scale.setScalar(moleculeScale);
-              molecularOxygenMaterial.opacity = waterViewActive ? 0.9 : 0.82;
-              molecularHydrogenMaterial.opacity = waterViewActive ? 0.94 : 0.86;
+              molecularLens.visible = input.showMolecules !== false;
+              molecularOxygenMaterial.opacity = molecularHydrogenMaterial.opacity = 1;
               molecularBondMaterial.opacity = waterViewActive ? 0.68 : 0.54;
               for (var moleculeIndex = 0; moleculeIndex < MOLECULE_COUNT; moleculeIndex++) {
                 var moleculeSeed = molecularSeeds[moleculeIndex];
@@ -13530,7 +13698,7 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.molecularArrangement = molecularPhase === 'gas'
                 ? 'gas-far-apart' : molecularPhase === 'solid'
                   ? 'solid-open-lattice' : 'liquid-close-disordered';
-              canvasEl.dataset.molecularLens = 'schematic-h2o-not-to-scale';
+              canvasEl.dataset.molecularLens = molecularLens.visible ? 'schematic-h2o-not-to-scale' : 'hidden';
             }
 
             // Latent-energy cue. These are not matter particles: they are a
@@ -13561,22 +13729,50 @@ const d = labToolData.waterCycle || {};
               blending: THREE.AdditiveBlending
             });
             var latentEnergyRing = new THREE.Mesh(
-              new THREE.RingGeometry(0.82, 1, 64), latentEnergyRingMaterial
+              new THREE.RingGeometry(0.96, 1, 64), latentEnergyRingMaterial
             );
+            // Camera-facing arrows keep direction legible in a frozen frame.
+            // They are schematic energy indicators, not escaping H2O particles.
+            var latentArrowShape = new THREE.Shape();
+            latentArrowShape.moveTo(-3.6, -0.48);
+            latentArrowShape.lineTo(0.7, -0.48);
+            latentArrowShape.lineTo(0.7, -1.8);
+            latentArrowShape.lineTo(3.5, 0);
+            latentArrowShape.lineTo(0.7, 1.8);
+            latentArrowShape.lineTo(0.7, 0.48);
+            latentArrowShape.lineTo(-3.6, 0.48);
+            latentArrowShape.closePath();
+            var latentArrowGeometry = new THREE.ShapeGeometry(latentArrowShape);
+            var latentArrowMaterial = new THREE.MeshBasicMaterial({
+              color: 0xfbbf24, transparent: true, opacity: 0,
+              depthWrite: false, depthTest: false, fog: false, side: THREE.DoubleSide
+            });
+            var latentEnergyArrows = new THREE.Group();
+            latentEnergyArrows.name = 'pilot-energy-arrows';
+            for (var energyArrowIndex = 0; energyArrowIndex < 8; energyArrowIndex++) {
+              var energyArrow = new THREE.Mesh(latentArrowGeometry, latentArrowMaterial);
+              energyArrow.renderOrder = 9;
+              latentEnergyArrows.add(energyArrow);
+            }
             var latentEnergyGroup = new THREE.Group();
+            latentEnergyGroup.name = 'pilot-energy-transfer';
+            latentEnergyGroup.scale.setScalar(0.7);
+            latentEnergyGroup.add(latentEnergyArrows);
             latentEnergyGroup.add(latentEnergyParticles);
             latentEnergyGroup.add(latentEnergyRing);
             latentEnergyGroup.visible = false;
             latentEnergyGroup.renderOrder = 8;
             scene.add(latentEnergyGroup);
             var latentEnergyKind = 'none';
+            var latentEnergyViewDirection = new THREE.Vector3();
             var latentEnergyElapsed = 0;
             canvasEl.dataset.latentEnergyTransfer = 'none-yet';
             canvasEl.dataset.latentEnergyCue = 'hidden';
 
             function beginLatentEnergyCue(fromForm, toForm) {
               latentEnergyKind = WCPK.energyTransfer(fromForm, toForm);
-              latentEnergyElapsed = 0;
+              // Start visibly, so an automatic learning pause captures the cue.
+              latentEnergyElapsed = 0.42;
               latentEnergyMaterial.opacity = 0;
               latentEnergyRingMaterial.opacity = 0;
               if (latentEnergyKind === 'none') {
@@ -13588,6 +13784,7 @@ const d = labToolData.waterCycle || {};
               var absorbed = latentEnergyKind === 'absorbed';
               latentEnergyMaterial.color.setHex(absorbed ? 0xfbbf24 : 0xfb923c);
               latentEnergyRingMaterial.color.setHex(absorbed ? 0xfde68a : 0xfdba74);
+              latentArrowMaterial.color.setHex(absorbed ? 0xfbbf24 : 0xfb923c);
               latentEnergyGroup.visible = true;
               canvasEl.dataset.latentEnergyTransfer = absorbed
                 ? 'absorbed-inward-to-water' : 'released-outward-to-air';
@@ -13596,8 +13793,8 @@ const d = labToolData.waterCycle || {};
 
             function updateLatentEnergyCue(dt, visualTime) {
               if (latentEnergyKind === 'none' || !latentEnergyGroup.visible) return;
-              latentEnergyElapsed += dt;
-              var latentDuration = motionReduced ? 1.35 : 2.45;
+              if (!input.paused && !document.hidden) latentEnergyElapsed += dt;
+              var latentDuration = 2.8;
               var latentProgress = Math.min(1, latentEnergyElapsed / latentDuration);
               if (latentProgress >= 1) {
                 latentEnergyGroup.visible = false;
@@ -13613,9 +13810,25 @@ const d = labToolData.waterCycle || {};
                 ? 30 - latentMotionProgress * 27.4
                 : 2.6 + latentMotionProgress * 27.4;
               var latentOpacity = motionReduced ? 0.64 : Math.sin(latentProgress * Math.PI) * 0.88;
-              latentEnergyGroup.position.copy(parcel.position);
+              if (input.cameraMode === 'water') {
+                // In Water view the parcel is behind the eye. Keep this schematic
+                // in the teaching lens, just ahead of the learner, like the H2O lens.
+                camera.getWorldDirection(latentEnergyViewDirection);
+                latentEnergyGroup.position.copy(camera.position).addScaledVector(latentEnergyViewDirection, 70);
+              } else {
+                latentEnergyGroup.position.copy(parcel.position);
+              }
               latentEnergyMaterial.opacity = latentOpacity;
-              latentEnergyRingMaterial.opacity = latentOpacity * 0.72;
+              latentEnergyRingMaterial.opacity = latentOpacity * 0.24;
+              latentArrowMaterial.opacity = motionReduced ? 0.92 : Math.min(0.96, latentOpacity * 1.7);
+              latentEnergyArrows.quaternion.copy(camera.quaternion);
+              var latentArrowRadius = Math.min(24, Math.max(10, latentRadius) + 4);
+              for (var arrowIndex = 0; arrowIndex < latentEnergyArrows.children.length; arrowIndex++) {
+                var arrowAngle = arrowIndex * Math.PI / 4 + Math.PI / 8;
+                var arrowMesh = latentEnergyArrows.children[arrowIndex];
+                arrowMesh.position.set(Math.cos(arrowAngle) * latentArrowRadius, Math.sin(arrowAngle) * latentArrowRadius, 0);
+                arrowMesh.rotation.z = arrowAngle + (latentAbsorbed ? Math.PI : 0);
+              }
               latentEnergyRing.quaternion.copy(camera.quaternion);
               latentEnergyRing.scale.setScalar(Math.max(2.2, latentRadius * 0.92));
               var latentPositionAttribute = latentEnergyGeometry.attributes.position;
@@ -13845,7 +14058,7 @@ const d = labToolData.waterCycle || {};
             var input = canvasEl._wcPilotInput = {
               up: 0, down: 0, left: 0, right: 0, fwd: 0, back: 0,
               paused: false, orbit: false, cameraMode: 'follow',
-              movementStyle: 'hold', steeringPace: 'standard', stepDirection: '', stepRemaining: 0, lookYaw: 0, lookPitch: 0,
+              showMolecules: true, movementStyle: 'hold', steeringPace: 'standard', stepDirection: '', stepRemaining: 0, lookYaw: 0, lookPitch: 0,
               navigationAssist: false, showWaypoint: true, landingGoal: 'water', pauseAtChanges: false, showLandingMap: false,
               scenario: 'tropicalOcean', reset: 0, restartAt: -1,
               restoreCheckpoint: null, resumeToken: '', rainbowAlign: 0
@@ -14088,6 +14301,9 @@ const d = labToolData.waterCycle || {};
               plantPathway.visible = false;
               for (var i = 0; i < nucSeed.length; i++) nucSeed[i].live = true;
               for (var j = 0; j < dropSeed.length; j++) dropSeed[j].live = true;
+              collectionCues.forEach(function(cue) { cue.sprite.visible = false; cue.startedAt = -1; });
+              collectionCueNext = 0;
+              canvasEl.dataset.collectionCue = 'hidden';
               fieldCx = px; fieldCz = pz; fieldCy = m2u(env.lclM);
               coalesceCooldown = 0;
               // Reference planes and their labels are positioned FROM the
@@ -14221,6 +14437,8 @@ const d = labToolData.waterCycle || {};
             // One lightweight ring and leader line, reused for every destination.
             var waypointRing = new THREE.Mesh(new THREE.TorusGeometry(5.5, 0.3, 6, 36),
               new THREE.MeshBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0.9, depthTest: false, depthWrite: false }));
+            waypointRing.name = 'pilot-navigation-waypoint';
+            var waypointCameraDelta = new THREE.Vector3(), waypointCameraForward = new THREE.Vector3();
             var waypointPositions = new Float32Array(6);
             var waypointGeometry = new THREE.BufferGeometry();
             waypointGeometry.setAttribute('position', new THREE.BufferAttribute(waypointPositions, 3));
@@ -14478,7 +14696,7 @@ const d = labToolData.waterCycle || {};
               var py = m2u(sim.altitudeM);
               var nucleusHit = false, dropletHit = false;
               var nAttr = nucGeo.attributes.position;
-              for (var k = 0; k < NUC_COUNT; k++) {
+              for (var k = 0; !input.paused && k < NUC_COUNT; k++) {
                 if (!nucSeed[k].live) continue;
                 var nx = nAttr.array[k * 3], ny = nAttr.array[k * 3 + 1], nz = nAttr.array[k * 3 + 2];
                 var ddx = nx - px, ddy = ny - py, ddz = nz - pz;
@@ -14487,8 +14705,8 @@ const d = labToolData.waterCycle || {};
                 }
               }
               var dAttr = dropGeo.attributes.position;
-              coalesceCooldown = Math.max(0, coalesceCooldown - dt);
-              for (var q = 0; q < DROP_COUNT; q++) {
+              if (!input.paused) coalesceCooldown = Math.max(0, coalesceCooldown - dt);
+              for (var q = 0; !input.paused && q < DROP_COUNT; q++) {
                 if (coalesceCooldown > 0) break;
                 if (!dropSeed[q].live) continue;
                 var dx2 = dAttr.array[q * 3] - px, dy2 = dAttr.array[q * 3 + 1] - py, dz2 = dAttr.array[q * 3 + 2] - pz;
@@ -14497,6 +14715,7 @@ const d = labToolData.waterCycle || {};
                     // One collision per frame. The kernel counts a hit per step,
                     // so removing a whole clump in one frame credited one droplet
                     // for seven collisions and the gauge never matched the scene.
+                    beginCollectionCue(dAttr.array[q * 3], dAttr.array[q * 3 + 1], dAttr.array[q * 3 + 2]);
                     dropletHit = true; coalesceCooldown = COALESCE_COOLDOWN_S; dropSeed[q].live = false; dAttr.array[q * 3 + 1] = -9999; dAttr.needsUpdate = true; break;
                   }
                 }
@@ -14602,8 +14821,9 @@ const d = labToolData.waterCycle || {};
               selfCloud.visible = (f === 'cloud');
               cloudVeil.visible = waterView && (f === 'droplet' || f === 'cloud' || f === 'ice');
               cloudVeil.position.set(px, py + 2, pz);
-              if (cloudVeil.visible && !motionReduced) cloudVeil.rotation.y += dt * 0.035;
-              halo.material.opacity = f === 'cloud' ? 0 : 0.62;
+              var parcelMotionDt = !input.paused && !document.hidden && !motionReduced ? dt : 0;
+              if (cloudVeil.visible) cloudVeil.rotation.y += parcelMotionDt * 0.035;
+              halo.material.opacity = f === 'cloud' ? 0 : f === 'vapor' || f === 'transpiring' ? 0.4 : 0.3;
               var haloScale = (f === 'droplet' || f === 'ice') ? 11 : (f === 'rain' || f === 'snow') ? 15 : 22;
               halo.scale.set(haloScale, haloScale, 1);
 
@@ -14619,11 +14839,15 @@ const d = labToolData.waterCycle || {};
               } else if (f === 'runoff') {
                 liquidMesh.material.color.setHex(0x22d3ee); liquidMesh.scale.setScalar(0.9);
               }
-              if (!motionReduced) {
-                if (f === 'ice') iceMesh.rotation.y += dt * 0.9;
-                if (f === 'snow') { snowMesh.rotation.y += dt * 1.4; snowMesh.rotation.x = Math.sin(t * 1.1) * 0.35; }
+              if (parcelMotionDt > 0) {
+                if (f === 'ice') iceMesh.rotation.y += parcelMotionDt * 0.55;
+                if (f === 'snow') {
+                  snowMesh.rotation.y += parcelMotionDt * 0.42;
+                  snowMesh.rotation.x = 0.55 + Math.sin(t * 1.1) * 0.16;
+                  snowMesh.rotation.z = Math.sin(t * 0.7) * 0.12;
+                }
                 if (f === 'vapor' || f === 'transpiring') {
-                  vaporMarker.rotation.y += dt * 0.6; vaporMarker.rotation.x += dt * 0.35;
+                  vaporMarker.rotation.y += parcelMotionDt * 0.6; vaporMarker.rotation.x += parcelMotionDt * 0.35;
                   vaporShell.scale.setScalar(1 + Math.sin(t * 2.2) * 0.09);
                 }
               }
@@ -14636,7 +14860,7 @@ const d = labToolData.waterCycle || {};
                 cloudBurstT = Math.min(1, cloudBurstT + dt * 1.6);
                 var cs = (0.5 + cloudBurstT * 0.5) * (1 + Math.min(0.9, sim.mass * 0.5));
                 selfCloud.scale.setScalar(cs);
-                if (!motionReduced) selfCloud.rotation.y += dt * 0.08;
+                selfCloud.rotation.y += parcelMotionDt * 0.08;
               } else { cloudBurstT = Math.max(0, cloudBurstT - dt * 2); }
 
               // Surface-relative wake: a motion cue, not a new water source.
@@ -14719,7 +14943,8 @@ const d = labToolData.waterCycle || {};
               dAttr.needsUpdate = true;
               freeDrops.visible = (sim.form === 'droplet' || sim.form === 'cloud' || sim.form === 'ice');
               freeDrops.material.size = waterView ? 1.45 : 3.1;
-              freeDrops.material.opacity = waterView ? 0.7 : 1;
+              freeDrops.material.opacity = waterView ? 0.68 : 0.82;
+              dropletPixelCap.value = (waterView ? 11 : 14) * renderer.getPixelRatio();
 
               // Heat-energy glints stay over the marked sun patch. They are a
               // visual meter for absorbed energy, never a claim that vapour is
@@ -14971,7 +15196,16 @@ const d = labToolData.waterCycle || {};
                   camera.position.y - parcelDisplayY, camera.position.z - pz));
                 cameraNeedsPlacement = false;
               }
-              updateLatentEnergyCue(dt, t);
+              if (waypointRing.visible) {
+                // Keep nearby guidance compact instead of obscuring the parcel.
+                camera.getWorldDirection(waypointCameraForward);
+                var waypointDepth = waypointCameraDelta.copy(waypointRing.position).sub(camera.position).dot(waypointCameraForward);
+                var waypointMaxScale = 38 * Math.tan(camera.fov * Math.PI / 360) * Math.max(0.01, waypointDepth)
+                  / (5.8 * Math.max(1, canvasEl.clientHeight || H));
+                waypointRing.scale.setScalar(Math.min(1, waypointMaxScale));
+                waypointRing.quaternion.copy(camera.quaternion);
+              }
+              updateCollectionCues();
               sky.position.set(px, py, pz);
 
               if (sim.form !== lastForm) {
@@ -14986,6 +15220,9 @@ const d = labToolData.waterCycle || {};
                 snapshot('tick');
               }
 
+              // Update after detecting a transition so its first paused frame
+              // already shows the energy direction and follows the current camera.
+              updateLatentEnergyCue(dt, t);
               drawLandingMap(now);
               renderer.render(scene, camera);
             }
@@ -15837,6 +16074,7 @@ const d = labToolData.waterCycle || {};
                   el._wcPilotInput.navigationAssist = pilotStored.navigationAssist === true;
                   el._wcPilotInput.pauseAtChanges = pilotStored.pauseAtChanges === true;
                   el._wcPilotInput.showLandingMap = pilotStored.showLandingMap === true;
+                  el._wcPilotInput.showMolecules = pilotStored.showMolecules !== false;
                   el._wcPilotInput.showWaypoint = pilotStored.showWaypoint !== false;
                   el._wcPilotInput.landingGoal = ['water', 'permeable', 'hard', 'plant'].indexOf(pilotStored.landingGoal) >= 0 ? pilotStored.landingGoal : 'water';
                   var resumeToken = String(pilotStored.resumeToken || '');
@@ -16670,6 +16908,7 @@ const d = labToolData.waterCycle || {};
                     h('p',null,'Gentle reduces your steering strength. Wind, falling, and the water-cycle clock keep their usual pace.'),
                     h('p',null,'Use Look in the scene toolbar for camera buttons, or drag the scene to look around.')),
                   h('div', { className: 'wc-pilot-navigation-controls' },
+                    h('button',{type:'button','aria-pressed':pilotStored.showMolecules!==false,onClick:function(){setPilot({showMolecules:pilotStored.showMolecules===false});}},'Molecular lens'),
                     h('button', { type: 'button', 'aria-pressed': waypoint, onClick: function() { setPilot({ showWaypoint: !waypoint }); } },
                       t('stem.watercycle.pilot_nav_waypoint', 'Show waypoint')),
                     h('button', { type: 'button', 'aria-pressed': pilotStored.showLandingMap === true,
@@ -16681,6 +16920,7 @@ const d = labToolData.waterCycle || {};
                     h('div', { className: 'wc-pilot-landing-choice' }, h('label', { htmlFor: 'wcPilotLandingGoal' }, t('stem.watercycle.pilot_nav_landing', 'Aim to land on')),
                       h('select', { id: 'wcPilotLandingGoal', value: landing, onChange: function(e) { setPilot({ landingGoal: e.target.value }); } },
                         ['water', 'permeable', 'hard', 'plant'].map(function(key) { return h('option', { key: key, value: key }, targets[key]); })))),
+                  h('p',null,'Molecular lens shows enlarged H2O models. Turn it off for a clear view of the landscape; the water state and learning cues remain available.'),
                   h('p', null, t('stem.watercycle.pilot_nav_help', 'The gold ring marks a navigation aid. Assistance uses ordinary movement; phase changes still need the right conditions. Manual controls take over while held. Wind and falling time can limit where you land. Pause stops the journey.'))),
                 h('p', { className: 'wc-pilot-navigation-target', role: 'status', 'aria-live': 'polite' },
                   t('stem.watercycle.pilot_nav_target', 'Next destination') + ': ' + (targets[snap.navigationKind] || targets.liquid),
@@ -17504,7 +17744,12 @@ const d = labToolData.waterCycle || {};
                   h('p', { id: 'wcPilotNoticeCause' }, noticeMeta.cause),
                   h('dl', { className: 'wc-pilot-notice-evidence' },
                     h('div', null, h('dt', null, t('stem.watercycle.pilot_notice_evidence', 'Model reading at the change')), h('dd', null, noticeMeta.evidence)),
-                    h('div', null, h('dt', null, t('stem.watercycle.pilot_notice_energy', 'Energy transfer')), h('dd', null, noticeMeta.energyLabel))),
+                    h('div', null, h('dt', null, t('stem.watercycle.pilot_notice_energy', 'Energy transfer')), h('dd', null, noticeMeta.energyLabel,
+                      !reviewChange && noticeMeta.energyDirection !== 'none' && h('small', { className: 'wc-pilot-energy-key' },
+                        noticeMeta.energyDirection === 'absorbed'
+                          ? t('stem.watercycle.pilot_energy_arrows_in', 'Arrows point toward the water.')
+                          : t('stem.watercycle.pilot_energy_arrows_out', 'Arrows point away from the water.'),
+                        ' ', t('stem.watercycle.pilot_energy_arrows_model', 'Energy indicator; not water particles.'))))),
                   h('p', { className: 'wc-pilot-notice-prompt' }, t('stem.watercycle.pilot_notice_prompt', 'What condition caused this change? Use the recorded evidence to explain it.'))),
                   reviewNeighbors && h('nav', { className: 'wc-pilot-review-nav', 'aria-label': t('stem.watercycle.pilot_review_nav_label', 'Browse recorded observations') },
                     h('button', { type: 'button', disabled: !reviewNeighbors.earlierId,

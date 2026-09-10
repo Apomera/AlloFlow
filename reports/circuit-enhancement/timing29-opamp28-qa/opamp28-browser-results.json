@@ -1,0 +1,24 @@
+{
+  "scenarios": [
+    "Upper/lower clipping, linear recovery, synchronized board and scope, output-window presets, undo/redo and electrical cursor reset",
+    "Finite gain, input-error probing without changing state, decade gain controls and focus from the scope",
+    "Reversed output-window and positive-feedback diagnoses, no stale trace or export, and undo/resize recovery",
+    "Inverting amplifier, active-filter scope, and model-aware waveform export",
+    "Desktop and phone operating-point/inspector accessibility, camera behavior and workspace persistence"
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

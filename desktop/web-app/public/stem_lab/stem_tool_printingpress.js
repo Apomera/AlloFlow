@@ -56,6 +56,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
     var st = document.createElement('style');
     st.id = 'printingpress-print-css';
     st.textContent = [
+      '.pp-broadside { font-family: system-ui,sans-serif; }',
+      '.pp-broadside :is(button,input,select,summary) { min-height: 44px; }',
+      '.pp-broadside :is(button,input,textarea,select,summary):focus-visible { outline: 3px solid #f5d77e; outline-offset: 3px; }',
+      '.pp-reader-tools { min-width: 0; overflow-wrap: anywhere; padding: 16px; border: 1px solid #856537; border-radius: 12px; background: #241b12; margin-bottom: 16px; }',
+      '.pp-reader-tools p { line-height: 1.6; }',
+      '.pp-reader-plan { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; padding-top: 12px; }',
+      '.pp-reader-plan label { display: block; font-size: 13px; font-weight: 650; margin-bottom: 6px; }',
+      '.pp-reader-plan input { width: 100%; box-sizing: border-box; background: #13100c; color: #f5ecd9; border: 1px solid #856537; border-radius: 6px; padding: 8px; font: inherit; }',
+      '.pp-proof-check { display: flex; align-items: start; gap: 10px; min-height: 44px; padding: 8px 0; font-size: 14px; line-height: 1.5; cursor: pointer; }',
+      '.pp-proof-check input { flex-shrink: 0; min-height: 0; width: 20px; height: 20px; margin: 1px 0 0; accent-color: #e8bd70; }',
+      '#pp-reader-proof { padding: 24px; background: #fffaf0; color: #241b12; border-radius: 8px; margin-bottom: 16px; overflow-wrap: anywhere; font: 18px/1.7 system-ui,sans-serif; }',
+      '@media(max-width:600px) { .pp-reader-plan { grid-template-columns: minmax(0,1fr); } .pp-broadside { padding: 14px !important; } #pp-reader-proof { padding: 16px; } }',
       '.pp-workshop { font-family: system-ui, sans-serif; }',
       '.pp-workbench { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(310px, 1fr); gap: 18px; align-items: start; margin-bottom: 22px; }',
       '.pp-scene, .pp-guide { min-width: 0; }',
@@ -102,6 +114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       '.pp-proof-gallery { max-height: 430px; overflow-y: auto; scrollbar-gutter: stable; padding: 3px !important; }',
       '@media (max-width: 780px) { .pp-workbench { grid-template-columns: minmax(0, 1fr); } .pp-guide { padding: 14px; } .pp-workshop { padding: 14px !important; } .pp-workshop h2 { font-size: 24px !important; } }',
       '@media print { .pp-workbench { display: block; } .pp-proof-gallery { max-height: none; overflow: visible; } }',
+      '@media print { #pp-design-proof[hidden] { display: block !important; } }',
       '@media print {',
       '  .printingpress-no-print { display: none !important; }',
       '  body { background: white !important; }',
@@ -7672,6 +7685,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         function choice(value, choices, fallback) { return choices.indexOf(value) >= 0 ? value : fallback; }
         function bounded(value, min, max, fallback) { return typeof value === 'number' && isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback; }
         var draft = {
+          audience: typeof rawDraft.audience === 'string' ? rawDraft.audience.slice(0, 240) : '',
+          purpose: typeof rawDraft.purpose === 'string' ? rawDraft.purpose.slice(0, 240) : '',
           templateIdx: Math.round(bounded(rawDraft.templateIdx, 0, TEMPLATES.length - 1, 0)),
           content: typeof rawDraft.content === 'string' ? rawDraft.content : TEMPLATES[0].sample,
           font: choice(rawDraft.font, ['Georgia', '"Times New Roman"', '"Courier New"', '"Helvetica Neue"', 'Verdana'], 'Georgia'),
@@ -7684,6 +7699,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           markMotto: Math.round(bounded(rawDraft.markMotto, 0, 5, 0)),
           markFinish: choice(rawDraft.markFinish, ['gold', 'copper', 'silver'], 'gold')
         };
+        var proofViewRaw = useState('design'), proofView = proofViewRaw[0], setProofView = proofViewRaw[1];
+        var readerChecksRaw = useState([]), readerChecks = readerChecksRaw[0], setReaderChecks = readerChecksRaw[1];
+        // A check describes this draft only; external title transfers and undo also invalidate it.
+        useEffect(function() { setReaderChecks([]); }, [draft.content, draft.font, draft.titleSize, draft.bodySize, draft.leading, draft.alignment, draft.borderStyle, draft.markSymbol, draft.markMotto, draft.markFinish, draft.audience, draft.purpose]);
         function changeDraft(patch) { upd('broadsideDraft', Object.assign({}, draft, patch)); }
         var templateIdx = draft.templateIdx, content = draft.content, font = draft.font, titleSize = draft.titleSize;
         var borderStyle = draft.borderStyle, markSymbol = draft.markSymbol, markMotto = draft.markMotto, markFinish = draft.markFinish;
@@ -7887,7 +7906,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           { id: 'script', label: __alloT('stem.printingpress.scribal_flourish', 'Scribal flourish') }
         ];
 
-        return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
+        return h('div', { className: 'pp-broadside', style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
           backBar('📰 Build a Broadside'),
           dropCapPara('Make a single-sheet announcement, poem, or manifesto. Compose your message, adjust the typography, and print or download your broadside. The top Print button creates a lesson handout.'),
 
@@ -7926,6 +7945,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             }),
             h('p', { id: 'pp-text-stats', style: { fontSize: 12, color: T.muted, margin: '6px 0' } },
               __alloFill(__alloT('stem.printingpress.composer_stats', '{words} words · {lines} lines. Check the print preview for page breaks.'), { words: content.trim() ? content.trim().split(/\s+/).length : 0, lines: lines.length })),
+            h('details', { style: { borderTop: '1px solid ' + T.border, marginTop: 12, paddingTop: 6 } },
+              h('summary', { style: { color: T.accentHi, cursor: 'pointer', display: 'list-item', paddingTop: 8, fontWeight: 650, fontSize: 14 } }, __alloT('stem.printingpress.reader_plan', 'Plan for your reader')),
+              h('p', { style: { fontSize: 13, color: T.muted, lineHeight: 1.6, margin: '6px 0' } }, __alloT('stem.printingpress.reader_plan_help', 'Who needs your message, and what should they understand, feel, or do? These notes are saved with your draft and stay off the printed sheet.')),
+              h('div', { className: 'pp-reader-plan' },
+                h('div', null, h('label', { htmlFor: 'pp-audience' }, __alloT('stem.printingpress.reader_audience', 'Who is your reader?')),
+                  h('input', { id: 'pp-audience', value: draft.audience, maxLength: 240, placeholder: __alloT('stem.printingpress.reader_audience_example', 'For example: students in my school'), onChange: function(e) { changeDraft({ audience: e.target.value }); } })),
+                h('div', null, h('label', { htmlFor: 'pp-purpose' }, __alloT('stem.printingpress.reader_purpose', 'What should your message do?')),
+                  h('input', { id: 'pp-purpose', value: draft.purpose, maxLength: 240, placeholder: __alloT('stem.printingpress.reader_purpose_example', 'For example: invite them to a workshop'), onChange: function(e) { changeDraft({ purpose: e.target.value }); } }))
+              )
+            ),
             h('div', { style: { display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' } },
               h('div', { style: { flex: 1, minWidth: 180 } },
                 h('label', { htmlFor: 'pp-font', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } }, 'Font:'),
@@ -7969,6 +7998,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             )
           ),
 
+          h('section', { className: 'pp-reader-tools printingpress-no-print', 'aria-labelledby': 'pp-reader-title' },
+            h('h3', { id: 'pp-reader-title', style: { color: T.accentHi, font: '700 23px/1.3 Georgia,serif', margin: '0 0 8px' } }, __alloT('stem.printingpress.reader_title', 'Read it as your reader')),
+            h('p', { style: { color: T.muted, fontSize: 14, margin: '0 0 12px' } }, __alloT('stem.printingpress.reader_intro', 'First check the words without decoration. Then return to the design and decide what your reader will notice first.')),
+            (draft.audience || draft.purpose) && h('p', { id: 'pp-reader-goal', style: { color: T.text, fontSize: 13, padding: 10, background: T.cardAlt, borderLeft: '3px solid ' + T.accentHi } },
+              draft.audience && h('span', { style: { display: 'block' } }, __alloT('stem.printingpress.reader_for', 'Reader: ') + draft.audience),
+              draft.purpose && h('span', { style: { display: 'block' } }, __alloT('stem.printingpress.reader_intent', 'Purpose: ') + draft.purpose)),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.printingpress.reader_view', 'Broadside proof view'), style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 } },
+              h('button', { 'aria-pressed': proofView === 'design', 'aria-controls': 'pp-design-proof', onClick: function() { setProofView('design'); }, style: proofView === 'design' ? btnPrimary() : btn() }, __alloT('stem.printingpress.reader_design', 'Design proof')),
+              h('button', { 'aria-pressed': proofView === 'text', 'aria-controls': 'pp-reader-proof', onClick: function() { setProofView('text'); }, style: proofView === 'text' ? btnPrimary() : btn() }, __alloT('stem.printingpress.reader_text', 'Text-only proof'))
+            ),
+            h('fieldset', { style: { border: '1px solid ' + T.border, borderRadius: 8, margin: 0, padding: '8px 12px' } },
+              h('legend', { style: { color: T.text, fontSize: 13, padding: '0 5px' } }, __alloT('stem.printingpress.reader_checklist', 'My review of this draft')),
+              [__alloT('stem.printingpress.reader_check_message', 'I checked that the title and message make sense for my reader.'), __alloT('stem.printingpress.reader_check_details', 'I reread the spelling and any names, dates, or places.'), __alloT('stem.printingpress.reader_check_design', 'I checked the text size, spacing, and order of information in the design.')].map(function(label, index) {
+                return h('label', { key: index, className: 'pp-proof-check' }, h('input', { type: 'checkbox', checked: readerChecks.indexOf(index) >= 0, onChange: function(e) { setReaderChecks(e.target.checked ? readerChecks.concat([index]) : readerChecks.filter(function(item) { return item !== index; })); } }), h('span', null, label));
+              })
+            ),
+            h('p', { id: 'pp-reader-progress', role: 'status', style: { fontSize: 12, color: T.muted, marginBottom: 0 } }, __alloFill(__alloT('stem.printingpress.reader_progress', '{count} of 3 self-checks marked. Checks reset when the draft changes; you can print at any time.'), { count: readerChecks.length }))
+          ),
+          h('section', { id: 'pp-reader-proof', className: 'printingpress-no-print', hidden: proofView !== 'text', 'aria-labelledby': 'pp-reader-text-title' },
+            h('h3', { id: 'pp-reader-text-title', style: { font: '700 14px/1.5 system-ui,sans-serif', margin: '0 0 16px', borderBottom: '1px solid #9c8a6e', paddingBottom: 10 } }, __alloT('stem.printingpress.reader_plain_label', 'Text-only proof · same words, no decoration')),
+            h('div', { style: { fontWeight: 750, fontSize: 24, lineHeight: 1.4, marginBottom: 12, whiteSpace: 'pre-wrap' } }, titleLine || __alloT('stem.printingpress.reader_no_title', 'Your title is empty. Add it on the first line.')),
+            h('div', { id: 'pp-reader-body', style: { whiteSpace: 'pre-wrap' } }, bodyLines.join('\n')),
+            h('button', { onClick: function() { var editor = document.getElementById('pp-content'); if (editor) { editor.focus(); editor.scrollIntoView({ block: 'center' }); } }, style: btn({ marginTop: 18, background: '#2a1f15', color: '#f5ecd9' }) }, __alloT('stem.printingpress.reader_edit', 'Return to my text'))
+          ),
           h('div', { className: 'printingpress-no-print', style: { marginBottom: 16 } },
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
               h('button', { disabled: !content.trim(), onClick: function() { exportBroadside(true); }, style: btnPrimary() }, __alloT('stem.printingpress.print_broadside', 'Print broadside / Save PDF')),
@@ -7991,7 +8044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           // curled at the corners — a real printed sheet doesn't sit flat on
           // a desk. Drop-shadow stack: subtle ground shadow + sharper top-edge
           // shadow for the "lifted" feel.
-          h('div', { style: {
+          h('div', { id: 'pp-design-proof', hidden: proofView !== 'design', style: {
               position: 'relative',
               marginBottom: 4,
               filter: 'drop-shadow(0 12px 18px rgba(0,0,0,0.4)) drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
