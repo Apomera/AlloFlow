@@ -6240,6 +6240,63 @@ window.StemLab = window.StemLab || {
     return Math.max(halfHeight / tangent, halfWidth / (tangent * Math.max(0.1, aspect))) * 1.24 + halfDepth;
   }
 
+  // Curved, asymmetric feather vane with a root pivot and tapered tip.
+  function dinoFeatherGeometry(THREE, length, width) {
+    var positions = [], uvs = [], indices = [], rows = 20, columns = 4;
+    for (var i = 0; i <= rows; i++) {
+      var t = i / rows;
+      var span = width * Math.pow(Math.sin(Math.PI * t), 0.72) * (0.70 + 0.30 * t);
+      for (var j = 0; j <= columns; j++) {
+        var across = j / columns * 2 - 1;
+        positions.push(across * span * (across < 0 ? 0.68 : 1), length * t,
+          length * 0.045 * Math.sin(Math.PI * t) + width * 0.14 * across * across * Math.sin(Math.PI * t));
+        uvs.push(j / columns, t);
+        if (i < rows && j < columns) {
+          var n = i * (columns + 1) + j;
+          indices.push(n, n + 1, n + columns + 1, n + 1, n + columns + 2, n + columns + 1);
+        }
+      }
+    }
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingBox();
+    return geometry;
+  }
+  function dinoPlateGeometry(THREE, width, height, thickness) {
+    var shape = new THREE.Shape();
+    shape.moveTo(-width * 0.28, 0);
+    shape.quadraticCurveTo(-width * 0.60, height * 0.28, -width * 0.28, height * 0.68);
+    shape.quadraticCurveTo(-width * 0.10, height * 0.91, width * 0.06, height);
+    shape.quadraticCurveTo(width * 0.40, height * 0.65, width * 0.48, height * 0.34);
+    shape.lineTo(width * 0.28, 0); shape.closePath();
+    var geometry = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: true,
+      bevelThickness: thickness * 0.28, bevelSize: thickness * 0.36, bevelSegments: 2, steps: 1, curveSegments: 6 });
+    geometry.translate(0, 0, -thickness * 0.5); geometry.computeVertexNormals(); geometry.computeBoundingBox();
+    return geometry;
+  }
+  function dinoMembraneGeometry(THREE, bottomPoints, topPoints) {
+    var bottom = new THREE.CatmullRomCurve3(bottomPoints), top = new THREE.CatmullRomCurve3(topPoints);
+    var positions = [], uv = [], indices = [], columns = 40, rows = 8;
+    for (var i = 0; i <= columns; i++) {
+      var t = i / columns, lower = bottom.getPoint(t), upper = top.getPoint(t);
+      for (var j = 0; j <= rows; j++) {
+        var v = j / rows, p = lower.clone().lerp(upper, v);
+        p.z += Math.sin(v * Math.PI) * lower.distanceTo(upper) * 0.018;
+        positions.push(p.x, p.y, p.z); uv.push(t, v);
+        if (i < columns && j < rows) {
+          var n = i * (rows + 1) + j;
+          indices.push(n, n + rows + 1, n + 1, n + 1, n + rows + 1, n + rows + 2);
+        }
+      }
+    }
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingBox();
+    return geometry;
+  }
+
   var DinoFieldStation3DStable = null;
 
   window.StemLab.registerTool('dinoLab', {
@@ -7851,23 +7908,23 @@ window.StemLab = window.StemLab || {
             }
             function addFeatherVane(base, tip, width) {
               if (!props.showBody) return null;
-              var dir = new THREE.Vector3().subVectors(tip, base);
-              var dist = dir.length();
+              var dir = new THREE.Vector3().subVectors(tip, base), dist = dir.length();
               if (!dist) return null;
-              var vane = new THREE.Mesh(new THREE.ConeGeometry(width, dist, 12), featherVaneMat);
-              vane.position.copy(base).add(tip).multiplyScalar(0.5);
-              vane.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
-              vane.scale.z = 0.14;
-              vane.castShadow = true;
-              vane.renderOrder = 12;
+              var vane = new THREE.Mesh(dinoFeatherGeometry(THREE, dist, width), featherVaneMat);
+              vane.position.copy(base);
+              dir.normalize();
+              var featherWidthAxis = new THREE.Vector3().crossVectors(dir, vec(0, 1, 0));
+              if (featherWidthAxis.lengthSq() < 0.000001) featherWidthAxis.set(1, 0, 0);
+              featherWidthAxis.normalize();
+              var featherNormal = new THREE.Vector3().crossVectors(featherWidthAxis, dir).normalize();
+              vane.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(featherWidthAxis, dir, featherNormal));
+              vane.castShadow = true; vane.receiveShadow = true; vane.renderOrder = 12;
+              vane.userData.dinoFeature = 'feather';
+              var shaftCurve = new THREE.CatmullRomCurve3([vec(0, 0, 0), vec(0, dist * 0.5, dist * 0.045), vec(0, dist, 0)]);
+              var shaft = new THREE.Mesh(new THREE.TubeGeometry(shaftCurve, 12, width * 0.028, 4, false), filamentMat);
+              shaft.renderOrder = 13; vane.add(shaft);
               model.add(vane);
-              var shaft = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.002, width * 0.055), Math.max(0.002, width * 0.055), dist, 6), filamentMat);
-              shaft.position.copy(vane.position);
-              shaft.quaternion.copy(vane.quaternion);
-              shaft.renderOrder = 13;
-              model.add(shaft);
-              idleMotion.feathers.push({ mesh: vane, baseRotation: vane.rotation.clone(), phase: idleMotion.phase + idleMotion.feathers.length * 0.19, amount: 0.016 });
-              idleMotion.feathers.push({ mesh: shaft, baseRotation: shaft.rotation.clone(), phase: idleMotion.phase + idleMotion.feathers.length * 0.19, amount: 0.010 });
+              idleMotion.feathers.push({ mesh: vane, baseRotation: vane.rotation.clone(), phase: idleMotion.phase + idleMotion.feathers.length * 0.19, amount: 0.012 });
               return vane;
             }
             function addModelCylinder(a, b, radius, mat, order) {
@@ -7951,7 +8008,8 @@ window.StemLab = window.StemLab || {
             var shoulder = vec(-len * (isTheropod ? 0.12 : 0.18), Math.max(0.12 * detailScale, isSauropod ? ht * 0.55 : ht * (isTheropod ? 0.73 : 0.48)) * reconstructionProfile.stance * reconstructionProfile.shoulder * posture.shoulderHeight, 0);
             var tail = vec(len * 0.52, Math.max(0.10 * detailScale, ht * (isTheropod ? 0.65 : 0.34)) * reconstructionProfile.stance * reconstructionProfile.tail * posture.tailHeight, 0);
             var head = vec(-len * (isSauropod ? 0.42 : 0.30), Math.max(0.16 * detailScale, isSauropod ? ht * 1.06 : ht * (isTheropod ? 0.93 : 0.68)) * reconstructionProfile.neck * posture.headHeight, 0);
-            var snout = vec(-len * (isTheropod ? 0.40 : 0.49), Math.max(0.14 * detailScale, isSauropod ? ht * 1.02 : ht * (isTheropod ? 0.89 : 0.64)) * reconstructionProfile.neck * posture.headHeight - Math.max(0.08 * detailScale, ht * 0.04) * posture.snoutDrop, 0);
+            var snoutLength = len * (isSauropod ? 0.030 : (/Stegosaur|Ankylosaur|Nodosaur/i.test(dn.clade || '') ? 0.035 : (isTheropod ? 0.085 : 0.075)));
+            var snout = head.clone().add(vec(-snoutLength, -ht * 0.020, 0));
             var bodyCenter = new THREE.Vector3().copy(hip).add(shoulder).multiplyScalar(0.5);
             var bodyLen = Math.max(0.45 * detailScale, Math.abs(hip.x - shoulder.x) * 0.72) * reconstructionProfile.torsoLength;
             var bodyHeight = Math.max(0.065 * detailScale, ht * (isSauropod ? 0.18 : 0.19)) * reconstructionProfile.bodyHeight * reconstructionProfile.chestFullness;
@@ -8049,9 +8107,81 @@ window.StemLab = window.StemLab || {
               idleMotion.body = bodyShell;
               idleMotion.bodyBaseScale = bodyShell.scale.clone();
             }
+            function dorsalSurfacePoint(t) {
+              var p;
+              if (t < 0) {
+                p = shoulder.clone().lerp(head, -t * 1.2);
+                p.y += surfaceBodyHeight * 0.32;
+              } else if (t > 1) {
+                p = hip.clone().lerp(tail, (t - 1) * 0.65);
+                p.y += surfaceBodyHeight * (0.35 - (t - 1) * 0.35);
+              } else {
+                p = shoulder.clone().lerp(hip, t);
+                var fullness = postcranialSurface.shoulderFullness * (1 - t) + postcranialSurface.pelvicFullness * t;
+                p.y += surfaceBodyHeight * (0.66 + 0.25 * Math.sin(Math.PI * t)) * fullness;
+              }
+              return p;
+            }
+            function addDorsalPlates(mat, outerScale) {
+              for (var plateIndex = 0; plateIndex < 17; plateIndex++) {
+                var u = plateIndex / 16, t = -0.10 + u * 1.52;
+                var root = dorsalSurfacePoint(t);
+                var side = plateIndex % 2 ? -1 : 1;
+                root.z = side * surfaceBodyDepth * 0.16;
+                root.y -= surfaceBodyHeight * 0.065;
+                var height = surfaceBodyHeight * (0.20 + Math.pow(Math.sin(Math.PI * u), 1.3) * 1.12) * outerScale;
+                var width = Math.abs(hip.x - shoulder.x) * (0.08 + Math.sin(Math.PI * u) * 0.12) * outerScale;
+                var plate = new THREE.Mesh(dinoPlateGeometry(THREE, width, height, Math.max(0.006 * detailScale, height * 0.065)), mat);
+                plate.position.copy(root); plate.rotation.x = side * 0.12;
+                plate.castShadow = true; plate.receiveShadow = true;
+                plate.userData.dinoFeature = 'dorsal-plate'; plate.userData.plateRow = side;
+                model.add(plate);
+              }
+            }
+            function addTailSpikes(mat, surface) {
+              var thagomizerBase = new THREE.Vector3().copy(hip).lerp(tail, 0.76);
+              [-1, 1].forEach(function (side) {
+                [0, 1].forEach(function (pair) {
+                  var root = thagomizerBase.clone().add(vec(len * (pair ? 0.030 : -0.025), 0, side * bodyDepth * 0.10));
+                  var tip = root.clone().add(vec(len * (pair ? 0.020 : -0.015), ht * (pair ? 0.065 : 0.09), side * bodyDepth * (pair ? 0.92 : 1.12)));
+                  var spike = surface ? addAccentCone(root, tip, ht * 0.018, mat) : addSkeletonCone(root, tip, ht * 0.014, mat);
+                  if (spike) spike.userData.dinoFeature = 'tail-spike';
+                });
+              });
+            }
+            function addFrillSurface(mat, size) {
+              var frillScale = cranialSurface.frillScale * size;
+              var center = head.clone().add(vec(len * 0.025 * frillScale, ht * 0.052, 0));
+              var height = ht * 0.20 * frillScale, width = surfaceBodyDepth * 0.86 * frillScale;
+              var vertices = [], frillUvs = [], indices = [], rings = 8, sides = 64;
+              for (var ring = 0; ring <= rings; ring++) {
+                var r = ring / rings;
+                for (var side = 0; side <= sides; side++) {
+                  var angle = side / sides * Math.PI * 2;
+                  var edge = 1 + 0.025 * Math.cos(angle * 14) * r * r;
+                  var y = Math.max(-height * 0.48, Math.sin(angle) * height * r * edge);
+                  vertices.push(center.x + y * 0.60 + len * 0.010 * r * r, center.y + y, Math.cos(angle) * width * r * edge);
+                  frillUvs.push(0.5 + Math.cos(angle) * r * 0.5, 0.5 + Math.sin(angle) * r * 0.5);
+                  if (ring < rings && side < sides) {
+                    var n = ring * (sides + 1) + side;
+                    indices.push(n, n + 1, n + sides + 1, n + 1, n + sides + 2, n + sides + 1);
+                  }
+                }
+              }
+              var geometry = new THREE.BufferGeometry();
+              geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+              geometry.setAttribute('uv', new THREE.Float32BufferAttribute(frillUvs, 2));
+              geometry.setIndex(indices); geometry.computeVertexNormals();
+              if (mat === boneMat) { mat = mat.clone(); mat.side = THREE.DoubleSide; }
+              var frill = new THREE.Mesh(geometry, mat);
+              frill.castShadow = true; frill.receiveShadow = true; frill.userData.dinoFeature = 'frill';
+              model.add(frill);
+              return frill;
+            }
+            var hasHighSail = /spinosaurus|sail/i.test([dn.name, dn.common, (dn.traits || []).join(' ')].join(' '));
             var surfaceHeadFactor = reconstructionProfile.head * surfaceHypothesis.headSoftTissueScale;
-            var surfaceHeadLength = Math.max(0.18 * detailScale, len * (isSauropod ? 0.035 : 0.055)) * surfaceHeadFactor * cranialSurface.headLengthScale;
-            var surfaceHeadHeight = Math.max(0.045 * detailScale, ht * (isTheropod ? 0.085 : 0.055)) * surfaceHeadFactor * cranialSurface.headHeightScale;
+            var surfaceHeadLength = Math.max(0.18 * detailScale, len * (isSauropod ? 0.022 : 0.055)) * surfaceHeadFactor * cranialSurface.headLengthScale;
+            var surfaceHeadHeight = Math.max(0.045 * detailScale, ht * (/Tyrannosaur|Abelisaur/i.test(cladeName) ? 0.12 : (isTheropod ? 0.085 : (isSauropod ? 0.030 : 0.055)))) * surfaceHeadFactor * cranialSurface.headHeightScale;
             var surfaceHeadDepth = Math.max(0.035 * detailScale, ht * (isTheropod ? 0.082 : 0.050)) * surfaceHeadFactor * cranialSurface.headDepthScale;
             var surfaceSnout = head.clone().add(new THREE.Vector3().subVectors(snout, head).multiplyScalar(cranialSurface.muzzleLengthScale));
             var headShell = isTheropod ? addSoftTissueChain([
@@ -8230,7 +8360,14 @@ window.StemLab = window.StemLab || {
                   addIntegumentFilament(bristleBase, bristleTip, Math.max(0.004 * detailScale, ht * 0.0018));
                 }
               }
-              if (surfaceHypothesis.tailFan) {
+              if (dn.id === 'microraptor' && surfaceHypothesis.tailFrond) {
+                [-1, 1].forEach(function (tailSide) {
+                  var terminalRoot = hip.clone().lerp(tail, 0.86).add(vec(0, 0, tailSide * bodyDepth * 0.08));
+                  var terminalTip = terminalRoot.clone().add(vec(len * 0.15, ht * 0.010, tailSide * bodyDepth * 0.07));
+                  var terminalFeather = addFeatherVane(terminalRoot, terminalTip, len * 0.012);
+                  if (terminalFeather) terminalFeather.userData.featherTract = 'terminal-tail';
+                });
+              } else if (surfaceHypothesis.tailFan) {
                 var tailFanBase = new THREE.Vector3().copy(hip).lerp(tail, 0.86);
                 for (var tailFanIndex = 0; tailFanIndex < 9; tailFanIndex++) {
                   var fanOffset = tailFanIndex - 4;
@@ -8326,8 +8463,7 @@ window.StemLab = window.StemLab || {
 
               if (/Ceratops/i.test(cladeName)) {
                 if (cranialSurface.frillScale > 0.08) {
-                  var frillCenter = head.clone().add(vec(len * 0.025 * cranialSurface.frillScale, ht * 0.035, 0));
-                  addEllipsoid(frillCenter, vec(Math.max(0.04 * detailScale, len * 0.014 * cranialSurface.frillScale), Math.max(0.10 * detailScale, ht * 0.15 * cranialSurface.frillScale), Math.max(0.10 * detailScale, bodyDepth * 0.92 * cranialSurface.frillScale)), anatomyAccentMat);
+                  addFrillSurface(anatomyAccentMat, 1);
                 }
                 if (cranialSurface.browHornScale > 0.08) [-1, 1].forEach(function (side) {
                   var hornBase = head.clone().add(vec(-len * 0.018, ht * 0.040, side * surfaceHeadDepth * 0.62));
@@ -8338,19 +8474,19 @@ window.StemLab = window.StemLab || {
                   addKeratinCone(noseHornBase, noseHornBase.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.025 * cranialSurface.noseHornScale), Math.max(0.05 * detailScale, ht * 0.045 * cranialSurface.noseHornScale), 0)), Math.max(0.020 * detailScale, ht * 0.011 * Math.sqrt(cranialSurface.noseHornScale)));
                 }
               } else if (/Stegosaur/i.test(cladeName)) {
-                for (var plateIndex = 0; plateIndex < 7; plateIndex++) {
-                  var plateT = plateIndex / 6;
-                  var plateX = shoulder.x + (hip.x - shoulder.x + len * 0.16) * plateT;
-                  var plateHeight = Math.max(0.20 * detailScale, bodyHeight * (0.70 + Math.sin(plateT * Math.PI) * 0.72));
-                  var plate = addAccentCone(vec(plateX, bodyCenter.y + bodyHeight * 0.72, 0), vec(plateX, bodyCenter.y + bodyHeight * 0.72 + plateHeight, 0), Math.max(0.10 * detailScale, bodyDepth * 0.34));
-                  if (plate) plate.scale.z = 0.30;
-                }
+                addDorsalPlates(anatomyAccentMat, 1);
+                addTailSpikes(keratinMat, true);
               } else if (/Spinosaur/i.test(cladeName)) {
-                for (var sailIndex = 0; sailIndex < 9; sailIndex++) {
-                  var sailT = sailIndex / 8;
-                  var sailX = shoulder.x + (hip.x - shoulder.x) * sailT;
-                  var sailHeight = Math.max(0.18 * detailScale, ht * (0.10 + Math.sin(sailT * Math.PI) * 0.16));
-                  addAccentCone(vec(sailX, bodyCenter.y + bodyHeight * 0.58, 0), vec(sailX, bodyCenter.y + bodyHeight * 0.58 + sailHeight, 0), Math.max(0.025 * detailScale, ht * 0.010));
+                if (hasHighSail) {
+                  var sailBottom = [], sailTop = [];
+                  for (var sailIndex = 0; sailIndex < 9; sailIndex++) {
+                    var sailT = sailIndex / 8, root = dorsalSurfacePoint(sailT);
+                    root.y -= surfaceBodyHeight * 0.10;
+                    sailBottom.push(root);
+                    sailTop.push(root.clone().add(vec(0, ht * (0.035 + Math.pow(Math.sin(sailT * Math.PI), 0.65) * 0.27), 0)));
+                  }
+                  var sail = new THREE.Mesh(dinoMembraneGeometry(THREE, sailBottom, sailTop), anatomyAccentMat);
+                  sail.castShadow = true; sail.receiveShadow = true; sail.userData.dinoFeature = 'sail'; model.add(sail);
                 }
               } else if (/Ankylosaur/i.test(cladeName)) {
                 for (var armorIndex = 0; armorIndex < 8; armorIndex++) {
@@ -8555,13 +8691,7 @@ window.StemLab = window.StemLab || {
 
               if (/Ceratops/i.test(cladeName)) {
                 if (cranialSurface.frillScale > 0.08) {
-                  var frillRadius = Math.max(0.10 * detailScale, ht * 0.14 * cranialSurface.frillScale);
-                  var frillBone = new THREE.Mesh(new THREE.TorusGeometry(frillRadius, Math.max(0.010 * detailScale, ht * 0.007 * Math.sqrt(cranialSurface.frillScale)), 9, 42), boneMat);
-                  frillBone.position.copy(head).add(vec(len * 0.022 * cranialSurface.frillScale, ht * 0.040, 0));
-                  frillBone.rotation.y = Math.PI / 2;
-                  frillBone.scale.set(0.62, 1.18, 1);
-                  frillBone.castShadow = true;
-                  model.add(frillBone);
+                  addFrillSurface(boneMat, 0.95);
                 }
                 if (cranialSurface.browHornScale > 0.08) [-1, 1].forEach(function (hornSide) {
                   var hornCore = head.clone().add(vec(-len * 0.018, ht * 0.055, hornSide * skullDepth * 0.62));
@@ -8574,8 +8704,9 @@ window.StemLab = window.StemLab || {
                 for (var neuralSpineIndex = 1; neuralSpineIndex < 9; neuralSpineIndex++) {
                   var neuralSpineT = neuralSpineIndex / 9;
                   var neuralSpineBase = new THREE.Vector3().copy(shoulder).lerp(hip, neuralSpineT);
-                  var neuralSpineHeight = Math.max(0.14 * detailScale, ht * (0.10 + Math.sin(neuralSpineT * Math.PI) * 0.15));
-                  addBone(neuralSpineBase, neuralSpineBase.clone().add(vec(0, neuralSpineHeight, 0)), Math.max(0.009 * detailScale, ht * 0.0035));
+                  var neuralSpineHeight = hasHighSail ? dorsalSurfacePoint(neuralSpineT).y - neuralSpineBase.y + ht * (0.035 + Math.pow(Math.sin(neuralSpineT * Math.PI), 0.65) * 0.27) : ht * 0.055;
+                  var sailSupport = addBone(neuralSpineBase, neuralSpineBase.clone().add(vec(0, neuralSpineHeight, 0)), Math.max(0.009 * detailScale, ht * 0.0035));
+                  if (sailSupport && hasHighSail) sailSupport.userData.dinoFeature = 'sail-support';
                 }
               } else if (/Hadrosaur|Lambeosaur/i.test(cladeName)) {
                 var duckBillCenter = snout.clone().add(vec(-skullLength * 0.20, -skullHeight * 0.04, 0));
@@ -8610,18 +8741,8 @@ window.StemLab = window.StemLab || {
                   addSkeletonEllipsoid(head.clone().add(vec(-skullLength * 0.20, skullHeight * 0.62, browSide * skullDepth * 0.64)), vec(skullLength * 0.18, skullHeight * 0.12, skullDepth * 0.18), boneMat);
                 });
               } else if (/Stegosaur/i.test(cladeName)) {
-                for (var skeletalPlateIndex = 0; skeletalPlateIndex < 8; skeletalPlateIndex++) {
-                  var skeletalPlateT = skeletalPlateIndex / 7;
-                  var skeletalPlateBase = new THREE.Vector3().copy(shoulder).lerp(hip, Math.min(1, skeletalPlateT * 1.08));
-                  var skeletalPlateHeight = Math.max(0.14 * detailScale, bodyHeight * (0.48 + Math.sin(skeletalPlateT * Math.PI) * 0.60));
-                  var skeletalPlate = addSkeletonCone(skeletalPlateBase, skeletalPlateBase.clone().add(vec(0, skeletalPlateHeight, 0)), Math.max(0.055 * detailScale, bodyDepth * 0.19), boneMat);
-                  if (skeletalPlate) skeletalPlate.scale.z = 0.24;
-                }
-                var thagomizerBase = new THREE.Vector3().copy(hip).lerp(tail, 0.76);
-                [-1, 1].forEach(function (spikeSide) {
-                  addSkeletonCone(thagomizerBase.clone().add(vec(-len * 0.025, 0, spikeSide * bodyDepth * 0.24)), thagomizerBase.clone().add(vec(-len * 0.035, Math.max(0.12 * detailScale, ht * 0.065), spikeSide * Math.max(0.24 * detailScale, bodyDepth * 1.10))), Math.max(0.018 * detailScale, ht * 0.007), boneMat);
-                  addSkeletonCone(thagomizerBase.clone().add(vec(len * 0.035, 0, spikeSide * bodyDepth * 0.18)), thagomizerBase.clone().add(vec(len * 0.055, Math.max(0.08 * detailScale, ht * 0.045), spikeSide * Math.max(0.20 * detailScale, bodyDepth * 0.92))), Math.max(0.016 * detailScale, ht * 0.006), boneMat);
-                });
+                addDorsalPlates(boneMat, 0.92);
+                addTailSpikes(boneMat, false);
               } else if (/Ankylosaur/i.test(cladeName)) {
                 for (var osteodermIndex = 0; osteodermIndex < 9; osteodermIndex++) {
                   var osteodermT = osteodermIndex / 8;
@@ -8999,9 +9120,9 @@ window.StemLab = window.StemLab || {
               var columnFactor = skeletalProfile.columnarLimbs ? 0.34 : 1;
               var distalScale = front ? 1 : skeletalProfile.distalLegScale;
               var topPoint = vec(x, top.y, z);
-              var knee = vec(x + (front ? -len * 0.012 : len * 0.030) * columnFactor, Math.max(0.20 * detailScale, top.y * (front ? 0.52 : (0.55 + (distalScale - 1) * 0.10)) - posture.kneeFlex * Math.max(0.20 * detailScale, top.y)), z + sideSign * Math.max(0.015 * detailScale, bodyDepth * 0.06) * columnFactor);
-              var ankle = vec(x + (front ? -len * 0.026 : len * 0.060 * distalScale) * columnFactor, Math.max(0.10 * detailScale, top.y * 0.16 * distalScale), z + sideSign * Math.max(0.045 * detailScale, bodyDepth * 0.12) * columnFactor);
-              var foot = vec(x + (front ? -len * 0.050 : len * 0.082 * distalScale) * posture.footReach * columnFactor, 0.055, z + sideSign * Math.max(0.08 * detailScale, bodyDepth * 0.20) * columnFactor);
+              var knee = vec(x + (front ? -len * 0.012 : (isTheropod ? -len * 0.043 : len * 0.018)) * columnFactor, Math.max(0.20 * detailScale, top.y * (front ? 0.52 : (0.55 + (distalScale - 1) * 0.10)) - posture.kneeFlex * Math.max(0.20 * detailScale, top.y)), z + sideSign * Math.max(0.015 * detailScale, bodyDepth * 0.06) * columnFactor);
+              var ankle = vec(x + (front ? -len * 0.026 : len * (isTheropod ? 0.025 : 0.050) * distalScale) * columnFactor, Math.max(0.10 * detailScale, top.y * 0.16 * distalScale), z + sideSign * Math.max(0.045 * detailScale, bodyDepth * 0.12) * columnFactor);
+              var foot = vec(x + (front ? -len * 0.050 : len * (isTheropod ? 0.005 : 0.065) * distalScale) * posture.footReach * columnFactor, Math.max(0.008, ht * 0.010), z + sideSign * Math.max(0.08 * detailScale, bodyDepth * 0.20) * columnFactor);
               var upperRadius = Math.max(0.034 * detailScale, ht * (front ? 0.011 : 0.013)) * limbRobustness;
               var lowerRadius = Math.max(0.028 * detailScale, ht * (front ? 0.009 : 0.011)) * limbRobustness;
               var upperBoneBow = front ? Math.min(0.008, skeletalProfile.longBoneBow) : skeletalProfile.longBoneBow;

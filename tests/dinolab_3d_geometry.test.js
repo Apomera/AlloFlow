@@ -52,3 +52,36 @@ describe('Dino Lab camera fitting', () => {
     expect(dinoFrameDistance(10,2,1,42,0.6)).toBeGreaterThan(dinoFrameDistance(10,2,1,42,2));
   });
 });
+
+describe('Dino Lab anatomical feature surfaces', () => {
+  const { dinoFeatherGeometry, dinoPlateGeometry, dinoMembraneGeometry } = internals();
+  function finiteGeometry(geometry) {
+    for (const key of ['position','normal']) expect([...geometry.attributes[key].array].every(Number.isFinite)).toBe(true);
+    expect(geometry.index.count).toBeGreaterThan(100);
+  }
+  for (const scale of [0.1,1,10]) {
+    it('creates a curved, tapered feather with a stable root at scale '+scale,()=>{
+      const g=dinoFeatherGeometry(THREE,scale,scale*0.15);finiteGeometry(g);
+      expect(g.boundingBox.min.y).toBeCloseTo(0);expect(g.boundingBox.max.y).toBeCloseTo(scale);
+      expect(g.boundingBox.max.z).toBeGreaterThan(0);
+      expect(g.attributes.position.getX(0)).toBeCloseTo(0);
+      expect(g.attributes.position.getX(g.attributes.position.count-1)).toBeCloseTo(0);
+      expect(g.boundingBox.max.x).toBeGreaterThan(-g.boundingBox.min.x);
+      g.dispose();
+    });
+    it('creates a broad plate with physical thickness at scale '+scale,()=>{
+      const g=dinoPlateGeometry(THREE,scale,scale*1.5,scale*0.08);
+      for(const key of ['position','normal'])expect([...g.attributes[key].array].every(Number.isFinite)).toBe(true);
+      expect(g.boundingBox.max.y).toBeGreaterThan(scale*1.45);
+      expect(g.boundingBox.max.z-g.boundingBox.min.z).toBeGreaterThan(scale*0.079);
+      g.dispose();
+    });
+    it('connects the sail continuously between both boundary curves at scale '+scale,()=>{
+      const bottom=[new THREE.Vector3(-scale,0,0),new THREE.Vector3(0,0,0),new THREE.Vector3(scale,0,0)];
+      const top=[new THREE.Vector3(-scale,0.1*scale,0),new THREE.Vector3(0,scale,0),new THREE.Vector3(scale,0.1*scale,0)];
+      const g=dinoMembraneGeometry(THREE,bottom,top);finiteGeometry(g);
+      expect(g.boundingBox.min.y).toBeCloseTo(0);expect(g.boundingBox.max.y).toBeCloseTo(scale);
+      expect(g.index.count).toBe(40*8*6);g.dispose();
+    });
+  }
+});

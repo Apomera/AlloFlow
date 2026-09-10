@@ -1,0 +1,38 @@
+{
+  "date": "2026-09-10",
+  "scope": "Dino Lab anatomical surface refinement",
+  "unitTestsPassed": 125,
+  "newGeometryTests": 9,
+  "distinctBrowserTestsPassed": 9,
+  "browserExecutionsPassed": 11,
+  "browserRuns": [
+    {
+      "stage": "Anatomy and field guide acceptance",
+      "testsPassed": 8
+    },
+    {
+      "stage": "Final frill, feather and sauropod review",
+      "testsPassed": 3
+    }
+  ],
+  "testedSpecies": [
+    "stegosaurus",
+    "spinosaurus",
+    "baryonyx",
+    "triceratops",
+    "microraptor",
+    "tyrannosaurus",
+    "brachiosaurus"
+  ],
+  "matchingModuleCopies": 3,
+  "modulePaths": [
+    "stem_lab/stem_tool_dinolab.js",
+    "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+    "desktop/app-build/stem_lab/stem_tool_dinolab.js"
+  ],
+  "moduleSha256": "BAAF3ED1DB08A5AA224EE8C9C4E68AB92FAD3147B04BBDBB86B5D6ACB13E4501",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "rendering": "Three.js r128 in Chromium with software WebGL and reduced motion",
+  "deployment": "not deployed"
+}

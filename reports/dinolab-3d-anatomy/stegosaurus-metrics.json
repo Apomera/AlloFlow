@@ -1,0 +1,14 @@
+{
+  "features": {
+    "dorsal-plate": 17,
+    "tail-spike": 4
+  },
+  "rows": {
+    "1": 9,
+    "-1": 8
+  },
+  "outside": 0,
+  "invalid": 0,
+  "errors": [],
+  "lost": false
+}

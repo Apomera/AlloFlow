@@ -1,0 +1,12 @@
+
+Running 3 tests using 1 worker
+
+(node:37696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-anatomy.spec.ts:38:7 › triceratops has coherent anatomical features and framing (54.0s)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-anatomy.spec.ts:38:7 › microraptor has coherent anatomical features and framing (22.9s)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-anatomy.spec.ts:38:7 › brachiosaurus has coherent anatomical features and framing (16.5s)
+
+  3 passed (1.6m)
