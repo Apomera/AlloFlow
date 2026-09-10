@@ -2234,6 +2234,52 @@ function __alloAST(k, fb) {
   try { window.__alloArchToolbox = { catalog: getArchToolboxEntries, filter: filterArchToolbox }; } catch (e) {}
 
 
+  var ARCH_REPLAY_LABELS = {
+  "title": "Construction replay",
+  "readonly": "Read-only",
+  "step": "Step {step} of {total}",
+  "blocks": "{count} blocks at this step",
+  "first": "First",
+  "previous": "Previous",
+  "next": "Next",
+  "last": "Latest",
+  "earliest": "Earliest retained",
+  "latest": "Latest build",
+  "changes": "Changes from the previous step",
+  "added": "Added",
+  "removed": "Removed",
+  "changed": "Changed",
+  "baseline": "This is the earliest retained state. It may already contain blocks.",
+  "unchanged": "No block properties changed in this step.",
+  "changed_help": "Changed means shape, material, color, or rotation at the same cell. Moving a block counts as removal and addition.",
+  "scope": "What this view includes",
+  "scope_help": "Counts and changes include all blocks at this step, including those hidden by 3D filters. Project names and notes are not compared.",
+  "history_help": "Replay contains up to 50 undo states plus the latest build. Leaving replay preserves the live build and undo history.",
+  "return": "Return to live build",
+  "range_value": "Step {step} of {total}; {count} blocks; read-only",
+  "credit": "Teaching credit change: {amount}",
+  "timeline": "Blocks across retained steps",
+  "display_help": "Viewport and heatmap show this historical step. Analysis, wind, badges, and totals describe the live build.",
+  "blocks_one": "{count} block at this step",
+  "range_value_one": "Step {step} of {total}; {count} block; read-only"
+};
+
+  // Compare retained states in their chronological order, never the filtered view.
+  function summarizeArchReplay(current, history, requestedStep) {
+    var retained = getArchHistoryStack(history);
+    var frames = retained.concat([current]);
+    var parsed = parseArchCoordinate(requestedStep);
+    var step = Math.max(0, Math.min(frames.length - 1, parsed == null ? 0 : parsed));
+    var frame = getArchRuntimeBlocks(frames[step]);
+    var previous = step > 0 ? getArchRuntimeBlocks(frames[step - 1]) : null;
+    return {
+      step: step, total: frames.length, count: frame.length,
+      counts: frames.map(function (item) { return getArchRuntimeBlocks(item).length; }),
+      delta: previous ? compareArchProjects(previous, frame) : null
+    };
+  }
+  window.__alloArchReplay = { summary: summarizeArchReplay, labels: ARCH_REPLAY_LABELS };
+
   var ARCH_PALETTE_LABELS = {
   "current_color": "Current color",
   "more": "More colors",
@@ -2270,7 +2316,7 @@ function __alloAST(k, fb) {
   var ARCH_SIDEBAR_PANELS = ['showDesign', 'showProject', 'showTemplates', 'showBOM',
     'showChallenges', 'showGallery', 'showStats', 'showStyleGuide', 'showPhases',
     'showShare', 'showRandomGen', 'showColorPicker', 'showFilter', 'showBadges',
-    'showFloorPlans', 'budgetEnabled'];
+    'showFloorPlans', 'budgetEnabled', 'showReplay'];
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('archStudio', {
@@ -3831,18 +3877,22 @@ function __alloAST(k, fb) {
     var startReplay = function () {
       if (!undoStack || undoStack.length === 0) { if (ctx.addToast) ctx.addToast('\u26A0\uFE0F No undo history to replay!', 'error'); return; }
       upd({ showReplay: true, replayStep: 0, selectedBlockKey: '' });
+      focusReplayPanel();
     };
 
     var stepReplay = function (dir) {
-      var maxStep = replayFrames; // includes current state as last frame
-      var next = Math.max(0, Math.min(maxStep, replayStep + dir));
-      upd('replayStep', next);
+      chooseReplayStep(replayStep + dir, true);
     };
 
-    var replayBlocks = archReplayFrame;
-    var replayLabel = replayStep >= 0 ? 'Step ' + (replayStep + 1) + '/' + (replayFrames + 1) : '';
+    var replayLabel = replayStep >= 0 ? replayText('step', { step: replayStep + 1, total: replayFrames + 1 }) : '';
 
-    var exitReplay = function () { upd({ showReplay: false, replayStep: -1 }); };
+    var exitReplay = function () {
+      upd({ showReplay: false, replayStep: -1 });
+      setTimeout(function () {
+        var button = document.querySelector('.arch-studio-feature-strip [data-arch-tool-id="replay"]');
+        if (button) { button.focus(); button.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      }, 0);
+    };
 
     // ══════════════════════════════════════════════════════════════
     // ── Block Search / Filter ──
@@ -4444,6 +4494,77 @@ function __alloAST(k, fb) {
       };
       return el('svg', { className: 'arch-shape-icon', viewBox: '0 0 48 44', 'aria-hidden': 'true', focusable: 'false' },
         el('path', { d: paths[shape] || paths.block, fill: 'currentColor', fillOpacity: .12, stroke: 'currentColor', strokeWidth: 1.8, strokeLinejoin: 'round', strokeLinecap: 'round' }));
+    }
+
+
+    function replayText(key, values) {
+      if ((key === 'blocks' || key === 'range_value') && values && values.count === 1) key += '_one';
+      var text = t('stem.archstudio.timeline_' + key, ARCH_REPLAY_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { text = text.split('{' + name + '}').join(String(values[name])); });
+      return text;
+    }
+    function focusReplayPanel() {
+      setTimeout(function () {
+        var heading = document.getElementById('arch-replay-heading');
+        if (heading) { heading.focus(); heading.scrollIntoView({ block: 'nearest' }); }
+      }, 0);
+    }
+    function chooseReplayStep(value, announce) {
+      var next = Math.max(0, Math.min(replayFrames, Math.round(Number(value) || 0)));
+      upd('replayStep', next);
+      if (announce && announceToSR) {
+        var selected = summarizeArchReplay(blocks, undoStack, next);
+        announceToSR(replayText('range_value', { step: next + 1, total: selected.total, count: selected.count }));
+      }
+    }
+    function renderReplayPanel() {
+      if (!showReplay) return null;
+      var summary = summarizeArchReplay(blocks, undoStack, replayStep), delta = summary.delta;
+      var values = { step: summary.step + 1, total: summary.total, count: summary.count };
+      var maxCount = Math.max.apply(Math, summary.counts.concat([1]));
+      return el('section', { id: 'arch-replay-panel', className: 'arch-replay-panel', 'aria-labelledby': 'arch-replay-heading',
+        onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); exitReplay(); } } },
+        el('div', { className: 'arch-replay-heading-row' },
+          el('h3', { id: 'arch-replay-heading', tabIndex: -1 }, replayText('title')),
+          el('span', { className: 'arch-replay-badge' }, replayText('readonly'))),
+        el('div', { className: 'arch-replay-position' },
+          el('strong', { 'data-arch-replay-position': true }, replayText('step', values)),
+          el('span', { 'data-arch-replay-count': true }, replayText('blocks', values))),
+        el('div', { className: 'arch-replay-timeline' },
+          el('span', { className: 'arch-replay-timeline-caption' }, replayText('timeline')),
+          el('svg', { viewBox: '0 0 300 36', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' },
+            summary.counts.map(function (count, index) {
+              var slot = 300 / summary.total, height = 3 + 29 * count / maxCount;
+              return el('rect', { key: index, x: index * slot + 2, y: 34 - height, width: Math.max(1, slot - 4), height: height, rx: 1,
+                fill: index === summary.step ? '#fcd34d' : '#5d7999',
+                stroke: index === summary.step ? '#fff' : 'none', strokeWidth: 1 });
+            })),
+          el('input', { type: 'range', 'aria-label': t('stem.archstudio.replay_step', 'replay step'),
+            'aria-valuetext': replayText('range_value', values), min: 0, max: replayFrames, step: 1, value: replayStep,
+            onChange: function (event) { chooseReplayStep(event.target.value, false); } }),
+          el('div', { className: 'arch-replay-endpoints' }, el('span', null, replayText('earliest')), el('span', null, replayText('latest')))),
+        el('div', { className: 'arch-replay-transport', role: 'group', 'aria-label': replayText('title') },
+          el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_first', 'Replay first construction step'), disabled: replayStep <= 0, onClick: function () { chooseReplayStep(0, true); } }, replayText('first')),
+          el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_previous', 'Replay previous construction step'), disabled: replayStep <= 0, onClick: function () { stepReplay(-1); } }, replayText('previous')),
+          el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_next', 'Replay next construction step'), disabled: replayStep >= replayFrames, onClick: function () { stepReplay(1); } }, replayText('next')),
+          el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_last', 'Replay final construction step'), disabled: replayStep >= replayFrames, onClick: function () { chooseReplayStep(replayFrames, true); } }, replayText('last'))),
+        el('div', { className: 'arch-replay-changes', role: 'group', 'aria-label': replayText('changes') },
+          el('div', { className: 'arch-replay-section-label' }, replayText('changes')),
+          el('dl', null, ['added', 'removed', 'changed'].map(function (key) {
+            return el('div', { key: key, 'data-arch-replay-delta': key },
+              el('dt', null, replayText(key)), el('dd', null, delta ? delta[key] : '\u2014'));
+          })),
+          el('p', { 'data-arch-replay-note': true }, !delta ? replayText('baseline') :
+            delta.added + delta.removed + delta.changed === 0 ? replayText('unchanged') :
+            replayText('credit', { amount: (delta.costDelta > 0 ? '+' : '') + delta.costDelta }))),
+        el('button', { type: 'button', className: 'arch-replay-return', onClick: exitReplay }, replayText('return')),
+        el('details', { className: 'arch-replay-scope' },
+          el('summary', null, replayText('scope')),
+          el('p', null, replayText('scope_help')),
+          el('p', null, replayText('changed_help')),
+          el('p', null, replayText('display_help')),
+          el('p', null, replayText('history_help')))
+      );
     }
 
     function workspaceText(key, values) {
@@ -5572,6 +5693,37 @@ function __alloAST(k, fb) {
         + '@media(forced-colors:active){#arch-studio-region .arch-material-swatch,#arch-studio-region .arch-color-current-swatch,#arch-studio-region .arch-color-choice{forced-color-adjust:none;}#arch-studio-region .arch-palette-check{forced-color-adjust:none;}#arch-studio-region .arch-color-choice:focus-visible{outline-color:Highlight;}}'
         + '.theme-contrast #arch-studio-region .arch-shape-choice,.theme-contrast #arch-studio-region .arch-material-choice{background:#000!important;color:#ffff00!important;border-color:#ffff00!important;}'
         + '.theme-contrast #arch-studio-region .arch-shape-icon{color:#ffff00!important;}.theme-contrast #arch-studio-region .arch-shape-choice[aria-pressed=true],.theme-contrast #arch-studio-region .arch-material-choice[aria-pressed=true]{border-color:#00ff00!important;background:#142314!important;}'
+        + '#arch-studio-region .arch-studio-sidebar.arch-studio-replay{width:clamp(300px,30vw,370px)!important;}'
+        + '#arch-studio-region .arch-replay-panel{flex:none;border:1px solid #8f773b;border-radius:12px;padding:13px;background:linear-gradient(155deg,#263348,#142238);box-shadow:0 9px 24px #02061733;color:#e2e8f0;}'
+        + '#arch-studio-region .arch-replay-heading-row{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;}'
+        + '#arch-studio-region #arch-replay-heading{font-size:15px;line-height:1.35;margin:0;color:#fef3c7;}'
+        + '#arch-studio-region #arch-replay-heading:focus{outline:2px solid #fcd34d;outline-offset:4px;}'
+        + '#arch-studio-region .arch-replay-badge{padding:4px 7px;background:#49371c;border:1px solid #947c42;border-radius:5px;color:#fde68a;font-size:11px;font-weight:700;}'
+        + '#arch-studio-region .arch-replay-position{display:flex;align-items:baseline;justify-content:space-between;gap:6px;flex-wrap:wrap;margin:14px 0 10px;}'
+        + '#arch-studio-region .arch-replay-position strong{font-size:18px;color:#f8fafc;}'
+        + '#arch-studio-region .arch-replay-position span{font-size:12px;color:#cbd5e1;}'
+        + '#arch-studio-region .arch-replay-timeline{padding:8px 10px 6px;background:#101c2e;border:1px solid #536982;border-radius:8px;}'
+        + '#arch-studio-region .arch-replay-timeline-caption{display:block;font-size:11px;color:#cbd5e1;margin-bottom:6px;}'
+        + '#arch-studio-region .arch-replay-timeline svg{display:block;width:100%;height:36px;}'
+        + '#arch-studio-region .arch-replay-timeline input{display:block;width:100%;min-width:0;height:44px;margin:0;accent-color:#fcd34d;cursor:pointer;}'
+        + '#arch-studio-region .arch-replay-endpoints{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#cbd5e1;}'
+        + '#arch-studio-region .arch-replay-transport{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:10px 0;}'
+        + '#arch-studio-region .arch-replay-panel button{min-height:44px;min-width:44px;box-sizing:border-box;border:1px solid #8295a8;border-radius:7px;background:#253b54;color:#f8fafc;font-size:12px;font-weight:700;line-height:1.35;padding:8px 4px;overflow-wrap:anywhere;}'
+        + '#arch-studio-region .arch-replay-panel button:disabled{background:#18283b;color:#a4b2c5;cursor:default;}'
+        + '#arch-studio-region .arch-replay-changes{padding:10px;border:1px solid #526982;border-radius:8px;background:#17293d;}'
+        + '#arch-studio-region .arch-replay-section-label{font-size:12px;font-weight:650;color:#dbeafe;}'
+        + '#arch-studio-region .arch-replay-changes dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0;}'
+        + '#arch-studio-region .arch-replay-changes dt{font-size:11px;color:#cbd5e1;}'
+        + '#arch-studio-region .arch-replay-changes dd{font-size:23px;font-weight:750;color:#f8fafc;margin:2px 0 0;}'
+        + '#arch-studio-region .arch-replay-panel p{font-size:12px;line-height:1.5;color:#cbd5e1;margin:0;}'
+        + '#arch-studio-region .arch-replay-panel .arch-replay-return{width:100%;margin-top:10px;background:#674817;border-color:#d4a748;color:#fff4c7;}'
+        + '#arch-studio-region .arch-replay-scope{margin-top:7px;font-size:12px;}'
+        + '#arch-studio-region .arch-replay-scope summary{min-height:44px;box-sizing:border-box;padding:12px 0;cursor:pointer;color:#dbeafe;}'
+        + '#arch-studio-region .arch-replay-scope p+p{margin-top:8px;}'
+        + '#arch-studio-region .arch-replay-scope summary:focus-visible{outline:2px solid #fcd34d;outline-offset:2px;}'
+        + '.theme-contrast #arch-studio-region .arch-replay-panel{background:#000;border-color:#ffff00;}.theme-contrast #arch-studio-region .arch-replay-panel button{border-color:#ffff00;color:#ffff00;background:#000;}'
+        + '.theme-contrast #arch-studio-region .arch-replay-timeline,.theme-contrast #arch-studio-region .arch-replay-changes{background:#000;border-color:#ffff00;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-studio-sidebar.arch-studio-replay{width:auto!important;max-height:min(54vh,440px);}#arch-studio-region .arch-replay-panel{padding:10px;}#arch-studio-region .arch-replay-transport button{font-size:11px;}}'
         + '#arch-studio-region .arch-studio-sidebar{scrollbar-width:thin;scrollbar-color:#475569 transparent;}'
         + '#arch-studio-region .arch-studio-sidebar>div{padding:9px;border:1px solid rgba(71,85,105,.55);border-radius:11px;background:linear-gradient(145deg,rgba(30,41,59,.72),rgba(15,23,42,.48));box-shadow:0 8px 18px rgba(2,6,23,.13);}'
         + '#arch-studio-region .arch-studio-sidebar>div:hover{border-color:rgba(100,116,139,.8);}'
@@ -5769,8 +5921,9 @@ function __alloAST(k, fb) {
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : '') + (showReplay ? ' arch-studio-replay' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
+          renderReplayPanel(),
           renderTemplateLibrary(),
           renderSchedulePanel(),
           renderProjectPanel(),
@@ -6264,31 +6417,6 @@ function __alloAST(k, fb) {
                 );
               })
             )
-          ),
-
-          // ── Time-Lapse Replay Controls ──
-          showReplay && el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\u23EA Construction Replay'),
-            replayFrames === 0
-              ? el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No undo history yet. Build something first!')
-              : el('div', null,
-                  el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, textAlign: 'center', fontWeight: 600 } }, replayLabel),
-                  el('div', { role: 'note', style: { fontSize: 10, color: '#cbd5e1', marginBottom: 6, textAlign: 'center', lineHeight: 1.4 } },
-                    'Viewport and heatmap show this historical step. Analysis, wind, badges, and totals describe the live build.'),
-                  el('div', { style: { display: 'flex', gap: 4, justifyContent: 'center' } },
-                    el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_first', 'Replay first construction step'), onClick: function () { upd('replayStep', 0); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 10 } }, '\u23EE'),
-                    el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_previous', 'Replay previous construction step'), onClick: function () { stepReplay(-1); }, disabled: replayStep <= 0, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: replayStep > 0 ? '#e2e8f0' : '#475569', cursor: replayStep > 0 ? 'pointer' : 'default', fontSize: 10 } }, '\u25C0'),
-                    el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_next', 'Replay next construction step'), onClick: function () { stepReplay(1); }, disabled: replayStep >= replayFrames, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: replayStep < replayFrames ? '#e2e8f0' : '#475569', cursor: replayStep < replayFrames ? 'pointer' : 'default', fontSize: 10 } }, '\u25B6'),
-                    el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_last', 'Replay final construction step'), onClick: function () { upd('replayStep', replayFrames); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 10 } }, '\u23ED')
-                  ),
-                  el('div', { style: { marginTop: 4 } },
-                    el('input', { type: 'range', 'aria-label': t('stem.archstudio.replay_step', 'replay step'), min: 0, max: replayFrames, value: replayStep >= 0 ? replayStep : replayFrames, onChange: function (e) { upd('replayStep', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#fbbf24' } })
-                  ),
-                  el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 2 } },
-                    (replayStep >= 0 && replayStep < replayFrames ? replayBlocks.length : totalBlocks) + ' blocks at this step'
-                  ),
-                  el('button', { onClick: exitReplay, style: { width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none', background: 'rgba(71,85,105,.3)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, '\u2716 Exit Replay')
-                )
           ),
 
           // ── Block Search / Filter ──

@@ -447,7 +447,7 @@ describe('Architecture Studio authoring', () => {
         editorView: 'grid', blocks: [{ x: 0, y: 0, z: 0, shape: 'block', material: 'stone' }],
         undoStack: [[]], showReplay: true, replayStep: 999,
       } });
-      expect(clampedReplayHtml).toContain('Replay Step 2/2');
+      expect(clampedReplayHtml).toContain('Replay Step 2 of 2');
       expect(clampedReplayHtml).not.toContain('Replay Step 1000');
     }
   });

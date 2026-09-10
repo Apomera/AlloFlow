@@ -2352,11 +2352,11 @@ test.describe('Architecture Studio — real WebGL', () => {
     await page.locator('.arch-studio-feature-strip [data-arch-tool-id=replay]').click();
     await expect(page.getByRole('group', { name: 'Current building tool', exact: true })).toContainText('Read-only replay');
     await expect(page.getByRole('group', { name: 'Current building tool', exact: true })).not.toContainText('Place Mode');
-    await expect(page.locator('#arch-studio-tools')).toBeHidden();
+    await expect(page.locator('#arch-studio-tools')).toBeVisible();
     await page.getByRole('button', { name: 'Drawing desk', exact: true }).click();
     await expect(page.locator('.arch-workspace-bar')).toHaveCount(0);
     await page.getByRole('button', { name: 'Return to build', exact: true }).click();
-    await expect(page.locator('#arch-studio-tools')).toBeHidden();
+    await expect(page.locator('#arch-studio-tools')).toBeVisible();
     await expect(page.getByRole('group', { name: 'Current building tool', exact: true })).toContainText('Read-only replay');
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
@@ -2536,6 +2536,128 @@ test.describe('Architecture Studio — real WebGL', () => {
     await page.getByRole('button', { name: 'Use custom color #ef4444', exact: true }).focus();
     await page.keyboard.press('Enter');
     await expect(page.getByRole('button', { name: 'Use custom color #ef4444', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('replay timeline compares retained steps without changing the live model or renderer', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 1050 });
+    const a = { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 };
+    const b = { ...a, x: 1, material: 'wood', color: '#92400e' };
+    const c = { ...a, x: 2, material: 'glass', color: '#38bdf8' };
+    const live = [{ ...a, color: '#ef4444' }, c], history = [[], [a], { kind: 'arch-project-frame', blocks: [a, b], projectName: 'Before', projectNotes: 'Saved notes' }];
+    await mount3d(page, { blocks: live, undoStack: history, redoStack: [[b]], projectName: 'Current', projectNotes: 'Live notes', sidebarCollapsed: true, soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:1010px}' });
+    const before = await page.evaluate(() => { const w = window as any; w.__replayCanvas = document.querySelector('canvas[data-arch-gl]'); return { blocks: w.__bucket().blocks, undo: w.__bucket().undoStack, redo: w.__bucket().redoStack, name: w.__bucket().projectName, notes: w.__bucket().projectNotes }; });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=replay]').click();
+    const panel = page.locator('#arch-replay-panel'), slider = panel.getByRole('slider');
+    await expect(panel).toBeVisible();
+    await expect(panel.locator('#arch-replay-heading')).toBeFocused();
+    await expect(panel.locator('[data-arch-replay-position]')).toHaveText('Step 1 of 4');
+    await expect(panel.locator('[data-arch-replay-count]')).toHaveText('0 blocks at this step');
+    await expect(panel.getByRole('button', { name: 'Replay first construction step', exact: true })).toBeDisabled();
+    await panel.getByRole('button', { name: 'Replay next construction step', exact: true }).click();
+    await expect(panel.locator('[data-arch-replay-delta=added] dd')).toHaveText('1');
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(1);
+    await slider.focus(); await page.keyboard.press('End');
+    await expect(slider).toHaveAttribute('aria-valuetext', 'Step 4 of 4; 2 blocks; read-only');
+    for (const key of ['added', 'removed', 'changed']) await expect(panel.locator('[data-arch-replay-delta=' + key + '] dd')).toHaveText('1');
+    await expect(panel.locator('[data-arch-replay-note]')).toHaveText('Teaching credit change: +9');
+    await expect(panel.getByRole('button', { name: 'Replay final construction step', exact: true })).toBeDisabled();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(2);
+    expect(await page.evaluate(() => { const w = window as any; return { blocks: w.__bucket().blocks, undo: w.__bucket().undoStack, redo: w.__bucket().redoStack, name: w.__bucket().projectName, notes: w.__bucket().projectNotes }; })).toEqual(before);
+    expect(await page.evaluate(() => (window as any).__replayCanvas === document.querySelector('canvas[data-arch-gl]'))).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('replay-desktop.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Return to live build', exact: true }).click();
+    await expect(panel).toHaveCount(0);
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=replay]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket().showReplay)).toBe(false);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('replay timeline counts hidden cells and keeps grid editing read-only', async ({ page }) => {
+    const blocks = [
+      { x: 0, y: 0, z: -1, shape: 'block', material: 'wood', color: '#92400e', rotation: 0 },
+      { x: 1, y: 1, z: -1, shape: 'ramp', material: 'stone', color: '#94a3b8', rotation: 90 }];
+    await mount3d(page, { blocks, undoStack: [[], [blocks[0]]], showReplay: true, replayStep: 2, filterMaterial: 'glass', viewLayer: 31, soundEnabled: false });
+    const panel = page.locator('#arch-replay-panel');
+    await expect(panel.locator('[data-arch-replay-count]')).toHaveText('2 blocks at this step');
+    await expect(panel.locator('[data-arch-replay-delta=added] dd')).toHaveText('1');
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(0);
+    await panel.locator('summary').click();
+    await expect(panel.locator('.arch-replay-scope')).toContainText('including those hidden by 3D filters');
+    await page.getByRole('button', { name: 'Floor Grid', exact: true }).click();
+    const cell = page.locator('[data-arch-cell="0,0,-1"]');
+    await cell.focus(); await page.keyboard.press('Enter');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual(blocks);
+    await expect(page.getByRole('grid')).toHaveAttribute('aria-readonly', 'true');
+    await panel.getByRole('slider').focus(); await page.keyboard.press('Home'); await page.keyboard.press('ArrowRight');
+    await expect(panel.locator('[data-arch-replay-position]')).toHaveText('Step 2 of 3');
+    await expect(panel.locator('[data-arch-replay-count]')).toHaveText('1 block at this step');
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ filterMaterial: 'glass', viewLayer: 31, editorView: 'grid', blocks });
+    await panel.getByRole('slider').press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(page.getByRole('grid')).toHaveAttribute('aria-readonly', 'false');
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=replay]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual(blocks);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('replay timeline opens from All tools and preserves its state across workspaces', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), undoStack: [[], tower().slice(0, 3)], soundEnabled: false, sidebarCollapsed: true });
+    await page.getByRole('button', { name: 'All tools', exact: true }).click();
+    await page.locator('#arch-tool-browser').getByRole('searchbox').fill('construction replay');
+    await page.locator('#arch-tool-browser').getByRole('button', { name: 'Construction replay', exact: true }).click();
+    await expect(page.locator('#arch-replay-heading')).toBeFocused();
+    const slider = page.locator('#arch-replay-panel').getByRole('slider');
+    await slider.focus(); await page.keyboard.press('ArrowRight');
+    await page.getByRole('button', { name: 'Drawing desk', exact: true }).click();
+    await expect(page.locator('#arch-replay-panel')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Return to build', exact: true }).click();
+    await expect(page.locator('[data-arch-replay-position]')).toHaveText('Step 2 of 3');
+    await page.getByRole('button', { name: 'Hide tools', exact: true }).click();
+    await expect(page.locator('#arch-replay-panel')).toBeHidden();
+    await page.getByRole('button', { name: 'Show tools', exact: true }).click();
+    await expect(page.locator('[data-arch-replay-position]')).toHaveText('Step 2 of 3');
+    await slider.focus(); await page.keyboard.press('Escape');
+    await expect(page.locator('#arch-replay-panel')).toHaveCount(0);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack)).toEqual([[], tower().slice(0, 3)]);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('replay timeline has reachable phone controls and accessible themes', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 960 });
+    await mount3d(page, { blocks: tower(), undoStack: [[], tower().slice(0, 3), tower().slice(0, 7)], soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=replay]').click();
+    const panel = page.locator('#arch-replay-panel');
+    const controls = panel.locator('button,input,summary');
+    const dimensions = await controls.evaluateAll(els => els.map(el => { const r = el.getBoundingClientRect(); return { width: r.width, height: r.height, left: r.left, right: r.right }; }));
+    expect(dimensions.filter(r => r.width < 44 || r.height < 44 || r.left < 0 || r.right > 320)).toEqual([]);
+    await panel.getByRole('slider').focus(); await page.keyboard.press('End');
+    await expect(panel.locator('[data-arch-replay-position]')).toHaveText('Step 4 of 4');
+    await panel.getByRole('button', { name: 'Replay previous construction step', exact: true }).click();
+    await expect(panel.locator('[data-arch-replay-position]')).toHaveText('Step 3 of 4');
+    await panel.getByRole('button', { name: 'Return to live build', exact: true }).scrollIntoViewIfNeeded();
+    expect(await panel.getByRole('button', { name: 'Return to live build', exact: true }).evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('replay-phone.png'), fullPage: true });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.setViewportSize({ width: 1280, height: 1100 });
+    await page.addStyleTag({ content: '#wrap{height:1060px}' });
+    await panel.locator('summary').click();
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      const violations = await page.evaluate(async () => {
+        const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+        return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+      });
+      expect(violations, theme).toEqual([]);
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
+    await panel.getByRole('slider').focus(); await page.keyboard.press('Home');
+    await expect(panel.locator('[data-arch-replay-position]')).toHaveText('Step 1 of 4');
+    await panel.getByRole('button', { name: 'Return to live build', exact: true }).click();
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=replay]')).toBeFocused();
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 

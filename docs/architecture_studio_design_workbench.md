@@ -14,6 +14,20 @@ The **Colors** toolbar action, also available in **All tools**, reveals the side
 
 Phone palettes scroll without a sticky mode card covering their controls. Color choices and the native picker have at least 44px targets. The earthquake intensity slider also has a 44px hit area.
 
+## Review construction steps
+
+Open **Construction replay** from **All tools**, or choose **Replay** in the feature toolbar. The sidebar opens with the replay panel at the top and keyboard focus on its heading. The model and floor grid remain read-only until you choose **Return to live build**.
+
+The timeline shows up to 50 retained undo states followed by the latest model. The first state may already contain blocks; it is the earliest retained baseline, not necessarily the start of the project. Step numbers begin at 1. The bars show block counts across retained states, and the slider's accessible value reports the selected step and block count.
+
+Use **First**, **Previous**, **Next**, and **Latest**, or focus the slider and use arrow keys, Home, and End. Boundary buttons disable when there is no earlier or later step. The latest state is also read-only while replay is active.
+
+**Changes from the previous step** counts added and removed cells, plus cells whose shape, material, color, or rotation changed. A move therefore appears as a removal and an addition. The panel shows the associated change in teaching credits. The baseline has no previous-state comparison; a step that changes only project text reports no block-property changes.
+
+Counts and comparisons include every block in the selected state, including blocks hidden by 3D filters. Names and design notes are not compared. Expand **What this view includes** for these details and the distinction between the historical viewport/heatmap and live-build analysis, wind, badges, and totals.
+
+Stepping through replay preserves geometry, project details, undo/redo history, and view filters. Visiting Drawing desk and returning retains the replay step. Hide/Show tools also preserves it. **Return to live build**, or Escape while focus is inside the replay panel, leaves replay and returns focus to the Replay toolbar action. Phone controls have at least 44px targets, and the panel scrolls within the sidebar.
+
 ## Build a structure
 
 Choose Room shell, Straight wall, or Floor slab. Set width, depth, wall height, and lower-corner coordinates. Room shells include a solid base with optional wood doors, glass windows, and a slab ceiling. Wall height counts layers above the base; a ceiling adds one layer. Dimensions and areas use grid units; costs use the studio's existing teaching credits.
@@ -166,6 +180,8 @@ Coverage includes room geometry, openings, ceilings, quantities, invalid dimensi
 Results: all 16 Architecture Studio unit suites passed across targeted runs and final rechecks (451 tests), including 27 workspace checks. Sixteen distinct Chromium workflows passed: view/camera separation, expanded/collapsed sidebar state and focus, renderer identity, mode-specific summaries, keyboard floor editing and undo, replay guidance, automatic panel reveal from navigation and All tools, phone targets and layout, shorter desktop sizing, long populated review panels in normal/filtered views, and existing design, project, workspace, template, materials-schedule, tool-browser, and WebGL regressions. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations with tools expanded and collapsed across light, dark, and high-contrast appearances. Desktop, final 320px phone, and populated long-advice screenshots were visually reviewed. Final review identified and corrected the long-advice overlap above camera controls. Browser validation disabled video and trace recording; unit runs used the existing longer local execution allowance.
 
 Palette refinement (September 9): all 468 unit checks across 17 Architecture Studio suites passed. Ten distinct local Chromium workflows passed across the main run and final rechecks, including color synchronization, place/paint/pick/undo, replay, sidebar focus, selected-object editing, workspace preservation, phone targets, and pointer reachability. Axe found no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations in the expanded palette across light, dark, and high-contrast themes; workspace expanded/collapsed states also passed. Forced-color keyboard selection and reduced-motion mode were exercised. Desktop material controls and final 320px phone shape/color screenshots were visually reviewed. The screenshots revealed and resolved the phone sticky-mode overlap; accessibility validation also led to a larger earthquake slider hit area. Unit worker startup and one timing failure on the busy local machine were resolved by the complete single-thread rerun with a longer execution allowance.
+
+Replay timeline refinement (September 9): all 503 checks across 18 Architecture Studio unit suites passed across the full run and the focused wording-assertion recheck. Eleven distinct local Chromium workflows passed, covering state comparisons, read-only grid editing, hidden-cell scope, renderer identity, All tools navigation, drawing/schedule/palette compatibility, step retention, return focus, phone targets, and pointer reachability. The expanded replay panel had no selected axe WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations across light, dark, and high-contrast themes. Forced-color and reduced-motion keyboard behavior were exercised. Desktop and 320px phone screenshots were visually reviewed. An active-view label dependency exposed by the initial regression run was restored before the final checks; the legacy clamping assertion was updated for the clearer step wording.
 
 No deployment or push was performed.
 
