@@ -2235,6 +2235,60 @@ function __alloAST(k, fb) {
 
 
 
+
+  var ARCH_SECTION_LABELS = {
+  "title": "Cross-section explorer",
+  "close": "Close cross-section explorer",
+  "close_short": "Close",
+  "choose": "Depth (Z)",
+  "all": "All depths",
+  "option": "Z={z} · {count} blocks",
+  "option_one": "Z={z} · {count} block",
+  "previous": "Previous section",
+  "next": "Next section",
+  "profile": "Blocks by depth",
+  "preview": "Section drawing",
+  "overview": "Front overview",
+  "overview_help": "Choose a depth to inspect a section through the build.",
+  "count": "{count} blocks in this section",
+  "count_one": "{count} block in this section",
+  "all_count": "{count} blocks across all depths",
+  "visible": "{count} visible in 3D",
+  "empty": "No blocks at this depth in the current frame. Choose another depth or show all depths.",
+  "empty_build": "This frame has no blocks. Add blocks or choose another replay step.",
+  "scope": "The drawing includes blocks hidden by floor, material, and shape filters in the 3D view.",
+  "grid": "Sections affect the 3D view. The floor grid continues to show the full editing floor.",
+  "cells": "The drawing shows occupied cells, including curved and sloped shapes.",
+  "coordinates": "Block coordinates",
+  "x": "X",
+  "y": "Y",
+  "shape": "Shape",
+  "material": "Material",
+  "page": "Page {page} of {pages}",
+  "page_previous": "Previous coordinate page",
+  "page_next": "Next coordinate page",
+  "rows": "Coordinates {start}–{end} of {count}",
+  "close_help": "Closing shows all depths. Reopening resumes this section.",
+  "all_count_one": "{count} block across all depths"
+};
+  // Section navigation follows occupied depths of the displayed frame, including negative Z.
+  function summarizeArchSections(input, requestedZ, selected) {
+    var frame = getArchRuntimeBlocks(input), counts = {}, z = parseArchCoordinate(requestedZ);
+    var current = selected === true && z != null && z >= ARCH_XZ_MIN && z <= ARCH_XZ_MAX ? z : null;
+    frame.forEach(function (block) { counts[block.z] = (counts[block.z] || 0) + 1; });
+    var levels = Object.keys(counts).map(Number).sort(function (a, b) { return a - b; });
+    var previous = null, next = null;
+    levels.forEach(function (level) {
+      if (current != null && level < current) previous = level;
+      if (next == null && (current == null || level > current)) next = level;
+    });
+    var section = current == null ? [] : frame.filter(function (block) { return block.z === current; });
+    section.sort(function (a, b) { return b.y - a.y || a.x - b.x; });
+    return { total: frame.length, selectedZ: current, count: current == null ? frame.length : section.length,
+      blocks: section, levels: levels.map(function (level) { return { z: level, count: counts[level] }; }), previous: previous, next: next };
+  }
+  window.__alloArchSections = { summary: summarizeArchSections, labels: ARCH_SECTION_LABELS };
+
   var ARCH_FILTER_LABELS = {
   "title": "Block filters",
   "close": "Close block filters",
@@ -2369,7 +2423,7 @@ function __alloAST(k, fb) {
   var ARCH_SIDEBAR_PANELS = ['showDesign', 'showProject', 'showTemplates', 'showBOM',
     'showChallenges', 'showGallery', 'showStats', 'showStyleGuide', 'showPhases',
     'showShare', 'showRandomGen', 'showColorPicker', 'showFilter', 'showBadges',
-    'showFloorPlans', 'budgetEnabled', 'showReplay'];
+    'showFloorPlans', 'budgetEnabled', 'showReplay', 'showSlice'];
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('archStudio', {
@@ -3906,17 +3960,6 @@ function __alloAST(k, fb) {
     ];
 
     // ══════════════════════════════════════════════════════════════
-    // ── Cross-Section Slicer (Z-depth) ──
-    // ══════════════════════════════════════════════════════════════
-    var sliceBlocks = sliceZSelected ? blocks.filter(function (b) { return b.z === sliceZ; }) : [];
-    var sliceZLevels = [];
-    if (totalBlocks > 0) {
-      var zSet = {};
-      blocks.forEach(function (b) { zSet[b.z] = true; });
-      sliceZLevels = Object.keys(zSet).map(Number).sort(function (a, b) { return a - b; });
-    }
-
-    // ══════════════════════════════════════════════════════════════
     // ── Structural Load Heatmap ──
     // ══════════════════════════════════════════════════════════════
     var blockLoads = showHeatmap ? archBlockLoads : {};
@@ -4549,6 +4592,117 @@ function __alloAST(k, fb) {
     }
 
 
+
+
+    function sectionText(key, values) {
+      if ((key === 'option' || key === 'count' || key === 'all_count') && values && values.count === 1) key += '_one';
+      var text = t('stem.archstudio.sections_' + key, ARCH_SECTION_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { text = text.split('{' + name + '}').join(String(values[name])); });
+      return text;
+    }
+    function toggleSectionPanel() {
+      var opening = !showSlice;
+      upd('showSlice', opening);
+      setTimeout(function () {
+        var target = opening ? document.getElementById('arch-section-heading') :
+          document.querySelector('.arch-studio-feature-strip [data-arch-tool-id="slice"]');
+        if (target) { target.focus(); target.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      }, 0);
+    }
+    function retainSectionFocus(control, targetId) {
+      setTimeout(function () {
+        if (control && control.disabled) {
+          var target = document.getElementById(targetId);
+          if (target) target.focus();
+        }
+      }, 0);
+    }
+    function chooseSection(value) {
+      var control = document.activeElement;
+      var z = value === 'all' ? null : parseArchCoordinate(value);
+      if (z != null && (z < ARCH_XZ_MIN || z > ARCH_XZ_MAX)) return;
+      upd({ sliceZ: z == null ? -1 : z, sliceZSelected: z != null, sectionPage: 0, sectionPageKey: '' });
+      retainSectionFocus(control, 'arch-section-heading');
+    }
+    function renderSectionPanel() {
+      if (!showSlice) return null;
+      var summary = summarizeArchSections(archReplayFrame, sliceZ, sliceZSelected), selected = summary.selectedZ != null;
+      var options = summary.levels.slice();
+      if (selected && !options.some(function (item) { return item.z === summary.selectedZ; })) {
+        options.push({ z: summary.selectedZ, count: 0 }); options.sort(function (a, b) { return a.z - b.z; });
+      }
+      var projection = archDrawingProjection(archReplayFrame, { view: selected ? 'section' : 'front', cut: summary.selectedZ });
+      var drawingLabels = {}; Object.keys(ARCH_DRAWING_LABELS).forEach(function (key) { drawingLabels[key] = drawingText(key); });
+      drawingLabels.front = sectionText('overview');
+      var pageKey = getArchBuildSignature(archReplayFrame) + ':' + summary.selectedZ;
+      var pages = Math.max(1, Math.ceil(summary.blocks.length / 48));
+      var page = d.sectionPageKey === pageKey ? Math.max(0, Math.min(pages - 1, parseArchCoordinate(d.sectionPage) || 0)) : 0;
+      var coordinateRows = summary.blocks.slice(page * 48, (page + 1) * 48);
+      var profileMax = Math.max.apply(Math, summary.levels.map(function (item) { return item.count; }).concat([1]));
+      var minZ = summary.levels.length ? summary.levels[0].z : 0;
+      var depth = summary.levels.length ? summary.levels[summary.levels.length - 1].z - minZ + 1 : 1;
+      function movePage(amount) {
+        var control = document.activeElement;
+        upd({ sectionPage: Math.max(0, Math.min(pages - 1, page + amount)), sectionPageKey: pageKey });
+        retainSectionFocus(control, 'arch-section-page');
+      }
+      return el('section', { id: 'arch-section-panel', className: 'arch-section-panel', 'aria-labelledby': 'arch-section-heading',
+        onKeyDown: function (event) { if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.preventDefault(); event.stopPropagation(); toggleSectionPanel(); } } },
+        el('div', { className: 'arch-section-header' },
+          el('h3', { id: 'arch-section-heading', tabIndex: -1 }, sectionText('title')),
+          el('button', { type: 'button', 'aria-label': sectionText('close'), onClick: toggleSectionPanel }, sectionText('close_short'))),
+        el('p', { className: 'arch-section-frame' }, showReplay ? filterText('replay', { step: replayStep + 1, total: replayFrames + 1 }) : filterText('live')),
+        el('label', { className: 'arch-section-picker', htmlFor: 'arch-section-depth' }, sectionText('choose'),
+          el('select', { id: 'arch-section-depth', 'aria-label': sectionText('choose'), value: selected ? String(summary.selectedZ) : 'all',
+            onChange: function (event) { chooseSection(event.target.value); } },
+            el('option', { value: 'all' }, sectionText('all')),
+            options.map(function (item) { return el('option', { key: item.z, value: String(item.z) }, sectionText('option', item)); }))),
+        el('div', { className: 'arch-section-navigation', role: 'group', 'aria-label': sectionText('title') },
+          el('button', { type: 'button', 'aria-label': sectionText('previous'), disabled: summary.previous == null, onClick: function () { chooseSection(summary.previous); } }, '\u2190 ' + sectionText('previous')),
+          el('button', { type: 'button', 'aria-label': sectionText('next'), disabled: summary.next == null, onClick: function () { chooseSection(summary.next); } }, sectionText('next') + ' \u2192')),
+        el('button', { type: 'button', className: 'arch-section-all',
+          'aria-label': __alloAST('stem.archstudio.a11y_show_all_z_cross_sections', 'Show all Z cross-sections'), 'aria-pressed': !selected,
+          onClick: function () { chooseSection('all'); } }, sectionText('all')),
+        summary.levels.length > 0 && el('div', { className: 'arch-section-profile' },
+          el('span', null, sectionText('profile')),
+          el('svg', { viewBox: '0 0 300 40', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' },
+            summary.levels.map(function (item) {
+              var height = 3 + 33 * item.count / profileMax, active = selected && item.z === summary.selectedZ;
+              return el('rect', { key: item.z, x: (item.z - minZ) * 300 / depth + .5, y: 38 - height,
+                width: Math.max(1, 300 / depth - 1), height: height, rx: 1, fill: active ? '#fcd34d' : '#5ea7b5',
+                stroke: active ? '#fef3c7' : 'none', strokeWidth: 1 });
+            })),
+          el('div', { className: 'arch-section-endpoints' }, el('span', null, 'Z=' + minZ), el('span', null, 'Z=' + (minZ + depth - 1)))),
+        el('div', { className: 'arch-section-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+          el('strong', { 'data-arch-section-count': true }, sectionText(selected ? 'count' : 'all_count', { count: summary.count })),
+          el('span', { 'data-arch-section-visible': true }, sectionText('visible', { count: archDisplayBlocks.length }))),
+        !summary.count && el('p', { className: 'arch-section-empty' }, sectionText(summary.total ? 'empty' : 'empty_build')),
+        !selected && summary.total > 0 && el('p', null, sectionText('overview_help')),
+        el('figure', { className: 'arch-section-figure' },
+          el('div', { className: 'arch-section-drawing', role: 'group', 'aria-label': sectionText('preview'),
+            dangerouslySetInnerHTML: { __html: archDrawingSvg(projection, { width: 320, height: 248, labels: drawingLabels, dimensions: false }) } }),
+          el('figcaption', null, sectionText('cells'))),
+        el('p', { className: 'arch-section-scope' }, sectionText('scope')),
+        editorView === 'grid' && el('p', { className: 'arch-section-grid-note' }, sectionText('grid')),
+        selected && summary.count > 0 && el('details', { className: 'arch-section-coordinates', open: d.sectionCoordinatesOpen === true,
+          onToggle: function (event) { var open = event.currentTarget.open; if (open !== (d.sectionCoordinatesOpen === true)) upd('sectionCoordinatesOpen', open); } },
+          el('summary', null, sectionText('coordinates')),
+          d.sectionCoordinatesOpen === true && el('div', null,
+            el('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, sectionText('rows', { start: page * 48 + 1, end: Math.min(summary.count, (page + 1) * 48), count: summary.count })),
+            el('table', { 'aria-label': sectionText('coordinates') },
+              el('thead', null, el('tr', null, ['x', 'y', 'shape', 'material'].map(function (key) { return el('th', { key: key, scope: 'col' }, sectionText(key)); }))),
+              el('tbody', null, coordinateRows.map(function (block) {
+                var shape = shapes.find(function (item) { return item.id === block.shape; }), material = materials.find(function (item) { return item.id === block.material; });
+                return el('tr', { key: archBlockKey(block) }, el('td', null, block.x), el('td', null, block.y), el('td', null, shape ? shape.label : block.shape), el('td', null, material ? material.label : block.material));
+              }))),
+            pages > 1 && el('div', { className: 'arch-section-pages' },
+              el('span', { id: 'arch-section-page', tabIndex: -1 }, sectionText('page', { page: page + 1, pages: pages })),
+              el('div', { className: 'arch-section-navigation' },
+                el('button', { type: 'button', disabled: page === 0, onClick: function () { movePage(-1); } }, sectionText('page_previous')),
+                el('button', { type: 'button', disabled: page === pages - 1, onClick: function () { movePage(1); } }, sectionText('page_next')))))),
+        el('p', { className: 'arch-section-footnote' }, sectionText('close_help'))
+      );
+    }
 
     function filterText(key, values) {
       if ((key === 'result' || key === 'remove') && values && values.count === 1) key += '_one';
@@ -5827,6 +5981,36 @@ function __alloAST(k, fb) {
         + '.theme-contrast #arch-studio-region .arch-shape-choice,.theme-contrast #arch-studio-region .arch-material-choice{background:#000!important;color:#ffff00!important;border-color:#ffff00!important;}'
         + '.theme-contrast #arch-studio-region .arch-shape-icon{color:#ffff00!important;}.theme-contrast #arch-studio-region .arch-shape-choice[aria-pressed=true],.theme-contrast #arch-studio-region .arch-material-choice[aria-pressed=true]{border-color:#00ff00!important;background:#142314!important;}'
 
+
+        + '#arch-studio-region .arch-studio-sidebar.arch-studio-sections{width:clamp(310px,30vw,370px)!important;}'
+        + '#arch-studio-region .arch-section-panel{flex:none;min-width:0;border:1px solid #568b96;border-radius:12px;padding:12px;background:linear-gradient(150deg,#1d3b45,#142738);color:#e2e8f0;}'
+        + '#arch-studio-region .arch-section-header{display:flex;align-items:center;justify-content:space-between;gap:8px;}'
+        + '#arch-studio-region .arch-section-header h3{margin:0;font-size:16px;line-height:1.35;color:#cffafe;}'
+        + '#arch-studio-region #arch-section-heading:focus{outline:2px solid #67e8f9;outline-offset:4px;}'
+        + '#arch-studio-region .arch-section-panel button,#arch-studio-region .arch-section-panel select{box-sizing:border-box;min-height:44px;min-width:44px;border:1px solid #86aab3;border-radius:7px;padding:8px;background:#203b48;color:#f1f5f9;font-size:12px;font-family:inherit;line-height:1.35;}'
+        + '#arch-studio-region .arch-section-panel button{font-weight:650;cursor:pointer;overflow-wrap:anywhere;}#arch-studio-region .arch-section-panel button:disabled{cursor:default;}'
+        + '#arch-studio-region .arch-section-panel button[aria-pressed=true]{border-color:#67e8f9;background:#164e63;}'
+        + '#arch-studio-region .arch-section-picker{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700;}#arch-studio-region .arch-section-picker select{width:100%;}'
+        + '#arch-studio-region .arch-section-picker select:focus-visible{outline:2px solid #67e8f9;outline-offset:2px;}'
+        + '#arch-studio-region .arch-section-navigation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0;}'
+        + '#arch-studio-region .arch-section-all{width:100%;}'
+        + '#arch-studio-region .arch-section-panel p{font-size:12px;line-height:1.5;color:#cbd5e1;margin:10px 0;}'
+        + '#arch-studio-region .arch-section-panel .arch-section-frame{color:#a5f3fc;font-size:11px;font-weight:700;letter-spacing:.5px;}'
+        + '#arch-studio-region .arch-section-profile{margin-top:12px;padding:9px;background:#0e2533;border:1px solid #568b96;border-radius:8px;color:#cbd5e1;font-size:11px;}'
+        + '#arch-studio-region .arch-section-profile svg{display:block;width:100%;height:40px;margin-top:6px;}#arch-studio-region .arch-section-endpoints{display:flex;justify-content:space-between;gap:10px;margin-top:3px;}'
+        + '#arch-studio-region .arch-section-status{display:flex;flex-direction:column;gap:4px;margin:12px 0;}#arch-studio-region .arch-section-status strong{font-size:18px;line-height:1.35;color:#f0fdfa;}#arch-studio-region .arch-section-status span{font-size:12px;color:#cbd5e1;}'
+        + '#arch-studio-region .arch-section-figure{margin:10px 0;}#arch-studio-region .arch-section-drawing{border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;background:#fff;}'
+        + '#arch-studio-region .arch-section-drawing svg{width:100%;height:auto;display:block;}'
+        + '#arch-studio-region .arch-section-figure figcaption{font-size:11px;line-height:1.5;color:#cbd5e1;margin-top:7px;}'
+        + '#arch-studio-region .arch-section-scope,#arch-studio-region .arch-section-empty,#arch-studio-region .arch-section-grid-note{padding:9px;border-left:3px solid #67e8f9;border-radius:4px;background:#17323e;}'
+        + '#arch-studio-region .arch-section-coordinates{border-top:1px solid #568b96;margin-top:12px;font-size:12px;}'
+        + '#arch-studio-region .arch-section-coordinates summary{box-sizing:border-box;min-height:44px;padding:12px 0;cursor:pointer;color:#e2e8f0;}#arch-studio-region .arch-section-coordinates summary:focus-visible{outline:2px solid #67e8f9;outline-offset:2px;}'
+        + '#arch-studio-region .arch-section-coordinates table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;}#arch-studio-region .arch-section-coordinates th,#arch-studio-region .arch-section-coordinates td{padding:8px 4px;text-align:left;border-bottom:1px solid #496b7b;overflow-wrap:anywhere;}'
+        + '#arch-studio-region .arch-section-coordinates th{background:#0e2533;color:#cffafe;font-weight:700;}#arch-studio-region .arch-section-coordinates td{color:#e2e8f0;font-variant-numeric:tabular-nums;}'
+        + '#arch-studio-region .arch-section-coordinates th:nth-child(-n+2){width:13%;}#arch-studio-region .arch-section-coordinates tbody tr:nth-child(even){background:#1d3b48;}'
+        + '#arch-studio-region .arch-section-pages{margin-top:10px;font-size:12px;color:#cbd5e1;}#arch-studio-region .arch-section-panel .arch-section-footnote{margin-bottom:0;font-size:11px;}'
+        + '.theme-contrast #arch-studio-region .arch-section-panel,.theme-contrast #arch-studio-region .arch-section-profile{background:#000;border-color:#ffff00;}.theme-contrast #arch-studio-region .arch-section-panel button,.theme-contrast #arch-studio-region .arch-section-panel select{background:#000;color:#ffff00;border-color:#ffff00;}.theme-contrast #arch-studio-region .arch-section-panel button[aria-pressed=true]{background:#142314;border-color:#00ff00;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-studio-sidebar.arch-studio-sections{width:auto!important;max-height:min(54vh,440px);}#arch-studio-region .arch-section-panel{padding:10px;}#arch-studio-region .arch-section-picker select{font-size:16px;}}'
         + '#arch-studio-region .arch-studio-sidebar.arch-studio-filtering{width:clamp(310px,30vw,370px)!important;}'
         + '#arch-studio-region .arch-filter-panel{flex:none;min-width:0;border:1px solid #6485a4;border-radius:12px;padding:12px;background:linear-gradient(150deg,#21384d,#132438);color:#e2e8f0;}'
         + '#arch-studio-region .arch-filter-header,#arch-studio-region .arch-filter-group-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;}'
@@ -6070,7 +6254,7 @@ function __alloAST(k, fb) {
           { id: 'share', node: pillBtn('\uD83D\uDCE4 Share', showShare, 'rgba(129,140,248,.2)', '#818cf8', '#a5b4fc', function () { upd('showShare', !showShare); }) },
           { id: 'generate', node: pillBtn('\uD83C\uDFB2 Generate', showRandomGen, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showRandomGen', !showRandomGen); }) },
           { id: 'colors', node: pillBtn('\uD83C\uDFA8 Colors', showColorPicker, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { togglePaletteColors(true); }) },
-          { id: 'slice', node: pillBtn('\uD83D\uDD2C Slice', showSlice, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('showSlice', !showSlice); }) },
+          { id: 'slice', node: pillBtn('\uD83D\uDD2C Slice', showSlice, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', toggleSectionPanel) },
           { id: 'heatmap', node: pillBtn('\uD83D\uDD25 Heatmap', showHeatmap, 'rgba(239,68,68,.2)', '#ef4444', '#fca5a5', function () { upd('showHeatmap', !showHeatmap); }) },
           { id: 'replay', node: pillBtn('\u23EA Replay', showReplay, 'rgba(251,191,36,.2)', '#fbbf24', '#fde68a', function () { if (!showReplay) startReplay(); else exitReplay(); }) },
           { id: 'filter', node: pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', toggleFilterPanel) },
@@ -6092,9 +6276,10 @@ function __alloAST(k, fb) {
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : '') + (showReplay ? ' arch-studio-replay' : '') + (showFilter ? ' arch-studio-filtering' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : '') + (showReplay ? ' arch-studio-replay' : '') + (showFilter ? ' arch-studio-filtering' : '') + (showSlice ? ' arch-studio-sections' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
           renderReplayPanel(),
+          renderSectionPanel(),
           renderFilterPanel(),
           renderTemplateLibrary(),
           renderSchedulePanel(),
@@ -6530,34 +6715,6 @@ function __alloAST(k, fb) {
                   )
                 );
               })
-            )
-          ),
-
-          // ── Cross-Section Slicer ──
-          showSlice && el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD2C Cross-Section (Z)'),
-            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 4 } },
-              el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_show_all_z_cross_sections', 'Show all Z cross-sections'), 'aria-pressed': !sliceZSelected, onClick: function () { upd({ sliceZ: -1, sliceZSelected: false }); }, style: {
-                padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                background: !sliceZSelected ? 'rgba(34,211,238,.2)' : 'transparent', border: !sliceZSelected ? '1px solid #22d3ee' : '1px solid #334155', color: !sliceZSelected ? '#67e8f9' : '#94a3b8'
-              } }, 'All'),
-              sliceZLevels.map(function (z) {
-                return el('button', { key: z, type: 'button', 'aria-label': 'Show Z cross-section ' + z, 'aria-pressed': sliceZSelected && sliceZ === z, onClick: function () { upd({ sliceZ: z, sliceZSelected: true }); }, style: {
-                  padding: '3px 6px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                  background: sliceZSelected && sliceZ === z ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZSelected && sliceZ === z ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZSelected && sliceZ === z ? '#67e8f9' : '#94a3b8'
-                } }, 'Z=' + z);
-              })
-            ),
-            sliceZSelected && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '4px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 6 } },
-              '\uD83D\uDD2C Slice Z=' + sliceZ + ': ' + sliceBlocks.length + ' block' + (sliceBlocks.length !== 1 ? 's' : ''),
-              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: 3 } },
-                sliceBlocks.map(function (b, i) {
-                  var sh = shapes.find(function (s) { return s.id === (b.shape || 'block'); });
-                  return el('span', { key: i, style: { fontSize: 10, padding: '2px 5px', background: 'rgba(30,41,59,.8)', borderRadius: 4, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                    (sh ? sh.icon : '') + ' (' + b.x + ',' + b.y + ')'
-                  );
-                })
-              )
             )
           ),
 

@@ -2787,4 +2787,149 @@ test.describe('Architecture Studio — real WebGL', () => {
   });
 
 
+  test('section explorer navigates negative depths with a full preview and preserves the live build', async ({ page }, testInfo) => {
+    const blocks = [
+      { x: -1, y: 0, z: -2, shape: 'block', material: 'wood', color: '#92400e', rotation: 0 },
+      { x: 0, y: 0, z: -1, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 },
+      { x: 1, y: 1, z: -1, shape: 'ramp', material: 'wood', color: '#92400e', rotation: 90 },
+      { x: 2, y: 0, z: 3, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 }];
+    await page.setViewportSize({ width: 1280, height: 1100 });
+    await mount3d(page, { blocks, undoStack: [[]], redoStack: [[blocks[0]]], projectName: 'Section study', projectNotes: 'Keep notes', filterMaterial: 'wood', viewLayer: 0, sidebarCollapsed: true, soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:1060px}' });
+    const before = await page.evaluate(() => { const w = window as any; w.__sectionCanvas = document.querySelector('canvas[data-arch-gl]'); return { blocks: w.__bucket().blocks, undo: w.__bucket().undoStack, redo: w.__bucket().redoStack, name: w.__bucket().projectName, notes: w.__bucket().projectNotes }; });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=slice]').click();
+    const panel = page.locator('#arch-section-panel'), depth = panel.getByLabel('Depth (Z)', { exact: true });
+    await expect(page.locator('#arch-section-heading')).toBeFocused();
+    await expect(depth).toHaveValue('all');
+    await expect(panel.getByRole('img', { name: 'Front overview', exact: true })).toBeVisible();
+    await panel.getByRole('button', { name: 'Next section', exact: true }).click();
+    await expect(depth).toHaveValue('-2');
+    await expect(panel.getByRole('button', { name: 'Previous section', exact: true })).toBeDisabled();
+    await panel.getByRole('button', { name: 'Next section', exact: true }).click();
+    await expect(depth).toHaveValue('-1');
+    await expect(panel.locator('[data-arch-section-count]')).toHaveText('2 blocks in this section');
+    await expect(panel.locator('[data-arch-section-visible]')).toHaveText('0 visible in 3D');
+    await expect(panel.locator('[data-drawing-cell]')).toHaveCount(2);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(0);
+    await page.screenshot({ path: testInfo.outputPath('section-desktop.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Next section', exact: true }).click();
+    await expect(depth).toHaveValue('3');
+    await expect(panel.getByRole('button', { name: 'Next section', exact: true })).toBeDisabled();
+    await panel.getByRole('button', { name: 'Previous section', exact: true }).click();
+    await panel.getByRole('button', { name: 'Show all Z cross-sections', exact: true }).click();
+    await expect(depth).toHaveValue('all');
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(1);
+    await depth.selectOption('-1');
+    await panel.getByRole('button', { name: 'Close cross-section explorer', exact: true }).click();
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=slice]')).toBeFocused();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(1);
+    await page.keyboard.press('Enter');
+    await expect(depth).toHaveValue('-1');
+    expect(await page.evaluate(() => { const w = window as any; return { blocks: w.__bucket().blocks, undo: w.__bucket().undoStack, redo: w.__bucket().redoStack, name: w.__bucket().projectName, notes: w.__bucket().projectNotes }; })).toEqual(before);
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ filterMaterial: 'wood', viewLayer: 0 });
+    expect(await page.evaluate(() => (window as any).__sectionCanvas === document.querySelector('canvas[data-arch-gl]'))).toBe(true);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('section explorer follows replay and handles empty restored depths without changing the floor grid', async ({ page }) => {
+    const live = [{ x: 0, y: 0, z: 1, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 }];
+    const past = [{ ...live[0], z: -3, material: 'wood', color: '#92400e' }];
+    await mount3d(page, { blocks: live, undoStack: [past], showReplay: true, replayStep: 0, sliceZ: 1, sliceZSelected: true, sidebarCollapsed: true, soundEnabled: false });
+    await page.getByRole('button', { name: 'All tools', exact: true }).click();
+    await page.locator('#arch-tool-browser').getByRole('searchbox').fill('section');
+    await page.locator('#arch-tool-browser [data-arch-tool=slice]').click();
+    const panel = page.locator('#arch-section-panel'), depth = panel.getByLabel('Depth (Z)', { exact: true });
+    await expect(page.locator('#arch-section-heading')).toBeFocused();
+    await expect(panel.locator('.arch-section-frame')).toHaveText('Replay step 1 of 2');
+    await expect(depth).toHaveValue('1');
+    await expect(panel.locator('.arch-section-empty')).toContainText('No blocks at this depth');
+    await expect(depth.locator('option')).toHaveText(['All depths', 'Z=-3 · 1 block', 'Z=1 · 0 blocks']);
+    await depth.focus(); await page.keyboard.press('Escape');
+    await expect(panel).toBeVisible();
+    await panel.getByRole('button', { name: 'Previous section', exact: true }).click();
+    await expect(panel.locator('[data-block="0,0,-3"]')).toHaveCount(1);
+    await page.locator('#arch-replay-panel').getByRole('slider').focus(); await page.keyboard.press('End');
+    await expect(panel.locator('.arch-section-frame')).toHaveText('Replay step 2 of 2');
+    await expect(panel.locator('[data-arch-section-count]')).toHaveText('0 blocks in this section');
+    await page.getByRole('button', { name: 'Floor Grid', exact: true }).click();
+    await expect(panel.locator('.arch-section-grid-note')).toContainText('full editing floor');
+    await expect(page.locator('[data-arch-cell="0,0,1"]')).toHaveAttribute('aria-label', /stone/);
+    await page.locator('[data-arch-cell="0,0,1"]').focus(); await page.keyboard.press('Enter');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual(live);
+    await panel.getByRole('button', { name: 'Next section', exact: true }).focus(); await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=slice]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ showReplay: true, replayStep: 1, blocks: live, undoStack: [past] });
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('section explorer pages readable coordinates and resets the page for another depth', async ({ page }) => {
+    const blocks = Array.from({ length: 70 }, (_, i) => ({ x: i - 35, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 }));
+    blocks.push({ ...blocks[0], z: 2 });
+    await mount3d(page, { blocks, showSlice: true, sliceZSelected: true, sliceZ: 0, soundEnabled: false });
+    const panel = page.locator('#arch-section-panel');
+    await expect(panel.locator('table')).toHaveCount(0);
+    await panel.locator('summary').click();
+    await expect(panel.locator('tbody tr')).toHaveCount(48);
+    await panel.getByRole('button', { name: 'Next coordinate page', exact: true }).click();
+    await expect(panel.locator('tbody tr')).toHaveCount(22);
+    await expect(panel.locator('tbody tr').first().locator('td').first()).toHaveText('13');
+    await expect(panel.getByRole('button', { name: 'Next coordinate page', exact: true })).toBeDisabled();
+    await expect(panel.locator('#arch-section-page')).toBeFocused();
+    await panel.getByLabel('Depth (Z)', { exact: true }).selectOption('2');
+    await expect(panel.locator('tbody tr')).toHaveCount(1);
+    await expect(panel.locator('tbody tr').first().locator('td').first()).toHaveText('-35');
+    await panel.getByLabel('Depth (Z)', { exact: true }).selectOption('0');
+    await expect(panel.locator('tbody tr')).toHaveCount(48);
+    await expect(panel.locator('tbody tr').first().locator('td').first()).toHaveText('-35');
+    await panel.locator('summary').click();
+    await expect(panel.locator('table')).toHaveCount(0);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual(blocks);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('section explorer has reachable phone controls and accessible drawing and table themes', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 960 });
+    await mount3d(page, { blocks: tower(), soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=slice]').click();
+    const panel = page.locator('#arch-section-panel');
+    await panel.getByRole('button', { name: 'Next section', exact: true }).click();
+    const sizes = await panel.locator('button,select,summary').evaluateAll(els => els.filter(el => el.getClientRects().length).map(el => { const r = el.getBoundingClientRect(); return { width: r.width, height: r.height, left: r.left, right: r.right }; }));
+    expect(sizes.filter(r => r.width < 44 || r.height < 44 || r.left < 0 || r.right > 320)).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath('section-controls-phone.png'), fullPage: true });
+    await panel.locator('.arch-section-figure').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath('section-drawing-phone.png'), fullPage: true });
+    await panel.locator('summary').click();
+    await expect(panel.locator('tbody tr')).toHaveCount(7);
+    expect(await panel.locator('summary').evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+    await panel.locator('summary').click();
+    await page.locator('[data-arch-stage]').scrollIntoViewIfNeeded();
+    expect(await page.locator('canvas[data-arch-gl]').evaluate(el => { const r = el.getBoundingClientRect(); return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === el; })).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('section-model-phone.png'), fullPage: true });
+    await panel.locator('summary').click();
+
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.setViewportSize({ width: 1280, height: 1100 });
+    await page.addStyleTag({ content: '#wrap{height:1060px}' });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      const violations = await page.evaluate(async () => {
+        const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+        return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+      });
+      expect(violations, theme).toEqual([]);
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
+    await panel.getByRole('button', { name: 'Next section', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(panel.getByLabel('Depth (Z)', { exact: true })).toHaveValue('1');
+    await expect(page.locator('#arch-section-heading')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=slice]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+
 });
