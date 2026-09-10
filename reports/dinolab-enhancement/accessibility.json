@@ -1,0 +1,47 @@
+[
+  {
+    "theme": "theme-default",
+    "tab": "notes",
+    "violations": []
+  },
+  {
+    "theme": "theme-default",
+    "tab": "compare",
+    "violations": []
+  },
+  {
+    "theme": "theme-default",
+    "tab": "explore",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "tab": "notes",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "tab": "compare",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "tab": "explore",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "tab": "notes",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "tab": "compare",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "tab": "explore",
+    "violations": []
+  }
+]

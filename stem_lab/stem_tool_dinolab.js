@@ -6128,6 +6128,67 @@ window.StemLab = window.StemLab || {
     }
     return { active: active, options: options, directFeatherEvidence: directFeatherEvidence, directScaleEvidence: directScaleEvidence, avianEligible: avianEligible };
   }
+
+  // Cache searchable text once; paging bounds the number of rendered cards.
+  var DINO_CATALOG_ORDER = DINOS.slice().sort(function (a, b) { return a.common.localeCompare(b.common); });
+  function catalogText(value) {
+    return String(value == null ? '' : value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+  var DINO_SEARCH = {};
+  DINOS.forEach(function (dn) {
+    DINO_SEARCH[dn.id] = catalogText([dn.common, dn.name, dn.meaning, dn.clade, dn.region, dn.formation, dn.epoch, dn.diet, dn.group, dn.blurb].concat(dn.traits).join(' '));
+  });
+  var NOTE_FIELDS = [
+    { id: 'question', label: 'My question', hint: 'What would you like to find out about this animal?' },
+    { id: 'observation', label: 'Evidence I noticed', hint: 'Describe a fossil, a trait, or something you observed in the model.' },
+    { id: 'inference', label: 'My explanation', hint: 'What might the evidence mean? Explain how it supports your idea.' },
+    { id: 'uncertainty', label: 'What I still wonder', hint: 'What cannot be concluded yet? What other evidence would help?' }
+  ];
+  function specimenMap(value) {
+    var out = {};
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return out;
+    DINOS.forEach(function (dn) { if (Object.prototype.hasOwnProperty.call(value, dn.id) && value[dn.id] === true) out[dn.id] = true; });
+    return out;
+  }
+  function notebookMap(value) {
+    var out = {};
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return out;
+    DINOS.forEach(function (dn) {
+      if (!Object.prototype.hasOwnProperty.call(value, dn.id)) return;
+      var raw = value[dn.id];
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return;
+      var note = {};
+      NOTE_FIELDS.forEach(function (field) { note[field.id] = typeof raw[field.id] === 'string' ? raw[field.id].slice(0, 2000) : ''; });
+      if (NOTE_FIELDS.some(function (field) { return note[field.id].length; })) out[dn.id] = note;
+    });
+    return out;
+  }
+  function catalogList(state) {
+    var saved = specimenMap(state.savedSpecimens), opened = specimenMap(state.seen);
+    var terms = catalogText(state.query).trim().split(/\s+/).filter(Boolean);
+    return DINO_CATALOG_ORDER.filter(function (dn) {
+      return (!state.filterPeriod || state.filterPeriod === 'all' || dn.period === state.filterPeriod) &&
+        (!state.filterDiet || state.filterDiet === 'all' || dn.diet === state.filterDiet) &&
+        (!state.filterContinent || state.filterContinent === 'all' || continentOf(dn.region) === state.filterContinent) &&
+        (!state.filterGroup || state.filterGroup === 'all' || dn.group === state.filterGroup) &&
+        (state.collectionView !== 'saved' || saved[dn.id]) &&
+        (state.collectionView !== 'unseen' || !opened[dn.id]) &&
+        terms.every(function (term) { return DINO_SEARCH[dn.id].indexOf(term) >= 0; });
+    }).sort(function (a, b) {
+      var delta = state.sortBy === 'time' ? b.myaHi - a.myaHi : state.sortBy === 'length' ? b.lengthM - a.lengthM : state.sortBy === 'weight' ? b.weightKg - a.weightKg : 0;
+      return delta || a.common.localeCompare(b.common);
+    });
+  }
+  function notebookText(notes) {
+    var lines = ['DINO LAB | FIELD NOTEBOOK', 'Student observations and explanations', 'Catalog measurements are estimates. Model observations are not direct observations of living extinct animals.', ''];
+    DINO_CATALOG_ORDER.forEach(function (dn) {
+      var note = notes[dn.id]; if (!note) return;
+      lines.push(dn.common + ' (' + dn.name + ')', dn.epoch + ' | ' + fmtMya(dn) + ' | ' + dn.region, 'Catalog evidence: ' + dn.howKnow, 'Catalog uncertainty: ' + dn.uncertain, '');
+      NOTE_FIELDS.forEach(function (field) { lines.push(field.label + ':', note[field.id] || '(not recorded)', ''); });
+      lines.push('---', '');
+    });
+    return lines.join('\n');
+  }
   var DinoFieldStation3DStable = null;
 
   window.StemLab.registerTool('dinoLab', {
@@ -6297,7 +6358,49 @@ window.StemLab = window.StemLab || {
       var filterDiet = d.filterDiet || 'all';
       var sortBy = d.sortBy || 'name';
       var selected = d.selected || null;
-      var seen = d.seen || {};
+
+      var seen = specimenMap(d.seen);
+      var savedSpecimens = specimenMap(d.savedSpecimens);
+      var notebook = notebookMap(d.notebook);
+      var actionStyle = { padding: '9px 12px', minHeight: 40, borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 12, fontWeight: 700, cursor: 'pointer' };
+      function focusSoon(id) {
+        if (typeof window === 'undefined') return;
+        window.setTimeout(function () { var node = document.getElementById(id); if (node) node.focus(); }, 0);
+      }
+      function toggleSpecimen(dn) {
+        var next = Object.assign({}, savedSpecimens);
+        if (next[dn.id]) delete next[dn.id]; else next[dn.id] = true;
+        upd('savedSpecimens', next);
+        announceToSR(dn.common + (next[dn.id] ? ' saved to your collection.' : ' removed from your collection.'));
+      }
+      function openNotebook(dn) {
+        upd({ tab: 'notes', notebookSpecies: dn.id });
+        focusSoon('dino-note-question');
+        announceToSR('Field notebook for ' + dn.common);
+      }
+      function specimenActions(dn) {
+        return el('div', { className: 'dinolab-specimen-actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7, margin: '10px 0' } },
+          el('button', { type: 'button', style: actionStyle, 'aria-pressed': !!savedSpecimens[dn.id], onClick: function () { toggleSpecimen(dn); } }, savedSpecimens[dn.id] ? __alloT('stem.dinolab.saved_specimen', 'Saved to collection') : __alloT('stem.dinolab.save_specimen', 'Save specimen')),
+          el('button', { type: 'button', style: actionStyle, onClick: function () { openNotebook(dn); } }, __alloT('stem.dinolab.write_field_note', 'Write a field note')),
+          el('button', { type: 'button', style: actionStyle, onClick: function () {
+            var patch = { tab: 'field3d', selected: dn.id, field3dSelected: dn.id, field3dDrawerOpen: false, field3dFocusMode: false };
+            if ((d.field3dSelected || d.selected) !== dn.id || (d.field3dScanSpecies && d.field3dScanSpecies !== dn.id)) {
+              Object.assign(patch, { field3dWorkflowStarted: false, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: dn.id, field3dAssemblyPlaced: {}, field3dAssemblySpecies: dn.id, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: dn.id });
+            }
+            upd(patch);
+          } }, __alloT('stem.dinolab.inspect_in_3d', 'Inspect in 3D'))
+        );
+      }
+      function catalogGlyph(dn) {
+        var shape = dn.group === 'sauropod' ? 'M8 52 Q34 48 48 34 Q65 25 84 36 Q96 42 105 19 L108 8 Q112 3 124 8 L127 14 L116 17 Q116 41 101 49 L99 64 L92 64 L89 49 L64 49 L60 64 L52 64 L53 45 Q33 53 8 52Z' :
+          dn.group === 'ornithischian' ? 'M8 42 L42 33 Q62 19 90 29 L110 36 L128 33 L142 43 L130 48 L112 46 L102 48 L101 63 L93 63 L90 47 L66 47 L61 63 L53 63 L52 44Z' :
+          dn.group === 'other' ? 'M8 44 Q37 30 69 34 L85 26 L108 30 L139 39 L113 42 L98 40 L89 47 L99 55 L90 58 L76 47 L59 46 L42 58 L34 54 L44 42 Q22 42 8 44Z' :
+          'M8 27 Q32 38 55 37 L72 25 L95 17 L100 9 L126 10 L134 17 L132 26 L111 28 L99 37 L110 42 L104 46 L92 39 L82 46 L86 56 L99 62 L83 64 L73 55 L69 45 L59 47 L54 59 L64 64 L46 64 L45 56 L49 42 Q23 37 8 27Z';
+        return el('svg', { viewBox: '0 0 150 72', width: '100%', height: 66, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', color: T.text, opacity: 0.85 } },
+          el('path', { d: shape, fill: 'currentColor' }),
+          el('path', { d: 'M8 68H142', stroke: pColor(dn.period), strokeWidth: 2, strokeDasharray: '3 4' })
+        );
+      }
 
       function badge(label, color) {
         return el('span', { style: { display: 'inline-block', fontSize: 11, letterSpacing: '0.01em', fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: color + '22', color: T.text, border: '1px solid ' + color + '55', marginRight: 6, marginBottom: 4, whiteSpace: 'nowrap' } }, label);
@@ -6489,9 +6592,11 @@ window.StemLab = window.StemLab || {
         if (!dn) return null;
         return panel([
           el('div', { key: 'hd', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, el('div', { key: 'nm', style: { fontSize: 20, fontWeight: 800 } }, dn.common), el('div', { key: 'acts', style: { display: 'flex', gap: 6 } }, el('button', { onClick: function () { upd({ tab: 'compare', compareA: dn.id }); }, style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', color: T.soft, cursor: 'pointer' } }, '⚖️ Compare'), el('button', { onClick: function () { printCard(dn); }, 'aria-label': 'Print a trading card for ' + dn.common, style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', color: T.soft, cursor: 'pointer' } }, '🖨️ Card'))),
+          el('div', { key: 'actions' }, specimenActions(dn)),
           el('div', { key: 'sci', style: { fontSize: 12, fontStyle: 'italic', color: T.soft } }, dn.name),
           el('div', { key: 'say', style: { fontSize: 12, color: T.soft, marginBottom: 8 } }, 'Say it: ' + dn.say + '  ·  Means: "' + dn.meaning + '"'),
           el('div', { key: 'bdg', style: { marginBottom: 8 } }, badge(periodName(dn.period) + ' · ' + fmtMya(dn), pColor(dn.period)), badge((DIET_ICON[dn.diet] || '') + ' ' + cap(dn.diet), dColor(dn.diet)), badge(GROUP_LABEL[dn.group] || cap(dn.group), '#38bdf8')),
+          el('div', { key: 'estimates', style: { fontSize: 11, color: T.soft, marginBottom: 8 } }, __alloT('stem.dinolab.catalog_estimates', 'Size values are approximate reconstructions.')),
           el('p', { key: 'bl', style: { fontSize: 13.5, lineHeight: 1.55, margin: '0 0 10px' } }, dn.blurb),
           el('div', { key: 'st' }, statRow('Length', fmtLength(dn.lengthM)), statRow('Height', fmtLength(dn.heightM)), statRow('Weight', fmtWeight(dn.weightKg)), statRow('When', dn.epoch + ' (' + fmtMya(dn) + ')'), statRow('Where', dn.region), statRow('Rock unit', dn.formation + ' Formation'), statRow('Named', dn.named + ' by ' + dn.namedBy)),
           el('div', { key: 'scale', style: { marginTop: 10 } }, el('div', { style: { fontSize: 12, fontWeight: 700, color: T.soft, marginBottom: 6 } }, 'Size next to a person'), (function () {
@@ -6510,49 +6615,90 @@ window.StemLab = window.StemLab || {
       }
 
       function renderExplore() {
-        var list = DINOS.slice();
-        var q = query.trim().toLowerCase();
-        var filterContinent = d.filterContinent || 'all';
-        function continentOf(region) { var i = region.indexOf(' ('); return i === -1 ? region : region.slice(0, i); }
-        list = list.filter(function (dn) {
-          if (filterPeriod !== 'all' && dn.period !== filterPeriod) return false;
-          if (filterDiet !== 'all' && dn.diet !== filterDiet) return false;
-          if (filterContinent !== 'all' && continentOf(dn.region) !== filterContinent) return false;
-          if (q) { var hay = (dn.common + ' ' + dn.name + ' ' + dn.meaning + ' ' + dn.clade + ' ' + dn.region).toLowerCase(); if (hay.indexOf(q) === -1) return false; }
-          return true;
-        });
-        list.sort(function (a, b) {
-          if (sortBy === 'name') return a.common < b.common ? -1 : 1;
-          if (sortBy === 'time') return b.myaHi - a.myaHi;
-          if (sortBy === 'length') return b.lengthM - a.lengthM;
-          if (sortBy === 'weight') return b.weightKg - a.weightKg;
-          return 0;
-        });
-        var periodPills = [pill(filterPeriod === 'all', 'All periods', function () { upd('filterPeriod', 'all'); }, 'p_all')];
-        PERIODS.forEach(function (p) { if (p.id === 'paleogene') return; periodPills.push(pill(filterPeriod === p.id, p.name, function () { upd('filterPeriod', p.id); }, 'p_' + p.id)); });
-        var dietPills = [pill(filterDiet === 'all', 'All diets', function () { upd('filterDiet', 'all'); }, 'di_all')];
-        ['carnivore', 'herbivore', 'omnivore', 'piscivore'].forEach(function (di) { dietPills.push(pill(filterDiet === di, (DIET_ICON[di] || '') + ' ' + cap(di), function () { upd('filterDiet', di); }, 'di_' + di)); });
-        var continents = []; DINOS.forEach(function (dn) { var c = continentOf(dn.region); if (continents.indexOf(c) === -1) continents.push(c); }); continents.sort();
-        var continentPills = [pill(filterContinent === 'all', 'All places', function () { upd('filterContinent', 'all'); }, 'c_all')];
-        continents.forEach(function (c) { continentPills.push(pill(filterContinent === c, c, function () { upd('filterContinent', c); }, 'c_' + c.replace(/\W/g, ''))); });
-        var controls = el('div', { style: { marginBottom: 12 } },
-          el('input', { type: 'text', value: query, placeholder: t('stem.dinolab.search_by_name_meaning_clade_or_place', 'Search by name, meaning, clade, or place...'), 'aria-label': t('stem.dinolab.search_dinosaurs', 'Search dinosaurs'), onChange: function (e) { upd('query', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }),
-          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_filter_by_geological_period', 'Filter by geological period'), style: { marginBottom: 6 } }, periodPills),
-          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_filter_by_diet', 'Filter by diet'), style: { marginBottom: 6 } }, dietPills),
-          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_filter_by_location', 'Filter by location'), style: { marginBottom: 6 } }, continentPills),
-          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_sort_dinosaurs', 'Sort dinosaurs'), style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } }, el('span', { 'aria-hidden': 'true', style: { fontSize: 12, color: T.soft } }, 'Sort:'), pill(sortBy === 'name', 'A to Z', function () { upd('sortBy', 'name'); }, 's_name'), pill(sortBy === 'time', 'Oldest first', function () { upd('sortBy', 'time'); }, 's_time'), pill(sortBy === 'length', 'Longest', function () { upd('sortBy', 'length'); }, 's_len'), pill(sortBy === 'weight', 'Heaviest', function () { upd('sortBy', 'weight'); }, 's_wt'), el('button', { key: 'surprise', onClick: function () { var n = (d.surpriseN || 0) + 1; var pick = DINOS[(n * 48271) % DINOS.length]; var ns = {}; for (var sk in seen) { ns[sk] = seen[sk]; } ns[pick.id] = true; upd({ selected: pick.id, seen: ns, surpriseN: n }); announceToSR('Surprise: ' + pick.common); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: 'transparent', color: T.text } }, '🎲 Surprise me'), el('span', { style: { marginLeft: 'auto', fontSize: 12, color: T.soft } }, list.length + ' of ' + DINOS.length))
-        );
-        var grid = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 } }, list.map(function (dn) {
-          return el('button', { key: dn.id, onClick: function () { markSeen(dn.id); }, 'aria-label': 'Open ' + dn.common, style: { textAlign: 'left', cursor: 'pointer', background: T.panel, border: '1px solid ' + (selected === dn.id ? '#22c55e' : T.border), borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.30)', padding: 12, color: T.text, position: 'relative' } },
-            el('div', { style: { fontSize: 26, marginBottom: 4 } }, dn.diet === 'carnivore' ? '🦖' : (dn.group === 'sauropod' ? '🦕' : '🦴')),
-            el('div', { style: { fontWeight: 700, fontSize: 14 } }, dn.common),
-            el('div', { style: { fontSize: 11, color: T.soft, fontStyle: 'italic', marginBottom: 6 } }, dn.meaning),
-            el('div', null, badge(periodName(dn.period), pColor(dn.period)), badge(cap(dn.diet), dColor(dn.diet))),
-            seen[dn.id] ? el('span', { 'aria-hidden': 'true', title: t('stem.dinolab.seen', 'Seen'), style: { position: 'absolute', top: 8, right: 10, fontSize: 11, fontWeight: 800, color: T.text } }, '✓') : null
-          );
-        }));
-        var detail = selected ? renderDetail(byId(selected)) : el('div', { style: { color: T.soft, fontSize: 13, padding: '20px 4px' } }, 'Pick a dinosaur to see its full file, including what we are still unsure about.');
-        return el('div', { className: 'dinolab-explore-layout', style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16 } }, el('div', null, controls, grid), el('div', null, detail));
+        var list = catalogList(d);
+        var pageSize = 24, totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+        var page = Math.max(0, Math.min(totalPages - 1, Math.floor(numVal(d.catalogPage, 0))));
+        var visible = list.slice(page * pageSize, (page + 1) * pageSize);
+        var collection = d.collectionView === 'saved' || d.collectionView === 'unseen' ? d.collectionView : 'all';
+        function filter(key, value) { var patch = { catalogPage: 0 }; patch[key] = value; upd(patch); }
+        function reset() { upd({ query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', filterGroup: 'all', collectionView: 'all', catalogPage: 0 }); }
+        function choose(dn) { markSeen(dn.id); focusSoon('dino-specimen-heading'); }
+        function selectFilter(id, label, value, items) {
+          return el('div', { key: id, style: { display: 'grid', gap: 5, fontSize: 11, fontWeight: 700, color: T.soft, minWidth: 0 } }, el('label', { htmlFor: 'dino-filter-' + id }, label),
+            el('select', { id: 'dino-filter-' + id, value: value || 'all', onChange: function (event) { filter(id, event.target.value); }, style: Object.assign({}, actionStyle, { width: '100%', minWidth: 0, fontWeight: 500 }) },
+              items.map(function (item) { return el('option', { key: item[0], value: item[0] }, item[1]); })));
+        }
+        var periods = [['all', __alloT('stem.dinolab.all_periods', 'All periods')]];
+        var diets = [['all', __alloT('stem.dinolab.all_diets', 'All diets')]];
+        var places = [['all', __alloT('stem.dinolab.all_places', 'All places')]];
+        var groups = [['all', __alloT('stem.dinolab.all_groups', 'All groups')]];
+        Object.keys(PERIOD_COLOR).forEach(function (id) { if (DINOS.some(function (dn) { return dn.period === id; })) periods.push([id, periodName(id)]); });
+        Object.keys(DIET_COLOR).forEach(function (id) { if (DINOS.some(function (dn) { return dn.diet === id; })) diets.push([id, cap(id)]); });
+        Array.from(new Set(DINOS.map(function (dn) { return continentOf(dn.region); }))).sort().forEach(function (name) { places.push([name, name]); });
+        Object.keys(GROUP_LABEL).forEach(function (id) { groups.push([id, GROUP_LABEL[id]]); });
+        var controls = el('div', { className: 'dinolab-catalog-controls', style: { background: T.panel, border: '1px solid ' + T.border, borderRadius: 14, padding: 14, marginBottom: 12 } },
+          el('h2', { style: { margin: '0 0 4px', fontSize: 20 } }, __alloT('stem.dinolab.species_field_guide', 'Species field guide')),
+          el('p', { style: { margin: '0 0 12px', color: T.soft, fontSize: 12, lineHeight: 1.5 } }, __alloT('stem.dinolab.catalog_intro', 'Follow a trait, a place, or a question. Save specimens to revisit as your ideas develop.')),
+          el('input', { type: 'search', value: query, placeholder: __alloT('stem.dinolab.catalog_search_hint', 'Try feathers, Morrison, or Mongolia…'), 'aria-label': t('stem.dinolab.search_dinosaurs', 'Search dinosaurs'), onChange: function (e) { filter('query', e.target.value); }, style: Object.assign({}, actionStyle, { width: '100%', boxSizing: 'border-box', fontSize: 14, marginBottom: 12, fontWeight: 400 }) }),
+          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.catalog_collection', 'Specimen collection'), style: { marginBottom: 10 } },
+            pill(collection === 'all', __alloT('stem.dinolab.all_specimens', 'All specimens'), function () { filter('collectionView', 'all'); }, 'all'),
+            pill(collection === 'saved', __alloT('stem.dinolab.saved_collection', 'Saved') + ' (' + Object.keys(savedSpecimens).length + ')', function () { filter('collectionView', 'saved'); }, 'saved'),
+            pill(collection === 'unseen', __alloT('stem.dinolab.unexplored', 'Unexplored'), function () { filter('collectionView', 'unseen'); }, 'unseen')),
+          el('div', { className: 'dinolab-catalog-filters', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10 } },
+            el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_filter_by_geological_period', 'Filter by geological period') }, selectFilter('filterPeriod', __alloT('stem.dinolab.period_label', 'Period'), filterPeriod, periods)),
+            el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_filter_by_diet', 'Filter by diet') }, selectFilter('filterDiet', __alloT('stem.dinolab.diet_label', 'Diet'), filterDiet, diets)),
+            el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_filter_by_location', 'Filter by location') }, selectFilter('filterContinent', __alloT('stem.dinolab.location_label', 'Fossil location'), d.filterContinent, places)),
+            selectFilter('filterGroup', __alloT('stem.dinolab.group_label', 'Animal group'), d.filterGroup, groups)),
+          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_sort_dinosaurs', 'Sort dinosaurs'), style: { display: 'flex', gap: 8, alignItems: 'end', flexWrap: 'wrap', marginTop: 12 } },
+            selectFilter('sortBy', __alloT('stem.dinolab.sort_label', 'Sort'), sortBy, [['name', 'A to Z'], ['time', 'Oldest first'], ['length', 'Longest'], ['weight', 'Heaviest']]),
+            el('button', { type: 'button', style: actionStyle, disabled: !list.length, onClick: function () {
+              if (!list.length) return;
+              var n = Math.max(0, Math.floor(numVal(d.surpriseN, 0))) + 1;
+              var candidates = list.filter(function (dn) { return dn.id !== selected; });
+              var pick = (candidates.length ? candidates : list)[(n * 48271) % (candidates.length || list.length)];
+              var nextSeen = Object.assign({}, seen); nextSeen[pick.id] = true;
+              upd({ selected: pick.id, seen: nextSeen, surpriseN: n, catalogPage: Math.floor(list.indexOf(pick) / pageSize) });
+              focusSoon('dino-specimen-heading'); announceToSR('Surprise: ' + pick.common);
+            } }, __alloT('stem.dinolab.surprise_filtered', 'Surprise me')),
+            el('button', { type: 'button', style: actionStyle, onClick: reset }, __alloT('stem.dinolab.reset_filters', 'Reset filters'))));
+        var grid = el('div', { className: 'dinolab-species-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(155px,1fr))', gap: 10 } },
+          visible.map(function (dn) {
+            return el('button', { key: dn.id, type: 'button', 'data-dino-card': dn.id, onClick: function () { choose(dn); }, 'aria-label': 'Open ' + dn.common + (savedSpecimens[dn.id] ? ', saved' : '') + (seen[dn.id] ? ', explored' : ''), 'aria-pressed': selected === dn.id, style: { textAlign: 'left', cursor: 'pointer', minWidth: 0, background: T.panel, border: (selected === dn.id ? '2px solid #22c55e' : '1px solid ' + T.border), borderRadius: 12, padding: 12, color: T.text, overflowWrap: 'anywhere' } },
+              el('div', { style: { background: 'linear-gradient(135deg,' + pColor(dn.period) + '20,transparent)', borderRadius: 8, marginBottom: 8 } }, catalogGlyph(dn)),
+              el('div', { style: { fontSize: 9, color: T.soft, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 } }, (GROUP_LABEL[dn.group] || dn.group) + ' · ' + __alloT('stem.dinolab.group_icon', 'group silhouette')),
+              el('div', { style: { fontSize: 14, fontWeight: 800, marginBottom: 6 } }, dn.common),
+              el('div', { style: { fontSize: 11, color: T.soft, marginBottom: 6 } }, fmtMya(dn) + ' · ' + fmtLength(dn.lengthM)),
+              el('div', null, badge(periodName(dn.period), pColor(dn.period)), badge(cap(dn.diet), dColor(dn.diet))),
+              el('div', { style: { color: T.soft, fontSize: 10, minHeight: 14, marginTop: 4 } }, savedSpecimens[dn.id] ? '★ ' + __alloT('stem.dinolab.saved_collection', 'Saved') : seen[dn.id] ? '✓ ' + __alloT('stem.dinolab.explored', 'Explored') : '')
+            );
+          }));
+        var resultSummary = el('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: T.soft, fontSize: 12, margin: '12px 0' } }, list.length + ' ' + __alloT('stem.dinolab.matching_specimens', 'matching specimens') + (list.length ? ' · ' + (page * pageSize + 1) + '–' + Math.min(list.length, (page + 1) * pageSize) : ''));
+        function changePage(next) { upd('catalogPage', next); focusSoon('dino-catalog-results'); }
+        var pagination = totalPages > 1 ? el('nav', { 'aria-label': __alloT('stem.dinolab.catalog_pages', 'Species pages'), style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginTop: 14 } },
+          el('button', { type: 'button', style: actionStyle, disabled: page === 0, onClick: function () { changePage(page - 1); } }, __alloT('stem.dinolab.previous_page', 'Previous page')),
+          el('span', { style: { color: T.soft, fontSize: 12 } }, (page + 1) + ' / ' + totalPages),
+          el('button', { type: 'button', style: actionStyle, disabled: page === totalPages - 1, onClick: function () { changePage(page + 1); } }, __alloT('stem.dinolab.next_page', 'Next page'))) : null;
+        var dn = byId(selected);
+        var detail = dn ? el('section', { 'aria-labelledby': 'dino-specimen-heading' },
+          el('h2', { id: 'dino-specimen-heading', tabIndex: -1, style: { margin: '0 0 10px', fontSize: 12, color: T.soft, letterSpacing: '.05em', textTransform: 'uppercase' } }, __alloT('stem.dinolab.specimen_file', 'Specimen file') + ' · ' + dn.common),
+          el('button', { type: 'button', style: Object.assign({}, actionStyle, { marginBottom: 10 }), onClick: function () { focusSoon('dino-catalog-results'); } }, __alloT('stem.dinolab.back_to_results', 'Back to results')),
+          !list.some(function (item) { return item.id === dn.id; }) ? el('p', { style: { color: T.soft, fontSize: 12 } }, __alloT('stem.dinolab.outside_filters', 'This open specimen is outside your current filters.')) : null,
+          renderDetail(dn)) : panel([
+            el('h3', { key: 'heading', style: { margin: '0 0 8px', fontSize: 18 } }, __alloT('stem.dinolab.follow_evidence', 'Follow the evidence')),
+            el('p', { key: 'intro', style: { color: T.soft, fontSize: 13, lineHeight: 1.6 } }, __alloT('stem.dinolab.specimen_empty', 'Open a specimen to explore its traits, fossil evidence, and unanswered questions.')),
+            el('ol', { key: 'steps', style: { paddingLeft: 20, color: T.soft, fontSize: 13, lineHeight: 1.8 } },
+              el('li', null, __alloT('stem.dinolab.guide_observe', 'Notice a distinctive trait.')),
+              el('li', null, __alloT('stem.dinolab.guide_explain', 'Ask how the fossils support an explanation.')),
+              el('li', null, __alloT('stem.dinolab.guide_record', 'Write what you know and what you still wonder.'))),
+            el('button', { key: 'start', type: 'button', style: actionStyle, onClick: function () { choose(byId('tyrannosaurus')); } }, __alloT('stem.dinolab.meet_trex', 'Meet T. rex'))
+          ]);
+        return el('div', { className: 'dinolab-explore-layout', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.25fr) minmax(0,1fr)', gap: 18, alignItems: 'start' } },
+          el('div', { style: { minWidth: 0 } }, controls, el('div', { id: 'dino-catalog-results', tabIndex: -1 }, resultSummary, list.length ? grid : panel([
+            el('h3', { key: 'h', style: { margin: '0 0 6px' } }, __alloT('stem.dinolab.no_matches', 'No specimens match yet')),
+            el('p', { key: 'p', style: { color: T.soft, fontSize: 13 } }, collection === 'saved' && !Object.keys(savedSpecimens).length ? __alloT('stem.dinolab.save_first_hint', 'Open a species file and choose Save specimen to begin your collection.') : __alloT('stem.dinolab.change_filters_hint', 'Try a broader search or reset the filters to see the full collection.')),
+            el('button', { key: 'b', type: 'button', style: actionStyle, onClick: reset }, __alloT('stem.dinolab.show_all_specimens', 'Show all specimens'))
+          ]), pagination)),
+          el('div', { className: 'dinolab-specimen-file' + (dn ? ' is-open' : ''), style: { minWidth: 0, position: 'sticky', top: 12, maxHeight: 'calc(100vh - 36px)', overflowY: 'auto', padding: 3 } }, detail));
       }
 
       function renderTimeline() {
@@ -6570,7 +6716,7 @@ window.StemLab = window.StemLab || {
             members.length ? el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, members.map(function (dn) { return el('button', { key: dn.id, onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, 'aria-label': 'Open ' + dn.common, style: { fontSize: 11, padding: '3px 9px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: T.deeper, color: T.text } }, dn.common); })) : el('div', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, 'No non-bird dinosaurs after the asteroid. Birds carry on.')
           );
         });
-        return el('div', null, sectionTitle('⏳', 'Walk the Mesozoic', 'The "age of dinosaurs" spans more than 180 million years. Bar width shows how long each period lasted.'), panel(rows), panel([el('div', { key: 't', style: { fontSize: 13, fontWeight: 700, marginBottom: 4 } }, '🤯 Deep time check'), el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.55 } }, 'Stegosaurus (about 150 million years ago) lived closer in time to you than to Tyrannosaurus (about 66 million years ago).')], { marginTop: 12, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.35)' }));
+        return el('div', null, sectionTitle('⏳', 'Walk the Mesozoic', 'The "age of dinosaurs" spans more than 180 million years. Bar width shows how long each period lasted.'), panel(rows), panel([el('div', { key: 't', style: { fontSize: 13, fontWeight: 700, marginBottom: 4 } }, '🤯 Deep time check'), el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.55 } }, 'Tyrannosaurus (about 66 million years ago) lived closer in time to you than to Stegosaurus (about 150 million years ago). About 84 million years separate these two dinosaurs.')], { marginTop: 12, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.35)' }));
       }
 
       function renderDeepTime() {
@@ -10332,6 +10478,7 @@ var evidenceRoute = [
                 el('div', { key: 'h', style: { fontSize: 16, fontWeight: 900, marginBottom: 2 } }, dn.common),
                 el('div', { key: 's', style: { fontSize: 12, color: T.soft, fontStyle: 'italic', marginBottom: 8 } }, dn.name),
                 el('div', { key: 'b', style: { marginBottom: 8 } }, badge(periodName(dn.period) + ' · ' + fmtMya(dn), pColor(dn.period)), badge((DIET_ICON[dn.diet] || '') + ' ' + cap(dn.diet), dColor(dn.diet)), badge(GROUP_LABEL[dn.group] || cap(dn.group), '#38bdf8')),
+                el('button', { key: 'notebook', type: 'button', onClick: function () { openNotebook(dn); }, style: Object.assign({}, actionStyle, { width: '100%', marginBottom: 9 }) }, __alloT('stem.dinolab.write_field_note', 'Write a field note')),
                 el('button', { key: 'file', id: 'dinolab-field-species-file', type: 'button', onClick: openSpeciesFile, style: { width: '100%', marginBottom: 9, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, 'Open full species file'),
                 el('div', { key: 'hypothesis', role: 'note', style: { marginBottom: 9, padding: 9, borderRadius: 8, background: activeHypothesis.id === 'classic' ? 'rgba(245,158,11,0.09)' : 'rgba(20,184,166,0.09)', border: '1px solid ' + (activeHypothesis.id === 'classic' ? 'rgba(245,158,11,0.34)' : 'rgba(20,184,166,0.30)') } },
                   el('div', { style: { fontSize: 11.5, fontWeight: 900, color: activeHypothesis.id === 'classic' ? '#fbbf24' : '#5eead4', marginBottom: 3 } }, 'Surface hypothesis | ' + activeHypothesis.status),
@@ -10383,39 +10530,39 @@ var evidenceRoute = [
         function picker(slot, current) {
           return el('select', { key: slot, value: current || '', 'aria-label': 'Choose dinosaur ' + slot, onChange: function (event) { var value = event.target.value || null; upd(slot === 'A' ? 'compareA' : 'compareB', value); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, [el('option', { key: 'none', value: '' }, 'Pick a dinosaur...')].concat(DINOS.slice().sort(function (x, y) { return x.common < y.common ? -1 : 1; }).map(function (dn) { return el('option', { key: dn.id, value: dn.id }, dn.common); })));
         }
-        function metricBar(label, value, max, unit, color, scale) {
+        function metricBar(label, value, max, unit, color, scale, displayValue) {
           var safeValue = value != null ? Math.max(0, value) : 0;
           var ratio = max > 0 ? safeValue / max : 0;
           if (scale === 'log') ratio = max > 0 ? Math.log10(safeValue + 1) / Math.log10(max + 1) : 0;
-          var pct = value != null ? Math.max(2, Math.round(ratio * 100)) : 0;
+          var pct = value != null ? Math.round(ratio * 10000) / 100 : 0;
           var scaleText = scale === 'log' ? ' on a logarithmic scale' : '';
           var valueText = value != null ? (label + ': ' + value + ' ' + unit + scaleText + ', ' + pct + '% of the comparison scale.') : (label + ': value unknown.');
-          return el('div', { style: { marginBottom: 8 } },
-            el('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, marginBottom: 2 } }, el('span', { style: { color: T.soft } }, label), el('span', { style: { fontWeight: 700 } }, value != null ? (value + ' ' + unit) : '?')),
-            el('div', { role: 'progressbar', 'aria-label': label + ' comparison value', 'aria-valuemin': 0, 'aria-valuemax': max, 'aria-valuenow': safeValue, 'aria-valuetext': valueText, style: { height: 12, borderRadius: 6, background: T.deeper, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.18)' } }, el('div', { style: { height: '100%', width: pct + '%', background: color, borderRadius: 6 } })));
+          return el('div', { key: label, style: { marginBottom: 8 } },
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, marginBottom: 2 } }, el('span', { style: { color: T.soft } }, label), el('span', { style: { fontWeight: 700 } }, value != null ? (displayValue || (value + ' ' + unit)) : __alloT('stem.dinolab.not_estimated', 'Not estimated'))),
+            value == null ? null : el('div', { role: 'progressbar', 'aria-label': label + ' comparison value', 'aria-valuemin': 0, 'aria-valuemax': max, 'aria-valuenow': safeValue, 'aria-valuetext': valueText, style: { height: 12, borderRadius: 6, background: T.deeper, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.18)' } }, el('div', { style: { height: '100%', width: pct + '%', background: color, borderRadius: 6 } })));
         }
         var content;
         if (picks.length < 2) {
           content = panel([el('div', { key: 'h', style: { fontWeight: 800, marginBottom: 4 } }, 'Build a comparison'), el('div', { key: 'b', style: { color: T.soft, fontSize: 13, lineHeight: 1.5 } }, 'Pick two animals. The charts use one shared scale per metric, then the verdict checks time overlap, present-day fossil regions, and evidence coverage.')]);
         } else {
           var maxLen = Math.max(picks[0].lengthM, picks[1].lengthM, 1.7);
-          var maxMassT = Math.max(picks[0].weightKg / 1000, picks[1].weightKg / 1000, 0.07);
+          var maxMassKg = Math.max(picks[0].weightKg, picks[1].weightKg, 1);
           var maxSpd = Math.max(picks[0].speedKmh, picks[1].speedKmh, 1);
           var maxHt = Math.max(picks[0].heightM, picks[1].heightM, 1.7);
           var cols = picks.map(function (dn, index) {
             var color = index === 0 ? '#38bdf8' : '#f59e0b';
             var profile = reconstructionProfileFor(dn);
-            var massT = Math.round(dn.weightKg / 100) / 10;
+            var massKg = dn.weightKg;
             return panel([
               el('div', { key: 'nm', style: { fontWeight: 900, fontSize: 16, marginBottom: 2 } }, dn.common),
               el('div', { key: 'bd', style: { marginBottom: 7 } }, badge(periodName(dn.period), pColor(dn.period)), badge((DIET_ICON[dn.diet] || '') + ' ' + cap(dn.diet), dColor(dn.diet))),
               el('div', { key: 'profile', style: { fontSize: 11.5, color: T.soft, marginBottom: 9, lineHeight: 1.4 } }, profile.label + ' | ' + cap(profile.coverage) + ' fossil coverage'),
               metricBar('Length', dn.lengthM, maxLen, 'm', color, 'linear'),
               metricBar('Height', dn.heightM, maxHt, 'm', color, 'linear'),
-              metricBar('Mass', massT, maxMassT, 't', color, 'log'),
-              metricBar('Top speed estimate', dn.speedKmh, maxSpd, 'km/h', color, 'linear'),
+              metricBar('Mass', massKg, maxMassKg, 'kg', color, d.compareMassScale === 'linear' ? 'linear' : 'log', fmtWeight(massKg)),
+              metricBar('Top speed estimate', dn.speedKmh > 0 ? dn.speedKmh : null, maxSpd, 'km/h', color, 'linear'),
               el('div', { key: 'unc', style: { marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', color: T.soft, fontSize: 11.5, lineHeight: 1.4 } }, 'Open question: ' + dn.uncertain)
-            ], { key: dn.id, borderTop: '3px solid ' + color });
+            ], { key: index + '-' + dn.id, borderTop: '3px solid ' + color });
           });
           var longer = picks[0].lengthM === picks[1].lengthM ? null : (picks[0].lengthM > picks[1].lengthM ? picks[0] : picks[1]);
           var heavier = picks[0].weightKg === picks[1].weightKg ? null : (picks[0].weightKg > picks[1].weightKg ? picks[0] : picks[1]);
@@ -10427,17 +10574,38 @@ var evidenceRoute = [
             el('div', { key: 't', style: { fontWeight: 900, marginBottom: 7 } }, 'Evidence-aware verdict'),
             el('div', { key: 'l', style: { fontSize: 12.5, marginBottom: 4 } }, longer ? ('Longer: ' + longer.common + ' (' + fmtLength(longer.lengthM) + ')') : 'Same estimated length.'),
             el('div', { key: 'w', style: { fontSize: 12.5, marginBottom: 4 } }, heavier ? ('Heavier: ' + heavier.common + ' (' + fmtWeight(heavier.weightKg) + ')') : 'Same estimated mass.'),
-            el('div', { key: 'time', style: { fontSize: 12.5, marginBottom: 4, color: timeOverlap ? '#86efac' : T.soft } }, timeOverlap ? ('Time ranges overlap around ' + overlapHigh + '–' + overlapLow + ' mya.') : 'Their known time ranges do not overlap.'),
-            el('div', { key: 'place', style: { fontSize: 12.5, marginBottom: 4, color: sameContinent ? '#7dd3fc' : T.soft } }, sameContinent ? ('Both are known from present-day ' + continentOf(picks[0].region) + '.') : 'Their fossils are known from different present-day continents.'),
-            el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, marginTop: 7, lineHeight: 1.45 } }, 'Length and height use linear scales. Mass uses a logarithmic scale so a multi-ton animal does not erase a small one. Speed, mass, posture, and soft tissue are estimates—not direct measurements.')
+            el('div', { key: 'time', style: { fontSize: 12.5, marginBottom: 4, color: T.text } }, timeOverlap ? ('Time ranges overlap around ' + overlapHigh + '–' + overlapLow + ' mya.') : 'Their known time ranges do not overlap.'),
+            el('div', { key: 'place', style: { fontSize: 12.5, marginBottom: 4, color: T.text } }, sameContinent ? ('Both are known from present-day ' + continentOf(picks[0].region) + '.') : 'Their fossils are known from different present-day continents.'),
+            el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, marginTop: 7, lineHeight: 1.45 } }, 'Length and height use linear scales. Mass uses the selected scale; logarithmic bars compress large differences. Matching time ranges and modern fossil regions do not prove these animals met. A missing speed estimate does not mean an animal was stationary.')
           ], { marginTop: 12, background: 'rgba(20,184,166,0.07)', border: '1px solid rgba(20,184,166,0.26)' });
-          content = el('div', null, el('div', { className: 'dinolab-compare-grid', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 } }, cols), verdict);
+          var oldest = Math.max(picks[0].myaHi, picks[1].myaHi, 1);
+          var timeChart = el('section', { 'aria-label': __alloT('stem.dinolab.shared_time_axis', 'Shared geological time scale'), style: { marginTop: 14, border: '1px solid ' + T.border, borderRadius: 12, padding: 14, background: T.panel } },
+            el('h3', { style: { margin: '0 0 10px', fontSize: 15 } }, __alloT('stem.dinolab.could_they_meet', 'Could they have met?')),
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', color: T.soft, fontSize: 11, marginBottom: 10 } }, el('span', null, oldest + ' mya'), el('span', null, __alloT('stem.dinolab.today', 'Today'))),
+            picks.map(function (animal, index) {
+              return el('div', { key: index, style: { marginBottom: 12 } },
+                el('div', { style: { fontSize: 12, marginBottom: 5 } }, animal.common + ' · ' + fmtMya(animal)),
+                el('div', { 'aria-hidden': 'true', style: { height: 18, background: T.deeper, borderRadius: 4, position: 'relative', border: '1px solid ' + T.border } },
+                  el('div', { style: { position: 'absolute', left: ((oldest - animal.myaHi) / oldest * 100) + '%', width: ((animal.myaHi - animal.myaLo) / oldest * 100) + '%', minWidth: 2, height: '100%', borderRadius: 3, background: index === 0 ? '#38bdf8' : '#f59e0b' } })));
+            }),
+            el('p', { style: { fontSize: 12, lineHeight: 1.5, color: T.soft, marginBottom: 0 } }, timeOverlap ? __alloT('stem.dinolab.overlap_caution', 'Their estimated age ranges overlap. Local habitat and more precise dating would be needed to test whether they shared an ecosystem.') : __alloT('stem.dinolab.time_gap', 'Their known time ranges are separated by about ') + Math.max(0, overlapLow - overlapHigh) + ' ' + __alloT('stem.dinolab.million_years', 'million years.')));
+          content = el('div', null, timeChart, el('div', { className: 'dinolab-compare-grid', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14 } }, cols), verdict);
         }
         return el('div', null,
           sectionTitle('⚖️', 'Compare two dinosaurs', 'Shared axes reveal scale; time, place, and fossil coverage keep the conclusion honest.'),
           el('div', { className: 'dinolab-compare-pickers', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } },
             el('div', { key: 'a' }, el('div', { style: { fontSize: 12, color: T.text, fontWeight: 700, marginBottom: 4 } }, el('span', { 'aria-hidden': 'true', style: { color: '#38bdf8' } }, '● '), 'Dinosaur A'), picker('A', aId)),
             el('div', { key: 'b' }, el('div', { style: { fontSize: 12, color: T.text, fontWeight: 700, marginBottom: 4 } }, el('span', { 'aria-hidden': 'true', style: { color: '#f59e0b' } }, '● '), 'Dinosaur B'), picker('B', bId))),
+          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.comparison_starters', 'Comparison starters'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+            [['tyrannosaurus', 'stegosaurus', 'Across deep time'], ['velociraptor', 'utahraptor', 'Raptor relatives'], ['microraptor', 'argentinosaurus', 'Small and enormous']].map(function (pair) {
+              return el('button', { key: pair[0], type: 'button', style: actionStyle, onClick: function () { upd({ compareA: pair[0], compareB: pair[1] }); } }, t('stem.dinolab.compare_pair_' + pair[0], pair[2]));
+            }),
+            el('button', { type: 'button', disabled: picks.length < 2, style: actionStyle, onClick: function () { upd({ compareA: bId, compareB: aId }); } }, __alloT('stem.dinolab.swap_specimens', 'Swap specimens'))),
+          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.mass_chart_scale', 'Mass chart scale'), style: { marginBottom: 12 } },
+            el('span', { style: { marginRight: 8, fontSize: 12, color: T.soft } }, __alloT('stem.dinolab.mass_scale', 'Mass scale:')),
+            pill(d.compareMassScale !== 'linear', __alloT('stem.dinolab.logarithmic', 'Logarithmic'), function () { upd('compareMassScale', 'log'); }, 'log'),
+            pill(d.compareMassScale === 'linear', __alloT('stem.dinolab.linear', 'Linear'), function () { upd('compareMassScale', 'linear'); }, 'linear')),
+          aId && aId === bId ? el('p', { role: 'status', style: { fontSize: 13, color: T.soft } }, __alloT('stem.dinolab.same_specimen', 'You have selected the same species twice. Choose a different species to investigate a contrast.')) : null,
           content);
       }
       function renderDig() {
@@ -10574,8 +10742,72 @@ var evidenceRoute = [
       }
 
       function renderNotes() {
+        var dn = byId(d.notebookSpecies) || byId(selected) || DINOS[0];
+        var entry = notebook[dn.id] || {};
+        var noteIds = DINO_CATALOG_ORDER.filter(function (animal) { return notebook[animal.id]; });
+        function edit(field, value) {
+          var next = Object.assign({}, notebook), note = Object.assign({}, entry);
+          note[field] = value.slice(0, 2000);
+          // Keep whitespace while writing; cleanup only removes truly empty entries.
+          if (NOTE_FIELDS.some(function (item) { return note[item.id]; })) next[dn.id] = note; else delete next[dn.id];
+          upd('notebook', next);
+        }
+        function downloadNotebook() {
+          var url = null;
+          try {
+            url = URL.createObjectURL(new Blob([notebookText(notebook)], { type: 'text/plain;charset=utf-8' }));
+            var link = document.createElement('a'); link.href = url; link.download = 'dino-lab-field-notebook.txt';
+            document.body.appendChild(link); link.click(); link.remove();
+            window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+            announceToSR(__alloT('stem.dinolab.notebook_download_started', 'Field notebook download started.'));
+          } catch (error) {
+            if (url) URL.revokeObjectURL(url);
+            announceToSR(__alloT('stem.dinolab.notebook_download_failed', 'The notebook could not be downloaded. Your notes are still in this activity.'));
+          }
+        }
+        var form = el('section', { 'aria-labelledby': 'dino-notebook-heading', style: { background: T.panel, border: '1px solid ' + T.border, borderRadius: 14, padding: 16, minWidth: 0 } },
+          el('h2', { id: 'dino-notebook-heading', style: { margin: '0 0 5px', fontSize: 20 } }, __alloT('stem.dinolab.my_field_notebook', 'My field notebook')),
+          el('p', { style: { margin: '0 0 14px', fontSize: 12.5, lineHeight: 1.6, color: T.soft } }, __alloT('stem.dinolab.notebook_intro', 'Separate what you notice from what you infer. Notes stay with this activity; download a copy to keep independently.')),
+          el('div', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700, marginBottom: 12 } }, el('label', { htmlFor: 'dino-notebook-specimen' }, __alloT('stem.dinolab.notebook_specimen', 'Notebook specimen')),
+            el('select', { id: 'dino-notebook-specimen', value: dn.id, onChange: function (event) { upd('notebookSpecies', event.target.value); }, style: Object.assign({}, actionStyle, { width: '100%' }) },
+              DINO_CATALOG_ORDER.map(function (animal) { return el('option', { key: animal.id, value: animal.id }, animal.common + (notebook[animal.id] ? ' •' : '')); }))),
+          el('div', { style: { fontSize: 12, color: T.soft, marginBottom: 12 } }, dn.name + ' · ' + fmtMya(dn)),
+          el('details', { style: { padding: 12, marginBottom: 14, border: '1px solid ' + T.border, background: T.deeper, borderRadius: 10 } },
+            el('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, __alloT('stem.dinolab.reference_evidence', 'Reference evidence and uncertainty')),
+            el('p', { style: { fontSize: 12, lineHeight: 1.6 } }, el('strong', null, __alloT('stem.dinolab.catalog_evidence', 'Catalog evidence: ')), dn.howKnow),
+            el('p', { style: { fontSize: 12, lineHeight: 1.6 } }, el('strong', null, __alloT('stem.dinolab.catalog_uncertainty', 'Catalog uncertainty: ')), dn.uncertain),
+            el('button', { type: 'button', style: actionStyle, onClick: function () { upd({ tab: 'explore', selected: dn.id }); } }, __alloT('stem.dinolab.open_species_file', 'Open species file'))),
+          NOTE_FIELDS.map(function (field, index) {
+            return el('div', { key: field.id, style: { marginBottom: 14 } },
+              el('label', { htmlFor: 'dino-note-' + field.id, style: { display: 'block', fontWeight: 800, fontSize: 13, marginBottom: 5 } }, (index + 1) + '. ' + t('stem.dinolab.notebook_' + field.id, field.label)),
+              el('div', { id: 'dino-note-hint-' + field.id, style: { color: T.soft, fontSize: 12, marginBottom: 6, lineHeight: 1.5 } }, t('stem.dinolab.notebook_' + field.id + '_hint', field.hint)),
+              el('textarea', { id: 'dino-note-' + field.id, 'aria-describedby': 'dino-note-hint-' + field.id, value: entry[field.id] || '', maxLength: 2000, rows: field.id === 'question' ? 2 : 3, onChange: function (event) { edit(field.id, event.target.value); }, style: { width: '100%', boxSizing: 'border-box', resize: 'vertical', border: '1px solid ' + T.border, background: T.deeper, color: T.text, borderRadius: 9, padding: 10, font: 'inherit', fontSize: 13, lineHeight: 1.5 } }),
+              el('div', { style: { textAlign: 'right', fontSize: 10, color: T.soft } }, (entry[field.id] || '').length + ' / 2000'));
+          }),
+          el('p', { style: { fontSize: 11, color: T.soft } }, __alloT('stem.dinolab.notes_retained', 'Changes are kept in the activity as you type.')),
+          el('button', { type: 'button', disabled: !noteIds.length, style: actionStyle, onClick: downloadNotebook }, __alloT('stem.dinolab.download_notebook', 'Download notebook')));
+        var collection = el('aside', { 'aria-label': __alloT('stem.dinolab.notebook_entries', 'Notebook entries'), style: { minWidth: 0 } },
+          panel([
+            el('h3', { key: 'h', style: { margin: '0 0 5px', fontSize: 16 } }, __alloT('stem.dinolab.your_investigations', 'Your investigations')),
+            el('p', { key: 'count', style: { color: T.soft, fontSize: 12 } }, noteIds.length + ' ' + __alloT('stem.dinolab.specimens_with_notes', 'specimens with notes')),
+            noteIds.length ? el('div', { key: 'entries', style: { display: 'grid', gap: 8 } }, noteIds.map(function (animal) {
+              var note = notebook[animal.id], complete = NOTE_FIELDS.filter(function (field) { return (note[field.id] || '').trim(); }).length;
+              return el('button', { key: animal.id, type: 'button', 'aria-pressed': dn.id === animal.id, style: Object.assign({}, actionStyle, { textAlign: 'left', whiteSpace: 'normal', overflowWrap: 'anywhere' }), onClick: function () { upd('notebookSpecies', animal.id); focusSoon('dino-note-question'); } },
+                el('div', { style: { marginBottom: 4 } }, animal.common),
+                el('div', { style: { fontSize: 11, color: T.soft, fontWeight: 400 } }, complete + '/4 ' + __alloT('stem.dinolab.prompts_explored', 'prompts explored')));
+            })) : el('p', { key: 'empty', style: { color: T.soft, fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.dinolab.notebook_empty', 'Start with a question. A specimen appears here when you begin writing.'))
+          ]),
+          el('div', { style: { marginTop: 12 } }, panel([
+            el('h3', { key: 'h', style: { margin: '0 0 8px', fontSize: 15 } }, __alloT('stem.dinolab.evidence_prompt', 'A useful distinction')),
+            el('p', { key: 'p', style: { margin: 0, color: T.soft, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.dinolab.evidence_distinction', '“The fossil has curved claws” describes evidence. “It may have gripped prey” is an inference. A model helps explore an idea, but does not prove the behavior.'))
+          ])));
         var cards = MYTHS.map(function (m) { return panel([el('div', { key: 'm', style: { fontSize: 13.5, fontWeight: 800, color: T.text, marginBottom: 6 } }, '❌ Myth: ' + m.myth), el('div', { key: 'r', style: { fontSize: 13, marginBottom: 6, lineHeight: 1.5 } }, el('strong', { style: { color: T.text } }, '✅ Reality: '), m.reality), el('div', { key: 'w', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, m.why)], { key: m.id }); });
-        return el('div', null, sectionTitle('📓', 'Field notes: myths, corrected', 'Science updates as new fossils turn up. Here are popular ideas the evidence has changed.'), panel([el('div', { key: 't', style: { fontWeight: 700, marginBottom: 4 } }, '🔬 Why these change'), el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.55 } }, 'Each correction came from new fossils or new methods. Changing your mind when the evidence changes is how science is supposed to work.')], { marginBottom: 14, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.30)' }), el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 } }, cards));
+        return el('div', null,
+          el('div', { className: 'dinolab-notebook-layout', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.7fr) minmax(0,1fr)', gap: 16, alignItems: 'start' } }, form, collection),
+          el('details', { className: 'dinolab-myth-notes', style: { marginTop: 18, padding: 14, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel } },
+            el('summary', { style: { cursor: 'pointer', fontSize: 16, fontWeight: 800 } }, __alloT('stem.dinolab.myths_corrected', 'Field notes: myths, corrected')),
+            el('p', { style: { color: T.soft, fontSize: 12.5, lineHeight: 1.6 } }, __alloT('stem.dinolab.science_changes', 'Science updates as new fossils turn up. Changing an explanation when the evidence changes is part of the work.')),
+            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', gap: 12 } }, cards)));
       }
 
       function renderGlossary() {
@@ -10739,8 +10971,8 @@ var evidenceRoute = [
           el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, alignItems: 'stretch' } },
             el('div', { style: { borderRadius: 14, padding: 14, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.20)' } },
               el('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Dino field station'),
-              el('h2', { style: { fontSize: 22, lineHeight: 1.15, margin: '0 0 8px', color: '#f1f5f9' } }, 'Choose a fossil investigation path.'),
-              el('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } }, 'Dino Lab has a large catalog. This panel turns it into a guided starting point while keeping every section available above.'),
+              el('h2', { style: { fontSize: 22, lineHeight: 1.15, margin: '0 0 8px', color: '#f1f5f9' } }, 'Every fossil starts a question.'),
+              el('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } }, 'Explore ' + DINOS.length + ' prehistoric animals. Collect specimens, inspect the evidence, and build your own field notebook.'),
               hasSavedProgress ? el('div', { className: 'dinolab-resume-card', role: 'region', 'aria-label': __alloT('stem.dinolab.a11y_saved_dino_lab_investigation', 'Saved Dino Lab investigation'), style: { marginTop: 12, padding: 10, borderRadius: 10, border: '1px solid rgba(94,234,212,0.42)', background: 'rgba(20,184,166,0.10)' } },
                 el('div', { style: { fontSize: 11, fontWeight: 900, color: '#99f6e4', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Saved investigation'),
                 el('div', { style: { fontSize: 13, fontWeight: 900, color: '#f8fafc', marginBottom: 3 } }, savedSpecies.common + ' · ' + savedScanCount + '/3 evidence logged · ' + savedAssemblyCount + '/6 assembled'),
@@ -10753,7 +10985,7 @@ var evidenceRoute = [
               el('div', { className: 'dinolab-mission-stats', style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
                 [
                   ['Species opened', seenCount + '/' + DINOS.length, '#86efac'],
-                  ['Quiz correct', quizCount + '/5', '#facc15'],
+                  ['Quiz correct', quizCount + '/' + (d.quizDone || 0), '#facc15'],
                   ['Active section', activeTab, '#67e8f9']
                 ].map(function (item) {
                   return el('div', { key: item[0], style: { padding: 9, borderRadius: 10, background: 'rgba(15,23,42,0.58)', border: '1px solid rgba(148,163,184,0.18)' } },
@@ -10763,13 +10995,15 @@ var evidenceRoute = [
                 })
               )
             ),
-            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10 } },
+            el('details', { className: 'dinolab-investigation-paths', style: { alignSelf: 'start', padding: 14, borderRadius: 14, border: '1px solid rgba(148,163,184,0.25)', color: '#f1f5f9' } },
+              el('summary', { style: { cursor: 'pointer', fontSize: 15, fontWeight: 800, padding: 4 } }, __alloT('stem.dinolab.choose_path', 'Choose an investigation path')),
+              el('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, __alloT('stem.dinolab.path_hint', 'Start with a species below, or choose a route through time, fossils, and reconstruction.')),
               routeCards.map(function (card) {
                 var active = tab === card.tab;
                 return el('button', {
                   key: card.id,
                   onClick: function () { upd('tab', card.tab); announceToSR(card.title); },
-                  style: { textAlign: 'left', cursor: 'pointer', minHeight: 128, padding: 13, borderRadius: 13, border: '1px solid ' + (active ? card.accent : 'rgba(148,163,184,0.20)'), background: active ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.50)', color: '#f1f5f9', boxShadow: active ? '0 10px 22px rgba(0,0,0,0.22)' : 'none' }
+                  style: { textAlign: 'left', cursor: 'pointer', width: '100%', marginBottom: 8, minHeight: 80, padding: 13, borderRadius: 13, border: '1px solid ' + (active ? card.accent : 'rgba(148,163,184,0.20)'), background: active ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.50)', color: '#f1f5f9', boxShadow: active ? '0 10px 22px rgba(0,0,0,0.22)' : 'none' }
                 },
                   el('div', { style: { width: 34, height: 5, borderRadius: 99, background: card.accent, marginBottom: 10 } }),
                   el('div', { style: { fontSize: 14, fontWeight: 900, marginBottom: 5 } }, card.title),
@@ -10782,7 +11016,8 @@ var evidenceRoute = [
         );
       }
 
-      var accessibilityStyles = '.dinolab-root button:focus-visible,.dinolab-root input:focus-visible,.dinolab-root select:focus-visible,.dinolab-root textarea:focus-visible,.dinolab-root [tabindex]:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px;box-shadow:0 0 0 5px #0f766e!important}' +
+      var accessibilityStyles = '.dinolab-root button:disabled{opacity:.5;cursor:not-allowed!important}.dinolab-root summary:focus-visible{outline:3px solid #0f766e;outline-offset:4px}.dinolab-root .dinolab-compare-grid>div{min-width:0}.dinolab-root .dinolab-notebook-layout select{box-sizing:border-box;max-width:100%}@media(max-width:720px){.dinolab-root .dinolab-specimen-file{position:static!important;max-height:none!important;overflow:visible!important}.dinolab-root .dinolab-specimen-file.is-open{order:-1}.dinolab-root .dinolab-notebook-layout{grid-template-columns:minmax(0,1fr)!important}}@media(max-width:380px){.dinolab-root .dinolab-species-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.dinolab-root .dinolab-species-grid button{padding:9px!important}.dinolab-root .dinolab-species-grid span{white-space:normal!important}}' +
+        '.dinolab-root button:focus-visible,.dinolab-root input:focus-visible,.dinolab-root select:focus-visible,.dinolab-root textarea:focus-visible,.dinolab-root [tabindex]:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px;box-shadow:0 0 0 5px #0f766e!important}' +
         '@media(max-width:980px){.dinolab-root .dinolab-field-drawer{position:static!important;width:100%!important;max-height:none!important;margin-top:12px!important}.dinolab-root .dinolab-field-workflow{grid-template-columns:repeat(2,minmax(0,1fr))!important}}' +
         '@media(max-width:720px){.dinolab-root .dinolab-explore-layout{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-mission-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-compare-grid,.dinolab-root .dinolab-compare-pickers{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-map-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-field-toolbar-actions{width:100%!important;display:grid!important;grid-template-columns:repeat(auto-fit,minmax(108px,1fr))!important;margin-left:0!important}.dinolab-root .dinolab-field-toolbar-actions>button{width:100%!important}.dinolab-root .dinolab-3d-viewer{min-height:380px!important}.dinolab-root .dinolab-3d-canvas{height:380px!important}.dinolab-root .dinolab-3d-readouts{max-height:88px;overflow:hidden}.dinolab-root .dinolab-3d-chip{font-size:10px!important;padding:4px 7px!important}}' +
         '@media(max-width:720px){.dinolab-root .dinolab-field-drawer{padding:14px!important;border-radius:14px 14px 10px 10px!important;box-shadow:0 -8px 24px rgba(0,0,0,0.24)!important;border-top:2px solid rgba(20,184,166,0.42)!important}.dinolab-root .dinolab-field-drawer-handle{display:block!important}}' +

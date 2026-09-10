@@ -58,7 +58,7 @@ export function setupDinoLab() {
   // tables and helpers are defined by this point in the IIFE.
   src = src.replace(
     "window.StemLab.registerTool('dinoLab'",
-    "globalThis.__dinoInternals = { DINOS: DINOS, PERIODS: PERIODS, CLADES: CLADES, EXTINCTIONS: EXTINCTIONS, KPG_EVIDENCE: KPG_EVIDENCE, ANATOMY: ANATOMY, MYTHS: MYTHS, QUIZ: QUIZ, GLOSSARY: GLOSSARY, SITES: SITES, RECORDS: RECORDS, PEOPLE: PEOPLE, byId: byId, periodName: periodName, fmtLength: fmtLength, fmtWeight: fmtWeight, fmtMya: fmtMya };\n  window.StemLab.registerTool('dinoLab'"
+    "globalThis.__dinoInternals = { DINOS: DINOS, PERIODS: PERIODS, CLADES: CLADES, EXTINCTIONS: EXTINCTIONS, KPG_EVIDENCE: KPG_EVIDENCE, ANATOMY: ANATOMY, MYTHS: MYTHS, QUIZ: QUIZ, GLOSSARY: GLOSSARY, SITES: SITES, RECORDS: RECORDS, PEOPLE: PEOPLE, byId: byId, periodName: periodName, fmtLength: fmtLength, fmtWeight: fmtWeight, fmtMya: fmtMya, catalogList: catalogList, specimenMap: specimenMap, notebookMap: notebookMap, notebookText: notebookText };\n  window.StemLab.registerTool('dinoLab'"
   );
   if (src.indexOf('__dinoInternals') === -1) {
     throw new Error('Harness: failed to splice internals capture — the registerTool anchor changed.');
