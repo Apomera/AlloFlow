@@ -19738,20 +19738,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       return -1;
   };
-  const updateTourMetrics = useCallback(() => {
+  const updateTourMetrics = useCallback((navigate = true) => {
       if (!runTour) return;
       if (spotlightMessage) return;
       const step = (customTourSteps || tourSteps)[tourStep];
       if (!step) return;
       const requestContext = _tourRunContextRef.current;
-      try { if (step.onEnter) step.onEnter(); } catch (_) {}
-      setTimeout(() => {
+      if (navigate) { try { if (step.onEnter) step.onEnter(); } catch (_) {} }
+      const measure = () => {
           if (requestContext !== _tourRunContextRef.current) return;
           const el = _resolveTourEl(step);
           if (el) {
               const tallPanels = ['ui-tool-simplified', 'tour-tool-adventure', 'ui-tool-quiz', 'tour-tool-visual', 'ui-tool-glossary', 'tour-tool-wordsounds'];
               const scrollBlock = tallPanels.includes(step.id) ? 'start' : 'center';
-              el.scrollIntoView({ behavior: 'smooth', block: scrollBlock, inline: 'center' });
+              if (navigate) el.scrollIntoView({ behavior: 'smooth', block: scrollBlock, inline: 'center' });
               const rect = el.getBoundingClientRect();
               let padding = 0;
               if (step.id === 'tour-tool-adventure') {
@@ -19759,14 +19759,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               }
               const clampedTop = Math.max(60, rect.top - padding);
               const heightAdjustment = (rect.top - padding) < 60 ? (60 - (rect.top - padding)) : 0;
-              setTourRect({
+              const nextRect = {
                   top: clampedTop,
                   left: rect.left - padding,
                   width: rect.width + (padding * 2),
                   height: rect.height + (padding * 2) - heightAdjustment,
                   bottom: rect.bottom + padding,
                   right: rect.right + padding
-              });
+              };
+              setTourRect(previous => previous
+                  && previous.top === nextRect.top && previous.left === nextRect.left
+                  && previous.width === nextRect.width && previous.height === nextRect.height
+                  && previous.bottom === nextRect.bottom && previous.right === nextRect.right
+                  ? previous : nextRect);
               if (alloBotRef.current) {
                   let targetX = rect.right + 200;
                   let targetY = rect.top - 180;
@@ -19781,9 +19786,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       targetY = rect.bottom + 0;
                   }
                   alloBotRef.current.moveTo(targetX, targetY);
-                  setBotSpotlightPos({ x: targetX, y: targetY });
+                  setBotSpotlightPos(previous => previous && previous.x === targetX && previous.y === targetY
+                      ? previous : { x: targetX, y: targetY });
               }
-          } else {
+          } else if (navigate) {
               // Auto-skip steps whose targets are not on screen right now
               // (state-dependent anchors — e.g. the what-now strip hides
               // while auto-continue runs; user report 2026-06-12: the tour
@@ -19794,7 +19800,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               if (_next >= 0) setTourStep(_next);
               else { setRunTour(false); setCustomTourSteps(null); }
           }
-      }, 600);
+      };
+      if (!navigate) { measure(); return; }
+      const timer = setTimeout(measure, 600);
+      return () => clearTimeout(timer);
   }, [runTour, tourStep, spotlightMessage, customTourSteps]);
   const ensureToolVisible = (toolId) => {
       if (!expandedTools.includes(toolId)) {
@@ -19904,15 +19913,28 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           }
       }, delay);
   };
+  // TOUR_GEOMETRY_TRACKING_START
   useEffect(() => {
-      updateTourMetrics();
-      window.addEventListener('resize', updateTourMetrics);
-      window.addEventListener('scroll', updateTourMetrics, true);
-      return () => {
-          window.removeEventListener('resize', updateTourMetrics);
-          window.removeEventListener('scroll', updateTourMetrics, true);
+      const cancelEntryMeasurement = updateTourMetrics();
+      if (!runTour || spotlightMessage) return cancelEntryMeasurement;
+      let frame = null;
+      const scheduleMetrics = () => {
+          if (frame !== null) return;
+          frame = window.requestAnimationFrame(() => {
+              frame = null;
+              updateTourMetrics(false);
+          });
       };
-  }, [updateTourMetrics]);
+      window.addEventListener('resize', scheduleMetrics);
+      window.addEventListener('scroll', scheduleMetrics, true);
+      return () => {
+          window.removeEventListener('resize', scheduleMetrics);
+          window.removeEventListener('scroll', scheduleMetrics, true);
+          if (frame !== null) window.cancelAnimationFrame(frame);
+          if (cancelEntryMeasurement) cancelEntryMeasurement();
+      };
+  }, [updateTourMetrics, runTour, spotlightMessage]);
+  // TOUR_GEOMETRY_TRACKING_END
   useEffect(() => {
       if (false && isSpotlightMode && !runTour) {
           const handleGlobalClick = (e) => {

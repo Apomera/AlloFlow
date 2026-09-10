@@ -1,0 +1,91 @@
+{
+  "scope": "Actual shell callbacks and effect in Chromium with native events, animation frames and DOM geometry. State setters are instrumented; programmatic scroll requests are counted without initiating smooth scrolling. This is not a whole-app timing benchmark.",
+  "before": {
+    "entry": {
+      "entries": 1,
+      "scrolls": 1,
+      "measurements": 1,
+      "rectChanges": 1,
+      "botChanges": 1,
+      "botMoves": 1
+    },
+    "eventsPerBurst": 200,
+    "burst": {
+      "entries": 200,
+      "scrolls": 200,
+      "measurements": 200,
+      "rectChanges": 200,
+      "botChanges": 200,
+      "botMoves": 200
+    },
+    "measuredRect": {
+      "top": 108,
+      "left": 33,
+      "width": 79.734375,
+      "height": 21,
+      "bottom": 129,
+      "right": 112.734375
+    },
+    "unchanged": {
+      "entries": 200,
+      "scrolls": 200,
+      "measurements": 200,
+      "rectChanges": 200,
+      "botChanges": 200,
+      "botMoves": 200
+    },
+    "afterCleanup": {
+      "entries": 1,
+      "scrolls": 1,
+      "measurements": 1,
+      "rectChanges": 1,
+      "botChanges": 1,
+      "botMoves": 1
+    }
+  },
+  "after": {
+    "entry": {
+      "entries": 1,
+      "scrolls": 1,
+      "measurements": 1,
+      "rectChanges": 1,
+      "botChanges": 1,
+      "botMoves": 1
+    },
+    "eventsPerBurst": 200,
+    "burst": {
+      "entries": 0,
+      "scrolls": 0,
+      "measurements": 1,
+      "rectChanges": 1,
+      "botChanges": 1,
+      "botMoves": 1
+    },
+    "measuredRect": {
+      "top": 108,
+      "left": 33,
+      "width": 79.734375,
+      "height": 21,
+      "bottom": 129,
+      "right": 112.734375
+    },
+    "unchanged": {
+      "entries": 0,
+      "scrolls": 0,
+      "measurements": 1,
+      "rectChanges": 0,
+      "botChanges": 0,
+      "botMoves": 1
+    },
+    "afterCleanup": {
+      "entries": 0,
+      "scrolls": 0,
+      "measurements": 0,
+      "rectChanges": 0,
+      "botChanges": 0,
+      "botMoves": 0
+    }
+  },
+  "geometryParity": true,
+  "errors": []
+}
