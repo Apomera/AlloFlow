@@ -186,3 +186,13 @@ Replay timeline refinement (September 9): all 503 checks across 18 Architecture 
 No deployment or push was performed.
 
 Repository gates passed: pipeline integrity, source-pair synchronization, staged file sizes, Lumen preservation, localization staleness, and whitespace. Other work in the shared repository is preserved.
+
+## Inspect with block filters
+
+**Filter** opens a focused panel near the top of the sidebar. Materials have labeled texture swatches; all twelve shapes have labeled diagrams. Pressed states and checkmarks identify the selected choices. Each choice shows how many blocks would match while keeping the other filter applied. Zero-count choices remain available, and **Clear block filters** restores all materials and shapes without changing floor, section, or replay settings.
+
+The results name their scope: the live build or the current replay step. Match counts include every floor and section in that frame; a separate count shows how many would appear in 3D. If floor or section settings hide matches, **Reveal matches across floors and sections** clears just those viewing restrictions. The Floor Grid continues to show its full editing floor. Empty builds, empty replay steps, and unmatched combinations each explain how to continue.
+
+Opening Filter from the toolbar or All tools reveals the sidebar and focuses its heading. Close or Escape returns focus to the toolbar while keeping filters applied. The controls have at least 44px targets, with a wider desktop panel and a scrollable phone layout. The **Edit matching blocks** disclosure retains bulk removal, explains that it includes hidden floors and sections, and disables removal during replay, without a filter, or with no matches. Removing blocks remains undoable.
+
+Filter refinement (September 9): all 536 Architecture Studio unit checks across 19 suites passed across the scoped runs and final rechecks. Eight local Chromium workflows passed, including live/replay facet counts, hidden-floor recovery, renderer and project-state preservation, keyboard focus, All tools navigation, bulk removal and undo, phone target sizes, and phone model reachability. The expanded filter panel had no selected axe WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations across light, dark, and high-contrast themes. Forced colors and reduced-motion keyboard use were exercised. Desktop and 320px phone material/shape screenshots were visually reviewed. One long authoring scenario exceeded its time limit during the broader run and passed in isolation. No deployment was performed.

@@ -124,7 +124,7 @@ describe('ArchStudio accessibility parity', () => {
       expect(optionalColors).toMatch(/'aria-label':\s*'Use (?:custom color|colour) '\s*\+\s*c(?:\.toUpperCase\(\))?/);
       expect(optionalColors).toMatch(/'aria-pressed':\s*(?:activeColor|customColor)\s*===\s*c/);
 
-      const filters = source.slice(source.lastIndexOf('// ── Block Search / Filter'), source.lastIndexOf('// ── Achievement Badges'));
+      const filters = source.slice(source.indexOf('function renderFilterPanel()'), source.indexOf('function replayText('));
       expect(filters).toContain("'aria-label': __alloAST('stem.archstudio.a11y_show_all_materials', 'Show all materials'");
       expect(filters).toContain("'aria-pressed': !filterMaterial");
       expect(filters).toContain("'aria-label': 'Filter by ' + m.label + ' material'");

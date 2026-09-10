@@ -2234,6 +2234,59 @@ function __alloAST(k, fb) {
   try { window.__alloArchToolbox = { catalog: getArchToolboxEntries, filter: filterArchToolbox }; } catch (e) {}
 
 
+
+  var ARCH_FILTER_LABELS = {
+  "title": "Block filters",
+  "close": "Close block filters",
+  "close_short": "Close",
+  "live": "Live build",
+  "replay": "Replay step {step} of {total}",
+  "result": "{count} of {total} blocks match",
+  "result_one": "{count} matching block out of {total}",
+  "visible": "{count} visible in 3D",
+  "material": "Material",
+  "shape": "Shape",
+  "all_materials": "All materials",
+  "all_shapes": "All shapes",
+  "counts_help": "Choice counts include the other filter, across all floors and sections.",
+  "reset": "Clear block filters",
+  "empty": "No blocks match. Try another shape or material, or clear the filters.",
+  "empty_build": "This build has no blocks yet. Place a block or open a starter design.",
+  "empty_replay": "This replay step has no blocks. Choose another step in the timeline.",
+  "grid_help": "Filters affect the 3D view. The floor grid continues to show the full editing floor.",
+  "hidden_help": "Floor or section settings hide some matches.",
+  "reveal": "Reveal matches across floors and sections",
+  "edit": "Edit matching blocks",
+  "remove": "Remove {count} matching blocks",
+  "remove_one": "Remove {count} matching block",
+  "remove_help": "Removes matches across all floors and sections of the live build. Undo restores them.",
+  "replay_help": "Return to the live build to remove matching blocks.",
+  "all_help": "Choose a material or shape before removing blocks.",
+  "keep_help": "Closing this panel keeps your filters applied."
+};
+  // Facets describe the current frame; each choice keeps the other facet applied.
+  function summarizeArchFilters(input, material, shape) {
+    var frame = getArchRuntimeBlocks(input);
+    material = ARCH_MATERIAL_IDS[material] ? material : '';
+    shape = ARCH_SHAPE_IDS[shape] ? shape : '';
+    var result = { total: frame.length, count: 0, materials: {}, shapes: {}, allMaterials: 0, allShapes: 0 };
+    frame.forEach(function (block) {
+      var materialMatch = !material || block.material === material;
+      var shapeMatch = !shape || block.shape === shape;
+      if (shapeMatch) {
+        result.materials[block.material] = (result.materials[block.material] || 0) + 1;
+        result.allMaterials++;
+      }
+      if (materialMatch) {
+        result.shapes[block.shape] = (result.shapes[block.shape] || 0) + 1;
+        result.allShapes++;
+      }
+      if (materialMatch && shapeMatch) result.count++;
+    });
+    return result;
+  }
+  window.__alloArchFilters = { summary: summarizeArchFilters, labels: ARCH_FILTER_LABELS };
+
   var ARCH_REPLAY_LABELS = {
   "title": "Construction replay",
   "readonly": "Read-only",
@@ -3904,7 +3957,6 @@ function __alloAST(k, fb) {
       return true;
     });
     var filterActive = !!(filterMaterial || filterShape);
-    var filterCount = filterActive ? filteredBlocks.length : totalBlocks;
 
     var deleteFiltered = function () {
       if (!requireLiveBuild()) return;
@@ -4496,6 +4548,87 @@ function __alloAST(k, fb) {
         el('path', { d: paths[shape] || paths.block, fill: 'currentColor', fillOpacity: .12, stroke: 'currentColor', strokeWidth: 1.8, strokeLinejoin: 'round', strokeLinecap: 'round' }));
     }
 
+
+
+    function filterText(key, values) {
+      if ((key === 'result' || key === 'remove') && values && values.count === 1) key += '_one';
+      var text = t('stem.archstudio.filters_' + key, ARCH_FILTER_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { text = text.split('{' + name + '}').join(String(values[name])); });
+      return text;
+    }
+    function toggleFilterPanel() {
+      var opening = !showFilter;
+      upd('showFilter', opening);
+      setTimeout(function () {
+        var target = opening ? document.getElementById('arch-filter-heading') :
+          document.querySelector('.arch-studio-feature-strip [data-arch-tool-id="filter"]');
+        if (target) { target.focus(); target.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      }, 0);
+    }
+    function renderFilterPanel() {
+      if (!showFilter) return null;
+      var summary = summarizeArchFilters(archReplayFrame, filterMaterial, filterShape);
+      var hiddenMatches = summary.count > archDisplayBlocks.length;
+      return el('section', { id: 'arch-filter-panel', className: 'arch-filter-panel', 'aria-labelledby': 'arch-filter-heading',
+        onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); toggleFilterPanel(); } } },
+        el('div', { className: 'arch-filter-header' },
+          el('h3', { id: 'arch-filter-heading', tabIndex: -1 }, filterText('title')),
+          el('button', { type: 'button', 'aria-label': filterText('close'), onClick: toggleFilterPanel }, filterText('close_short'))),
+        el('div', { className: 'arch-filter-results', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+          el('span', { className: 'arch-filter-scope' }, showReplay ? filterText('replay', { step: replayStep + 1, total: replayFrames + 1 }) : filterText('live')),
+          el('strong', { 'data-arch-filter-result': true }, filterText('result', summary)),
+          el('span', { 'data-arch-filter-visible': true }, filterText('visible', { count: archDisplayBlocks.length }))),
+        !summary.count && el('p', { className: 'arch-filter-empty' }, filterText(summary.total ? 'empty' : showReplay ? 'empty_replay' : 'empty_build')),
+        el('button', { type: 'button', className: 'arch-filter-reset', disabled: !filterActive,
+          onClick: function () { upd({ filterMaterial: '', filterShape: '' }); } }, filterText('reset')),
+        editorView === 'grid' && el('p', { className: 'arch-filter-grid-note' }, filterText('grid_help')),
+        hiddenMatches && el('div', { className: 'arch-filter-hidden' },
+          el('p', null, filterText('hidden_help')),
+          el('button', { type: 'button', onClick: function () {
+            upd({ viewLayer: -1, showSlice: false, sliceZSelected: false });
+            setTimeout(function () { var heading = document.getElementById('arch-filter-heading'); if (heading) heading.focus(); }, 0);
+          } }, filterText('reveal'))),
+        el('p', { id: 'arch-filter-counts-help' }, filterText('counts_help')),
+        el('div', { role: 'group', 'aria-labelledby': 'arch-filter-material-heading', 'aria-describedby': 'arch-filter-counts-help' },
+          el('div', { className: 'arch-filter-group-heading' },
+            el('h4', { id: 'arch-filter-material-heading' }, filterText('material')),
+            el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_show_all_materials', 'Show all materials'),
+              'aria-pressed': !filterMaterial, onClick: function () { upd('filterMaterial', ''); } },
+              filterText('all_materials'), el('span', { className: 'arch-filter-count' }, summary.allMaterials))),
+          el('div', { className: 'arch-filter-materials' }, materials.map(function (m) {
+            var countId = 'arch-filter-material-count-' + m.id;
+            return el('button', { key: m.id, type: 'button', className: 'arch-filter-choice',
+              'aria-label': 'Filter by ' + m.label + ' material', 'aria-pressed': filterMaterial === m.id,
+              'aria-describedby': countId, onClick: function () { upd('filterMaterial', m.id); } },
+              el('span', { className: 'arch-material-swatch arch-material-' + m.id, 'aria-hidden': 'true', style: { backgroundColor: m.color } }),
+              el('span', { className: 'arch-filter-choice-label' }, m.label),
+              el('span', { id: countId, className: 'arch-filter-count' }, summary.materials[m.id] || 0),
+              paletteMark(filterMaterial === m.id));
+          }))),
+        el('div', { role: 'group', 'aria-labelledby': 'arch-filter-shape-heading', 'aria-describedby': 'arch-filter-counts-help' },
+          el('div', { className: 'arch-filter-group-heading' },
+            el('h4', { id: 'arch-filter-shape-heading' }, filterText('shape')),
+            el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_show_all_shapes', 'Show all shapes'),
+              'aria-pressed': !filterShape, onClick: function () { upd('filterShape', ''); } },
+              filterText('all_shapes'), el('span', { className: 'arch-filter-count' }, summary.allShapes))),
+          el('div', { className: 'arch-filter-shapes' }, shapes.map(function (s) {
+            var countId = 'arch-filter-shape-count-' + s.id;
+            return el('button', { key: s.id, type: 'button', className: 'arch-filter-choice',
+              'aria-label': 'Filter by ' + s.label + ' shape', 'aria-pressed': filterShape === s.id,
+              'aria-describedby': countId, onClick: function () { upd('filterShape', s.id); } },
+              paletteShapeIcon(s.id), el('span', { className: 'arch-filter-choice-label' }, s.label),
+              el('span', { id: countId, className: 'arch-filter-count' }, summary.shapes[s.id] || 0), paletteMark(filterShape === s.id));
+          }))),
+        el('details', { className: 'arch-filter-edit' },
+          el('summary', null, filterText('edit')),
+          el('p', { id: 'arch-filter-remove-help' }, filterText(showReplay ? 'replay_help' : filterActive ? 'remove_help' : 'all_help')),
+          el('button', { type: 'button', className: 'arch-filter-remove', onClick: deleteFiltered, disabled: showReplay || !filterActive || !filteredBlocks.length,
+            'aria-describedby': 'arch-filter-remove-help',
+            title: showReplay ? 'Exit construction replay to remove matching blocks' : 'Remove matching blocks' },
+            filterText('remove', { count: summary.count }))),
+        el('p', { className: 'arch-filter-footnote' }, filterText('keep_help'))
+      );
+    }
 
     function replayText(key, values) {
       if ((key === 'blocks' || key === 'range_value') && values && values.count === 1) key += '_one';
@@ -5693,6 +5826,44 @@ function __alloAST(k, fb) {
         + '@media(forced-colors:active){#arch-studio-region .arch-material-swatch,#arch-studio-region .arch-color-current-swatch,#arch-studio-region .arch-color-choice{forced-color-adjust:none;}#arch-studio-region .arch-palette-check{forced-color-adjust:none;}#arch-studio-region .arch-color-choice:focus-visible{outline-color:Highlight;}}'
         + '.theme-contrast #arch-studio-region .arch-shape-choice,.theme-contrast #arch-studio-region .arch-material-choice{background:#000!important;color:#ffff00!important;border-color:#ffff00!important;}'
         + '.theme-contrast #arch-studio-region .arch-shape-icon{color:#ffff00!important;}.theme-contrast #arch-studio-region .arch-shape-choice[aria-pressed=true],.theme-contrast #arch-studio-region .arch-material-choice[aria-pressed=true]{border-color:#00ff00!important;background:#142314!important;}'
+
+        + '#arch-studio-region .arch-studio-sidebar.arch-studio-filtering{width:clamp(310px,30vw,370px)!important;}'
+        + '#arch-studio-region .arch-filter-panel{flex:none;min-width:0;border:1px solid #6485a4;border-radius:12px;padding:12px;background:linear-gradient(150deg,#21384d,#132438);color:#e2e8f0;}'
+        + '#arch-studio-region .arch-filter-header,#arch-studio-region .arch-filter-group-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;}'
+        + '#arch-studio-region .arch-filter-header h3{margin:0;font-size:16px;line-height:1.35;color:#e0f2fe;}'
+        + '#arch-studio-region #arch-filter-heading:focus{outline:2px solid #7dd3fc;outline-offset:4px;}'
+        + '#arch-studio-region .arch-filter-panel button{min-height:44px;min-width:44px;box-sizing:border-box;border:1px solid #7891a9;border-radius:7px;padding:8px;background:#20354b;color:#f1f5f9;font-size:12px;font-weight:650;line-height:1.35;cursor:pointer;overflow-wrap:anywhere;}'
+        + '#arch-studio-region .arch-filter-panel button:disabled{cursor:default;}'
+        + '#arch-studio-region .arch-filter-panel button[aria-pressed=true]{border-color:#7dd3fc;background:#244e6b;color:#fff;}'
+        + '#arch-studio-region .arch-filter-panel p{font-size:12px;line-height:1.5;color:#cbd5e1;margin:8px 0;}'
+        + '#arch-studio-region .arch-filter-results{display:flex;flex-direction:column;gap:5px;margin:10px 0;padding:12px;border:1px solid #6485a4;border-radius:8px;background:#0f2235;}'
+        + '#arch-studio-region .arch-filter-results strong{font-size:20px;line-height:1.3;color:#f8fafc;}'
+        + '#arch-studio-region .arch-filter-results span{font-size:12px;color:#cbd5e1;}'
+        + '#arch-studio-region .arch-filter-results .arch-filter-scope{font-size:11px;font-weight:700;letter-spacing:.6px;color:#a5dfff;}'
+        + '#arch-studio-region .arch-filter-reset{width:100%;}'
+        + '#arch-studio-region .arch-filter-panel .arch-filter-empty,#arch-studio-region .arch-filter-grid-note,#arch-studio-region .arch-filter-hidden{padding:9px;border-left:3px solid #7dd3fc;background:#152c41;border-radius:4px;}'
+        + '#arch-studio-region .arch-filter-hidden{margin-top:10px;}#arch-studio-region .arch-filter-hidden p{margin-top:0;}'
+        + '#arch-studio-region .arch-filter-hidden button{width:100%;}'
+        + '#arch-studio-region .arch-filter-group-heading{margin:14px 0 7px;}#arch-studio-region .arch-filter-group-heading h4{font-size:13px;margin:0;}'
+        + '#arch-studio-region .arch-filter-group-heading button{display:flex;align-items:center;gap:8px;font-size:11px;}'
+        + '#arch-studio-region .arch-filter-materials{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}'
+        + '#arch-studio-region .arch-filter-shapes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}'
+        + '#arch-studio-region .arch-filter-choice{position:relative;display:flex;align-items:center;gap:6px;min-width:0;padding:10px 7px!important;}'
+        + '#arch-studio-region .arch-filter-choice-label{min-width:0;overflow-wrap:anywhere;}'
+        + '#arch-studio-region .arch-filter-count{font-variant-numeric:tabular-nums;color:#cbd5e1;font-size:11px;font-weight:500;}'
+        + '#arch-studio-region .arch-filter-materials .arch-filter-count{margin-left:auto;}'
+        + '#arch-studio-region .arch-filter-choice .arch-palette-check{position:absolute;top:3px;right:3px;width:13px;height:13px;font-size:10px;}'
+        + '#arch-studio-region .arch-filter-materials .arch-material-swatch{width:19px;height:24px;}'
+        + '#arch-studio-region .arch-filter-materials .arch-filter-choice{min-height:56px;padding-right:15px!important;}'
+        + '#arch-studio-region .arch-filter-shapes .arch-filter-choice{flex-direction:column;justify-content:center;gap:2px;}'
+        + '#arch-studio-region .arch-filter-shapes .arch-shape-icon{height:27px;width:30px;}'
+        + '#arch-studio-region .arch-filter-edit{margin-top:13px;border-top:1px solid #6485a4;font-size:12px;}'
+        + '#arch-studio-region .arch-filter-edit summary{box-sizing:border-box;min-height:44px;padding:12px 0;cursor:pointer;color:#e2e8f0;}'
+        + '#arch-studio-region .arch-filter-edit summary:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px;}'
+        + '#arch-studio-region .arch-filter-panel .arch-filter-remove{width:100%;background:#7f1d1d;color:#fff;border-color:#fca5a5;}'
+        + '#arch-studio-region .arch-filter-panel .arch-filter-footnote{margin-bottom:0;font-size:11px;}'
+        + '.theme-contrast #arch-studio-region .arch-filter-panel,.theme-contrast #arch-studio-region .arch-filter-results{background:#000;border-color:#ffff00;}.theme-contrast #arch-studio-region .arch-filter-panel button{background:#000;color:#ffff00;border-color:#ffff00;}.theme-contrast #arch-studio-region .arch-filter-panel button[aria-pressed=true]{border-color:#00ff00;background:#142314;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-studio-sidebar.arch-studio-filtering{width:auto!important;max-height:min(58vh,480px);}#arch-studio-region .arch-filter-panel{padding:10px;}}'
         + '#arch-studio-region .arch-studio-sidebar.arch-studio-replay{width:clamp(300px,30vw,370px)!important;}'
         + '#arch-studio-region .arch-replay-panel{flex:none;border:1px solid #8f773b;border-radius:12px;padding:13px;background:linear-gradient(155deg,#263348,#142238);box-shadow:0 9px 24px #02061733;color:#e2e8f0;}'
         + '#arch-studio-region .arch-replay-heading-row{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;}'
@@ -5902,7 +6073,7 @@ function __alloAST(k, fb) {
           { id: 'slice', node: pillBtn('\uD83D\uDD2C Slice', showSlice, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('showSlice', !showSlice); }) },
           { id: 'heatmap', node: pillBtn('\uD83D\uDD25 Heatmap', showHeatmap, 'rgba(239,68,68,.2)', '#ef4444', '#fca5a5', function () { upd('showHeatmap', !showHeatmap); }) },
           { id: 'replay', node: pillBtn('\u23EA Replay', showReplay, 'rgba(251,191,36,.2)', '#fbbf24', '#fde68a', function () { if (!showReplay) startReplay(); else exitReplay(); }) },
-          { id: 'filter', node: pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showFilter', !showFilter); }) },
+          { id: 'filter', node: pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', toggleFilterPanel) },
           { id: 'badges', node: pillBtn('\uD83C\uDFC5 ' + badgeCount + '/' + badges.length, showBadges, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showBadges', !showBadges); }) },
           { id: 'floorplans', node: pillBtn('\uD83C\uDFE0 Floor Plans', showFloorPlans, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showFloorPlans', !showFloorPlans); }) },
           { id: 'gravity', node: el('button', { onClick: applyGravity, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to apply gravity' : t('stem.archstudio.apply_gravity_drop_floating_blocks', 'Apply gravity (drop floating blocks)'), style: { background: !showReplay && blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (!showReplay && blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: !showReplay && blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity') },
@@ -5921,9 +6092,10 @@ function __alloAST(k, fb) {
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : '') + (showReplay ? ' arch-studio-replay' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : '') + (showReplay ? ' arch-studio-replay' : '') + (showFilter ? ' arch-studio-filtering' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
           renderReplayPanel(),
+          renderFilterPanel(),
           renderTemplateLibrary(),
           renderSchedulePanel(),
           renderProjectPanel(),
@@ -6417,36 +6589,6 @@ function __alloAST(k, fb) {
                 );
               })
             )
-          ),
-
-          // ── Block Search / Filter ──
-          showFilter && el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD0D Block Filter'),
-            el('div', { style: { marginBottom: 4 } },
-              el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, 'Material:'),
-              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
-                el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_show_all_materials', 'Show all materials'), 'aria-pressed': !filterMaterial, onClick: function () { upd('filterMaterial', ''); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: !filterMaterial ? '1px solid #60a5fa' : '1px solid #334155', background: !filterMaterial ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterMaterial ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
-                materials.map(function (m) {
-                  return el('button', { key: m.id, type: 'button', 'aria-label': 'Filter by ' + m.label + ' material', 'aria-pressed': filterMaterial === m.id, onClick: function () { upd('filterMaterial', m.id); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: filterMaterial === m.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterMaterial === m.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterMaterial === m.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, m.icon + ' ' + m.label);
-                })
-              )
-            ),
-            el('div', { style: { marginBottom: 4 } },
-              el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, 'Shape:'),
-              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
-                el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_show_all_shapes', 'Show all shapes'), 'aria-pressed': !filterShape, onClick: function () { upd('filterShape', ''); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: !filterShape ? '1px solid #60a5fa' : '1px solid #334155', background: !filterShape ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterShape ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
-                shapes.map(function (s) {
-                  return el('button', { key: s.id, type: 'button', 'aria-label': 'Filter by ' + s.label + ' shape', 'aria-pressed': filterShape === s.id, title: s.label, onClick: function () { upd('filterShape', s.id); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: filterShape === s.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterShape === s.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterShape === s.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, s.icon);
-                })
-              )
-            ),
-            el('div', { style: { padding: '4px 8px', background: filterActive ? 'rgba(96,165,250,.1)' : 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 11, color: filterActive ? '#93c5fd' : '#94a3b8', fontWeight: 600 } },
-              '\uD83D\uDD0D ' + filterCount + ' block' + (filterCount !== 1 ? 's' : '') + ' match' + (filterCount === 1 ? 'es' : '')
-            ),
-            filterActive && el('button', { onClick: deleteFiltered, disabled: showReplay, title: showReplay ? 'Exit construction replay to remove matching blocks' : 'Remove matching blocks', style: {
-              width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none',
-              background: showReplay ? 'rgba(71,85,105,.3)' : 'linear-gradient(135deg,#b91c1c,#991b1b)', color: showReplay ? '#475569' : '#fff', fontWeight: 700, fontSize: 11, cursor: showReplay ? 'default' : 'pointer'
-            } }, '\uD83D\uDDD1\uFE0F Remove ' + filterCount + ' Matching Blocks')
           ),
 
           // ── Achievement Badges ──

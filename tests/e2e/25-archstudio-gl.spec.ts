@@ -2661,4 +2661,130 @@ test.describe('Architecture Studio — real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
+  test('block filter panel reveals matching geometry and preserves authoring state', async ({ page }, testInfo) => {
+    const blocks = [
+      { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 },
+      { x: 1, y: 0, z: 0, shape: 'block', material: 'wood', color: '#92400e', rotation: 0 },
+      { x: 2, y: 1, z: -1, shape: 'ramp', material: 'wood', color: '#92400e', rotation: 90 },
+      { x: 3, y: 0, z: 0, shape: 'ramp', material: 'glass', color: '#38bdf8', rotation: 0 }];
+    await page.setViewportSize({ width: 1280, height: 1100 });
+    await mount3d(page, { blocks, undoStack: [[]], redoStack: [[blocks[0]]], projectName: 'Filter study', projectNotes: 'Keep notes', soundEnabled: false, sidebarCollapsed: true, viewLayer: 0 });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:1060px}' });
+    const before = await page.evaluate(() => { const w = window as any; w.__filterCanvas = document.querySelector('canvas[data-arch-gl]'); return { blocks: w.__bucket().blocks, undo: w.__bucket().undoStack, redo: w.__bucket().redoStack, name: w.__bucket().projectName, notes: w.__bucket().projectNotes }; });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=filter]').click();
+    const panel = page.locator('#arch-filter-panel');
+    await expect(page.locator('#arch-filter-heading')).toBeFocused();
+    await panel.getByRole('button', { name: 'Filter by Wood material', exact: true }).click();
+    await expect(panel.locator('[data-arch-filter-result]')).toHaveText('2 of 4 blocks match');
+    await expect(panel.locator('[data-arch-filter-visible]')).toHaveText('1 visible in 3D');
+    await panel.getByRole('button', { name: 'Filter by Ramp shape', exact: true }).click();
+    await expect(panel.locator('[data-arch-filter-result]')).toHaveText('1 matching block out of 4');
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(0);
+    await panel.getByRole('button', { name: 'Reveal matches across floors and sections', exact: true }).click();
+    await expect(page.locator('#arch-filter-heading')).toBeFocused();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(1);
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ filterMaterial: 'wood', filterShape: 'ramp', viewLayer: -1, showSlice: false });
+    await panel.getByRole('button', { name: 'Filter by Stone material', exact: true }).click();
+    await expect(panel.locator('.arch-filter-empty')).toContainText('No blocks match.');
+    await panel.getByRole('button', { name: 'Clear block filters', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(4);
+    await panel.getByRole('button', { name: 'Filter by Wood material', exact: true }).click();
+    await page.screenshot({ path: testInfo.outputPath('filters-desktop.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Close block filters', exact: true }).click();
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=filter]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket().filterMaterial)).toBe('wood');
+    expect(await page.evaluate(() => { const w = window as any; return { blocks: w.__bucket().blocks, undo: w.__bucket().undoStack, redo: w.__bucket().redoStack, name: w.__bucket().projectName, notes: w.__bucket().projectNotes }; })).toEqual(before);
+    expect(await page.evaluate(() => (window as any).__filterCanvas === document.querySelector('canvas[data-arch-gl]'))).toBe(true);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('block filter panel opens from All tools and follows replay without altering the editing floor', async ({ page }) => {
+    const blocks = tower(), history = [[], blocks.slice(0, 3)];
+    await mount3d(page, { blocks, undoStack: history, soundEnabled: false, showReplay: true, replayStep: 1, sidebarCollapsed: true, filterMaterial: 'stone', viewLayer: 0 });
+    await page.getByRole('button', { name: 'All tools', exact: true }).click();
+    await page.locator('#arch-tool-browser').getByRole('searchbox').fill('material filter');
+    await page.locator('#arch-tool-browser [data-arch-tool=filter]').click();
+    const panel = page.locator('#arch-filter-panel');
+    await expect(page.locator('#arch-filter-heading')).toBeFocused();
+    await expect(panel.locator('.arch-filter-scope')).toHaveText('Replay step 2 of 3');
+    await expect(panel.locator('[data-arch-filter-result]')).toHaveText('3 of 3 blocks match');
+    await panel.locator('summary').click();
+    await expect(panel.locator('.arch-filter-remove')).toBeDisabled();
+    await page.locator('#arch-replay-panel').getByRole('slider').focus(); await page.keyboard.press('Home');
+    await expect(panel.locator('.arch-filter-empty')).toContainText('This replay step has no blocks.');
+    await page.keyboard.press('End');
+    await expect(panel.locator('[data-arch-filter-result]')).toHaveText('4 of 13 blocks match');
+    await page.getByRole('button', { name: 'Floor Grid', exact: true }).click();
+    await panel.getByRole('button', { name: 'Filter by Glass material', exact: true }).click();
+    await expect(panel.locator('.arch-filter-grid-note')).toContainText('full editing floor');
+    await expect(page.locator('[data-arch-cell="0,0,0"]')).toHaveAttribute('aria-label', /stone/);
+    await panel.getByRole('button', { name: 'Clear block filters', exact: true }).click();
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ viewLayer: 0, showReplay: true, replayStep: 2, blocks, undoStack: history });
+    await panel.getByRole('button', { name: 'Show all materials', exact: true }).focus();
+    await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=filter]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('block filter panel bulk removal includes hidden floors and remains undoable', async ({ page }) => {
+    const blocks = tower().map(b => ({ ...b, color: ({ stone: '#94a3b8', brick: '#b45309', wood: '#92400e' } as any)[b.material], rotation: 0 }));
+    await mount3d(page, { blocks, undoStack: [], redoStack: [], showFilter: true, filterMaterial: 'brick', viewLayer: 0, soundEnabled: false });
+    const panel = page.locator('#arch-filter-panel');
+    await expect(panel.locator('[data-arch-filter-result]')).toHaveText('8 of 13 blocks match');
+    await expect(panel.locator('[data-arch-filter-visible]')).toHaveText('0 visible in 3D');
+    await panel.locator('summary').click();
+    await expect(panel.locator('#arch-filter-remove-help')).toContainText('across all floors and sections');
+    await panel.getByRole('button', { name: 'Remove 8 matching blocks', exact: true }).click();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(5);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack)).toEqual([blocks]);
+    await expect(panel.locator('.arch-filter-remove')).toBeDisabled();
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual(blocks);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('block filter panel has reachable phone targets and accessible themes', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 960 });
+    await mount3d(page, { blocks: tower(), soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=filter]').click();
+    const panel = page.locator('#arch-filter-panel');
+    await panel.getByRole('button', { name: 'Filter by Brick material', exact: true }).click();
+    const sizes = await panel.locator('button,summary').evaluateAll(els => els.filter(el => el.getClientRects().length).map(el => { const r = el.getBoundingClientRect(); return { width: r.width, height: r.height, left: r.left, right: r.right }; }));
+    expect(sizes.filter(r => r.width < 44 || r.height < 44 || r.left < 0 || r.right > 320)).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath('filters-materials-phone.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Filter by Door shape', exact: true }).scrollIntoViewIfNeeded();
+    expect(await panel.getByRole('button', { name: 'Filter by Door shape', exact: true }).evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+    await panel.getByRole('button', { name: 'Filter by Door shape', exact: true }).click();
+    await expect(panel.getByRole('button', { name: 'Filter by Door shape', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await page.screenshot({ path: testInfo.outputPath('filters-shapes-phone.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Show all shapes', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(8);
+    await page.locator('[data-arch-stage]').scrollIntoViewIfNeeded();
+    expect(await page.locator('canvas[data-arch-gl]').evaluate(el => { const r = el.getBoundingClientRect(); return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === el; })).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('filters-model-phone.png'), fullPage: true });
+
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.setViewportSize({ width: 1280, height: 1100 });
+    await page.addStyleTag({ content: '#wrap{height:1060px}' });
+    await panel.locator('summary').click();
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      const violations = await page.evaluate(async () => {
+        const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+        return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+      });
+      expect(violations, theme).toEqual([]);
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
+    await panel.getByRole('button', { name: 'Show all shapes', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(panel.getByRole('button', { name: 'Show all shapes', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=filter]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+
 });
