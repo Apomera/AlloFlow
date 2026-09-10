@@ -146,6 +146,19 @@ async function checkRecovery(page, context, width, portalUrl) {
         await page.screenshot({ path: path.join(output, width + '-' + name + '.png') });
         states.push({ name, steps: guideTitles.length, overflow, violations });
       }
+
+      await page.locator('[data-store-setup-route="it"]').click();
+      assert.equal(await page.locator('[data-help-key="schoolrewards_copy_source"]').count(), 0);
+      assert.equal(await page.locator('#sr-school-details').count(), 1);
+      assert.equal(await page.locator('#schoolrewards-portal-url').count(), 1);
+      assert.equal(await page.locator('[data-help-key="schoolrewards_add_later"]').getAttribute('open'), null);
+      await page.locator('#sr-path-handoff').scrollIntoViewIfNeeded();
+      const itViolations = await page.evaluate(async () => (await axe.run(document.querySelector('[role="dialog"]'), { runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21aa'] } })).violations.map(v => ({ id: v.id, impact: v.impact })));
+      assert.deepEqual(itViolations.filter(v => ['serious','critical'].includes(v.impact)), []);
+      await page.screenshot({ path: path.join(output, width + '-it-route.png') });
+      await page.locator('[data-help-key="schoolrewards_add_later"] > summary').click();
+      assert.equal(await page.locator('[data-help-key="schoolrewards_add_later"]').evaluate(el => el.open), true);
+      await page.locator('[data-store-setup-route="guided"]').click();
       assert.equal(await page.evaluate(() => JSON.stringify(localStorage)), before, 'Guidance must not save setup progress or an address');
       assert.equal(await page.evaluate(() => opened.length), 0, 'Guidance must not open remote setup or authorization');
       assert.deepEqual(blocked, [], 'No source files or remote services should be requested by navigation');

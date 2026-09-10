@@ -146,7 +146,7 @@ describe('not connected: the setup checklist', () => {
       Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(el, value);
       el.dispatchEvent(new Event('input', { bubbles: true }));
     };
-    const inputs = Array.from(dialog.querySelectorAll('[data-help-key="schoolrewards_step_setup"] input[type="text"], [data-help-key="schoolrewards_step_setup"] input:not([type])'));
+    const inputs = Array.from(dialog.querySelectorAll('[id="sr-school-details"] input[type="text"], [id="sr-school-details"] input:not([type])'));
     await settle(() => {
       setValue(inputs[0], "St. Mary's Elementary");
       setValue(inputs[1], 'school.example');
@@ -549,7 +549,7 @@ describe('address edits, launch recovery and resumable setup', () => {
       return original.call(this, key, value);
     });
     const dialog = await mountPanel({ portalUrl: PORTAL, initialPath: 'setup' });
-    const school = dialog.querySelector('[data-help-key="schoolrewards_step_setup"] input[placeholder="Example Elementary"]');
+    const school = dialog.querySelector('[id="sr-school-details"] input[placeholder="Example Elementary"]');
     await settle(() => inputValue(school, 'Fictional Unsaved School'));
     expect(school.value).toBe('Fictional Unsaved School');
     reject = false;
@@ -633,8 +633,9 @@ describe('IT handoff (2026-09-02)', () => {
     window.alloCopyText = vi.fn(async () => true);
     localStorage.setItem('allo_school_rewards_setup_v1', JSON.stringify({ steps: [], form: { schoolName: 'Lincoln Elementary', allowedDomain: 'lincoln.k12.example' } }));
     const dialog = await mountPanel({ portalUrl: '' });
+    await settle(() => dialog.querySelector('[data-store-setup-route="it"]').click());
     const box = dialog.querySelector('[data-help-key="schoolrewards_handoff"]');
-    expect(box.textContent).toMatch(/Not doing the editor steps yourself/);
+    expect(box.textContent).toMatch(/Send your school details and setup packet to IT/);
     await settle(() => box.querySelector('[data-help-key="schoolrewards_handoff_copy"]').click());
     const text = window.alloCopyText.mock.calls[0][0];
     expect(text).toContain('Lincoln Elementary');
@@ -658,7 +659,8 @@ describe('IT handoff (2026-09-02)', () => {
     URL.revokeObjectURL = vi.fn();
     try {
       const dialog = await mountPanel({ portalUrl: '' });
-      const box = dialog.querySelector('[data-help-key="schoolrewards_handoff"]');
+      await settle(() => dialog.querySelector('[data-store-setup-route="it"]').click());
+    const box = dialog.querySelector('[data-help-key="schoolrewards_handoff"]');
       await settle(() => box.querySelector('[data-help-key="schoolrewards_handoff_download"]').click());
       await new Promise((res) => setTimeout(res, 60));
       expect(created.length).toBe(1);
@@ -855,5 +857,46 @@ describe('themes (2026-09-02)', () => {
   it('dark and contrast pairs clear AA', () => {
     const pairs = [['#e6ebf5', '#162032'], ['#aab6c8', '#162032'], ['#e6ebf5', '#111a2b'], ['#cfe0ff', '#14233d'], ['#ffe9b8', '#3a2c08'], ['#ffb3c0', '#3d1520'], ['#e6ebf5', '#0f2a1f'], ['#fff', '#157347'], ['#8ab4ff', '#162032'], ['#000', '#fbbf24'], ['#fff', '#000']];
     for (const [fg, bg] of pairs) expect(ratio(fg, bg), fg + ' on ' + bg).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+
+describe('school setup ownership routes', () => {
+  it('keeps one details form before either route and preserves progress while switching', async () => {
+    const dialog = await mountPanel({ portalUrl: '' });
+    const details = dialog.querySelector('#sr-school-details');
+    const guided = dialog.querySelector('[data-store-setup-route="guided"]');
+    expect(details.compareDocumentPosition(guided) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const school = details.querySelector('input[placeholder="Example Elementary"]');
+    await settle(() => { Simulate.change(school, { target: { value: 'Fictional Route School' } }); });
+    await settle(() => dialog.querySelector('#sr-step-approval').click());
+    const saved = localStorage.getItem(testing.SR_SETUP_KEY);
+    const networkBefore = fetch.mock.calls.length;
+    await settle(() => dialog.querySelector('[data-store-setup-route="it"]').click());
+    expect(dialog.querySelectorAll('#schoolrewards-portal-url')).toHaveLength(1);
+    expect(dialog.querySelectorAll('#sr-school-details')).toHaveLength(1);
+    expect(dialog.querySelectorAll('[data-help-key="schoolrewards_copy_source"]')).toHaveLength(0);
+    expect(dialog.querySelector('#sr-path-handoff')).toBeTruthy();
+    expect(dialog.querySelector('#sr-school-details input').value).toBe('Fictional Route School');
+    expect(SERIOUS(await axe.run(dialog, AXE_OPTS))).toEqual([]);
+    await settle(() => dialog.querySelector('[data-store-setup-route="guided"]').click());
+    expect(dialog.querySelector('#sr-step-approval').checked).toBe(true);
+    expect(dialog.querySelector('#schoolrewards-setup-snippet').value).toContain('Fictional Route School');
+    expect(localStorage.getItem(testing.SR_SETUP_KEY)).toBe(saved);
+    expect(fetch.mock.calls.length).toBe(networkBefore);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_add_later"]').open).toBe(false);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_domain_requirement"]').textContent).toContain('students.district.org');
+    expect(dialog.querySelector('#sr-route-help').textContent).toContain('not a central multi-school district platform');
+  }, 15000);
+
+  it('uses the same saved address and launch safeguards from the IT route', async () => {
+    const dialog = await mountPanel({ portalUrl: PORTAL });
+    await settle(() => dialog.querySelector('[data-store-setup-route="it"]').click());
+    const input = dialog.querySelector('#schoolrewards-portal-url');
+    await settle(() => Simulate.change(input, { target: { value: PORTAL.replace('xyz', 'changed') } }));
+    expect(dialog.querySelector('[data-help-key="schoolrewards_open_portal"]').disabled).toBe(true);
+    await settle(() => dialog.querySelector('[data-help-key="schoolrewards_discard_address"]').click());
+    expect(input.value).toBe(PORTAL);
+    expect(dialog.querySelector('[data-help-key="schoolrewards_open_portal"]').disabled).toBe(false);
   });
 });

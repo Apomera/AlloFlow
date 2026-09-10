@@ -1121,3 +1121,6 @@ Validation: 57 Chromium cases passed across Adventure visual/settings and learni
 
 - 2026-09-10 Codex release: user explicitly requested commit and deploy.sh after duplicate inputText fix. Other tasks inactive; prior deployment process no longer running. Including completed shared lesson-board, STEM, reports and source changes. Validation and deployment in progress.
 - Release focused validation: 159 tests passed across lesson_board_runtime, lesson_board_transfer, circuit_network_opamp_timing, and watercycle_pilot_experience. Duplicate inputText absent from all three host copies (esbuild transform passed).
+
+- 2026-09-10 Codex: simplifying School Store guided/IT setup routes, school-details ordering, optional integration disclosure, route recovery tests and module mirrors. Existing backend and identity permissions preserved; no deployment in this task.
+- Completed School Store setup simplification: school details before guided/IT ownership choices, one shared Google-authenticated backend explanation, explicit exact-domain compatibility, IT return-address flow, optional Add later section, and matching manual/packet. Validation: 187 tests across five suites passed; desktop 1180px/mobile 390px route, guide, recovery and accessibility checks passed; mobile IT screenshot inspected; generated/public pairs match. No backend permission changes or deployment.
