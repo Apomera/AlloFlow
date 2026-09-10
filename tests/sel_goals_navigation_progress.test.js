@@ -25,7 +25,7 @@ describe('Goal Setter navigation and progress', () => {
   it('uses contextual labels for habit and SMART filters', () => {
     const text = source();
     expect(text).toContain("'aria-label': 'Add suggested habit: ' + sug.n");
-    expect(text).toContain("'aria-label': 'Filter suggested habits by ' + hc.label");
+    expect(text).toContain("'aria-label': 'Filter habits by ' + hc.label");
     expect(text).toContain("'aria-label': 'Filter SMART examples by ' + cat.label");
     expect(text).not.toContain("'aria-label': '4px 10px'");
     expect(text).not.toContain("'aria-label': '44'");

@@ -1,0 +1,38 @@
+{
+  "pass": "tenth - local-calendar habit records",
+  "regressions_passed": 106,
+  "local_date_tests_passed": 5,
+  "browser_workflows_passed": 7,
+  "browser_unrelated_filtered_out": 64,
+  "tool_renders_passed": 72,
+  "audits": {
+    "light-habits-axe.json": [],
+    "theme-contrast-habits-axe.json": [],
+    "theme-dark-habits-axe.json": []
+  },
+  "visual_review": [
+    "theme-dark-habits-phone.png",
+    "theme-contrast-habits-removal-phone.png"
+  ],
+  "sha256": "8dca26acae98cf5d4f943966dd79c59e1807ce66f60ba3b3f51042a6ca574b11",
+  "mirrors_identical": true,
+  "syntax": "passed",
+  "scoped_whitespace": "passed",
+  "logs": [
+    "reports/sel-hub-habits-browser.log",
+    "reports/sel-hub-habits-browser-final.log",
+    "reports/sel-hub-habits-regression.log",
+    "reports/sel-hub-habits-render.log",
+    "reports/sel-hub-habits-render-final.log"
+  ],
+  "validation_sequence": "The initial four functional browser checks and five date checks passed; three theme audits found visible/accessibility-name mismatch. Names now derive from displayed text and routine headings. All 12 focused checks and all 72 renders passed after that correction and removal of unused presentation helpers; the 106 regressions preceded those final refinements.",
+  "date_coverage": [
+    "America/New_York late evening",
+    "Asia/Tokyo early morning",
+    "US spring DST",
+    "US fall DST",
+    "Pacific/Auckland year boundary"
+  ],
+  "limits": "Isolated Chromium harness with simulated host callbacks and serialized state restore. Existing UTC date keys preserved because original local dates cannot be reconstructed. No actual project-file, classroom, real assistive-technology or packaged Desktop validation.",
+  "deployed": false
+}

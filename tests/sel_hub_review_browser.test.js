@@ -557,6 +557,98 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     return page.getByRole('region', { name: 'Weekly goal review', exact: true });
   }
 
+  it('habit tracker gives each date a named state and preserves keyboard records on restore', async () => {
+    await openGoalReview({ tab: 'habits', habits: ['Read a section', { name: 'Make time to create', category: 'creative' }], habitLog: { '0-2025-01-01': true } });
+    let card = page.getByRole('region', { name: 'Routine: Read a section', exact: true });
+    const buttons = card.locator('[data-habit-date]');
+    expect(await buttons.count()).toBe(7);
+    expect(new Set(await buttons.evaluateAll(nodes => nodes.map(n => n.getAttribute('aria-labelledby')))).size).toBe(7);
+    expect(await card.getByRole('button', { name: /Not recorded Read a section$/ }).count()).toBe(7);
+    const today = await buttons.last().getAttribute('data-habit-date');
+    expect(await buttons.last().innerText()).toContain('Today');
+    expect(await buttons.last().getAttribute('aria-pressed')).toBe('false');
+    await buttons.last().focus(); await page.keyboard.press('Space');
+    expect(await buttons.last().getAttribute('aria-pressed')).toBe('true');
+    expect(await card.innerText()).toContain('1 of 7 displayed days recorded.');
+    const saved = await page.evaluate(() => window.__alloflowSelToolData.goals_tool);
+    expect(saved.habitLog['0-' + today]).toBe(true);
+    expect(saved.habitLog['0-2025-01-01']).toBe(true);
+    await openGoalReview(JSON.parse(JSON.stringify(saved)));
+    card = page.getByRole('region', { name: 'Routine: Read a section', exact: true });
+    expect(await card.locator('[data-habit-date]').last().getAttribute('aria-pressed')).toBe('true');
+    await card.locator('[data-habit-date]').last().click();
+    expect(await card.innerText()).toContain('0 of 7 displayed days recorded.');
+  }, 120000);
+
+  it('habit tracker cancels removal and reindexes other routines without changing their records', async () => {
+    await openGoalReview({ tab: 'habits', habits: ['First routine', { name: 'Second routine', category: 'creative' }], habitLog: { '0-2025-01-01': true, '1-2025-01-02': true, '1-2025-01-03': false } });
+    const tracker = page.getByRole('region', { name: 'Habit tracker', exact: true });
+    await tracker.getByRole('button', { name: 'Remove routine: First routine', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-habit-remove-cancel-0');
+    const confirm = tracker.getByRole('group', { name: 'Confirm removal of First routine', exact: true });
+    await confirm.getByRole('button', { name: 'Keep routine', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-habit-remove-0');
+    expect((await page.evaluate(() => window.__alloflowSelToolData.goals_tool)).habits).toHaveLength(2);
+    await tracker.getByRole('button', { name: 'Remove routine: First routine', exact: true }).click();
+    await confirm.getByRole('button', { name: 'Remove routine and records', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-habits-heading');
+    const data = await page.evaluate(() => window.__alloflowSelToolData.goals_tool);
+    expect(data.habits).toEqual([{ name: 'Second routine', category: 'creative' }]);
+    expect(data.habitLog).toEqual({ '0-2025-01-02': true, '0-2025-01-03': false });
+    await tracker.getByRole('button', { name: 'Remove routine: Second routine', exact: true }).click();
+    await tracker.getByRole('button', { name: 'Remove routine and records', exact: true }).click();
+    expect((await page.evaluate(() => window.__alloflowSelToolData.goals_tool)).habitLog).toEqual({});
+    expect(await tracker.innerText()).toContain('No routines recorded yet.');
+  }, 120000);
+
+  it('habit tracker supports labeled authoring, empty category filters and unfiltered totals', async () => {
+    await openGoalReview({ tab: 'habits', habits: [] });
+    const tracker = page.getByRole('region', { name: 'Habit tracker', exact: true });
+    await tracker.getByRole('textbox', { name: 'Routine to try', exact: true }).fill('A short practice');
+    await tracker.getByRole('combobox', { name: 'Routine category', exact: true }).selectOption('academic');
+    await tracker.getByRole('button', { name: 'Add routine', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-habit-0');
+    const card = tracker.getByRole('region', { name: 'Routine: A short practice', exact: true });
+    await card.locator('[data-habit-date]').last().click();
+    await tracker.getByRole('button', { name: 'Filter habits by Creative', exact: true }).click();
+    expect(await tracker.innerText()).toContain('No routines in this category.');
+    await tracker.getByText('Daily record totals', { exact: true }).click();
+    const table = tracker.getByRole('table', { name: 'Records across current routines', exact: true });
+    expect(await table.getByRole('row').last().innerText()).toContain('1 of 1');
+    await tracker.getByRole('button', { name: 'All routines', exact: true }).click();
+    expect(await card.count()).toBe(1);
+    expect(await tracker.getByRole('textbox', { name: 'Routine to try', exact: true }).inputValue()).toBe('');
+  }, 120000);
+
+  it('habit tracker rejects stale removal targets after the routine list changes', async () => {
+    await openGoalReview({ tab: 'habits', habits: ['Original routine'], pendingHabitRemoval: { index: 0, snapshot: JSON.stringify(['A different routine']) } });
+    const tracker = page.getByRole('region', { name: 'Habit tracker', exact: true });
+    expect(await tracker.getByRole('button', { name: 'Remove routine and records', exact: true }).count()).toBe(0);
+    expect(await tracker.getByRole('button', { name: 'Remove routine: Original routine', exact: true }).count()).toBe(1);
+  }, 120000);
+
+  it.each(['', 'theme-dark', 'theme-contrast'])('habit tracker fits a phone with accessible records and removal in %s', async theme => {
+    await openGoalReview({ tab: 'habits', habits: [{ name: 'Read or listen to a short section with a support I choose', category: 'academic' }] }, 320, theme);
+    const tracker = page.getByRole('region', { name: 'Habit tracker', exact: true });
+    await tracker.locator('[data-habit-date]').last().click();
+    await tracker.getByRole('button', { name: /^Remove routine:/ }).click();
+    await tracker.getByText('Daily record totals', { exact: true }).click();
+    await page.addScriptTag({ path: path.join(root, 'node_modules/axe-core/axe.min.js') });
+    const violations = await tracker.evaluate(async node => {
+      const result = await window.axe.run(node, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'select-name', 'label-content-name-mismatch'] } });
+      return result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ html: n.html, summary: n.failureSummary })) }));
+    });
+    fs.writeFileSync(path.join(reports, (theme || 'light') + '-habits-axe.json'), JSON.stringify(violations, null, 2));
+    expect(violations).toEqual([]);
+    expect(await tracker.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+    expect(await tracker.locator('button:visible,input:visible,select:visible,summary:visible').evaluateAll(nodes => nodes.every(node => node.getBoundingClientRect().height >= 44))).toBe(true);
+    await tracker.locator('[data-habit-date]').first().scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-habits-phone.png') });
+    await tracker.getByRole('button', { name: 'Keep routine', exact: true }).scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-habits-removal-phone.png') });
+    expect(errors).toEqual([]);
+  }, 120000);
+
   const completedNoteGoal = (id, text) => ({ id, text, category: 'academic', completed: true, progress: 100, createdAt: Date.now() - 86400000, completedAt: Date.now(), steps: [{ text: 'Try a model', done: true }], reflections: [], customField: 'keep me' });
   const noteState = () => page.evaluate(() => window.__alloflowSelToolData.goals_tool);
   const noteRegion = name => page.getByRole('region', { name, exact: true });

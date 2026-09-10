@@ -122,6 +122,19 @@ window.SelHub = window.SelHub || {
     ]
   };
 
+  // Date-only habit records use the device calendar, including DST transitions.
+  function goalHabitWeekDates(now) {
+    var anchor = new Date(now);
+    anchor.setHours(12, 0, 0, 0);
+    var dates = [];
+    for (var offset = 6; offset >= 0; offset--) {
+      var day = new Date(anchor.getTime());
+      day.setDate(anchor.getDate() - offset);
+      dates.push(day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0'));
+    }
+    return dates;
+  }
+
   // ── Weekly review record helpers ──
   function goalReviewSnapshot(goals, now) {
     var start = now - 7 * 86400000;
@@ -652,7 +665,6 @@ window.SelHub = window.SelHub || {
         // ── Habit Tracker state ──
         var habits = d.habits || [];
         var habitLog = d.habitLog || {};
-        var habitEditMode = d.habitEditMode || false;
 
         // ── Vision Board state ──
         var visionBoard = d.visionBoard || { thisYear: '', thisMonth: '', thisWeek: '' };
@@ -951,18 +963,7 @@ window.SelHub = window.SelHub || {
         };
 
         // ── Habit Tracker helpers ──
-        var getWeekDates = function() {
-          var dates = [];
-          var today = new Date();
-          for (var i = 6; i >= 0; i--) {
-            var d2 = new Date(today.getTime() - i * 86400000);
-            dates.push(d2.toISOString().slice(0, 10));
-          }
-          return dates;
-        };
-
-        var weekDates = getWeekDates();
-        var dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        var weekDates = goalHabitWeekDates(Date.now());
 
         var toggleHabit = function(habitIdx, dateStr) {
           sfxClick();
@@ -1004,7 +1005,8 @@ window.SelHub = window.SelHub || {
           if (!name || !name.trim() || habits.length >= 7) return;
           sfxAdd();
           var habitObj = { name: name.trim(), category: category || 'health' };
-          upd({ habits: habits.concat([habitObj]) });
+          upd({ habits: habits.concat([habitObj]), habitNameDraft: '', pendingHabitRemoval: null, habitCategoryFilter: 'all', habitNotice: 'Routine added. You choose which days to record.' });
+          setTimeout(function() { var card = document.getElementById('goal-habit-' + habits.length); if (card) card.focus(); }, 0);
         };
 
         // Helper to get habit display name (supports old string format and new object format)
@@ -1018,7 +1020,20 @@ window.SelHub = window.SelHub || {
           return (hab && hab.category) || 'health';
         };
 
+        var focusHabitControl = function(id) {
+          setTimeout(function() { var control = document.getElementById(id); if (control) control.focus(); }, 0);
+        };
+
+        var requestHabitRemoval = function(idx) {
+          upd({ pendingHabitRemoval: { index: idx, snapshot: JSON.stringify(habits) } });
+          focusHabitControl('goal-habit-remove-cancel-' + idx);
+        };
+
         var removeHabit = function(idx) {
+          if (!d.pendingHabitRemoval || d.pendingHabitRemoval.index !== idx || d.pendingHabitRemoval.snapshot !== JSON.stringify(habits)) {
+            upd({ pendingHabitRemoval: null, habitNotice: 'The routine list changed. Choose the routine to remove again.' });
+            return;
+          }
           var next = habits.filter(function(h, i) { return i !== idx; });
           // Clean up log entries for removed habit
           var newLog = {};
@@ -1028,13 +1043,8 @@ window.SelHub = window.SelHub || {
             if (hi < idx) { newLog[k] = habitLog[k]; }
             else if (hi > idx) { newLog[(hi - 1) + '-' + parts.slice(1).join('-')] = habitLog[k]; }
           });
-          upd({ habits: next, habitLog: newLog });
-        };
-
-        var getHabitCompletion = function(habitIdx) {
-          var done = 0;
-          weekDates.forEach(function(wd) { if (habitLog[habitIdx + '-' + wd]) done++; });
-          return Math.round((done / 7) * 100);
+          upd({ habits: next, habitLog: newLog, pendingHabitRemoval: null, habitNotice: 'Routine and its dated records removed. Other routine records are unchanged.' });
+          focusHabitControl('goal-habits-heading');
         };
 
         // ── Vision Board helpers ──
@@ -1331,19 +1341,6 @@ window.SelHub = window.SelHub || {
             var pct = Math.round((completed / habits.length) * 100);
             return { date: wd, pct: pct, completed: completed, total: habits.length };
           });
-        };
-
-        // ── Habit of the Week helper ──
-        var getHabitOfTheWeek = function() {
-          if (habits.length === 0) return null;
-          var bestIdx = 0;
-          var bestPct = 0;
-          habits.forEach(function(hab, hi) {
-            var pct = getHabitCompletion(hi);
-            if (pct > bestPct) { bestPct = pct; bestIdx = hi; }
-          });
-          if (bestPct === 0) return null;
-          return { name: getHabitName(habits[bestIdx]), category: getHabitCategory(habits[bestIdx]), pct: bestPct, idx: bestIdx };
         };
 
         var templates = GOAL_TEMPLATES[band] || GOAL_TEMPLATES.elementary;
@@ -1738,172 +1735,76 @@ window.SelHub = window.SelHub || {
             ) : null,
 
             // ── HABITS TAB ──
-            tab === 'habits' ? h('div', null,
-              h('div', { style: { fontSize: 14, fontWeight: 'bold', color: _goaFg('#a5b4fc'), marginBottom: 4 } }, '\uD83D\uDD01 Daily Habit Tracker'),
-              h('p', { style: { fontSize: 11, color: _goaFg('#94a3b8'), marginBottom: 14, lineHeight: 1.5 } },
-                band === 'elementary' ? 'Track your daily habits! Check off each one you do every day.' :
-                band === 'middle' ? 'Build consistency by tracking up to 7 daily habits over the week.' :
-                'Atomic habits: track small daily actions that compound over time. Up to 7 habits.'
-              ),
-              // Habit of the Week spotlight
-              (function() {
-                var hotw = getHabitOfTheWeek();
-                if (!hotw) return null;
-                var hCat = HABIT_CATEGORIES.find(function(c) { return c.id === hotw.category; }) || HABIT_CATEGORIES[0];
-                return h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.10), rgba(234,179,8,0.06))', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', gap: 10 } },
-                  h('span', { style: { fontSize: 18 } }, '\u2B50'),
-                  h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontSize: 11, fontWeight: 'bold', color: _goaFg('#fbbf24'), textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, 'Habit of the Week'),
-                    h('div', { style: { fontSize: 12, color: _goaFg('#e2e8f0'), fontWeight: 'bold' } }, hotw.name),
-                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 } },
-                      h('span', { style: { fontSize: 10 } }, hCat.emoji),
-                      h('span', { style: { fontSize: 10, color: _goaFg('#94a3b8') } }, hCat.label),
-                      h('span', { style: { fontSize: 10, fontWeight: 'bold', color: hotw.pct >= 80 ? _goaFg('#34d399') : _goaFg('#fbbf24') } }, hotw.pct + '% this week')
-                    )
-                  )
-                );
-              })(),
-              // Add habit input with category selector
-              habits.length < 7 ? h('div', { style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
-                h('input', { type: 'text', id: 'habit-input', 'aria-label': 'Add a daily habit', placeholder: band === 'elementary' ? 'Add a habit (e.g., Drink water)...' : 'Add a daily habit...', onKeyDown: function(e) {
-                  if (e.key === 'Enter' && e.target.value.trim()) {
-                    var catSel = document.getElementById('habit-cat-select');
-                    var cat = catSel ? catSel.value : 'health';
-                    addHabit(e.target.value, cat); e.target.value = '';
-                  }
-                }, style: { flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#e2e8f0'), fontSize: 12 } }),
-                h('select', { id: 'habit-cat-select', style: { padding: '8px 6px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#94a3b8'), fontSize: 11, cursor: 'pointer' } },
-                  HABIT_CATEGORIES.map(function(hc) { return h('option', { key: hc.id, value: hc.id }, hc.emoji + ' ' + hc.label); })
+            tab === 'habits' ? h('section', { 'aria-label': 'Habit tracker', style: { fontSize: 14, lineHeight: 1.6, color: _goaFg('#e2e8f0'), overflowWrap: 'anywhere' } },
+              h('h3', { id: 'goal-habits-heading', tabIndex: -1, style: { fontSize: 18, margin: '0 0 8px', scrollMarginTop: 100 } }, 'Routines that fit your day'),
+              h('p', null, 'Choose a routine that is useful to you. You can change your plan, ask for support, or take a break. An unchecked day means not recorded; it does not tell us whether you tried or how the day went.'),
+              h('p', null, 'Dates follow this device’s local calendar. Earlier dated records keep their original date labels. Use the Hub save/export controls to keep a project copy.'),
+              h('p', { role: 'status', 'aria-live': 'polite' }, d.habitNotice || ''),
+              habits.length < 7 ? h('form', { 'aria-label': 'Add a routine', onSubmit: function(event) { event.preventDefault(); addHabit(d.habitNameDraft || '', d.habitCategoryDraft || 'health'); }, style: { marginBottom: 16 } },
+                h('label', { htmlFor: 'habit-input', style: { display: 'block', fontWeight: 700 } }, 'Routine to try'),
+                h('input', { id: 'habit-input', value: d.habitNameDraft || '', onChange: function(event) { upd({ habitNameDraft: event.target.value }); }, style: Object.assign({}, noteFieldStyle, { minHeight: 44, marginBottom: 12 }) }),
+                h('label', { htmlFor: 'habit-cat-select', style: { display: 'block', fontWeight: 700 } }, 'Routine category'),
+                h('select', { id: 'habit-cat-select', value: d.habitCategoryDraft || 'health', onChange: function(event) { upd({ habitCategoryDraft: event.target.value }); }, style: Object.assign({}, noteFieldStyle, { minHeight: 44, marginBottom: 12 }) },
+                  HABIT_CATEGORIES.map(function(hc) { return h('option', { key: hc.id, value: hc.id }, hc.label); })
                 ),
-                h('button', { 'aria-label': '+ Add', onClick: function() {
-                  var inp = document.getElementById('habit-input');
-                  var catSel = document.getElementById('habit-cat-select');
-                  if (inp && inp.value.trim()) { addHabit(inp.value, catSel ? catSel.value : 'health'); inp.value = ''; }
-                }, style: { padding: '8px 14px', borderRadius: 8, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '+ Add')
-              ) : h('p', { style: { fontSize: 10, color: _goaFg('#94a3b8'), marginBottom: 10 } }, 'Maximum 7 habits reached. Remove one to add a new one.'),
-              // Habit category filter
-              habits.length > 0 ? h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
-                h('button', { onClick: function() { upd({ habitCategoryFilter: 'all' }); }, style: { padding: '3px 10px', borderRadius: 12, background: habitCategoryFilter === 'all' ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (habitCategoryFilter === 'all' ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.08)'), color: habitCategoryFilter === 'all' ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, 'All'),
-                HABIT_CATEGORIES.map(function(hc) {
-                  var isActive = habitCategoryFilter === hc.id;
-                  return h('button', { 'aria-label': 'Filter suggested habits by ' + hc.label, 'aria-pressed': isActive, key: hc.id, onClick: function() { upd({ habitCategoryFilter: hc.id }); }, style: { padding: '3px 10px', borderRadius: 12, background: isActive ? hc.color + '22' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (isActive ? hc.color + '44' : 'rgba(99,102,241,0.08)'), color: isActive ? hc.color : _goaFg('#94a3b8'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, hc.emoji + ' ' + hc.label);
-                })
-              ) : null,
-              // Habit suggestion chips (with categories)
-              habits.length === 0 ? h('div', { style: { marginBottom: 14 } },
-                h('div', { style: { fontSize: 10, color: _goaFg('#94a3b8'), marginBottom: 6 } }, 'Suggested habits \u2014 tap to add:'),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-                  (band === 'elementary' ?
-                    [{ n: 'Drink water \uD83D\uDCA7', c: 'health' }, { n: 'Read 15 min \uD83D\uDCDA', c: 'academic' }, { n: 'Exercise \uD83C\uDFC3', c: 'health' }, { n: 'Be kind \uD83D\uDC9B', c: 'social' }, { n: 'Draw or color \uD83C\uDFA8', c: 'creative' }] :
-                    band === 'middle' ?
-                    [{ n: 'Read 15 min \uD83D\uDCDA', c: 'academic' }, { n: 'Exercise 20 min \uD83C\uDFC3', c: 'health' }, { n: 'Journal \uD83D\uDCDD', c: 'creative' }, { n: 'No phone at dinner \uD83D\uDCF1', c: 'social' }, { n: 'Practice instrument \uD83C\uDFB5', c: 'creative' }] :
-                    [{ n: 'Read 30 min \uD83D\uDCDA', c: 'academic' }, { n: 'Exercise \uD83D\uDCAA', c: 'health' }, { n: 'Meditate \uD83E\uDDD8', c: 'health' }, { n: 'Journal \uD83D\uDCDD', c: 'creative' }, { n: 'Connect with a friend \uD83E\uDD1D', c: 'social' }]
-                  ).map(function(sug) {
-                    return h('button', { 'aria-label': 'Add suggested habit: ' + sug.n, key: sug.n, onClick: function() { addHabit(sug.n, sug.c); }, style: { padding: '4px 10px', borderRadius: 16, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', color: _goaFg('#a5b4fc'), fontSize: 10, cursor: 'pointer' } }, sug.n);
+                h('button', { type: 'submit', style: noteSaveStyle }, 'Add routine')
+              ) : h('p', null, 'You have seven routines, the limit for this tracker. You can keep these or remove one before adding another.'),
+              habits.length < 7 && h('details', { style: { marginBottom: 16 } },
+                h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700 } }, 'Try a suggested routine'),
+                h('p', null, 'These are starting points. Choose an amount and a way of participating that fit your situation.'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                  [{ n: 'Read or listen to a short section', c: 'academic' }, { n: 'Check my plan and supports', c: 'health' }, { n: 'Make time to create', c: 'creative' }].map(function(sug) {
+                    return h('button', { 'aria-label': 'Add suggested habit: ' + sug.n, key: sug.n, onClick: function() { addHabit(sug.n, sug.c); }, style: noteButtonStyle }, sug.n);
                   })
                 )
-              ) : null,
-              // 7-day grid
-              habits.length > 0 ? h('div', { style: { overflowX: 'auto' } },
-                h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
-                  h('caption', { className: 'sr-only' }, 'Read 30 min \uD83D\uDCDA'), h('thead', null,
-                    h('tr', null,
-                      h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', color: _goaFg('#94a3b8'), fontWeight: 'bold', fontSize: 10, borderBottom: '1px solid rgba(99,102,241,0.1)' } }, 'Habit'),
-                      weekDates.map(function(wd, wi) {
-                        var dt = new Date(wd + 'T12:00:00');
-                        var dayName = dayLabels[dt.getDay()];
-                        var isToday = wd === new Date().toISOString().slice(0, 10);
-                        return h('th', { scope: 'col', key: wd, style: { padding: '6px 4px', color: isToday ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), fontWeight: isToday ? 'bold' : 'normal', fontSize: 11, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)', minWidth: 32 } },
-                          h('div', null, dayName),
-                          h('div', { style: { fontSize: 8 } }, wd.slice(5))
-                        );
-                      }),
-                      h('th', { scope: 'col', style: { padding: '6px 4px', color: _goaFg('#94a3b8'), fontSize: 11, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)' } }, '%')
-                    )
-                  ),
-                  h('tbody', null,
-                    habits.map(function(hab, hi) {
-                      var habCat = getHabitCategory(hab);
-                      // Filter by category
-                      if (habitCategoryFilter !== 'all' && habCat !== habitCategoryFilter) return null;
-                      var pct = getHabitCompletion(hi);
-                      var habCatObj = HABIT_CATEGORIES.find(function(c) { return c.id === habCat; }) || HABIT_CATEGORIES[0];
-                      return h('tr', { key: hi },
-                        h('td', { style: { padding: '8px', color: _goaFg('#e2e8f0'), fontSize: 11, borderBottom: '1px solid rgba(99,102,241,0.05)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
-                          h('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
-                            h('span', { title: habCatObj.label, style: { fontSize: 10 } }, habCatObj.emoji),
-                            h('span', null, getHabitName(hab)),
-                            habitEditMode ? h('button', { 'aria-label': 'Remove habit', onClick: function() { removeHabit(hi); }, style: { background: 'none', border: 'none', color: _goaFg('#ef4444'), fontSize: 10, cursor: 'pointer', padding: 0, marginLeft: 4 } }, '\u2715') : null
-                          )
-                        ),
-                        weekDates.map(function(wd) {
-                          var checked = !!habitLog[hi + '-' + wd];
-                          return h('td', { key: wd, style: { textAlign: 'center', padding: '4px', borderBottom: '1px solid rgba(99,102,241,0.05)' } },
-                            h('button', { 'aria-label': 'Toggle habit completion', onClick: function() { toggleHabit(hi, wd); }, style: { width: 26, height: 26, borderRadius: 6, border: 'none', background: checked ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.04)', color: checked ? _goaFg('#34d399') : '#475569', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 } }, checked ? '\u2705' : '\u2B1C')
-                          );
-                        }),
-                        h('td', { style: { textAlign: 'center', padding: '4px 6px', borderBottom: '1px solid rgba(99,102,241,0.05)' } },
-                          h('span', { style: { fontSize: 11, fontWeight: 'bold', color: pct >= 80 ? _goaFg('#34d399') : pct >= 50 ? _goaFg('#fbbf24') : _goaFg('#94a3b8'), padding: '2px 6px', borderRadius: 4, background: pct >= 80 ? 'rgba(52,211,153,0.1)' : pct >= 50 ? 'rgba(245,158,11,0.1)' : 'transparent' } }, pct + '%')
+              ),
+              habits.length > 0 && h('div', { role: 'group', 'aria-label': 'Filter routines', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 } },
+                h('button', { 'aria-pressed': habitCategoryFilter === 'all', onClick: function() { upd({ habitCategoryFilter: 'all' }); }, style: habitCategoryFilter === 'all' ? noteSaveStyle : noteButtonStyle }, 'All routines'),
+                HABIT_CATEGORIES.map(function(hc) { return h('button', { key: hc.id, 'aria-label': 'Filter habits by ' + hc.label, 'aria-pressed': habitCategoryFilter === hc.id, onClick: function() { upd({ habitCategoryFilter: hc.id }); }, style: habitCategoryFilter === hc.id ? noteSaveStyle : noteButtonStyle }, hc.label); })
+              ),
+              habits.length === 0 ? h('p', null, 'No routines recorded yet. You can start with one manageable action.') : !habits.some(function(hab) { return habitCategoryFilter === 'all' || getHabitCategory(hab) === habitCategoryFilter; }) ? h('p', null, 'No routines in this category. Choose All routines to see your other records.') : null,
+              habits.map(function(hab, hi) {
+                if (habitCategoryFilter !== 'all' && getHabitCategory(hab) !== habitCategoryFilter) return null;
+                var name = getHabitName(hab) || 'Unnamed routine';
+                var recorded = weekDates.filter(function(date) { return !!habitLog[hi + '-' + date]; }).length;
+                var pending = d.pendingHabitRemoval && d.pendingHabitRemoval.index === hi && d.pendingHabitRemoval.snapshot === JSON.stringify(habits);
+                return h('section', { key: hi, id: 'goal-habit-' + hi, tabIndex: -1, 'aria-label': 'Routine: ' + name, style: { marginBottom: 16, padding: 12, border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), borderRadius: 12, scrollMarginTop: 100 } },
+                  h('h4', { id: 'goal-habit-name-' + hi, style: { fontSize: 16, margin: '0 0 8px' } }, name),
+                  h('p', null, recorded + ' of 7 displayed days recorded.'),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8 } },
+                    weekDates.map(function(date) {
+                      var checked = !!habitLog[hi + '-' + date];
+                      var dateText = new Date(date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                      var today = date === weekDates[6];
+                      return h('button', { key: date, 'data-habit-date': date, 'aria-labelledby': 'goal-habit-day-' + hi + '-' + date + ' goal-habit-name-' + hi, 'aria-pressed': checked, onClick: function() { toggleHabit(hi, date); }, style: Object.assign({}, checked ? noteSaveStyle : noteButtonStyle, { minWidth: 0, padding: 8, textAlign: 'left' }) },
+                        h('span', { id: 'goal-habit-day-' + hi + '-' + date },
+                          h('span', { style: { display: 'block' } }, dateText), ' ',
+                          today && h('span', { style: { display: 'block', fontWeight: 700 } }, 'Today'), ' ',
+                          h('span', { style: { display: 'block', fontWeight: 700 } }, checked ? 'Recorded' : 'Not recorded')
                         )
                       );
                     })
-                  )
-                ),
-                // Edit/manage habits button
-                h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 8 } },
-                  h('button', { 'aria-label': 'Edit habits', onClick: function() { upd({ habitEditMode: !habitEditMode }); }, style: { padding: '4px 10px', borderRadius: 6, background: habitEditMode ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (habitEditMode ? 'rgba(239,68,68,0.2)' : 'rgba(99,102,241,0.1)'), color: habitEditMode ? _goaFg('#f87171') : _goaFg('#94a3b8'), fontSize: 10, cursor: 'pointer' } }, habitEditMode ? 'Done editing' : '\u270F\uFE0F Edit habits')
-                ),
-                // Habit streak info
-                (function() {
-                  var bestStreak = 0;
-                  habits.forEach(function(hab, hi) {
-                    var s = 0;
-                    for (var i = weekDates.length - 1; i >= 0; i--) {
-                      if (habitLog[hi + '-' + weekDates[i]]) { s++; } else { break; }
-                    }
-                    if (s > bestStreak) bestStreak = s;
-                  });
-                  return bestStreak > 0 ? h('div', { style: { textAlign: 'center', marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)' } },
-                    h('span', { style: { fontSize: 11, color: _goaFg('#fbbf24') } }, '\uD83D\uDD25 Best current habit streak: ' + bestStreak + ' day' + (bestStreak !== 1 ? 's' : ''))
-                  ) : null;
-                })(),
-                // ── Weekly Habit Completion Chart (7 bars) ──
-                (function() {
-                  var chartData = getWeeklyHabitChartData();
-                  if (chartData.length === 0) return null;
-                  var maxBarH = 80;
-                  return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)' } },
-                    h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _goaFg('#a5b4fc'), marginBottom: 10, textAlign: 'center' } }, '\uD83D\uDCCA Weekly Habit Completion'),
-                    h('div', { style: { display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 6, height: maxBarH + 30 } },
-                      chartData.map(function(cd, ci) {
-                        var dt = new Date(cd.date + 'T12:00:00');
-                        var dayName = dayLabels[dt.getDay()];
-                        var isToday = cd.date === new Date().toISOString().slice(0, 10);
-                        var barH = Math.max(4, Math.round((cd.pct / 100) * maxBarH));
-                        var barColor = cd.pct >= 80 ? _goaFg('#22c55e') : cd.pct >= 50 ? _goaFg('#f59e0b') : cd.pct > 0 ? '#6366f1' : 'rgba(255,255,255,0.06)';
-                        return h('div', { key: ci, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 } },
-                          h('span', { style: { fontSize: 11, fontWeight: 'bold', color: cd.pct >= 80 ? _goaFg('#34d399') : _goaFg('#94a3b8') } }, cd.pct + '%'),
-                          h('div', { style: { width: '100%', maxWidth: 28, height: barH, borderRadius: 4, background: barColor, transition: 'height 0.3s', border: isToday ? '2px solid #a5b4fc' : 'none' } }),
-                          h('span', { style: { fontSize: 8, color: isToday ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), fontWeight: isToday ? 'bold' : 'normal' } }, dayName)
-                        );
-                      })
-                    ),
-                    // Weekly average
-                    (function() {
-                      var totalPct = 0;
-                      chartData.forEach(function(cd) { totalPct += cd.pct; });
-                      var avgPct = Math.round(totalPct / chartData.length);
-                      return h('div', { style: { textAlign: 'center', marginTop: 8, fontSize: 10, color: _goaFg('#94a3b8') } },
-                        'Weekly average: ',
-                        h('span', { style: { fontWeight: 'bold', color: avgPct >= 80 ? _goaFg('#34d399') : avgPct >= 50 ? _goaFg('#fbbf24') : _goaFg('#a5b4fc') } }, avgPct + '%')
-                      );
-                    })()
-                  );
-                })()
-              ) : h('div', { style: { textAlign: 'center', padding: 30 } },
-                h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDD01'),
-                h('p', { style: { fontSize: 13, color: _goaFg('#94a3b8') } }, band === 'elementary' ? 'Add a habit above to start tracking!' : 'Define your daily habits above to begin tracking consistency.'),
-                h('p', { style: { fontSize: 11, color: _goaFg('#94a3b8'), marginTop: 4 } }, 'Tip: Start with just 1-2 habits and build up over time.')
+                  ),
+                  pending ? h('div', { role: 'group', 'aria-label': 'Confirm removal of ' + name, style: { marginTop: 12 } },
+                    h('p', null, 'Remove this routine and all its dated records? This cannot be undone here. Other routine records will stay.'),
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                      h('button', { id: 'goal-habit-remove-cancel-' + hi, onClick: function() { upd({ pendingHabitRemoval: null }); focusHabitControl('goal-habit-remove-' + hi); }, style: noteButtonStyle }, 'Keep routine'),
+                      h('button', { onClick: function() { removeHabit(hi); }, style: noteButtonStyle }, 'Remove routine and records')
+                    )
+                  ) : h('button', { id: 'goal-habit-remove-' + hi, 'aria-label': 'Remove routine: ' + name, onClick: function() { requestHabitRemoval(hi); }, style: Object.assign({}, noteButtonStyle, { marginTop: 12 }) }, 'Remove routine')
+                );
+              }),
+              habits.length > 0 && h('details', { style: { marginTop: 16 } },
+                h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700 } }, 'Daily record totals'),
+                h('p', null, 'Totals include all current routines, including those hidden by the category filter. They count recorded checks, not effort or learning. Adding or removing a routine changes the current list used for these totals.'),
+                h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 14 } },
+                  h('caption', null, 'Records across current routines'),
+                  h('thead', null, h('tr', null, h('th', { scope: 'col', style: { textAlign: 'left', padding: 8 } }, 'Date'), h('th', { scope: 'col', style: { textAlign: 'left', padding: 8 } }, 'Recorded'))),
+                  h('tbody', null, getWeeklyHabitChartData().map(function(day) { return h('tr', { key: day.date },
+                    h('th', { scope: 'row', style: { textAlign: 'left', padding: 8, fontWeight: 400 } }, day.date),
+                    h('td', { style: { padding: 8 } }, day.completed + ' of ' + day.total)
+                  ); }))
+                )
               )
             ) : null,
 
