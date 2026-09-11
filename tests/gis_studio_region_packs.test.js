@@ -862,6 +862,25 @@ describe('GIS Studio - custom region packs', () => {
     expect(analysed).toContain('cloud-masked');
   });
 
+  it('walks the basemap fallback chain without looping and ends at the schematic', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const next = tool.testing.nextGISBasemap;
+    expect(next('street', [])).toBe('esriStreet');
+    expect(next('esriStreet', [])).toBe('satellite');
+    expect(next('satellite', [])).toBe('esriStreet');
+    // Providers that already failed this session are skipped, never retried.
+    expect(next('street', ['esriStreet'])).toBe('satellite');
+    expect(next('street', ['esriStreet', 'satellite'])).toBe('none');
+    expect(next('satellite', ['esriStreet'])).toBe('none');
+    expect(next('none', [])).toBe('none');
+    expect(next('not-a-provider', [])).toBe('none');
+    // Every online provider declares where to go next, so no failure dead-ends
+    // on a blank map.
+    Object.values(tool.testing.basemapProviders).filter((provider) => provider.online).forEach((provider) => {
+      expect(provider.fallback, provider.id + ' has no fallback').toBeTruthy();
+    });
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });

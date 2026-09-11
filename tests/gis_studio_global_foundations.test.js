@@ -400,7 +400,7 @@ describe('GIS Studio - declarative basemap provider lifecycle', () => {
   });
 
 
-  it('keeps a tile-error warning visible when a routine overlay refresh reuses the basemap', async () => {
+  it('falls back to the next keyless provider on a tile error and keeps saying so across an overlay refresh', async () => {
     const stub = makeBasemapLifecycleStub();
     const host = document.createElement('div');
     document.body.appendChild(host);
@@ -423,8 +423,14 @@ describe('GIS Studio - declarative basemap provider lifecycle', () => {
       await React.act(async function () {
         layer.emit('tileerror', { tile: 1 });
         await Promise.resolve();
+        await Promise.resolve();
       });
-      expect(host.textContent).toContain('Some online basemap tiles could not load.');
+      // OpenStreetMap failed, so the map moved to Esri's street tiles on its own.
+      expect(host.textContent).toContain('OpenStreetMap Standard tiles could not load, so the map switched to Esri World Street Map.');
+      expect(stub.layers).toHaveLength(2);
+      expect(stub.layers[1].url).toContain('World_Street_Map');
+      // The learner's saved choice is untouched; the fallback is for this visit.
+      expect(host.querySelector('select[value="esriStreet"], option[value="esriStreet"]')).toBeTruthy();
 
       const gridLabel = Array.from(host.querySelectorAll('label')).find(function (label) {
         return label.textContent.includes('Coordinate grid');
@@ -436,8 +442,8 @@ describe('GIS Studio - declarative basemap provider lifecycle', () => {
         await Promise.resolve();
       });
 
-      expect(stub.layers).toHaveLength(1);
-      expect(host.textContent).toContain('Some online basemap tiles could not load.');
+      expect(stub.layers).toHaveLength(2);
+      expect(host.textContent).toContain('so the map switched to Esri World Street Map');
       expect(host.textContent).not.toContain('Interactive base map ready.');
     } finally {
       if (host.isConnected) {

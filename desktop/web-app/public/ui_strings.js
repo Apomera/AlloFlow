@@ -13975,7 +13975,15 @@
       "ui_planning_checks_complete": "{done} of {total} planning checks complete",
       "ui_rubric_rated_complete": "{rated} of {total} rubric areas rated • review complete",
       "ui_rubric_rated": "{rated} of {total} rubric areas rated",
-      "ui_mapped_records_table_twin": "{count} mapped records in a data-table twin"
+      "ui_mapped_records_table_twin": "{count} mapped records in a data-table twin",
+      "basemap": {
+        "fell_back": "{failed} tiles could not load, so the map switched to {next}. Your saved basemap choice is unchanged.",
+        "all_failed": "No online basemap could load ({provider} was the last tried), so the offline schematic is shown. Mapped data remain interactive."
+      },
+      "sr_basemap_all_failed": "Online basemap tiles could not load, so the offline schematic map is shown.",
+      "sr_basemap_fell_back": "Basemap switched from {failed} to {next} because its tiles could not load.",
+      "ui_street_map_esri": "Street map (Esri)",
+      "ui_basemap_privacy_note": "Online basemaps load Leaflet from unpkg.com and tiles from {service}. Each pan or zoom tells that service which area you are viewing."
     },
     "a11yauditor": {
       "vision_audit_failed_the_file_may_be_to": "Vision audit failed. The file may be too large or unsupported.",

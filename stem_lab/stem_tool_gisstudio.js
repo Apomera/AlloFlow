@@ -662,7 +662,16 @@
       policy: {
         url: 'https://operations.osmfoundation.org/policies/tiles/', interactiveOnly: true,
         allowsPrefetch: false, allowsOfflineCache: false, allowsSensitiveData: false, revealsViewport: true
-      }
+      },
+      fallback: 'esriStreet'
+    },
+    esriStreet: {
+      id: 'esriStreet', label: 'Esri World Street Map',
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+      attribution: 'Tiles &copy; Esri and source contributors', maxZoom: 18,
+      domains: ['server.arcgisonline.com'], requestOrigin: 'https://server.arcgisonline.com', online: true,
+      policy: { providerCreditsRequired: true, revealsViewport: true },
+      fallback: 'satellite'
     },
     satellite: {
       id: 'satellite', label: 'Esri World Imagery',
@@ -670,7 +679,8 @@
       attribution: 'Tiles &copy; Esri and source contributors', maxZoom: 18,
       domains: ['services.arcgisonline.com'], requestOrigin: 'https://services.arcgisonline.com', online: true,
       creditsUrl: 'https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9',
-      policy: { providerCreditsRequired: true, revealsViewport: true }
+      policy: { providerCreditsRequired: true, revealsViewport: true },
+      fallback: 'esriStreet'
     },
     none: {
       id: 'none', label: 'Offline schematic', url: '', attribution: '',
@@ -684,6 +694,23 @@
     Object.freeze(provider);
   });
   Object.freeze(GIS_BASEMAP_PROVIDERS);
+
+  // The next provider to try after `id` fails, skipping any that already
+  // failed this session, ending at the offline schematic. Never loops.
+  function nextGISBasemap(id, failed) {
+    var tried = Array.isArray(failed) ? failed.slice() : [];
+    var current = getGISBasemapProvider(id);
+    var guard = 0;
+    while (current && current.fallback && guard < 10) {
+      guard += 1;
+      var candidate = getGISBasemapProvider(current.fallback);
+      if (!candidate || !candidate.online) return 'none';
+      if (tried.indexOf(candidate.id) < 0 && candidate.id !== id) return candidate.id;
+      tried.push(candidate.id);
+      current = candidate;
+    }
+    return 'none';
+  }
 
   function getGISBasemapProvider(id) {
     return Object.prototype.hasOwnProperty.call(GIS_BASEMAP_PROVIDERS, id) ? GIS_BASEMAP_PROVIDERS[id] : null;
@@ -3858,6 +3885,7 @@
       normalizeGISRegionPackList: normalizeGISRegionPackList, resolveRegionPack: resolveRegionPack,
       regionPackFormat: GIS_REGION_PACK_FORMAT, customPackLimit: GIS_CUSTOM_PACK_LIMIT,
       basemapProviders: GIS_BASEMAP_PROVIDERS, getGISBasemapProvider: getGISBasemapProvider, createGISBasemapLayer: createGISBasemapLayer,
+      nextGISBasemap: nextGISBasemap,
       haversineKm: haversineKm, pathLengthKm: pathLengthKm, polygonAreaSquareKm: polygonAreaSquareKm,
       pointInFeature: pointInFeature, selectPointsInFeature: selectPointsInFeature,
       selectWithinRadius: selectWithinRadius, nearestRecord: nearestRecord, featureMeasurements: featureMeasurements,
@@ -3974,6 +4002,8 @@
         packPlaces: t('stem.gisstudio.pack.places', 'places'),
         compareSingleLabel: t('stem.gisstudio.compare.single_label', 'One attribute only:'),
         compareSingleNote: t('stem.gisstudio.compare.single_note', '{pack} carries only {attribute}, so both maps show the same layer and there is no contrast to read. Add another numeric column to the pack, map a GeoJSON layer to compare against, or switch to a pack with more attributes.'),
+        basemapFellBack: t('stem.gisstudio.basemap.fell_back', '{failed} tiles could not load, so the map switched to {next}. Your saved basemap choice is unchanged.'),
+        basemapAllFailed: t('stem.gisstudio.basemap.all_failed', 'No online basemap could load ({provider} was the last tried), so the offline schematic is shown. Mapped data remain interactive.'),
         packBudgetExceeded: t('stem.gisstudio.pack.budget_exceeded', 'These boundaries need {incoming} kB and your packs already use {used} kB of the {budget} kB the studio keeps on this device. Remove a pack with boundaries, or load this one without them.'),
         autosaveOk: t('stem.gisstudio.autosave.ok', 'Autosaved locally at {time}.'),
         autosaveWithoutBoundaries: t('stem.gisstudio.autosave.without_boundaries', 'Autosaved locally at {time}, without the region pack boundaries. Download a project file to keep them.'),
@@ -4147,6 +4177,10 @@
         var s11 = React.useState(60), latitude = s11[0], setLatitude = s11[1];
         var s12 = React.useState('Loading the interactive map. The table is ready now.'), mapStatus = s12[0], setMapStatus = s12[1];
         var mapLoadingState = React.useState(true), mapLoading = mapLoadingState[0], setMapLoading = mapLoadingState[1];
+        // Providers whose tiles failed this session. The learner's saved choice is
+        // left alone; the fallback is for this visit only.
+        var failedBasemaps = React.useRef([]);
+        var basemapFallbackNotice = React.useRef(null);
         var s13 = React.useState(getGISBasemapProvider(initial.gisBasemap || 'street') ? (initial.gisBasemap || 'street') : 'none'), basemap = s13[0], setBasemap = s13[1];
         var s14 = React.useState(EXAMPLE_GEOJSON), geoText = s14[0], setGeoText = s14[1];
         var s15 = React.useState(null), geoData = s15[0], setGeoData = s15[1];
@@ -4727,10 +4761,23 @@
                 try { map.removeLayer(tileLayer); } catch (ignoreOldTileLayer) {}
               }
               tileLayer = createGISBasemapLayer(L, basemap, function (_event, ownedLayer) {
-                if (studioMounted.current && mapTileLayer.current === ownedLayer) {
-                  setMapLoading(false);
-                  setMapStatus('Some online basemap tiles could not load. Mapped data remain interactive; choose the offline schematic if the tile service is blocked.');
+                if (!studioMounted.current || mapTileLayer.current !== ownedLayer) return;
+                setMapLoading(false);
+                if (failedBasemaps.current.indexOf(basemap) < 0) failedBasemaps.current.push(basemap);
+                var next = nextGISBasemap(basemap, failedBasemaps.current);
+                var failedLabel = (getGISBasemapProvider(basemap) || {}).label || basemap;
+                if (next === 'none') {
+                  setBasemap('none');
+                  setMapStatus(gisFillTemplate(gisText.basemapAllFailed, { provider: failedLabel }));
+                  announce(gisFillTemplate(__alloT('stem.gisstudio.sr_basemap_all_failed', 'Online basemap tiles could not load, so the offline schematic map is shown.'), {}));
+                  return;
                 }
+                var nextLabel = (getGISBasemapProvider(next) || {}).label || next;
+                var notice = gisFillTemplate(gisText.basemapFellBack, { failed: failedLabel, next: nextLabel });
+                basemapFallbackNotice.current = { basemap: next, message: notice };
+                setBasemap(next);
+                setMapStatus(notice);
+                announce(gisFillTemplate(__alloT('stem.gisstudio.sr_basemap_fell_back', 'Basemap switched from {failed} to {next} because its tiles could not load.'), { failed: failedLabel, next: nextLabel }));
               });
               if (!tileLayer) {
                 setBasemap('none'); persist('gisBasemap', 'none');
@@ -4845,7 +4892,12 @@
             var instruction = analysisMode === 'distance' ? 'Click map vertices to measure a path.' :
               analysisMode === 'buffer' ? 'Click the map to place the buffer center.' : 'Click the map to find the nearest point.';
             if (!mapTileLayer.current._gisHadTileError) {
-              setMapStatus('Interactive base map ready. ' + records.length + ' records mapped. ' + instruction);
+              var pending = basemapFallbackNotice.current;
+              if (pending && pending.basemap === basemap) {
+                setMapStatus(pending.message + ' ' + instruction);
+              } else {
+                setMapStatus('Interactive base map ready. ' + records.length + ' records mapped. ' + instruction);
+              }
             }
             setMapLoading(false);
           });
@@ -6078,14 +6130,15 @@
                   h('p', { style: { margin: '7px 0 0', color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, geographicCoverage.note),
                   !imported && h('button', { type: 'button', onClick: function () { go('import'); }, style: Object.assign({}, control, { marginTop: 8, cursor: 'pointer' }) }, __alloT('stem.gisstudio.ui_broaden_coverage_with_your_data', 'Broaden coverage with your data'))),                h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('span', { style: { fontWeight: 700 } }, __alloT('stem.gisstudio.ui_basemap', 'Basemap')),
-                  h('select', { value: basemap, onChange: function (event) { setBasemap(event.target.value); persist('gisBasemap', event.target.value); }, style: control },
+                  h('select', { value: basemap, onChange: function (event) { basemapFallbackNotice.current = null; setBasemap(event.target.value); persist('gisBasemap', event.target.value); }, style: control },
                     h('option', { value: 'street' }, __alloT('stem.gisstudio.ui_street_map', 'Street map')),
+                    h('option', { value: 'esriStreet' }, __alloT('stem.gisstudio.ui_street_map_esri', 'Street map (Esri)')),
                     h('option', { value: 'satellite' }, __alloT('stem.gisstudio.ui_satellite_imagery', 'Satellite imagery')),
                     h('option', { value: 'none' }, __alloT('stem.gisstudio.ui_no_basemap_offline_schematic', 'No basemap — offline schematic'))),
                   h('span', { style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } },
                     basemap === 'none'
                       ? 'Drawn on this device. No map-tile or map-library requests are made.'
-                      : 'Street and satellite basemaps load Leaflet from unpkg.com and tiles from ' + (basemap === 'satellite' ? 'Esri' : 'OpenStreetMap') + '. Each pan or zoom tells that service which area you are viewing.')),
+                      : gisFillTemplate(__alloT('stem.gisstudio.ui_basemap_privacy_note', 'Online basemaps load Leaflet from unpkg.com and tiles from {service}. Each pan or zoom tells that service which area you are viewing.'), { service: ((getGISBasemapProvider(basemap) || {}).domains || ['the tile service']).join(', ') }))),
                 !imported && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('span', { style: { fontWeight: 700 } }, __alloT('stem.gisstudio.ui_thematic_attribute', 'Thematic attribute')),
                   h('select', { value: metric, onChange: function (event) { setMetric(event.target.value); resetTableRange(); persist('gisMetric', event.target.value); }, style: control },
