@@ -13,6 +13,12 @@
 //   2. Prepends a new entry to desktop/web-app/public/releases.json.
 //   3. Rewrites the FALLBACK_CANVAS_URL constant in launch.html.
 //   4. Rewrites the data-version-label element in index.html (warning-only).
+//   5. Runs dev-tools/set_canvas_url.cjs, the ONE list of every place the link is
+//      held (it also stamps the in-app "Use AlloFlow inside Gemini Canvas" button
+//      and rebuilds its compiled module). Before this step existed the in-app
+//      button was a hand-maintained copy and shipped release 1.4 still pointing at
+//      the 1.3 link. Steps 1-3 above overlap with that list; the delegate finds them
+//      already current and stamps only what is left.
 //
 // Writes are atomic where reasonable (write .tmp + rename) and ordered so
 // that launch.html is rewritten BEFORE the JSON files; if the launch.html
@@ -37,6 +43,7 @@ const RELEASE_JSON = path.posix.join(REPO_ROOT, "release.json");
 const RELEASES_JSON = path.posix.join(REPO_ROOT, "releases.json");
 const LAUNCH_HTML = path.posix.join(REPO_ROOT, "launch.html");
 const INDEX_HTML = path.posix.join(REPO_ROOT, "index.html");
+const SET_CANVAS_URL = path.posix.join(REPO_ROOT, "dev-tools/set_canvas_url.cjs");
 
 const CANVAS_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 const FALLBACK_RE = /const\s+FALLBACK_CANVAS_URL\s*=\s*"[^"]*"\s*;/g;
@@ -226,6 +233,32 @@ async function rewriteIndexHtml(newVersion) {
   info(`  index.html: navbar version -> v${newVersion}`);
 }
 
+// ---------- in-app Canvas button rewrite + rebuild --------------------------
+// The module reads release.json at runtime; this keeps its OFFLINE fallback on the
+// same link and rebuilds the compiled module so the repo root and the desktop
+// mirror both carry it. Hard failure on purpose: a silent skip here is exactly how
+// release 1.4 shipped the in-app button still pointing at the 1.3 link.
+
+async function rewriteMiscModals(newUrl) {
+  if (!(await exists(SET_CANVAS_URL))) die(7, `${SET_CANVAS_URL} not found; the in-app Canvas button would keep the old link.`);
+  let out = "";
+  try {
+    out = execSync(`node "${SET_CANVAS_URL}" "${newUrl}"`, { cwd: REPO_ROOT, stdio: "pipe" }).toString();
+  } catch (e) {
+    const text = String((e.stdout && e.stdout.toString()) || "") + String((e.stderr && e.stderr.toString()) || e.message);
+    die(7, `set_canvas_url failed: ${text.trim().split(String.fromCharCode(10)).slice(-3).join(" | ")}`);
+  }
+  out.trim().split(String.fromCharCode(10)).filter((line) => /changed|rebuilt|mirrored|unchanged/.test(line))
+    .forEach((line) => info(`  ${line.trim()}`));
+  // The delegate's own check is the proof: one link everywhere, module rebuilt.
+  try {
+    execSync(`node "${SET_CANVAS_URL}" --check`, { cwd: REPO_ROOT, stdio: "pipe" });
+  } catch (e) {
+    die(7, `set_canvas_url --check failed after stamping: ${String((e.stdout && e.stdout.toString()) || e.message).trim().split(String.fromCharCode(10)).slice(-4).join(" | ")}`);
+  }
+  info(`  set_canvas_url --check: one link in every place, built module and mirrors in sync`);
+}
+
 // ---------- JSON writes -----------------------------------------------------
 
 async function writeReleaseJson(entry) {
@@ -337,6 +370,7 @@ async function main() {
   // Step 5: rewrite launch.html FIRST so that a regex failure aborts before
   // any JSON files are touched.
   await rewriteLaunchHtml(newUrl);
+  await rewriteMiscModals(newUrl);
 
   // Step 6: JSON writes.
   await writeReleaseJson(releasePointer);

@@ -9,6 +9,15 @@
 // Total ~527 lines extracted from AlloFlowANTI.txt.
 // Closure deps generated via SCOPE-AWARE enumerator (handles param shadowing).
 
+// The current Gemini Canvas share link. release.json is the ONE source of truth and
+// launch.html already reads it at runtime; this module does the same, so a student on
+// an older pinned build still lands on the newest Canvas. The constant below is only
+// the offline fallback, and `node bump-link.mjs <url> "<notes>"` restamps it together
+// with launch.html and release.json - do not edit it by hand.
+const CANVAS_SHARE_URL_FALLBACK = 'https://share.gemini.google/qTPQLK0kok07';
+const CANVAS_RELEASE_JSON_URL = 'https://alloflow-cdn.pages.dev/release.json';
+const CANVAS_SHARE_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
+
 // Schema fields are local drafts. Applying a form never executes a command.
 function AlloCommandFields({ fields, params, tx, disabled, styles, onApply, onDirty = () => {} }) {
   const [values, setValues] = React.useState(() => ({ ...params }));
@@ -1403,6 +1412,21 @@ function AIBackendModalBody(props) {
   const [guidedReady, setGuidedReady] = React.useState(false);
   const guidedHeadingRef = React.useRef(null);
   const prevGuidedViewRef = React.useRef('choose');
+  // Fetched on mount, not on click: window.open must run inside the click's user
+  // gesture or popup blockers eat it, so the URL has to be known beforehand.
+  const [canvasShareUrl, setCanvasShareUrl] = React.useState(CANVAS_SHARE_URL_FALLBACK);
+  React.useEffect(() => {
+    let alive = true;
+    if (typeof fetch !== 'function') return undefined;
+    fetch(CANVAS_RELEASE_JSON_URL + '?t=' + Date.now(), { cache: 'no-store' })
+      .then((res) => (res && res.ok ? res.json() : null))
+      .then((release) => {
+        const url = release && typeof release.canvas_url === 'string' ? release.canvas_url.trim() : '';
+        if (alive && CANVAS_SHARE_URL_RE.test(url)) setCanvasShareUrl(url);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
   React.useEffect(() => {
     // Focus the step heading only on real view TRANSITIONS — never on plain
     // re-renders (that pattern caused the remediation focus war, fixed
@@ -1970,12 +1994,12 @@ function AIBackendModalBody(props) {
         {connected && <p className="text-[11px] font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2">✅ {(t('ai_backend.guided_connected_chip') || 'Connected —') + ' ' + (GUIDED_BACKEND_LABELS[currentBackend] || currentBackend)}</p>}
         {/* Canvas-first card (W7, 2026-08-16): the zero-setup path. A visitor who
             arrived keyless (deep link, shared shell) is one click from the full
-            free experience instead of a key hunt. The share URL is the same one
-            launch.html carries; keep the two in sync when it is restamped.
+            free experience instead of a key hunt. The share URL comes from
+            release.json at runtime (see CANVAS_SHARE_URL_FALLBACK at the top).
             No quota numbers or plan pricing here on purpose — they rot into
             false claims; "your plan's daily quota" plus Google's own page. */}
         {!connected && guidedCard({ 'data-help-key': 'ai_backend_guided_card_canvas' },
-          () => { try { window.open('https://share.gemini.google/Y10uvvswOaio', '_blank', 'noopener'); } catch (e) {} },
+          () => { try { window.open(canvasShareUrl, '_blank', 'noopener'); } catch (e) {} },
           '🚀', t('ai_backend.guided_card_canvas_title') || 'Use AlloFlow inside Gemini Canvas',
           t('ai_backend.guided_card_canvas_badge') || 'No setup',
           t('ai_backend.guided_card_canvas_body') || 'The easiest way to get AI: open AlloFlow inside Google Gemini. Free with a Google account, using your Gemini plan’s daily quota (personal, Education, or paid plans all work). Nothing to install and no key to manage.',

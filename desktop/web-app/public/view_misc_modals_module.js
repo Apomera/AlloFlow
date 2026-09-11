@@ -47,6 +47,9 @@ var ImageIcon = _lazyIcon('ImageIcon');
 var Unplug = _lazyIcon('Unplug');
 var Cpu = _lazyIcon('Cpu');
 var Headphones = _lazyIcon('Headphones');
+const CANVAS_SHARE_URL_FALLBACK = "https://share.gemini.google/qTPQLK0kok07";
+const CANVAS_RELEASE_JSON_URL = "https://alloflow-cdn.pages.dev/release.json";
+const CANVAS_SHARE_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 function AlloCommandFields({ fields, params, tx, disabled, styles, onApply, onDirty = () => {
 } }) {
   const [values, setValues] = React.useState(() => ({ ...params }));
@@ -1207,6 +1210,19 @@ function AIBackendModalBody(props) {
   const [guidedReady, setGuidedReady] = React.useState(false);
   const guidedHeadingRef = React.useRef(null);
   const prevGuidedViewRef = React.useRef("choose");
+  const [canvasShareUrl, setCanvasShareUrl] = React.useState(CANVAS_SHARE_URL_FALLBACK);
+  React.useEffect(() => {
+    let alive = true;
+    if (typeof fetch !== "function") return void 0;
+    fetch(CANVAS_RELEASE_JSON_URL + "?t=" + Date.now(), { cache: "no-store" }).then((res) => res && res.ok ? res.json() : null).then((release) => {
+      const url = release && typeof release.canvas_url === "string" ? release.canvas_url.trim() : "";
+      if (alive && CANVAS_SHARE_URL_RE.test(url)) setCanvasShareUrl(url);
+    }).catch(() => {
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
   React.useEffect(() => {
     if (prevGuidedViewRef.current === guidedView) return;
     prevGuidedViewRef.current = guidedView;
@@ -1689,7 +1705,7 @@ function AIBackendModalBody(props) {
       { "data-help-key": "ai_backend_guided_card_canvas" },
       () => {
         try {
-          window.open("https://share.gemini.google/Y10uvvswOaio", "_blank", "noopener");
+          window.open(canvasShareUrl, "_blank", "noopener");
         } catch (e) {
         }
       },

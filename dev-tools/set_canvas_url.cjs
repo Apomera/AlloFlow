@@ -79,12 +79,25 @@ function sites() {
       set: (text, url) => text.replace(/(id="launch-btn"[\s\S]*?href=")[^"]+(")/, `$1${url}$2`),
     },
     {
-      label: 'view_misc_modals_source.jsx (in-app open-Canvas button)',
+      // The button now reads release.json at runtime (so a student on an older pinned
+      // build still lands on the newest Canvas); this constant is its offline fallback
+      // and the ONLY link literal in the source. The compiled module is checked below.
+      label: 'view_misc_modals_source.jsx (in-app open-Canvas button fallback)',
       file: path.join(ROOT, 'view_misc_modals_source.jsx'),
-      get: (text) => firstMatch(text, /window\.open\('(https:\/\/share\.gemini\.google\/[^']+)'/),
-      set: (text, url) => text.replace(/(window\.open\(')https:\/\/share\.gemini\.google\/[^']+(')/, `$1${url}$2`),
+      get: (text) => firstMatch(text, /CANVAS_SHARE_URL_FALLBACK\s*=\s*'(https:\/\/share\.gemini\.google\/[^']+)'/),
+      set: (text, url) => text.replace(/(CANVAS_SHARE_URL_FALLBACK\s*=\s*')https:\/\/share\.gemini\.google\/[^']+(')/, `$1${url}$2`),
     },
   ];
+}
+
+/** The in-app button ships as a compiled module; a stale build is the silent failure. */
+const BUILT_MODULES = [
+  path.join(ROOT, 'view_misc_modals_module.js'),
+  path.join(MIRROR, 'view_misc_modals_module.js'),
+];
+function rebuildMiscModals() {
+  const { execFileSync } = require('child_process');
+  execFileSync(process.execPath, [path.join(ROOT, '_build_view_misc_modals_module.js')], { cwd: ROOT, stdio: 'pipe' });
 }
 
 function check() {
@@ -112,7 +125,16 @@ function check() {
     console.error('\nCANVAS URL: FAIL — these differ from their published mirror: ' + drifted.join(', '));
     return 1;
   }
-  console.log('\nCANVAS URL: PASS (one link, ' + urls[0] + ', in all ' + found.length + ' places, mirrors in sync)');
+  // The compiled module (root = CDN, public = desktop) must carry the same link, or the
+  // source was stamped and never rebuilt - which is how the in-app button once shipped
+  // a release behind.
+  const stale = BUILT_MODULES.filter((file) => !fs.existsSync(file) || !read(file).includes(urls[0]));
+  if (stale.length) {
+    console.error('\nCANVAS URL: FAIL — built module does not carry ' + urls[0] + ': ' + stale.map((f) => path.relative(ROOT, f)).join(', '));
+    console.error('Run: node _build_view_misc_modals_module.js');
+    return 1;
+  }
+  console.log('\nCANVAS URL: PASS (one link, ' + urls[0] + ', in all ' + found.length + ' places, built module and mirrors in sync)');
   return 0;
 }
 
@@ -141,8 +163,15 @@ function update(url) {
     fs.copyFileSync(source, mirrored);
     console.log('  mirrored   desktop/web-app/public/' + name);
   });
+  // Rebuild the module here rather than asking the operator to remember to.
+  try {
+    rebuildMiscModals();
+    console.log('  rebuilt    view_misc_modals_module.js (root + desktop/web-app/public)');
+  } catch (error) {
+    console.error('\nCANVAS URL: FAIL — could not rebuild view_misc_modals_module.js: ' + String(error.message).split(String.fromCharCode(10))[0]);
+    return 1;
+  }
   console.log('\n' + changed + ' file(s) changed. Still to do:');
-  console.log('  node _build_view_misc_modals_module.js     (the modal lives in a built module)');
   console.log('  git add + commit + push                   (the promo site is Pages off main)');
   console.log('  ./deploy.sh                               (the CDN app copy updates on deploy)');
   return 0;

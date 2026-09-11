@@ -1,6 +1,6 @@
 {
-  "version": "1.4",
-  "canvas_url": "https://share.gemini.google/Y10uvvswOaio",
-  "released": "2026-09-06T20:31:57.249Z",
-  "notes": "Plate Tectonics teaching rebuild: the eight-question quiz now ends with a score and a concepts-to-revisit list, the epicentre widget saves the map you are looking at, the boundary simulator no longer interrupts screen readers once a second, and the glossary carries 172 terms instead of 106. Broad translation coverage across the STEM tools, including screen-reader announcements and the labels drawn onto the figures. Also TreeLab, Galaxy Explorer, School Rewards, geology and test-prep improvements."
+  "version": "1.5",
+  "canvas_url": "https://share.gemini.google/qTPQLK0kok07",
+  "released": "2026-09-11T04:53:38.661Z",
+  "notes": "Titration Lab rebuilt: the 3D bench sits in a lit room with a real glass flask and an endpoint colour bloom, the buffer tab shows the pH shift on a bar, the parallax lesson magnifies the reading error, and every screen now passes contrast checks in default, dark and high-contrast themes. School Store: the Store tab explains who completes a purchase and when, and the register confirms each sale where the cashier clicked. New Scale Explorer tool. Zoom Gallery images load again, Geography Explorer and GIS Studio no longer depend on keyed map tiles, Geometry World characters speak in the app voice, Dino Lab and Architecture Studio gained 3D detail, the auto mechanic workshop added guided repair routes, and SEL goals, habits and journals keep dated records. Shared tool links open straight to the tool."
 }
