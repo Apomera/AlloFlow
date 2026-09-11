@@ -1241,15 +1241,24 @@ var d = labToolData || {};
 
           }
 
-          // CARTO basemap. labels=false picks the *_nolabels style so the answer is not
-          // printed on the map: dark_all prints country AND city names, which gave away
-          // Find Country and Capitals at any zoom level.
+          // Basemap. CARTO's public tiles began stamping "API KEY REQUIRED" across
+          // every tile served to a browser (September 2026), so the map read as
+          // broken in class. Esri World Imagery needs no key, prints no names, and
+          // is the same provider GIS Studio already credits. The country outlines
+          // draw a 60% dark fill over each country, so the quiz look survives: dark
+          // countries on ocean, nothing labelled. When a tab does want names,
+          // Esri's boundaries-and-places reference layer supplies them, also keyless.
           function geoTileLayer(m, labels) {
-            var style = labels ? 'dark_all' : 'dark_nolabels';
-            return window.L.tileLayer('https://{s}.basemaps.cartocdn.com/' + style + '/{z}/{x}/{y}{r}.png', {
-              attribution: '\u00a9 <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> \u00a9 <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
-              maxZoom: 18, noWrap: true
+            var esri = 'Tiles \u00a9 <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a> and source contributors';
+            var base = window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+              attribution: esri, maxZoom: 18, noWrap: true
             }).addTo(m);
+            if (labels) {
+              window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 18, noWrap: true, opacity: 0.9
+              }).addTo(m);
+            }
+            return base;
           }
 
           // Shared factory for the small maps on the Capitals / Continents / Landmarks /
