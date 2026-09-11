@@ -206,6 +206,14 @@ try {
       await page.locator('#metric-students').scrollIntoViewIfNeeded();
       await checkSurface('student', true);
 
+      phase = 'store note for a browse-only role';
+      // The student view of the store, from step 3, carries no checkout; the note has
+      // to say purchases happen at the register rather than leave a catalog with no
+      // Buy button and no explanation.
+      await page.goto(store.url + '/?demoStep=balance&role=student'); await settled(page);
+      await page.locator('#tab-store').click(); await settled(page);
+      assert.equal(await page.locator('#store-buy-note').isVisible(), true, 'browse-only role gets the how-to-buy note');
+      assert.match(await page.locator('#store-buy-note').innerText(), /completed at the register by a cashier or administrator/);
       phase = 'cashier checkout';
       await page.locator('[data-demo-step="shop"]').click(); await ready(page, 'cashier', 'shop');
       assert.equal(await page.locator('#checkout-student').inputValue(), '', 'Navigation cannot choose a checkout recipient');
@@ -223,6 +231,11 @@ try {
       assert.equal(afterCheckout.catalog.find(item => item.id === metadata.notebookId).remaining, 4);
       assert.equal(afterCheckout.recentOrders.length, 1); assert.equal(count('checkoutSchoolRewardsOrder'), 1);
       result.checkout = { balance: 55, notebookStock: 4, orders: 1 };
+      // The panel the cashier just clicked in must say the purchase happened. Before
+      // this, it reverted to "Cart is empty… Add at least one prize." while the receipt
+      // rendered ~1000 px lower under the catalog, and the demo read as a purchase that
+      // silently failed.
+      assert.match(await page.locator('#cart-budget').textContent(), /^Purchase complete: 1 x Notebook for 10 points\. Avery R\. now has 55 points available\./);
       await page.locator('#checkout-receipt').scrollIntoViewIfNeeded(); await checkSurface('checkout', true);
 
       phase = 'student receipt email preview';

@@ -1082,7 +1082,11 @@
     "your_role_cannot_resubmit_print_lab_requests_p7gcwi": "Your role cannot resubmit Print Lab requests.",
     "your_role_cannot_submit_print_lab_requests_1oj21n7": "Your role cannot submit Print Lab requests.",
     "your_role_cannot_upload_print_lab_assets_1nkp49v": "Your role cannot upload Print Lab assets.",
-    "your_saving_goal_ncnj1b": "Your saving goal"
+    "your_saving_goal_ncnj1b": "Your saving goal",
+    "checkout_stays_closed_until_an_administrator_opens_a_shopp_10rrapf": "Checkout stays closed until an administrator opens a shopping window. A cashier then completes each purchase at the register.",
+    "open_a_shopping_window_in_admin_setup_to_enable_checkout_14t2ao9": "Open a shopping window in Admin setup to enable checkout.",
+    "purchase_complete_1_for_2_points_3_now_has_4_points_availa_1jew1qt": "Purchase complete: {1} for {2} points. {3} now has {4} points available. The receipt is below the catalog.",
+    "purchases_are_completed_at_the_register_by_a_cashier_or_ad_91j09e": "Purchases are completed at the register by a cashier or administrator. This view is browse-only."
   },
   "patterns": {
     "1_available_16n661b": {

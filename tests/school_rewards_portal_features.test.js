@@ -240,3 +240,50 @@ describe('storage and retention (2026-09-04)', () => {
     expect(CODE).toContain('A mail run is still in progress or waiting for review');
   });
 });
+
+describe('the store says how a purchase happens (2026-09-11)', () => {
+  // Found by driving the practice page as a first-time user: it opens as Staff in the
+  // "store preview" scenario, where the catalog shows no Add-to-cart button and no
+  // checkout for ANY role, and nothing on the Store tab said why. It read as broken.
+  it('carries one sentence per situation as static markup, so the language pack sees them', () => {
+    expect(PORTAL).toContain('<div id="store-buy-note" class="muted" hidden>');
+    expect(PORTAL).toContain('<span data-buy-note="browse" hidden>Purchases are completed at the register by a cashier or administrator. This view is browse-only.</span>');
+    expect(PORTAL).toContain('<span data-buy-note="admin" hidden>Open a shopping window in Admin setup to enable checkout.</span>');
+    expect(PORTAL).toContain('<span data-buy-note="closed" hidden>Checkout stays closed until an administrator opens a shopping window. A cashier then completes each purchase at the register.</span>');
+  });
+  it('picks the sentence from the live window state and the actor role, and hides it for a cashier who can buy', () => {
+    expect(SCRIPT).toContain("buyKind=open?(cashier?'':'browse'):(admin?'admin':'closed')");
+    expect(SCRIPT).toContain("buyNote.hidden=!buyKind");
+    expect(SCRIPT).toContain("n.hidden=n.getAttribute('data-buy-note')!==buyKind");
+  });
+  it('ships the sentences in the catalogue and in Spanish', () => {
+    const catalogue = JSON.parse(readFileSync(resolve(root, 'apps_script/school_rewards/portal_strings.json'), 'utf8'));
+    const es = JSON.parse(readFileSync(resolve(root, 'apps_script/school_rewards/i18n_src/es.json'), 'utf8'));
+    for (const key of [
+      'purchases_are_completed_at_the_register_by_a_cashier_or_ad_91j09e',
+      'open_a_shopping_window_in_admin_setup_to_enable_checkout_14t2ao9',
+      'checkout_stays_closed_until_an_administrator_opens_a_shopp_10rrapf',
+      'purchase_complete_1_for_2_points_3_now_has_4_points_availa_1jew1qt',
+    ]) {
+      expect(catalogue.strings[key], key).toBeTruthy();
+      expect(es.strings[key], key + ' (es)').toBeTruthy();
+      expect(es.strings[key]).not.toBe(catalogue.strings[key]);
+    }
+  });
+});
+
+describe('the checkout panel reports a completed purchase (2026-09-11)', () => {
+  // After the one click that completes a purchase, the panel reverted to "Cart is
+  // empty… Add at least one prize." while the receipt rendered under the catalog,
+  // about a thousand pixels lower on the demo's six-item store. The success state was
+  // indistinguishable from a reset.
+  it('records what was just bought, for the student it was bought for', () => {
+    expect(SCRIPT).toContain("state.lastCheckoutSummary={studentId:student.id,items:doneLines.map(function(line){return Number(line.quantity)+' x '+line.itemName}).join(', '),total:Number(out.order&&out.order.total||0),available:Number(out.availableBalance||0)}");
+  });
+  it('shows it in the budget line ahead of the empty-cart prompt, as one translatable sentence', () => {
+    expect(SCRIPT).toContain("else if(!lines.length&&state.lastCheckoutSummary&&state.lastCheckoutSummary.studentId===selected.id)budget.textContent=fmt('Purchase complete: {1} for {2} points. {3} now has {4} points available. The receipt is below the catalog.'");
+  });
+  it('forgets it the moment a new cart starts', () => {
+    expect(SCRIPT).toContain("if(lines.length)delete state.lastCheckoutSummary;$('cart-lines').innerHTML=");
+  });
+});

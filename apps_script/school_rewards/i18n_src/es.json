@@ -1082,7 +1082,11 @@
     "no_rewards_match_your_filters_k8oosh": "Ningún premio coincide con tus filtros.",
     "try_another_search_or_choose_clear_filters_to_see_all_rewa_p5ly8m": "Prueba otra búsqueda o elige Quitar filtros para ver todos los premios.",
     "help_learners_find_a_meaningful_reward_1k3y9kp": "Ayuda a los estudiantes a encontrar un premio que les interese.",
-    "refreshing_current_details_1l7cic7": "Actualizando los datos actuales…"
+    "refreshing_current_details_1l7cic7": "Actualizando los datos actuales…",
+    "purchases_are_completed_at_the_register_by_a_cashier_or_ad_91j09e": "Las compras se completan en la caja por un cajero o administrador. Esta vista es solo para explorar.",
+    "open_a_shopping_window_in_admin_setup_to_enable_checkout_14t2ao9": "Abre un periodo de compras en Configuración para habilitar la caja.",
+    "checkout_stays_closed_until_an_administrator_opens_a_shopp_10rrapf": "La caja permanece cerrada hasta que un administrador abra un periodo de compras. Después, un cajero completa cada compra en la caja.",
+    "purchase_complete_1_for_2_points_3_now_has_4_points_availa_1jew1qt": "Compra completada: {1} por {2} puntos. {3} ahora tiene {4} puntos disponibles. El recibo está debajo del catálogo."
   },
   "patterns": {
     "1_available_16n661b": "{1} disponibles",
