@@ -1091,42 +1091,58 @@ describe('WeldLab treats a saved project as untrusted input', () => {
   });
 });
 
-describe('WeldLab heat-input discovery uses the right units', () => {
-  // The widget's slider is labelled mm/SECOND but the formula carried the x60
-  // that only belongs to a per-MINUTE travel speed (which is what the main Heat
-  // Input Calculator uses, in/min). Every reading came out 60x too large, so the
-  // default settings reported "Burn-through risk" at 24.75 kJ/mm when the true
-  // figure was 0.41 — on the one screen whose entire job is discovering the
-  // relationship between travel speed and heat input.
+describe('WeldLab heat-input inquiry notebook', () => {
+  // The `heatHunt` view carried the one science-practice cycle the tool lacked
+  // (hypothesis -> log what you try -> prompts on request -> explain it yourself)
+  // but nothing in the app navigated to it, it had its own styling, and its
+  // physics was 60x off (a per-minute factor on a mm/s slider). The cycle now
+  // lives on the Heat Input Calculator, which already teaches this relationship
+  // with correct units, and the orphan is gone.
   const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
 
-  it('computes kJ/mm from mm/s without a per-minute factor', () => {
+  it('has no unreachable dispatch arm any more', () => {
     const src = read();
-    expect(src).toMatch(/var heatInput = \(iq\.amperage \* iq\.voltage\) \/ \(iq\.travelSpeed \* 1000\);/);
-    expect(src).not.toMatch(/iq\.amperage \* iq\.voltage \* 60/);
+    expect(src).not.toMatch(/view === 'heatHunt'/);
+    // Every dispatch arm must have a way in. Menu card ids navigate via goto(c.id).
+    const arms = [...src.matchAll(/(?:if|else if) \(view === '([A-Za-z0-9_]+)'\)/g)].map((m) => m[1]);
+    const cards = [...src.matchAll(/^\s*id: '([A-Za-z0-9_]+)', title:/gm)].map((m) => m[1]);
+    const gotos = [...src.matchAll(/goto\('([A-Za-z0-9_]+)'\)/g)].map((m) => m[1]);
+    const reachable = new Set([...cards, ...gotos, 'menu']);
+    const orphans = arms.filter((a) => !reachable.has(a));
+    expect(orphans, 'dispatch arm nothing navigates to').toEqual([]);
   });
 
-  it('keeps the regime thresholds, which were always realistic', () => {
+  it('carries the full inquiry cycle on the calculator', () => {
     const src = read();
-    // 0.8 / 2.0 / 3.5 kJ/mm are sane arc-welding bands. They were never the bug;
-    // only the value fed into them was. Pin them so a later "fix" does not move
-    // the bands to accommodate a wrong number.
-    const at = src.indexOf('var heatInput = (iq.amperage');
-    const block = src.slice(at, at + 420);
-    expect(block).toMatch(/heatInput < 0\.8\) state = 'cold'/);
-    expect(block).toMatch(/heatInput < 2\.0\) state = 'optimal'/);
-    expect(block).toMatch(/heatInput < 3\.5\) state = 'hot'/);
+    const calc = src.slice(src.indexOf('function HeatInputCalculator('), src.indexOf('function WeldBeadLab('));
+    expect(calc).toContain("id: 'hi-hypothesis'");
+    expect(calc).toContain('Log this setting');
+    expect(calc).toContain('Stuck? Show me some prompts');
+    expect(calc).toContain('I can explain it');
+    // The two placeholders keep the keys the old view registered, so existing
+    // translations of them are reused rather than orphaned.
+    expect(calc).toContain("'stem.weldlab.hypothesis_how_does_travel_speed_compe'");
+    expect(calc).toContain("'stem.weldlab.explain_how_amperage_voltage_and_speed'");
   });
 
-  it('opens on settings that land in the optimal band', () => {
+  it('treats the saved notebook as untrusted input', () => {
     const src = read();
-    const m = /heatHunt \|\| \{ amperage: (\d+), travelSpeed: ([\d.]+), voltage: (\d+)/.exec(src);
-    expect(m, 'default state not found').toBeTruthy();
-    const [A, v, V] = [Number(m[1]), Number(m[2]), Number(m[3])];
-    const kJmm = (A * V) / (v * 1000);
-    // A discovery widget should open showing the target regime, not an extreme.
-    expect(kJmm).toBeGreaterThanOrEqual(0.8);
-    expect(kJmm).toBeLessThan(2.0);
+    const calc = src.slice(src.indexOf('function HeatInputCalculator('), src.indexOf('function WeldBeadLab('));
+    // Same discipline as usePersistedNumber: a project file can carry anything.
+    expect(calc).toMatch(/var hiNotebook = \(function \(raw\)/);
+    expect(calc).toMatch(/if \(!Array\.isArray\(out\.log\)\) out\.log = \[\];/);
+    expect(calc).toMatch(/if \(typeof out\.hypothesis !== 'string'\) out\.hypothesis = '';/);
+  });
+
+  it('logs the calculator\'s own numbers, in the calculator\'s own units', () => {
+    const src = read();
+    const calc = src.slice(src.indexOf('function HeatInputCalculator('), src.indexOf('function WeldBeadLab('));
+    // The log row is built from the live V/A/TS/net/tier, not a second formula.
+    expect(calc).toMatch(/net: Number\(net\.toFixed\(1\)\), tier: tier/);
+    // and caps at eight, so the table cannot grow without bound
+    expect(calc).toMatch(/\.slice\(-8\)/);
+    // kJ/in, not the mm/s kJ/mm the old view used
+    expect(calc).not.toMatch(/kJ\/mm/);
   });
 });
 

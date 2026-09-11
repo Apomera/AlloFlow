@@ -530,10 +530,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
       var d = (ctx.toolData && ctx.toolData['weldLab']) || {};
       var upd = function(key, val) { ctx.update('weldLab', key, val); };
-      // The heat-hunt inquiry widget reads toolData and calls setToolData
-      // directly rather than going through upd/ctx.update, but neither was ever
-      // bound here — so opening that view threw. Bound rather than rewritten,
-      // to leave the widget's own update shape alone.
+      // Bound for any view that reads toolData / setToolData directly rather
+      // than through upd. (The heatHunt inquiry widget that once needed this
+      // was folded into the Heat Input Calculator's notebook and removed.)
       var toolData = ctx.toolData;
       var setToolData = ctx.setToolData;
       var addToast = ctx.addToast || function(msg) { console.log('[WeldLab]', msg); };
@@ -1413,6 +1412,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var TS = TS_state[0], setTS = TS_state[1];
         var P = P_state[0], setP = P_state[1];
 
+        // Inquiry notebook — one persisted object, normalised on the way in
+        // because toolData is a project file a student can save, copy, hand-edit
+        // or carry between versions (see usePersistedNumber). Merged onto the
+        // defaults so a partial object from an older save keeps every field.
+        var HI_NOTEBOOK_DEFAULTS = { hypothesis: '', log: [], stuckRevealed: false, understood: false, explanation: '' };
+        var hiNotebook = (function (raw) {
+          var base = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+          var out = Object.assign({}, HI_NOTEBOOK_DEFAULTS, base);
+          if (typeof out.hypothesis !== 'string') out.hypothesis = '';
+          if (typeof out.explanation !== 'string') out.explanation = '';
+          if (!Array.isArray(out.log)) out.log = [];
+          out.stuckRevealed = !!out.stuckRevealed;
+          out.understood = !!out.understood;
+          return out;
+        })(d.hi_inquiry);
+        var setNotebook = function (patch) { upd('hi_inquiry', Object.assign({}, hiNotebook, patch)); };
+
         var gross = heatInputGross(V, A, TS);
         var eta = ARC_EFFICIENCY[P];
         var net = gross * eta;
@@ -1547,6 +1563,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   'Net HI = ' + gross.toFixed(2) + ' × ' + eta.toFixed(2) + ' = ' + net.toFixed(2) + ' kJ/in')
               )
             ),
+            // ── Inquiry notebook ──
+            // Lifted from the orphaned `heatHunt` view, which nothing in the app
+            // could navigate to: it carried the one science-practice cycle the
+            // rest of the tool lacked — write a hypothesis, log the settings you
+            // try, ask for a prompt when stuck, then explain the relationship in
+            // your own words — but on a screen with its own styling, native range
+            // inputs, and (until fixed) physics 60x off. Same cycle, on the
+            // calculator that already teaches this relationship with correct
+            // units. No score, no reveal, by design: the notebook is the student's.
+            (function () {
+              var nb = hiNotebook;
+              var TIER_LABEL = { LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', EXCESSIVE: 'EXCESSIVE' };
+              var logRow = function () {
+                var entry = { V: Number(V.toFixed(1)), A: Math.round(A), TS: Number(TS.toFixed(1)), P: P, net: Number(net.toFixed(1)), tier: tier };
+                setNotebook({ log: nb.log.concat([entry]).slice(-8) });
+                announce(__alloFill(__alloT('stem.weldlab.sr_logged_setting', 'Logged: {value1} volts, {value2} amps, {value3} inches per minute, {value4} kilojoules per inch, {value5}'),
+                  { value1: entry.V, value2: entry.A, value3: entry.TS, value4: entry.net, value5: tier }));
+              };
+              return h('section', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4', 'aria-labelledby': 'hi-notebook-title' },
+                h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+                  h('div', null,
+                    h('h3', { id: 'hi-notebook-title', className: 'text-sm font-black uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.inquiry_notebook', 'Inquiry notebook')),
+                    h('p', { className: 'text-xs text-slate-700 mt-1' }, __alloT('stem.weldlab.inquiry_notebook_intro', 'Predict first, then test. Log the settings you try and see whether the numbers agree with you. No score here — the notebook is yours.'))
+                  ),
+                  h('button', {
+                    type: 'button',
+                    onClick: function () { setNotebook({ hypothesis: '', log: [], stuckRevealed: false, understood: false, explanation: '' }); announce(__alloT('stem.weldlab.sr_notebook_cleared', 'Notebook cleared')); },
+                    className: 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 hover:border-orange-400 focus:outline-none focus:ring-2 ring-orange-500/40'
+                  }, __alloT('stem.weldlab.clear_notebook', '↺ Clear notebook'))
+                ),
+                // 1. Hypothesis
+                h('div', null,
+                  h('label', { htmlFor: 'hi-hypothesis', className: 'block text-xs font-bold uppercase tracking-wider text-orange-800 mb-1' },
+                    __alloT('stem.weldlab.1_your_hypothesis', '1. Your hypothesis')),
+                  h('textarea', {
+                    id: 'hi-hypothesis', rows: 2,
+                    value: nb.hypothesis,
+                    onChange: function (e) { setNotebook({ hypothesis: e.target.value }); },
+                    placeholder: __alloT('stem.weldlab.hypothesis_how_does_travel_speed_compe', 'Hypothesis: How does travel speed compensate for amperage?'),
+                    className: 'w-full rounded-lg border border-slate-300 bg-slate-50 p-2 text-sm text-slate-800 font-mono focus:outline-none focus:ring-2 ring-orange-500/40'
+                  })
+                ),
+                // 2. Log the settings you try
+                h('div', null,
+                  h('div', { className: 'flex items-center justify-between gap-3 flex-wrap mb-1' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-orange-800' }, __alloT('stem.weldlab.2_test_it', '2. Test it — log each setting you try')),
+                    h('button', {
+                      type: 'button', onClick: logRow,
+                      className: 'text-xs font-bold px-3 py-1.5 rounded-lg bg-orange-700 text-white hover:bg-orange-800 focus:outline-none focus:ring-4 ring-orange-500/40'
+                    }, __alloT('stem.weldlab.log_this_setting', '📋 Log this setting'))
+                  ),
+                  nb.log.length === 0
+                    ? h('p', { className: 'text-xs text-slate-600 italic' }, __alloT('stem.weldlab.nothing_logged_yet', 'Nothing logged yet. Move a slider, then log it. Try to make the tier change with ONE control.'))
+                    : h('div', { className: 'overflow-x-auto' },
+                        h('table', { className: 'w-full text-xs font-mono' },
+                          h('thead', null,
+                            h('tr', { className: 'border-b border-slate-300 text-slate-700' },
+                              ['#', 'V', 'A', 'in/min', __alloT('stem.weldlab.process', 'Process'), 'kJ/in', __alloT('stem.weldlab.heat_input_tier', 'Heat Input Tier')].map(function (hd, i) {
+                                return h('th', { key: i, scope: 'col', className: 'text-left py-1 pr-3 font-bold' }, hd);
+                              })
+                            )
+                          ),
+                          h('tbody', null,
+                            nb.log.map(function (r, i) {
+                              return h('tr', { key: i, className: 'border-b border-slate-100 text-slate-800' },
+                                h('td', { className: 'py-1 pr-3 text-slate-500' }, String(i + 1)),
+                                h('td', { className: 'py-1 pr-3' }, r.V), h('td', { className: 'py-1 pr-3' }, r.A),
+                                h('td', { className: 'py-1 pr-3' }, r.TS), h('td', { className: 'py-1 pr-3 uppercase' }, r.P),
+                                h('td', { className: 'py-1 pr-3 font-bold' }, r.net),
+                                h('td', { className: 'py-1 pr-3 font-bold' }, TIER_LABEL[r.tier] || r.tier)
+                              );
+                            })
+                          )
+                        )
+                      )
+                ),
+                // 3. Stuck? prompts, revealed on request only
+                h('div', null,
+                  !nb.stuckRevealed
+                    ? h('button', {
+                        type: 'button', onClick: function () { setNotebook({ stuckRevealed: true }); },
+                        className: 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 hover:bg-amber-100 focus:outline-none focus:ring-2 ring-amber-400/50'
+                      }, __alloT('stem.weldlab.stuck_show_prompts', '🤔 Stuck? Show me some prompts'))
+                    : h('div', { className: 'rounded-lg bg-amber-50 border border-amber-300 p-3' },
+                        h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, __alloT('stem.weldlab.prompts', 'Prompts')),
+                        h('ul', { className: 'list-disc list-outside pl-5 text-sm text-slate-800 space-y-1' },
+                          h('li', null, __alloT('stem.weldlab.prompt_double_speed', 'Double the travel speed and leave amperage alone. What happens to kJ/in — and why exactly half?')),
+                          h('li', null, __alloT('stem.weldlab.prompt_two_ways', 'Find TWO different settings that both land in MEDIUM. What do they have in common? What differs?')),
+                          h('li', null, __alloT('stem.weldlab.prompt_real_wps', 'A real Welding Procedure Specification lists a heat-input RANGE, not a number. Why would a shop want a range?'))
+                        )
+                      )
+                ),
+                // 4. Explain it in your own words
+                h('div', null,
+                  h('label', { className: 'flex items-center gap-2 text-sm font-bold text-emerald-800 cursor-pointer' },
+                    h('input', {
+                      type: 'checkbox', checked: nb.understood,
+                      onChange: function (e) { setNotebook({ understood: e.target.checked }); },
+                      className: 'w-4 h-4'
+                    }),
+                    __alloT('stem.weldlab.i_can_explain_it', '✓ I can explain it — in my own words')
+                  ),
+                  nb.understood && h('textarea', {
+                    'aria-label': __alloT('stem.weldlab.explain_how_amperage_voltage_and_speed', 'Explain how amperage, voltage and travel speed together set the heat input'),
+                    rows: 3,
+                    value: nb.explanation,
+                    onChange: function (e) { setNotebook({ explanation: e.target.value }); },
+                    placeholder: __alloT('stem.weldlab.explain_how_amperage_voltage_and_speed', 'Explain how amperage, voltage and travel speed together set the heat input'),
+                    className: 'mt-2 w-full rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-sm text-slate-800 font-mono focus:outline-none focus:ring-2 ring-emerald-400/50'
+                  })
+                )
+              );
+            })(),
             h(TeacherNotes, {
               standards: ['HS-PS3-3 (Energy)', 'CTE Manufacturing 5.1', 'AWS SENSE QC10'],
               questions: [
@@ -10534,78 +10663,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       else if (view === 'safetyHealth') viewBody = h(SafetyHealthDeepDive);
       else if (view === 'mathBlueprint') viewBody = h(MathBlueprintLab);
       else if (view === 'careerStories') viewBody = h(CareerStories);
-      else if (view === 'heatHunt') viewBody = h(function() {
-        var d2 = (toolData && toolData.weldLab) || {};
-        var iq = d2.heatHunt || { amperage: 150, travelSpeed: 3, voltage: 22, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        function setIQ(patch) {
-          setToolData(function(prev) {
-            var prior = (prev && prev.weldLab) || {};
-            var st = Object.assign({}, prior.heatHunt || iq, patch);
-            return Object.assign({}, prev, { weldLab: Object.assign({}, prior, { heatHunt: st }) });
-          });
-        }
-        // ★ Was `(A * V * 60) / (v * 1000)` — 60x too large. The 60 converts a
-        // per-MINUTE travel speed, which is what the main Heat Input Calculator
-        // uses (in/min), but this slider is labelled mm/SECOND. Heat input in
-        // kJ/mm from mm/s is simply (V x A) / (v x 1000).
-        // The regime thresholds below (0.8 / 2.0 / 3.5 kJ/mm) are realistic for
-        // arc welding, so the BANDS were right and only the number feeding them
-        // was wrong — which parked the widget in "burn-through" at settings that
-        // are actually sound, and told a student the opposite of the truth on the
-        // one screen whose whole job is discovering this relationship.
-        var heatInput = (iq.amperage * iq.voltage) / (iq.travelSpeed * 1000);
-        var state;
-        if (heatInput < 0.8) state = 'cold';
-        else if (heatInput < 2.0) state = 'optimal';
-        else if (heatInput < 3.5) state = 'hot';
-        else state = 'burnthrough';
-        var sm = {
-          cold:         { label: __alloT('stem.weldlab.cold_weld_insufficient_fusion', '🧊 Cold weld (insufficient fusion)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.weldlab.not_enough_heat_cold_lap_defects_poor_', 'Not enough heat. Cold lap defects, poor penetration.') },
-          optimal:      { label: __alloT('stem.weldlab.optimal_heat_input', '🟢 Optimal heat input'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.weldlab.good_penetration_fusion_minimal_distor', 'Good penetration, fusion, minimal distortion.') },
-          hot:          { label: __alloT('stem.weldlab.excessive_heat', '🟠 Excessive heat'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.weldlab.high_distortion_wide_haz_possible_unde', 'High distortion, wide HAZ, possible undercut.') },
-          burnthrough:  { label: __alloT('stem.weldlab.burn_through_risk', '🔥 Burn-through risk'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.weldlab.excessive_base_metal_melts_through', 'Excessive — base metal melts through.') }
-        }[state];
-        var H = React.createElement;
-        return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
-          H('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: '#fef2f2', color: '#9f1239', border: '1px solid #fca5a5', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Menu'),
-          H('div', { style: { padding: 16, background: '#0f172a', borderRadius: 10, color: '#e2e8f0', border: '1px solid #fb7185' } },
-            H('h3', { style: { fontSize: 14, fontWeight: 800, color: '#fb7185', margin: '0 0 6px 0' } }, '🔥 Heat input discovery'),
-            H('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'Sliders for amperage, travel speed, voltage. Discrete 4-state heat-input regime. No score, no reveal.'),
-            H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
-              H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
-              H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
-              H('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } }, 'Heat input ≈ ' + heatInput.toFixed(2) + ' kJ/mm')
-            ),
-            H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
-              [{ k: 'amperage', l: 'Amperage (A)', mn: 50, mx: 350, st: 5 },
-               { k: 'travelSpeed', l: 'Travel speed (mm/s)', mn: 1, mx: 25, st: 0.5 },
-               { k: 'voltage', l: 'Voltage (V)', mn: 12, mx: 32, st: 0.5 }].map(function(s) {
-                return H('div', { key: s.k },
-                  H('label', { htmlFor: 'hh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: '#fb7185', fontFamily: 'monospace' } }, iq[s.k])),
-                  H('input', { id: 'hh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
-                    onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
-                    style: { width: '100%' }, 'aria-label': s.l }));
-              })
-            ),
-            H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-              H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.amperage, t: iq.travelSpeed, v: iq.voltage, h: heatInput.toFixed(2), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
-              H('button', { onClick: function() { setIQ({ amperage: 150, travelSpeed: 8, voltage: 22, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
-            ),
-            H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.weldlab.hypothesis_how_does_travel_speed_compe', 'Hypothesis: How does travel speed compensate for amperage?'),
-              style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
-            !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
-            iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
-              H('ul', { style: { margin: 0, paddingLeft: 18 } },
-                H('li', null, 'Real welds: kJ/mm spec is given. Investigate why.'),
-                H('li', null, 'Doubling speed at same amps — what changes?'))),
-            H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
-              H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-            iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.weldlab.explain_how_amperage_voltage_and_speed', 'Explain how amperage, voltage, and speed compose heat input.'),
-              style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-            H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state heat-input marker; no quality score; no reveal — by design.')
-          )
-        );
-      });
       else viewBody = h(MainMenu);
       return h(React.Fragment, null, defectCelebOverlay(), viewBody);
     }
