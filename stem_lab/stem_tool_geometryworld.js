@@ -8178,15 +8178,34 @@
         upd({showGeometryHome:true,geometryHomePage:'start',_geometryHomeInitial:false,_introShownOnce:true,showLessonIntro:false,showSandboxLauncher:false,showGameSettings:false,showPredictionPanel:false,objectivesOpen:false,showNpcDialog:false,showHelp:false,showReflection:false,showMyLessons:false,showLessonEditor:false,showCreatorPanel:false,creatorMode:false,showGrowthNudge:false,showTeacherView:false,showPeerWorlds:false});
       }
 
-      // ── Show the mode chooser on the first visit; standalone core keeps its intro. ──
-      // Defer via setTimeout(0) so we don't call upd (state update) during render.
-      // _introShownOnce is flipped to true immediately to prevent re-queueing on re-renders
-      // that happen before the deferred upd lands.
+      // ── Home chooser on entry. ──
+      // The old gate bailed on `worldActive || showLessonIntro || d._introShownOnce`.
+      // worldActive and _introShownOnce both PERSIST in toolData, so once either had
+      // been saved a returning user never saw the home screen again: the chooser
+      // had quietly become a first-visit-only intro. It now opens on every mount
+      // when the builder enhancement is present. A returning user with a live
+      // world gets it as non-initial, which is what makes the Continue option
+      // appear; a fresh user gets the initial Learn / Build / Explore / Create page.
+      // A pending Print Lab return or an explicit build handoff is never
+      // interrupted. The per-mount ref stops the chooser re-queueing on re-renders
+      // and reopening after the user dismisses it; being a ref rather than a
+      // persisted flag, re-entering the tool shows the home again. The legacy
+      // lesson intro is kept only for a builder that genuinely failed to load, and
+      // there it keeps its old once-per-toolData gate.
+      var homePresentedRef = React.useRef(false);
       React.useEffect(function(){
-        if(!threeReady || worldActive || showLessonIntro || d._introShownOnce || window.__alloGeometryWorldPendingBuild)return;
-        if(window.StemLab && window.StemLab.geometryWorldBuilderPure)upd({showGeometryHome:true,geometryHomePage:'start',_geometryHomeInitial:true,_introShownOnce:true});
-        else upd({showLessonIntro:true,_introShownOnce:true});
-      },[threeReady,worldActive,showLessonIntro,d._introShownOnce]);
+        if(!threeReady || homePresentedRef.current)return;
+        if(window.__alloGeometryWorldPendingBuild || window.__alloGeometryWorldReturnProject)return;
+        if(window.StemLab && window.StemLab.geometryWorldBuilderPure){
+          homePresentedRef.current=true;
+          window.__alloGeometryWorldHomePresented=true;
+          if(showGeometryHome)return;
+          upd({showGeometryHome:true,geometryHomePage:'start',_geometryHomeInitial:!worldActive,_introShownOnce:true,showLessonIntro:false});
+        } else if(!worldActive && !showLessonIntro && !d._introShownOnce){
+          homePresentedRef.current=true;
+          upd({showLessonIntro:true,_introShownOnce:true});
+        }
+      },[threeReady,worldActive,showLessonIntro,showGeometryHome,d._introShownOnce]);
 
       // ── Typewriter effect: auto-advance character position ──
       if (showNpcDialog && npcTypewriterNpc === dialogNpcIdx) {
