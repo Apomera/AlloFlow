@@ -1423,6 +1423,10 @@ function titrAnimCanvasRef(cvEl) {
 // Persisted classroom state can outlive a release. Normalize it before any
 // calculation so a removed option, malformed trial, or stale result cannot crash the
 // lab or reveal the answer for a different unknown.
+var TITRATION_SUBSTRATE_CSS =
+  '.theme-dark [data-titration-instance]{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:18px}' +
+  '.theme-contrast [data-titration-instance]{background:#000000;color:#ffffff;padding:14px;border-radius:18px}';
+
 function titrationReferencePH(progress) {
   var p = Math.max(0, Math.min(1, Number(progress) || 0));
   var v0 = 25, conc = 0.1, added = p * 50;
@@ -4244,7 +4248,7 @@ if (!safetyChecked) {
     '@keyframes safetyPulseRing { 0%,100% { box-shadow:0 0 0 0 rgba(56,189,248,0.6); } 50% { box-shadow:0 0 0 14px rgba(56,189,248,0); } } ' +
     '@keyframes safetyPulseGlow { 0%,100% { filter:drop-shadow(0 0 4px currentColor); } 50% { filter:drop-shadow(0 0 18px currentColor); } } ' +
     '@keyframes safetyFlipIn { 0% { transform:perspective(800px) rotateY(90deg); opacity:0; } 100% { transform:perspective(800px) rotateY(0); opacity:1; } } ' +
-    '@keyframes safetyUrgencyPulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.6; transform:scale(1.08); } } ' +
+    '@keyframes safetyUrgencyPulse { 0%,100% { box-shadow:0 0 0 0 rgba(249,115,22,0); } 50% { box-shadow:0 0 24px 3px rgba(249,115,22,0.45); } } ' +
     '@keyframes safetyShake { 0%,100% { transform:translateX(0); } 10%,30%,50%,70%,90% { transform:translateX(-8px); } 20%,40%,60%,80% { transform:translateX(8px); } } ' +
     '@keyframes safetyFireGlow { 0%,100% { text-shadow:0 0 8px #ff4500, 0 0 16px #ff4500; } 50% { text-shadow:0 0 16px #ff6700, 0 0 32px #ff4500, 0 0 48px #832; } } ' +
     '@keyframes safetyScanline { 0% { top:-20%; } 100% { top:120%; } } ' +
@@ -4328,7 +4332,7 @@ if (!safetyChecked) {
     ref: titrDrillTeardownRef,
     style: { animation: 'safetyFadeUp 0.4s ease' }
   },
-    React.createElement("style", null, safetyCSSText),
+    React.createElement("style", null, safetyCSSText + ' ' + TITRATION_SUBSTRATE_CSS),
 
     // Back button
     React.createElement("button", { type: "button", "aria-label": __alloT('stem.titration.back', "Back"),
@@ -4746,7 +4750,7 @@ if (!safetyChecked) {
         style: { animation: 'safetyStationEnter 0.4s ease' }
       },
         React.createElement("div", { className: "text-center mb-2" },
-          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#ef4444', letterSpacing:'2px', textTransform:'uppercase' } }, __alloT('stem.titration.chemical_hazard_briefing', "SDS Chemical Hazard Briefing")),
+          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#f87171', letterSpacing:'2px', textTransform:'uppercase' } }, __alloT('stem.titration.chemical_hazard_briefing', "SDS Chemical Hazard Briefing")),
           React.createElement("p", { style: { fontSize:'11px', color:'rgba(226,232,240,0.88)', marginTop:'4px' } }, __alloT('stem.titration.review_every_chemical_you_will_handle_', "Review EVERY chemical you will handle today. Tap each card to acknowledge you understand the hazards."))
         ),
 
@@ -4870,7 +4874,7 @@ if (!safetyChecked) {
             focusTitrationRegion('titration-drill-scenario');
           },
           className: "w-full py-4 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02]",
-          style: { background:'linear-gradient(90deg, #f97316, #ea580c)', boxShadow:'0 0 25px rgba(249,115,22,0.4)', animation:'safetyUrgencyPulse 2s ease infinite' }
+          style: { background:'linear-gradient(90deg, #c2410c, #9a3412)', boxShadow:'0 0 25px rgba(249,115,22,0.4)', animation:'safetyUrgencyPulse 2s ease infinite' }
         }, __alloT('stem.titration.begin_emergency_drill', "\uD83D\uDEA8 Begin Emergency Drill")),
 
         // Scenario content
@@ -4890,7 +4894,8 @@ if (!safetyChecked) {
                 animation: drillActive && !drillResult && drillScenario.urgency === 'critical' ? 'safetyFireGlow 1s ease infinite' : 'none' } }, drillScenario.title),
               React.createElement("span", {
                 style: { fontSize:'9px', fontWeight:700, padding:'2px 8px', borderRadius:'4px', textTransform:'uppercase',
-                  background: drillScenario.urgency === 'critical' ? '#dc2626' : '#d97706', color:'white' }
+                  // White on amber-600 is 3.2:1; amber-700 gives the 9 px badge 5:1.
+                  background: drillScenario.urgency === 'critical' ? '#dc2626' : '#b45309', color:'white' }
               }, drillScenario.urgency + " URGENCY")
             )
           ),
@@ -5058,7 +5063,8 @@ return React.createElement("div", {
   React.createElement("style", null,
     '@keyframes safetyFadeUp { 0% { opacity:0; transform:translateY(16px); } 100% { opacity:1; transform:translateY(0); } } ' +
     '@keyframes safetyPulseGlow { 0%,100% { filter:drop-shadow(0 0 4px currentColor); } 50% { filter:drop-shadow(0 0 18px currentColor); } } ' +
-    '@keyframes labGlow { 0%,100% { opacity:0.3; } 50% { opacity:0.6; } } '
+    '@keyframes labGlow { 0%,100% { opacity:0.3; } 50% { opacity:0.6; } } ' +
+    TITRATION_SUBSTRATE_CSS
   ),
 
 
@@ -5272,7 +5278,10 @@ return React.createElement("div", {
       incidents:  { accent: '#f87171', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDEA8', title: __alloT('stem.titration.safety_drills_what_could_go_wrong', 'Safety drills \u2014 what could go wrong'),     hint: __alloT('stem.titration.burette_explodes_acid_burns_spill_indi', 'Practice protocol-first responses to splashes, spills, fumes, incompatible chemicals, and other realistic lab incidents.') },
       equipment:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: __alloT('stem.titration.equipment_burette_flask_pipette', 'Equipment \u2014 burette, flask, pipette'),     hint: __alloT('stem.titration.burette_tolerance_0_05_ml_volumetric_f', 'Distinguish 0.01 mL displayed readings, a typical 50 mL Class AS manufacturer error limit of ±0.05 mL, this activity’s scoring target, and the course-defined concordance range. They are not interchangeable.') },
       molarity:   { accent: '#a78bfa', soft: 'rgba(167,139,250,0.10)', icon: '\uD83E\uDDEE', title: __alloT('stem.titration.dilution_calculator_m_v_m_v', 'Dilution calculator \u2014 M\u2081V\u2081 = M\u2082V\u2082'),     hint: __alloT('stem.titration.stock_diluent_desired_concentration_th', 'Stock + diluent \u2192 desired concentration. The 4 most-tested AP Chem problems all reduce to this single equation. Track significant figures: weakest measurement sets the answer.') },
-      buffers:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDEE1\uFE0F', title: __alloT('stem.titration.buffer_discovery_when_does_a_buffer_ho', 'Buffer discovery \u2014 when does a buffer hold?'), hint: __alloT('stem.titration.adjust_acid_strength_a_ha_ratio_starti', 'Adjust acid strength, [A\u207B]/[HA] ratio, starting pH. Discrete outcome: good buffer or poor buffer (after 20% more acid added). No score, no reveal \u2014 just sweep and observe.') }
+      // cyan-600 as a 15 px bold title measured 4.33:1 against the strip's gradient; it
+      // hid behind that gradient until the audit learned to read the stops. cyan-400
+      // brings it in line with the other tab accents.
+      buffers:    { accent: '#22d3ee', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDEE1\uFE0F', title: __alloT('stem.titration.buffer_discovery_when_does_a_buffer_ho', 'Buffer discovery \u2014 when does a buffer hold?'), hint: __alloT('stem.titration.adjust_acid_strength_a_ha_ratio_starti', 'Adjust acid strength, [A\u207B]/[HA] ratio, starting pH. Discrete outcome: good buffer or poor buffer (after 20% more acid added). No score, no reveal \u2014 just sweep and observe.') }
     };
     var meta = TAB_META[labTab] || TAB_META.titrate;
     return React.createElement('div', {
