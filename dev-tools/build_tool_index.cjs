@@ -80,13 +80,30 @@ function firstMatch(src, re, fallback) {
 // Pull the registerTool config head for one tool without executing anything.
 function extractTools(file, src) {
   const out = [];
-  const re = /window\.StemLab\.registerTool\s*\(\s*['"]([A-Za-z0-9_$]+)['"]\s*,\s*\{/g;
+  // Two registration shapes exist. Nearly every tool passes the config inline
+  // (`registerTool('id', { ... })`); stem_tool_fractions.js builds it first
+  // (`var fracPlugin = { ... }`) and registers that one object under two ids,
+  // 'fractionViz' and its legacy alias 'fractions'. Until 2026-09-10 only the
+  // inline shape was matched, so Fraction Lab had no index row, no lesson-plan
+  // recommendation and no /fraction-lab deep link. A named config is resolved
+  // to its declaration; the same object registered twice yields one record,
+  // under the first id, because the index is one record per TOOL.
+  const re = /window\.StemLab\.registerTool\s*\(\s*['"]([A-Za-z0-9_$]+)['"]\s*,\s*(\{|[A-Za-z_$][A-Za-z0-9_$]*)/g;
+  const seenConfig = new Set();
   let m;
   while ((m = re.exec(src)) !== null) {
     const id = m[1];
+    let headAt = m.index;
+    if (m[2] !== '{') {
+      if (seenConfig.has(m[2])) continue;
+      seenConfig.add(m[2]);
+      const decl = src.match(new RegExp('\\b(?:var|let|const)\\s+' + m[2].replace(/\$/g, '\\$') + '\\s*=\\s*\\{'));
+      if (!decl) continue; // not a literal we can read without executing
+      headAt = decl.index;
+    }
     // The config head is enough: icon/label/desc/color/category/questHooks all
     // precede render() by convention in every tool in this repo.
-    const seg = src.slice(m.index, m.index + 6000);
+    const seg = src.slice(headAt, headAt + 6000);
     const label = firstMatch(seg, /\blabel:\s*['"]((?:\\.|[^'"\\])*)['"]/, id);
     const desc = firstMatch(seg, /\bdesc:\s*(['"])((?:\\.|(?!\1)[\s\S])*)\1/, null) === null
       ? firstMatch(seg, /\bdesc:\s*(['"])((?:\\.|(?!\1)[\s\S])*)\1/, '')

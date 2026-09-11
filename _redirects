@@ -55,11 +55,13 @@
 /ecosystem /app/?tool=ecosystem 302
 /epidemic-sim /app/?tool=epidemicSim 302
 /evo-lab /app/?tool=evoLab 302
+/field-journeys /app/?tool=fieldJourneys 302
 /fire-ecology /app/?tool=fireEcology 302
 /first-response /app/?tool=firstResponse 302
 /fisher-lab /app/?tool=fisherLab 302
 /flight-sim /app/?tool=flightSim 302
 /forge /app/?tool=forge 302
+/fraction-viz /app/?tool=fractionViz 302
 /free-forms /app/?tool=freeForms 302
 /func-grapher /app/?tool=funcGrapher 302
 /galaxy /app/?tool=galaxy 302
@@ -116,6 +118,7 @@
 /road-ready /app/?tool=roadReady 302
 /rock-cycle /app/?tool=rockCycle 302
 /rocks /app/?tool=rocks 302
+/scale-explorer /app/?tool=scaleExplorer 302
 /school-behavior-toolkit /app/?tool=schoolBehaviorToolkit 302
 /semiconductor /app/?tool=semiconductor 302
 /sim-shelf /app/?tool=simShelf 302

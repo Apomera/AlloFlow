@@ -12,6 +12,14 @@
 //                                                   OFFLINE, which is the only case
 //                                                   that build exists for
 //                                                   (scaleExplorer, Sep 2026)
+//   5. a row in tool_index.json, which feeds the  — missing ⇒ /scale-explorer and
+//      shell deep-link map and /_redirects            ?tool=scaleExplorer open the
+//      (both GENERATED, never hand-edited)             plain app with no error, and
+//                                                   the lesson-plan agent cannot
+//                                                   recommend the tool
+//                                                   (scaleExplorer AND fieldJourneys,
+//                                                    found 2026-09-10 by opening the
+//                                                    deep link in the live app)
 //
 // check_stem_tile_catalog covers (1) and stem_plugin_fallback_allowlist covers (2).
 // Nothing tied them together, and (3) was uncovered. This closes that, so the next
@@ -75,7 +83,7 @@ const MODULE_COPIES = ['stem_lab/stem_lab_module.js', 'desktop/web-app/public/st
 // registering a tool while this gate stayed green.
 const ANTI_COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
 
-describe('STEM tool reachability — all four wiring points agree', () => {
+describe('STEM tool reachability — all five wiring points agree', () => {
   const exempt = exemptIds();
   const registered = registeredTools();
   const ids = [...registered.keys()].filter((id) => !exempt.has(id)).sort();
@@ -116,6 +124,40 @@ describe('STEM tool reachability — all four wiring points agree', () => {
     const src = read('build.js');
     const listed = (f) => src.includes("'stem_lab/" + f + "'") || src.includes('"stem_lab/' + f + '"');
     expect(files.filter((f) => !listed(f)), 'build.js — the desktop build would not package these').toEqual([]);
+  });
+
+  it('every registered tool resolves as a shell deep link, in all three ANTI copies and both _redirects', () => {
+    // _alloReadShellDeepLinkTool validates ?tool= / ?stem_tool= / the last path
+    // segment against _ALLO_STEM_DEEP_LINK_MAP and returns null for anything not
+    // in it, so the app opens normally with nothing to say. The map and the
+    // /_redirects slugs are both generated from tool_index.json by
+    // dev-tools/build_stem_deep_links.cjs; the fix for a failure here is
+    //   node dev-tools/build_tool_index.cjs && node dev-tools/build_stem_deep_links.cjs
+    // and then copying the regenerated ANTI block into the two desktop mirrors,
+    // which the generator does not write.
+    const norm = (id) => id.toLowerCase().replace(/[\s_-]+/g, '');
+    const indexed = new Set(JSON.parse(read('tool_index.json')).tools.map((t) => t.id));
+    // The index builder deliberately keeps a few registrations out (a tool
+    // rehomed outside STEM keeps a hidden registration so old links resolve).
+    const nonIndex = block(read('dev-tools/build_tool_index.cjs'), /const NON_STEM_INDEX_IDS = new Set\(\[([\s\S]*?)\]\);/, 'NON_STEM_INDEX_IDS');
+    const skip = new Set([...nonIndex.matchAll(/'([A-Za-z_$][A-Za-z0-9_$]*)'/g)].map((m) => m[1]));
+    // A legacy id registered as a tile alias ('fractions' on the fractionViz
+    // tile) is the same tool; its primary id carries the index row and the link.
+    for (const m of read('stem_lab/stem_lab_module.js').matchAll(/\baliases:\s*\[\s*([^\]]+)\]/g)) {
+      for (const q of m[1].match(/['"]([a-zA-Z_][a-zA-Z0-9_$]*)['"]/g) || []) skip.add(q.slice(1, -1));
+    }
+    const want = ids.filter((id) => !skip.has(id));
+    expect(want.filter((id) => !indexed.has(id)), 'tool_index.json — registered but not indexed (rebuild it)').toEqual([]);
+    for (const rel of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx']) {
+      const seg = block(read(rel), /const _ALLO_STEM_DEEP_LINK_MAP = \{([\s\S]*?)\n\};/, '_ALLO_STEM_DEEP_LINK_MAP in ' + rel);
+      const keys = new Set([...seg.matchAll(/'([a-z0-9]+)':\s*'([A-Za-z0-9_$]+)'/g)].map((m) => m[1]));
+      expect(want.filter((id) => !keys.has(norm(id))), rel + ' — ?tool= deep link resolves to null').toEqual([]);
+    }
+    for (const rel of ['_redirects', 'desktop/web-app/public/_redirects']) {
+      const src = read(rel);
+      const missing = want.filter((id) => !new RegExp('^/[a-z0-9-]+ /app/\\?tool=' + id + ' 302$', 'm').test(src));
+      expect(missing, rel + ' — no shareable /slug for these').toEqual([]);
+    }
   });
 
   it('the two ANTI copies carry the same loader list', () => {
