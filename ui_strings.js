@@ -45943,7 +45943,12 @@
       "scaled_volume_changed": "🔵 Scaled (volume changed)",
       "skewed_shape_deformed": "🟠 Skewed (shape deformed)",
       "degenerate_volume_0": "💀 Degenerate (volume → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "aim_at_build_area": "Aim at the build area",
+      "aim_at_build_area_short": "Aim at build area",
+      "a11y_next_shape_q": "Next shape. Shortcut Q",
+      "hint_free_cursor": "Free cursor",
+      "hint_click_to_look": "Click the world to look"
     },
     "geosandbox": {
       "studio_new_sculpture": "New sculpture",
