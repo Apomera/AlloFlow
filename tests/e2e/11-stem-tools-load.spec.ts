@@ -29,6 +29,11 @@ test.describe('Flagship STEM Lab tools — CDN load + registry contract', () => 
     test(`${tool.id}: CDN file loads OK`, async ({ request }) => {
       const resp = await request.get(tool.url);
       expect(resp.ok(), `Failed: ${tool.url} (${resp.status()})`).toBeTruthy();
+      // A missing path comes back 200 text/html (the SPA shell, ~380 KB), which
+      // passes an ok()+size check. The registry test below would catch it, but
+      // this one should not pass first and muddy the report.
+      const type = resp.headers()['content-type'] || '';
+      expect(type, `${tool.id}: served as "${type}" — that is the SPA fallback, not the module`).toMatch(/javascript/i);
       const body = await resp.text();
       expect(body.length, `${tool.id}: response body too small`).toBeGreaterThan(1000);
     });
