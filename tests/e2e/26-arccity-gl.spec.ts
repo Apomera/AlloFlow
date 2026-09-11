@@ -231,6 +231,96 @@ test.describe('Arc City — 2D board (dark theme polish)', () => {
   test.afterAll(async () => { await harness.stop(); });
   test.afterEach(async ({ page }) => { await harness.destroy(page); });
 
+  // Idle GPU cost. The city view's frame loop is supposed to render ONLY when something
+  // moved or changed (motion || dirty) — the reason it can be left open on a Chromebook.
+  // That was asserted in a comment and never measured. Count real renderer.render
+  // calls: with Calm on (idle motion off) and nothing happening, the count must stay
+  // near zero; firing must produce a burst; the loop must go quiet again afterwards;
+  // and — the control — with Calm off the same scene DOES render continuously.
+  test('the 3D loop renders only when something changes', async ({ page }) => {
+    const errs = trackErrors(page);
+
+    async function mountCounting(calm: boolean) {
+      await page.goto(`${harness.url}/__harness`);
+      await page.evaluate(() => {
+        document.body.classList.add('theme-dark');
+        document.documentElement.style.background = '#0f172a';
+        document.body.style.background = '#0f172a';
+        // Wrap the renderer BEFORE the tool builds one. The bloom composer's RenderPass
+        // calls renderer.render internally, so this counts both the plain and the
+        // post-processed paths. NOTE: in three r128 `render` is assigned on the INSTANCE
+        // inside the constructor, not on the prototype — a prototype patch counts
+        // nothing and silently made the first version of this test report 0 everywhere.
+        // So wrap the constructor and patch each instance as it is built.
+        const T = (window as any).THREE;
+        const Orig = T.WebGLRenderer;
+        (window as any).__renders = 0;
+        const Wrapped = function (this: unknown, ...a: unknown[]) {
+          const r = new Orig(...a);
+          const o = r.render;
+          r.render = function (...b: unknown[]) { (window as any).__renders++; return o.apply(r, b); };
+          return r;
+        } as unknown as typeof Orig;
+        (Wrapped as any).prototype = Orig.prototype;
+        T.WebGLRenderer = Wrapped;
+      });
+      await page.waitForFunction(() => !!(window as any).StemLab?._registry?.arccity, null, { timeout: 30000 });
+      await page.evaluate((c) => (window as any).__mount({ _arccity: { schemaVersion: 2, levelId: 'L3', byLevel: { L1: { solved: true }, L2: { solved: true }, L3: { params: { a: -0.5, h: 5, k: 5 } } }, tier: 'practice', badges: [], city3d: true, calm: c } }), calm);
+      await cityCanvas(page);
+      await page.waitForTimeout(2500); // bloom addons arrive and trigger one re-render; let that pass
+    }
+    const renders = () => page.evaluate(() => (window as any).__renders as number);
+    const inView = () => page.locator('.arc-city3d canvas').scrollIntoViewIfNeeded().then(() => page.waitForTimeout(400));
+
+    // 0. Scrolled OUT of view — which is where the canvas sits in this viewport, under
+    //    the board — the loop must not render at all, even with idle motion ON. This is
+    //    the IntersectionObserver gate, and it is the bigger Chromebook win: a student
+    //    reading the sliders with the city off-screen pays nothing for it. (It also
+    //    explains why a naive version of this test read 0 renders and looked broken:
+    //    the pause was working.)
+    await mountCounting(false);
+    const o0 = await renders();
+    await page.waitForTimeout(2000);
+    const offscreen = (await renders()) - o0;
+    expect(offscreen, 'off-screen, the loop must be paused (2s window)').toBeLessThanOrEqual(2);
+
+    // 4 (control, moved up). Scroll it into view with Calm OFF: the idle sway is live,
+    //    so now the same window must be busy. Without this, a loop that never renders
+    //    would pass every "quiet" assertion below.
+    await inView();
+    const c0 = await renders();
+    await page.waitForTimeout(2000);
+    const busy = (await renders()) - c0;
+    expect(busy, 'in view with idle motion on, the loop renders continuously').toBeGreaterThan(20);
+    await harness.destroy(page);
+
+    // 1. Calm on, in view, nothing happening: the loop must be idle.
+    await mountCounting(true);
+    await inView();
+    const t0 = await renders();
+    await page.waitForTimeout(2000);
+    const idle = (await renders()) - t0;
+    expect(idle, 'an idle calm scene must not keep re-rendering (2s window)').toBeLessThanOrEqual(3);
+
+    // 2. Firing animates the draw-on, so it must render a burst of frames...
+    const t1 = await renders();
+    await page.getByRole('button', { name: /Fire beam/ }).click();
+    await inView();
+    await page.waitForTimeout(700);
+    const burst = (await renders()) - t1;
+    expect(burst, 'the draw-on must actually render frames').toBeGreaterThan(10);
+
+    // 3. ...and then go quiet again.
+    await page.waitForTimeout(1500);
+    const t2 = await renders();
+    await page.waitForTimeout(2000);
+    const after = (await renders()) - t2;
+    expect(after, 'the loop must settle after the shot, not keep spinning').toBeLessThanOrEqual(3);
+    await harness.destroy(page);
+
+    expect(errs.filter((e) => !/net::ERR|Failed to load resource/.test(e))).toEqual([]);
+  });
+
   // Reduced motion. Every animated thing added to this tool is supposed to be gated on
   // prefers-reduced-motion, and that claim had never actually been RUN — only asserted.
   // Two things have to hold at once, and they pull in opposite directions: an idle

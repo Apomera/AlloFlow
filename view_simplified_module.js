@@ -2255,6 +2255,52 @@ function SimplifiedView(props) {
     }
     setEditAudioOpen(next);
   };
+  // Read-aloud for the Define and Explain popups. Both go through the host's
+  // handleSpeak, the same path the sentence reader, the immersive word
+  // speaker and the glossary use, so voice, speed, provider fallback and
+  // the global play state all match the rest of the app. Calling handleSpeak
+  // again with the same content id while that id is playing stops it, so one
+  // button serves as both play and stop.
+  var SIMPLIFIED_DEFINE_AUDIO_ID = 'simplified-define-popup';
+  var SIMPLIFIED_REVISION_AUDIO_ID = 'simplified-revision-popup';
+  var simplifiedPopupReadAloudLabel = t('common.read_aloud') || 'Read this aloud';
+  var simplifiedPopupStopReadingLabel = t('common.stop_reading') || 'Stop reading aloud';
+  var simplifiedPopupListenLabel = t('common.listen') || 'Listen';
+  var simplifiedPopupStopLabel = t('common.stop') || 'Stop';
+  var simplifiedPopupSpokenText = function (parts) {
+    return (Array.isArray(parts) ? parts : [parts]).map(function (part) {
+      return String(part == null ? '' : part).replace(/\s+/g, ' ').trim();
+    }).filter(Boolean).join('. ');
+  };
+  var renderSimplifiedPopupSpeaker = function (contentId, spokenText) {
+    if (typeof handleSpeak !== 'function') return null;
+    var text = simplifiedPopupSpokenText(spokenText);
+    if (!text) return null;
+    var active = !!isPlaying && playingContentId === contentId;
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-simplified-popup-speaker": contentId,
+      onClick: function () {
+        handleSpeak(text, contentId, 0);
+      },
+      "aria-label": active ? simplifiedPopupStopReadingLabel : simplifiedPopupReadAloudLabel,
+      title: active ? simplifiedPopupStopReadingLabel : simplifiedPopupReadAloudLabel,
+      className: `min-h-11 flex items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${active ? 'bg-indigo-700 text-white hover:bg-indigo-800' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`
+    }, active ? /*#__PURE__*/React.createElement(StopCircle, {
+      size: 14,
+      "aria-hidden": "true"
+    }) : /*#__PURE__*/React.createElement(Volume2, {
+      size: 14,
+      "aria-hidden": "true"
+    }), /*#__PURE__*/React.createElement("span", null, active ? simplifiedPopupStopLabel : simplifiedPopupListenLabel));
+  };
+  // Closing a popup should not leave its audio running with nothing on
+  // screen to stop it. The ref carries the live id into the effect cleanup.
+  var simplifiedPlayingContentIdRef = React.useRef(null);
+  simplifiedPlayingContentIdRef.current = playingContentId;
+  var stopSimplifiedPopupAudio = function (contentId) {
+    if (simplifiedPlayingContentIdRef.current === contentId && typeof stopPlayback === 'function') stopPlayback();
+  };
   function containSimplifiedModalFocus(e, container, onEscape) {
     if (!e || !container) return;
     var nearestDialog = e.target && typeof e.target.closest === 'function' ? e.target.closest('[role="dialog"]') : null;
@@ -2314,6 +2360,7 @@ function SimplifiedView(props) {
     }, 0);
     return function () {
       clearTimeout(timer);
+      stopSimplifiedPopupAudio(SIMPLIFIED_DEFINE_AUDIO_ID);
       if (previouslyFocused && typeof previouslyFocused.focus === 'function' && document.contains(previouslyFocused)) previouslyFocused.focus();
     };
   }, [!!definitionData]);
@@ -2325,6 +2372,7 @@ function SimplifiedView(props) {
     }, 0);
     return function () {
       clearTimeout(timer);
+      stopSimplifiedPopupAudio(SIMPLIFIED_REVISION_AUDIO_ID);
       if (previouslyFocused && typeof previouslyFocused.focus === 'function' && document.contains(previouslyFocused)) previouslyFocused.focus();
     };
   }, [!!revisionData]);
@@ -3655,7 +3703,9 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement("h5", {
     id: "simplified-definition-title",
     className: "font-bold text-indigo-900 text-lg capitalize"
-  }, definitionData.word), /*#__PURE__*/React.createElement("button", {
+  }, definitionData.word), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1"
+  }, definitionData.text ? renderSimplifiedPopupSpeaker(SIMPLIFIED_DEFINE_AUDIO_ID, [definitionData.word, definitionData.text]) : null, /*#__PURE__*/React.createElement("button", {
     ref: definitionCloseRef,
     type: "button",
     onClick: closeDefinition,
@@ -3663,7 +3713,7 @@ function SimplifiedView(props) {
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
-  }))), definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : /*#__PURE__*/React.createElement("div", {
+  })))), definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 text-xs text-indigo-500"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
@@ -3892,7 +3942,9 @@ function SimplifiedView(props) {
   }) : /*#__PURE__*/React.createElement(HelpCircle, {
     size: 14,
     className: "text-teal-500"
-  }), revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')), /*#__PURE__*/React.createElement("button", {
+  }), revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1"
+  }, revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null, /*#__PURE__*/React.createElement("button", {
     ref: revisionCloseRef,
     type: "button",
     onClick: closeRevision,
@@ -3900,7 +3952,7 @@ function SimplifiedView(props) {
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
-  }))), revisionData.result ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  })))), revisionData.result ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3"
   }, renderFormattedText(revisionData.result, false)), (revisionData.type === 'simplify' || revisionData.type === 'custom') && /*#__PURE__*/React.createElement("button", {
     type: "button",

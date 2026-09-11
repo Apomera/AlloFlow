@@ -557,7 +557,14 @@
         return Object.assign({}, defaults[seat][lane], raw.drafts && raw.drafts[seat] && raw.drafts[seat][lane]);
       });
     });
-    out.trails = Array.isArray(raw.trails) ? raw.trails.slice(-12) : [];
+    // Keep only trails that are records. A saved file carrying `trails: [1, 2, 3]`
+    // passed the array check and crashed the board when a number's missing `lane`
+    // reached the lane-colour lookup. Every consumer already tolerates a record
+    // with no samples (`trail.samples || []`), so the shape rule is "object", not
+    // "object with samples" — the lane lookup itself is guarded separately.
+    out.trails = (Array.isArray(raw.trails) ? raw.trails : [])
+      .filter(function (trail) { return !!trail && typeof trail === 'object'; })
+      .slice(-12);
     var maxReplayIndex = Math.max(0, out.trails.length - 1);
     var requestedReplayIndex = raw.replayIndex == null ? maxReplayIndex : Math.floor(Number(raw.replayIndex));
     out.replayIndex = isFinite(requestedReplayIndex) ? Math.max(0, Math.min(maxReplayIndex, requestedReplayIndex)) : maxReplayIndex;
@@ -2070,8 +2077,13 @@
   // paints its own dark scene even while the app is in light mode, so it asks for
   // 'dark' there and only switches on the contrast theme.
   function arcLaneColor(arenaConfig, laneIndex, mode) {
+    // A trail from a corrupted save can carry no lane at all; a neutral slate is
+    // the honest colour for "a shot from a circuit we cannot identify", and it is
+    // far better than throwing out of the board.
+    var lane = arenaConfig && arenaConfig.lanes ? arenaConfig.lanes[laneIndex] : null;
+    if (!lane) return '#94a3b8';
     if (mode === true || mode === 'contrast') return ARC_CONTRAST_LANES[laneIndex % ARC_CONTRAST_LANES.length];
-    var c = arenaConfig.lanes[laneIndex].color;
+    var c = lane.color;
     if (mode === 'light') return ARC_LIGHT_LANES[String(c).toLowerCase()] || c;
     return c;
   }
@@ -3511,15 +3523,27 @@
             // to set amplitude, left/right to set phase so a crest lands where you drop it.
             var TAU = 2 * Math.PI;
             var xc = (Math.PI / 2 - P.c) / P.b; // first crest of a·sin(b·x+c)+k
-            while (xc < wx0) xc += TAU / P.b;
-            while (xc > wx1) xc -= TAU / P.b;
+            // This used to walk the crest into the window one period at a time with two
+            // `while` loops. A saved project can hold ANYTHING for b: at b = 1e308 the
+            // period is ~6e-308 and the walk never arrives; at b < 0 it walks the wrong
+            // way forever; at b = 9999 it takes billions of steps. An infinite loop
+            // inside render is the one failure the render try/catch cannot catch — it
+            // freezes the whole lab tab, not just this tool. Same arithmetic, closed
+            // form, and no handle at all when the wave is degenerate.
+            var period = Math.abs(TAU / P.b);
+            var crestOk = isFinite(xc) && isFinite(period) && period > 1e-6;
+            if (crestOk) {
+              if (xc < wx0) xc += Math.ceil((wx0 - xc) / period) * period;
+              if (xc > wx1) xc -= Math.ceil((xc - wx1) / period) * period;
+              crestOk = isFinite(xc);
+            }
             var yc = P.k + P.a;
-            handleEls.push(h('circle', {
+            if (crestOk) handleEls.push(h('circle', {
               key: 'sh', cx: sx(xc), cy: sy(yc), r: 9, fill: HANDLE, opacity: 0.95, stroke: '#06262b', strokeWidth: 2,
               style: { cursor: 'grab' }, 'aria-hidden': 'true',
               onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return sineCrestParams(wx, wy, level, P.b, P.k); }); }
             }));
-            handleEls.push(h('text', { key: 'shl', x: sx(xc) + 12, y: sy(yc) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, t('stem.arccity.crest_drag_onto_a_window', 'crest — drag onto a window')));
+            if (crestOk) handleEls.push(h('text', { key: 'shl', x: sx(xc) + 12, y: sy(yc) - 8, fill: HANDLE, fontSize: 11,'aria-hidden': 'true' }, t('stem.arccity.crest_drag_onto_a_window', 'crest — drag onto a window')));
           }
         }
 

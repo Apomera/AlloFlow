@@ -1,6 +1,6 @@
 # School Rewards Portal Translation Handoff
 
-**As of:** 2026-09-09
+**As of:** 2026-09-11
 
 The School Rewards portal is the one AlloFlow surface that cannot use the shared
 translation helper or the 63 `lang/*.js` packs: Google serves it from the school's
@@ -30,8 +30,8 @@ the school name, and store window names. Those belong to the school.
 
 | Language | Coverage | Entries |
 | --- | --- | --- |
-| English (en) | 100% | 1124/1124 |
-| Español (es) | 100% | 1124/1124 |
+| English (en) | 100% | 1128/1128 |
+| Español (es) | 100% | 1128/1128 |
 
 A language is treated as complete at 95% or above; below that the menu
 shows the percentage so nobody chooses a language expecting a translated portal.
@@ -42,7 +42,7 @@ Balance statement emails are rendered by `Code.gs`, not the portal, and exist on
 English and Spanish. A student whose portal is set to another language still receives
 English email. That is a separate piece of work in `statementCopy_`.
 
-## Untranslated entries (0 of 1124)
+## Untranslated entries (0 of 1128)
 
 | Key | English | Have |
 | --- | --- | --- |
