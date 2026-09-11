@@ -1130,3 +1130,4 @@ Validation: 57 Chromium cases passed across Adventure visual/settings and learni
 ### 2026-09-10 - Canvas release link update (Codex)
 - Updating the canonical Canvas URL, current release entry, launcher fallback/button and in-app modal plus public mirrors to the user-provided Y10uvvswOaio link. User authorized commit and deploy.sh.
 - Validation: Canvas URL consistency and launcher fallback suites passed (7 tests); broader AI capability suite passed 36 tests with one pre-existing failure asserting a missing Full Pack marker in unchanged AlloFlowANTI.txt. Generated modal and published mirrors synchronized. Proceeding with normal deploy gates.
+- Deployment recovery: desktop compilation succeeded but the isolated output omitted its bridge file. Added canonical-public bridge recovery alongside existing service-worker recovery; all 7 desktop packaging tests passed. Resuming deploy.sh from Step 4.5 with the original build hash.

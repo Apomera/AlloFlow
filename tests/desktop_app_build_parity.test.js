@@ -114,7 +114,7 @@ describe('desktop app-build deployment guard', () => {
     expect(shouldFingerprintPath(join(process.cwd(), 'desktop', 'web-app', 'public', 'app', 'index.html'))).toBe(false);
   });
 
-  it('restores a missing service worker before stamping an isolated build', () => {
+  it('restores missing service-worker and bridge assets before stamping an isolated build', () => {
     const buildRoot = mkdtempSync(join(tmpdir(), 'alloflow-postbuild-missing-sw-'));
     temporaryRoots.push(buildRoot);
     write(buildRoot, 'index.html', [
@@ -125,7 +125,7 @@ describe('desktop app-build deployment guard', () => {
     ].join(''));
     write(buildRoot, 'static/js/main.1234abcd.js', 'window.__desktopBuild = true;\n');
     write(buildRoot, 'static/css/main.5678cdef.css', 'body { color: #111; }\n');
-    write(buildRoot, 'alloflow_desktop_bridge.js', 'window.__desktopBridge = true;\n');
+
 
     execFileSync(process.execPath, [join(process.cwd(), 'desktop', 'web-app', 'postbuild.js')], {
       cwd: process.cwd(),
@@ -133,6 +133,9 @@ describe('desktop app-build deployment guard', () => {
       stdio: 'pipe',
     });
 
+    expect(readFileSync(join(buildRoot, 'alloflow_desktop_bridge.js'), 'utf8')).toBe(
+      readFileSync('desktop/web-app/public/alloflow_desktop_bridge.js', 'utf8')
+    );
     const stampedWorker = readFileSync(join(buildRoot, 'sw.js'), 'utf8');
     expect(stampedWorker).toMatch(/alloflow-v\d+/);
     expect(stampedWorker).toContain('./static/js/main.1234abcd.js');

@@ -47,7 +47,10 @@ if (!fs.existsSync(swPath)) {
 }
 const desktopBridgePath = path.join(buildDir, 'alloflow_desktop_bridge.js');
 if (!fs.existsSync(desktopBridgePath)) {
-    throw new Error('build/alloflow_desktop_bridge.js is missing');
+    const bridgeTemplatePath = path.join(__dirname, 'public', 'alloflow_desktop_bridge.js');
+    if (!fs.existsSync(bridgeTemplatePath)) throw new Error('public/alloflow_desktop_bridge.js is missing');
+    console.warn('⚠ build/alloflow_desktop_bridge.js is missing — restoring the published bridge');
+    fs.copyFileSync(bridgeTemplatePath, desktopBridgePath);
 }
 const buildTs = Date.now();
 let swContent = fs.readFileSync(swPath, 'utf8');
