@@ -14775,6 +14775,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         var states = window[stateKey] || {};
         window[stateKey] = states;
         var loadTimeoutMs = 20000;
+        // How long a STEM plugin script is held back for stem_lab_module.js (see
+        // loadOne). Generous because the module is ~560 KB behind the deferred
+        // pump on a cold load; bounded so a module that never arrives still ends
+        // in this loader's own error card rather than a skeleton forever.
+        var stemHostWaitMs = 25000;
         // Dependency work is intentionally separate from per-file state. This
         // lets the selected tool report loading while support files load without
         // pretending that the tool's own script has already started.
@@ -14954,14 +14959,42 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             pluginDiag('warn', '[' + label + ' Plugin] Failed to load: ' + mod + ' (src: ' + s.src + ')');
             finish('error', 'The plugin file could not be downloaded. Check the connection or school network filter, then try again.');
           };
-          timeoutId = setTimeout(function() {
-            try { if (s.parentNode) s.parentNode.removeChild(s); } catch (_) {}
-            finish('error', 'The plugin took longer than 20 seconds to load. Check the connection, then try again.');
-          }, loadTimeoutMs);
-          try {
-            document.head.appendChild(s);
-          } catch (appendError) {
-            finish('error', 'The plugin could not be added to this page. Check the browser content policy, then try again.');
+          var appendPluginScript = function() {
+            if (states[mod] !== state || state.status !== 'loading') return;
+            timeoutId = setTimeout(function() {
+              try { if (s.parentNode) s.parentNode.removeChild(s); } catch (_) {}
+              finish('error', 'The plugin took longer than 20 seconds to load. Check the connection, then try again.');
+            }, loadTimeoutMs);
+            try {
+              document.head.appendChild(s);
+            } catch (appendError) {
+              finish('error', 'The plugin could not be added to this page. Check the browser content policy, then try again.');
+            }
+          };
+          // A STEM plugin registers into window.StemLab, which stem_lab_module.js
+          // creates. The shell deep link (?tool=...) requests the plugin the moment
+          // the app is ready while that module sits in the deferred pump, so on a
+          // cold load the plugin ran first. Twenty-one plugins return when StemLab
+          // is absent and were reported as "loaded but did not register" on every
+          // shared link; the rest install a bare shim, which the module then kept,
+          // so 3D tools opened that way had no ensureThree (measured 2026-09-10 on
+          // the live app). Hold the script until the module has executed. The
+          // registry check keeps unit harnesses, which have no module pump, on the
+          // immediate path.
+          var stemHostReady = function() {
+            return !!((window.AlloModules && window.AlloModules.StemLab)
+              || (window.StemLab && typeof window.StemLab.ensureThree === 'function'));
+          };
+          if (label === 'Stem' && window.__alloModuleRegistry && !stemHostReady()) {
+            var hostWaitStarted = Date.now();
+            var waitForStemHost = function() {
+              if (states[mod] !== state || state.status !== 'loading') return;
+              if (stemHostReady() || Date.now() - hostWaitStarted >= stemHostWaitMs) { appendPluginScript(); return; }
+              setTimeout(waitForStemHost, 100);
+            };
+            waitForStemHost();
+          } else {
+            appendPluginScript();
           }
           return state.promise;
         }

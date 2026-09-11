@@ -438,3 +438,40 @@ describe('Scale Explorer position scrubber', () => {
     expect(src).toMatch(/onChange: function \(e\) \{ stopJourney\(\); goTo\(parseFloat\(e\.target\.value\)/);
   });
 });
+
+// 2026-09-10. The shell deep link (?tool=scaleExplorer) requests this plugin as soon as
+// the app is ready, while stem_lab_module.js is still queued in the deferred
+// module pump, so on a cold load the plugin runs with no window.StemLab. The
+// file used to return silently in that case and the live app showed "The
+// plugin loaded but did not register" on every shared link. It now installs
+// the same minimal registry the other plugins install; the module adopts it.
+describe('scaleExplorer registers even when it runs before stem_lab_module.js', () => {
+  it('leaves a registry entry behind in a context that had no window.StemLab', () => {
+    const win = {
+      AlloModules: {}, addEventListener() {}, navigator: {},
+      location: { hostname: '', pathname: '', origin: '', href: 'about:blank' },
+      __alloT: (k, fb) => fb || k,
+      localStorage: { getItem() { return null; }, setItem() {} },
+    };
+    win.window = win; win.self = win;
+    const ctx = {
+      window: win, self: win, console: { log() {}, warn() {}, error() {} }, setTimeout, clearTimeout,
+      navigator: win.navigator, location: win.location, localStorage: win.localStorage,
+      document: { createElement() { return { style: {}, setAttribute() {}, appendChild() {} }; }, head: { appendChild() {} }, body: { appendChild() {} }, addEventListener() {}, querySelector() { return null; } },
+    };
+    ctx.globalThis = ctx;
+    vm.runInNewContext(fs.readFileSync(path.join(process.cwd(), 'stem_lab/stem_tool_scaleexplorer.js'), 'utf8'), ctx, { filename: 'stem_lab/stem_tool_scaleexplorer.js' });
+    expect(win.StemLab && win.StemLab._registry && Object.keys(win.StemLab._registry)).toEqual(['scaleExplorer']);
+    expect(typeof win.StemLab.isRegistered).toBe('function');
+    expect(win.StemLab.isRegistered('scaleExplorer')).toBe(true);
+  });
+
+  it('the shim is the recognisable kind: it lacks ensureThree, so the module knows to adopt it', () => {
+    // stem_lab_module.js tells a plugin shim from its own full object by that
+    // one method. If a shim ever grows an ensureThree, the module would keep it
+    // and the session would lose the real helpers again.
+    const shim = fs.readFileSync(path.join(process.cwd(), 'stem_lab/stem_tool_scaleexplorer.js'), 'utf8').match(/window\.StemLab = window\.StemLab \|\| \{[\s\S]*?\n  \};/);
+    expect(shim, 'shim block present').toBeTruthy();
+    expect(shim[0]).not.toMatch(/ensureThree/);
+  });
+});

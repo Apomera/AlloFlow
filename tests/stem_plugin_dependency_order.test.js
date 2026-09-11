@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 function loaderFactorySource() {
   const shell = fs.readFileSync('AlloFlowANTI.txt', 'utf8').replace(/\r\n?/g, '\n');
@@ -158,5 +158,77 @@ describe('STEM demand-loader dependency ordering', () => {
     harness.history[3].onload();
     await flushJobs();
     expect(harness.window.__alloGetStemPluginState('dataStudio')).toMatchObject({ status: 'loaded', attempt: 2 });
+  });
+});
+
+// 2026-09-10: the shell deep link (?tool=solarSystem) requests a plugin as soon as
+// the app is ready, while stem_lab_module.js sits in the deferred module pump, so
+// on a cold load the plugin script executed before window.StemLab existed. The
+// 21 plugins that return in that case never registered ("The plugin loaded but
+// did not register" on every shared link); the rest installed a bare shim the
+// module then kept, so 3D tools opened that way had no ensureThree. The loader
+// now holds a STEM plugin script until the module has executed. The hold is
+// keyed on window.__alloModuleRegistry, which the real app creates before the
+// loader and which the harness above deliberately lacks, so the older tests in
+// this file keep exercising the immediate path.
+describe('STEM demand-loader waits for stem_lab_module.js before injecting a plugin', () => {
+  const MANIFEST = ['stem_lab/stem_tool_solarsystem.js'];
+
+  it('holds the script while the module is missing and appends it once the module has executed', async () => {
+    vi.useFakeTimers();
+    try {
+      const harness = createHarness(MANIFEST);
+      harness.window.__alloModuleRegistry = {};
+      expect(harness.window.__alloEnsureStemPluginLoaded('solarSystem')).toBe(true);
+      await flushJobs();
+      expect(harness.history).toEqual([]);
+      expect(harness.window.__alloGetStemPluginState('solarSystem')).toMatchObject({ status: 'loading' });
+
+      vi.advanceTimersByTime(5000);
+      await flushJobs();
+      expect(harness.history, 'still held five seconds in').toEqual([]);
+
+      harness.window.AlloModules = { StemLab: {} };
+      vi.advanceTimersByTime(200);
+      await flushJobs();
+      expect(harness.history.map(modulePath)).toEqual(['stem_lab/stem_tool_solarsystem.js']);
+
+      harness.history[0].onload();
+      await flushJobs();
+      expect(harness.window.__alloGetStemPluginState('solarSystem')).toMatchObject({ status: 'loaded' });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('gives up waiting after the bound and still injects, so a missing module ends in the normal error card', async () => {
+    vi.useFakeTimers();
+    try {
+      const harness = createHarness(MANIFEST);
+      harness.window.__alloModuleRegistry = {};
+      harness.window.__alloEnsureStemPluginLoaded('solarSystem');
+      await flushJobs();
+      vi.advanceTimersByTime(25200);
+      await flushJobs();
+      expect(harness.history.map(modulePath)).toEqual(['stem_lab/stem_tool_solarsystem.js']);
+      // The plugin's own 20 s download timeout only starts once it is injected.
+      vi.advanceTimersByTime(19000);
+      await flushJobs();
+      expect(harness.window.__alloGetStemPluginState('solarSystem')).toMatchObject({ status: 'loading' });
+      vi.advanceTimersByTime(1500);
+      await flushJobs();
+      expect(harness.window.__alloGetStemPluginState('solarSystem')).toMatchObject({ status: 'error' });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not hold the script when the module is already there', async () => {
+    const harness = createHarness(MANIFEST);
+    harness.window.__alloModuleRegistry = {};
+    harness.window.StemLab = { ensureThree: function () {} };
+    harness.window.__alloEnsureStemPluginLoaded('solarSystem');
+    await flushJobs();
+    expect(harness.history.map(modulePath)).toEqual(['stem_lab/stem_tool_solarsystem.js']);
   });
 });

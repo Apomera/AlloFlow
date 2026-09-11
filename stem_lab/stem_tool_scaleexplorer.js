@@ -37,7 +37,29 @@
 // ═══════════════════════════════════════════════════════════════════════
 (function () {
   'use strict';
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+  // A shared link (?tool=...) requests this plugin before stem_lab_module.js has
+  // run, so window.StemLab may not exist yet. Returning here made the host show
+  // "The plugin loaded but did not register" on every deep link (found
+  // 2026-09-10 by opening the live app). Install the same minimal registry the
+  // other plugins install; the module adopts it when it arrives.
+  window.StemLab = window.StemLab || {
+    _registry: {},
+    _order: [],
+    registerTool: function (id, config) {
+      config.id = id;
+      config.ready = config.ready !== false;
+      this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    getRegisteredTools: function () { var self = this; return this._order.map(function (id) { return self._registry[id]; }).filter(Boolean); },
+    isRegistered: function (id) { return !!this._registry[id]; },
+    renderTool: function (id, ctx) {
+      var tool = this._registry[id];
+      if (!tool || !tool.render) return null;
+      try { return tool.render(ctx); } catch (e) { return null; }
+    }
+  };
+  if (typeof window.StemLab.registerTool !== 'function') return;
 
   // ── The ladder ────────────────────────────────────────────────────────
   // size: metres. dim: which dimension the size refers to.

@@ -19,7 +19,8 @@ const tools = {
   simShelf: ['stem_tool_simshelf.js', 'science'],
   timelineStudio: ['stem_tool_timeline.js', 'history'],
   weldLab: ['stem_tool_weldlab.js', 'engineering'],
-  zoomGallery: ['stem_tool_zoomgallery.js', 'creative']
+  // 2026-09-10: 'creative' was v1's value; the v2 gallery is NASA + Smithsonian science imagery and sits under Earth & Space Science.
+  zoomGallery: ['stem_tool_zoomgallery.js', 'science']
 };
 
 function configSource(source, id) {

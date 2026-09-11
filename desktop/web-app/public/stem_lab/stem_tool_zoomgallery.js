@@ -41,7 +41,29 @@
 // ═══════════════════════════════════════════════════════════════════════
 (function () {
   'use strict';
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+  // A shared link (?tool=...) requests this plugin before stem_lab_module.js has
+  // run, so window.StemLab may not exist yet. Returning here made the host show
+  // "The plugin loaded but did not register" on every deep link (found
+  // 2026-09-10 by opening the live app). Install the same minimal registry the
+  // other plugins install; the module adopts it when it arrives.
+  window.StemLab = window.StemLab || {
+    _registry: {},
+    _order: [],
+    registerTool: function (id, config) {
+      config.id = id;
+      config.ready = config.ready !== false;
+      this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    getRegisteredTools: function () { var self = this; return this._order.map(function (id) { return self._registry[id]; }).filter(Boolean); },
+    isRegistered: function (id) { return !!this._registry[id]; },
+    renderTool: function (id, ctx) {
+      var tool = this._registry[id];
+      if (!tool || !tool.render) return null;
+      try { return tool.render(ctx); } catch (e) { return null; }
+    }
+  };
+  if (typeof window.StemLab.registerTool !== 'function') return;
 
   var OSD_VERSION = '5.0.1';
   var OSD_BASE = 'https://cdn.jsdelivr.net/npm/openseadragon@' + OSD_VERSION + '/build/openseadragon/';
@@ -377,7 +399,7 @@
     label: 'Zoom Gallery',
     desc: 'Zoom deep into real, openly-licensed images — Smithsonian Open Access artifacts (CC0) and famous NASA photographs (public domain) — in OpenSeadragon, the viewer museums use. Magnify to the pixel: the Pillars of Creation, an Apollo bootprint, the Apollo 11 capsule, a coral fan. A Notice → Wonder coach sits beside the viewer.',
     color: 'sky',
-    category: 'creative',
+    category: 'science',
     aliases: ['deep zoom', 'OpenSeadragon', 'NASA images', 'Smithsonian'],
     questHooks: [
       { id: 'zoom_open', label: 'Open an image and zoom in', icon: '🔍',

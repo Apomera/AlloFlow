@@ -660,7 +660,18 @@
     // Initialize before the hub component so plugins can register tools.
     // Plugins (stem_tool_*.js) call window.StemLab.registerTool(id, config)
     // and the hub's fallback renderer (at the end of the explore chain) delegates to them.
-    if (!window.StemLab) {
+    //
+    // A plugin can run BEFORE this module: the shell deep link (?tool=solarSystem)
+    // requests the plugin as soon as the app is ready, while this module sits in
+    // the deferred pump. Most plugins then install a six-method shim so their
+    // registerTool call lands somewhere. Until 2026-09-10 this block kept that
+    // shim as-is, so the whole session ran without ensureThree, loadScriptResilient,
+    // setupHiDPI and the viewers, and every 3D tool opened from a shared link
+    // reported "The 3D engine could not load". A shim is recognised by what it
+    // lacks; its registry is re-registered through the real registerTool below so
+    // the entries pick up the same defaults and lesson-plan rows as the rest.
+    var __alloStemLabShim = (window.StemLab && typeof window.StemLab.ensureThree !== 'function') ? window.StemLab : null;
+    if (!window.StemLab || __alloStemLabShim) {
       window.StemLab = {
         _registry: {},
         _order: [],
@@ -2426,6 +2437,17 @@
           return null;
         }
       };
+      if (__alloStemLabShim && __alloStemLabShim._registry) {
+        var __alloShimOrder = Array.isArray(__alloStemLabShim._order) && __alloStemLabShim._order.length
+          ? __alloStemLabShim._order.slice()
+          : Object.keys(__alloStemLabShim._registry);
+        __alloShimOrder.forEach(function (id) {
+          var cfg = __alloStemLabShim._registry[id];
+          if (!cfg || window.StemLab._registry[id]) return;
+          try { window.StemLab.registerTool(id, cfg); }
+          catch (e) { try { console.warn('[StemLab] Could not adopt early registration ' + id, e); } catch (_) {} }
+        });
+      }
     }
 
     // ── AI Hint guardrails (pure + testable; the gate lives in getHint below) ──
@@ -4965,17 +4987,17 @@
       var _activeToolFallbackMeta = {
         heatLab: { label: t('stem.tools_menu.heat_thermodynamics_lab') || 'Heat & Thermodynamics Lab', icon: '\uD83C\uDF21\uFE0F' },
         nuclearLab: { label: t('stem.tools_menu.nuclear_radiation_lab') || 'Nuclear & Radiation Lab', icon: '\u2622\uFE0F' },
-        volume: { label: t('stem.tools_menu.3d_volume_explorer') || '3D Volume Explorer', icon: 'ðŸ“¦' },
-        numberline: { label: t('stem.assessment.number_line') || 'Number Line', icon: 'ðŸ“' },
-        areamodel: { label: t('stem.assessment.area_model') || 'Area Model', icon: 'ðŸŸ§' },
-        fractionViz: { label: t('stem.assessment.fraction_lab') || 'Fraction Lab', icon: 'ðŸ•' },
-        chemBalance: { label: t('stem.tools_menu.chemistry_lab') || 'Chemistry Lab', icon: 'âš–ï¸' },
-        opticsLab: { label: t('stem.optics.optics_lab') || 'Optics Lab', icon: 'ðŸ”†' },
-        codingPlayground: { label: t('stem.coding.coding_playground') || 'Coding Playground', icon: 'ðŸ’»' },
-        graphCalc: { label: t('stem.tools_menu.graphing_calculator') || 'Graphing Calculator', icon: 'ðŸ“ˆ' },
-        solarSystem: { label: t('stem.solarsystem.solar_system_explorer_2') || 'Solar System Explorer', icon: 'ðŸª' },
-        anatomy: { label: t('stem.tools_menu.human_anatomy') || 'Human Anatomy', icon: 'ðŸ«€' },
-        titrationLab: { label: t('stem.titration.titration_lab') || 'Titration Lab', icon: 'ðŸ§ª' }
+        volume: { label: t('stem.tools_menu.3d_volume_explorer') || '3D Volume Explorer', icon: '\uD83D\uDCE6' },
+        numberline: { label: t('stem.assessment.number_line') || 'Number Line', icon: '\uD83D\uDCCF' },
+        areamodel: { label: t('stem.assessment.area_model') || 'Area Model', icon: '\uD83D\uDFE7' },
+        fractionViz: { label: t('stem.assessment.fraction_lab') || 'Fraction Lab', icon: '\uD83C\uDF55' },
+        chemBalance: { label: t('stem.tools_menu.chemistry_lab') || 'Chemistry Lab', icon: '\u2696\uFE0F' },
+        opticsLab: { label: t('stem.optics.optics_lab') || 'Optics Lab', icon: '\uD83D\uDD06' },
+        codingPlayground: { label: t('stem.coding.coding_playground') || 'Coding Playground', icon: '\uD83D\uDDA5\uFE0F' },
+        graphCalc: { label: t('stem.tools_menu.graphing_calculator') || 'Graphing Calculator', icon: '\uD83D\uDCDF' },
+        solarSystem: { label: t('stem.solarsystem.solar_system_explorer_2') || 'Solar System Explorer', icon: '\uD83E\uDE90' },
+        anatomy: { label: t('stem.tools_menu.human_anatomy') || 'Human Anatomy', icon: '\uD83E\uDEC0' },
+        titrationLab: { label: t('stem.titration.titration_lab') || 'Titration Lab', icon: '\uD83E\uDDEA' }
       };
       function _formatStemToolId(id) {
         return String(id || 'Tool').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
@@ -4985,7 +5007,7 @@
         try { reg = window.StemLab && window.StemLab._registry && window.StemLab._registry[id]; } catch (_) {}
         var fallback = _activeToolFallbackMeta[id] || {};
         var label = (reg && reg.label) || fallback.label || _formatStemToolId(id);
-        var icon = (reg && reg.icon) || fallback.icon || 'ðŸ§ª';
+        var icon = (reg && reg.icon) || fallback.icon || '\uD83E\uDDEA';
         return { label: label, icon: icon };
       }
       var _activeStemToolMeta = stemLabTool ? _getActiveStemToolMeta(stemLabTool) : null;
@@ -5849,6 +5871,16 @@
                 desc: t('stem.tools_menu.experience_13_8_billion_years_of') || 'Experience 13.8 billion years of cosmic history, from the Big Bang to the far future.',
                 color: 'violet', ready: true
               },
+              {
+                id: 'zoomGallery', icon: '\uD83D\uDD0D', label: t('stem.tools_menu.zoom_gallery') || 'Zoom Gallery',
+                desc: t('stem.tools_menu.zoom_deep_into_real_openly_licensed') || 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
+                color: 'sky', ready: true
+              },
+              {
+                id: 'scaleExplorer', icon: '🪆', label: t('stem.tools_menu.scale_explorer') || 'Scale Explorer',
+                desc: t('stem.tools_menu.zoom_smoothly_across_42_powers_of_ten') || 'Zoom smoothly across 42 powers of ten, from the observable universe down to a proton, seeing what lives at every scale. Equal steps across the screen mean equal ratios, so “ten times bigger” always looks the same distance. Compare any two things and find out how many of one fit across the other.',
+                color: 'violet', ready: true
+              },
               { id: '_cat_Physics&Chemistry', icon: '', label: t('stem.tools_menu.physics_chemistry') || 'Physics & Chemistry', desc: '', color: 'slate', chip: 'science', palette: ['cyan', 'orange', 'violet'], paletteBreaks: { molecule: ['amber', 'emerald', 'violet'] }, category: true },
               {
                 // @tool wave
@@ -6000,16 +6032,6 @@
                 id: 'simShelf', icon: '🗄️', label: t('stem.tools_menu.sim_shelf') || 'Sim Shelf',
                 desc: t('stem.tools_menu.sixteen_hand_picked_phet_simulations_university') || 'Sixteen hand-picked PhET simulations (University of Colorado Boulder) \u2014 forces, circuits, light, matter, orbits, evolution, fractions, probability \u2014 wrapped in a Predict \u2192 Explore \u2192 Explain coach that makes you commit to a guess before you touch anything.',
                 color: 'amber', ready: true
-              },
-              {
-                id: 'zoomGallery', icon: '\uD83D\uDD0D', label: t('stem.tools_menu.zoom_gallery') || 'Zoom Gallery',
-                desc: t('stem.tools_menu.zoom_deep_into_real_openly_licensed') || 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
-                color: 'sky', ready: true
-              },
-              {
-                id: 'scaleExplorer', icon: '🪆', label: t('stem.tools_menu.scale_explorer') || 'Scale Explorer',
-                desc: t('stem.tools_menu.zoom_smoothly_across_42_powers_of_ten') || 'Zoom smoothly across 42 powers of ten, from the observable universe down to a proton, seeing what lives at every scale. Equal steps across the screen mean equal ratios, so “ten times bigger” always looks the same distance. Compare any two things and find out how many of one fit across the other.',
-                color: 'violet', ready: true
               },
               { id: '_cat_ArtsMusic', icon: '', label: t('stem.tools_menu.arts_music', 'Arts & Music'), desc: '', color: 'slate', chip: 'creative', palette: ['violet', 'rose', 'indigo'], category: true },
 
