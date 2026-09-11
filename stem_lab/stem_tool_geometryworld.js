@@ -119,6 +119,7 @@
       ".gw-root .gw-action-feedback[data-feedback-kind=\"shape\"]{bottom:194px!important}@media(max-width:800px) and (min-height:620px) and (orientation:portrait){.gw-root .gw-action-feedback[data-feedback-kind=\"shape\"]{top:calc(50% - 112px);bottom:auto!important;left:12px!important;transform:none!important;max-width:calc(100% - 108px)!important}}",
       ".gw-placement-hint{position:absolute;bottom:186px;top:auto;left:50%;transform:translateX(-50%);z-index:25;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:7px;width:max-content;max-width:min(440px,calc(100% - 36px));padding:7px 11px;border:1px solid #c4dfc770;border-radius:10px;background:#113b30f2;color:#e8f2e0;font-size:12px;font-weight:600;line-height:1.4;pointer-events:none;box-shadow:0 5px 18px #092b2533}.gw-placement-hint[data-allowed=\"false\"]{background:#502f29f2;border-color:#ecc3a3aa;color:#ffe3cc}.gw-placement-hint-mark{display:grid;flex:0 0 auto;place-items:center;width:18px;height:18px;border:1px solid currentColor;border-radius:50%;font-size:12px;font-weight:800}.gw-root .gw-action-feedback{background:#112d2bf2!important;border-color:#c4dfc766!important;color:#f5f0e5!important}",
       ".gw-placement-hint .gw-placement-aim{pointer-events:auto;white-space:nowrap;margin-left:6px;padding:4px 9px;border-radius:8px;border:1px solid #c4dfc7aa;background:#1c5a48;color:#f1faf3;font:inherit;font-size:11px;font-weight:700;cursor:pointer;min-height:28px}.gw-placement-hint .gw-placement-aim:hover{background:#25705a}",
+      ".gw-npc-speech{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:2px 0 10px;padding:6px 8px;border-radius:10px;border:1px solid rgba(148,163,184,0.25);background:rgba(15,23,42,0.45)}.gw-npc-speech button{min-height:32px;padding:4px 10px;border-radius:8px;border:1px solid rgba(148,163,184,0.4);background:rgba(30,41,59,0.85);color:#e2e8f0;font:inherit;font-size:11px;font-weight:700;cursor:pointer}.gw-npc-speech button[disabled]{opacity:.45;cursor:default}.gw-npc-speech .gw-npc-speech-play{border-color:rgba(251,191,36,0.55);color:#fde68a}.gw-npc-speech .gw-npc-speech-mute[aria-pressed=\"true\"]{opacity:.7}.gw-npc-speech .gw-npc-speech-auto{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#cbd5e1}.gw-npc-speech .gw-npc-speech-status{flex-basis:100%;font-size:10px;color:#94a3b8}.gw-npc-speech .gw-npc-speech-status[data-speech-status=\"error\"]{color:#fca5a5}.gw-npc-speech .gw-npc-speech-status[data-speech-status=\"speaking\"]{color:#86efac}@media(pointer:coarse){.gw-npc-speech button{min-height:44px;min-width:44px}}",
       ".gw-key-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;margin-left:5px;border-radius:4px;border:1px solid #64748b;background:#0b1220;color:#cbd5e1;font:700 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;vertical-align:middle}",
       ".gw-shape-heading{cursor:pointer;background:transparent;border:0;color:inherit;font:inherit;display:inline-flex;align-items:center;padding:0 4px;min-height:24px}.gw-shape-heading:hover .gw-key-badge,.gw-shape-rotate:hover .gw-key-badge{border-color:#fbbf24;color:#fde68a}.gw-shape-rotate[disabled]{opacity:.45;cursor:default}",
       ".gw-pointer-hint{position:absolute;top:14px;left:14px;z-index:24;pointer-events:none;display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:9px;border:1px solid #47556780;background:#0f172acc;color:#e2e8f0;font-size:11px;font-weight:600;line-height:1;backdrop-filter:blur(6px)}.gw-pointer-hint[data-locked=\"true\"]{border-color:#fbbf2466;color:#fde68a}.gw-pointer-hint .gw-key-badge{margin-left:0}",
@@ -470,6 +471,94 @@
   }
   window.StemLab.GeometryWorldBlinkScale = geometryWorldBlinkScale;
   window.StemLab.GeometryWorldSunVector = geometryWorldSunVector;
+
+  // ── NPC speech ──
+  // Geometry World does not own a speech engine. Every line goes through the
+  // application's shared player (window.AlloSpeechPlayer, backed by callTTS),
+  // which is where the Gemini TTS / Kokoro choice, the global mute, the browser
+  // fallback, abort-on-newer-request and the error toast already live. The tool's
+  // job is only to decide WHAT to say and WHICH voice to ask for, and to keep
+  // captions on screen whatever happens to the audio. Kokoro voices are the ones
+  // callTTS routes by prefix; anything else is a Gemini voice name.
+  var GW_KOKORO_VOICE = /^(af_|am_|bf_|bm_)/i;
+  function geometryWorldSpeechConfig() {
+    var cfg = {};
+    try { cfg = JSON.parse((typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_ai_config')) || '{}') || {}; } catch (e) { cfg = {}; }
+    return {
+      ttsProvider: String(cfg.ttsProvider || 'auto').trim().toLowerCase(),
+      backend: String(cfg.backend || 'gemini').trim().toLowerCase(),
+      model: String((cfg.models && cfg.models.tts) || ''),
+      selectedVoice: String((typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Kore'),
+      language: String((typeof window !== 'undefined' && window.__alloTextLanguage) || 'English'),
+      globalMuted: (function() { try { return typeof localStorage !== 'undefined' && localStorage.getItem('alloflow-global-muted') === 'true'; } catch (e) { return false; } })()
+    };
+  }
+  // Which engine will actually speak, from the user's TTS setting. 'auto' means
+  // follow the selected voice: a Kokoro voice name routes to Kokoro, anything
+  // else to the configured backend (Gemini).
+  function geometryWorldEffectiveProvider(config) {
+    var p = String((config && config.ttsProvider) || 'auto').toLowerCase();
+    if (p === 'off') return 'off';
+    if (p === 'browser') return 'browser';
+    if (p === 'kokoro' || p === 'local') return 'kokoro';
+    if (p === 'gemini') return 'gemini';
+    return GW_KOKORO_VOICE.test(String((config && config.selectedVoice) || '')) ? 'kokoro' : 'gemini';
+  }
+  // An NPC may prefer a voice. null / '' / 'follow-current' inherit the user's
+  // selection. A preference that belongs to the OTHER provider is dropped, not
+  // forced: a Kokoro voice name sent to Gemini would be silently remapped and a
+  // Gemini name sent to Kokoro would fail, so the provider's own default is the
+  // graceful outcome. `fellBack` is exposed so the UI can say so.
+  function geometryWorldResolveNpcVoice(preference, config) {
+    var provider = geometryWorldEffectiveProvider(config);
+    var pref = preference == null ? '' : String(preference).trim();
+    if (!pref || pref.toLowerCase() === 'follow-current') return { provider: provider, voice: undefined, fellBack: false, source: 'current' };
+    var prefIsKokoro = GW_KOKORO_VOICE.test(pref);
+    if (provider === 'kokoro' && prefIsKokoro) return { provider: provider, voice: pref, fellBack: false, source: 'npc' };
+    if (provider === 'gemini' && !prefIsKokoro) return { provider: provider, voice: pref, fellBack: false, source: 'npc' };
+    return { provider: provider, voice: undefined, fellBack: true, source: 'current' };
+  }
+  // Identity of one spoken line. The provider is IN the key, so a line spoken
+  // under Gemini and the same line under Kokoro are different entries; audio
+  // bytes themselves are cached inside callTTS by resolved voice, language and
+  // model, which this key mirrors rather than duplicates.
+  function geometryWorldSpeechKey(parts) {
+    parts = parts || {};
+    return JSON.stringify([
+      String(parts.provider || ''), String(parts.model || ''), String(parts.voice || ''),
+      String(parts.language || '').toLowerCase(), String(parts.style || ''), String(parts.text || '')
+    ]);
+  }
+  // Speak one line for an NPC through the shared player. Returns a record the UI
+  // can show; never throws. With no player on the page (a harness, or a very old
+  // host) it reports 'unavailable' and the caption is all the student gets.
+  function geometryWorldSpeakLine(text, npc, options) {
+    options = options || {};
+    var value = String(text == null ? '' : text).trim();
+    var config = options.config || geometryWorldSpeechConfig();
+    var pick = geometryWorldResolveNpcVoice(npc && npc.voicePreference, config);
+    var language = options.language || (npc && npc.language) || undefined;
+    var key = geometryWorldSpeechKey({ provider: pick.provider, model: config.model, voice: pick.voice || config.selectedVoice, language: language || config.language, style: options.style || '', text: value });
+    var record = { key: key, text: value, provider: pick.provider, voice: pick.voice, fellBack: pick.fellBack, spoken: false, reason: null, promise: null };
+    if (!value) { record.reason = 'empty'; return record; }
+    if (pick.provider === 'off') { record.reason = 'provider-off'; return record; }
+    if (config.globalMuted) { record.reason = 'muted'; return record; }
+    var player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
+    if (!player || typeof player.speak !== 'function') { record.reason = 'unavailable'; return record; }
+    try {
+      record.spoken = true;
+      record.promise = Promise.resolve(player.speak(value, { voice: pick.voice, language: language, priority: 'interactive', reason: 'geometry-world-npc', maxRetries: options.maxRetries == null ? 1 : options.maxRetries }))
+        .catch(function(e) { record.reason = 'error'; record.error = e && e.message; return null; });
+    } catch (e) { record.spoken = false; record.reason = 'error'; record.error = e && e.message; }
+    return record;
+  }
+  function geometryWorldStopSpeech() {
+    try { var player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null; if (player && typeof player.stop === 'function') player.stop(); } catch (e) {}
+  }
+  window.StemLab.geometryWorldSpeech = {
+    config: geometryWorldSpeechConfig, effectiveProvider: geometryWorldEffectiveProvider, resolveNpcVoice: geometryWorldResolveNpcVoice,
+    speechKey: geometryWorldSpeechKey, speakLine: geometryWorldSpeakLine, stop: geometryWorldStopSpeech, isKokoroVoice: function(v) { return GW_KOKORO_VOICE.test(String(v || '')); }
+  };
   window.StemLab.GeometryWorldLerpAngle = geometryWorldLerpAngle;
 
   // ── Block Types ──
@@ -3121,6 +3210,57 @@
       // state fed by the pointerlockchange handler through the engine bridge, never
       // written to toolData, because a captured cursor is not something to persist.
       var pointerLockedState = React.useState(false); var pointerLocked = pointerLockedState[0], setPointerLocked = pointerLockedState[1];
+      // NPC speech status, mirrored from the shared player's state event so the
+      // dialog can show loading / speaking / error without owning any audio.
+      // npcSpeechMuted and npcSpeechAuto are the student's own preferences and
+      // do persist; the global mute is the app's and is only read here.
+      var npcSpeechState = React.useState({ status: 'idle', key: null, error: null });
+      var npcSpeech = npcSpeechState[0], setNpcSpeech = npcSpeechState[1];
+      var npcSpeechRef = React.useRef({ key: null, request: 0 });
+      var globalMutedState = React.useState(function() { try { return localStorage.getItem('alloflow-global-muted') === 'true'; } catch (e) { return false; } });
+      var globalMuted = globalMutedState[0], setGlobalMuted = globalMutedState[1];
+      var npcSpeechMuted = !!d.npcSpeechMuted;
+      var npcSpeechAuto = !!d.npcSpeechAuto;
+      React.useEffect(function() {
+        function onSpeech(ev) {
+          var st = (ev && ev.detail) || {};
+          setNpcSpeech(function(prev) {
+            var ours = npcSpeechRef.current.key && prev.key === npcSpeechRef.current.key;
+            if (!ours && st.status !== 'idle') return prev;
+            var status = st.error ? 'error' : st.status === 'generating' ? 'loading' : st.isPlaying ? 'speaking' : 'idle';
+            return { status: status, key: prev.key, error: st.error || null };
+          });
+        }
+        function onMute(ev) { setGlobalMuted(!!(ev && ev.detail && ev.detail.muted)); }
+        window.addEventListener('allo-speech-state', onSpeech);
+        window.addEventListener('alloflow-mute-changed', onMute);
+        return function() { window.removeEventListener('allo-speech-state', onSpeech); window.removeEventListener('alloflow-mute-changed', onMute); };
+      }, []);
+      // Say a line for the character in the open dialog. Captions are already on
+      // screen (the dialogue text and the chat history), so this only ever adds
+      // audio and status; a request that is no longer the newest is ignored.
+      function speakNpcLine(text, npcData, opts) {
+        opts = opts || {};
+        var speech = window.StemLab && window.StemLab.geometryWorldSpeech;
+        if (!speech) return null;
+        if (npcSpeechMuted && !opts.force) return null;
+        var request = ++npcSpeechRef.current.request;
+        var record = speech.speakLine(text, npcData, { language: opts.language });
+        npcSpeechRef.current.key = record.key;
+        if (record.spoken) {
+          setNpcSpeech({ status: 'loading', key: record.key, error: null });
+          if (record.promise) record.promise.then(function(id) {
+            if (npcSpeechRef.current.request !== request) return; // superseded
+            if (id == null) setNpcSpeech(function(prev) { return prev.key === record.key && prev.status !== 'error' ? { status: 'idle', key: record.key, error: prev.error } : prev; });
+          });
+        } else {
+          setNpcSpeech({ status: record.reason === 'muted' || record.reason === 'provider-off' ? 'muted' : record.reason === 'unavailable' ? 'unavailable' : 'idle', key: record.key, error: null });
+        }
+        return record;
+      }
+      function stopNpcSpeech() { var speech = window.StemLab && window.StemLab.geometryWorldSpeech; if (speech) speech.stop(); npcSpeechRef.current.request++; setNpcSpeech(function(prev) { return { status: 'idle', key: prev.key, error: null }; }); }
+      // Closing the dialog ends the character's line.
+      React.useEffect(function() { if (!showNpcDialog) stopNpcSpeech(); }, [showNpcDialog]);
       var shapeActionRef = React.useRef({ timer: null, feedback: '' });
       shapeActionRef.current.feedback = actionFeedback;
       React.useEffect(function() {
@@ -8493,6 +8633,10 @@
           n.position = Array.isArray(n.position) && n.position.length >= 3 ? n.position.map(function(v) { return Math.max(-4, Math.min(30, Math.round(v || 0))); }) : [5, 2, 5];
           n.color = typeof n.color === 'number' ? n.color : 8048861;
           n.dialogue = n.dialogue || 'Hello!';
+          // Optional speech fields. Absent or 'follow-current' means inherit the
+          // app's TTS selection, so every existing lesson keeps working unchanged.
+          n.voicePreference = typeof n.voicePreference === 'string' && n.voicePreference.trim() && n.voicePreference.trim().toLowerCase() !== 'follow-current' ? n.voicePreference.trim().slice(0, 64) : null;
+          n.language = typeof n.language === 'string' && n.language.trim() ? n.language.trim().slice(0, 32) : null;
           // Validate question structure
           if (n.question) {
             if (!n.question.text || !Array.isArray(n.question.choices) || n.question.choices.length < 2) {
@@ -9878,6 +10022,9 @@
             cv.width = W * dpr; cv.height = H * dpr;
             cv.style.width = W + 'px'; cv.style.height = H + 'px';
             var ctx = cv.getContext('2d');
+            // A 2D context can be refused (context limit, headless hosts); the strip
+            // then simply does not draw rather than throwing inside React's commit.
+            if (!ctx) return;
             ctx.scale(dpr, dpr);
             // The strip is absolutely positioned inside the WORKSPACE, which starts
             // at the toolbar, so a plain top:12px put the whole thing inside the dark
@@ -10228,6 +10375,11 @@
           // NPC Creator form
           el('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
             el('input', { type: 'text', value: creatorNpcName, 'aria-label': __alloT('stem.geometryworld.npc_name', 'NPC name'), onChange: function(ev) { upd('creatorNpcName', ev.target.value); }, placeholder: __alloT('stem.geometryworld.npc_name_e_g_professor_volume', 'NPC Name (e.g. Professor Volume)'), style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
+            el('button', { type: 'button', className: 'gw-focusable gw-npc-preview-voice', disabled: !String(creatorNpcDialogue || '').trim(),
+              'aria-label': __alloT('stem.geometryworld.a11y_preview_voice', 'Preview this dialogue in the current voice'),
+              onClick: function() { speakNpcLine(creatorNpcDialogue, { name: creatorNpcName }, { force: true }); },
+              style: { alignSelf: 'flex-start', fontSize: '11px', padding: '4px 10px', borderRadius: '8px', border: '1px solid rgba(148,163,184,0.4)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', cursor: 'pointer' } },
+              '\uD83D\uDD0A ', __alloT('stem.geometryworld.preview_voice', 'Preview voice')),
             el('textarea', { value: creatorNpcDialogue, 'aria-label': __alloT('stem.geometryworld.npc_dialogue', 'NPC dialogue'), onChange: function(ev) { upd('creatorNpcDialogue', ev.target.value); }, placeholder: __alloT('stem.geometryworld.what_should_the_npc_say_e_g_look_at_th', 'What should the NPC say? (e.g. "Look at the structure behind me!")'), rows: 2, style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', resize: 'vertical' } }),
             el('input', { type: 'text', value: creatorNpcQuestion, 'aria-label': __alloT('stem.geometryworld.npc_question_optional', 'NPC question (optional)'), onChange: function(ev) { upd('creatorNpcQuestion', ev.target.value); }, placeholder: __alloT('stem.geometryworld.question_optional_e_g_what_is_the_volu', 'Question (optional, e.g. "What is the volume?")'), style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
             creatorNpcQuestion.trim() && el('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px' } },
@@ -11219,18 +11371,39 @@
                 ? el('span', null, (data.dialogue || '').slice(0, npcTypewriterPos), el('span', { style: { opacity: 0.4, animation: 'pulse 0.8s infinite' } }, '\u2588'))
                 : data.dialogue
             ),
+            // ── Speech bar: hear the line through the app's current voice. ──
+            (function() {
+              var speech = window.StemLab && window.StemLab.geometryWorldSpeech;
+              var cfg = speech ? speech.config() : null;
+              var pick = speech ? speech.resolveNpcVoice(data.voicePreference, cfg) : null;
+              var providerLabel = pick ? (pick.provider === 'kokoro' ? 'Kokoro' : pick.provider === 'gemini' ? 'Gemini voice' : pick.provider === 'browser' ? 'Browser voice' : 'Voice off') : 'Voice';
+              var busy = npcSpeech.status === 'loading' || npcSpeech.status === 'speaking';
+              var lastSpokenIsThis = npcSpeech.key && speech && npcSpeech.key === speech.speechKey({ provider: pick.provider, model: cfg.model, voice: pick.voice || cfg.selectedVoice, language: data.language || cfg.language, style: '', text: String(data.dialogue || '').trim() });
+              var statusText = globalMuted ? __alloT('stem.geometryworld.speech_app_muted', 'App sound is muted') : npcSpeechMuted ? __alloT('stem.geometryworld.speech_npc_off', 'Character voices off')
+                : npcSpeech.status === 'loading' ? __alloT('stem.geometryworld.speech_loading', 'Loading voice\u2026') : npcSpeech.status === 'speaking' ? __alloT('stem.geometryworld.speech_speaking', 'Speaking\u2026')
+                : npcSpeech.status === 'error' ? __alloT('stem.geometryworld.speech_failed', 'Voice unavailable right now. Captions are shown.') : npcSpeech.status === 'unavailable' ? __alloT('stem.geometryworld.speech_unavailable', 'Voice is not available here. Captions are shown.')
+                : (pick && pick.fellBack ? __alloT('stem.geometryworld.speech_voice_fallback', 'Using the current default voice') : providerLabel);
+              return el('div', { className: 'gw-npc-speech', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_character_speech_controls', 'Character speech controls') },
+                el('button', { type: 'button', className: 'gw-focusable gw-npc-speech-play', disabled: globalMuted || npcSpeechMuted || (pick && pick.provider === 'off'),
+                  'aria-label': busy ? __alloT('stem.geometryworld.a11y_replay_line', 'Replay this line') : __alloT('stem.geometryworld.a11y_hear_line', 'Hear this line'),
+                  onClick: function() { speakNpcLine(data.dialogue, data, { language: data.language }); } },
+                  el('span', { 'aria-hidden': 'true' }, busy || lastSpokenIsThis ? '\u21BB' : '\uD83D\uDD0A'), ' ', busy || lastSpokenIsThis ? __alloT('stem.geometryworld.speech_replay', 'Replay') : __alloT('stem.geometryworld.speech_hear', 'Hear it')),
+                busy && el('button', { type: 'button', className: 'gw-focusable gw-npc-speech-stop', 'aria-label': __alloT('stem.geometryworld.a11y_stop_speech', 'Stop speaking'), onClick: stopNpcSpeech }, '\u23F9 ', __alloT('stem.geometryworld.speech_stop', 'Stop')),
+                npcSpeech.status === 'error' && el('button', { type: 'button', className: 'gw-focusable gw-npc-speech-retry', onClick: function() { speakNpcLine(data.dialogue, data, { language: data.language, force: false }); } }, '\u21BB ', __alloT('stem.geometryworld.speech_retry', 'Retry')),
+                el('button', { type: 'button', className: 'gw-focusable gw-npc-speech-mute', 'aria-pressed': npcSpeechMuted ? 'true' : 'false',
+                  'aria-label': npcSpeechMuted ? __alloT('stem.geometryworld.a11y_turn_character_voices_on', 'Turn character voices on') : __alloT('stem.geometryworld.a11y_turn_character_voices_off', 'Turn character voices off'),
+                  onClick: function() { if (!npcSpeechMuted) stopNpcSpeech(); upd('npcSpeechMuted', !npcSpeechMuted); } }, npcSpeechMuted ? '\uD83D\uDD07' : '\uD83D\uDD09'),
+                el('label', { className: 'gw-npc-speech-auto' }, el('input', { type: 'checkbox', checked: npcSpeechAuto, onChange: function(ev) { upd('npcSpeechAuto', !!ev.target.checked); } }), ' ', __alloT('stem.geometryworld.speech_auto', 'Speak replies')),
+                el('span', { className: 'gw-npc-speech-status', role: 'status', 'aria-live': 'polite', 'data-speech-status': npcSpeech.status }, statusText)
+              );
+            })(),
             // Bilingual translation line (click to hear)
             homeLang !== 'en' && translation && el('div', {
               onClick: function() {
-                // Speak translation aloud using browser TTS
-                if (window.speechSynthesis) {
-                  var LANG_CODES = { es: 'es-ES', fr: 'fr-FR', ar: 'ar-SA', so: 'so-SO', pt: 'pt-BR', vi: 'vi-VN', zh: 'zh-CN', sw: 'sw-KE' };
-                  var utt = new SpeechSynthesisUtterance(translation.dialogue);
-                  utt.lang = LANG_CODES[homeLang] || homeLang;
-                  utt.rate = 0.85;
-                  window.speechSynthesis.cancel();
-                  window.speechSynthesis.speak(utt);
-                }
+                // Through the app's current voice, in the home language; the player
+                // falls back to the browser voice itself when that is allowed.
+                var LANG_NAMES = { es: 'Spanish', fr: 'French', ar: 'Arabic', so: 'Somali', pt: 'Portuguese', vi: 'Vietnamese', zh: 'Chinese', sw: 'Swahili' };
+                speakNpcLine(translation.dialogue, data, { language: LANG_NAMES[homeLang] || homeLang, force: true });
               },
               title: __alloT('stem.geometryworld.click_to_hear_translation_spoken_aloud', 'Click to hear translation spoken aloud'),
               style: { fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, marginBottom: '10px', fontStyle: 'italic', borderLeft: '3px solid #fbbf24', paddingLeft: '8px', cursor: 'pointer' }
@@ -11430,10 +11603,14 @@
                         + 'Use concrete examples with blocks. If they ask about volume, reference L\u00d7W\u00d7H. '
                         + 'If they seem confused, break it down into simpler steps.';
 
+                      var chatRequest = ++npcSpeechRef.current.request;
                       callGemini(npcPrompt, true).then(function(response) {
                         var updatedHist = Object.assign({}, npcChatHistory);
                         updatedHist[dialogNpcIdx] = history.concat([{ role: 'npc', text: response }]);
+                        // Caption first, always. Then the newest reply only speaks,
+                        // through whatever provider the user has selected right now.
                         upd({ npcChatHistory: updatedHist, npcChatLoading: false });
+                        if (npcSpeechAuto && npcSpeechRef.current.request === chatRequest) { npcSpeechRef.current.request--; speakNpcLine(response, data, { language: data.language }); }
                         var eng = window[engineKey];
                         if (eng && eng.logEvent) eng.logEvent('npc_chat', { npc: data.name, question: userMsg, response: response.substring(0, 100) });
                       }).catch(function() {
@@ -11460,9 +11637,12 @@
                       + 'Context: ' + data.dialogue + ' '
                       + (measureResult ? 'Student measured: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' occupied V=' + measuredVolume(measureResult) + ', bounding-box V=' + measureResult.boundingVolume + '. ' : '')
                       + 'Student asks: "' + userMsg + '". Respond in 2-3 warm, concrete sentences.';
+                    var chatRequest = ++npcSpeechRef.current.request;
                     callGemini(npcPrompt, true).then(function(r) {
                       var uh = Object.assign({}, npcChatHistory); uh[dialogNpcIdx] = history.concat([{ role: 'npc', text: r }]);
                       upd({ npcChatHistory: uh, npcChatLoading: false });
+                      // Caption first; the newest reply speaks through the current provider.
+                      if (npcSpeechAuto && npcSpeechRef.current.request === chatRequest) { npcSpeechRef.current.request--; speakNpcLine(r, data, { language: data.language }); }
                       // Must use gwChatKey — loadLesson READS with it. Writing with the
                       // raw activeLesson stored a freshly generated world's chat under
                       // 'ai_generated' while the read looked under the lesson's _id, so
