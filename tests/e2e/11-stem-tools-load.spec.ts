@@ -22,6 +22,9 @@ const FLAGSHIP_TOOLS = [
   { id: 'cephalopod', url: 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_cephalopodlab.js', expectKey: 'cephalopodLab' },
   { id: 'assessmentliteracy', url: 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_assessmentliteracy.js', expectKey: 'assessmentLiteracy' },
   { id: 'learninglab', url: 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_learning_lab.js', expectKey: 'learningLab' },
+  // Sep 2026: the two observation-and-scale tools, live since @0897e3e98.
+  { id: 'zoomgallery', url: 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_zoomgallery.js', expectKey: 'zoomGallery' },
+  { id: 'scaleexplorer', url: 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_scaleexplorer.js', expectKey: 'scaleExplorer' },
 ];
 
 test.describe('Flagship STEM Lab tools — CDN load + registry contract', () => {

@@ -13,6 +13,9 @@ const FLAGSHIP = [
   { id: 'cell', url: 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_cell.js' },
   { id: 'chemBalance', url: 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_chembalance.js' },
   { id: 'raptorHunt', url: 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_raptorhunt.js' },
+  // Sep 2026: the two observation-and-scale tools, live since @0897e3e98.
+  { id: 'zoomGallery', url: 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_zoomgallery.js' },
+  { id: 'scaleExplorer', url: 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_scaleexplorer.js' },
 ];
 
 test.describe('Flagship tools — render without throwing', () => {
