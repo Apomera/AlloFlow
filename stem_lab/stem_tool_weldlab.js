@@ -7023,6 +7023,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           var rafId = null;
           var lastSampleAt = startTime;
           var localSamples = samples.slice();
+          // ── What a screen reader hears during a run ──
+          // The countdown and the in-spec card used to be aria-live regions, so
+          // every second AND every 250 ms sample queued an announcement:
+          // measured in Chromium at ~80/min + ~280/min, roughly 360 in a
+          // 60-second run, which buried the only event that matters — leaving
+          // or regaining spec. Those cards are visual now; this loop announces
+          // the TRANSITION (debounced, so a student hovering on the tolerance
+          // edge does not get a word every quarter second) and two time
+          // milestones. Same defect class as the live-region-narrates-the-sim
+          // note in the lab's memory.
+          var lastInSpec = null;
+          var lastTransitionAt = 0;
+          var milestoneDone = {};
 
           function tick(now) {
             var live = liveRef.current;
@@ -7047,7 +7060,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 dA: dA
               });
               setSamples(localSamples.slice());
+              if (lastInSpec !== null && inSpec !== lastInSpec && now - lastTransitionAt > 1500) {
+                lastTransitionAt = now;
+                announce(inSpec
+                  ? __alloT('stem.weldlab.sr_back_in_spec', 'Back in spec.')
+                  : __alloT('stem.weldlab.sr_out_of_spec_adjust', 'Out of spec. Adjust voltage or amperage.'));
+              }
+              lastInSpec = inSpec;
             }
+            var remaining = live.T.duration - elapsedSec;
+            [30, 10].forEach(function (m) {
+              if (remaining <= m && remaining > 0 && !milestoneDone[m]) {
+                milestoneDone[m] = true;
+                announce(__alloFill(__alloT('stem.weldlab.sr_seconds_left', '{value1} seconds left.'), { value1: m }));
+              }
+            });
 
             if (elapsedSec >= live.T.duration) {
               setRunning(false);
@@ -7194,9 +7221,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.run_timer', 'Run Timer')),
+                // Not aria-live: a countdown in a live region is one announcement
+                // per second for the whole run. Milestones are announced from the
+                // tick loop instead; the readout stays reachable on demand.
                 h('div', {
-                  className: 'text-2xl font-black font-mono ' + (running ? T.accent : 'text-slate-800'),
-                  'aria-live': 'polite'
+                  className: 'text-2xl font-black font-mono ' + (running ? T.accent : 'text-slate-800')
                 }, (T.duration - Math.floor(elapsed)) + 's')
               ),
               h('div', { className: 'h-4 bg-slate-200 rounded-full overflow-hidden', style: BAR_TRACK_STYLE, 'aria-hidden': true },
@@ -7223,9 +7252,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 valueColor: dA <= T.tolA ? 'text-emerald-700' : 'text-rose-700'
               })
             ),
-            // Live in-spec indicator
+            // Live in-spec indicator — VISUAL. Its text carries the running
+            // sample count, so as a live region it announced every 250 ms.
+            // The tick loop announces the in/out-of-spec transition instead.
             h('div', {
-              'aria-live': 'polite',
               className: 'p-4 rounded-2xl border-2 transition-colors ' +
                 (running
                   ? (liveInSpec ? 'bg-emerald-50 border-emerald-400 text-emerald-900' : 'bg-rose-50 border-rose-400 text-rose-900')

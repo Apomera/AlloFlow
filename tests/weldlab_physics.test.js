@@ -1193,3 +1193,60 @@ describe('WeldLab menu, badges and labels agree with each other', () => {
     expect(src).toMatch(/'All \{value1\} modules live\./);
   });
 });
+
+describe('WeldLab Speed Challenge does not narrate the run', () => {
+  // Measured in Chromium before the fix: the countdown (aria-live, one mutation
+  // per second) plus the in-spec card (aria-live, its text carries the running
+  // sample count, one mutation per 250 ms) queued roughly 360 announcements in
+  // a 60-second run. That buries the only event a listener needs — leaving or
+  // regaining spec. After: one announcement at start, then only transitions
+  // ("Out of spec. Adjust voltage or amperage." / "Back in spec.") and two time
+  // milestones, verified by a probe that drives the voltage slider mid-run.
+  //
+  // Structural on purpose — the run is a requestAnimationFrame loop jsdom cannot
+  // time; behaviour is pinned by the browser probe.
+  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  // Comments stripped before any negative match: the explanation of WHY the
+  // timer is not aria-live contains the words "aria-live", and a gate that
+  // cannot tell prose from code reports its own explanation as the defect.
+  // (Fourth time this session a negative regex tripped on a comment.)
+  const speed = (src) => src
+    .slice(src.indexOf('function SpeedChallenge('), src.indexOf('function ComingSoon('))
+    .split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+
+  it('keeps the countdown and the in-spec card out of live regions', () => {
+    const sc = speed(read());
+    // the timer readout
+    const timerAt = sc.indexOf("(T.duration - Math.floor(elapsed)) + 's')");
+    expect(timerAt).toBeGreaterThan(-1);
+    expect(sc.slice(timerAt - 400, timerAt)).not.toMatch(/aria-live/);
+    // the in-spec card: from its comment to its first child
+    const cardAt = sc.indexOf("running ? (liveInSpec ? 'IN SPEC' : 'OUT OF SPEC");
+    expect(cardAt).toBeGreaterThan(-1);
+    expect(sc.slice(cardAt - 700, cardAt)).not.toMatch(/aria-live/);
+  });
+
+  it('announces the spec transition, debounced, from the sampling loop', () => {
+    const sc = speed(read());
+    expect(sc).toMatch(/inSpec !== lastInSpec && now - lastTransitionAt > 1500/);
+    expect(sc).toContain("'stem.weldlab.sr_out_of_spec_adjust'");
+    expect(sc).toContain("'stem.weldlab.sr_back_in_spec'");
+    // and only at a real change: the previous value is tracked, not re-announced
+    expect(sc).toMatch(/lastInSpec = inSpec;/);
+  });
+
+  it('announces two time milestones rather than every second', () => {
+    const sc = speed(read());
+    expect(sc).toMatch(/\[30, 10\]\.forEach/);
+    expect(sc).toMatch(/!milestoneDone\[m\]/);
+    expect(sc).toContain("'stem.weldlab.sr_seconds_left'");
+  });
+
+  it('still announces the result once, where a live region belongs', () => {
+    const sc = speed(read());
+    // The result card renders once when the run ends; that one may stay live.
+    const resultAt = sc.indexOf("'Final Score: ' + finalScore + '%'");
+    expect(resultAt).toBeGreaterThan(-1);
+    expect(sc.slice(resultAt - 700, resultAt)).toMatch(/aria-live/);
+  });
+});
