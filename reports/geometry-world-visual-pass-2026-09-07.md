@@ -207,3 +207,52 @@ Round 15 verification at commit time: 317 unit tests, and four e2e tests includi
 Round 16 verification at commit time: 319 unit tests, and four e2e tests including the HUD preset sweep passed 4/4 with retries off.
 
 Round 17 run of the same spec: **17 passed, 0 failed, 0 flaky** in 6.4 minutes on a quiet machine, no retries.
+
+
+---
+
+# Geometry World handoff work (September 10, 2026)
+
+Picked up the ChatGPT handoff covering the home chooser bug, control discoverability and first-block guidance, and NPC speech through the existing providers. Three commits, one per workstream, each by pathspec on the shared tree. The tool had been substantially redesigned since the September 7 visual pass (a Free Build Studio dock, new terrain and sky); nothing below touches that work.
+
+## 1. Home chooser (c234692c7)
+
+The entry effect bailed on `worldActive || showLessonIntro || d._introShownOnce`. Both `worldActive` and `_introShownOnce` persist in toolData, so once either had been saved a returning user never saw the home screen again; the chooser had quietly become a first-visit-only intro.
+
+It now opens on every mount when the builder enhancement is present. A returning user with a live world gets it as non-initial, which is what makes Continue appear; a fresh user gets the initial Learn, Build, Explore and Create page. A pending Print Lab return (`__alloGeometryWorldPendingBuild` or `__alloGeometryWorldReturnProject`) is never interrupted, the old lesson intro overlay is cleared when the chooser opens, and a per-mount React ref stops it re-queueing on re-renders or reopening after the user dismisses it. The ref is not persisted, so re-entering the tool shows the home again. The legacy lesson intro remains only for a builder that genuinely failed to load and keeps its once-per-toolData gate there. `_introShownOnce` is no longer read by the chooser gate at all.
+
+`tests/geometry_world_home_chooser.test.js` mounts the real tool with the builder loaded. Its five regression cases fail against the previous code and pass now; the specific reported state, `_introShownOnce: true` with `worldActive: true`, shows the chooser with Continue.
+
+## 2. Discoverability and first-block guidance (9c99db083)
+
+- **Q and R.** The Shape heading is a button with a Q badge that cycles shapes; the rotate control is always present with an R badge and inert for the cube. Every shape stays directly clickable with its accessible name and `aria-keyshortcuts`. On coarse pointers both are 44 px.
+- **Pointer lock.** A small chip in the top-left corner reads Esc, Free cursor while captured and Click the world to look while free. It is React state fed by the real `pointerlockchange` handler, never persisted, hidden on touch layouts and under overlays. The first QA pass found the chip missing on desktop: my condition keyed on the touch-controls preference, which defaults on everywhere. Fixed to key on the device only, and the test now pins that.
+- **First block.** The no-target case was suppressed outright, so a student aiming at the sky saw nothing. While they have yet to place a block it now says Look down at the nearby ground or a block face, then press B or tap Place, with an Aim at build area action that only pitches the camera to the ground ahead. It never places, removes or moves a block; the ghost preview stays hidden with no target; every existing refusal code and its transaction behaviour is unchanged.
+- **Placement status** moves from directly under the crosshair to the lower control cluster on desktop. Two earlier, more specific rules re-centred it under the crosshair on narrow non-touch screens and pinned landscape to 190 px; both were aligned to the same policy. Landscape follows portrait: while the builder dock is expanded the hint yields to the dock, which carries the same guidance.
+
+Browser QA at 320×700, 390×844, 844×390 and 1440×1000, dock expanded and collapsed: no hint overlaps the crosshair, no horizontal overflow, zero page errors. Captures in `scratch/geometry-world-visuals-2026-09-07/handoff-2026-09-10/`.
+
+## 3. NPC speech (5621642dc)
+
+Geometry World owns no speech engine. Lines go to the application's shared player, `window.AlloSpeechPlayer`, backed by `callTTS`, which is where the Gemini TTS or Kokoro choice (`ttsProvider` in the AI config), the global mute, the browser fallback, abort-on-newer-request and the error toast already live. The tool adds no engine, no server, no key and no provider override; it decides what to say and which voice to ask for, and keeps captions on screen whatever happens to the audio.
+
+- A pure resolver, exposed as `StemLab.geometryWorldSpeech`, follows the current provider by default. `auto` follows the selected voice, since `callTTS` routes Kokoro by the `af_ am_ bf_ bm_` voice prefixes. A per-character `voicePreference` is honoured only when the current provider can use it; a Kokoro voice under Gemini or a Gemini name under Kokoro falls back to the provider default and the bar says so.
+- Spoken lines are keyed by provider, model, voice, language, style and text, so a switch can never replay the other engine's audio. The audio bytes themselves are cached inside `callTTS` by resolved voice, language and model, which the key mirrors rather than duplicates. Preset lines synthesise lazily on Hear it, never at load, and the player's provider-less prefetch map is deliberately not used.
+- AI replies are captioned first, then spoken by the current provider when Speak replies is on (off by default, for classrooms). A reply that lands after the student has moved on is captioned but never spoken. Both send paths, Enter and the button, carry this.
+- The dialog gains Hear it, Replay, Stop, a persisted character-voices toggle, Retry after a failure and a live status that mirrors the player's state event; closing the dialog stops the line. The translation line moves off raw browser `speechSynthesis` onto the same path. Lessons carry optional `voicePreference` and `language`; existing lessons import unchanged. The authoring panel gains Preview voice. Speech controls live in the character dialog, not in the building view.
+
+`tests/geometry_world_npc_speech.test.js` (20 cases) covers provider default, Gemini, Kokoro, preference fallback, keying, AI-reply speech, stale replies, captions on failure, mute behaviour, and import compatibility. Real-browser check with a recording fake player: Gemini and Kokoro configs both route the preset line with no provider override; with no player present the bar reads Voice is not available here, captions are shown.
+
+On the way, the compass strip's ref now tolerates a refused 2D context instead of throwing inside React's commit.
+
+## Strings
+
+Twenty-six new `stem.geometryworld.*` strings registered in `ui_strings.js` through the registration tool with the snapshot-and-restore clobber guard (0 keys lost, verified), mirrored to the desktop copy, and added to the geometryworld English registry. Three of the twenty-one in the speech commit were already-unregistered strings from the previous session's work, which would never have been translated otherwise. The `check_ui_strings_drift` gate fails identically against HEAD on thirteen keys in other tools, none of these.
+
+## Tests
+
+436 tests across seventeen Geometry World suites, including the nine the handoff listed and the three new ones.
+
+## Deployment status, verified separately
+
+The repository is correct and the Gemini Canvas link is **not** updated. The loader pins `?v=0897e3e98` and the CDN copy at `https://alloflow-cdn.pages.dev/stem_lab/stem_tool_geometryworld.js` is 905,798 bytes against 930,715 locally; it contains none of `geometryWorldSpeech`, `homePresentedRef` or `gw-pointer-hint`. The branch is eleven commits ahead of origin. Nothing was pushed or deployed in this session.
