@@ -1,0 +1,578 @@
+{
+  "advocacy": {
+    "purpose": "Prepare a clear request for something that helps you participate.",
+    "model": "A learner says, \"An example would help me begin. Could you show one?\" The request names a need and a useful change.",
+    "practice": "Use a fictional task. Name its barrier, one requested support, and someone who could help.",
+    "reflect": "What makes the request specific? What if the first person cannot help?",
+    "transfer": "Rehearse a shorter version using words, a drawing, or AAC.",
+    "boundary": "A clear request does not guarantee agreement. Responsibility for access does not rest only with the learner."
+  },
+  "anxietyToolkit": {
+    "purpose": "Separate a worry from a practical question or support you can act on.",
+    "model": "A character worries about a new classroom. They cannot know the whole day in advance, but can ask for a map and meeting point.",
+    "practice": "Choose a fictional worry. Identify one fact, one uncertainty, and one possible support.",
+    "reflect": "Which part needs information, and which cannot be settled right now?",
+    "transfer": "Choose a person or resource to consult about a similar uncertainty.",
+    "boundary": "This is educational practice, not diagnosis or a requirement to confront feared situations alone."
+  },
+  "behavioralActivation": {
+    "purpose": "Plan a manageable activity and notice whether its size and supports fit.",
+    "model": "A character puts paper nearby and tries one small sketch instead of planning a finished picture.",
+    "practice": "Plan a brief activity with a first action, available materials, and an easier version.",
+    "reflect": "What helped you begin, regardless of whether your mood changed?",
+    "transfer": "Keep, shrink, replace, or pause the activity based on what you noticed.",
+    "boundary": "Completion and ratings do not measure recovery. This planner is not a course of therapy."
+  },
+  "bigFeelings": {
+    "purpose": "Distinguish feeling angry from deciding what to do next.",
+    "model": "A character feels angry about interruptions. They pause the discussion and ask for help protecting their work time.",
+    "practice": "Using a fictional interruption, name a possible need and a response that protects people and belongings.",
+    "reflect": "What could change in the setting, as well as in the response?",
+    "transfer": "Practice one request for space or support that fits another setting.",
+    "boundary": "Anger is not a character flaw. Practice does not excuse harm or require negotiating when unsafe."
+  },
+  "bodyStory": {
+    "purpose": "Examine body-related messages through comfort, access, and respect.",
+    "model": "An advertisement suggests only one body type belongs in a sport. A character asks whose bodies and participation options are missing.",
+    "practice": "Choose a fictional media message. Separate what it shows from what it asks viewers to believe.",
+    "reflect": "How could the message include more bodies without ranking them?",
+    "transfer": "Identify a change to a message, space, or activity that would improve inclusion.",
+    "boundary": "No measurements, appearance judgments, food records, or personal body disclosure are needed."
+  },
+  "careConstellations": {
+    "purpose": "Explore care as something people give, receive, and arrange together.",
+    "model": "A character gets a lift from a neighbor and helps a sibling find a book. These are forms of care, not debts to balance.",
+    "practice": "Map two fictional care connections. Describe the help and whether it is wanted and available.",
+    "reflect": "Is anyone expected to give more than they can?",
+    "transfer": "Practice asking about someone's capacity before offering or requesting help.",
+    "boundary": "Care is not a score or an obligation to stay in a harmful relationship. Roles can replace names."
+  },
+  "careerCompass": {
+    "purpose": "Use interests to generate career questions and possible experiences.",
+    "model": "A character enjoys organizing an event. They explore several planning roles rather than treating an interest code as a job assignment.",
+    "practice": "Compare two roles connected to an interest. List a question about each role's work, preparation, or accessibility.",
+    "reflect": "What experience would test your assumptions?",
+    "transfer": "Prepare a question for an interview or find a first-person account of the work.",
+    "boundary": "A self-check does not determine ability or future opportunity. Career information needs current local verification."
+  },
+  "circlesOfSupport": {
+    "purpose": "Describe support without ranking your worth by your network.",
+    "model": "A character lists a friend for shared interests and a staff member for arranging access. Each offers a different kind of support.",
+    "practice": "Create a fictional map with two people or roles and describe their possible support.",
+    "reflect": "Does closeness match availability? Who could help arrange missing support?",
+    "transfer": "Choose a practical question about reaching a support person.",
+    "boundary": "There is no ideal number of people in a circle. Paid support and chosen relationships can both matter."
+  },
+  "civicAction": {
+    "purpose": "Connect an issue with a feasible, informed action.",
+    "model": "A club notices an inaccessible event notice. It asks affected students what format would work and proposes a revision.",
+    "practice": "Choose a school-level issue. Identify who is affected, whose input is missing, and one proportionate action.",
+    "reflect": "Would the action address the barrier? Who should help decide?",
+    "transfer": "Plan how to seek support and check whether the change helped.",
+    "boundary": "Public advocacy and personal disclosure are optional. A learner is not responsible for solving structural injustice alone."
+  },
+  "community": {
+    "purpose": "Explore belonging through curiosity about experiences and shared spaces.",
+    "model": "A celebration assumes everyone follows one tradition. A character asks what choices would help people participate.",
+    "practice": "Use a fictional event. Identify an assumption and a question that invites varied experiences.",
+    "reflect": "Does the question avoid making one person speak for a whole group?",
+    "transfer": "Try an inclusive invitation or access question in a future group plan.",
+    "boundary": "Cultural labels do not predict an individual's beliefs, needs, or behavior."
+  },
+  "compassion": {
+    "purpose": "Respond to a mistake with accuracy, care, and a useful next step.",
+    "model": "Instead of \"I ruin everything,\" a character tries \"I missed this step; I can ask what to repair and what help I need.\"",
+    "practice": "Rewrite a fictional harsh judgment into a specific description plus a supportive action.",
+    "reflect": "Does the wording acknowledge the problem without attacking the person?",
+    "transfer": "Keep a phrase you could offer after a small mistake.",
+    "boundary": "Compassion does not require denying harm, feeling positive, or forgiving another person."
+  },
+  "conflict": {
+    "purpose": "Compare safe ways to handle a low-stakes disagreement.",
+    "model": "Two characters want the quiet work area. They describe their needs and consider turns, another location, or asking for help.",
+    "practice": "Rehearse one neutral description, one listening question, and two possible arrangements.",
+    "reflect": "Which needs does each option meet? Is anyone pressured to agree?",
+    "transfer": "Choose a phrase for checking agreement and revisiting an arrangement.",
+    "boundary": "Use fictional, low-stakes disagreements. Bullying, coercion, or danger call for support, not equal-responsibility negotiation."
+  },
+  "conflicttheater": {
+    "purpose": "Practice mediation questions in a fictional disagreement.",
+    "model": "A mediator asks, \"What would each of you want understood before suggesting a solution?\"",
+    "practice": "Choose a fictional scene. Separate each character's statement from your assumptions before replying.",
+    "reflect": "Which question made space for different perspectives? What remained unresolved?",
+    "transfer": "Rehearse one clarification question for an everyday disagreement.",
+    "boundary": "AI characters are simulations, not interpretations of real people. Do not use this activity to mediate abuse or danger."
+  },
+  "coping": {
+    "purpose": "Compare comfortable supports and notice their fit.",
+    "model": "Breath focus feels uncomfortable to a character. They choose to look at a still object or ask for a quieter place instead.",
+    "practice": "Read one strategy before deciding whether to try, adapt, observe, or skip it.",
+    "reflect": "Did it feel helpful, unchanged, or uncomfortable? What setting or support mattered?",
+    "transfer": "Choose an alternative and a way to stop or ask for help.",
+    "boundary": "No strategy works for everyone. Stop uncomfortable practice; calm is not a completion requirement."
+  },
+  "costBenefit": {
+    "purpose": "Compare choices across time and from more than one viewpoint.",
+    "model": "Joining a club could offer connection, but takes time a character needs for another responsibility.",
+    "practice": "Name short-term and longer-term benefits and costs of a fictional choice, including effects on others.",
+    "reflect": "Which predictions are uncertain? What information could change the comparison?",
+    "transfer": "Identify a question to answer before deciding and when to review the choice.",
+    "boundary": "Counting items in boxes does not determine the right decision. Consent and safety cannot always be traded against convenience."
+  },
+  "crewProtocols": {
+    "purpose": "Choose a group structure that fits a purpose and preserves participation choices.",
+    "model": "A facilitator models passing and offers drawing or listening before inviting spoken contributions.",
+    "practice": "Plan a protocol's purpose, instructions, response choices, and ways to pause or pass.",
+    "reflect": "Who might be excluded by timing, language, or format?",
+    "transfer": "Try one access adjustment and ask participants whether it helped.",
+    "boundary": "A group protocol is not permission to demand disclosure or make peers responsible for handling a crisis."
+  },
+  "crisiscompanion": {
+    "purpose": "Locate support and understand the limits of a peer-support role.",
+    "model": "A practice phrase is, \"You matter to me. Let's get someone who can help us with this.\"",
+    "practice": "For learning, locate the tool's help options and identify a trusted adult or service you could contact.",
+    "reflect": "What would help you reach support? What is outside a friend's responsibility?",
+    "transfer": "Keep a help-seeking phrase or identify where support information is available.",
+    "boundary": "If support is needed now, use immediate-help options rather than finishing this guide. This activity is not emergency monitoring."
+  },
+  "cultureExplorer": {
+    "purpose": "Ask specific cultural questions and evaluate how answers are represented.",
+    "model": "A learner asks about a community's celebration in a named place and time, then seeks an account from that community.",
+    "practice": "Choose a focused question. Identify whose voice an answer represents and what needs checking.",
+    "reflect": "Could it flatten differences within a community or confuse past and present?",
+    "transfer": "Check one claim using a community-authored source before sharing it.",
+    "boundary": "AI descriptions, images, and audio can be inaccurate or stereotyped. No generated example represents an entire culture."
+  },
+  "dearMan": {
+    "purpose": "Build an assertive request while considering choice and safety.",
+    "model": "A character says, \"The instructions moved quickly. Could I have them in writing so I can begin?\"",
+    "practice": "Use a fictional ask. Separate the observable situation, your need, and a specific request.",
+    "reflect": "Which parts make the request understandable? What could remain flexible?",
+    "transfer": "Rehearse a short version and backup request in words, writing, or AAC.",
+    "boundary": "The script does not require eye contact, a particular voice, or negotiating away a boundary. It cannot guarantee agreement."
+  },
+  "decisions": {
+    "purpose": "Compare options, likely effects, and missing information before acting.",
+    "model": "A character finds an uncredited image and considers seeking permission, finding a licensed image, or making their own.",
+    "practice": "Name two options for a fictional decision, who they affect, and one uncertainty.",
+    "reflect": "Which consequence is likely, which is only possible, and what could you check?",
+    "transfer": "Plan a pause question for a similar choice.",
+    "boundary": "An activity score or AI suggestion is not proof that a choice is ethical in every context."
+  },
+  "digitalWellbeing": {
+    "purpose": "Consider whether a digital habit serves your needs and boundaries.",
+    "model": "A character values friend messages but finds notifications interrupting rest. They explore a quieter setting.",
+    "practice": "Identify what is useful, what gets in the way, and an adjustable setting or boundary in a fictional situation.",
+    "reflect": "Could a change preserve needed connection or accessibility?",
+    "transfer": "Plan one reversible change and a time to review it.",
+    "boundary": "Screen time alone does not describe wellbeing. This self-check is not a diagnosis; unsafe online behavior may need adult support."
+  },
+  "disabilityVoices": {
+    "purpose": "Learn from disabled people's accounts while attending to differences between voices.",
+    "model": "A learner asks of an advocate's account, \"What barrier are they naming, and what change are they asking for?\"",
+    "practice": "Summarize one argument in your own words and identify its original source and context.",
+    "reflect": "What assumption did it challenge? Where might another disabled person disagree?",
+    "transfer": "Connect an access issue to a concrete classroom or community change.",
+    "boundary": "One advocate cannot represent all disabled people. A short quote is not a complete position."
+  },
+  "ecomap": {
+    "purpose": "Explore how settings and systems support or strain participation.",
+    "model": "School offers a fictional learner friendship and a noisy lunch space. One connection can contain support and strain.",
+    "practice": "Map one fictional system and describe flows of time, help, demands, or resources.",
+    "reflect": "What could the system change, rather than asking only the individual to cope?",
+    "transfer": "Name an access question or resource to discuss with a support person.",
+    "boundary": "A map is a selected perspective, not a clinical assessment or a complete picture of a system."
+  },
+  "emotions": {
+    "purpose": "Build feeling vocabulary while leaving room for uncertainty and mixtures.",
+    "model": "Starting a new activity, a character says, \"I might be curious and nervous at the same time.\"",
+    "practice": "Compare two feeling words for a fictional situation. Explain why either might fit.",
+    "reflect": "What context would distinguish the words? Could neither fit?",
+    "transfer": "Use a word, picture, or \"not sure\" to begin a future check-in.",
+    "boundary": "Faces, body language, and ratings do not reveal another person's feelings with certainty."
+  },
+  "ethicalReasoning": {
+    "purpose": "Explain a decision through reasons, stakeholder perspectives, and tradeoffs.",
+    "model": "A club compares equal funding shares with extra support for members facing access barriers.",
+    "practice": "Compare two approaches to a fictional dilemma and explain whose needs each prioritizes.",
+    "reflect": "What does your preferred approach overlook? What fact could change your position?",
+    "transfer": "Practice giving a reason and acknowledging uncertainty in a discussion.",
+    "boundary": "An argument or quiz score is not a measure of moral worth. Reasonable disagreement may remain."
+  },
+  "execfunction": {
+    "purpose": "Match a task barrier with a practical external support.",
+    "model": "A partner helps a character turn \"work on the assignment\" into \"open the instructions and mark one question.\"",
+    "practice": "Identify whether starting, remembering, sequencing, or estimating time is the immediate barrier in a fictional task.",
+    "reflect": "Does the support reduce that barrier or simply ask for more effort?",
+    "transfer": "Try a cue, checklist, model, or support request and review its fit.",
+    "boundary": "Task difficulty is not laziness. Strategies do not replace needed accommodations or support."
+  },
+  "friendship": {
+    "purpose": "Practice invitations, reciprocity, and boundaries without requiring closeness.",
+    "model": "A character invites someone to a game and says, \"Okay, you're welcome another time,\" when they decline.",
+    "practice": "Rehearse an invitation and responses to yes, no, and not now using a fictional pair.",
+    "reflect": "Does each person have a real choice? What shows interest without pressure?",
+    "transfer": "Choose a respectful way to check availability before an invitation.",
+    "boundary": "Friendship is not earned by compliance. Ending contact or seeking support can be appropriate when boundaries are ignored."
+  },
+  "genogram": {
+    "purpose": "Use a family map to organize chosen information and questions.",
+    "model": "A fictional map leaves an unknown relationship unfilled instead of guessing or forcing a standard family shape.",
+    "practice": "Map a small fictional family or use roles. Mark what is known, unknown, or intentionally private.",
+    "reflect": "What does the map show, and what would be unfair to infer?",
+    "transfer": "Formulate a question or support need, only if sharing feels appropriate.",
+    "boundary": "Family structure does not establish causes, diagnoses, or future behavior. You may skip family history entirely."
+  },
+  "goals": {
+    "purpose": "Connect a meaningful goal to a manageable action and useful supports.",
+    "model": "A learner replaces \"get better at reading\" with \"try a short section with audio and notice what helps.\"",
+    "practice": "For a fictional goal, name a first step, a support, and a way to notice what happened.",
+    "reflect": "Would you keep, change, shrink, or pause the step?",
+    "transfer": "Choose when to revisit the plan and what help to request.",
+    "boundary": "Checked steps, ratings, and XP are activity records, not measures of learning or worth."
+  },
+  "griefLoss": {
+    "purpose": "Explore ways people can make room for loss and receive support.",
+    "model": "A fictional character sometimes wants to remember a lost pet and sometimes wants an ordinary activity. Both preferences can be acknowledged.",
+    "practice": "Read one reflection or support option and choose whether to explore, use fiction, or pass.",
+    "reflect": "Does it allow different feelings and timing?",
+    "transfer": "Identify a comforting routine or someone who can listen without requiring a particular response.",
+    "boundary": "There is no required sequence or deadline for grief. No personal loss story is needed here."
+  },
+  "growthmindset": {
+    "purpose": "Connect learning with strategies, feedback, access, and realistic next steps.",
+    "model": "A character says, \"This explanation did not work for me. I can ask for a different example and try one part.\"",
+    "practice": "Replace a fictional all-or-nothing statement with a specific difficulty and possible change in approach.",
+    "reflect": "What support is needed beyond effort? Would changing the task or taking a break help?",
+    "transfer": "Choose a feedback question that helps decide what to try next.",
+    "boundary": "Growth does not mean unlimited improvement through effort alone. Barriers and support needs are real."
+  },
+  "healthyRelationships": {
+    "purpose": "Identify consent, respect, and access to support in relationship situations.",
+    "model": "A character declines to share a private message. A respectful response accepts the boundary without punishment.",
+    "practice": "Compare a response that respects a fictional boundary with one that adds pressure.",
+    "reflect": "Can the person change their mind freely? Who could help if the boundary is ignored?",
+    "transfer": "Rehearse a support-seeking question or locate help information.",
+    "boundary": "A checklist cannot establish safety. Coercion or danger should not become a shared negotiation task."
+  },
+  "howlTracker": {
+    "purpose": "Connect a work-and-learning self-rating to evidence and conditions.",
+    "model": "A learner says, \"I contributed more when I had questions ahead of time.\" The support matters alongside the rating.",
+    "practice": "Describe an example of a work-and-learning habit and a condition that helped or hindered it.",
+    "reflect": "Would a different setting change the rating? What does the number leave out?",
+    "transfer": "Choose a support or small practice to discuss at a future check-in.",
+    "boundary": "Ratings are contextual self-reports, not fixed traits or measures of obedience."
+  },
+  "identitySupport": {
+    "purpose": "Explore language and support while keeping identity and disclosure self-directed.",
+    "model": "A character is unsure which label fits and learns more without deciding or telling anyone today.",
+    "practice": "Explore a term or support option. Note a question, using a fictional example if preferred.",
+    "reflect": "Does the information allow uncertainty and self-description?",
+    "transfer": "Identify a trusted resource or a boundary about what stays private.",
+    "boundary": "No label, coming-out step, or disclosure is required. Others cannot determine your identity from an activity."
+  },
+  "journal": {
+    "purpose": "Notice context, supports, and possible next steps through reflection.",
+    "model": "A learner writes, \"The room was loud. A quieter seat helped me start. Next time I can ask before the task.\"",
+    "practice": "Choose a prompt or fictional event. Record only useful detail, or respond away from the form.",
+    "reflect": "What helped, what remains uncertain, and what needs adapting?",
+    "transfer": "Revisit a note in a similar situation and keep or revise the plan.",
+    "boundary": "A mood trend is not a complete account of wellbeing. An activity note differs from a saved or shared project copy."
+  },
+  "landPlace": {
+    "purpose": "Connect learning about place with accountable, locally informed care.",
+    "model": "Before acting, a group learns who is responsible for a local space and what its stewards request.",
+    "practice": "Choose a question about history, ecology, or the present and identify whose knowledge could inform it.",
+    "reflect": "Whose voice is missing? Would the action help or mainly signal good intentions?",
+    "transfer": "Find a locally led source or organization and learn what support it asks for.",
+    "boundary": "No community speaks for all Indigenous peoples. A land acknowledgment does not complete a responsibility."
+  },
+  "maps": {
+    "purpose": "Explore a person's aspirations, strengths, needs, and first steps with their direction.",
+    "model": "A fictional learner discusses a hope and support need while passing on a prompt about difficult experiences.",
+    "practice": "Start with one chosen prompt. Connect an aspiration to a needed support or resource.",
+    "reflect": "Whose priorities drive the plan? Can the person revise or decline it?",
+    "transfer": "Choose an agreed question or small action for a planning conversation.",
+    "boundary": "A worksheet is not a facilitated planning process. Personal history or feared futures need not be disclosed."
+  },
+  "mindfulness": {
+    "purpose": "Practice choosing and returning attention in a comfortable way.",
+    "model": "A character notices a sound, becomes distracted, and returns to looking at an object without calling distraction failure.",
+    "practice": "Read a practice and choose a comfortable focus, an observation-only version, or a pass.",
+    "reflect": "What was noticing attention shifts like? Did the focus fit?",
+    "transfer": "Choose a brief attention practice or another support for a future pause.",
+    "boundary": "Eyes may stay open and movement is allowed. Stop uncomfortable exercise; stillness or calm is not proof of success."
+  },
+  "motivationalInterviewing": {
+    "purpose": "Practice listening that supports a person's own reasons and choices.",
+    "model": "A listener says, \"You want more time with friends, and changing the routine feels difficult,\" then checks their understanding.",
+    "practice": "For a fictional change, write an open question and a reflection that does not push a preferred answer.",
+    "reflect": "Is there room for mixed feelings and deciding not to change?",
+    "transfer": "Use a permission question before offering ideas in a conversation.",
+    "boundary": "These skills do not make someone a counselor and should not be used to steer others covertly."
+  },
+  "onePageProfile": {
+    "purpose": "Describe what matters to a person and what useful support looks like.",
+    "model": "A profile says, \"Give me written steps and time for a question,\" instead of \"needs to focus more.\"",
+    "practice": "For a fictional person, write a strength, a priority, and a concrete support instruction.",
+    "reflect": "Could someone act on the wording? Has the person approved sharing it?",
+    "transfer": "Review the profile with its owner before a transition or handoff.",
+    "boundary": "The person chooses content and audience. A profile should not become a fixed label or replace asking them."
+  },
+  "orientations": {
+    "purpose": "Compare philosophical responses while recognizing contexts and limits.",
+    "model": "Two perspectives on a busy life emphasize personal choices and responsibilities to others. A learner examines what each highlights.",
+    "practice": "Compare two presented responses to one question. Restate each fairly before evaluating it.",
+    "reflect": "What does each illuminate or leave out? What would a fuller source add?",
+    "transfer": "Use one question from the comparison to examine a future choice.",
+    "boundary": "Brief summaries cannot represent whole traditions. Indigenous perspectives need grounding in named communities and sources."
+  },
+  "path": {
+    "purpose": "Connect a hoped-for direction with supports and a near-term action.",
+    "model": "A character imagines joining a training program, then works backward to access, transport, and a first visit.",
+    "practice": "For a fictional future direction, name a support, an unknown, and a near-term action.",
+    "reflect": "Does the action depend on someone else's agreement or resources?",
+    "transfer": "Decide who to consult and when to revise the plan.",
+    "boundary": "A future map is an invitation to plan, not a prediction or promise. Priorities can change."
+  },
+  "peersupport": {
+    "purpose": "Offer attentive listening and connect someone with further help when needed.",
+    "model": "A peer asks, \"Would you like me to listen or help find someone to talk to?\" without promising secrecy.",
+    "practice": "Practice an open question, a reflection, and a support-seeking phrase using a fictional situation.",
+    "reflect": "Did the response check understanding before offering advice? Where are the peer's limits?",
+    "transfer": "Identify an adult or support route a peer could help someone reach.",
+    "boundary": "Peers are not responsible for counseling or keeping someone safe alone. Immediate concerns take priority over practice."
+  },
+  "perma": {
+    "purpose": "Explore areas of experience without reducing wellbeing to a score.",
+    "model": "A character reports connection in a club and difficulty resting. Both can coexist without becoming a judgment about their life.",
+    "practice": "Choose a domain. Give a fictional example of a support and a barrier within it.",
+    "reflect": "What does a rating capture, and what context would you add?",
+    "transfer": "Choose an accessible opportunity or support to explore in that domain.",
+    "boundary": "This adapted self-check is not a clinical measure or a requirement to feel positive in every domain."
+  },
+  "perspective": {
+    "purpose": "Separate observation from interpretation and ask about missing context.",
+    "model": "A classmate has not replied. A character considers being busy, missing the message, or needing space as possible explanations.",
+    "practice": "Name an observable fact, two plausible interpretations, and a respectful question about a fictional scene.",
+    "reflect": "How could you check an interpretation without demanding private information?",
+    "transfer": "Use \"I noticed... I wondered...\" for an appropriate clarification.",
+    "boundary": "Perspective-taking is not mind-reading. Understanding a viewpoint does not require agreeing with harmful behavior."
+  },
+  "practiceJourneys": {
+    "purpose": "Trace how communication choices affect an unfolding group project.",
+    "model": "A fictional team clarifies roles, then revisits them when a member's availability changes.",
+    "practice": "Try one encounter and explain a choice. Notice what the next encounter adds.",
+    "reflect": "What information did you have then? What might you revise now?",
+    "transfer": "Name one group-project question to use before a real task begins.",
+    "boundary": "Pilot outcomes and AI narration are simulated consequences, not predictions of people or scores of social ability."
+  },
+  "quietQuestions": {
+    "purpose": "Explore an open question without rushing to a final answer.",
+    "model": "A character asks, \"When can I ask for help?\" Their answer changes after a different classroom experience.",
+    "practice": "Choose a question and notice an example, counterexample, or further question. A brief thought or a pass is enough.",
+    "reflect": "Did context change your thinking? Is leaving the question open useful?",
+    "transfer": "Return at a time you choose and notice what differs.",
+    "boundary": "No insight, belief, daily streak, or week-long commitment is required for your own inquiry."
+  },
+  "restorativeCircle": {
+    "purpose": "Plan a voluntary conversation about participation, needs, and repair.",
+    "model": "A facilitator explains the purpose, models passing, and asks how participants want to contribute.",
+    "practice": "Plan a fictional community-building circle with an invitation, neutral prompt, pass option, and closing check.",
+    "reflect": "Who has power? What makes participation meaningfully voluntary?",
+    "transfer": "Identify a facilitation support or access adjustment before using a circle.",
+    "boundary": "A circle does not replace safeguarding. No one must forgive, disclose harm, or meet someone who harmed them."
+  },
+  "safety": {
+    "purpose": "Practice recognizing a boundary and asking for help.",
+    "model": "A character says, \"I do not want that photo shared,\" then asks a trusted adult for help when ignored.",
+    "practice": "For a fictional scenario, identify a boundary phrase and a support person or route.",
+    "reflect": "What if the first person does not help?",
+    "transfer": "Rehearse another help request using words, pointing, writing, signing, or AAC.",
+    "boundary": "A child is not responsible for preventing another person's harmful actions. Help-seeking does not require perfect words."
+  },
+  "selfAdvocacy": {
+    "purpose": "Prepare a school-support question while deciding what to disclose.",
+    "model": "A learner asks, \"These instructions are hard to access. Who can help arrange another format?\" and chooses which details to include.",
+    "practice": "Name a fictional school-task barrier, requested change, and person to consult.",
+    "reflect": "What information is necessary, and what can stay private?",
+    "transfer": "Prepare a meeting question and a follow-up if the answer is unclear.",
+    "boundary": "This is educational, not individualized legal advice. Procedures and supports need checking in the person's setting."
+  },
+  "sensoryRegulation": {
+    "purpose": "Connect sensory preferences or barriers to changes in an activity or setting.",
+    "model": "A character finds a buzzing light distracting and asks about another workspace rather than trying to endure it.",
+    "practice": "Identify a sensory feature in a fictional environment and an adjustable support.",
+    "reflect": "Would it improve access? What would you ask rather than assume about someone else's needs?",
+    "transfer": "Plan a low-pressure support request or comparison.",
+    "boundary": "A sensory profile is not a diagnosis. Preferences can change; no one should endure discomfort for practice."
+  },
+  "sfbt": {
+    "purpose": "Notice a manageable preferred difference and conditions that already help.",
+    "model": "A character cannot imagine everything solved but describes one easier morning with written steps ready.",
+    "practice": "Describe a small observable difference and a fictional time when part of it was possible.",
+    "reflect": "What support mattered? Does a scale number need a concrete explanation?",
+    "transfer": "Choose a small next step or a question for someone who can help.",
+    "boundary": "Future-focused questions do not mean problems are imaginary or that structural barriers yield to optimism."
+  },
+  "sleep": {
+    "purpose": "Notice rest patterns, barriers, and supports without judging a person by a diary.",
+    "model": "A shared room and family responsibilities affect a character's evening. They separate possible changes from needs for help.",
+    "practice": "Use a fictional day or chosen entry. Separate an observation from a guess about its cause.",
+    "reflect": "Which conditions are within the person's control, and which require support?",
+    "transfer": "Plan a question or feasible adjustment to review later.",
+    "boundary": "A diary does not diagnose a condition. Use the tool's age-aware guidance and support information beyond planning."
+  },
+  "social": {
+    "purpose": "Practice communication that allows different ways to listen and respond.",
+    "model": "A character says, \"I am listening even when I look away. Could you give me a moment to answer?\"",
+    "practice": "Rehearse a greeting, clarification, or turn-taking phrase in a fictional exchange using a suitable response mode.",
+    "reflect": "Does the exchange allow processing time and communication differences?",
+    "transfer": "Choose a way to signal interest or ask for clarification without forcing eye contact.",
+    "boundary": "There is no single correct body language, voice, or social style. Mutual understanding matters more than performing a norm."
+  },
+  "sociallab": {
+    "purpose": "Compare social responses and explain why they might fit.",
+    "model": "A fictional classmate asks to join a project. One reply welcomes them and asks what role or support would help.",
+    "practice": "Compare two replies to a scenario, including a boundary or clarification request.",
+    "reflect": "What assumptions does each make? Could another response be equally reasonable?",
+    "transfer": "Rehearse an adaptable phrase for a similar low-stakes situation.",
+    "boundary": "AI roleplay and answer keys cannot establish what a real person thinks or prescribe one correct social identity."
+  },
+  "somaticReset": {
+    "purpose": "Choose whether a body-awareness or attention practice fits this moment.",
+    "model": "A character decides movement does not fit today and chooses stillness or observing the instructions.",
+    "practice": "Read an option before choosing to try, adapt, or skip. Keep the stop control available.",
+    "reflect": "Was it comfortable, unchanged, or unhelpful? What would you change?",
+    "transfer": "Keep a comfortable option and an alternative for a future pause.",
+    "boundary": "Sensations and before/after entries are not diagnoses. Stop if uncomfortable; bodily change is not required."
+  },
+  "sourcesOfStrength": {
+    "purpose": "Identify available supports and gaps others can help address.",
+    "model": "A character names a mentor but is unsure how to access a service. The gap becomes a question, not a failing.",
+    "practice": "Explore a support area using fictional people or roles. Describe available help and uncertainty.",
+    "reflect": "Is support accessible when needed? Who could address a gap?",
+    "transfer": "Choose a question about reaching a person, activity, or service.",
+    "boundary": "This map is not delivery of the evaluated program and does not assess risk or replace urgent support."
+  },
+  "strengths": {
+    "purpose": "Connect a strength word to an example, context, and support.",
+    "model": "A character explains ideas clearly when they have preparation time and a visual example.",
+    "practice": "Describe a fictional action showing a strength and a condition that helps it appear.",
+    "reflect": "Could the strength look different elsewhere? What would help it develop?",
+    "transfer": "Name a small opportunity to use the strength with suitable support.",
+    "boundary": "A strength label is not a fixed identity or ranking. Needing help does not cancel a strength."
+  },
+  "stressBucket": {
+    "purpose": "Distinguish demands, supports, and changes needed in the environment.",
+    "model": "A learner has several deadlines and little quiet space. They consider a break and asking about a deadline adjustment.",
+    "practice": "List one fictional demand, one support, and one change requiring another person's help.",
+    "reflect": "Which demands cannot be removed by an individual coping strategy?",
+    "transfer": "Choose a support request or adjustment to revisit later.",
+    "boundary": "The bucket is a metaphor, not a capacity measurement. Overload is not evidence of failure to cope."
+  },
+  "substancePsychoed": {
+    "purpose": "Build information literacy and identify support routes for substance-related questions.",
+    "model": "A character hears a confident claim and asks what source supports it and who could answer safely.",
+    "practice": "Choose an educational topic without sharing personal use. Identify a question and a qualified source or support route.",
+    "reflect": "What needs checking, and when is professional help more appropriate than peer advice?",
+    "transfer": "Keep a question for a trusted adult or qualified service.",
+    "boundary": "This is not screening or personalized medical advice. Urgent concerns need immediate help rather than a learning exercise."
+  },
+  "teamwork": {
+    "purpose": "Plan roles, communication, and access for different ways of contributing.",
+    "model": "A team asks about strengths, availability, and needed supports before dividing a project.",
+    "practice": "For a fictional task, agree responsibilities and a way to ask for help or change roles.",
+    "reflect": "Is work distributed fairly, including less visible work? Who might be excluded?",
+    "transfer": "Choose a check-in question and a time to revisit responsibilities.",
+    "boundary": "Roles are flexible, not personality types. Equal participation does not require identical contributions."
+  },
+  "thoughtRecord": {
+    "purpose": "Distinguish a situation, an interpretation, and what evidence supports.",
+    "model": "A character thinks, \"One unanswered question means I am bad at this.\" They notice one difficulty does not establish overall ability.",
+    "practice": "Separate fact from thought in a low-stakes fictional event, then consider a more precise interpretation.",
+    "reflect": "Does the alternative fit evidence without denying a real barrier or harm?",
+    "transfer": "Choose a question such as \"What else do I know?\" for later reflection.",
+    "boundary": "The aim is accuracy, not forced positive thinking. This exercise does not replace support or therapy."
+  },
+  "tipp": {
+    "purpose": "Read about options and safety notes before deciding whether a practice fits.",
+    "model": "A character reads instructions and chooses to ask for support rather than try an unfamiliar body-based technique.",
+    "practice": "Locate the tool's safety information and stop options. Observing or choosing another support is a valid first step.",
+    "reflect": "What would you need to know about fit before choosing an option?",
+    "transfer": "Identify an alternative support and someone to ask if unsure.",
+    "boundary": "Follow the activity's specific precautions. This guide is not medical clearance; do not delay urgent help to finish it."
+  },
+  "transitions": {
+    "purpose": "Separate what changes, what stays available, and what needs clarification.",
+    "model": "A character joins a new class. The room changes, but written directions and a known contact can still help.",
+    "practice": "Name one fictional change, one continuing support, and one question.",
+    "reflect": "Which uncertainty can be clarified now? What needs a backup plan?",
+    "transfer": "Choose a first-day support or a question to ask beforehand.",
+    "boundary": "People respond differently to change. Readiness or positivity is not required to make a useful plan."
+  },
+  "traumaPsychoed": {
+    "purpose": "Learn support principles without identifying or disclosing personal trauma.",
+    "model": "A fictional classroom offers predictable instructions, choices, and a pause without requiring an explanation.",
+    "practice": "Explore a principle in the material and a classroom practice that could express it.",
+    "reflect": "Would the practice increase choice and predictability? How would you check its fit?",
+    "transfer": "Identify an environmental or communication change to discuss with an educator.",
+    "boundary": "This is psychoeducation, not screening or trauma processing. Reactions cannot establish someone's history or diagnosis."
+  },
+  "upstander": {
+    "purpose": "Compare safe support options when someone is targeted.",
+    "model": "A witness gets a trusted adult and checks in privately with the targeted person instead of escalating a confrontation.",
+    "practice": "Identify a support action, a help route, and a reason direct intervention could be unsafe in a fictional scene.",
+    "reflect": "Does it center the targeted person's wishes and safety?",
+    "transfer": "Rehearse asking for help and offering support without demanding a response.",
+    "boundary": "No learner must confront someone or take risks. Adults and institutions share responsibility for responding."
+  },
+  "valuesCommittedAction": {
+    "purpose": "Distinguish an ongoing value from a goal and choose a fitting action.",
+    "model": "A character values inclusion and asks whether a meeting format works for everyone, rather than pursuing a perfect inclusion score.",
+    "practice": "Compare two small actions expressing a fictional value.",
+    "reflect": "Which fits the setting and resources? Are values in tension?",
+    "transfer": "Choose a manageable action and a way to reflect on its effects.",
+    "boundary": "Values are self-chosen directions, not a ranked list of what people should care about."
+  },
+  "viaStrengths": {
+    "purpose": "Use strength terms as prompts rather than fixed test results.",
+    "model": "A character values curiosity and recalls asking a useful question, while noticing time pressure makes questions harder.",
+    "practice": "Choose a strength, an example, and a situation where another strength could balance it.",
+    "reflect": "What does the example support, and what is too much to infer from a ranking?",
+    "transfer": "Choose an opportunity to use or develop the strength with support.",
+    "boundary": "This adapted self-sort is not the authoritative VIA survey or a validated assessment of character."
+  },
+  "voicedetective": {
+    "purpose": "Notice vocal cues while keeping interpretations tentative.",
+    "model": "A short phrase can sound different with context, fatigue, accent, or recording conditions. A listener considers more than one meaning.",
+    "practice": "Compare a sample's words and audible features. Offer a possible interpretation and a question to check it.",
+    "reflect": "What did you hear, and what did you infer? What is missing?",
+    "transfer": "Use clarification rather than treating tone as proof in real conversations.",
+    "boundary": "Voice alone cannot establish emotion, honesty, or intent. Learners can explore context and wording without completing an audio task."
+  },
+  "wheelOfLife": {
+    "purpose": "Explore life areas and choose which deserve attention on your terms.",
+    "model": "A character values creative time but wants more accessible social opportunities. Uneven ratings suggest questions, not failure.",
+    "practice": "Explain a fictional rating for one chosen domain.",
+    "reflect": "What does the chart omit? Does the person want this domain to change?",
+    "transfer": "Choose a question or support instead of maximizing every score.",
+    "boundary": "The wheel is a reflection aid, not a validated wellbeing test. A balanced chart is not a required goal."
+  },
+  "windowOfTolerance": {
+    "purpose": "Use a metaphor to explore activation and support without labeling a person.",
+    "model": "A fictional learner feels overloaded in one setting and better able to participate when expectations and noise change.",
+    "practice": "Identify a possible sign and environmental support in one part of the model using fictional details.",
+    "reflect": "Does the model fit, or are important experiences missing?",
+    "transfer": "Choose a support to discuss or another way to describe the experience.",
+    "boundary": "The zones are a metaphor, not a diagnosis or a way to read another person's internal state."
+  },
+  "zones": {
+    "purpose": "Use zone words or colors to describe possible feelings and support needs.",
+    "model": "A character feels tired and worried together. They choose a useful description and ask for a manageable first step.",
+    "practice": "Compare two zone descriptions for a fictional situation, or choose unsure. Name a possible support.",
+    "reflect": "Does the color help, or would a word, picture, or another description work better?",
+    "transfer": "Practice a support request tied to the situation rather than a demand to change color.",
+    "boundary": "No zone makes someone good or bad. Reaching green is not a condition for inclusion or support."
+  }
+}

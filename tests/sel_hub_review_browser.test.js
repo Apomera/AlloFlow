@@ -52,6 +52,7 @@ async function mount(width = 1280, theme = '', fixture = null) {
     const R = window.React, noop = () => {}, Icon = () => null;
     function ReviewApp() {
       const [tool, setTool] = R.useState(null);
+      window.reviewSelectTool = setTool;
       const [tab, setTab] = R.useState('explore');
       return R.createElement(window.AlloModules.SelHub, {
         showSelHub: true, setShowSelHub: noop, selHubTool: tool, setSelHubTool: setTool,
@@ -87,6 +88,68 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
   }, 60000);
   // Browser process shutdown can be slow on the shared Windows workstation.
   afterAll(async () => { await browser?.close(); }, 180000);
+
+  const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
+  const learningGuideIds = Object.keys(learningGuides);
+  it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {
+    await mount();
+    for (const id of learningGuideIds.slice(batch * 18, batch * 18 + 18)) {
+      // Select through the host to inspect guidance even for content-gated tools.
+      // This does not dismiss a tool gate or activate its exercises.
+      await page.evaluate(id => window.reviewSelectTool(id), id);
+      const guide = page.locator('[data-sel-learning-guide="' + id + '"]');
+      await guide.waitFor({ state: 'attached' });
+      expect(await page.locator('[data-sel-learning-guide]').count()).toBe(1);
+      const text = await guide.textContent();
+      for (const value of Object.values(learningGuides[id])) expect(text).toContain(value);
+    }
+    expect(errors).toEqual([]);
+  }, 180000);
+
+  it('learning guide opens by keyboard and changes content without recording completion', async () => {
+    await mount();
+    await page.locator('[data-sel-tool-card-id="perspective"]').click();
+    const support = page.locator('details[aria-label="Practice support"]');
+    const before = await page.evaluate(() => JSON.stringify(window.__alloflowSelToolData));
+    await support.locator(':scope > summary').focus(); await page.keyboard.press('Enter');
+    const guide = support.locator('[data-sel-learning-guide="perspective"]');
+    expect(await guide.innerText()).toContain(learningGuides.perspective.model);
+    const reflect = guide.getByText('Reflect and use it elsewhere', { exact: true });
+    await reflect.focus(); await page.keyboard.press('Enter');
+    expect(await guide.innerText()).toContain(learningGuides.perspective.transfer);
+    await guide.getByText('Adapt the practice together', { exact: true }).click();
+    expect(await guide.innerText()).toContain('Start smaller:');
+    expect(await page.evaluate(() => JSON.stringify(window.__alloflowSelToolData))).toBe(before);
+    await support.getByRole('button', { name: 'Return to activities', exact: true }).click();
+    await page.locator('[data-sel-tool-card-id="goals"]').click();
+    expect(await support.getAttribute('open')).toBeNull();
+    await support.locator(':scope > summary').click();
+    expect(await support.innerText()).toContain(learningGuides.goals.model);
+    expect(await support.innerText()).not.toContain(learningGuides.perspective.model);
+  }, 120000);
+
+  it.each(['', 'theme-dark', 'theme-contrast'])('learning guide supports readable phone practice and deeper questions in %s', async theme => {
+    await mount(320, theme);
+    await page.locator('[data-sel-tool-card-id="perspective"]').click();
+    const support = page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByText('Reflect and use it elsewhere', { exact: true }).click();
+    await support.getByText('Adapt the practice together', { exact: true }).click();
+    await page.addScriptTag({ path: path.join(root, 'node_modules/axe-core/axe.min.js') });
+    const violations = await support.evaluate(async node => {
+      const result = await window.axe.run(node, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'label-content-name-mismatch'] } });
+      return result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ html: n.html, summary: n.failureSummary })) }));
+    });
+    fs.writeFileSync(path.join(reports, (theme || 'light') + '-learning-guide-axe.json'), JSON.stringify(violations, null, 2));
+    expect(violations).toEqual([]);
+    expect(await support.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+    expect(await support.locator('button:visible,summary:visible').evaluateAll(nodes => nodes.every(n => n.getBoundingClientRect().height >= 44))).toBe(true);
+    await support.locator('[data-sel-learning-guide]').evaluate(node => { node.style.scrollMarginTop = '110px'; node.scrollIntoView({ block: 'start' }); });
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-learning-guide-phone.png') });
+    await support.getByText('Reflect and use it elsewhere', { exact: true }).evaluate(node => { node.style.scrollMarginTop = '110px'; node.scrollIntoView({ block: 'start' }); });
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-learning-guide-reflection-phone.png') });
+    expect(errors).toEqual([]);
+  }, 120000);
 
   it('offers an ungraded practice cycle and does not call opening completion', async () => {
     await mount();

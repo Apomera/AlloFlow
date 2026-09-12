@@ -1,0 +1,55 @@
+{
+  "date": "2026-09-12",
+  "scope": "Tool-specific shared learning guides for all registered SEL tools",
+  "registered_tools": 72,
+  "guide_fields": [
+    "purpose",
+    "model",
+    "practice",
+    "reflect",
+    "transfer",
+    "boundary"
+  ],
+  "distinct_passed_checks": 348,
+  "existing_regressions": 265,
+  "guide_content_tests": 75,
+  "browser_workflows": 8,
+  "initial_render_smokes": 72,
+  "final_rechecks": {
+    "phone_browser": 3,
+    "guide_and_educator_copy": 77
+  },
+  "axe_scope": [
+    "color-contrast",
+    "button-name",
+    "label",
+    "label-content-name-mismatch"
+  ],
+  "axe_violations": {
+    "light-learning-guide-axe.json": [],
+    "theme-contrast-learning-guide-axe.json": [],
+    "theme-dark-learning-guide-axe.json": []
+  },
+  "visual_review": [
+    "theme-dark-learning-guide-phone.png",
+    "theme-contrast-learning-guide-reflection-phone.png"
+  ],
+  "source_public_sha256": "47c92048b67cf87db51a4f39128780964e12f57f013cce3af327ff5eac2c2333",
+  "source_public_byte_parity": true,
+  "build_check": "passed",
+  "logs": [
+    "reports/sel-hub-learning-guides-browser.log",
+    "reports/sel-hub-learning-guides-regression.log",
+    "reports/sel-hub-learning-guides-render.log",
+    "reports/sel-hub-learning-guides-visual.log",
+    "reports/sel-hub-learning-guides-final-copy2.log"
+  ],
+  "corrections": "Final formatting introduced CRLF-sensitive guide extraction; builder normalization and test extraction now support Windows line endings. Final 77 checks passed.",
+  "limits": [
+    "Isolated Chromium host with simulated callbacks",
+    "Guide content and initial render verified for all 72; not every internal tool workflow",
+    "No live AI, clinical effectiveness, classroom outcome, assistive-technology session or packaged Desktop validation"
+  ],
+  "deployed": false,
+  "pushed": false
+}

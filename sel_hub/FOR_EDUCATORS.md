@@ -185,3 +185,12 @@ Each pathway offers elementary, middle-school, and high-school examples. Learner
 Station builder drafts are stored on the current device for recovery. Resume an unfinished draft before starting another, or discard it. **Cancel discards the draft.** Save it as a station to include it in the data available to a project save. Undo for removed steps lasts while the draft is open; undo for station removal lasts while the hub is mounted. Restoring a station keeps its existing practice records. A full SEL data reset clears recovery state too.
 
 The **Saving and sharing** panel reports failures for hub stations, station notes, checkpoints, portfolio artifacts, and authoring drafts. It does not verify every input in every individual tool. A failed local save can leave an older copy on the device. Keep the hub open, retry, and use the main app's project-save flow. A save request is not confirmation that a file was written. Drafts remain device-local until saved as stations. Live sessions and optional AI have separate data flows; review the Share Packet preview before sharing.
+
+
+## Tool-specific learning guides
+
+Each of the 72 tools has an optional **Learning guide and ways to practice** panel. It names a learning purpose, gives a worked example, and suggests one first step. Open **Reflect and use it elsewhere** for a tool-specific reasoning question and possible transfer to another setting. **Adapt the practice together** offers ways to simplify, deepen, or contextualize the example. These prompts support discussion or practice away from a form; they do not submit work, award completion, or change an activity's own criteria.
+
+Model one small action, invite a response mode that fits the learner, then discuss what the example shows and leaves uncertain. Use fictional situations and keep personal disclosure optional. Follow each tool's own content notices, safety information, and age guidance. Immediate help takes priority over a learning guide. The new guides add instructional support; they do not validate every existing activity, assessment-like display, clinical claim, or AI response.
+
+The structure draws on [CASEL's guidance for explicit SEL instruction](https://schoolguide.casel.org/focus-area-3/classroom/explicit-sel-instruction/) and [CAST's choice and autonomy guidance](https://udlguidelines.cast.org/engagement/interests-identities/choice-autonomy/). Those sources inform the design, not evidence that these digital guides are effective. Examples need local educator and learner review for language, culture, context, and access.
