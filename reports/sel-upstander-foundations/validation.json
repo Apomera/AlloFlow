@@ -1,0 +1,78 @@
+{
+  "date": "2026-09-12",
+  "scope": "Upstander core Roles and Break the Cycle",
+  "examples": {
+    "roles": 9,
+    "sharedResponsibility": 9
+  },
+  "tests": {
+    "focusedBrowser": {
+      "passed": 19,
+      "log": "reports/sel-upstander-foundations-browser.log"
+    },
+    "regressionsIncludingPreviousUpstanderPractice": {
+      "passed": 544,
+      "skipped": 2,
+      "log": "reports/sel-upstander-foundations-regressions.log"
+    },
+    "targetedHub": {
+      "passed": 2,
+      "filteredOut": 84,
+      "log": "reports/sel-upstander-foundations-hub.log"
+    },
+    "totalPassed": 565
+  },
+  "renderSmoke": {
+    "log": "reports/sel-upstander-foundations-render.log",
+    "output": "[SelHub] Safety layer v1.2 loaded (crisis modal + scanForCrisis)\n[SelHub] sel_tool_civicaction.js loaded\n[SelHub] sel_tool_community.js loaded\n[SelHub] sel_tool_conflicttheater.js loaded \u2014 Conflict Theater v0.1\n[SelHub] sel_tool_cultureexplorer.js loaded\n[SelHub] sel_tool_ethicalreasoning.js loaded\n[SelHub] sel_tool_goals.js loaded \u2014 Goal Setter\n[SelHub] sel_tool_journal.js loaded\n[SEL] Peer Support Coach tool registered\n[SelHub] sel_tool_restorativecircle.js loaded\n[SelHub] sel_tool_safety.js loaded\n[SelHub Plugin] Loaded: sel_hub/sel_tool_selfadvocacy.js\n[SEL] Social Skills Lab tool registered\n[SelHub] sel_tool_strengths.js v2.5 loaded \u2014 Strengths Finder (Stories, Compare, Challenge, Gratitude, Interview, Planner, Peers, Affirmations)\n[SelHub] sel_tool_teamwork.js loaded\n[SEL] Voice Detective tool registered\n\u2713 check_sel_render: no app-crash render failures across 72 SEL tools.",
+    "toolsPassed": 72
+  },
+  "accessibility": {
+    "viewportWidth": 320,
+    "regions": [
+      "Role, behavior and support",
+      "Shared responsibility for stopping harm"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scans": 6,
+    "violations": 0,
+    "evidence": [
+      "contrast-cycle-axe.json",
+      "contrast-roles-axe.json",
+      "dark-cycle-axe.json",
+      "dark-roles-axe.json",
+      "light-cycle-axe.json",
+      "light-roles-axe.json"
+    ]
+  },
+  "visualReview": {
+    "reviewed": [
+      "contrast-cycle-phone.png",
+      "contrast-roles-phone.png",
+      "dark-cycle-phone.png",
+      "dark-roles-phone.png",
+      "light-cycle-phone.png",
+      "light-roles-phone.png"
+    ],
+    "findings": "Readable wrapping and no horizontal overflow in revised regions. Native select may abbreviate a long title; the full selected title is also displayed directly below it."
+  },
+  "sourcePublicByteParity": true,
+  "sha256": "4cbbec6dec4bf243287a1838bd2d1e004a853118a1f1269b4e90f6c6c0b5b6f3",
+  "syntaxChecks": [
+    "sel_hub/sel_tool_upstander.js",
+    "desktop/web-app/public/sel_hub/sel_tool_upstander.js",
+    "tests/sel_upstander_foundations_browser.test.js",
+    "tests/sel_hub_review_browser.test.js"
+  ],
+  "limitations": [
+    "Accessibility checks cover revised core regions only.",
+    "Specialized role and cycle deep dives, repair pathway and generated activities were not revised.",
+    "Authored practice is not a validated intervention."
+  ],
+  "pushed": false,
+  "deployed": false
+}

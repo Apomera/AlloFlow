@@ -225,6 +225,29 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   },120000);
 
+  it('upstander role reflections and shared-responsibility notes survive hub return and reopen',async () => {
+    await mount();
+    await page.locator('[data-sel-tool-card-id="upstander"]').click();
+    const roles=page.getByRole('region',{name:'Role, behavior and support',exact:true});
+    const cycle=page.getByRole('region',{name:'Shared responsibility for stopping harm',exact:true});
+    const label='What can you notice, and what is still unknown? (optional)';
+    await roles.getByLabel('Choose a role example',{exact:true}).selectOption('bystander');
+    await roles.getByLabel(label,{exact:true}).fill('Silence alone does not tell us what the witness thinks.');
+    await page.getByRole('tab',{name:/Break the Cycle/}).click();
+    await cycle.getByLabel('Choose a shared-responsibility example',{exact:true}).selectOption('review');
+    await cycle.getByLabel(label,{exact:true}).fill('Check whether support changed access and stopped harm.');
+    const support=page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="upstander"]').click();
+    expect(await cycle.getByLabel('Choose a shared-responsibility example',{exact:true}).inputValue()).toBe('review');
+    expect(await cycle.getByLabel(label,{exact:true}).inputValue()).toContain('changed access');
+    await page.getByRole('tab',{name:/Three Roles/}).click();
+    expect(await roles.getByLabel('Choose a role example',{exact:true}).inputValue()).toBe('bystander');
+    expect(await roles.getByLabel(label,{exact:true}).inputValue()).toContain('Silence alone');
+    expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

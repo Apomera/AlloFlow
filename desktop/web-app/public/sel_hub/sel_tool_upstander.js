@@ -38,49 +38,112 @@ window.SelHub = window.SelHub || {
 
   // The Three Roles
   var ROLES = {
-    elementary: [
-      { id: 'target', icon: '\uD83D\uDC94', title: 'The Person Being Hurt', color: '#93c5fd',
-        feels: ['scared', 'alone', 'ashamed', 'confused', 'angry', 'small'],
-        truth: 'Being bullied is NEVER your fault. It doesn\u2019t matter what you look like, what you\u2019re good at, or how you talk. Nobody deserves to be treated badly.',
-        myth: 'Myth: "Just ignore them and they\u2019ll stop." Truth: Ignoring doesn\u2019t always work, and telling you to just ignore it puts the responsibility on YOU instead of the person doing the hurting.' },
-      { id: 'bully', icon: '\uD83D\uDE1E', title: 'The Person Doing the Hurting', color: '#fca5a5',
-        feels: ['scared too', 'hurt before', 'lonely', 'angry inside', 'wanting control', 'not knowing better'],
-        truth: 'Most people who bully others have been hurt themselves. That doesn\u2019t make it okay. But understanding why helps us break the cycle instead of just adding more punishment.',
-        myth: 'Myth: "Bullies are just mean people." Truth: Bullying is a behavior, not an identity. People who bully can learn to stop. The behavior is wrong. The person still deserves help.' },
-      { id: 'bystander', icon: '\uD83D\uDE36', title: 'The Person Watching', color: '#fde68a',
-        feels: ['frozen', 'guilty', 'relieved it\u2019s not them', 'wanting to help but scared', 'confused about what to do'],
-        truth: 'When you see someone being bullied and don\u2019t say anything, it can feel like you\u2019re agreeing with the bully. But staying silent usually isn\u2019t about agreeing \u2014 it\u2019s about being scared. That\u2019s honest and human.',
-        myth: 'Myth: "It\u2019s not my problem." Truth: Bullying only works when there\u2019s an audience that stays silent. One person speaking up changes everything.' }
-    ],
-    middle: [
-      { id: 'target', icon: '\uD83D\uDC94', title: 'The Target', color: '#93c5fd',
-        feels: ['hypervigilant', 'dreading school', 'self-doubting', 'isolated', 'depressed', 'performing "okay"'],
-        truth: 'Bullying targets are often chosen not for their weakness but for their difference \u2014 which is often their strength. The creative kid, the sensitive kid, the kid who doesn\u2019t perform dominance. The qualities that make you a target at 13 make you remarkable at 30.',
-        myth: 'Myth: "You need thicker skin." Truth: Telling someone to be less affected by cruelty is protecting the cruelty, not the person. The skin isn\u2019t too thin. The behavior is too harmful.' },
-      { id: 'bully', icon: '\uD83D\uDE1E', title: 'The One Who Bullies', color: '#fca5a5',
-        feels: ['fear of vulnerability', 'hurt that became armor', 'pressure to perform toughness', 'self-loathing masked as dominance', 'modeling what was done to them'],
-        truth: 'Research (Olweus, 1993): students who bully are significantly more likely to have experienced abuse, witnessed domestic violence, or been bullied themselves. The behavior is a corruption of the need for connection \u2014 power substituted for belonging.',
-        myth: 'Myth: "They\u2019re just evil." Truth: Dehumanizing the person who bullies is itself a form of the same thinking that enables bullying. Accountability without empathy just moves the harm around.' },
-      { id: 'bystander', icon: '\uD83D\uDE36', title: 'The Bystander', color: '#fde68a',
-        feels: ['relief it\u2019s not them', 'social calculation', 'guilt', 'paralysis', 'fear of becoming the next target'],
-        truth: 'The bystander effect is one of the most studied phenomena in social psychology. The more people watching, the less likely any one person intervenes. It\u2019s not because people don\u2019t care. It\u2019s because each person assumes someone else will act.',
-        myth: 'Myth: "I can\u2019t make a difference." Truth: Studies show that when ONE bystander speaks up, bullying stops within 10 seconds over 57% of the time (Hawkins, Pepler & Craig, 2001).' }
-    ],
-    high: [
-      { id: 'target', icon: '\uD83D\uDC94', title: 'The Target', color: '#93c5fd',
-        feels: ['chronic stress response', 'identity questioning', 'academic decline', 'social withdrawal', 'suicidal ideation in severe cases', 'complex PTSD symptoms'],
-        truth: 'Bullying is not a rite of passage. Longitudinal research shows that bullying victimization is associated with increased risk of depression, anxiety, and self-harm that persists into adulthood (Copeland et al., 2013). Over time it can have lasting effects on the stress-response system.',
-        myth: 'Myth: "It builds character." Truth: Chronic stress doesn\u2019t build character \u2014 it depletes the neurobiological resources needed FOR character. Adversity that builds resilience is adversity with support. Bullying is adversity designed to isolate you from support.' },
-      { id: 'bully', icon: '\uD83D\uDE1E', title: 'The One Who Bullies', color: '#fca5a5',
-        feels: ['externalized pain', 'attachment disruption', 'performing a version of masculinity/power they were taught', 'fear of vulnerability equated with death', 'trapped in a role they may not want'],
-        truth: 'The relationship between being bullied and becoming a bully is one of the strongest findings in the literature. "Bully-victims" \u2014 those who are both perpetrators and targets \u2014 have the worst mental health outcomes of any group. They need intervention, not just consequences.',
-        myth: 'Myth: "Zero tolerance works." Truth: Zero-tolerance policies increase dropout rates and disproportionately affect students of color and students with disabilities without reducing bullying (APA Zero Tolerance Task Force, 2008). What works: restorative practices, social-emotional skill building, and addressing root causes.' },
-      { id: 'bystander', icon: '\uD83D\uDE36', title: 'The Bystander', color: '#fde68a',
-        feels: ['moral injury from inaction', 'social cost calculation', 'diffusion of responsibility', 'conformity pressure', 'cognitive dissonance'],
-        truth: 'Hannah Arendt wrote about the "banality of evil" \u2014 how ordinary people enable harm through passivity and conformity. The bystander\u2019s silence isn\u2019t neutral. In a system where harm is occurring, inaction IS a choice. The question isn\u2019t whether you have the right to intervene. It\u2019s whether you can live with not doing so.',
-        myth: 'Myth: "Speaking up will make me a target too." Truth: Sometimes it does. And that\u2019s a real cost. But the research also shows that peer intervention is the single most effective bullying deterrent \u2014 more effective than teacher intervention, school policy, or punishment.' }
-    ]
-  };
+  "elementary": [
+    {
+      "id": "target",
+      "title": "Experiencing harm",
+      "scenario": "At lunch, classmates repeatedly use a name one child has asked them not to use.",
+      "notice": "The name-calling continues after a request to stop.",
+      "unknown": "You cannot tell how the child feels or whether they want company from their face or silence.",
+      "learner": "The child can ask for space, company or a trusted adult. They do not have to say the perfect words to deserve help.",
+      "adult": "A lunchroom adult needs to stop the name-calling, check what support is wanted and watch for it happening again.",
+      "boundary": "Do not make the child change their name, leave lunch or forgive someone as the price of help.",
+      "check": "Check whether the name-calling stopped and the child can use the lunchroom without being targeted."
+    },
+    {
+      "id": "bully",
+      "title": "Causing harm",
+      "scenario": "At lunch, a child keeps using a name a classmate has asked them not to use.",
+      "notice": "The child is repeating an unwanted name.",
+      "unknown": "You do not know their feelings, home life or reason for doing it. Those guesses are not needed to stop the behavior.",
+      "learner": "The child needs to stop using the name and practice the name the classmate wants. They can ask an adult for help changing the habit.",
+      "adult": "An adult should name the behavior clearly, set a limit, teach a different response and follow up.",
+      "boundary": "An explanation does not excuse repeating the name. The classmate does not have to accept an apology or help teach the lesson.",
+      "check": "Look for the name actually changing in later interactions, rather than only an apology being said."
+    },
+    {
+      "id": "bystander",
+      "title": "Witnessing harm",
+      "scenario": "A child hears repeated name-calling at lunch but does not speak in that moment.",
+      "notice": "The child heard the behavior and did not speak then.",
+      "unknown": "Silence does not tell you whether they agreed, were scared, missed part of it or did not know what to do.",
+      "learner": "They can stop joining any laughter, seek adult help or offer company later if wanted. Public speaking is not required.",
+      "adult": "Adults should make it easy to ask for help, respond to the behavior and check the witness's support needs too.",
+      "boundary": "Do not make a child responsible for stopping the whole group or demand an apology for being unable to speak.",
+      "check": "Check whether an adult responded and whether the witness knows a usable support route."
+    }
+  ],
+  "middle": [
+    {
+      "id": "target",
+      "title": "Experiencing harm",
+      "scenario": "A group repeatedly removes a student's contribution from a shared project and jokes that the student has nothing to offer.",
+      "notice": "The contribution is being removed and the comments target the student.",
+      "unknown": "You cannot infer ability, confidence or feelings from whether the student protests.",
+      "learner": "The student can ask for their work to be recognized and choose a supported way to participate without defending their worth to the group.",
+      "adult": "The teacher needs to address the removal, review how contributions are recorded and check for retaliation.",
+      "boundary": "Do not solve exclusion by automatically moving only the targeted student or requiring them to win the group over.",
+      "check": "Check whether contributions are retained, credit is accurate and the student can participate without further targeting."
+    },
+    {
+      "id": "bully",
+      "title": "Causing harm",
+      "scenario": "A student repeatedly deletes a peer's project contributions and joins jokes about their ability.",
+      "notice": "Deleting and mocking are observable actions that affect the peer's access and credit.",
+      "unknown": "You do not know the student's motives or personal history. More than one factor may matter.",
+      "learner": "The student needs to stop deleting and mocking, help restore the work and use agreed feedback methods. They can seek help learning those methods.",
+      "adult": "The teacher should set expectations, arrange proportionate accountability under school procedures and monitor access to the project.",
+      "boundary": "Do not make the peer supervise the repair, forgive the behavior or meet privately with someone who intimidates them.",
+      "check": "Check whether work stays restored and later disagreements use the agreed review process."
+    },
+    {
+      "id": "bystander",
+      "title": "Witnessing harm",
+      "scenario": "A student sees a peer's work removed from a group project and hears mocking but worries that objecting will make them the next target.",
+      "notice": "The student noticed removal and mocking and has a concern about retaliation.",
+      "unknown": "They may not know the full pattern or which support route will respond well.",
+      "learner": "They can describe what they directly saw to the teacher or another trusted adult and ask how retaliation will be addressed.",
+      "adult": "The teacher needs to investigate the concern appropriately, protect participation and follow through. The witness does not need to gather a case alone.",
+      "boundary": "Do not demand screenshots obtained at risk, a public accusation or an equal-blame mediation session.",
+      "check": "Check whether the report led to concrete protection and whether another trusted route is needed."
+    }
+  ],
+  "high": [
+    {
+      "id": "target",
+      "title": "Experiencing harm",
+      "scenario": "A peer is repeatedly targeted with identity-based comments after an earlier request for the comments to stop.",
+      "notice": "The comments are repeated and unwanted.",
+      "unknown": "You cannot infer the person's identity, diagnosis, feelings or preferred disclosure from the comments being used.",
+      "learner": "The peer can choose what support to request and which identity details to share. They do not have to educate others or show distress as proof.",
+      "adult": "School adults need to address the harassment, discuss privacy limits and respond to retaliation or continued harm.",
+      "boundary": "Do not out the person, require public advocacy, or ask them to debate whether they deserve respect.",
+      "check": "Check whether the behavior and retaliation stop while access to learning and privacy are protected."
+    },
+    {
+      "id": "bully",
+      "title": "Causing harm",
+      "scenario": "A student repeats identity-based comments about a peer and says the group meant them as jokes.",
+      "notice": "The student used the comments; calling them jokes does not undo the action.",
+      "unknown": "You do not know the student's background or whether they understand every effect of the comments.",
+      "learner": "They need to stop the comments, avoid recruiting others to defend them, and work with appropriate adults on a specific change in behavior.",
+      "adult": "Adults should set limits, follow applicable school procedures and provide instruction and monitoring that do not rely on the targeted peer.",
+      "boundary": "Support for the student causing harm is compatible with accountability. It does not entitle them to contact, forgiveness or access to the peer.",
+      "check": "Look for changed behavior across settings and no further pressure on the peer, not a persuasive account of good intentions."
+    },
+    {
+      "id": "bystander",
+      "title": "Witnessing harm",
+      "scenario": "A student witnesses repeated identity-based comments and wants to help without exposing the peer to more attention.",
+      "notice": "The student noticed the comments and is considering a response.",
+      "unknown": "They may not know who is safe to involve, what the peer wants disclosed or how the group might retaliate.",
+      "learner": "If welcome, they can ask about a preferred support route and report observed behavior with only necessary personal details.",
+      "adult": "School adults must respond to harassment and explain how reports, privacy and retaliation concerns will be handled.",
+      "boundary": "No witness has to prove courage through confrontation or disclose someone else's identity. Immediate danger still needs urgent help.",
+      "check": "Check whether the chosen support route responds; if it does not, seek another trusted route without expanding disclosure unnecessarily."
+    }
+  ]
+};
 
   // Upstander strategies
   var UPSTANDER_MOVES = {
@@ -220,22 +283,112 @@ window.SelHub = window.SelHub || {
 
   // Breaking the cycle — what actually works
   var CYCLE_BREAKERS = {
-    elementary: [
-      { title: 'Hurt People Hurt People', text: 'When someone is mean to you, your brain wants to be mean to someone else. That\u2019s normal \u2014 but it\u2019s a chain. You can be the one who breaks it by choosing kindness even when you\u2019re hurting.', icon: '\uD83D\uDD17' },
-      { title: 'What Punishment Can\u2019t Do', text: 'Getting in trouble doesn\u2019t teach someone how to be kind. It teaches them not to get caught. Real change happens when someone helps the bully understand WHY their behavior hurts and gives them a different way to feel powerful.', icon: '\u2696\uFE0F' },
-      { title: 'You Can Be All Three', text: 'Sometimes you\u2019re the one being hurt. Sometimes you watch it happen. Sometimes \u2014 and this is hard to admit \u2014 you might be the one doing the hurting. All of these are human. The question is what you do next.', icon: '\uD83C\uDF00' },
-    ],
-    middle: [
-      { title: 'The Harm Cycle', text: 'A child is humiliated at home. At school, they humiliate someone smaller. That child goes home and kicks the dog. The dog bites the baby. Harm flows downhill \u2014 until someone absorbs it instead of passing it on. That person is the cycle breaker.', icon: '\uD83D\uDD17' },
-      { title: 'Restorative vs. Punitive', text: 'Punishment asks: "What rule was broken?" Restoration asks: "Who was harmed, and what do they need?" One creates compliance through fear. The other creates accountability through empathy. Research shows restorative approaches reduce repeat offenses by 40-60%.', icon: '\u2696\uFE0F' },
-      { title: 'The Courage Hierarchy', text: 'Level 1: Don\u2019t participate in bullying. Level 2: Walk away from it. Level 3: Support the target privately. Level 4: Intervene publicly. Level 5: Work to change the system. Every level matters. Start where you are.', icon: '\uD83E\uDDD7' },
-    ],
-    high: [
-      { title: 'The Neuroscience of Cruelty', text: 'Dehumanization \u2014 the cognitive process that enables bullying \u2014 literally deactivates the medial prefrontal cortex, the brain region responsible for mentalizing (seeing others as having thoughts and feelings). Bullying doesn\u2019t just harm the target. It erodes the bully\u2019s own capacity for empathy.', icon: '\uD83E\uDDE0' },
-      { title: 'Systems, Not Just Individuals', text: 'Bullying is not a character problem \u2014 it\u2019s an environmental one. Schools with hierarchical social structures, status-based reward systems, and inadequate supervision have more bullying regardless of the students in them (Espelage & Swearer, 2004). To end bullying, change the system that incentivizes it.', icon: '\uD83C\uDFDB\uFE0F' },
-      { title: 'Moral Courage as Practice', text: 'Moral courage isn\u2019t a trait you have or don\u2019t have. It\u2019s a skill you practice. Every time you speak up about something small, you build the neural pathways that make it easier to speak up about something big. Start with micro-courage. The muscles grow.', icon: '\uD83E\uDDD7' },
-    ]
-  };
+  "elementary": [
+    {
+      "id": "stop",
+      "title": "Stop harm without carrying it",
+      "scenario": "A child who was teased earlier is now teasing someone else during a game.",
+      "notice": "Two harmful events may have happened. Each needs attention.",
+      "unknown": "Being hurt does not mean someone will hurt others, and it does not tell us why this child did.",
+      "learner": "The child needs to stop the teasing and can ask for help with what happened earlier.",
+      "adult": "An adult should respond to both events, help protect each child and teach a different response.",
+      "boundary": "No child has to absorb unkind treatment to keep it from reaching someone else.",
+      "check": "Check that both situations receive help and that the teasing stops in later games."
+    },
+    {
+      "id": "accountability",
+      "title": "A limit and a way to learn",
+      "scenario": "An adult stops a child from taking a classmate's supplies. The child says they did not know what else to do.",
+      "notice": "The supplies were taken and need to be returned.",
+      "unknown": "You do not know whether the child lacked a skill, ignored a rule or faced another difficulty.",
+      "learner": "The child can return the supplies and practice asking before borrowing.",
+      "adult": "The adult should set a clear limit, help restore access and teach or practice the needed skill.",
+      "boundary": "The classmate does not have to lend supplies later or accept an apology before getting them back.",
+      "check": "Check whether supplies stay available and borrowing happens with permission."
+    },
+    {
+      "id": "review",
+      "title": "Check that help worked",
+      "scenario": "A teacher talks with children about name-calling. The next day the name-calling happens again away from the teacher.",
+      "notice": "The first response did not stop the behavior across settings.",
+      "unknown": "The teacher may not know it continued; the child experiencing it need not work out why.",
+      "learner": "A child can tell a trusted adult that it happened again, with the details they know.",
+      "adult": "Adults need to adjust supervision or support and check back rather than treating the first talk as completion.",
+      "boundary": "The child experiencing harm does not have to confront the group or become more tolerant.",
+      "check": "Check whether adults follow up where it happens and whether the child can join activities without targeting."
+    }
+  ],
+  "middle": [
+    {
+      "id": "stop",
+      "title": "Different responsibilities in the same situation",
+      "scenario": "A student who was excluded from one group begins excluding a younger student elsewhere.",
+      "notice": "The student may have experienced harm and also caused harm.",
+      "unknown": "One event does not prove the cause of the other. Experiencing exclusion does not excuse using it.",
+      "learner": "The student needs to stop excluding the younger student and can seek support for what happened to them.",
+      "adult": "Adults should address both patterns, including access, accountability and the conditions that let them continue.",
+      "boundary": "Do not ask either student to carry the other's distress or pretend responsibility is equal in every incident.",
+      "check": "Check each pattern separately: has the harm stopped and is appropriate support available?"
+    },
+    {
+      "id": "accountability",
+      "title": "Repair does not require a meeting",
+      "scenario": "A student offers an apology after repeatedly mocking a peer. The peer does not want to meet.",
+      "notice": "An apology has been offered and a boundary has been stated.",
+      "unknown": "You do not know whether a meeting would feel safe or be useful; declining does not show an unwillingness to heal.",
+      "learner": "The student who mocked can stop, correct what they control and plan different behavior without demanding contact.",
+      "adult": "Adults should address safety and accountability and avoid forcing mediation between people with unequal power.",
+      "boundary": "No meeting, forgiveness or renewed friendship is required to make a repair plan meaningful.",
+      "check": "Check the changed behavior and respect for no contact, rather than whether the apology was accepted."
+    },
+    {
+      "id": "review",
+      "title": "Support is not a courage contest",
+      "scenario": "After an incident, one witness speaks publicly and another asks a trusted adult privately for help.",
+      "notice": "The witnesses used different support routes.",
+      "unknown": "Visibility does not tell you how safe, useful or wanted either response was.",
+      "learner": "Witnesses can choose a supported route that fits the setting and the person's wishes.",
+      "adult": "Adults should respond to the concern and protect those involved, including witnesses worried about retaliation.",
+      "boundary": "Do not rank people by public bravery or treat a private report as a lower level of help.",
+      "check": "Check whether the response reduced harm, respected boundaries and led to follow-through."
+    }
+  ],
+  "high": [
+    {
+      "id": "stop",
+      "title": "Address behavior and conditions",
+      "scenario": "Harassment happens repeatedly in a poorly supervised area even after individual reminders to stop.",
+      "notice": "The behavior continues in a particular setting.",
+      "unknown": "You cannot conclude that either personal choices or the setting alone explain every incident.",
+      "learner": "Students can describe observed behavior and suggest access or supervision concerns without investigating others.",
+      "adult": "School adults need to address the behavior and the conditions around it, with a plan for monitoring and response.",
+      "boundary": "A student should not have to lead a campaign or leave a needed activity to receive protection.",
+      "check": "Check whether behavior changes in that area and elsewhere, and whether protection remains accessible."
+    },
+    {
+      "id": "accountability",
+      "title": "Support and accountability can work together",
+      "scenario": "A student causing harm receives support from an adult while the school considers consequences under its procedures.",
+      "notice": "Support and a response to harmful behavior are both being considered.",
+      "unknown": "You cannot predict success from calling an approach restorative or punitive. How it is carried out matters.",
+      "learner": "The student needs to stop the behavior and participate in a concrete plan for change.",
+      "adult": "Adults should explain expectations, use appropriate procedures, protect the affected person and review the result.",
+      "boundary": "Support does not erase responsibility. Consequences alone do not establish that learning, repair or safety has occurred.",
+      "check": "Check specific behavior, continued access and retaliation, rather than relying on the name of the approach."
+    },
+    {
+      "id": "review",
+      "title": "Revise a plan that is not protecting people",
+      "scenario": "An earlier intervention reduced public comments, but private messages now continue the harassment.",
+      "notice": "The form of the behavior changed; the harm may still be continuing.",
+      "unknown": "A quiet classroom does not by itself show that the problem is resolved.",
+      "learner": "The affected person or a witness can use a trusted route to describe the continuation without spreading messages broadly.",
+      "adult": "Adults need to revisit the plan, discuss privacy and retaliation concerns, and check whether new supports are working.",
+      "boundary": "Do not treat a report of continued harm as failure by the person seeking help or require them to mediate it.",
+      "check": "Look for sustained changes across settings and a clear way to get further help if the pattern returns."
+    }
+  ]
+};
 
   // ── Practice Scenarios (branching) ──
   // Built-in scenarios compare conditional support routes without rating the learner.
@@ -17186,306 +17339,72 @@ window.SelHub = window.SelHub || {
         )
       );
 
+      // Optional fictional reflections: band and example keep separate drafts.
+      function renderCoreReflection(kind, data, title, lead, selectLabel, legacyIndex) {
+        function record(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+        var coreBand = Object.prototype.hasOwnProperty.call(data, band) ? band : 'elementary';
+        var items = data[coreBand];
+        var selectionsKey = kind + 'CoreSelected', notesKey = kind + 'CoreNotes';
+        var selections = record(d[selectionsKey]), allNotes = record(d[notesKey]);
+        var selected = items.find(function(item) { return item.id === selections[coreBand]; });
+        if (!selected) selected = items[Number.isInteger(legacyIndex) && legacyIndex >= 0 && legacyIndex < items.length ? legacyIndex : 0];
+        var noteKey = coreBand + ':' + selected.id, notes = record(allNotes[noteKey]);
+        function value(key) { return typeof notes[key] === 'string' ? notes[key] : ''; }
+        function setNote(key, text) {
+          var next = Object.assign({}, allNotes);
+          next[noteKey] = Object.assign({}, notes); next[noteKey][key] = text;
+          upd(notesKey, next);
+        }
+        var edge = _upCHC ? '#ffff00' : _upCDark ? '#94a3b8' : '#64748b';
+        var control = { width: '100%', minHeight: 44, boxSizing: 'border-box', padding: 10, border: '1px solid ' + edge, borderRadius: 8, background: _upC('#fff'), color: _upC('#0f172a'), fontFamily: 'inherit', fontSize: 16 };
+        var summaryStyle = { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 };
+        function paragraph(label, text) { return h('p', null, h('strong', null, label + ': '), text); }
+        function field(key, label) {
+          var id = 'up-' + kind + '-core-' + key;
+          return h('div', { style: { margin: '16px 0' } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, label),
+            h('textarea', { id: id, value: value(key), rows: 3, style: Object.assign({}, control, { resize: 'vertical' }), onChange: function(e) { setNote(key, e.target.value); } }));
+        }
+        var oldNote = kind === 'roles' && typeof record(d.roleReflect)[selected.id] === 'string' ? d.roleReflect[selected.id] : '';
+        var hasOldScores = kind === 'roles' && Object.keys(record(d.scAnswers)).length > 0;
+        return h('section', { role: 'region', 'aria-label': title, style: { background: _upC('#fff'), color: _upC('#0f172a'), padding: 16, border: '1px solid ' + edge, borderRadius: 14, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+          h('h2', { style: { margin: '0 0 8px', fontSize: 22, lineHeight: 1.3 } }, title),
+          h('p', null, lead),
+          h('p', null, 'Use these fictional examples. You can read, think, write, or skip any reflection. You do not need to share a personal experience, and these notes are not scored.'),
+          h('label', { htmlFor: 'up-' + kind + '-core-select', style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, selectLabel),
+          h('select', { id: 'up-' + kind + '-core-select', style: control, value: selected.id, onChange: function(e) { var next = Object.assign({}, selections); next[coreBand] = e.target.value; upd(selectionsKey, next); } }, items.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
+          h('div', { key: noteKey },
+            h('h3', { style: { fontSize: 18, lineHeight: 1.4 } }, selected.title),
+            h('p', null, selected.scenario),
+            h('details', { open: true, style: { borderTop: '1px solid ' + edge } },
+              h('summary', { style: summaryStyle }, '1. Notice without guessing'),
+              paragraph('What is observed', selected.notice), paragraph('What is not known', selected.unknown),
+              field('notice', 'What can you notice, and what is still unknown? (optional)')),
+            h('details', { style: { borderTop: '1px solid ' + edge } },
+              h('summary', { style: summaryStyle }, '2. Separate choices and responsibilities'),
+              paragraph('Learner choices', selected.learner), paragraph('Adult responsibility', selected.adult), paragraph('A boundary to protect', selected.boundary),
+              field('plan', 'Who can help, and what responsibility belongs to them? (optional)')),
+            h('details', { style: { borderTop: '1px solid ' + edge } },
+              h('summary', { style: summaryStyle }, '3. Check support and follow-through'),
+              paragraph('A follow-through check', selected.check),
+              field('review', 'What would show that support needs to change? (optional)')),
+            oldNote.trim() && h('details', { style: { borderTop: '1px solid ' + edge } },
+              h('summary', { style: summaryStyle }, 'Earlier reflection: grade band unassigned'),
+              h('p', null, 'This earlier reflection has no recorded grade band. It remains unchanged and has not been assigned to this fictional example. Copy it only if you want to use it here.'),
+              h('p', { style: { whiteSpace: 'pre-wrap' } }, oldNote),
+              h('button', { type: 'button', disabled: value('notice').length > 0, style: Object.assign({}, control, { cursor: value('notice').length ? 'default' : 'pointer' }), onClick: function() { if (!value('notice').length) setNote('notice', oldNote); } }, 'Copy earlier reflection into empty noticing note'),
+              value('notice').length > 0 && h('p', { role: 'status' }, 'Your current noticing note is kept. Clear it yourself before copying an earlier reflection.'))
+          ),
+          hasOldScores && h('p', null, 'Earlier self-check answers remain in your project data. They are not used here to classify you or calculate role percentages.'),
+          h('p', { style: { marginBottom: 0 } }, 'Notes stay separate for each example and grade band in this project. Use the hub save controls to keep your project. Review personal details before sharing it.')
+        );
+      }
+
       // ── Three Roles ──
       var rolesContent = null;
       if (activeTab === 'roles') {
-        var roles = ROLES[band] || ROLES.elementary;
-        var cur = roles[roleIdx % roles.length];
         rolesContent = h('div', { style: { padding: '20px', maxWidth: '640px', margin: '0 auto' } },
-          // \u2500\u2500 Tool hero \u2500\u2500
-          h('div', { className: 'us-card', style: {
-            padding: '16px 18px', marginBottom: 16, borderRadius: 14,
-            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 60%, #ede9fe 100%)',
-            border: '1px solid #bfdbfe',
-            display: 'flex', alignItems: 'center', gap: 14
-          } },
-            h('div', { 'aria-hidden': 'true', style: {
-              width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-              background: 'linear-gradient(135deg, ' + BLUE + ' 0%, #1e3a8a 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 28, color: '#fff',
-              boxShadow: '0 5px 12px rgba(37,99,235,0.30), inset 0 1px 0 rgba(255,255,255,0.30)'
-            } }, '\uD83E\uDDF1'),
-            h('div', { style: { flex: 1, minWidth: 0 } },
-              h('h2', { style: { margin: '0 0 2px', color: BD, fontSize: 20, lineHeight: 1.2 } }, 'Upstander Workshop'),
-              h('p', { style: { margin: 0, color: _upC('#334155'), fontSize: 13, lineHeight: 1.5 } },
-                'Understand bullying from all sides \u2014 target, bystander, and the one doing the hurting \u2014 and build the courage to break the cycle.')
-            )
-          ),
-          // \u2500\u2500 Cross-link to Digital Wellbeing for cyberbullying \u2500\u2500
-          h('div', { role: 'note', style: {
-            padding: 12, marginBottom: 16,
-            background: _upC('#ecfeff'), border: '1px solid #67e8f9', borderRadius: 10,
-            display: 'flex', gap: 10, alignItems: 'center'
-          } },
-            h('span', { 'aria-hidden': 'true', style: {
-              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-              background: 'linear-gradient(135deg, #67e8f9 0%, #06b6d4 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 18, color: '#fff'
-            } }, '\uD83D\uDCF1'),
-            h('div', { style: { flex: 1, minWidth: 0, fontSize: 13, color: _upC('#0f172a'), lineHeight: 1.5 } },
-              h('strong', null, 'For online bullying \u2014 '),
-              'screenshots, group chats, pile-ons, photo-without-consent \u2014 open the ',
-              h('strong', { style: { color: _upC('#0e7490') } }, 'Digital Wellbeing Studio'),
-              ' \u2192 Cyberbullying tab. The dynamics are different enough to need their own playbook.')
-          ),
-          // \u2500\u2500 Self-Check (collapsible role-pattern assessment) \u2500\u2500
-          (function() {
-            var totalAnswered = Object.keys(scAnswers).length;
-            // Compute per-role percentages
-            var roleScores = { target: 0, bully: 0, bystander: 0 };
-            var roleCounts = { target: 0, bully: 0, bystander: 0 };
-            SELF_CHECK_ITEMS.forEach(function(q) {
-              roleCounts[q.role]++;
-              if (scAnswers[q.id] != null) roleScores[q.role] += scAnswers[q.id];
-            });
-            var rolePct = {
-              target:    roleCounts.target    > 0 ? roleScores.target    / (roleCounts.target    * 3) : 0,
-              bully:     roleCounts.bully     > 0 ? roleScores.bully     / (roleCounts.bully     * 3) : 0,
-              bystander: roleCounts.bystander > 0 ? roleScores.bystander / (roleCounts.bystander * 3) : 0
-            };
-            var roleLabel = { target: 'The target', bully: 'The one doing the hurting', bystander: 'The bystander' };
-            var roleColor = { target: '#93c5fd', bully: '#fca5a5', bystander: '#fde68a' };
-            var roleAccent = { target: _upC('#1e40af'), bully: _upC('#991b1b'), bystander: _upC('#92400e') };
-
-            return h('div', { style: { marginBottom: 18 } },
-              h('button', {
-                onClick: function() { upd('scOpen', !scOpen); if (soundOn) sfxClick(); },
-                'aria-expanded': scOpen ? 'true' : 'false',
-                style: {
-                  width: '100%', padding: '12px 14px', textAlign: 'left',
-                  border: '2px solid ' + (scOpen ? '#a78bfa' : '#d8b4fe'),
-                  background: scOpen ? _upC('#faf5ff') : _upC('#fdf4ff'),
-                  borderRadius: 12, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  font: 'inherit', color: 'inherit'
-                }
-              },
-                h('span', { 'aria-hidden': 'true', style: {
-                  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                  background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 20, color: '#fff',
-                  boxShadow: '0 3px 8px rgba(124, 58, 237, 0.22)'
-                } }, '\uD83E\uDE9E'),
-                h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 14, color: _upC('#6b21a8'), marginBottom: 2 } },
-                    scShowResults ? 'Your role-pattern result' : 'Quick self-check \u2014 which roles do I find myself in?'),
-                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
-                    scShowResults ? 'Most people are in more than one role. Tap to revisit.' : '6 questions. Honest answers only. No single \"right\" role.')
-                ),
-                h('span', { 'aria-hidden': 'true', style: { color: '#7c3aed', fontSize: 18 } }, scOpen ? '\u25BE' : '\u25B8')
-              ),
-              scOpen && (scShowResults
-                ? // Results view
-                  h('div', { 'aria-live': 'polite', style: { marginTop: 12, padding: 16, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 12 } },
-                    h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.55, color: _upC('#0f172a') } },
-                      h('strong', null, 'Most people are in more than one role at different times. '),
-                      'Your higher-scoring roles are the ones you might look at first \u2014 but reading all three is the whole point.'),
-                    h('div', { style: { display: 'grid', gap: 8, marginBottom: 14 } },
-                      ['target', 'bully', 'bystander'].map(function(r) {
-                        var pct = Math.round(rolePct[r] * 100);
-                        return h('div', { key: r, style: { display: 'flex', alignItems: 'center', gap: 10, fontSize: 13 } },
-                          h('div', { style: { width: 180, color: roleAccent[r], fontWeight: 700, flexShrink: 0 } }, roleLabel[r]),
-                          h('div', { style: { flex: 1, background: _upC('#e2e8f0'), height: 18, borderRadius: 4, overflow: 'hidden', position: 'relative' } },
-                            h('div', { style: {
-                              background: 'linear-gradient(90deg, ' + roleColor[r] + ' 0%, ' + roleAccent[r] + ' 100%)',
-                              height: '100%', width: pct + '%',
-                              transition: 'width 0.6s ease'
-                            } }),
-                            h('span', { style: { position: 'absolute', right: 6, top: 0, lineHeight: '18px', fontSize: 11, fontWeight: 700, color: _upC('#0f172a') } }, pct + '%')
-                          ),
-                          h('button', {
-                            onClick: function() {
-                              var idx = ['target', 'bully', 'bystander'].indexOf(r);
-                              if (idx >= 0) upd('roleIdx', idx);
-                              if (soundOn) sfxClick();
-                            },
-                            style: { padding: '4px 10px', background: roleAccent[r], color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: 11, flexShrink: 0 }
-                          }, 'Open \u2192')
-                        );
-                      })
-                    ),
-                    // If they scored high on both target AND bully, surface bully-victim signpost
-                    (rolePct.target >= 0.5 && rolePct.bully >= 0.5) && h('div', { style: {
-                      padding: 12, background: _upC('#fef3c7'), border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 10
-                    } },
-                      h('div', { style: { fontWeight: 800, fontSize: 13, color: _upC('#92400e'), marginBottom: 4 } },
-                        '\u26A0\uFE0F You flagged both target and perpetrator patterns'),
-                      h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.55, color: _upC('#0f172a') } },
-                        'This combination has a specific name in the research \u2014 "bully-victim." It is also the group with the hardest outcomes AND the one schools usually serve worst. There is a Bully-Victim section in the role detail below \u2014 it is for you. Please read it.')
-                    ),
-                    h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                      h('button', {
-                        onClick: function() { upd({ scAnswers: {}, scShowResults: false }); if (soundOn) sfxClick(); },
-                        style: { padding: '8px 14px', background: _upC('#fff'), color: _upC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
-                      }, 'Retake check-in')
-                    )
-                  )
-                : // Question view
-                  h('div', { style: { marginTop: 12, padding: 16, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 12 } },
-                    h('p', { style: { margin: '0 0 10px', fontSize: 12, color: _upC('#475569'), lineHeight: 1.5 } },
-                      'For each one: how often is this true for you?'),
-                    h('div', { style: { display: 'grid', gap: 10 } },
-                      SELF_CHECK_ITEMS.map(function(q) {
-                        return h('div', { key: q.id, style: { padding: 10, background: _upC('#faf5ff'), borderRadius: 8 } },
-                          h('div', { style: { fontSize: 13, color: _upC('#0f172a'), marginBottom: 8, lineHeight: 1.5 } }, q.text),
-                          h('div', { role: 'radiogroup', 'aria-label': q.text, style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-                            ['Never', 'Sometimes', 'Often', 'Always'].map(function(lbl, idx) {
-                              var selected = scAnswers[q.id] === idx;
-                              return h('button', {
-                                key: idx, role: 'radio', 'aria-checked': selected ? 'true' : 'false',
-                                onClick: function() {
-                                  var na = Object.assign({}, scAnswers); na[q.id] = idx;
-                                  upd('scAnswers', na);
-                                  if (soundOn) sfxClick();
-                                },
-                                style: {
-                                  flex: '1 1 70px', minWidth: 60,
-                                  padding: '6px 8px',
-                                  background: selected ? '#7c3aed' : _upC('#fff'),
-                                  color: selected ? '#fff' : _upC('#475569'),
-                                  border: '1px solid ' + (selected ? '#7c3aed' : _upC('#cbd5e1')),
-                                  borderRadius: 6, fontWeight: selected ? 700 : 500,
-                                  fontSize: 12, cursor: 'pointer', font: 'inherit'
-                                }
-                              }, lbl);
-                            })
-                          )
-                        );
-                      })
-                    ),
-                    h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 12 } },
-                      h('button', {
-                        disabled: totalAnswered < SELF_CHECK_ITEMS.length,
-                        onClick: function() {
-                          upd('scShowResults', true);
-                          if (soundOn) sfxBrave();
-                          tryAwardBadge('self_check_done', 10);
-                        },
-                        style: {
-                          padding: '8px 16px',
-                          background: totalAnswered < SELF_CHECK_ITEMS.length ? _upC('#cbd5e1') : '#7c3aed',
-                          color: totalAnswered < SELF_CHECK_ITEMS.length && _upCHC ? '#000000' : '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
-                          cursor: totalAnswered < SELF_CHECK_ITEMS.length ? 'not-allowed' : 'pointer', fontSize: 13
-                        }
-                      }, totalAnswered < SELF_CHECK_ITEMS.length
-                        ? 'Answer all 6 to see your pattern (' + totalAnswered + '/' + SELF_CHECK_ITEMS.length + ')'
-                        : 'See my pattern \u2192')
-                    )
-                  )
-              )
-            );
-          })(),
-          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '\uD83D\uDC65'),
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Understanding the Three Roles'),
-            h('p', { style: { fontSize: '13px', color: _upC('#64748b'), margin: 0 } }, 'Every bullying situation has three roles. Understanding all three is how we break the pattern.')
-          ),
-          // Role selector — icon-circle cards
-          h('div', { role: 'tablist', 'aria-label': 'Select a role to learn about', style: { display: 'grid', gap: 10, gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 16 } },
-            roles.map(function(r, i) {
-              var active = i === roleIdx % roles.length;
-              return h('button', { key: r.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-label': r.title,
-                onClick: function() { upd('roleIdx', i); if (soundOn) sfxClick(); },
-                className: 'us-card',
-                style: {
-                  padding: '14px 8px',
-                  borderRadius: 14,
-                  border: '2px solid ' + (active ? r.color : _upC('#e5e7eb')),
-                  background: active ? r.color + '18' : _upC('#fff'),
-                  cursor: 'pointer', textAlign: 'center',
-                  font: 'inherit', color: 'inherit',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                  transform: active ? 'translateY(-2px)' : 'none',
-                  boxShadow: active ? '0 6px 14px ' + r.color + '55' : '0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06)'
-                }
-              },
-                h('div', { 'aria-hidden': 'true', style: {
-                  width: 48, height: 48, borderRadius: 14,
-                  background: active
-                    ? 'linear-gradient(135deg, ' + r.color + ' 0%, ' + r.color + 'cc 100%)'
-                    : 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 26, color: active ? '#fff' : _upC('#475569'),
-                  boxShadow: active ? 'inset 0 1px 0 rgba(255, 255, 255, 0.3)' : 'none',
-                  transition: 'all 0.2s ease'
-                } }, r.icon),
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: active ? BD : _upC('#374151'), lineHeight: 1.25 } }, r.title)
-              );
-            })
-          ),
-          // Role detail
-          h('div', { style: { background: cur.color + '15', borderRadius: '16px', padding: '20px', border: '2px solid ' + cur.color + '44' } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' } },
-              h('span', { style: { fontSize: '32px' } }, cur.icon),
-              h('h4', { style: { fontSize: '16px', fontWeight: 800, color: BD, margin: 0 } }, cur.title)
-            ),
-            // What they feel
-            h('div', { style: { marginBottom: '12px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 700, color: _upC('#94a3b8'), marginBottom: '6px' } }, 'What they might feel:'),
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
-                cur.feels.map(function(f) {
-                  return h('span', { key: f, style: { padding: '3px 10px', background: _upC('#fff'), border: '1px solid ' + cur.color + '66', borderRadius: '20px', fontSize: '11px', color: _upC('#374151') } }, f);
-                })
-              )
-            ),
-            // The truth
-            h('div', { style: { background: _upC('#fff'), borderRadius: '10px', padding: '12px', borderLeft: '4px solid ' + BLUE, marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _upC(BLUE), marginBottom: '2px' } }, 'The truth:'),
-              h('p', { style: { fontSize: '13px', color: _upC('#374151'), margin: 0, lineHeight: 1.6 } }, cur.truth)
-            ),
-            // Myth vs truth
-            h('div', { style: { background: _upC('#fef3c7'), borderRadius: '10px', padding: '12px', borderLeft: '4px solid #f59e0b' } },
-              h('p', { style: { fontSize: '12px', color: _upC('#92400e'), margin: 0, lineHeight: 1.6 } }, cur.myth)
-            ),
-            // ── Have I been here? reflection ──
-            h('div', { style: { marginTop: 14 } },
-              h('button', {
-                onClick: function() { upd('roleReflectOpen', !roleReflectOpen); if (soundOn) sfxClick(); },
-                'aria-expanded': roleReflectOpen ? 'true' : 'false',
-                style: {
-                  width: '100%', padding: '10px 12px', textAlign: 'left',
-                  background: roleReflectOpen ? _upC('#fff') : 'transparent',
-                  border: '1px dashed ' + cur.color,
-                  borderRadius: 10, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  font: 'inherit', color: 'inherit'
-                }
-              },
-                h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, '🪞'),
-                h('span', { style: { flex: 1, fontSize: 13, fontWeight: 700, color: BD } },
-                  'Have I been here? — a quiet reflection'),
-                h('span', { 'aria-hidden': 'true', style: { color: _upC('#64748b'), fontSize: 14 } }, roleReflectOpen ? '▾' : '▸')
-              ),
-              roleReflectOpen && h('div', { style: { marginTop: 10, padding: 14, background: _upC('#fff'), border: '1px solid ' + cur.color + '66', borderRadius: 10 } },
-                h('p', { style: { margin: '0 0 10px', fontSize: 12, color: _upC('#475569'), lineHeight: 1.55 } },
-                  'Nobody is going to read this except you. Whatever you write stays on your device. The point is honesty — with yourself.'),
-                h('label', { htmlFor: 'us-rr-' + cur.id, style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
-                  band === 'elementary'
-                    ? 'A time I felt like ' + cur.title.toLowerCase() + ' — or someone I know did'
-                    : 'A time I have been in this role — what was happening, what I felt, what I did or did not do'),
-                h('textarea', {
-                  id: 'us-rr-' + cur.id,
-                  value: roleReflect[cur.id] || '',
-                  onChange: function(e) {
-                    var nr = Object.assign({}, roleReflect);
-                    nr[cur.id] = e.target.value;
-                    upd('roleReflect', nr);
-                  },
-                  placeholder: 'Write as much or as little as you want. Nothing has to be polished.',
-                  rows: 3,
-                  style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }
-                }),
-                (function() {
-                  var savedCount = Object.keys(roleReflect).filter(function(k) { return (roleReflect[k] || '').trim().length > 0; }).length;
-                  return savedCount >= 3 && h('p', { 'aria-live': 'polite', style: { margin: '8px 0 0', fontSize: 12, color: '#059669', fontWeight: 600 } },
-                    '✓ You have reflected on all three roles. That is rare and honest work.');
-                })()
-              )
-            )
-          ),
+          renderCoreReflection('roles', ROLES, 'Role, behavior and support', 'Roles describe what is happening in a situation, not a fixed identity. A person may have different experiences over time. Support needs and responsibility are not the same for everyone.', 'Choose a role example', roleIdx),
           // ── Identity-based harassment deep dive ──
           (band !== 'elementary') && (function() {
             var ihContent = IDENTITY_HARASSMENT[band] || IDENTITY_HARASSMENT.middle;
@@ -18053,123 +17972,8 @@ window.SelHub = window.SelHub || {
       // ── Break the Cycle ──
       var cycleContent = null;
       if (activeTab === 'cycle') {
-        var breakers = CYCLE_BREAKERS[band] || CYCLE_BREAKERS.elementary;
         cycleContent = h('div', { style: { padding: '20px', maxWidth: '640px', margin: '0 auto' } },
-          // Hero card
-          h('div', { className: 'us-card', style: {
-            padding: '16px 18px', marginBottom: 16, borderRadius: 14,
-            background: 'linear-gradient(135deg, #fef2f2 0%, #fef9c3 50%, #f0fdf4 100%)',
-            border: '1px solid #fcd34d',
-            display: 'flex', alignItems: 'center', gap: 14
-          } },
-            h('div', { 'aria-hidden': 'true', style: {
-              width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-              background: 'linear-gradient(135deg, #fca5a5 0%, #16a34a 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 28, color: '#fff',
-              boxShadow: '0 5px 12px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255,255,255,0.30)'
-            } }, '\uD83D\uDD17'),
-            h('div', { style: { flex: 1, minWidth: 0 } },
-              h('h2', { style: { margin: '0 0 2px', color: _upC('#0f172a'), fontSize: 20, lineHeight: 1.2 } }, 'Breaking the Cycle'),
-              h('p', { style: { margin: 0, color: _upC('#334155'), fontSize: 13, lineHeight: 1.5 } },
-                'How harm flows, why punishment fails, and what actually works \u2014 for targets, perpetrators, and witnesses alike.')
-            )
-          ),
-          // \u2500\u2500 Harm Cycle visualization \u2500\u2500
-          h('div', { className: 'us-card', style: {
-            padding: 16, marginBottom: 16, borderRadius: 14,
-            background: 'linear-gradient(135deg, #fef2f2 0%, #fefce8 50%, #f0fdf4 100%)',
-            border: '1px solid #fcd34d'
-          } },
-            h('div', { style: { fontSize: 12, color: _upC('#92400e'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, textAlign: 'center' } },
-              'How harm flows \u2014 and where it stops'),
-            h('svg', {
-              viewBox: '0 0 460 220',
-              role: 'img',
-              'aria-label': 'Harm cycle diagram: hurt flows from one person to the next, until one person absorbs it instead of passing it on.',
-              style: { width: '100%', height: 'auto', display: 'block', maxWidth: 460, margin: '0 auto' }
-            },
-              // Arrows between nodes
-              h('defs', null,
-                h('marker', { id: 'us-arrowhead', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto' },
-                  h('path', { d: 'M0,0 L10,5 L0,10 Z', fill: _upC('#dc2626') })
-                ),
-                h('marker', { id: 'us-arrowhead-green', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto' },
-                  h('path', { d: 'M0,0 L10,5 L0,10 Z', fill: '#16a34a' })
-                )
-              ),
-              // Curved arrows showing harm flowing
-              h('path', { d: 'M 80,70 Q 130,40 175,70', stroke: _upC('#dc2626'), strokeWidth: 2.5, fill: 'none', 'marker-end': 'url(#us-arrowhead)' }),
-              h('path', { d: 'M 215,70 Q 265,40 310,70', stroke: _upC('#dc2626'), strokeWidth: 2.5, fill: 'none', 'marker-end': 'url(#us-arrowhead)' }),
-              // The cycle-breaker absorbs (no arrow leaving them \u2014 shown by a stop sign)
-              h('path', { d: 'M 350,160 L 350,190', stroke: '#16a34a', strokeWidth: 3, fill: 'none', strokeDasharray: '4 3' }),
-              // Node 1: Adult hurts child
-              h('g', null,
-                h('circle', { cx: 60, cy: 90, r: 32, fill: '#fecaca', stroke: _upC('#dc2626'), strokeWidth: 2 }),
-                h('text', { x: 60, y: 96, textAnchor: 'middle', fontSize: 24 }, '\uD83D\uDC64'),
-                h('text', { x: 60, y: 140, textAnchor: 'middle', fontSize: 11, fill: _upC('#991b1b'), fontWeight: 700 }, 'Hurt'),
-                h('text', { x: 60, y: 155, textAnchor: 'middle', fontSize: 10, fill: _upC('#475569') }, 'at home')
-              ),
-              // Node 2: Child hurts smaller child
-              h('g', null,
-                h('circle', { cx: 195, cy: 90, r: 32, fill: '#fed7aa', stroke: '#ea580c', strokeWidth: 2 }),
-                h('text', { x: 195, y: 96, textAnchor: 'middle', fontSize: 24 }, '\uD83D\uDE1E'),
-                h('text', { x: 195, y: 140, textAnchor: 'middle', fontSize: 11, fill: _upC('#9a3412'), fontWeight: 700 }, 'Hurts'),
-                h('text', { x: 195, y: 155, textAnchor: 'middle', fontSize: 10, fill: _upC('#475569') }, 'at school')
-              ),
-              // Node 3: Smaller child hurts someone smaller
-              h('g', null,
-                h('circle', { cx: 330, cy: 90, r: 32, fill: '#fde68a', stroke: '#ca8a04', strokeWidth: 2 }),
-                h('text', { x: 330, y: 96, textAnchor: 'middle', fontSize: 24 }, '\uD83D\uDE22'),
-                h('text', { x: 330, y: 140, textAnchor: 'middle', fontSize: 11, fill: _upC('#92400e'), fontWeight: 700 }, 'Could pass'),
-                h('text', { x: 330, y: 155, textAnchor: 'middle', fontSize: 10, fill: _upC('#475569') }, 'it on')
-              ),
-              // The cycle-breaker \u2014 distinct, green, with shield
-              h('g', null,
-                h('circle', { cx: 405, cy: 90, r: 36, fill: '#bbf7d0', stroke: '#16a34a', strokeWidth: 3 }),
-                h('text', { x: 405, y: 98, textAnchor: 'middle', fontSize: 28 }, '\uD83D\uDEE1\uFE0F'),
-                h('text', { x: 405, y: 145, textAnchor: 'middle', fontSize: 11, fill: _upC('#166534'), fontWeight: 800 }, 'The cycle'),
-                h('text', { x: 405, y: 158, textAnchor: 'middle', fontSize: 11, fill: _upC('#166534'), fontWeight: 800 }, 'breaker')
-              ),
-              // STOPS HERE label under cycle breaker
-              h('rect', { x: 360, y: 188, width: 90, height: 20, rx: 10, fill: '#16a34a' }),
-              h('text', { x: 405, y: 202, textAnchor: 'middle', fontSize: 11, fill: '#fff', fontWeight: 800 }, 'STOPS HERE')
-            ),
-            h('p', { style: { margin: '12px 0 0', fontSize: 12, color: _upC('#0f172a'), lineHeight: 1.55, textAlign: 'center' } },
-              h('strong', null, 'Hurt people hurt people \u2014 '),
-              'until one person absorbs the harm instead of passing it on. That person is the cycle breaker. ',
-              h('em', null, 'It can be you.'))
-          ),
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
-            breakers.map(function(b, i) {
-              var active = i === cycleIdx;
-              return h('button', { key: i, className: 'us-card', 'aria-pressed': active ? 'true' : 'false', 'aria-label': b.title,
-                onClick: function() { upd('cycleIdx', i); if (soundOn) sfxClick(); },
-                style: {
-                  background: active ? BL : _upC('#fff'),
-                  border: active ? '2px solid #93c5fd' : '1px solid #e5e7eb',
-                  borderRadius: '14px', padding: '14px', cursor: 'pointer',
-                  textAlign: 'left', width: '100%', font: 'inherit', color: 'inherit'
-                }
-              },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: active ? 10 : 0 } },
-                  h('span', { 'aria-hidden': 'true', style: {
-                    width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                    background: active
-                      ? 'linear-gradient(135deg, #60a5fa 0%, ' + BLUE + ' 100%)'
-                      : 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 20, color: '#fff',
-                    boxShadow: active ? '0 3px 8px rgba(37, 99, 235, 0.22)' : 'none',
-                    transition: 'all 0.18s ease'
-                  } }, b.icon),
-                  h('h4', { style: { fontSize: 14, fontWeight: 700, color: active ? BD : _upC('#374151'), margin: 0, flex: 1 } }, b.title)
-                ),
-                active && h('p', { style: { fontSize: 13, lineHeight: 1.7, color: _upC('#374151'), margin: 0, paddingLeft: 52 } }, b.text)
-              );
-            })
-          ),
-
+          renderCoreReflection('cycle', CYCLE_BREAKERS, 'Shared responsibility for stopping harm', 'Stopping harm can take clear limits, support, changes to the setting, and repeated follow-through. No learner has to absorb harm or solve it alone.', 'Choose a shared-responsibility example', cycleIdx),
           // ── REPAIR pathway (for students who have been the one causing harm) ──
           (function() {
             var steps = REPAIR_STEPS[band] || REPAIR_STEPS.elementary;
