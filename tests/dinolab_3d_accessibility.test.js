@@ -39,10 +39,10 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("var viewerSummary = props.species.common + ' 3D model summary.");
     expect(source).toContain("Visible layers: ' + layerSummary");
     expect(source).toContain("Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.");
-    expect(source).toContain("if (!reducedMotion && scanPulse)");
-    expect(source).toContain("if (!reducedMotion && assemblyPulse)");
-    expect(source).toContain("if (!reducedMotion && claimEvidencePulse)");
-    expect(source).toContain("if (!reducedMotion) loggedRings.forEach");
+    expect(source).toContain('var motionRunning = !motionPausedRef.current && !reducedMotionRef.current;');
+    expect(source).toContain('dinoMotionStep(motionClockRef.current, performance.now(), motionRunning)');
+    expect(source).toContain('var idleTime = motionClockRef.current.elapsed;');
+    expect(source).toContain("loggedRings.forEach(function (ring, idx)");
     expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_fossil_assembly_progress', 'Fossil assembly progress')`);
     expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_claim_strength', 'Claim strength')`);
     expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_challenge_progress', 'Reconstruction challenge progress')`);

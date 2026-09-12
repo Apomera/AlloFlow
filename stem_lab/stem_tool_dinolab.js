@@ -6552,6 +6552,15 @@ window.StemLab = window.StemLab || {
     return material;
   }
 
+  // Count only active visible time; a stalled frame cannot cause a large pose jump.
+  function dinoMotionStep(clock, now, running) {
+    var previous = clock.last;
+    clock.last = running && Number.isFinite(now) ? now : null;
+    var delta = running && Number.isFinite(now) && previous != null ? Math.min(0.1, Math.max(0, (now - previous) * 0.001)) : 0;
+    clock.elapsed = (clock.elapsed || 0) + delta;
+    return delta;
+  }
+
   var DinoFieldStation3DStable = null;
 
   window.StemLab.registerTool('dinoLab', {
@@ -7292,6 +7301,33 @@ window.StemLab = window.StemLab || {
         var rendererRef = React.useRef(null);
         var cameraControlRef = React.useRef(null);
         var visualMaterialsRef = React.useRef(null);
+        var motionClockRef = React.useRef({ last: null, elapsed: 0 });
+        var motionPausedState = React.useState(false), motionPaused = motionPausedState[0], setMotionPaused = motionPausedState[1];
+        var motionPausedRef = React.useRef(false);
+        var reducedMotionState = React.useState(function () { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); });
+        var deviceReducedMotion = reducedMotionState[0], setDeviceReducedMotion = reducedMotionState[1];
+        var reducedMotionRef = React.useRef(deviceReducedMotion);
+        React.useEffect(function () {
+          if (!window.matchMedia) return;
+          var preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+          function updateMotionPreference() {
+            reducedMotionRef.current = preference.matches;
+            motionClockRef.current.last = null;
+            setDeviceReducedMotion(preference.matches);
+          }
+          updateMotionPreference();
+          if (preference.addEventListener) preference.addEventListener('change', updateMotionPreference);
+          else if (preference.addListener) preference.addListener(updateMotionPreference);
+          return function () {
+            if (preference.removeEventListener) preference.removeEventListener('change', updateMotionPreference);
+            else if (preference.removeListener) preference.removeListener(updateMotionPreference);
+          };
+        }, []);
+        function toggleMotionPause() {
+          motionPausedRef.current = !motionPausedRef.current;
+          motionClockRef.current.last = null;
+          setMotionPaused(motionPausedRef.current);
+        }
         var requestedBodyOpacity = Math.max(10, Math.min(100, Number(props.bodyOpacity) || 28));
         var bodyOpacityRef = React.useRef(requestedBodyOpacity);
         var bodyOpacityPropRef = React.useRef(requestedBodyOpacity);
@@ -7409,7 +7445,7 @@ window.StemLab = window.StemLab || {
             fieldPalette = { skin: integument.base, dark: integument.dark, accent: integument.accent };
             var bodyColor = integument.base;
 
-            var reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            motionClockRef.current.last = null;
             var yaw = yawRef.current.value;
             var pitch = Number(yawRef.current.pitch);
             var zoom = Number(yawRef.current.zoom);
@@ -9998,8 +10034,9 @@ window.StemLab = window.StemLab || {
               if (!alive) return;
               if (inViewport && pageVisible) {
                 if (!frame) frame = window.requestAnimationFrame(animate);
-              } else if (frame) {
-                window.cancelAnimationFrame(frame);
+              } else {
+                motionClockRef.current.last = null;
+                if (frame) window.cancelAnimationFrame(frame);
                 frame = 0;
               }
             }
@@ -10007,9 +10044,11 @@ window.StemLab = window.StemLab || {
               frame = 0;
               if (!alive || !renderer || !scene || !camera) return;
               if (model) {
-                var idleTime = performance.now() * 0.001;
-                if (!dragging && !reducedMotion && autoRotateRef.current !== false && performance.now() >= interactionPauseUntil) yaw += 0.0035;
-                if (!reducedMotion && props.showBody) {
+                var motionRunning = !motionPausedRef.current && !reducedMotionRef.current;
+                var motionDelta = dinoMotionStep(motionClockRef.current, performance.now(), motionRunning);
+                var idleTime = motionClockRef.current.elapsed;
+                if (!dragging && motionRunning && autoRotateRef.current !== false && performance.now() >= interactionPauseUntil) yaw += motionDelta * 0.21;
+                if (props.showBody) {
                   var breathWave = Math.sin(idleTime * 1.28 + idleMotion.phase);
                   var breathAmount = 0.5 + breathWave * 0.5;
                   if (idleMotion.body && idleMotion.bodyBaseScale) {
@@ -10055,23 +10094,23 @@ window.StemLab = window.StemLab || {
                 model.rotation.y = yaw;
                 if (contactShadowRig) contactShadowRig.rotation.y = yaw;
                 updateCameraView();
-                if (!reducedMotion && scanPulse) {
-                  var pulse = 1 + Math.sin(performance.now() * 0.006) * 0.10;
+                if (scanPulse) {
+                  var pulse = 1 + Math.sin(idleTime * 6) * 0.10;
                   scanPulse.scale.set(pulse, pulse, pulse);
-                  if (scanPulse.material) scanPulse.material.opacity = 0.30 + Math.sin(performance.now() * 0.006) * 0.08;
+                  if (scanPulse.material) scanPulse.material.opacity = 0.30 + Math.sin(idleTime * 6) * 0.08;
                 }
-                if (!reducedMotion && assemblyPulse) {
-                  var assemblyGlow = 1 + Math.sin(performance.now() * 0.005) * 0.08;
+                if (assemblyPulse) {
+                  var assemblyGlow = 1 + Math.sin(idleTime * 5) * 0.08;
                   assemblyPulse.scale.set(assemblyGlow, assemblyGlow, assemblyGlow);
-                  if (assemblyPulse.material) assemblyPulse.material.opacity = 0.32 + Math.sin(performance.now() * 0.005) * 0.08;
+                  if (assemblyPulse.material) assemblyPulse.material.opacity = 0.32 + Math.sin(idleTime * 5) * 0.08;
                 }
-                if (!reducedMotion && claimEvidencePulse) {
-                  var claimGlow = 1 + Math.sin(performance.now() * 0.006 + 1.7) * 0.11;
+                if (claimEvidencePulse) {
+                  var claimGlow = 1 + Math.sin(idleTime * 6 + 1.7) * 0.11;
                   claimEvidencePulse.scale.set(claimGlow, claimGlow, claimGlow);
-                  if (claimEvidencePulse.material) claimEvidencePulse.material.opacity = 0.36 + Math.sin(performance.now() * 0.006 + 1.7) * 0.10;
+                  if (claimEvidencePulse.material) claimEvidencePulse.material.opacity = 0.36 + Math.sin(idleTime * 6 + 1.7) * 0.10;
                 }
-                if (!reducedMotion) loggedRings.forEach(function (ring, idx) {
-                  var glow = 1 + Math.sin(performance.now() * 0.003 + idx) * 0.035;
+                loggedRings.forEach(function (ring, idx) {
+                  var glow = 1 + Math.sin(idleTime * 3 + idx) * 0.035;
                   ring.scale.set(glow, glow, glow);
                 });
               }
@@ -10249,6 +10288,14 @@ var evidenceRoute = [
                 onClick: function () { if (region === 'full') applyCameraPreset('reset'); else applyStudyView(region); },
                 style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (selected ? '#0f766e' : T.border), background: selected ? '#0f766e' : T.deeper, color: selected ? '#ffffff' : T.text, cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, label);
             })
+          ),
+          el('div', { className: 'dinolab-motion-controls', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
+            el('button', { type: 'button', disabled: deviceReducedMotion, onClick: toggleMotionPause,
+              'aria-pressed': motionPaused || deviceReducedMotion ? 'true' : 'false',
+              style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 12, fontWeight: 800, cursor: deviceReducedMotion ? 'default' : 'pointer' } },
+              deviceReducedMotion ? __alloT('stem.dinolab.motion_reduced', 'Motion reduced') : (motionPaused ? __alloT('stem.dinolab.resume_motion', 'Resume motion') : __alloT('stem.dinolab.pause_motion', 'Pause motion'))),
+            el('span', { role: 'status', 'aria-live': 'polite', style: { flex: '1 1 220px', fontSize: 11.5, color: T.soft, lineHeight: 1.4 } },
+              deviceReducedMotion ? __alloT('stem.dinolab.device_motion_paused', 'Motion is paused by your device preference.') : (motionPaused ? __alloT('stem.dinolab.motion_paused_help', 'Motion paused. You can still rotate and zoom.') : __alloT('stem.dinolab.motion_help', 'Pause breathing, feather movement, and auto spin.')))
           ),
           renderEvidenceRoute(),
           el('details', { className: 'dinolab-3d-controls-disclosure', open: props.focusMode ? true : null, style: { marginTop: 8 } },

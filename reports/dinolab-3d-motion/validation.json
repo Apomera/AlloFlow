@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-12",
+  "focusedChecksPassed": 121,
+  "focusedTestFiles": 5,
+  "motionClockTests": 8,
+  "browserScenariosPassed": 7,
+  "newBrowserScenarios": 4,
+  "existingBrowserScenarios": 3,
+  "finalEvidenceVisibilityRecheck": "passed",
+  "frameRates": [
+    15,
+    30,
+    60,
+    120
+  ],
+  "spinRadiansPerSecond": 0.21,
+  "maxMotionStepSeconds": 0.1,
+  "pauseAllMeshTransforms": true,
+  "manualCameraWhilePaused": true,
+  "liveReducedMotion": true,
+  "hiddenViewerResume": true,
+  "savedDataUnchanged": true,
+  "moduleCopies": 3,
+  "moduleSha256": "321730971D9E8A07E1BD6C098FC1165F2AD244B4F12CAB9BEC018ADF219C90E6",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "browserRendering": "Local Chromium, Three.js r128, software WebGL",
+  "deployed": false,
+  "pushed": false,
+  "hardwarePerformanceBenchmarked": false
+}

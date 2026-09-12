@@ -3657,6 +3657,10 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <button type="button" aria-label="Study body details" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Body</button>
 <button type="button" aria-label="Study tail details" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Tail</button>
 </div>
+<div class="dinolab-motion-controls" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px">
+<button type="button" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:800;cursor:pointer">Pause motion</button>
+<span role="status" aria-live="polite" style="flex:1 1 220px;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Pause breathing, feather movement, and auto spin.</span>
+</div>
 <div class="dinolab-3d-evidence-route" role="list" aria-label="Evidence route" style="display:grid;grid-template-columns:100px repeat(3,minmax(0,1fr)) minmax(140px,1.2fr);gap:7px;align-items:center;margin-top:8px;padding:8px;border-radius:10px;background:rgba(15,23,42,0.82);border:1px solid rgba(245,158,11,0.48);box-shadow:0 10px 24px rgba(0,0,0,0.24);z-index:3">
 <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px;color:#f8fafc;font-size:11px;font-weight:900;letter-spacing:0.03em;text-transform:uppercase">
 <span>Evidence route</span>
