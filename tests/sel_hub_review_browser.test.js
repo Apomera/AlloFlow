@@ -89,6 +89,26 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
   // Browser process shutdown can be slow on the shared Windows workstation.
   afterAll(async () => { await browser?.close(); }, 180000);
 
+  it('perspective case study keeps its reasoning through the real hub return and reopen flow', async () => {
+    await mount();
+    await page.locator('[data-sel-tool-card-id="perspective"]').click();
+    const activity = page.getByRole('region', { name: 'Perspective case study', exact: true });
+    await activity.getByLabel('What do we know? (optional)', { exact: true }).fill('Project decisions were shared in a private chat.');
+    await activity.getByRole('group', { name: 'Your first response (optional)', exact: true }).getByRole('button').first().click();
+    await activity.getByRole('button', { name: 'Reveal new context', exact: true }).click();
+    await activity.getByRole('group', { name: 'Your response with this context (optional)', exact: true }).getByRole('button').nth(1).click();
+    const support = page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button', { name: 'Return to activities', exact: true }).click();
+    await page.locator('[data-sel-tool-card-id="perspective"]').click();
+    expect(await activity.getByLabel('What do we know? (optional)', { exact: true }).inputValue()).toBe('Project decisions were shared in a private chat.');
+    expect(await activity.getByRole('button', { name: 'New context shown', exact: true }).getAttribute('aria-expanded')).toBe('true');
+    expect(await activity.getByRole('group', { name: 'Your first response (optional)', exact: true }).innerText()).toContain('Ask privately');
+    expect(await activity.getByRole('group', { name: 'Your response with this context (optional)', exact: true }).getByRole('button').nth(1).getAttribute('aria-pressed')).toBe('true');
+    expect(await page.evaluate(() => window.__alloflowSelToolData.perspective.scenCompleted)).toBeUndefined();
+    expect(errors).toEqual([]);
+  }, 120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

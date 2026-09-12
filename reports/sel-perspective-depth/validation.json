@@ -1,0 +1,62 @@
+{
+  "date": "2026-09-12",
+  "scope": "Nine interactive Perspective-Taking case studies in three grade bands",
+  "cases": {
+    "elementary": [
+      "lunch-choice",
+      "tower-repair",
+      "group-voice"
+    ],
+    "middle": [
+      "chat-boundary",
+      "message-delay",
+      "access-fairness"
+    ],
+    "high": [
+      "unequal-review",
+      "project-credit",
+      "posted-video"
+    ]
+  },
+  "distinct_checks_passed": 587,
+  "existing_regressions": 567,
+  "existing_skips": 2,
+  "case_browser_workflows": 15,
+  "hub_browser_workflows": 5,
+  "final_theme_recheck": {
+    "passed": 294,
+    "existing_skips": 2
+  },
+  "final_all_tool_render_smokes": 72,
+  "axe_scope": "All enabled axe rules within the case-study region at 320 px, after context reveal and response revision",
+  "axe_violations": {
+    "contrast-axe.json": [],
+    "dark-axe.json": [],
+    "light-axe.json": []
+  },
+  "visually_reviewed": [
+    "dark-response-phone.png",
+    "contrast-revision-phone.png"
+  ],
+  "source_public_byte_parity": true,
+  "source_public_sha256": "fb853defd56dc5d15c75ee59732be8829de6e5069e84a198f60a9ce095730ad8",
+  "syntax": "passed",
+  "scoped_whitespace": "passed",
+  "correction": "Initial browser run passed 13/15 workflows. Dark and contrast scans caught a missing case-region background in isolated rendering. Added theme background; final 15/15 and three axe scans passed. Explicit learner roles and viewer-appropriate video response added before final browser run.",
+  "validation_sequence": "567 existing regressions preceded the final role/background refinements. Final case-browser, actual-hub, theme and all-tool render checks ran after those changes.",
+  "logs": [
+    "reports/sel-perspective-depth-regression.log",
+    "reports/sel-perspective-depth-browser-final.log",
+    "reports/sel-perspective-depth-hub.log",
+    "reports/sel-perspective-depth-theme-final.log",
+    "reports/sel-perspective-depth-render-final.log"
+  ],
+  "limitations": [
+    "Simulated callbacks for isolated tool tests; actual hub bridge checked separately",
+    "Serialized state restoration, not an actual project-file round trip",
+    "No packaged Desktop, live assistive technology, classroom outcomes or clinical efficacy validation",
+    "Legacy short scenarios, other tabs and AI responses outside this pass"
+  ],
+  "pushed": false,
+  "deployed": false
+}

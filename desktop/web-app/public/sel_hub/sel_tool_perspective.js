@@ -65,6 +65,455 @@ window.SelHub = window.SelHub || {
   // ── Scenario Theater Data ──
   // Students read a scenario and identify how each character feels
   // ══════════════════════════════════════════════════════════════
+  // Authored case studies: compare evidence, context and response tradeoffs.
+  var PERSPECTIVE_CASES = {
+  "elementary": [
+    {
+      "id": "lunch-choice",
+      "title": "An invitation with room to say no",
+      "scene": "Ari sits at the end of a lunch table with a book. Jo notices an empty seat beside Ari and wants to invite Ari to a group game. Ari has not asked to join.",
+      "facts": [
+        "Ari is sitting with a book.",
+        "There is an empty seat; no invitation has been made."
+      ],
+      "uncertainty": "Being alone does not tell us whether Ari feels lonely, content, tired, or something else.",
+      "voices": [
+        {
+          "name": "Jo",
+          "view": "Jo might want to be welcoming and might also worry about interrupting."
+        },
+        {
+          "name": "Ari",
+          "view": "Ari might enjoy the book, want company, or want both at different times. Ari can choose whether to answer."
+        }
+      ],
+      "context": "Ari says, \"I want to finish this page. Please ask me again after lunch.\" This tells us what Ari wants now, not how Ari always feels.",
+      "pivot": "What if Ari said, \"No thanks, I want quiet today\"? How could Jo be welcoming while accepting that answer?",
+      "transfer": "Practice an invitation that includes a real way to decline. What would accepting the answer look like?",
+      "options": [
+        {
+          "id": "ask",
+          "label": "Offer a brief, optional invitation",
+          "benefit": "Jo can offer company without deciding that Ari needs rescuing.",
+          "limit": "Repeated invitations can become pressure. A quiet or non-speaking response still deserves space.",
+          "after": "Acknowledge the request and wait until after lunch. A later invitation is still a choice."
+        },
+        {
+          "id": "space",
+          "label": "Leave space and stay available",
+          "benefit": "Ari can keep reading without interruption.",
+          "limit": "Jo cannot know whether Ari also wanted an invitation. Space and welcome can both matter.",
+          "after": "Give reading time, then follow through on the requested later invitation."
+        },
+        {
+          "id": "join",
+          "label": "Ask whether sitting nearby would be welcome",
+          "benefit": "There may be a way to be together without joining a busy game.",
+          "limit": "An empty seat is not permission to take over the space or start talking.",
+          "after": "Respect the request to finish reading; do not treat it as rejection of Jo."
+        }
+      ],
+      "role": "Practice as Jo, deciding how to offer company."
+    },
+    {
+      "id": "tower-repair",
+      "title": "An accident still needs repair",
+      "scene": "Noor builds a block tower. Ellis reaches across the table for a marker and knocks part of it down. Noor says, \"Stop! I worked on that.\" Ellis says, \"I did not mean to.\"",
+      "facts": [
+        "The reach knocked blocks down.",
+        "Noor asked Ellis to stop; Ellis said it was not intended."
+      ],
+      "uncertainty": "We know what happened and what was said. We do not yet know what kind of repair Noor wants.",
+      "voices": [
+        {
+          "name": "Noor",
+          "view": "Noor may want space, help rebuilding, or acknowledgment of the work that was lost."
+        },
+        {
+          "name": "Ellis",
+          "view": "Ellis may want Noor to know it was an accident and may need help making a useful repair."
+        }
+      ],
+      "context": "Noor says, \"Please do not touch it yet. I want to rebuild the small part myself, but I need help finding the blocks.\"",
+      "pivot": "What if Ellis kept reaching across after being asked to stop? When would an adult need to change the setup or help maintain the boundary?",
+      "transfer": "Rehearse acknowledging an impact, asking what repair would help, and accepting that forgiveness may take time.",
+      "options": [
+        {
+          "id": "repair",
+          "label": "Acknowledge the damage and ask what would help",
+          "benefit": "The response can recognize impact without claiming Ellis meant harm.",
+          "limit": "An apology does not decide what happens next or require immediate forgiveness.",
+          "after": "Help find the blocks if Noor agrees; let Noor decide who touches the tower."
+        },
+        {
+          "id": "pause",
+          "label": "Pause and make room",
+          "benefit": "Stopping movement protects the remaining tower and gives Noor space.",
+          "limit": "Leaving without acknowledgment could leave Noor with all the repair work.",
+          "after": "Pair space with the specific offer to find blocks; do not insist on rebuilding."
+        },
+        {
+          "id": "adult",
+          "label": "Ask an adult to help with the workspace",
+          "benefit": "Moving shared supplies could prevent another reach across the tower.",
+          "limit": "The adult should not force a hug, shared rebuilding, or an apology that ends the conversation.",
+          "after": "Ask for a reachable marker area while respecting Noor's repair request."
+        }
+      ],
+      "role": "Practice as Ellis, deciding how to respond after knocking down the blocks."
+    },
+    {
+      "id": "group-voice",
+      "title": "More than one way to take a turn",
+      "scene": "In a group puzzle, Ren answers quickly. Sol points to a drawing but does not get a turn before Ren answers again. The group has five minutes left.",
+      "facts": [
+        "Ren has answered more than once.",
+        "Sol pointed to a drawing before the next answer."
+      ],
+      "uncertainty": "We do not know whether Sol wants to speak, point, write, or pass. Speed does not show whose idea is strongest.",
+      "voices": [
+        {
+          "name": "Sol",
+          "view": "Sol may want a way to contribute without having to interrupt or speak quickly."
+        },
+        {
+          "name": "Ren",
+          "view": "Ren may be excited or focused on finishing. That does not remove the effect of taking most turns."
+        }
+      ],
+      "context": "Sol points to a missing puzzle piece and says, \"I want to show it, not explain it out loud.\"",
+      "pivot": "What if Sol preferred to pass this round? How could the group keep a later opening without forcing participation?",
+      "transfer": "Try a group routine that makes time for showing, writing, speaking, AAC, or passing. Ask whether it helped.",
+      "options": [
+        {
+          "id": "invite",
+          "label": "Offer a turn with a choice of response",
+          "benefit": "Sol can choose how to share, and the group can use information it has missed.",
+          "limit": "A turn should be an invitation, not a demand to perform in front of everyone.",
+          "after": "Make room for Sol to show the piece without requiring a spoken explanation."
+        },
+        {
+          "id": "routine",
+          "label": "Suggest a short pause before each answer",
+          "benefit": "A shared routine gives everyone time to think and reduces the need to interrupt.",
+          "limit": "A pause alone may not make pictures or other communication methods accessible.",
+          "after": "Keep the pause and include showing as an accepted response."
+        },
+        {
+          "id": "help",
+          "label": "Ask the teacher to adjust the group task",
+          "benefit": "An adult can help with roles, response methods, or the time limit.",
+          "limit": "The group should not describe Sol as the problem or ask for private information.",
+          "after": "Describe the turn-taking barrier and request flexible ways to contribute."
+        }
+      ],
+      "role": "Practice as another group member who notices the missed turn."
+    }
+  ],
+  "middle": [
+    {
+      "id": "chat-boundary",
+      "title": "Privacy, belonging, and the group chat",
+      "scene": "During a class project, friends mention a chat that Morgan is not in. They stop talking when Morgan asks about it. The project deadline is tomorrow.",
+      "facts": [
+        "Morgan is not in the chat being discussed.",
+        "The conversation stops after Morgan asks about it."
+      ],
+      "uncertainty": "The silence does not prove guilt. We do not yet know whether this is a private friendship chat, a project channel, or both.",
+      "voices": [
+        {
+          "name": "Morgan",
+          "view": "Morgan may want belonging, access to project information, or an explanation. Those are related but different needs."
+        },
+        {
+          "name": "The friends",
+          "view": "The friends may value a private space. Privacy does not justify withholding information needed for shared work."
+        }
+      ],
+      "context": "A friend explains that the chat began as a private weekend plan, but the group later posted project decisions there. Morgan missed a change to the task.",
+      "pivot": "What if classmates were also posting repeated targeted insults there? Getting project information would not resolve the harassment; support and a safer reporting route would matter.",
+      "transfer": "Separate the question of who gets access to required work from who chooses to be in a private friendship space.",
+      "options": [
+        {
+          "id": "clarify",
+          "label": "Ask privately which project information was shared",
+          "benefit": "This seeks the information Morgan needs without demanding access to every private conversation.",
+          "limit": "A private question may be difficult if there is a pattern of exclusion or a power imbalance.",
+          "after": "Ask the group to move project decisions to a channel everyone can access and share the missed update."
+        },
+        {
+          "id": "shared",
+          "label": "Request one accessible channel for the project",
+          "benefit": "A shared process can prevent missing information without deciding who must be friends.",
+          "limit": "Changing the channel alone does not acknowledge the effect of the missed work.",
+          "after": "Pair the new channel with time or support to act on the update Morgan missed."
+        },
+        {
+          "id": "support",
+          "label": "Ask the teacher to help with access to the work",
+          "benefit": "An adult can resolve a task barrier without requiring Morgan to confront the whole group.",
+          "limit": "Share the information needed for support; avoid forwarding unrelated private messages.",
+          "after": "Describe the missed task update and ask for an accessible project process."
+        }
+      ],
+      "role": "Practice as Morgan, seeking access to the project information."
+    },
+    {
+      "id": "message-delay",
+      "title": "A read receipt is incomplete information",
+      "scene": "Imani sends Dev a message about a project due tomorrow. The app marks it read, but two hours pass without a reply. Imani needs to decide what to do next.",
+      "facts": [
+        "The app marks the message read.",
+        "There is no reply yet, and the deadline is tomorrow."
+      ],
+      "uncertainty": "A read receipt cannot tell us who saw the screen, whether Dev could respond, or why there is a delay.",
+      "voices": [
+        {
+          "name": "Imani",
+          "view": "Imani needs a workable plan and may be worried about the deadline. That need does not require knowing Dev's private circumstances."
+        },
+        {
+          "name": "Dev",
+          "view": "Dev may be busy, unable to reply, or unsure what to say. Several explanations remain possible."
+        }
+      ],
+      "context": "Dev later says, \"I cannot work on this tonight. It is private. Can we ask for another plan?\" No further explanation is offered.",
+      "pivot": "What if the deadline were next week instead? How would urgency change the plan without changing Dev's right to privacy?",
+      "transfer": "Draft one clear message with the task, a reasonable reply time, and a backup plan that does not depend on immediate availability.",
+      "options": [
+        {
+          "id": "message",
+          "label": "Send one clear, low-pressure follow-up",
+          "benefit": "A specific question and reply time can reduce ambiguity about the task.",
+          "limit": "Repeated messages or demands for an explanation can add pressure without solving the deadline.",
+          "after": "Acknowledge the limit, avoid asking for private details, and agree on who will request a new plan."
+        },
+        {
+          "id": "backup",
+          "label": "Work on an agreed part and make a backup plan",
+          "benefit": "Imani can take a reversible step while waiting instead of guessing Dev's intent.",
+          "limit": "Taking over all the work can be unfair and may hide the need for support.",
+          "after": "Set a limit on extra work and include an adult if the original workload is no longer realistic."
+        },
+        {
+          "id": "teacher",
+          "label": "Ask the teacher about a deadline or role adjustment",
+          "benefit": "The person who set the task may be able to change the constraint.",
+          "limit": "The request should describe the work barrier without speculating about Dev's reasons.",
+          "after": "Ask for a revised plan together if possible; Dev does not need to disclose private circumstances to Imani."
+        }
+      ],
+      "role": "Practice as Imani, making a plan while respecting Dev's availability."
+    },
+    {
+      "id": "access-fairness",
+      "title": "Fairness without private proof",
+      "scene": "A teacher gives Casey extra time on a quiz. Jules says, \"I ran out of time too. Why does Casey get more?\" Casey does not answer.",
+      "facts": [
+        "Casey has extra time.",
+        "Jules reports running out of time; Casey has not explained the arrangement."
+      ],
+      "uncertainty": "The class does not know the basis of Casey's arrangement. Casey's silence is not evidence that the support is undeserved.",
+      "voices": [
+        {
+          "name": "Casey",
+          "view": "Casey can use an agreed support without proving a need to classmates or sharing a diagnosis."
+        },
+        {
+          "name": "Jules",
+          "view": "Jules may have a real difficulty with time. That can be addressed without removing someone else's support."
+        },
+        {
+          "name": "The teacher",
+          "view": "The teacher can discuss how to request help and review the task while protecting private information."
+        }
+      ],
+      "context": "The teacher says, \"Casey's arrangement is private. If timing was a barrier for you, speak with me about what happened and what support you need.\"",
+      "pivot": "What if several students report the same barrier? Consider reviewing the task design as well as individual supports.",
+      "transfer": "Practice describing a barrier and asking for support without comparing whose need is more legitimate.",
+      "options": [
+        {
+          "id": "own",
+          "label": "Describe your own timing barrier privately",
+          "benefit": "The request focuses on what would help Jules participate.",
+          "limit": "A request is the start of a conversation; it does not establish that everyone needs an identical adjustment.",
+          "after": "Bring a concrete example of where time was lost and ask about available support."
+        },
+        {
+          "id": "redirect",
+          "label": "Redirect the public question toward access for everyone",
+          "benefit": "The group can discuss how to ask for help without putting Casey on trial.",
+          "limit": "A general discussion should not turn into guessing which classmates have disabilities.",
+          "after": "Ask how students can request help and whether the class can review the task demands."
+        },
+        {
+          "id": "check",
+          "label": "Offer Casey a private, optional check-in",
+          "benefit": "A brief offer can support Casey after being singled out.",
+          "limit": "Support is not permission to ask what the arrangement is for or to speak for Casey.",
+          "after": "Ask whether any support would be useful, accept a no, and keep private information private."
+        }
+      ],
+      "role": "Practice as Jules, who had a timing difficulty and asked about Casey's support."
+    }
+  ],
+  "high": [
+    {
+      "id": "unequal-review",
+      "title": "Questioning an unequal review",
+      "scene": "A teacher asks Talia to explain why her quiz score improved, but does not ask another student whose score improved by a similar amount. Talia says she studied with a tutor. A classmate hears the exchange.",
+      "facts": [
+        "The teacher questions one student's improvement in this exchange.",
+        "Talia describes studying with a tutor; another similar improvement is not questioned."
+      ],
+      "uncertainty": "The exchange raises a concern about unequal treatment. It does not by itself establish the teacher's intent or the full pattern of decisions.",
+      "voices": [
+        {
+          "name": "Talia",
+          "view": "Talia may want a fair review and privacy. She should not have to manage the teacher's feelings in order to request a consistent process."
+        },
+        {
+          "name": "The classmate",
+          "view": "The classmate can offer factual support, but speaking publicly without checking may increase attention or risk for Talia."
+        },
+        {
+          "name": "The teacher",
+          "view": "The teacher has authority to apply a consistent process and correct an unsupported assumption. Intent does not settle whether treatment was fair."
+        }
+      ],
+      "context": "Talia says privately, \"This has happened before. I want someone with me when I ask about the review process, but I do not want a public argument.\"",
+      "pivot": "What if Talia feared retaliation or a private meeting had already failed? A different trusted adult or formal school support route may be safer than repeating the same approach.",
+      "transfer": "Identify an observable concern, who controls the decision, and a support route that reduces the burden on the affected person.",
+      "options": [
+        {
+          "id": "process",
+          "label": "Ask for the evidence and a consistent review process",
+          "benefit": "This focuses on how the decision is made and whether the same criteria are used.",
+          "limit": "A direct request can carry risk when one person controls grades; support may be needed.",
+          "after": "Plan the request with Talia and the support person she chooses, keeping the discussion factual."
+        },
+        {
+          "id": "accompany",
+          "label": "Offer to accompany Talia or share what you observed",
+          "benefit": "A classmate can reduce isolation and contribute specific information.",
+          "limit": "An ally should not turn a limited observation into certainty about motive or speak over Talia.",
+          "after": "Ask what role would help and honor the request to avoid a public argument."
+        },
+        {
+          "id": "route",
+          "label": "Seek another trusted school support route",
+          "benefit": "Someone outside the immediate exchange may help address a repeated pattern or power imbalance.",
+          "limit": "Explain privacy limits and the likely next steps rather than promising secrecy or a particular outcome.",
+          "after": "Discuss a route with Talia where possible, especially if a direct meeting feels unsafe."
+        }
+      ],
+      "role": "Practice as the classmate who heard the exchange and wants to offer support."
+    },
+    {
+      "id": "project-credit",
+      "title": "Visible work, hidden work, and shared credit",
+      "scene": "A project document shows that Quinn wrote most of the final text. Sage has few edits in the file. The group receives one grade, and Quinn says the workload was unfair.",
+      "facts": [
+        "Quinn made most of the text edits in this document.",
+        "The project has one group grade, and Quinn has raised a workload concern."
+      ],
+      "uncertainty": "Document edits show some work, not every contribution. They do not establish who researched, translated, organized, designed, or faced access barriers.",
+      "voices": [
+        {
+          "name": "Quinn",
+          "view": "Quinn may need acknowledgment and a limit on extra work. Looking for missing information should not dismiss that concern."
+        },
+        {
+          "name": "Sage",
+          "view": "Sage may have contributed elsewhere or may not have been able to do an agreed part. Neither explanation should be assumed."
+        },
+        {
+          "name": "The group",
+          "view": "The group needs an accurate account and a realistic way to share the remaining work, including accessible roles."
+        }
+      ],
+      "context": "Sage shows research notes used in the project and says the document was inaccessible on their phone. Quinn still spent hours rewriting material without an agreed handoff.",
+      "pivot": "What if the group had already agreed on accessible roles, but a task was repeatedly left undone? Accountability can include a new deadline or teacher support without labeling a person lazy.",
+      "transfer": "Before the next project, agree on roles, accessible tools, visible handoffs, and a time to revisit workload.",
+      "options": [
+        {
+          "id": "inventory",
+          "label": "Compare contributions and barriers before allocating credit",
+          "benefit": "A shared inventory can include work that edit counts miss.",
+          "limit": "A demand to prove every minute can become surveillance; keep the review relevant and respectful.",
+          "after": "Include the research and the rewriting, then identify where the handoff and tool access failed."
+        },
+        {
+          "id": "reset",
+          "label": "Set limits and renegotiate the remaining work",
+          "benefit": "Quinn can protect time while the group makes a workable next step.",
+          "limit": "A future plan alone does not acknowledge work already done or resolve how it will be credited.",
+          "after": "Agree on an accessible handoff and acknowledge both research and rewriting contributions."
+        },
+        {
+          "id": "teacher",
+          "label": "Ask the teacher to review the process and grading",
+          "benefit": "The person responsible for the assignment can adjust roles, access, or how evidence of contribution is considered.",
+          "limit": "Present what is known and unresolved; do not use the request to assign a character label to Sage.",
+          "after": "Explain the access problem and unequal rewriting burden, with a proposed process change."
+        }
+      ],
+      "role": "Practice as Quinn, addressing the workload concern without assuming what the edit count cannot show."
+    },
+    {
+      "id": "posted-video",
+      "title": "Intent, consent, and a public audience",
+      "scene": "A student posts a video of Leila stumbling during rehearsal. Leila messages, \"Please take it down.\" The poster replies, \"Everyone thinks it is funny. I meant it as a compliment.\"",
+      "facts": [
+        "A video of Leila has been posted.",
+        "Leila has requested removal; the poster has described a different intention."
+      ],
+      "uncertainty": "We do not need to settle the poster's motive before respecting the removal request. We do not know who has saved or reshared the video.",
+      "voices": [
+        {
+          "name": "Leila",
+          "view": "Leila has stated a boundary. She can ask for support without having to persuade everyone that her feelings are justified."
+        },
+        {
+          "name": "The poster",
+          "view": "The poster can acknowledge impact and act on the request even if the original intention was different."
+        },
+        {
+          "name": "A viewer",
+          "view": "A viewer can stop sharing and offer support. A public defense that repeats the clip can increase its reach."
+        }
+      ],
+      "context": "The poster removes the original, but another account has reposted it. Leila asks a friend for help using the platform's reporting tools and does not want a public argument.",
+      "pivot": "What if targeted threats or repeated harassment appeared? Prioritize immediate safety and trusted support rather than asking Leila to mediate with the people targeting her.",
+      "transfer": "Before posting someone else's moment, ask about permission, audience, and how you would respond if they wanted it removed.",
+      "options": [
+        {
+          "id": "remove",
+          "label": "Support the removal request and stop resharing",
+          "benefit": "A viewer can support the stated boundary without debating whose feelings count more.",
+          "limit": "A friend cannot remove another account's post or guarantee that every copy disappears. Avoid promising total erasure.",
+          "after": "Avoid resharing and support requests to remove reposts through appropriate tools and support."
+        },
+        {
+          "id": "private",
+          "label": "Offer private support chosen by Leila",
+          "benefit": "Leila can choose help without becoming the center of another public discussion.",
+          "limit": "A friend cannot guarantee confidentiality or safety in every situation; be clear about support limits.",
+          "after": "Help with the requested reporting steps and avoid downloading or recirculating the clip."
+        },
+        {
+          "id": "report",
+          "label": "Use platform or school support channels",
+          "benefit": "Reporting may reach people who can address reposting or repeated targeting.",
+          "limit": "Processes and outcomes vary. Involve Leila where possible and avoid demanding that she retell everything publicly.",
+          "after": "Focus on the repost and requested support; do not start a public campaign against the poster."
+        }
+      ],
+      "role": "Practice as a friend who saw the post and wants to support Leila."
+    }
+  ]
+};
+
   var SCENARIOS = {
     elementary: [
       { id: 'e1', title: 'The New Kid',
@@ -897,7 +1346,7 @@ window.SelHub = window.SelHub || {
       };
 
       // Navigation
-      var activeTab     = d.activeTab || 'scenarios';
+      var activeTab     = d.activeTab || 'cases';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Scenario state
@@ -1057,6 +1506,7 @@ window.SelHub = window.SelHub || {
       // ── Tab Bar ──
       // ══════════════════════════════════════════════════════════
       var tabs = [
+        { id: 'cases', label: 'Case studies' },
         { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' },
         { id: 'swap',      label: '\uD83D\uDD04 Viewpoint Swap' },
         { id: 'stories',   label: '\uD83D\uDCD6 Empathy Stories' },
@@ -1103,6 +1553,7 @@ window.SelHub = window.SelHub || {
       // ── Topic-accent hero band per tab ──
       var heroBand = (function() {
         var TAB_META = {
+          cases: { accent: _pspFg('#a78bfa'), soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD0E', title: 'Case studies - notice, compare, reconsider', hint: 'Explore what is known, what is uncertain, and what a response might help or miss. New context can change a plan. Understanding a perspective does not require agreement or excusing harm.' },
           scenarios: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 step into another\u2019s shoes',         hint: 'Theory of mind: separating what YOU know from what THEY know develops fully ~age 4 (Sally-Anne test). Practice keeps it sharp into adulthood. The skill that makes friendships, IEPs, and leadership possible.' },
           swap:      { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83D\uDD04', title: 'Viewpoint Swap \u2014 same scene, two narrators',           hint: 'The Rashomon effect: same event, irreconcilable accounts. Both are usually \u201Ctrue\u201D from the narrator\u2019s vantage. Hearing both sides isn\u2019t neutrality \u2014 it\u2019s the basic move that prevents stuck conflicts.' },
           stories:   { accent: _pspFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCD6', title: 'Empathy Stories \u2014 narrative builds the muscle',        hint: 'Reading literary fiction (Kidd + Castano 2013) measurably improves theory-of-mind scores. Genre fiction doesn\u2019t. Why: literary characters require you to fill in interiors. The brain treats it as social practice.' },
@@ -1212,6 +1663,114 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── TAB: Scenario Theater ──
       // ══════════════════════════════════════════════════════════
+      // Notes are ordinary tool/project state, separate from legacy scores and badges.
+      var caseContent = null;
+      if (activeTab === 'cases') {
+        var caseBand = PERSPECTIVE_CASES[band] ? band : 'elementary';
+        var caseList = PERSPECTIVE_CASES[caseBand];
+        var caseIds = d.caseStudyIds && typeof d.caseStudyIds === 'object' ? d.caseStudyIds : {};
+        var activeCase = caseList.find(function(item) { return item.id === caseIds[caseBand]; }) || caseList[0];
+        var caseNotes = d.caseStudyNotes && typeof d.caseStudyNotes === 'object' ? d.caseStudyNotes : {};
+        var note = caseNotes[activeCase.id] && typeof caseNotes[activeCase.id] === 'object' ? caseNotes[activeCase.id] : {};
+        var contextSeen = note.contextSeen === true;
+        var caseText = function(field) { return typeof note[field] === 'string' ? note[field] : ''; };
+        var caseChoice = function(field) { return activeCase.options.find(function(option) { return option.id === note[field]; }); };
+        var caseUpdate = function(field, value) {
+          var next = Object.assign({}, caseNotes);
+          next[activeCase.id] = Object.assign({}, note);
+          next[activeCase.id][field] = value;
+          upd('caseStudyNotes', next);
+        };
+        var caseBorder = _pspBd('#334155');
+        var caseCard = { padding: 16, margin: '16px 0', border: '1px solid ' + caseBorder, borderRadius: 12, background: _pspBg('#0f172a') };
+        var caseButton = { minHeight: 44, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + caseBorder, background: _pspBg('#1e293b'), color: _pspFg('#f1f5f9'), fontSize: 14, cursor: 'pointer', textAlign: 'left', width: '100%', overflowWrap: 'anywhere' };
+        var caseSummary = { minHeight: 44, padding: '10px 0', fontWeight: 700, cursor: 'pointer' };
+        var caseField = function(field, label, help) {
+          var fieldId = 'psp-case-' + field;
+          return h('div', { style: { marginTop: 12 } },
+            h('label', { htmlFor: fieldId, style: { display: 'block', fontWeight: 600 } }, label + ' (optional)'),
+            h('p', { id: fieldId + '-help', style: { margin: '4px 0 8px' } }, help),
+            h('textarea', { id: fieldId, value: caseText(field), 'aria-describedby': fieldId + '-help', rows: 3,
+              onChange: function(event) { caseUpdate(field, event.target.value); },
+              style: { width: '100%', maxWidth: '100%', boxSizing: 'border-box', minHeight: 90, padding: 10, borderRadius: 8, border: '1px solid ' + caseBorder, background: _pspBg('#1e293b'), color: _pspFg('#f1f5f9'), fontSize: 16, lineHeight: 1.5, resize: 'vertical' }
+            })
+          );
+        };
+        var responsePicker = function(field, legend, locked) {
+          var chosen = caseChoice(field);
+          return h('fieldset', { style: { border: 0, padding: 0, margin: '12px 0', minWidth: 0 } },
+            h('legend', { style: { fontWeight: 700, padding: '0 0 8px' } }, legend),
+            locked ? h('p', null, chosen ? chosen.label : 'No first response recorded. You can still compare the options and choose a response below.') :
+              h('div', { style: { display: 'grid', gap: 8 } }, activeCase.options.map(function(option) {
+                var selected = !!chosen && chosen.id === option.id;
+                return h('button', { key: option.id, type: 'button', 'aria-pressed': selected,
+                  onClick: function() { caseUpdate(field, selected ? '' : option.id); },
+                  style: Object.assign({}, caseButton, { borderWidth: selected ? 3 : 1, fontWeight: selected ? 700 : 400 })
+                }, option.label);
+              })),
+            chosen && h('div', { style: { borderLeft: '3px solid ' + caseBorder, paddingLeft: 12, marginTop: 12 } },
+              h('p', null, h('strong', null, 'What this can help: '), chosen.benefit),
+              h('p', null, h('strong', null, 'What to watch for: '), chosen.limit),
+              field === 'revisedChoice' && h('p', null, h('strong', null, 'With the new context: '), chosen.after)
+            )
+          );
+        };
+        caseContent = h('section', { 'aria-label': 'Perspective case study', style: { background: _pspBg('#1e293b'), padding: '12px 16px 24px', maxWidth: 720, margin: '0 auto', color: _pspFg('#f1f5f9'), fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere' } },
+          h('label', { htmlFor: 'psp-case-select', style: { display: 'block', fontWeight: 700 } }, 'Choose a case study'),
+          h('select', { id: 'psp-case-select', value: activeCase.id, style: Object.assign({}, caseButton, { fontSize: 16 }), onChange: function(event) {
+            var nextIds = Object.assign({}, caseIds); nextIds[caseBand] = event.target.value; upd('caseStudyIds', nextIds);
+            announceToSR && announceToSR('Case study changed. Notes for other cases are kept in the current tool.');
+          } }, caseList.map(function(item, index) { return h('option', { key: item.id, value: item.id }, (index + 1) + '. ' + item.title); })),
+          h('h3', { id: 'psp-case-title', style: { fontSize: 21, margin: '16px 0 8px' } }, activeCase.title),
+          h('p', null, 'Use this fictional case. You may think, discuss, sketch, sign, or use AAC instead of typing. Explore in any order; there is no score or required answer.'),
+          h('p', { style: { padding: 12, borderLeft: '3px solid ' + caseBorder } }, 'Notes stay in the current tool state. Use the Hub save/export controls to keep a project copy. Opening a case or revealing context does not record completion.'),
+          h('section', { style: caseCard, 'aria-labelledby': 'psp-notice-title' },
+            h('h4', { id: 'psp-notice-title', style: { fontSize: 17, marginTop: 0 } }, '1. Notice before interpreting'),
+            h('p', null, activeCase.scene),
+            h('p', null, h('strong', null, 'Your role: '), activeCase.role),
+            caseField('observation', 'What do we know?', 'Name something the story says happened. Keep a guess about a feeling or motive separate.'),
+            h('details', null, h('summary', { style: caseSummary }, 'Compare with an observation model'),
+              h('ul', { style: { paddingLeft: 22 } }, activeCase.facts.map(function(fact) { return h('li', { key: fact }, fact); })),
+              h('p', null, h('strong', null, 'Still uncertain: '), activeCase.uncertainty)
+            )
+          ),
+          h('section', { style: caseCard, 'aria-labelledby': 'psp-possibilities-title' },
+            h('h4', { id: 'psp-possibilities-title', style: { fontSize: 17, marginTop: 0 } }, '2. Hold more than one possibility'),
+            caseField('alternative', 'What else could be going on?', 'Consider two explanations or needs. It is also useful to say what you cannot tell yet.'),
+            h('details', null, h('summary', { style: caseSummary }, 'Compare possible perspectives'),
+              h('p', null, 'These are possible readings of the fictional case, not hidden answers about real people.'),
+              activeCase.voices.map(function(voice) { return h('p', { key: voice.name }, h('strong', null, voice.name + ': '), voice.view); })
+            )
+          ),
+          h('section', { style: caseCard, 'aria-labelledby': 'psp-response-title' },
+            h('h4', { id: 'psp-response-title', style: { fontSize: 17, marginTop: 0 } }, '3. Compare responses and tradeoffs'),
+            h('p', null, 'Consider what each response helps, what it might miss, and who carries the effort or risk. These options can be combined; some situations call for support before a direct conversation.'),
+            responsePicker('initialChoice', 'Your first response (optional)', contextSeen),
+            contextSeen && h('p', null, 'This first choice is kept for comparison. You can revise your response in step 4.'),
+            h('details', null, h('summary', { style: caseSummary }, 'Compare all three responses'), activeCase.options.map(function(option) {
+              return h('div', { key: option.id, style: { borderTop: '1px solid ' + caseBorder, paddingTop: 8 } }, h('h5', { style: { fontSize: 15, margin: '8px 0' } }, option.label), h('p', null, option.benefit), h('p', null, h('strong', null, 'Limit: '), option.limit));
+            }))
+          ),
+          h('section', { style: caseCard, 'aria-labelledby': 'psp-context-title' },
+            h('h4', { id: 'psp-context-title', style: { fontSize: 17, marginTop: 0 } }, '4. Reconsider with new context'),
+            h('p', null, 'You can reveal the next part without choosing or writing first. The first response is kept as it stands when you reveal.'),
+            h('button', { type: 'button', 'aria-expanded': contextSeen, 'aria-controls': 'psp-case-context', style: caseButton,
+              onClick: function() { if (!contextSeen) { caseUpdate('contextSeen', true); announceToSR && announceToSR('New context is available. Compare it with your first response.'); } }
+            }, contextSeen ? 'New context shown' : 'Reveal new context'),
+            h('div', { id: 'psp-case-context', hidden: !contextSeen },
+              h('p', { style: { padding: 12, borderLeft: '3px solid ' + caseBorder } }, activeCase.context),
+              responsePicker('revisedChoice', 'Your response with this context (optional)', false),
+              caseField('reason', 'What would you keep or change, and why?', 'Refer to a new detail, a boundary, or a tradeoff. Keeping a response can be reasonable if you can explain how it fits.'),
+              h('details', null, h('summary', { style: caseSummary }, 'Change one condition'), h('p', null, activeCase.pivot))
+            )
+          ),
+          h('details', { style: caseCard }, h('summary', { style: caseSummary }, '5. Take the learning into another situation'),
+            h('p', null, activeCase.transfer),
+            caseField('nextUse', 'A possible next use', 'Use a fictional example or a low-pressure situation. Name a support, a limit, or information you would check first.')
+          )
+        );
+      }
+
       var scenContent = null;
       if (activeTab === 'scenarios') {
         var scenList = SCENARIOS[band] || SCENARIOS.elementary;
@@ -2466,7 +3025,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
-      var content = scenContent || swapContent || storiesContent || exercisesContent || biasContent || emContent || hfContent || journalContent || guidedJContent || respondContent || coachContent || progressContent;
+      var content = caseContent || scenContent || swapContent || storiesContent || exercisesContent || biasContent || emContent || hfContent || journalContent || guidedJContent || respondContent || coachContent || progressContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('perspective', h, ctx) : null),
