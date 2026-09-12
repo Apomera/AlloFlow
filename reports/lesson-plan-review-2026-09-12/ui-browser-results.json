@@ -1,0 +1,30 @@
+{
+  "results": [
+    {
+      "viewport": "desktop",
+      "horizontalOverflow": false,
+      "axeViolations": []
+    },
+    {
+      "editSave": "passed",
+      "generateNewVersion": "passed",
+      "focusAfterGeneration": "passed"
+    },
+    {
+      "viewport": "phone",
+      "horizontalOverflow": false,
+      "axeViolations": []
+    },
+    {
+      "viewport": "small-phone",
+      "horizontalOverflow": false,
+      "axeViolations": []
+    },
+    {
+      "viewport": "new-script-phone",
+      "horizontalOverflow": false,
+      "axeViolations": []
+    }
+  ],
+  "pageErrors": []
+}

@@ -92,7 +92,9 @@ function LessonTeachingScriptPanel(props) {
   };
   const id = React.useId();
   const planId = String(plan.id);
-  const versions = Array.isArray(plan.data?.teachingScripts) ? plan.data.teachingScripts.filter(version => version && version.id && Array.isArray(version.steps)) : [];
+  const savedVersions = Array.isArray(plan.data?.teachingScripts) ? plan.data.teachingScripts : [];
+  const versions = savedVersions.filter(version => version && version.id && Array.isArray(version.steps) && version.steps.length && version.steps.every(step => step && typeof step === 'object' && !Array.isArray(step)));
+  const hasIncompleteVersions = versions.length !== savedVersions.length;
   const materials = (Array.isArray(history) ? history : []).filter(item => item && item.id != null && String(item.id) !== planId);
   const gradeOptions = Array.isArray(defaultSettings.gradeOptions) && defaultSettings.gradeOptions.length ? defaultSettings.gradeOptions.map(_ltsText) : _LTS_GRADES;
   const subjectOptions = Array.isArray(defaultSettings.subjectOptions) && defaultSettings.subjectOptions.length ? defaultSettings.subjectOptions.map(item => [String(item.id), _ltsText(item.label)]) : _LTS_SUBJECTS;
@@ -100,7 +102,9 @@ function LessonTeachingScriptPanel(props) {
   const initialGrade = _ltsText(defaultSettings.grade);
   const suggested = defaultSettings.suggestedDuration || {};
   const [expanded, setExpanded] = React.useState(false);
-  const [goal, setGoal] = React.useState(() => (_ltsText(plan.data?.essentialQuestion) || (Array.isArray(plan.data?.objectives) ? plan.data.objectives.map(_ltsText).filter(Boolean).join('; ') : '')).slice(0, 1200));
+  const [settingsExpanded, setSettingsExpanded] = React.useState(() => versions.length === 0);
+  const settingsToggle = React.useRef(null);
+  const [goal, setGoal] = React.useState(() => ((Array.isArray(plan.data?.objectives) ? plan.data.objectives.map(_ltsText).filter(Boolean).join('; ') : _ltsText(plan.data?.objectives)) || _ltsText(plan.data?.essentialQuestion)).slice(0, 1200));
   const [grade, setGrade] = React.useState(initialGrade);
   const [subject, setSubject] = React.useState(() => subjectOptions.some(([value]) => value === defaultSettings.subject) ? defaultSettings.subject : 'other');
   const [topic, setTopic] = React.useState(() => _ltsText(defaultSettings.topic).slice(0, 200));
@@ -139,9 +143,9 @@ function LessonTeachingScriptPanel(props) {
   const invalidDraftText = !!draft && draft.some(step => _ltsText(step.title).trim().length < 2 || ['teacherSays', 'studentDoes', 'checkQuestion', 'possibleResponse', 'ifStruggling', 'ifReady'].some(key => _ltsText(step[key]).trim().length < (key === 'teacherSays' ? 60 : 12)));
   const staleDraft = !!draft && JSON.stringify(sourceSteps) !== draftBase;
   const selectedMaterials = materials.filter(item => materialIds.includes(String(item.id)));
-  const sources = Array.isArray(version?.sources) ? version.sources : [];
+  const sources = Array.isArray(version?.sources) ? version.sources.filter(source => source && typeof source === 'object') : [];
   const recommendationById = new Map();
-  sources.forEach(source => (Array.isArray(source.recommendations) ? source.recommendations : []).forEach(recommendation => recommendationById.set(String(recommendation.id), {
+  sources.forEach(source => (Array.isArray(source.recommendations) ? source.recommendations : []).filter(recommendation => recommendation && typeof recommendation === 'object').forEach(recommendation => recommendationById.set(String(recommendation.id), {
     source,
     recommendation
   })));
@@ -167,6 +171,9 @@ function LessonTeachingScriptPanel(props) {
     if (added.length && !draft) {
       setSelectedId(String(added[added.length - 1].id));
       setNotice(tr('added', 'Script added to this plan.'));
+      setSettingsExpanded(false);
+      // Keep keyboard focus visible when the generation form closes after success.
+      settingsToggle.current?.focus();
     }
   }, [versionIds]);
   const toggleMaterial = resourceId => setMaterialIds(previous => previous.includes(resourceId) ? previous.filter(item => item !== resourceId) : previous.concat(resourceId));
@@ -267,6 +274,7 @@ function LessonTeachingScriptPanel(props) {
     } : version;
     try {
       const text = runtime.toPlainText(exportVersion);
+      if (typeof text !== 'string' || !text.trim()) throw new Error(tr('export_incomplete', 'This script could not be exported because its saved data or draft is incomplete. Review the script fields and try again.'));
       if (kind === 'copy') {
         if (typeof navigator.clipboard?.writeText !== 'function') throw new Error(tr('copy_unavailable', 'Copy is unavailable here. Download the text instead.'));
         await navigator.clipboard.writeText(text);
@@ -330,14 +338,40 @@ function LessonTeachingScriptPanel(props) {
     "aria-hidden": "true"
   }, expanded ? '−' : '+'))), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
-  }, tr('tagline', 'Word-for-word teacher wording for this lesson · any subject and grade · a teaching segment or the whole lesson'))), expanded && /*#__PURE__*/React.createElement("div", {
+  }, tr('tagline', 'Word-for-word teacher wording for this lesson · any subject and grade · a teaching segment or the whole lesson')), hasIncompleteVersions && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-2 text-sm text-amber-950"
+  }, tr('incomplete_saved', 'A saved script has incomplete data and could not be displayed. Your lesson plan and other script versions are still available.')), version && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 break-words text-sm font-semibold text-indigo-900"
+  }, tr('saved_script', 'Saved script:'), " ", _ltsText(version.title) || tr('title', 'Teaching script'), " · ", version.durationMinutes, " ", tr('minutes', 'minutes')), busy && !expanded && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-2 text-sm text-indigo-900"
+  }, _ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…')), error && !expanded && /*#__PURE__*/React.createElement("p", {
+    role: "alert",
+    className: "mt-2 text-sm text-red-900"
+  }, error)), expanded && /*#__PURE__*/React.createElement("div", {
     id: id + '-panel',
     className: "space-y-5 border-t border-indigo-100 p-4 sm:p-5"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
-  }, tr('intro', 'Review the detected lesson context, then build a scripted teaching sequence from the resources you select. Each generated version is attached to this plan.')), /*#__PURE__*/React.createElement("form", {
+  }, tr('intro', 'Review the detected lesson context, then build a scripted teaching sequence from the resources you select. Each generated version is attached to this plan.')), /*#__PURE__*/React.createElement("div", {
+    className: "no-print"
+  }, /*#__PURE__*/React.createElement("button", {
+    ref: settingsToggle,
+    type: "button",
+    className: buttonClass + ' flex w-full items-center justify-between gap-3 text-left',
+    "aria-expanded": settingsExpanded,
+    "aria-controls": id + '-settings',
+    onClick: () => setSettingsExpanded(previous => !previous)
+  }, /*#__PURE__*/React.createElement("span", null, version ? tr('create_another', 'Create another script') : tr('generation_settings', 'Script settings')), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, settingsExpanded ? '−' : '+')), /*#__PURE__*/React.createElement("div", {
+    id: id + '-settings',
+    hidden: !settingsExpanded,
+    className: "mt-4"
+  }, /*#__PURE__*/React.createElement("form", {
     onSubmit: generate,
-    className: "space-y-4 no-print"
+    className: "space-y-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg border border-indigo-100 bg-indigo-50/60 p-3 text-sm text-indigo-950",
     "data-teaching-context": true
@@ -519,7 +553,7 @@ function LessonTeachingScriptPanel(props) {
     type: "button",
     className: buttonClass,
     onClick: cancel
-  }, tr('cancel', 'Cancel generation')))), /*#__PURE__*/React.createElement("div", {
+  }, tr('cancel', 'Cancel generation')))))), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     className: "text-sm font-bold text-indigo-950"
@@ -579,7 +613,7 @@ function LessonTeachingScriptPanel(props) {
     className: "space-y-4"
   }, steps.map((step, index) => /*#__PURE__*/React.createElement("li", {
     key: step.id || index,
-    className: "space-y-3 rounded-xl border border-slate-300 p-4",
+    className: "min-w-0 space-y-3 break-words rounded-xl border border-slate-300 p-3 sm:p-4",
     "data-teaching-step": step.id || index
   }, draft ? /*#__PURE__*/React.createElement("div", {
     className: "grid gap-3 sm:grid-cols-[1fr_8rem]"
@@ -710,7 +744,7 @@ function LessonTeachingScriptPanel(props) {
       className: "text-xs text-slate-600"
     }, tr('retrieved', 'Retrieved:'), " ", _ltsText(source.retrievedAt)), Array.isArray(source.recommendations) && source.recommendations.length > 0 && /*#__PURE__*/React.createElement("ul", {
       className: "mt-2 list-disc space-y-1 pl-5"
-    }, source.recommendations.map((recommendation, offset) => /*#__PURE__*/React.createElement("li", {
+    }, source.recommendations.filter(recommendation => recommendation && typeof recommendation === 'object').map((recommendation, offset) => /*#__PURE__*/React.createElement("li", {
       key: recommendation.id || offset
     }, _ltsText(recommendation.text), recommendation.locator ? ' (' + _ltsText(recommendation.locator) + ')' : ''))));
   })) : /*#__PURE__*/React.createElement("p", {

@@ -60,6 +60,31 @@ describe('teaching-script input boundary', () => {
     expect(s.plan.directInstruction).toBe('Keep this teacher-edited introduction.');
     expect(Object.isFrozen(s.settings)).toBe(true);
   });
+  it.each([
+    ['sentence frame list', 'sentence-frames', { mode: 'list', items: [{ text: 'I know the two fractions are equal because ___.', response: 'LEARNER_SECRET' }], studentResponses: ['LEARNER_SECRET'] }, ['I know the two fractions are equal']],
+    ['paragraph frame', 'sentence-frames', { mode: 'paragraph', text: 'First I divide the whole into [number] equal parts.', responses: { number: 'LEARNER_SECRET' } }, ['First I divide the whole']],
+    ['outline', 'outline', { main: 'Equivalent fractions', branches: [{ title: 'Use a number line', items: ['Mark one half and two fourths.'] }], studentAnswers: ['LEARNER_SECRET'] }, ['Equivalent fractions', 'Use a number line', 'Mark one half and two fourths.']],
+    ['concept sort', 'concept-sort', { categories: [{ id: 'half', label: 'Equal to one half' }], items: [{ id: 'card', categoryId: 'half', content: 'Two fourths', response: 'LEARNER_SECRET' }], placements: { card: 'LEARNER_SECRET' } }, ['Two fourths', 'Equal to one half']],
+    ['single math problem', 'math', { problem: 'What is one half plus one fourth?', answer: 'Three fourths', steps: [{ explanation: 'Rename one half as two fourths.', latex: '2/4 + 1/4 = 3/4' }], studentAnswer: 'LEARNER_SECRET' }, ['What is one half plus one fourth?', 'Three fourths', 'Rename one half as two fourths.', '2/4 + 1/4 = 3/4']],
+    ['math problem list', 'math', { problems: [{ question: 'What is two minus two?', correct_answer: 0, steps: 'Subtract both units to leave zero.', studentAnswer: 'LEARNER_SECRET' }] }, ['What is two minus two?', '0', 'Subtract both units to leave zero.']],
+  ])('uses the native %s teaching content without learner responses', (_label, type, data, expected) => {
+    const selected = [{ id: 'native-material', type, data }];
+    const captured = api.captureInputs(plan(), settings(), selected);
+    expect(api.validateInputs(captured)).toEqual({ ok: true, errors: [] });
+    expect(captured.materials).toHaveLength(1);
+    for (const phrase of expected) expect(captured.materials[0].text).toContain(phrase);
+    expect(JSON.stringify(captured)).not.toContain('LEARNER_SECRET');
+    const prompt = api.buildScriptPrompt(captured, disabled());
+    for (const phrase of expected) expect(prompt).toContain(phrase);
+  });
+  it('detects native teaching-content edits while ignoring changes to learner responses', () => {
+    const rows = [{ id: 'frames', type: 'sentence-frames', data: { mode: 'list', items: [{ text: 'I can explain one half because ___.' }], studentResponses: { 0: 'My answer' } } }];
+    const initial = api.captureInputs(plan(), settings(), rows).fingerprint;
+    rows[0].data.studentResponses[0] = 'My revised answer';
+    expect(api.captureInputs(plan(), settings(), rows).fingerprint).toBe(initial);
+    rows[0].data.items[0].text = 'I can explain three fourths because ___.';
+    expect(api.captureInputs(plan(), settings(), rows).fingerprint).not.toBe(initial);
+  });
   it('captures every saved plan phase for whole-lesson scripts', () => {
     const p=plan();p.data.hook='Show the pizza photo.';p.data.guidedPractice='Partners place fractions.';p.data.independentPractice='Exit ticket.';p.data.closure='Share one placement.';p.data.materialsNeeded=['Fraction strips',{text:'Number line poster'}];
     const s=api.captureInputs(p,{...settings(),scope:'lesson',durationMinutes:45},materials());
@@ -169,8 +194,29 @@ describe('teaching-script structure and source attribution', () => {
     expect(api.toPlainText(result.version)).toContain('Whole lesson · 45 minutes · 4th Grade');
     expect(api.toPlainText(result.version)).toContain('Guided practice');
     raw.steps[1].phase='lecture';
-    expect(api.normalizeScript(raw,s,disabled()).version.steps[1].phase).toBe('');
+    expect(api.normalizeScript(raw,s,disabled()).ok).toBe(false);
     expect(api.normalizeScript({...raw,steps:raw.steps.slice(0,3).map((item,i)=>({...item,minutes:15}))},s,disabled()).ok).toBe(false);
+  });
+  it('rejects a response for a different or unspecified script scope', () => {
+    for (const scope of ['lesson', 'unknown', undefined]) {
+      const result = api.normalizeScript({ ...response(), scope }, snapshot(), evidence());
+      expect(result.ok).toBe(false);
+      expect(result.errors).toContain('The script scope must match the requested teaching segment or whole lesson.');
+    }
+  });
+  it('requires every saved lesson phase while allowing another modeling step during practice', () => {
+    const p = plan();
+    Object.assign(p.data, { hook: 'Invite learners to compare two strips.', guidedPractice: 'Mark halves together.', independentPractice: 'Mark fourths alone.', closure: 'Explain the equal parts.' });
+    const s = api.captureInputs(p, { ...settings(), scope: 'lesson', durationMinutes: 30, researchEnabled: false }, materials());
+    const phases = ['hook', 'directInstruction', 'guidedPractice', 'directInstruction', 'independentPractice', 'closure'];
+    const raw = { title: 'Whole fractions lesson', scope: 'lesson', durationMinutes: 30, steps: phases.map((phase, index) => step('phase-' + index, { phase, recommendationIds: [] })) };
+    expect(api.normalizeScript(raw, s, disabled()).ok).toBe(true);
+    raw.steps[5].phase = 'guidedPractice';
+    const missing = api.normalizeScript(raw, s, disabled());
+    expect(missing.ok).toBe(false);
+    expect(missing.errors.join(' ')).toContain('Closure');
+    raw.steps[5].phase = '';
+    expect(api.normalizeScript(raw, s, disabled()).errors).toContain('Every whole-lesson step needs a valid lesson phase.');
   });
   it('rejects malformed JSON, short summaries, missing fields, wrong duration, and invalid step count', () => {
     expect(api.normalizeScript('not JSON',snapshot(),evidence()).ok).toBe(false);
@@ -262,6 +308,28 @@ describe('teaching-script save, edit, and export', () => {
     const noMaterials=structuredClone(v.steps);noMaterials.forEach(item=>item.resourceIds=[]);expect(api.updateVersion(saved,v.id,noMaterials)).toBe(saved);
     const tooLong=structuredClone(v.steps);tooLong[0].minutes=31;tooLong[1].minutes=-21;expect(api.updateVersion(saved,v.id,tooLong)).toBe(saved);
     const missing=structuredClone(v);missing.steps[0].ifStruggling='';expect(api.appendVersion(plan(),missing).data.teachingScripts).toBeUndefined();
+  });
+  it('edits a valid saved script when another imported version is an empty row', () => {
+    const v = version(), saved = api.appendVersion(plan(), v);
+    saved.data.teachingScripts.unshift(null);
+    const steps = v.steps.map(item => ({ ...item, teacherSays: item.teacherSays + ' Use your own number line now.' }));
+    const edited = api.updateVersion(saved, v.id, steps);
+    expect(edited).not.toBe(saved);
+    expect(edited.data.teachingScripts[0]).toBeNull();
+    expect(edited.data.teachingScripts[1].steps[0].teacherSays).toContain('Use your own number line now.');
+  });
+  it('exports valid teaching steps despite empty optional imported provenance rows', () => {
+    const raw = response();
+    raw.steps.forEach(item => { item.recommendationIds = []; });
+    const v = api.normalizeScript(raw, snapshot(), disabled()).version;
+    v.sources = [null];
+    v.inputSnapshot.materialTitles.unshift(null);
+    const saved = api.appendVersion(plan(), v);
+    expect(api.updateVersion(saved, v.id, v.steps)).not.toBe(saved);
+    const exported = api.toPlainText(v);
+    expect(exported).toContain(v.steps[0].teacherSays);
+    expect(exported).toContain('Fraction number line');
+    expect(exported).toContain('No retrieved research sources for this version.');
   });
   it('keeps pilot (schema 1) versions readable, editable and exportable under their original rules', () => {
     const legacy={id:'old',schemaVersion:1,title:'Legacy fractions segment',planId:'plan-a',inputFingerprint:'legacy-fp',createdAt:'2026-09-04T00:00:00.000Z',inputSnapshot:{settings:{grade:4,durationMinutes:15,goal:'Old goal',language:'English'},materialIds:['text-a'],materialTitles:[{id:'text-a',title:'Fraction number line'}]},durationMinutes:15,researchStatus:'disabled',sources:[],warnings:['Generated wording is not an evaluated intervention.'],steps:[step('l1',{recommendationIds:[]}),step('l2',{recommendationIds:[]}),step('l3',{recommendationIds:[]})]};

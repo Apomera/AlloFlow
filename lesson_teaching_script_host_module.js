@@ -3,7 +3,7 @@
   'use strict';
   const array = value => Array.isArray(value) ? value : [];
   const idOf = value => value?.id == null ? '' : String(value.id);
-  const TYPES = new Set(['analysis', 'source', 'simplified', 'glossary', 'quiz', 'math', 'sentence-frames', 'anchor-chart', 'timeline', 'concept-sort', 'image', 'outline']);
+  const TYPES = new Set(['analysis', 'source', 'simplified', 'glossary', 'quiz', 'math', 'sentence-frames', 'anchor-chart', 'note-taking', 'timeline', 'concept-sort', 'image', 'outline']);
   function coreModule() {
     if (root.AlloModules?.LessonTeachingScript) return root.AlloModules.LessonTeachingScript;
     if (typeof require === 'function') { try { return require('./lesson_teaching_script_module.js'); } catch (_) { return null; } }
@@ -11,16 +11,19 @@
   }
   function availableMaterials(plan, history) {
     const scopeKeys = ['unitId', 'lessonId', 'sourceArtifactId', 'sourceFingerprint', 'sourceId'];
-    const scope = item => Object.fromEntries(scopeKeys.map(key => [key, item?.[key] ?? item?.config?.[key] ?? (key === 'sourceArtifactId' && ['analysis', 'source'].includes(item?.type) ? idOf(item) : null)]));
+    const scopeValue = value => typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+    const scope = item => Object.fromEntries(scopeKeys.map(key => [key, [item?.[key], item?.config?.[key], key === 'sourceArtifactId' && ['analysis', 'source'].includes(item?.type) ? idOf(item) : null].map(scopeValue).find(Boolean) || '']));
     const planScope = scope(plan);
     return array(history).filter(item => {
       if (!item || !idOf(item) || !TYPES.has(item.type) || idOf(item) === idOf(plan) || item.isStudentWork || item.config?.isStudentWork || item.studentId || item.submissionId) return false;
       const itemScope = scope(item);
       for (const key of scopeKeys) {
-        if (planScope[key] != null && itemScope[key] != null && String(planScope[key]) !== String(itemScope[key])) return false;
+        if (planScope[key] && itemScope[key] && planScope[key] !== itemScope[key]) return false;
       }
-      const required = scopeKeys.find(key => planScope[key] != null);
-      return !required || (itemScope[required] != null && String(itemScope[required]) === String(planScope[required]));
+      // Unit folders can be assigned after generation and need not be present on
+      // the original source. Any shared scope is sufficient if none conflicts.
+      const known = scopeKeys.filter(key => planScope[key]);
+      return !known.length || known.some(key => itemScope[key] === planScope[key]);
     });
   }
   function canonicalPlan(state, planId) {

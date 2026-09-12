@@ -29,7 +29,7 @@ const labels = {
 };
 function props(extra = {}) {
   return {
-    generatedContent: { id: 'plan', type: 'lesson-plan', data: {
+    generatedContent: { id: 'plan', type: 'lesson-plan', config: { sourceTopic: 'Fractions', gradeLevel: '4th Grade' }, data: {
       essentialQuestion: 'How do fractions compare?', objectives: ['Compare fractions'],
       extensions: [{ title: 'Explore equivalent fractions', description: 'Use fraction models.' }],
       recommendedStemTools: [{ id: 'fractions', rationale: 'Compare parts.' }],

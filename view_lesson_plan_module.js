@@ -42,7 +42,25 @@
   var GitMerge = _lazyIcon('GitMerge');
   var X = _lazyIcon('X');
 
-  function PlanningInputsSummary(props) {
+  // Older saved plans may contain scalar lists or structured language/text fields.
+function _lessonPlanText(value) {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+  if (Array.isArray(value)) return value.map(_lessonPlanText).filter(Boolean).join('\n');
+  if (value && typeof value === 'object') return _lessonPlanText(value.en || value.text || value.description || value.title || value.label);
+  return '';
+}
+function _lessonPlanEditedText(previous, value) {
+  if (previous && typeof previous === 'object' && !Array.isArray(previous)) {
+    const key = ['en', 'text', 'description', 'title', 'label'].find(key => typeof previous[key] === 'string');
+    if (key) return {
+      ...previous,
+      [key]: value
+    };
+  }
+  return value;
+}
+function PlanningInputsSummary(props) {
   const record = props.resource?.config?.generationInputs;
   const label = (key, fallback) => {
     const value = typeof props.t === 'function' ? props.t('lesson_plan.inputs.' + key) : '';
@@ -107,15 +125,25 @@
   }, label('local', 'Only the context excerpt supplied to the local model is listed. No asset inventory was supplied.'))));
 }
 function LessonPlanView(props) {
-  var t = props.t;
-  var generatedContent = props.generatedContent;
-  var sourceTopic = props.sourceTopic;
-  var gradeLevel = props.gradeLevel;
+  var t = key => {
+    const value = typeof props.t === 'function' ? props.t(key) : '';
+    return typeof value === 'string' && value !== key ? value : '';
+  };
+  var generatedContent = {
+    ...props.generatedContent,
+    data: props.generatedContent?.data && typeof props.generatedContent.data === 'object' ? props.generatedContent.data : {}
+  };
+  var lessonList = value => Array.isArray(value) ? value : value == null ? [] : [value];
+  var materialsNeeded = lessonList(generatedContent.data.materialsNeeded);
+  var objectives = lessonList(generatedContent.data.objectives);
+  var recommendedStemTools = Array.isArray(generatedContent.data.recommendedStemTools) ? generatedContent.data.recommendedStemTools.filter(tool => tool && typeof tool === 'object' && typeof tool.id === 'string') : [];
+  var sourceTopic = _lessonPlanText(generatedContent.config?.sourceTopic || generatedContent.config?.topic || generatedContent.sourceTopic || generatedContent.title || props.defaultSettings?.topic);
+  var gradeLevel = _lessonPlanText(generatedContent.config?.gradeLevel ?? generatedContent.config?.grade ?? generatedContent.targetGradeLevel ?? generatedContent.instructionalText?.complexity?.requestedGrade ?? generatedContent.gradeLevel ?? generatedContent.grade ?? props.defaultSettings?.grade) || t('lesson_plan.grade_not_recorded') || 'Not recorded';
   var isTeacherMode = props.isTeacherMode;
   var isIndependentMode = props.isIndependentMode;
   var isParentMode = props.isParentMode;
   var isEditingLessonPlan = props.isEditingLessonPlan;
-  var history = props.history;
+  var history = Array.isArray(props.history) ? props.history : [];
   var isGeneratingExtensionGuide = props.isGeneratingExtensionGuide || {};
   var progressionData = props.progressionData;
   var isGeneratingProgression = props.isGeneratingProgression;
@@ -126,33 +154,41 @@ function LessonPlanView(props) {
   var handleToggleIsEditingLessonPlan = props.handleToggleIsEditingLessonPlan;
   var handleCopyToClipboard = props.handleCopyToClipboard;
   var handleExportPDF = props.handleExportPDF;
-  var handleLessonPlanChange = props.handleLessonPlanChange;
+  var handleLessonPlanChange = (field, value, index = null) => {
+    const previous = index !== null && Array.isArray(generatedContent.data[field]) ? generatedContent.data[field][index] : generatedContent.data[field];
+    props.handleLessonPlanChange(field, typeof value === 'string' ? _lessonPlanEditedText(previous, value) : value, index);
+  };
   var handleGenerateExtensionGuide = props.handleGenerateExtensionGuide;
   var handleExport = props.handleExport;
   var handleGenerateProgression = props.handleGenerateProgression;
   var handleSetProgressionDataToNull = props.handleSetProgressionDataToNull;
   var handleActivateNextLesson = props.handleActivateNextLesson;
-  var getRows = props.getRows;
-  var normalizeMaterialItem = props.normalizeMaterialItem;
-  var renderFormattedText = props.renderFormattedText;
+  var getRows = value => typeof props.getRows === 'function' ? props.getRows(_lessonPlanText(value)) : 3;
+  var normalizeMaterialItem = value => typeof props.normalizeMaterialItem === 'function' ? props.normalizeMaterialItem(_lessonPlanText(value)) : _lessonPlanText(value);
+  var renderFormattedText = value => typeof props.renderFormattedText === 'function' ? props.renderFormattedText(_lessonPlanText(value)) : _lessonPlanText(value);
   var addToast = props.addToast;
-  var BilingualFieldRenderer = props.BilingualFieldRenderer;
+  var BilingualFieldRenderer = fieldProps => props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, {
+    ...fieldProps,
+    text: _lessonPlanText(fieldProps.text)
+  }) : /*#__PURE__*/React.createElement("div", {
+    className: fieldProps.className
+  }, _lessonPlanText(fieldProps.text));
   return /*#__PURE__*/React.createElement("div", {
-    className: "space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10"
+    className: "min-w-0 space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-0 sm:pr-2 pb-10"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-indigo-50 p-6 rounded-xl border border-indigo-100 shadow-sm"
+    className: "bg-indigo-50 p-4 sm:p-6 rounded-xl border border-indigo-100 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap justify-between items-start gap-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     className: "text-2xl font-bold text-indigo-900 mb-1"
   }, t('lesson_plan.header_title')), /*#__PURE__*/React.createElement("div", {
-    className: "text-sm font-bold text-indigo-700"
-  }, t('lesson_plan.topic_label'), ": ", sourceTopic || "General", " | ", t('lesson_plan.grade_label'), ": ", gradeLevel)), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-x-3 gap-y-1 break-words text-sm font-bold text-indigo-700"
+  }, /*#__PURE__*/React.createElement("span", null, t('lesson_plan.topic_label'), ": ", sourceTopic || 'General'), /*#__PURE__*/React.createElement("span", null, t('lesson_plan.grade_label'), ": ", gradeLevel))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2 no-print"
   }, isTeacherMode && /*#__PURE__*/React.createElement("button", {
     "aria-pressed": !!isEditingLessonPlan,
     onClick: handleToggleIsEditingLessonPlan,
-    className: `flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm ${isEditingLessonPlan ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-600 hover:bg-indigo-100 border border-indigo-200'}`,
+    className: `flex min-h-11 items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm ${isEditingLessonPlan ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-600 hover:bg-indigo-100 border border-indigo-200'}`,
     title: t('lesson_plan.edit_plan')
   }, isEditingLessonPlan ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
@@ -161,7 +197,7 @@ function LessonPlanView(props) {
   }), isEditingLessonPlan ? t('common.done') : t('common.edit')), /*#__PURE__*/React.createElement("button", {
     onClick: handleCopyToClipboard,
     "data-help-key": "export_copy_button",
-    className: "flex items-center gap-1 text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 rounded-full transition-colors shadow-sm",
+    className: "flex min-h-11 items-center gap-1 text-sm font-bold bg-white text-indigo-600 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 rounded-full transition-colors shadow-sm",
     title: t('lesson_plan.tooltip_copy'),
     "aria-label": t('lesson_plan.tooltip_copy')
   }, /*#__PURE__*/React.createElement(Copy, {
@@ -169,7 +205,7 @@ function LessonPlanView(props) {
   }), " ", t('common.copy')), /*#__PURE__*/React.createElement("button", {
     onClick: handleExportPDF,
     "data-help-key": "export_pdf_button",
-    className: "flex items-center gap-1 text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 border border-indigo-600 px-3 py-1.5 rounded-full transition-colors shadow-sm",
+    className: "flex min-h-11 items-center gap-1 text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 border border-indigo-600 px-3 py-1.5 rounded-full transition-colors shadow-sm",
     title: t('lesson_plan.tooltip_pdf'),
     "aria-label": t('lesson_plan.tooltip_pdf')
   }, /*#__PURE__*/React.createElement(FileDown, {
@@ -208,7 +244,7 @@ function LessonPlanView(props) {
     className: "mt-3 min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, t('lesson_script.retry_load') || 'Try loading again'))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, generatedContent?.data.materialsNeeded && generatedContent?.data.materialsNeeded.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, materialsNeeded.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-2"
@@ -216,15 +252,15 @@ function LessonPlanView(props) {
     size: 14
   }), " ", t('lesson_plan.materials_header')), /*#__PURE__*/React.createElement("ul", {
     className: "list-disc list-inside text-sm text-slate-700 space-y-1"
-  }, generatedContent?.data.materialsNeeded.map((mat, i) => /*#__PURE__*/React.createElement("li", {
+  }, materialsNeeded.map((mat, i) => mat == null ? null : /*#__PURE__*/React.createElement("li", {
     key: i,
     className: "flex items-start gap-2"
   }, isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_material') || `Edit material ${i + 1}`,
-    value: mat,
+    value: _lessonPlanText(mat),
     onChange: e => handleLessonPlanChange('materialsNeeded', e.target.value, i),
     className: "w-full text-sm bg-transparent border-b border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded-none outline-none resize-none overflow-hidden h-auto",
-    rows: Math.max(1, Math.ceil(mat.length / 50))
+    rows: Math.max(1, Math.ceil(_lessonPlanText(mat).length / 50))
   }) : /*#__PURE__*/React.createElement("div", {
     className: "w-full"
   }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
@@ -237,7 +273,7 @@ function LessonPlanView(props) {
     size: 14
   }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.essentialQuestion`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_essential_question') || 'Edit essential question',
-    value: generatedContent?.data.essentialQuestion,
+    value: _lessonPlanText(generatedContent.data.essentialQuestion),
     onChange: e => handleLessonPlanChange('essentialQuestion', e.target.value),
     className: "w-full text-lg text-slate-800 bg-transparent border border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded p-2 outline-none resize-y transition-all",
     rows: 2
@@ -254,15 +290,15 @@ function LessonPlanView(props) {
     size: 14
   }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.objectives`)), /*#__PURE__*/React.createElement("ul", {
     className: "list-disc list-inside text-sm text-slate-700 space-y-2"
-  }, generatedContent?.data.objectives.map((obj, i) => /*#__PURE__*/React.createElement("li", {
+  }, objectives.map((obj, i) => obj == null ? null : /*#__PURE__*/React.createElement("li", {
     key: i,
     className: "flex items-start gap-2"
   }, isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_objective') || `Edit objective ${i + 1}`,
-    value: obj,
+    value: _lessonPlanText(obj),
     onChange: e => handleLessonPlanChange('objectives', e.target.value, i),
     className: "w-full text-sm bg-transparent border-b border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded-none outline-none resize-none overflow-hidden h-auto",
-    rows: Math.max(1, Math.ceil(obj.length / 40))
+    rows: Math.max(1, Math.ceil(_lessonPlanText(obj).length / 40))
   }) : /*#__PURE__*/React.createElement("div", {
     className: "w-full"
   }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
@@ -275,7 +311,7 @@ function LessonPlanView(props) {
     size: 14
   }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.hook`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_hook') || 'Edit hook or opener',
-    value: generatedContent?.data.hook,
+    value: _lessonPlanText(generatedContent.data.hook),
     onChange: e => handleLessonPlanChange('hook', e.target.value),
     className: "w-full text-sm text-slate-700 bg-transparent border border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded p-2 outline-none resize-y transition-all",
     rows: getRows(generatedContent?.data.hook)
@@ -290,7 +326,7 @@ function LessonPlanView(props) {
     size: 14
   }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.directInstruction`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_direct_instruction') || 'Edit direct instruction',
-    value: generatedContent?.data.directInstruction,
+    value: _lessonPlanText(generatedContent.data.directInstruction),
     onChange: e => handleLessonPlanChange('directInstruction', e.target.value),
     className: "w-full text-sm text-slate-700 bg-transparent border border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded p-2 outline-none resize-y transition-all font-medium",
     rows: getRows(generatedContent?.data.directInstruction),
@@ -308,7 +344,7 @@ function LessonPlanView(props) {
     size: 14
   }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.guidedPractice`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_guided_practice') || 'Edit guided practice',
-    value: generatedContent?.data.guidedPractice,
+    value: _lessonPlanText(generatedContent.data.guidedPractice),
     onChange: e => handleLessonPlanChange('guidedPractice', e.target.value),
     className: "w-full text-sm text-slate-700 bg-transparent border border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded p-2 outline-none resize-y transition-all",
     rows: getRows(generatedContent?.data.guidedPractice)
@@ -323,7 +359,7 @@ function LessonPlanView(props) {
     size: 14
   }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.independentPractice`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_independent_practice') || 'Edit independent practice',
-    value: generatedContent?.data.independentPractice,
+    value: _lessonPlanText(generatedContent.data.independentPractice),
     onChange: e => handleLessonPlanChange('independentPractice', e.target.value),
     className: "w-full text-sm text-slate-700 bg-transparent border border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded p-2 outline-none resize-y transition-all",
     rows: getRows(generatedContent?.data.independentPractice)
@@ -338,7 +374,7 @@ function LessonPlanView(props) {
     size: 14
   }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.closure`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_closure') || 'Edit closure',
-    value: generatedContent?.data.closure,
+    value: _lessonPlanText(generatedContent.data.closure),
     onChange: e => handleLessonPlanChange('closure', e.target.value),
     className: "w-full text-sm text-slate-700 bg-transparent border border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded p-2 outline-none resize-y transition-all",
     rows: getRows(generatedContent?.data.closure)
@@ -353,18 +389,21 @@ function LessonPlanView(props) {
     size: 14
   }), " ", t('lesson_headers.extensions_header')), Array.isArray(generatedContent?.data.extensions) ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-4"
-  }, generatedContent?.data.extensions.map((ext, idx) => /*#__PURE__*/React.createElement("div", {
+  }, generatedContent?.data.extensions.map((ext, idx) => ext == null ? null : /*#__PURE__*/React.createElement("div", {
     key: idx,
     className: "bg-slate-50 p-4 rounded-xl border border-slate-400"
   }, /*#__PURE__*/React.createElement("h5", {
     className: "font-bold text-indigo-900 mb-2 text-sm"
   }, isEditingLessonPlan && typeof ext !== 'string' ? /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_typeof'),
-    value: typeof ext.title === 'string' ? ext.title : ext.title?.en || '',
-    onChange: e => handleLessonPlanChange('extensions', {
-      ...ext,
-      title: e.target.value
-    }, idx),
+    value: _lessonPlanText(ext.title),
+    onChange: e => {
+      const title = e.target.value;
+      handleLessonPlanChange('extensions', previous => ({
+        ...previous,
+        title: _lessonPlanEditedText(previous?.title, title)
+      }), idx);
+    },
     className: "w-full bg-white border border-indigo-600 rounded px-2 py-1 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
   }) : /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: typeof ext === 'string' ? t('lesson_headers.extension_idea_fallback') : ext.title
@@ -372,12 +411,13 @@ function LessonPlanView(props) {
     className: "text-sm text-slate-700 leading-relaxed mb-4"
   }, isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_extension_description') || `Edit extension ${idx + 1} description`,
-    value: typeof ext === 'string' ? ext : typeof ext.description === 'string' ? ext.description : ext.description?.en || '',
+    value: typeof ext === 'string' ? ext : _lessonPlanText(ext.description),
     onChange: e => {
-      const newVal = typeof ext === 'string' ? e.target.value : {
-        ...ext,
-        description: e.target.value
-      };
+      const description = e.target.value;
+      const newVal = typeof ext === 'string' ? description : previous => ({
+        ...previous,
+        description: _lessonPlanEditedText(previous?.description, description)
+      });
       handleLessonPlanChange('extensions', newVal, idx);
     },
     className: "w-full bg-white border border-indigo-200 rounded px-2 py-1 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y",
@@ -394,11 +434,14 @@ function LessonPlanView(props) {
     size: 14
   }), " ", t('lesson_headers.teacher_guide_header')), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_teacher_guide') || `Edit extension ${idx + 1} teacher guide`,
-    value: typeof ext.guide === 'string' ? ext.guide : ext.guide?.en || '',
-    onChange: e => handleLessonPlanChange('extensions', {
-      ...ext,
-      guide: e.target.value
-    }, idx),
+    value: _lessonPlanText(ext.guide),
+    onChange: e => {
+      const guide = e.target.value;
+      handleLessonPlanChange('extensions', previous => ({
+        ...previous,
+        guide: _lessonPlanEditedText(previous?.guide, guide)
+      }), idx);
+    },
     className: "w-full bg-slate-50 border border-slate-400 rounded p-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y",
     rows: 6
   }) : /*#__PURE__*/React.createElement("div", {
@@ -415,7 +458,7 @@ function LessonPlanView(props) {
     size: 14
   }), isGeneratingExtensionGuide[idx] ? t('brainstorm.creating_guide') : t('brainstorm.generate_guide')))))) : /*#__PURE__*/React.createElement(React.Fragment, null, isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_extensions') || 'Edit extensions',
-    value: generatedContent?.data.extensions,
+    value: _lessonPlanText(generatedContent.data.extensions),
     onChange: e => handleLessonPlanChange('extensions', e.target.value),
     className: "w-full text-sm text-slate-700 bg-transparent border border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded p-2 outline-none resize-y transition-all",
     rows: getRows(generatedContent?.data.extensions)
@@ -423,15 +466,15 @@ function LessonPlanView(props) {
     className: "text-sm text-slate-700 leading-relaxed whitespace-pre-line"
   }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: generatedContent?.data.extensions
-  })))))), generatedContent?.data?.recommendedStemTools && generatedContent.data.recommendedStemTools.length > 0 && /*#__PURE__*/React.createElement("div", {
+  })))))), recommendedStemTools.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-6 mb-4 border-2 border-emerald-200 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 p-5 animate-in fade-in duration-300"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between mb-3"
+    className: "flex flex-wrap items-center justify-between gap-3 mb-3"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-emerald-900 flex items-center gap-2"
   }, "🔬 Recommended STEAM Lab Tools"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
-      const tools = generatedContent.data.recommendedStemTools.map(t => t.id);
+      const tools = recommendedStemTools.map(t => t.id);
       const station = {
         id: 'station_' + Date.now(),
         name: (sourceTopic || 'Lesson') + ' Station',
@@ -454,12 +497,12 @@ function LessonPlanView(props) {
     className: "flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
   }, "📌 Create Station")), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
-  }, generatedContent.data.recommendedStemTools.map((tool, idx) => {
+  }, recommendedStemTools.map((tool, idx) => {
     const registry = window.STEM_TOOL_REGISTRY || [];
     const meta = registry.find(r => r.id === tool.id);
     return /*#__PURE__*/React.createElement("div", {
       key: tool.id || idx,
-      className: "flex items-start gap-3 bg-white/80 rounded-xl p-3 border border-emerald-100"
+      className: "flex flex-wrap items-start gap-3 bg-white/80 rounded-xl p-3 border border-emerald-100"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-2xl mt-0.5"
     }, meta ? '🧪' : '🔧'), /*#__PURE__*/React.createElement("div", {
@@ -505,7 +548,7 @@ function LessonPlanView(props) {
   }), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-sm"
   }, isGeneratingProgression ? t('progression.analyzing_btn') : t('progression.analyze_btn')), /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-normal opacity-70"
+    className: "text-xs font-normal text-slate-700"
   }, t('progression.helper_text'))) : /*#__PURE__*/React.createElement("div", {
     className: "animate-in slide-in-from-bottom-4 space-y-4"
   }, /*#__PURE__*/React.createElement("div", {

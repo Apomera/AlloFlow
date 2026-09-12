@@ -77,7 +77,7 @@ describe('lesson-aware teaching-script UI', () => {
     expect(host.textContent).toContain('Detected lesson context');
     expect(host.textContent).toContain('Subject detected from the saved plan');
     expect(host.textContent).not.toMatch(/pilot|Grades 3–6/);
-    expect(field('Learning goal').value).toBe('How can we compare fractions?');
+    expect(field('Learning goal').value).toBe('Compare fractions using models');
     expect(field('Subject area').value).toBe('mathematics');
     expect(field('Lesson topic').value).toBe('Comparing fractions');
     expect(field('Use research').checked).toBe(true);
@@ -290,6 +290,68 @@ describe('lesson-aware teaching-script UI', () => {
       URL.createObjectURL=originalCreate;URL.revokeObjectURL=originalRevoke;
     }
   });
+  it('does not replace the clipboard with empty text when the export boundary rejects incomplete script data', async () => {
+    const originalCore = window.AlloModules.LessonTeachingScript;
+    const originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    const writeText = vi.fn().mockResolvedValue();
+    window.AlloModules.LessonTeachingScript = { toPlainText: () => '' };
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+    try {
+      mount(React.createElement(View, props({ generatedContent: plan('plan-a', [script()]) }))); expand();
+      await act(async () => button('Copy text').click());
+      expect(writeText).not.toHaveBeenCalled();
+      expect(host.querySelector('[role="alert"]').textContent).toContain('saved data or draft is incomplete');
+      expect(host.textContent).not.toContain('Script text copied.');
+    } finally {
+      window.AlloModules.LessonTeachingScript = originalCore;
+      if (originalClipboard) Object.defineProperty(navigator, 'clipboard', originalClipboard); else delete navigator.clipboard;
+    }
+  });
+  it('keeps the lesson script panel usable when a saved version or evidence row is malformed', () => {
+    const damaged = script('damaged', { steps: [null] });
+    const valid = script();
+    valid.sources.push(null);
+    valid.sources[0].recommendations.push(null);
+    mount(React.createElement(View, props({ generatedContent: plan('plan-a', [null, damaged, valid]) })));
+    expect(host.textContent).toContain('A saved script has incomplete data');
+    expand();
+    expect(field('Script version').options).toHaveLength(1);
+    expect(host.textContent).toContain('Use number lines as a central representation');
+    expect(button('Edit script').disabled).toBe(false);
+  });
+  it('shows saved work without exposing the full generation form and reopens settings on demand', () => {
+    mount(React.createElement(View, props({ generatedContent: plan('plan-a', [script()]) })));
+    expect(host.textContent).toContain('Saved script: Compare fractions on a number line');
+    expand();
+    const settings = button('Create another script+');
+    expect(settings.getAttribute('aria-expanded')).toBe('false');
+    expect(host.querySelector('[id="' + settings.getAttribute('aria-controls') + '"]').hidden).toBe(true);
+    expect(button('Edit script').closest('[hidden]')).toBeNull();
+    click('Create another script+');
+    expect(settings.getAttribute('aria-expanded')).toBe('true');
+    expect(host.querySelector('[id="' + settings.getAttribute('aria-controls') + '"]').hidden).toBe(false);
+  });
+  it('closes completed generation settings and leaves keyboard focus on a visible control', async () => {
+    function Harness() {
+      const [resource, setResource] = React.useState(plan());
+      return React.createElement(View, props({ generatedContent: resource, onGenerateTeachingScript: async () => {
+        setResource(plan('plan-a', [script()])); return { ok: true };
+      } }));
+    }
+    mount(React.createElement(Harness)); expand();
+    expect(button('Script settings−').getAttribute('aria-expanded')).toBe('true');
+    await submit();
+    expect(button('Create another script+').getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(button('Create another script+'));
+    expect(host.textContent).toContain('Script added to this plan.');
+  });
+  it('keeps progress and failures visible while the teaching script is collapsed', () => {
+    const p = props({ scriptRun: { planId: 'plan-a', busy: true, stage: 'Reading teaching sources…' } });
+    mount(React.createElement(View, p));
+    expect(host.querySelector('[role="status"]').textContent).toBe('Reading teaching sources…');
+    act(() => root.render(React.createElement(View, { ...p, scriptRun: { planId: 'plan-a', error: 'Source reading failed.' } })));
+    expect(host.querySelector('[role="alert"]').textContent).toBe('Source reading failed.');
+  });
   it('resets drafts and ignores late completion when the selected plan changes', async () => {
     const pending=deferred(), p=props({generatedContent:plan('plan-a',[script()]),onUpdateTeachingScript:()=>pending.promise});
     mount(React.createElement(View,p));expand();click('Edit script');
@@ -332,6 +394,65 @@ describe('lesson-plan mounting', () => {
     expand();
     expect(field('Grade').value).toBe('5th Grade');
     expect(field('Fraction models').checked).toBe(true);
+  });
+  it('uses the saved plan topic and grade when workspace settings have moved to another lesson', () => {
+    const resource = { ...plan(), config: { sourceTopic: 'Equivalent fractions', gradeLevel: '4th Grade' } };
+    mount(React.createElement(PlanView, base({ generatedContent: resource, sourceTopic: 'Cell division', gradeLevel: '9th Grade' })));
+    expect(host.textContent).toContain('Equivalent fractions');
+    expect(host.textContent).toContain('4th Grade');
+    expect(host.textContent).not.toContain('Cell division');
+    expect(host.textContent).not.toContain('9th Grade');
+  });
+  it('uses a saved title and marks missing grade metadata instead of showing unrelated workspace settings', () => {
+    const resource = { ...plan(), title: 'Comparing halves and fourths' };
+    mount(React.createElement(PlanView, base({ generatedContent: resource, defaultSettings: {}, sourceTopic: 'Cell division', gradeLevel: '9th Grade' })));
+    expect(host.textContent).toContain('Comparing halves and fourths');
+    expect(host.textContent).toContain('Not recorded');
+    expect(host.textContent).not.toContain('Cell division');
+    expect(host.textContent).not.toContain('9th Grade');
+  });
+  it('updates extension fields against the latest saved entry to keep an arriving teacher guide', () => {
+    const resource = plan();
+    resource.data.extensions = [{ title: { en: 'Model fractions', es: 'Modelar fracciones' }, description: 'Use strips to compare the fractions.' }];
+    const update = vi.fn();
+    mount(React.createElement(PlanView, base({ generatedContent: resource, isEditingLessonPlan: true, handleLessonPlanChange: update })));
+    const input = host.querySelector('input');
+    act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, 'Compare equal wholes');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    const [field, applyChange, index] = update.mock.calls[0];
+    expect(field).toBe('extensions'); expect(index).toBe(0); expect(typeof applyChange).toBe('function');
+    expect(applyChange({ ...resource.data.extensions[0], guide: 'A teacher guide that arrived during this edit.', id: 'extension-1' })).toEqual({ title: { en: 'Compare equal wholes', es: 'Modelar fracciones' }, description: 'Use strips to compare the fractions.', guide: 'A teacher guide that arrived during this edit.', id: 'extension-1' });
+  });
+  it('renders absent data and legacy scalar lists without crashing', () => {
+    mount(React.createElement(PlanView, base({ generatedContent: { id: 'legacy', type: 'lesson-plan' }, onGenerateTeachingScript: null })));
+    act(() => root.render(React.createElement(PlanView, base({ generatedContent: { id: 'legacy', type: 'lesson-plan', data: { objectives: 'Compare models', materialsNeeded: 'Fraction strips', extensions: [null, 'Try another model'], recommendedStemTools: 'invalid legacy value' } }, onGenerateTeachingScript: null }))));
+    expect(host.textContent).toContain('Compare models');
+    expect(host.textContent).toContain('Fraction strips');
+    expect(host.textContent).toContain('Try another model');
+  });
+  it('renders structured text and preserves its other language when editing', () => {
+    const resource = plan();
+    resource.data.materialsNeeded = [{ en: 'Fraction strips', es: 'Tiras de fracciones' }];
+    resource.data.objectives = [null, { en: 'Compare fraction models', es: 'Comparar modelos' }];
+    resource.data.essentialQuestion = { en: 'How do models compare?', es: '¿Cómo se comparan?' };
+    const update = vi.fn();
+    const p = base({ generatedContent: resource, handleLessonPlanChange: update, normalizeMaterialItem: value => value.replace(/strips/, 'bars') });
+    mount(React.createElement(PlanView, p));
+    expect(host.textContent).toContain('Fraction bars');
+    expect(host.textContent).toContain('Compare fraction models');
+    expect(host.textContent).not.toContain('[object Object]');
+    act(() => root.render(React.createElement(PlanView, { ...p, isEditingLessonPlan: true })));
+    const material = host.querySelector('textarea[aria-label="Edit material 1"]');
+    expect(material.value).toBe('Fraction strips');
+    act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(material, 'Paper fraction bars');
+      material.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(update).toHaveBeenCalledWith('materialsNeeded', { en: 'Paper fraction bars', es: 'Tiras de fracciones' }, 0);
+    expect(resource.data.materialsNeeded[0].en).toBe('Fraction strips');
+    expect(host.querySelector('textarea[aria-label="Edit objective 2"]').value).toBe('Compare fraction models');
   });
   it('does not show loading controls when the feature is not teacher-authorized', () => {
     window.AlloModules.LessonTeachingScriptView=null;

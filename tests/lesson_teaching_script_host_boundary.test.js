@@ -121,6 +121,33 @@ describe('teaching-script host boundaries with real core',()=>{
     const conflicting={...material(),id:'different',config:{sourceArtifactId:'source-b'}};
     expect(host.availableMaterials(p,[source,matching,conflicting,material()]).map(item=>item.id)).toEqual(['source-a','m']);
   });
+  it('keeps source-linked materials available when the plan alone is filed into a unit',async()=>{
+    const p={...plan(),unitId:'unit-a',config:{...plan().config,lessonId:'lesson-a',sourceArtifactId:'source-a',sourceFingerprint:'fingerprint-a'}};
+    const original={id:'source-a',type:'analysis',data:{originalText:'The original passage about equal intervals.'}};
+    const matching={...material(),config:{sourceFingerprint:'fingerprint-a'}};
+    const otherUnit={...matching,id:'other-unit',unitId:'unit-b'};
+    const otherSource={...material(),id:'other-source',unitId:'unit-a',config:{sourceArtifactId:'source-b'}};
+    const otherLesson={...matching,id:'other-lesson',config:{...matching.config,lessonId:'lesson-b'}};
+    expect(host.availableMaterials(p,[original,matching,otherUnit,otherSource,otherLesson,material()]).map(item=>item.id)).toEqual(['source-a','m']);
+    const h=setup();h.set(s=>({...s,history:[p,original,matching]}));
+    expect((await h.controller.generate('p',settings())).ok).toBe(true);
+    expect(h.get().history[0].data.teachingScripts).toHaveLength(1);
+  });
+  it('ignores empty scope metadata and falls back to the recorded source in config',()=>{
+    const p={...plan(),unitId:' ',config:{unitId:'',sourceArtifactId:'source-a',sourceFingerprint:''}};
+    const original={id:'source-a',type:'analysis',data:{originalText:'Fractions source'}};
+    const matching={...material(),sourceArtifactId:'',config:{sourceArtifactId:'source-a',sourceFingerprint:'fingerprint-a'}};
+    const unrelated={...material(),id:'unrelated',config:{sourceArtifactId:'source-b',sourceFingerprint:''}};
+    expect(host.availableMaterials(p,[original,matching,unrelated,material()]).map(item=>item.id)).toEqual(['source-a','m']);
+    expect(host.availableMaterials({...plan(),config:{sourceArtifactId:null,sourceFingerprint:''}},[material()])).toHaveLength(1);
+  });
+  it('lets a teacher generate a script from saved guided notes',async()=>{
+    const notes={id:'m',type:'note-taking',title:'Fraction notes',data:{title:'Equal intervals',cues:['What makes one fourth?'],blanks:[{before:'A whole divided into',answer:'four',after:'equal intervals gives fourths.'}]}};
+    const h=setup();h.set(s=>({...s,history:[plan(),notes]}));
+    expect(host.availableMaterials(plan(),[notes])).toEqual([notes]);
+    expect((await h.controller.generate('p',settings())).ok).toBe(true);
+    expect(h.deps.callText.mock.calls[0][0]).toContain('equal intervals gives fourths');
+  });
   it('rejects known conflicting lesson/source scope, duplicate and learner-owned materials',async()=>{
     const p={...plan(),config:{lessonId:'lesson-a',sourceFingerprint:'source-a'}},good={...material(),config:{lessonId:'lesson-a',sourceFingerprint:'source-a'}},bad={...material(),id:'bad',config:{lessonId:'lesson-b',sourceFingerprint:'source-b'}};
     expect(host.availableMaterials(p,[good,bad,{...good,id:'student',studentId:'learner'}]).map(item=>item.id)).toEqual(['m']);

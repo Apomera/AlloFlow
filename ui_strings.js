@@ -5219,6 +5219,7 @@
     "english_only": "English Only"
   },
   "lesson_plan": {
+    "grade_not_recorded": "Not recorded",
     "toast_drafting_plan": "Drafting Lesson Plan...",
     "toast_drafting_study": "Drafting Study Guide...",
     "toast_drafting_family": "Drafting Family Guide...",
@@ -98020,6 +98021,11 @@
     "empty_work_hint": "Open Notes, Anchor Charts, Memory Aid or Applied Challenge from the resource tools to begin."
   },
   "lesson_script": {
+    "export_incomplete": "This script could not be exported because its saved data or draft is incomplete. Review the script fields and try again.",
+    "create_another": "Create another script",
+    "generation_settings": "Script settings",
+    "saved_script": "Saved script:",
+    "incomplete_saved": "A saved script has incomplete data and could not be displayed. Your lesson plan and other script versions are still available.",
     "added": "Script added to this plan.",
     "generate_failed": "The script could not be generated. Your lesson plan is still available.",
     "cancelled": "Generation cancelled.",

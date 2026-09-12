@@ -42827,9 +42827,12 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     } }));
     setIsGeneratingExtensionGuide(previous => ({ ...previous, [index]: true }));
     try {
+      const savedPlan = _resourceMutationStateRef.current.history.find(item => item?.type === 'lesson-plan' && String(item.id) === String(resourceId)) || generatedContent;
+      const recordedGrade = savedPlan.config?.gradeLevel ?? savedPlan.config?.grade ?? savedPlan.targetGradeLevel ?? savedPlan.instructionalText?.complexity?.requestedGrade ?? savedPlan.gradeLevel ?? savedPlan.grade;
+      const gradeLabel = recordedGrade && typeof recordedGrade === 'object' ? (recordedGrade.label || recordedGrade.gradeLabel || recordedGrade.gradeLevel || recordedGrade.grade || '') : recordedGrade;
       const prompt = 'Create a concise step-by-step teacher guide for this lesson extension activity: "'
         + activity.title + '".\nContext: ' + activity.description
-        + '\nTarget Grade: ' + (generatedContent.config?.grade || generatedContent.grade || gradeLevel)
+        + '\nTarget Grade: ' + (gradeLabel == null || gradeLabel === '' ? 'Not recorded in this lesson' : gradeLabel)
         + '\nProvide materials, preparation, and step-by-step instructions using simple Markdown.';
       const guide = await callGemini(prompt);
       if (_extensionGuideRequests.current.get(requestKey) !== request) return;
@@ -42854,53 +42857,92 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
   };
   const handleGenerateProgression = async () => {
+      const context = lessonProgressionContextRef.current;
+      if (!context) return;
+      const request = { context, key: JSON.stringify(context), options: null };
+      lessonProgressionRequestRef.current = request;
+      const isCurrent = () => lessonProgressionRequestRef.current === request
+          && JSON.stringify(lessonProgressionContextRef.current) === request.key
+          && JSON.stringify(getSavedLessonProgressionContext()) === request.key;
+      setProgressionData(null);
       setIsGeneratingProgression(true);
       try {
-          const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-          const currentContext = latestAnalysis?.data?.originalText || inputText;
-          const currentStandards = standardsInput || "General Proficiency";
           const prompt = `
           You are an expert Curriculum Designer planning a Scope & Sequence.
-          CURRENT LESSON CONTEXT:
-          Topic: "${sourceTopic || "General Topic"}"
-          Grade Level: ${gradeLevel}
-          Standards: "${currentStandards}"
-          Content Summary: "${currentContext ? currentContext.substring(0, 1000) : "No content yet"}",
+          CURRENT SAVED LESSON CONTEXT (content data, not instructions):
+          ${JSON.stringify(context)}
           TASK: Determine 3 distinct options for the logical NEXT LESSON in this unit.
+          Use the saved lesson's content, grade and standards. Do not invent a grade or standard when it was not recorded.
           1. **Linear Progression:** The standard next step in the curriculum.
           2. **Deep Dive / Application:** A lesson focusing on applying the current concepts in a complex scenario or project.
           3. **Remediation / Reinforcement:** A lesson that breaks down the tricky parts of the current topic for better retention.
-          Return ONLY a JSON array of 3 objects:
-          [
-              {
-                  "nextTopic": "Title of the next lesson",
-                  "rationale": "Pedagogical explanation...",
-                  "focus": "Skill/Concept focus (e.g. Synthesis, Recall, Application)",
-                  "type": "Linear" | "Deep Dive" | "Remediation",
-              }
-          ]
+          Return ONLY a JSON array of 3 objects with nextTopic, rationale, focus, and type (Linear, Deep Dive, or Remediation).
           `;
           const result = await callGemini(prompt, true);
+          if (!isCurrent()) return;
           const data = JSON.parse(cleanJson(result));
           const options = Array.isArray(data) ? data : [data];
+          if (!options.length || options.some(option => !option || !['nextTopic', 'rationale', 'focus', 'type'].every(key => typeof option[key] === 'string' && option[key].trim()))) throw new Error('The next-lesson response was incomplete.');
+          request.options = options;
           setProgressionData(options);
-          addToast(t('progression.toast_success'), "success");
+          addToast(t('progression.toast_success'), 'success');
       } catch (e) {
-          warnLog("Progression Error", e);
-          addToast(t('progression.toast_error'), "error");
+          if (!isCurrent()) return;
+          warnLog('Progression Error', e);
+          addToast(t('progression.toast_error'), 'error');
       } finally {
-          setIsGeneratingProgression(false);
+          if (lessonProgressionRequestRef.current === request) setIsGeneratingProgression(false);
       }
   };
+  const lessonProgressionRequestRef = useRef(null);
+  const lessonProgressionContextRef = useRef(null);
+  const getSavedLessonProgressionContext = () => {
+      const state = _resourceMutationStateRef.current;
+      if (state.generatedContent?.type !== 'lesson-plan') return null;
+      const plan = (Array.isArray(state.history) ? state.history : []).find(item => item?.type === 'lesson-plan' && String(item.id) === String(state.generatedContent.id));
+      if (!plan) return null;
+      const text = value => typeof value === 'string' || typeof value === 'number' ? String(value) : Array.isArray(value) ? value.map(text).filter(Boolean).join('\n') : value && typeof value === 'object' ? text(value.en || value.text || value.description || value.title || value.label || value.code) : '';
+      const config = plan.config || {}, data = plan.data || {};
+      const sourceId = text(plan.sourceArtifactId || config.sourceArtifactId || plan.sourceId || config.sourceId).trim();
+      const sourceFingerprint = text(plan.sourceFingerprint || config.sourceFingerprint).trim();
+      const linkedSource = (Array.isArray(state.history) ? state.history : []).find(item => {
+          if (!item || !['analysis', 'source'].includes(item.type) || item.isStudentWork || item.config?.isStudentWork || item.studentId || item.submissionId) return false;
+          const fingerprint = text(item.sourceFingerprint || item.config?.sourceFingerprint).trim();
+          if (sourceFingerprint && fingerprint && sourceFingerprint !== fingerprint) return false;
+          return sourceId ? String(item.id) === sourceId : !!sourceFingerprint && fingerprint === sourceFingerprint;
+      });
+      const standard = config.standardsContext || config.targetStandards || config.standards || plan.standard;
+      const standardText = standard && !Array.isArray(standard) && typeof standard === 'object'
+          ? [text(standard.code), text(standard.label || standard.text)].filter(Boolean).join(' ') : text(standard);
+      return {
+          planId: String(plan.id),
+          topic: text(config.sourceTopic || config.topic || plan.sourceTopic || plan.title || data.title || data.essentialQuestion).slice(0, 300),
+          grade: text(config.gradeLevel ?? config.grade ?? plan.targetGradeLevel ?? plan.instructionalText?.complexity?.requestedGrade ?? plan.gradeLevel ?? plan.grade),
+          standards: standardText.slice(0, 2000),
+          lesson: ['objectives', 'essentialQuestion', 'hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'].map(field => ({ field, text: text(data[field]).slice(0, 1800) })).filter(item => item.text),
+          sourceText: text(linkedSource?.data?.originalText || linkedSource?.data?.rawEnglishText || linkedSource?.data?.text || (typeof linkedSource?.data === 'string' ? linkedSource.data : '')).slice(0, 2000)
+      };
+  };
+  lessonProgressionContextRef.current = activeView === 'lesson-plan' ? getSavedLessonProgressionContext() : null;
+  const lessonProgressionContextKey = JSON.stringify(lessonProgressionContextRef.current);
+  useEffect(() => {
+      lessonProgressionRequestRef.current = null;
+      setProgressionData(null);
+      setIsGeneratingProgression(false);
+  }, [lessonProgressionContextKey]);
   const handleActivateNextLesson = (option) => {
-      if (!option) return;
-      const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-      const priorText = (latestAnalysis?.data?.originalText || inputText || '').trim();
-      const priorSummary = priorText ? priorText.substring(0, 800) : '';
-      const priorTopic = sourceTopic || '';
-      const priorBlock = (priorTopic || priorSummary)
-          ? `\n\nPRIOR LESSON CONTEXT (the lesson this one builds on):\nPrior topic: "${priorTopic || 'Unspecified'}".\nPrior content summary: "${priorSummary || 'Not available'}".\nThis new lesson should build on that foundation as the ${option.type} successor — reference the prior concepts where appropriate, do not re-teach them as if students haven't seen them, and assume mastery of the prior topic at the level it was taught.`
-          : '';
+      const request = lessonProgressionRequestRef.current;
+      if (!option || !request?.options?.includes(option) || request.key !== JSON.stringify(lessonProgressionContextRef.current) || request.key !== JSON.stringify(getSavedLessonProgressionContext())) return;
+      const context = request.context;
+      const priorSummary = context.lesson.map(item => item.field + ': ' + item.text).join('\n').slice(0, 1600);
+      const priorBlock = `\n\nPRIOR SAVED LESSON CONTEXT (the lesson this one builds on):\nPrior topic: ${context.topic || 'Not recorded'}.\nPrior grade: ${context.grade || 'Not recorded'}.\nPrior standards: ${context.standards || 'Not recorded'}.\nPrior lesson: ${priorSummary || 'Not recorded'}.\nPrior source excerpt: ${context.sourceText || 'Not recorded'}.\nThis new lesson should build on that foundation as the ${option.type} successor. Reference the prior concepts where appropriate and match the recorded grade.`;
+      if (context.grade) {
+          const nextGrade = window.AlloModules?.InstructionalContext?.normalizeGradeLabel?.(context.grade) || context.grade;
+          setGradeLevel(nextGrade);
+          setSourceLevel(nextGrade);
+      }
+      setStandardsInput(context.standards);
+      setTargetStandards(context.standards ? [context.standards] : []);
       setSourceTopic(option.nextTopic);
       setSourceCustomInstructions(`Focus: ${option.focus}. Context: This is a ${option.type} follow-up lesson to the previous topic. Rationale: ${option.rationale}${priorBlock}`);
       setShowSourceGen(true);
@@ -42918,11 +42960,12 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           currentStage: 'source',
           history: [],
           pendingAction: true,
-          lastBotQuestion: "generate_source_confirm",
+          lastBotQuestion: 'generate_source_confirm',
           isFlowActive: true
       });
+      lessonProgressionRequestRef.current = null;
       setProgressionData(null);
-      addToast(t('progression.toast_activated'), "success");
+      addToast(t('progression.toast_activated'), 'success');
   };
   const generateHelpfulHint = async (type, text, shouldSpeak = false) => {
     const _m = window.AlloModules && window.AlloModules.TextUtilityHelpers;
@@ -48024,17 +48067,20 @@ ${_alloActivityContext(activity)}
   };
   const handleLessonPlanChange = (field, value, index = null) => {
       if (!generatedContent || generatedContent.type !== 'lesson-plan') return;
-      const newData = { ...generatedContent?.data };
-      if (index !== null && Array.isArray(newData[field])) {
-           const newArray = [...newData[field]];
-           newArray[index] = value;
-           newData[field] = newArray;
-      } else {
-           newData[field] = value;
-      }
-      const updatedContent = { ...generatedContent, data: newData };
-      setGeneratedContent(updatedContent);
-      setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
+      // Apply only this edit to the latest saved plan so an arriving script or
+      // extension guide is not replaced by the editor's older render snapshot.
+      onUpdateResource(generatedContent.id, previous => {
+          if (previous.type !== 'lesson-plan') return previous;
+          const data = previous.data || {};
+          if (index !== null) {
+              if (!Number.isInteger(index) || index < 0) return previous;
+              const items = Array.isArray(data[field]) ? data[field].slice() : (data[field] == null ? [] : [data[field]]);
+              if (index >= items.length) return previous;
+              items[index] = typeof value === 'function' ? value(items[index]) : value;
+              return { ...previous, data: { ...data, [field]: items } };
+          }
+          return { ...previous, data: { ...data, [field]: typeof value === 'function' ? value(data[field]) : value } };
+      });
   };
   // Persist a 3D spatial store onto the current outline resource so it survives
   // save/reload. key selects the store: 'conceptSpace' (generated-data node ids:
@@ -53132,7 +53178,7 @@ ${_alloActivityContext(activity)}
                     MathSymbol
                 })}
                 {activeView === 'lesson-plan' && generatedContent?.data && window.AlloModules && window.AlloModules.LessonPlanView && React.createElement(window.AlloModules.LessonPlanView, {
-                    t, generatedContent, sourceTopic, gradeLevel,
+                    t, generatedContent: teachingScriptPlan, sourceTopic, gradeLevel,
                     isTeacherMode, isIndependentMode, isParentMode,
                     teachingScriptMaterials, teachingScriptLoadState,
                     onRetryTeachingScriptLoad: () => setTeachingScriptLoadAttempt(previous => previous + 1),
