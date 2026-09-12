@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:28372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-microtexture.spec.ts:38:119 › anchiornis uses coherent close-up microtexture (37.3s)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-microtexture.spec.ts:38:119 › tyrannosaurus uses coherent close-up microtexture (2.8m)
+
+  2 passed (3.7m)

@@ -6450,6 +6450,52 @@ window.StemLab = window.StemLab || {
     geometry.setAttribute('dinoSkinNormal', new THREE.Float32BufferAttribute(skinNormals, 3));
     geometry.setAttribute('dinoSkinRegion', new THREE.Float32BufferAttribute(regionCoordinates, 2));
   }
+  // Periodic microrelief drives color, height and roughness from the same surface cells.
+  function dinoSkinTextureData(width, height, seed, baseColor, scaled) {
+    var rng = mulberry32(seed), columns = 64, rows = 32;
+    var cells = new Float32Array(columns * rows * 3);
+    for (var cell = 0; cell < columns * rows; cell++) {
+      cells[cell * 3] = 0.27 + rng() * 0.46;
+      cells[cell * 3 + 1] = 0.27 + rng() * 0.46;
+      cells[cell * 3 + 2] = rng() - 0.5;
+    }
+    var colorData = new Uint8ClampedArray(width * height * 4);
+    var heightData = new Uint8ClampedArray(width * height * 4);
+    var roughnessData = new Uint8ClampedArray(width * height * 4);
+    for (var y = 0; y < height; y++) {
+      var v = y / (height - 1), py = v * rows, iy = Math.floor(py);
+      for (var x = 0; x < width; x++) {
+        var u = x / (width - 1), px = u * columns, ix = Math.floor(px);
+        var first = Infinity, second = Infinity, tone = 0;
+        for (var cy = iy - 1; cy <= iy + 1; cy++) for (var cx = ix - 1; cx <= ix + 1; cx++) {
+          var index = (((cy % rows + rows) % rows) * columns + (cx % columns + columns) % columns) * 3;
+          var dx = px - cx - cells[index], dy = py - cy - cells[index + 1], distance = dx * dx + dy * dy;
+          if (distance < first) { second = first; first = distance; tone = cells[index + 2]; }
+          else if (distance < second) second = distance;
+        }
+        var edge = Math.min(1, Math.max(0, (second - first) * 6));
+        edge = edge * edge * (3 - 2 * edge);
+        var relief = edge * (0.7 + 0.3 * (1 - Math.min(1, Math.sqrt(first) / 0.8)));
+        // Wrap the grain seed too, so all three maps meet at each tile boundary.
+        var grainSeed = Math.imul(x === width - 1 ? 0 : x, 374761393) ^ Math.imul(y === height - 1 ? 0 : y, 668265263) ^ seed;
+        grainSeed = Math.imul(grainSeed ^ (grainSeed >>> 13), 1274126177);
+        var grain = ((grainSeed ^ (grainSeed >>> 16)) >>> 0) / 4294967295 - 0.5;
+        var broad = Math.sin(u * Math.PI * 4 + Math.sin(v * Math.PI * 2)) * Math.cos(v * Math.PI * 4);
+        var pigment = 1 + broad * 0.016 + (relief - 0.6) * (scaled ? 0.024 : 0.008) + tone * 0.006;
+        var bump = scaled ? 106 + relief * 53 + grain * 2 : 122 + relief * 9 + grain * 2;
+        var roughness = 229 - relief * (scaled ? 18 : 4) - grain * 2;
+        var offset = (y * width + x) * 4;
+        for (var channel = 0; channel < 3; channel++) {
+          colorData[offset + channel] = baseColor[channel] * pigment;
+          heightData[offset + channel] = bump;
+          roughnessData[offset + channel] = roughness;
+        }
+        colorData[offset + 3] = heightData[offset + 3] = roughnessData[offset + 3] = 255;
+      }
+    }
+    return { color: colorData, bump: heightData, roughness: roughnessData, style: scaled ? 'fine-scales' : 'fine-grain' };
+  }
+
   function dinoSkinMapping(THREE, material, size, shadeStrength, profile) {
     material.userData.dinoSkinMapping = true;
     var pigmentProfile = profile.pattern !== 'subtle' && profile.pattern !== 'none';
@@ -7599,105 +7645,32 @@ window.StemLab = window.StemLab || {
             var inferenceOpacity = Math.max(10, Math.min(100, Number(bodyOpacityRef.current) || 28)) / 100;
             var lifeSurface = inferenceOpacity >= 0.98;
             var skinCanvas = document.createElement('canvas');
-            skinCanvas.width = 768;
-            skinCanvas.height = 384;
-            var skinContext = skinCanvas.getContext('2d');
-            var skinTexture = null;
-            var skinBumpTexture = null;
-            var skinRoughnessTexture = null;
-            if (skinContext) {
-              skinContext.fillStyle = bodyColor;
-              skinContext.fillRect(0, 0, 768, 384);
-              // Strong bands belong to their anatomical regions, not the shared skin tile.
-              if (integument.pattern === 'iridescent') {
-                var iridescentSheen = skinContext.createLinearGradient(0, 0, 768, 384);
-                iridescentSheen.addColorStop(0, 'rgba(48,64,104,0.16)');
-                iridescentSheen.addColorStop(0.42, 'rgba(164,177,220,0.06)');
-                iridescentSheen.addColorStop(0.76, 'rgba(30,28,58,0.20)');
-                iridescentSheen.addColorStop(1, 'rgba(5,7,12,0.04)');
-                skinContext.fillStyle = iridescentSheen;
-                skinContext.fillRect(0, 0, 768, 384);
-              }
-              var skinRng = mulberry32(String(dn.id || '').split('').reduce(function (seed, char) { return ((seed * 37) + char.charCodeAt(0)) >>> 0; }, 97));
-              // Broad pigment patches keep the procedural surface from reading as a flat plastic shell.
-              for (var pigmentPatch = 0; pigmentPatch < 46; pigmentPatch++) {
-                skinContext.fillStyle = pigmentPatch % 3 === 0 ? 'rgba(25,20,14,0.022)' : 'rgba(244,225,181,0.018)';
-                skinContext.beginPath();
-                skinContext.ellipse(skinRng() * 768, skinRng() * 384, 18 + skinRng() * 84, 8 + skinRng() * 38, skinRng() * Math.PI, 0, Math.PI * 2);
-                skinContext.fill();
-              }
-              // Fine stippling suggests pores and scale edges without drawing a distracting repeated grid.
-              var surfaceMarkCount = surfaceHypothesis.featureScales ? 2400 : (surfaceHypothesis.filamentCoverage > 0 ? 760 : 1500);
-              for (var scaleDot = 0; scaleDot < surfaceMarkCount; scaleDot++) {
-                var scaleShade = Math.floor(34 + skinRng() * 94);
-                skinContext.fillStyle = 'rgba(' + scaleShade + ',' + Math.floor(scaleShade * 0.94) + ',' + Math.floor(scaleShade * 0.78) + ',' + (0.028 + skinRng() * 0.060) + ')';
-                skinContext.beginPath();
-                skinContext.ellipse(skinRng() * 768, skinRng() * 384, 0.7 + skinRng() * 2.6, 0.45 + skinRng() * 1.6, skinRng() * Math.PI, 0, Math.PI * 2);
-                skinContext.fill();
-              }
-              if (surfaceHypothesis.filamentCoverage > 0) {
-                skinContext.strokeStyle = 'rgba(48,42,34,0.18)';
-                skinContext.lineWidth = 1.4;
-                for (var filamentStroke = 0; filamentStroke < 420; filamentStroke++) {
-                  var filamentX = skinRng() * 768;
-                  var filamentY = skinRng() * 384;
-                  skinContext.beginPath();
-                  skinContext.moveTo(filamentX, filamentY);
-                  skinContext.quadraticCurveTo(filamentX + 3 + skinRng() * 8, filamentY - 3 - skinRng() * 7, filamentX + 6 + skinRng() * 11, filamentY - 1 + skinRng() * 5);
-                  skinContext.stroke();
+            var skinTexture = null, skinBumpTexture = null, skinRoughnessTexture = null;
+            if (props.showBody) {
+              var skinSeed = String(dn.id || '').split('').reduce(function (seed, char) { return ((seed * 37) + char.charCodeAt(0)) >>> 0; }, 97);
+              var skinRGB = new THREE.Color(bodyColor).toArray().map(function (value) { return Math.round(value * 255); });
+              var skinPixels = dinoSkinTextureData(512, 256, skinSeed, skinRGB, !!surfaceHypothesis.featureScales);
+              function makeSkinTexture(canvas, pixels, channel) {
+                canvas.width = 512; canvas.height = 256;
+                var context = canvas.getContext('2d');
+                if (!context) return null;
+                var data = context.createImageData(512, 256); data.data.set(pixels); context.putImageData(data, 0, 0);
+                var texture = new THREE.CanvasTexture(canvas);
+                texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+                texture.minFilter = THREE.LinearMipmapLinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.generateMipmaps = true;
+                texture.userData = { dinoMicrotexture: skinPixels.style, channel: channel };
+                if (channel === 'color') {
+                  if (THREE.sRGBEncoding !== undefined) texture.encoding = THREE.sRGBEncoding;
+                  if (THREE.SRGBColorSpace !== undefined) texture.colorSpace = THREE.SRGBColorSpace;
                 }
+                if (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+                return texture;
               }
-              skinTexture = new THREE.CanvasTexture(skinCanvas);
-              skinTexture.wrapS = THREE.RepeatWrapping;
-              skinTexture.wrapT = THREE.RepeatWrapping;
-              skinTexture.repeat.set(1, 1);
-              if (THREE.sRGBEncoding !== undefined) skinTexture.encoding = THREE.sRGBEncoding;
-              if (THREE.SRGBColorSpace !== undefined) skinTexture.colorSpace = THREE.SRGBColorSpace;
-              if (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) skinTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-
-              // Separate height and roughness maps give the low-poly reconstruction a tactile, matte surface.
-              var bumpCanvas = document.createElement('canvas');
-              bumpCanvas.width = 768;
-              bumpCanvas.height = 384;
-              var bumpContext = bumpCanvas.getContext('2d');
-              if (bumpContext) {
-                bumpContext.fillStyle = '#777777';
-                bumpContext.fillRect(0, 0, 768, 384);
-                for (var bumpDot = 0; bumpDot < surfaceMarkCount; bumpDot++) {
-                  var bumpValue = Math.floor(92 + skinRng() * 92);
-                  bumpContext.fillStyle = 'rgb(' + bumpValue + ',' + bumpValue + ',' + bumpValue + ')';
-                  bumpContext.beginPath();
-                  bumpContext.ellipse(skinRng() * 768, skinRng() * 384, 0.55 + skinRng() * 1.9, 0.35 + skinRng() * 1.2, skinRng() * Math.PI, 0, Math.PI * 2);
-                  bumpContext.fill();
-                }
-
-                skinBumpTexture = new THREE.CanvasTexture(bumpCanvas);
-                skinBumpTexture.wrapS = THREE.RepeatWrapping;
-                skinBumpTexture.wrapT = THREE.RepeatWrapping;
-                skinBumpTexture.repeat.set(1, 1);
-                if (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) skinBumpTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-              }
-
-              var roughnessCanvas = document.createElement('canvas');
-              roughnessCanvas.width = 256;
-              roughnessCanvas.height = 128;
-              var roughnessContext = roughnessCanvas.getContext('2d');
-              if (roughnessContext) {
-                roughnessContext.fillStyle = '#d7d7d7';
-                roughnessContext.fillRect(0, 0, 256, 128);
-                for (var roughnessPatch = 0; roughnessPatch < 180; roughnessPatch++) {
-                  var roughnessValue = Math.floor(164 + skinRng() * 70);
-                  roughnessContext.fillStyle = 'rgb(' + roughnessValue + ',' + roughnessValue + ',' + roughnessValue + ')';
-                  roughnessContext.beginPath();
-                  roughnessContext.arc(skinRng() * 256, skinRng() * 128, 1 + skinRng() * 4, 0, Math.PI * 2);
-                  roughnessContext.fill();
-                }
-                skinRoughnessTexture = new THREE.CanvasTexture(roughnessCanvas);
-                skinRoughnessTexture.wrapS = THREE.RepeatWrapping;
-                skinRoughnessTexture.wrapT = THREE.RepeatWrapping;
-                skinRoughnessTexture.repeat.set(1, 1);
-                if (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) skinRoughnessTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-              }
+              skinTexture = makeSkinTexture(skinCanvas, skinPixels.color, 'color');
+              skinBumpTexture = makeSkinTexture(document.createElement('canvas'), skinPixels.bump, 'bump');
+              skinRoughnessTexture = makeSkinTexture(document.createElement('canvas'), skinPixels.roughness, 'roughness');
             }
             var boneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xe9dfc7, emissive: 0x171b1a, emissiveIntensity: 0.18, roughness: 0.72, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xe9dfc7, emissive: 0x171b1a, shininess: 18 });
             var jointMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xc9b990, roughness: 0.76, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xc9b990, shininess: 12 });

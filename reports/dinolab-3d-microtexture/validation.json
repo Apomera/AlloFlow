@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-12",
+  "focusedChecksPassed": 141,
+  "focusedTestFiles": 8,
+  "newTextureTests": 8,
+  "browserScenariosPassed": 15,
+  "newBrowserScenarios": 6,
+  "existingRegionalBrowserScenarios": 9,
+  "species": [
+    "anchiornis",
+    "tyrannosaurus",
+    "sinosauropteryx",
+    "microraptor",
+    "triceratops",
+    "brachiosaurus",
+    "psittacosaurus"
+  ],
+  "maxTileEdgeDifference": 0,
+  "invalidMaps": 0,
+  "shaderFailures": 0,
+  "textureLifecycleChecked": [
+    "anchiornis",
+    "tyrannosaurus"
+  ],
+  "baseTexturePixelReductionPercent": 36.8421052631579,
+  "moduleCopies": 3,
+  "moduleSha256": "042B9BA04BBDB1D07EB64F8F975DFBA8A764C4B2AD602BB0E619329FD106CA4C",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "rendering": "Local Three.js r128 / Chromium software WebGL",
+  "hardwarePerformanceBenchmarked": false,
+  "deployed": false,
+  "pushed": false,
+  "initialCorrection": "Aligned grain roughness with its height variation"
+}

@@ -1,0 +1,18 @@
+{
+  "invalid": 0,
+  "outside": 0,
+  "mapped": 78,
+  "tailVertices": 1227,
+  "crest": 0,
+  "rootGap": 0,
+  "crestMaterials": [],
+  "bodyTextureDeviation": 1.667634809955405,
+  "bandOpacity": 0,
+  "clearances": [
+    0.3199999999999993,
+    0.3200000000000066
+  ],
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

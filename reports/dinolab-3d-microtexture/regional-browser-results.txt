@@ -1,0 +1,18 @@
+
+Running 9 tests using 1 worker
+
+(node:26044) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26044) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › anchiornis uses anatomical color regions (45.0s)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › sinosauropteryx uses anatomical color regions (21.1s)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › microraptor uses anatomical color regions (10.3s)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › psittacosaurus uses anatomical color regions (20.0s)
+  ok 5 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › tyrannosaurus uses anatomical color regions (16.1s)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › brachiosaurus uses anatomical color regions (17.6s)
+  ok 7 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:107:5 › tail pattern stays fixed to its moving surface (9.0s)
+  ok 8 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:122:7 › anchiornis classic reconstruction omits evidence palette features (10.0s)
+  ok 9 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:122:7 › sinosauropteryx classic reconstruction omits evidence palette features (9.1s)
+
+  9 passed (2.7m)

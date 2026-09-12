@@ -1,0 +1,56 @@
+{
+  "maps": [
+    {
+      "id": "18791E99-5D25-4455-84CD-C5E6E7E97EAD",
+      "channel": "color",
+      "style": "fine-grain",
+      "width": 512,
+      "height": 256,
+      "seam": 0,
+      "min": 184,
+      "max": 192,
+      "hash": 1019374650,
+      "repeat": true,
+      "mipmaps": true,
+      "colorEncoding": true
+    },
+    {
+      "id": "9C0833B5-AB7C-4AF1-A583-464B67DEFC95",
+      "channel": "bump",
+      "style": "fine-grain",
+      "width": 512,
+      "height": 256,
+      "seam": 0,
+      "min": 121,
+      "max": 132,
+      "hash": 3457057637,
+      "repeat": true,
+      "mipmaps": true,
+      "colorEncoding": true
+    },
+    {
+      "id": "63B9B7FC-C8B2-480A-8593-F1904BE9E2EB",
+      "channel": "roughness",
+      "style": "fine-grain",
+      "width": 512,
+      "height": 256,
+      "seam": 0,
+      "min": 224,
+      "max": 230,
+      "hash": 664758905,
+      "repeat": true,
+      "mipmaps": true,
+      "colorEncoding": true
+    }
+  ],
+  "coordinates": [
+    3869939615,
+    3869939615
+  ],
+  "invalid": 0,
+  "mapped": 36,
+  "crest": 0,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

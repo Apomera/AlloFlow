@@ -1,0 +1,31 @@
+{
+  "previousBaseTexels": 622592,
+  "currentBaseTexels": 393216,
+  "reductionPercent": 36.8421052631579,
+  "textureCount": 3,
+  "dimensions": [
+    512,
+    256
+  ],
+  "previousDimensions": [
+    [
+      768,
+      384
+    ],
+    [
+      768,
+      384
+    ],
+    [
+      256,
+      128
+    ]
+  ],
+  "channels": [
+    "sRGB color",
+    "linear height",
+    "linear roughness"
+  ],
+  "newMeshCount": 0,
+  "note": "Base texture allocation only; excludes mip levels, driver overhead and other scene textures. No hardware performance benchmark."
+}

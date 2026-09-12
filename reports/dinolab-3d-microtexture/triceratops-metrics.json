@@ -1,0 +1,56 @@
+{
+  "maps": [
+    {
+      "id": "A3BD9034-E827-45E4-890A-10BAF1C5B2C8",
+      "channel": "color",
+      "style": "fine-scales",
+      "width": 512,
+      "height": 256,
+      "seam": 0,
+      "min": 98,
+      "max": 104,
+      "hash": 671347335,
+      "repeat": true,
+      "mipmaps": true,
+      "colorEncoding": true
+    },
+    {
+      "id": "A18F9E3D-CBD0-4612-9C0E-2843C86012C6",
+      "channel": "bump",
+      "style": "fine-scales",
+      "width": 512,
+      "height": 256,
+      "seam": 0,
+      "min": 105,
+      "max": 160,
+      "hash": 434052938,
+      "repeat": true,
+      "mipmaps": true,
+      "colorEncoding": true
+    },
+    {
+      "id": "DD599173-7615-4CE9-B294-8E265960EF6E",
+      "channel": "roughness",
+      "style": "fine-scales",
+      "width": 512,
+      "height": 256,
+      "seam": 0,
+      "min": 210,
+      "max": 230,
+      "hash": 368405313,
+      "repeat": true,
+      "mipmaps": true,
+      "colorEncoding": true
+    }
+  ],
+  "coordinates": [
+    1727383312,
+    1191135933
+  ],
+  "invalid": 0,
+  "mapped": 83,
+  "crest": 0,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

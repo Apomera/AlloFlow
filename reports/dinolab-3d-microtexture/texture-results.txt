@@ -1,0 +1,28 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/dinolab_3d_microtexture.test.js
+[PureHelpers] 7 helpers registered
+
+ ❯ tests/dinolab_3d_microtexture.test.js (8 tests | 1 failed) 2997ms
+     × keeps relief and roughness aligned and bounded for grain 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_microtexture.test.js > Dino Lab coherent microtexture > keeps relief and roughness aligned and bounded for grain
+AssertionError: expected -0.747019164204115 to be less than -0.75
+ ❯ tests/dinolab_3d_microtexture.test.js:23:58
+     21|    expect(Math.min(...r)).toBeGreaterThanOrEqual(209);expect(Math.max(…
+     22|    const covariance=b.reduce((s,x,i)=>s+(x-bs.mean)*(r[i]-rs.mean),0)/…
+     23|    expect(covariance/Math.sqrt(bs.variance*rs.variance)).toBeLessThan(…
+       |                                                          ^
+     24|   });
+     25|  }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 37 passed (38)
+   Start at  15:47:55
+   Duration  7.58s (transform 55ms, setup 72ms, import 206ms, tests 3.14s, environment 3.42s)

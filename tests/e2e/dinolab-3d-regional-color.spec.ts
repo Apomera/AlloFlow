@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 import fs from 'node:fs';
 import {GlHarness} from './helpers/stem_gl_harness';
 test.describe.configure({timeout:240_000});test.use({video:'off',trace:'off'});
-const report='reports/dinolab-3d-regional-color';
+const report=process.env.DINOLAB_REPORT_DIR || 'reports/dinolab-3d-regional-color';
 const harness=new GlHarness({toolFile:'stem_lab/stem_tool_dinolab.js',toolId:'dinoLab',width:1180,height:920,appStyles:true,
 probes:"var realNow=performance.now.bind(performance);performance.now=function(){return window.__regionClock==null?realNow():window.__regionClock;};var R=THREE.WebGLRenderer;THREE.WebGLRenderer=function(o){var r=new R(o),render=r.render.bind(r);r.render=function(s,c){window.__regionRenderedClock=window.__regionClock;window.__regionScene=s;window.__regionCamera=c;window.__regionRenderer=r;if(window.__regionStudy){c.position.copy(window.__regionStudy.position);c.lookAt(window.__regionStudy.target);c.near=.001;c.updateProjectionMatrix();}return render(s,c);};return r;};"});
 test.beforeAll(async()=>{fs.mkdirSync(report,{recursive:true});await harness.start();});
@@ -49,8 +49,8 @@ async function inspect(page){
     const body=model.children.find(p=>p.userData.dinoRegion==='torso');
     let bodyTextureDeviation=0,bandOpacity=0;
     if(body){
-      const canvas=body.material.map.image,ctx=canvas.getContext('2d'),data=ctx.getImageData(0,192,768,1).data,values=[];
-      for(let x=0;x<768;x+=4)values.push(data[x*4]);
+      const canvas=body.material.map.image,ctx=canvas.getContext('2d'),data=ctx.getImageData(0,Math.floor(canvas.height/2),canvas.width,1).data,values=[];
+      for(let x=0;x<canvas.width;x+=4)values.push(data[x*4]);
       const mean=values.reduce((sum,value)=>sum+value,0)/values.length;
       bodyTextureDeviation=Math.sqrt(values.reduce((sum,value)=>sum+(value-mean)**2,0)/values.length);
       const shader={uniforms:{},vertexShader:'#include <begin_vertex>',fragmentShader:'#include <map_fragment>'};
