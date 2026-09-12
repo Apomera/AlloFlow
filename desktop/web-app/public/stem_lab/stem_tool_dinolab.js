@@ -6331,17 +6331,20 @@ window.StemLab = window.StemLab || {
   }
 
   // Bake coordinates in specimen space so separate meshes share a texture scale and rotation cannot move the pattern.
-  function dinoSkinCoordinates(THREE, geometry, matrix) {
+  function dinoSkinCoordinates(THREE, geometry, matrix, tailRegion) {
     var positions = geometry.attributes.position, normals = geometry.attributes.normal;
-    var skinPositions = [], skinNormals = [], p = new THREE.Vector3(), n = new THREE.Vector3();
+    var skinPositions = [], skinNormals = [], regionCoordinates = [], p = new THREE.Vector3(), n = new THREE.Vector3();
     var normalMatrix = new THREE.Matrix3().getNormalMatrix(matrix);
     for (var i = 0; i < positions.count; i++) {
       p.fromBufferAttribute(positions, i).applyMatrix4(matrix);
       n.fromBufferAttribute(normals, i).applyMatrix3(normalMatrix).normalize();
       skinPositions.push(p.x, p.y, p.z); skinNormals.push(n.x, n.y, n.z);
+      // Tail loft UVs run along its curve, so bands wrap the tail and move with it.
+      regionCoordinates.push(tailRegion && geometry.attributes.uv ? geometry.attributes.uv.getX(i) : 0, tailRegion ? 1 : 0);
     }
     geometry.setAttribute('dinoSkinPosition', new THREE.Float32BufferAttribute(skinPositions, 3));
     geometry.setAttribute('dinoSkinNormal', new THREE.Float32BufferAttribute(skinNormals, 3));
+    geometry.setAttribute('dinoSkinRegion', new THREE.Float32BufferAttribute(regionCoordinates, 2));
   }
   function dinoSkinMapping(THREE, material, size, shadeStrength, profile) {
     material.userData.dinoSkinMapping = true;
@@ -6354,13 +6357,15 @@ window.StemLab = window.StemLab || {
 
     material.onBeforeCompile = function (shader) {
       shader.uniforms.dinoSkinScale = { value: 1 / Math.max(0.01, size) };
+      var tailIvory = new THREE.Color('#f2ead8').convertSRGBToLinear();
+      shader.uniforms.dinoTailBandTint = { value: new THREE.Vector4(tailIvory.r, tailIvory.g, tailIvory.b, profile.pattern === 'ginger-banded' ? 0.90 : 0) };
       shader.uniforms.dinoShadeStrength = { value: pigmentProfile ? 0 : shadeStrength };
       shader.uniforms.dinoDorsalTint = { value: tintVector(profile.dorsalOverlay) };
       shader.uniforms.dinoUndersideTint = { value: tintVector(profile.undersideOverlay) };
-      shader.vertexShader = 'attribute vec3 dinoSkinPosition;\nattribute vec3 dinoSkinNormal;\nvarying vec3 vDinoSkinPosition;\nvarying vec3 vDinoSkinNormal;\n' + shader.vertexShader;
-      shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvDinoSkinPosition = dinoSkinPosition;\nvDinoSkinNormal = dinoSkinNormal;');
+      shader.vertexShader = 'attribute vec3 dinoSkinPosition;\nattribute vec3 dinoSkinNormal;\nattribute vec2 dinoSkinRegion;\nvarying vec2 vDinoSkinRegion;\nvarying vec3 vDinoSkinPosition;\nvarying vec3 vDinoSkinNormal;\n' + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvDinoSkinPosition = dinoSkinPosition;\nvDinoSkinNormal = dinoSkinNormal;\nvDinoSkinRegion = dinoSkinRegion;');
       var skinSampling = [
-        'varying vec3 vDinoSkinPosition;', 'varying vec3 vDinoSkinNormal;',
+        'varying vec3 vDinoSkinPosition;', 'varying vec3 vDinoSkinNormal;', 'varying vec2 vDinoSkinRegion;', 'uniform vec4 dinoTailBandTint;',
         'uniform float dinoSkinScale;', 'uniform float dinoShadeStrength;',
         'uniform vec4 dinoDorsalTint;', 'uniform vec4 dinoUndersideTint;',
         'vec4 dinoSampleSkin(sampler2D skinMap, vec3 p) {',
@@ -6379,7 +6384,10 @@ window.StemLab = window.StemLab || {
         'diffuseColor.rgb = mix(diffuseColor.rgb, dinoDorsalTint.rgb, max(skinUp, 0.0) * dinoDorsalTint.a);',
         'diffuseColor.rgb = mix(diffuseColor.rgb, dinoUndersideTint.rgb, max(-skinUp, 0.0) * dinoUndersideTint.a);',
         'diffuseColor.rgb *= 1.0 - max(skinUp, 0.0) * dinoShadeStrength;',
-        'diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.14 + vec3(0.028, 0.024, 0.016), max(-skinUp, 0.0) * dinoShadeStrength * 2.0);'
+        'diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.14 + vec3(0.028, 0.024, 0.016), max(-skinUp, 0.0) * dinoShadeStrength * 2.0);',
+        'float tailBandWave = sin(vDinoSkinRegion.x * 50.265482);',
+        'float tailBand = smoothstep(-0.16, 0.16, tailBandWave) * smoothstep(0.12, 0.22, vDinoSkinRegion.x) * vDinoSkinRegion.y;',
+        'diffuseColor.rgb = mix(diffuseColor.rgb, dinoTailBandTint.rgb, tailBand * dinoTailBandTint.a);'
       ].join('\n'));
       // Screen derivatives reuse one height sample per projection instead of resampling neighboring pixels.
       var bumpChunk = THREE.ShaderChunk.bumpmap_pars_fragment.replace(
@@ -6390,7 +6398,7 @@ window.StemLab = window.StemLab || {
       shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>',
         THREE.ShaderChunk.roughnessmap_fragment.replace('texture2D( roughnessMap, vUv )', 'dinoSampleSkin( roughnessMap, vDinoSkinPosition )'));
     };
-    material.customProgramCacheKey = function () { return 'dinolab-specimen-skin-v1'; };
+    material.customProgramCacheKey = function () { return 'dinolab-specimen-skin-v2'; };
     return material;
   }
 
@@ -7523,18 +7531,8 @@ window.StemLab = window.StemLab || {
             if (skinContext) {
               skinContext.fillStyle = bodyColor;
               skinContext.fillRect(0, 0, 768, 384);
-              if (integument.pattern === 'ginger-banded' || integument.pattern === 'white-banded') {
-                skinContext.save();
-                skinContext.strokeStyle = integument.patternColor;
-                skinContext.lineWidth = integument.pattern === 'ginger-banded' ? 20 : 24;
-                for (var integumentBand = -1; integumentBand < 14; integumentBand++) {
-                  skinContext.beginPath();
-                  skinContext.moveTo(integumentBand * 72, 0);
-                  skinContext.lineTo(integumentBand * 72 - 92, 384);
-                  skinContext.stroke();
-                }
-                skinContext.restore();
-              } else if (integument.pattern === 'iridescent') {
+              // Strong bands belong to their anatomical regions, not the shared skin tile.
+              if (integument.pattern === 'iridescent') {
                 var iridescentSheen = skinContext.createLinearGradient(0, 0, 768, 384);
                 iridescentSheen.addColorStop(0, 'rgba(48,64,104,0.16)');
                 iridescentSheen.addColorStop(0.42, 'rgba(164,177,220,0.06)');
@@ -7689,6 +7687,13 @@ window.StemLab = window.StemLab || {
             }
             activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat, muscle: muscleMat, lung: lungMat, airSac: airSacMat, keratin: keratinMat, filament: filamentMat, feather: featherVaneMat, scaleRelief: scaleReliefMat };
             activeMaterialSet.callout = anatomyCalloutMat;
+            var crestMat = null;
+            if (props.showBody && integument.pattern === 'white-banded' && surfaceHypothesis.filamentCoverage > 0) {
+              crestMat = featherVaneMat.clone();
+              crestMat.map = null;
+              crestMat.color.set(fieldPalette.accent).convertSRGBToLinear();
+              activeMaterialSet.crest = crestMat;
+            }
             [muscleMat, lungMat, airSacMat, anatomyCalloutMat].forEach(function (material) { material.visible = !lifeSurface; });
             visualMaterialsRef.current = activeMaterialSet;
             var markerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
@@ -8489,6 +8494,20 @@ window.StemLab = window.StemLab || {
                   addSeatedFilament(tailMeshes[0], tailCoatCenter, vec(0, 1, tailCoatSide * 0.55),
                     Math.max(0.028 * detailScale, ht * 0.014) * (0.72 + integumentRng() * 0.46),
                     Math.max(0.0035 * detailScale, ht * 0.0014), Math.max(0.008 * detailScale, len * 0.003));
+                }
+              }
+              if (crestMat) {
+                for (var crestIndex = 0; crestIndex < 13; crestIndex++) {
+                  var crestT = crestIndex / 12;
+                  var crestCenter = head.clone().add(vec(surfaceHeadLength * (-0.30 + crestT * 0.72), 0, 0));
+                  var crestLength = surfaceHeadHeight * (0.34 + Math.sin(Math.PI * crestT) * 0.62);
+                  var crestFeather = addSeatedFeather(headShell, crestCenter, vec(0, 1, 0),
+                    vec(surfaceHeadLength * 0.24, crestLength, (crestIndex % 3 - 1) * surfaceHeadDepth * 0.12),
+                    surfaceHeadLength * 0.085, vec(1, 0, 0), 'crown');
+                  if (crestFeather) {
+                    crestFeather.material = crestMat;
+                    crestFeather.userData.dinoFeature = 'crest-feather';
+                  }
                 }
               }
               if (surfaceHypothesis.dorsalBristles) {
@@ -9467,7 +9486,7 @@ window.StemLab = window.StemLab || {
               if (!part.isMesh || part.userData.dinoContour || !part.geometry) return;
               part.userData.dinoAnatomy = true;
               if (part.material && part.material.userData.dinoSkinMapping) {
-                dinoSkinCoordinates(THREE, part.geometry, part.matrixWorld);
+                dinoSkinCoordinates(THREE, part.geometry, part.matrixWorld, part.userData.dinoRegion === 'tail');
                 part.receiveShadow = true;
               }
               if (!part.geometry.boundingBox) part.geometry.computeBoundingBox();
@@ -10005,6 +10024,12 @@ window.StemLab = window.StemLab || {
             materials.keratin.opacity = opaqueSurface ? 1 : Math.min(0.94, 0.58 + alpha * 0.48);
             materials.filament.opacity = opaqueSurface ? 1 : Math.min(0.90, 0.44 + alpha * 0.58);
             materials.feather.opacity = opaqueSurface ? 1 : Math.min(0.92, 0.48 + alpha * 0.60);
+            if (materials.crest) {
+              materials.crest.opacity = materials.feather.opacity;
+              materials.crest.transparent = !opaqueSurface;
+              materials.crest.depthWrite = opaqueSurface;
+              materials.crest.needsUpdate = true;
+            }
             materials.scaleRelief.opacity = opaqueSurface ? 1 : Math.min(0.72, 0.18 + alpha * 0.62);
             [materials.body, materials.head, materials.accent, materials.keratin, materials.filament, materials.feather, materials.scaleRelief].forEach(function (material) {
               material.transparent = !opaqueSurface;

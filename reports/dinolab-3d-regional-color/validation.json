@@ -1,0 +1,29 @@
+{
+  "date": "2026-09-12",
+  "scope": "Dino Lab regional color and feather crest",
+  "focusedTestsPassed": 160,
+  "focusedTestFiles": 8,
+  "initialFocusedRun": {
+    "passed": 145,
+    "workerStartupErrors": 1,
+    "unstartedFile": "tests/dinolab_3d_accessibility.test.js"
+  },
+  "accessibilityRecheckPassed": 15,
+  "newRegionalTests": 11,
+  "browserTestsPassed": 11,
+  "testedSpecies": [
+    "anchiornis",
+    "sinosauropteryx",
+    "microraptor",
+    "psittacosaurus",
+    "tyrannosaurus",
+    "brachiosaurus"
+  ],
+  "tailVerticesChecked": 1227,
+  "moduleCopies": 3,
+  "moduleSha256": "C44376363E7CDE0DA8AD53C1AA802831A0A125F95DA83F9AAC9651DAC45D72F4",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "rendering": "Three.js r128 in Chromium with software WebGL",
+  "deployment": "No deployment or push performed"
+}

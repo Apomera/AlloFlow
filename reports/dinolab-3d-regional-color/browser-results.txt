@@ -1,0 +1,24 @@
+
+Running 11 tests using 1 worker
+
+(node:3260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › anchiornis uses anatomical color regions (54.6s)
+  ok  2 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › sinosauropteryx uses anatomical color regions (26.0s)
+  ok  3 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › microraptor uses anatomical color regions (15.3s)
+  ok  4 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › psittacosaurus uses anatomical color regions (21.4s)
+  ok  5 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › tyrannosaurus uses anatomical color regions (18.5s)
+  ok  6 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › brachiosaurus uses anatomical color regions (18.8s)
+  ok  7 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:107:5 › tail pattern stays fixed to its moving surface (9.2s)
+  ok  8 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:122:7 › anchiornis classic reconstruction omits evidence palette features (19.4s)
+  ok  9 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:122:7 › sinosauropteryx classic reconstruction omits evidence palette features (24.5s)
+(node:8684) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:8684) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 10 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:19:5 › catalog, notebook export, keyboard return, responsive layout, and contrast (1.1m)
+  ok 11 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:73:5 › species-file entry resets stale 3D evidence and connects the live station to the notebook (2.3m)
+
+  11 passed (7.9m)

@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:9928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › anchiornis uses anatomical color regions (2.3m)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:74:7 › sinosauropteryx uses anatomical color regions (44.3s)
+
+  2 passed (3.9m)

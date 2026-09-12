@@ -216,7 +216,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'Visible body silhouette: '");
     expect(source).toContain("'Species body silhouette'");
     expect(source).toContain('var surfaceSnout = head.clone().add(new THREE.Vector3().subVectors(snout, head).multiplyScalar(cranialSurface.muzzleLengthScale));');
-    expect(source).toContain('dinoSkinCoordinates(THREE, part.geometry, part.matrixWorld);');
+    expect(source).toContain("dinoSkinCoordinates(THREE, part.geometry, part.matrixWorld, part.userData.dinoRegion === 'tail');");
     expect(source).toContain("readoutChip('Head ' + cranialSurface.shortLabel");
     expect(source).toContain("'Visible head silhouette: '");
     expect(source).toContain("'Species head silhouette'");

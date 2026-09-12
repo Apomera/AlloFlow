@@ -1,0 +1,29 @@
+{
+  "invalid": 0,
+  "outside": 0,
+  "mapped": 38,
+  "tailVertices": 1227,
+  "crest": 13,
+  "rootGap": 0.030000000000011365,
+  "crestMaterials": [
+    {
+      "color": [
+        0.36625259558833256,
+        0.07421356837213867,
+        0.040915196900556984
+      ],
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true
+    }
+  ],
+  "bodyTextureDeviation": 1.7235649097912988,
+  "bandOpacity": 0,
+  "clearances": [
+    0.3199999999999986,
+    0.3199999999999996
+  ],
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}
