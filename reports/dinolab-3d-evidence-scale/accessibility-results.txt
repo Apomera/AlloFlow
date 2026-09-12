@@ -1,0 +1,139 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/dinolab_3d_accessibility.test.js
+[PureHelpers] 7 helpers registered
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > moves focus and activates sections with tab-list arrow keys
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > moves focus and activates sections with tab-list arrow keys
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > moves focus and activates sections with tab-list arrow keys
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > restores and clears a saved evidence investigation
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > restores and clears a saved evidence investigation
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > restores and clears a saved evidence investigation
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > copies a readable investigation summary from the share disclosure
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > copies a readable investigation summary from the share disclosure
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > moves the active evidence focus from the in-stage route
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > moves the active evidence focus from the in-stage route
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > moves the active evidence focus from the in-stage route
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > moves the active evidence focus from the in-stage route
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > switches to an opaque Life view without changing the reconstruction hypothesis
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > switches to an opaque Life view without changing the reconstruction hypothesis
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > switches to an opaque Life view without changing the reconstruction hypothesis
+Warning: The current testing environment is not configured to support act(...)
+    at DinoFieldStation3D (eval at setupDinoLab (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/dino_lab_harness.js:83:3), <anonymous>:7297:31)
+    at div
+    at div
+    at div
+    at div
+    at div
+Warning: The current testing environment is not configured to support act(...)
+    at DinoFieldStation3D (eval at setupDinoLab (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/dino_lab_harness.js:83:3), <anonymous>:7297:31)
+    at div
+    at div
+    at div
+    at div
+    at div
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > switches to an opaque Life view without changing the reconstruction hypothesis
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > renders Quiz, Classify, Map, and Compare without automated structural WCAG A/AA axe violations
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <div>. See https://reactjs.org/link/warning-keys for more information.
+    at div
+
+···············
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  19:00:25
+   Duration  95.04s (transform 96ms, setup 43ms, import 230ms, tests 93.34s, environment 1.16s)

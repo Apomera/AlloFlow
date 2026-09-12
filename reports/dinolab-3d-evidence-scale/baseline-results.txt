@@ -1,0 +1,10 @@
+
+Running 1 test using 1 worker
+
+(node:29720) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29720) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:86:56 › microraptor keeps evidence proportionate in close-up and whole views (47.9s)
+
+  1 passed (1.6m)

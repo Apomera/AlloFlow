@@ -9624,10 +9624,16 @@ window.StemLab = window.StemLab || {
               }
             }
 
+            // Match annotation floors to the specimen, including small feathered dinosaurs.
+            function evidenceAnnotationScale(id) {
+              return id === 'skull' ? Math.min(1, snoutLength / (ht * 0.25)) : 1;
+            }
             function addAssemblySocket(piece, active, placed) {
+              var annotationScale = evidenceAnnotationScale(piece.id);
               var point = piece.point.clone();
-              point.y += Math.max(0.09, ht * 0.028);
-              var ring = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.18, ht * 0.056), Math.max(0.010, ht * 0.0045), 10, 42), placed ? assemblyPlacedRingMat : (active ? assemblyFocusRingMat : assemblySocketMat));
+              point.y += (Math.max(0.09 * detailScale, ht * 0.028) * annotationScale);
+              var ring = new THREE.Mesh(new THREE.TorusGeometry((Math.max(0.18 * detailScale, ht * 0.056) * annotationScale), (Math.max(0.010 * detailScale, ht * 0.0045) * annotationScale), 10, 42), placed ? assemblyPlacedRingMat : (active ? assemblyFocusRingMat : assemblySocketMat));
+              ring.name = 'evidence-socket-' + piece.id;
               ring.position.copy(point);
               ring.rotation.x = Math.PI / 2;
               ring.renderOrder = active ? 29 : (placed ? 24 : 12);
@@ -9661,59 +9667,64 @@ window.StemLab = window.StemLab || {
               scene.add(group);
             }
             function addPlacedAssemblyPiece(id, active, claimEvidence) {
+              var firstPart = model.children.length;
               var mat = claimEvidence ? claimEvidenceMat : (active ? assemblyFocusMat : assemblyPlacedMat);
               var order = claimEvidence ? 32 : (active ? 30 : 24);
               if (id === 'skull') {
-                addAssemblyEllipsoid(model, head.clone(), vec(Math.max(0.16, len * 0.042), Math.max(0.10, ht * 0.048), Math.max(0.09, ht * 0.042)), mat, order);
+                addAssemblyEllipsoid(model, head.clone(), vec(Math.max(0.16 * detailScale, len * 0.042), Math.max(0.10 * detailScale, ht * 0.048), Math.max(0.09 * detailScale, ht * 0.042)), mat, order);
               } else if (id === 'spine') {
-                addAssemblyCylinder(model, shoulder, hip, Math.max(0.052, ht * 0.018), mat, order);
+                addAssemblyCylinder(model, shoulder, hip, Math.max(0.052 * detailScale, ht * 0.018), mat, order);
               } else if (id === 'ribs') {
                 for (var ri = 0; ri < 3; ri++) {
-                  var rib = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.15, bodyDepth * (0.76 - ri * 0.08)), Math.max(0.010, ht * 0.004), 8, 32), mat);
-                  rib.position.set(bodyCenter.x + (ri - 1) * Math.max(0.10, len * 0.030), bodyCenter.y, 0);
+                  var rib = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.15 * detailScale, bodyDepth * (0.76 - ri * 0.08)), Math.max(0.010 * detailScale, ht * 0.004), 8, 32), mat);
+                  rib.position.set(bodyCenter.x + (ri - 1) * Math.max(0.10 * detailScale, len * 0.030), bodyCenter.y, 0);
                   rib.rotation.y = Math.PI / 2;
-                  rib.scale.y = Math.max(0.52, bodyHeight / Math.max(0.18, bodyDepth));
+                  rib.scale.y = Math.max(0.52, bodyHeight / Math.max(0.18 * detailScale, bodyDepth));
                   rib.renderOrder = order;
                   model.add(rib);
                 }
               } else if (id === 'pelvis') {
-                addAssemblyEllipsoid(model, hip.clone(), vec(Math.max(0.16, ht * 0.070), Math.max(0.09, ht * 0.038), Math.max(0.14, bodyDepth * 0.70)), mat, order);
+                addAssemblyEllipsoid(model, hip.clone(), vec(Math.max(0.16 * detailScale, ht * 0.070), Math.max(0.09 * detailScale, ht * 0.038), Math.max(0.14 * detailScale, bodyDepth * 0.70)), mat, order);
               } else if (id === 'hindlimb') {
-                var kneeA = vec(hip.x + len * 0.025, Math.max(0.18, hip.y * 0.48), stance);
-                var footA = vec(hip.x + len * 0.085, 0.06, stance + 0.10);
-                var kneeB = vec(hip.x + len * 0.025, Math.max(0.18, hip.y * 0.48), -stance);
-                var footB = vec(hip.x + len * 0.085, 0.06, -stance - 0.10);
-                addAssemblyCylinder(model, vec(hip.x, hip.y, stance), kneeA, Math.max(0.040, ht * 0.014), mat, order);
-                addAssemblyCylinder(model, kneeA, footA, Math.max(0.034, ht * 0.012), mat, order);
-                addAssemblyCylinder(model, vec(hip.x, hip.y, -stance), kneeB, Math.max(0.040, ht * 0.014), mat, order);
-                addAssemblyCylinder(model, kneeB, footB, Math.max(0.034, ht * 0.012), mat, order);
+                var kneeA = vec(hip.x + len * 0.025, Math.max(0.18 * detailScale, hip.y * 0.48), stance);
+                var footA = vec(hip.x + len * 0.085, 0.06 * detailScale, stance + 0.10 * detailScale);
+                var kneeB = vec(hip.x + len * 0.025, Math.max(0.18 * detailScale, hip.y * 0.48), -stance);
+                var footB = vec(hip.x + len * 0.085, 0.06 * detailScale, -stance - 0.10 * detailScale);
+                addAssemblyCylinder(model, vec(hip.x, hip.y, stance), kneeA, Math.max(0.040 * detailScale, ht * 0.014), mat, order);
+                addAssemblyCylinder(model, kneeA, footA, Math.max(0.034 * detailScale, ht * 0.012), mat, order);
+                addAssemblyCylinder(model, vec(hip.x, hip.y, -stance), kneeB, Math.max(0.040 * detailScale, ht * 0.014), mat, order);
+                addAssemblyCylinder(model, kneeB, footB, Math.max(0.034 * detailScale, ht * 0.012), mat, order);
               } else if (id === 'tail') {
-                addAssemblyCylinder(model, hip, tail, Math.max(0.048, ht * 0.016), mat, order);
+                addAssemblyCylinder(model, hip, tail, Math.max(0.048 * detailScale, ht * 0.016), mat, order);
               }
+              model.children.slice(firstPart).forEach(function (part) { part.userData.dinoAssemblyPiece = id; });
             }
             function addClaimEvidenceBeacon(piece) {
+              var annotationScale = evidenceAnnotationScale(piece.id);
               var point = piece.point.clone();
-              point.y += Math.max(0.14, ht * 0.040);
+              point.y += (Math.max(0.14 * detailScale, ht * 0.040) * annotationScale);
               var anchorPoint = claimEvidenceAnchorId && evidenceAnchorPoints[claimEvidenceAnchorId] ? evidenceAnchorPoints[claimEvidenceAnchorId].clone() : null;
               if (anchorPoint) {
-                anchorPoint.y += Math.max(0.16, ht * 0.052);
-                if (point.distanceTo(anchorPoint) > Math.max(0.10, ht * 0.030)) addModelCylinder(point, anchorPoint, Math.max(0.014, ht * 0.005), claimEvidenceTrailMat, 31);
+                anchorPoint.y += Math.max(0.16 * detailScale, ht * 0.052) * evidenceAnnotationScale(claimEvidenceAnchorId);
+                if (point.distanceTo(anchorPoint) > (Math.max(0.10 * detailScale, ht * 0.030) * annotationScale)) addModelCylinder(point, anchorPoint, (Math.max(0.014 * detailScale, ht * 0.005) * annotationScale), claimEvidenceTrailMat, 31);
               }
-              var ring = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.24, ht * 0.074), Math.max(0.014, ht * 0.0055), 10, 52), claimEvidenceRingMat);
+              var ring = new THREE.Mesh(new THREE.TorusGeometry((Math.max(0.24 * detailScale, ht * 0.074) * annotationScale), (Math.max(0.014 * detailScale, ht * 0.0055) * annotationScale), 10, 52), claimEvidenceRingMat);
+              ring.name = 'evidence-claim-halo-' + piece.id;
               ring.position.copy(point);
               ring.rotation.x = Math.PI / 2;
               ring.renderOrder = 34;
               model.add(ring);
               claimEvidencePulse = ring;
-              var beamHeight = Math.max(0.82, ht * 0.28);
-              var beam = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.010, ht * 0.0035), Math.max(0.010, ht * 0.0035), beamHeight, 10), claimEvidenceBeamMat);
+              var beamHeight = (Math.max(0.82 * detailScale, ht * 0.28) * annotationScale);
+              var beam = new THREE.Mesh(new THREE.CylinderGeometry((Math.max(0.010 * detailScale, ht * 0.0035) * annotationScale), (Math.max(0.010 * detailScale, ht * 0.0035) * annotationScale), beamHeight, 10), claimEvidenceBeamMat);
+              beam.name = 'evidence-claim-beam-' + piece.id;
               beam.position.copy(point);
               beam.position.y += beamHeight * 0.5;
               beam.renderOrder = 33;
               model.add(beam);
               var labelPos = piece.point.clone();
-              labelPos.y += Math.max(0.88, ht * 0.26);
-              labelPos.z += Math.max(0.20, bodyDepth * 0.55);
+              labelPos.y += (Math.max(0.88 * detailScale, ht * 0.26) * annotationScale);
+              labelPos.z += (Math.max(0.20 * detailScale, bodyDepth * 0.55) * annotationScale);
               addTextLabel('Claim: ' + piece.label, labelPos, '#14b8a6');
             }
             if (props.assemblyTotal != null && props.showEvidence && assemblyUnlocked) {
@@ -9722,7 +9733,7 @@ window.StemLab = window.StemLab || {
                 { id: 'spine', label: 'Spine', point: bodyCenter },
                 { id: 'ribs', label: 'Ribs', point: bodyCenter.clone().add(vec(-len * 0.035, 0, 0)) },
                 { id: 'pelvis', label: 'Pelvis', point: hip },
-                { id: 'hindlimb', label: 'Hindlimb', point: vec(hip.x, Math.max(0.20, hip.y * 0.50), stance) },
+                { id: 'hindlimb', label: 'Hindlimb', point: vec(hip.x, Math.max(0.20 * detailScale, hip.y * 0.50), stance) },
                 { id: 'tail', label: 'Tail', point: new THREE.Vector3().copy(hip).add(tail).multiplyScalar(0.5) }
               ];
               assemblyPieces3d.forEach(function (piece, idx) {
@@ -9735,8 +9746,8 @@ window.StemLab = window.StemLab || {
                 if (claimEvidence) addClaimEvidenceBeacon(piece);
                 if (active && !claimEvidence) {
                   var assemblyLabel = piece.point.clone();
-                  assemblyLabel.y += Math.max(0.68, ht * 0.20);
-                  assemblyLabel.z -= Math.max(0.18, bodyDepth * 0.50);
+                  assemblyLabel.y += Math.max(0.68 * detailScale, ht * 0.20) * evidenceAnnotationScale(piece.id);
+                  assemblyLabel.z -= Math.max(0.18 * detailScale, bodyDepth * 0.50) * evidenceAnnotationScale(piece.id);
                   addTextLabel((placed ? 'Placed ' : 'Assemble ') + piece.label, assemblyLabel, placed ? '#22c55e' : '#a78bfa');
                 }
               });
@@ -9749,12 +9760,12 @@ window.StemLab = window.StemLab || {
                 { id: 'hip', label: 'Hip', point: hip }
               ];
               var evidencePoints = {};
-              function evidenceMarkPoint(point) {
+              function evidenceMarkPoint(point, id) {
                 var p = point.clone();
-                p.y += Math.max(0.12, ht * 0.050);
+                p.y += Math.max(0.12 * detailScale, ht * 0.050) * evidenceAnnotationScale(id);
                 return p;
               }
-              evidenceAnchors.forEach(function (anchor) { evidencePoints[anchor.id] = evidenceMarkPoint(anchor.point); });
+              evidenceAnchors.forEach(function (anchor) { evidencePoints[anchor.id] = evidenceMarkPoint(anchor.point, anchor.id); });
               [
                 { a: 'skull', b: 'shoulder' },
                 { a: 'shoulder', b: 'hip' }
@@ -9765,20 +9776,23 @@ window.StemLab = window.StemLab || {
                 var complete = !!loggedAnchors[segment.a] && !!loggedAnchors[segment.b];
                 var active = segment.a === scanTargetId || segment.b === scanTargetId;
                 var mat = complete ? loggedPathMat : (active ? activePathMat : evidencePathMat);
-                addModelCylinder(a, b, Math.max(0.018, ht * 0.006), mat, complete ? 21 : (active ? 18 : 7));
+                addModelCylinder(a, b, Math.max(0.018 * detailScale, ht * 0.006), mat, complete ? 21 : (active ? 18 : 7));
               });
               evidenceAnchors.forEach(function (anchor) {
+                var annotationScale = evidenceAnnotationScale(anchor.id);
                 var anchorLogged = !!loggedAnchors[anchor.id];
-                var mark = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.09, ht * 0.026), 16, 10), anchorLogged ? loggedMarkerMat : markerMat);
+                var mark = new THREE.Mesh(new THREE.SphereGeometry((Math.max(0.09 * detailScale, ht * 0.026) * annotationScale), 16, 10), anchorLogged ? loggedMarkerMat : markerMat);
+                mark.name = 'evidence-marker-' + anchor.id;
                 mark.position.copy(evidencePoints[anchor.id]);
                 mark.renderOrder = anchorLogged ? 23 : 10;
                 model.add(mark);
                 var labelPos = anchor.point.clone();
-                labelPos.y += Math.max(0.46, ht * 0.15);
-                labelPos.z += Math.max(0.18, bodyDepth * 0.48);
+                labelPos.y += (Math.max(0.46 * detailScale, ht * 0.15) * annotationScale);
+                labelPos.z += (Math.max(0.18 * detailScale, bodyDepth * 0.48) * annotationScale);
                 addTextLabel(anchor.label + (anchorLogged ? ' done' : ''), labelPos, anchorLogged ? '#22c55e' : '#38bdf8');
                 if (anchorLogged) {
-                  var loggedHalo = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.18, ht * 0.060), Math.max(0.012, ht * 0.005), 10, 42), loggedRingMat);
+                  var loggedHalo = new THREE.Mesh(new THREE.TorusGeometry((Math.max(0.18 * detailScale, ht * 0.060) * annotationScale), (Math.max(0.012 * detailScale, ht * 0.005) * annotationScale), 10, 42), loggedRingMat);
+                  loggedHalo.name = 'evidence-logged-halo-' + anchor.id;
                   loggedHalo.position.copy(mark.position);
                   loggedHalo.rotation.x = Math.PI / 2;
                   loggedHalo.renderOrder = 22;
@@ -9787,16 +9801,18 @@ window.StemLab = window.StemLab || {
                 }
                 if (anchor.id === scanTargetId) {
                   var haloMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
-                  var halo = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.22, ht * 0.075), Math.max(0.014, ht * 0.006), 10, 48), haloMat);
+                  var halo = new THREE.Mesh(new THREE.TorusGeometry((Math.max(0.22 * detailScale, ht * 0.075) * annotationScale), (Math.max(0.014 * detailScale, ht * 0.006) * annotationScale), 10, 48), haloMat);
+                  halo.name = 'evidence-scan-halo-' + anchor.id;
                   halo.position.copy(mark.position);
                   halo.rotation.x = Math.PI / 2;
                   halo.renderOrder = 25;
                   model.add(halo);
                   scanPulse = halo;
                   var beamMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.28, depthWrite: false, depthTest: false });
-                  var beam = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.008, ht * 0.003), Math.max(0.008, ht * 0.003), Math.max(0.9, ht * 0.34), 10), beamMat);
+                  var beam = new THREE.Mesh(new THREE.CylinderGeometry((Math.max(0.008 * detailScale, ht * 0.003) * annotationScale), (Math.max(0.008 * detailScale, ht * 0.003) * annotationScale), (Math.max(0.9 * detailScale, ht * 0.34) * annotationScale), 10), beamMat);
+                  beam.name = 'evidence-scan-beam-' + anchor.id;
                   beam.position.copy(mark.position);
-                  beam.position.y += Math.max(0.46, ht * 0.17);
+                  beam.position.y += (Math.max(0.46 * detailScale, ht * 0.17) * annotationScale);
                   beam.renderOrder = 24;
                   model.add(beam);
                 }
@@ -9893,6 +9909,17 @@ window.StemLab = window.StemLab || {
               yawRef.current.value = yaw; interactionPauseUntil = performance.now() + (cameraStudy === 'full' ? 3000 : 30000);
               updateCameraView(); setStatus(message);
             };
+            activeCameraControl.focusEvidence = function () {
+              if (!evidenceAnchorPoints[scanTargetId]) return;
+              cameraStudy = 'full';
+              cameraTargetIsEvidence = true;
+              cameraTarget = evidenceAnchorPoints[scanTargetId].clone();
+              yawRef.current.study = 'full'; yawRef.current.framing = 'evidence';
+              setStudyView({ speciesId: props.species.id, region: 'full' });
+              pauseAutoRotate(30000);
+              updateCameraView();
+              setStatus('Camera centered on ' + cap(scanTargetId) + ' evidence anchor.');
+            };
             cameraControlRef.current = activeCameraControl;
             updateCameraView();
 
@@ -9903,7 +9930,7 @@ window.StemLab = window.StemLab || {
               var candidates = sceneLabels.slice().sort(function (a, b) {
                 function priority(label) {
                   var text = label.userData.dinoLabel;
-                  if (text.toLowerCase() === scanTargetId) return 0;
+                  if (text.toLowerCase().replace(/ done$/, '') === scanTargetId) return 0;
                   if (/^(Skull|Shoulder|Hip)( done)?$/.test(text)) return 1;
                   if (/^(Claim:|Placed|Assemble)/.test(text)) return 2;
                   return 3;
@@ -10245,7 +10272,7 @@ var evidenceRoute = [
               var logged = !!loggedRoute[step.id];
               var state = logged ? 'Logged' : (current ? 'Current' : 'Next');
               return el('div', { key: step.id, role: 'listitem', style: { marginTop: index ? 4 : 0 } },
-                el('button', { type: 'button', onClick: function () { if (props.onScanTargetChange) props.onScanTargetChange(index); }, 'aria-current': current ? 'step' : null, 'aria-pressed': current ? 'true' : 'false', 'aria-label': 'Focus ' + step.label + ' evidence anchor' + (logged ? ', logged' : (current ? ', current focus' : ', next focus')), style: { width: '100%', display: 'grid', gridTemplateColumns: '20px minmax(0,1fr) auto', alignItems: 'center', gap: 6, padding: '5px 6px', borderRadius: 7, border: '1px solid ' + (current ? 'rgba(245,158,11,0.68)' : (logged ? 'rgba(34,197,94,0.46)' : 'rgba(148,163,184,0.24)')), background: current ? 'rgba(245,158,11,0.16)' : (logged ? 'rgba(34,197,94,0.10)' : 'rgba(15,23,42,0.44)'), color: '#f8fafc', cursor: 'pointer', textAlign: 'left', fontSize: 11.5, fontWeight: 850 } },
+                el('button', { type: 'button', onClick: function () { if (current && cameraControlRef.current && cameraControlRef.current.focusEvidence) { notifyOrientationInteraction(); setCameraPreset(null); cameraControlRef.current.focusEvidence(); } if (props.onScanTargetChange) props.onScanTargetChange(index); }, 'aria-current': current ? 'step' : null, 'aria-pressed': current ? 'true' : 'false', 'aria-label': 'Focus ' + step.label + ' evidence anchor' + (logged ? ', logged' : (current ? ', current focus' : ', next focus')), style: { width: '100%', display: 'grid', gridTemplateColumns: '20px minmax(0,1fr) auto', alignItems: 'center', gap: 6, padding: '5px 6px', borderRadius: 7, border: '1px solid ' + (current ? 'rgba(245,158,11,0.68)' : (logged ? 'rgba(34,197,94,0.46)' : 'rgba(148,163,184,0.24)')), background: current ? 'rgba(245,158,11,0.16)' : (logged ? 'rgba(34,197,94,0.10)' : 'rgba(15,23,42,0.44)'), color: '#f8fafc', cursor: 'pointer', textAlign: 'left', fontSize: 11.5, fontWeight: 850 } },
                   el('span', { 'aria-hidden': 'true', style: { width: 18, height: 18, display: 'grid', placeItems: 'center', borderRadius: 999, background: current ? '#b45309' : (logged ? '#166534' : 'rgba(148,163,184,0.22)'), color: '#fff', fontSize: 10, fontWeight: 900 } }, String(index + 1)),
                   el('span', null, step.label),
                   el('span', { style: { color: current ? '#fbbf24' : (logged ? '#86efac' : '#cbd5e1'), fontSize: 9.5, fontWeight: 900, textTransform: 'uppercase' } }, state)
@@ -11687,7 +11714,7 @@ var evidenceRoute = [
         );
       }
 
-      var accessibilityStyles = '@media(max-width:720px){.dinolab-root .dinolab-3d-evidence-route{grid-template-columns:repeat(3,minmax(0,1fr))!important}.dinolab-root .dinolab-3d-evidence-route>div:first-child,.dinolab-root .dinolab-3d-evidence-route>div:last-child,.dinolab-root .dinolab-3d-evidence-route>button:last-child{grid-column:1/-1}.dinolab-root .dinolab-3d-camera-readout{max-width:calc(100% - 170px);font-size:9px!important}.dinolab-root .dinolab-3d-readouts>.dinolab-3d-chip:nth-child(n+3){display:none}.dinolab-root .dinolab-fit-model{font-size:10px!important;padding:7px!important;bottom:55px!important}}' +
+      var accessibilityStyles = '@media(max-width:720px){.dinolab-root .dinolab-3d-evidence-route{grid-template-columns:repeat(3,minmax(0,1fr))!important}.dinolab-root .dinolab-3d-evidence-route>div:first-child,.dinolab-root .dinolab-3d-evidence-route>div:last-child,.dinolab-root .dinolab-3d-evidence-route>button:last-child{grid-column:1/-1}.dinolab-root .dinolab-3d-evidence-route>div[role=listitem]{margin-top:0!important}.dinolab-root .dinolab-3d-evidence-route>div[role=listitem]>button{grid-template-columns:18px minmax(0,1fr)!important;row-gap:2px!important;min-height:44px}.dinolab-root .dinolab-3d-evidence-route>div[role=listitem]>button>span:last-child{grid-column:2}.dinolab-root .dinolab-3d-camera-readout{max-width:calc(100% - 170px);font-size:9px!important}.dinolab-root .dinolab-3d-readouts>.dinolab-3d-chip:nth-child(n+3){display:none}.dinolab-root .dinolab-fit-model{font-size:10px!important;padding:7px!important;bottom:55px!important}}' +
         '.dinolab-root button:disabled{opacity:.5;cursor:not-allowed!important}.dinolab-root summary:focus-visible{outline:3px solid #0f766e;outline-offset:4px}.dinolab-root .dinolab-compare-grid>div{min-width:0}.dinolab-root .dinolab-notebook-layout select{box-sizing:border-box;max-width:100%}@media(max-width:720px){.dinolab-root .dinolab-specimen-file{position:static!important;max-height:none!important;overflow:visible!important}.dinolab-root .dinolab-specimen-file.is-open{order:-1}.dinolab-root .dinolab-notebook-layout{grid-template-columns:minmax(0,1fr)!important}}@media(max-width:380px){.dinolab-root .dinolab-species-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.dinolab-root .dinolab-species-grid button{padding:9px!important}.dinolab-root .dinolab-species-grid span{white-space:normal!important}}' +
         '.dinolab-root button:focus-visible,.dinolab-root input:focus-visible,.dinolab-root select:focus-visible,.dinolab-root textarea:focus-visible,.dinolab-root [tabindex]:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px;box-shadow:0 0 0 5px #0f766e!important}' +
         '@media(max-width:980px){.dinolab-root .dinolab-field-drawer{position:static!important;width:100%!important;max-height:none!important;margin-top:12px!important}.dinolab-root .dinolab-field-workflow{grid-template-columns:repeat(2,minmax(0,1fr))!important}}' +

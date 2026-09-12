@@ -1,0 +1,111 @@
+
+Running 8 tests using 1 worker
+
+(node:29152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:86:56 › microraptor keeps evidence proportionate in close-up and whole views (31.9s)
+  x  2 [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:86:56 › anchiornis keeps evidence proportionate in close-up and whole views (21.6s)
+(node:38044) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38044) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:86:56 › sinosauropteryx keeps evidence proportionate in close-up and whole views (23.7s)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:86:56 › tyrannosaurus keeps evidence proportionate in close-up and whole views (31.9s)
+  x  5 [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:86:56 › brachiosaurus keeps evidence proportionate in close-up and whole views (16.4s)
+(node:37968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:128:61 › microraptor keeps placed fossils and claim highlights proportionate (28.1s)
+  ok 7 [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:128:61 › tyrannosaurus keeps placed fossils and claim highlights proportionate (45.5s)
+  x  8 [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:159:5 › phone evidence route still focuses and logs each anchor (35.5s)
+
+
+  1) [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:86:56 › anchiornis keeps evidence proportionate in close-up and whole views
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m0.24[39m
+    Received:   [31m0.29391594004114824[39m
+
+       96 |     expect(head.beams).toHaveLength(1);
+       97 |     expect(head.beams[0].height / height).toBeLessThanOrEqual(.451);
+    >  98 |     expect(head.markers[0].radius * 2 / head.headSpan).toBeLessThan(.24);
+          |                                                        ^
+       99 |   }
+      100 |   if (species === 'microraptor') {
+      101 |     await page.setViewportSize({ width: 390, height: 844 }); await settle(page);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-evidence-scale.spec.ts:98:56
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-evidence-scale\acceptance\dinolab-3d-evidence-scale--0cdac-in-close-up-and-whole-views-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-evidence-scale\acceptance\dinolab-3d-evidence-scale--0cdac-in-close-up-and-whole-views-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-evidence-scale\acceptance\dinolab-3d-evidence-scale--0cdac-in-close-up-and-whole-views-chromium\error-context.md
+
+  2) [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:86:56 › brachiosaurus keeps evidence proportionate in close-up and whole views
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m0.24[39m
+    Received:   [31m0.5372755583016304[39m
+
+       96 |     expect(head.beams).toHaveLength(1);
+       97 |     expect(head.beams[0].height / height).toBeLessThanOrEqual(.451);
+    >  98 |     expect(head.markers[0].radius * 2 / head.headSpan).toBeLessThan(.24);
+          |                                                        ^
+       99 |   }
+      100 |   if (species === 'microraptor') {
+      101 |     await page.setViewportSize({ width: 390, height: 844 }); await settle(page);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-evidence-scale.spec.ts:98:56
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-evidence-scale\acceptance\dinolab-3d-evidence-scale--f1520-in-close-up-and-whole-views-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-evidence-scale\acceptance\dinolab-3d-evidence-scale--f1520-in-close-up-and-whole-views-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-evidence-scale\acceptance\dinolab-3d-evidence-scale--f1520-in-close-up-and-whole-views-chromium\error-context.md
+
+  3) [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:159:5 › phone evidence route still focuses and logs each anchor
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.dinolab-3d-camera-readout')
+    Expected substring: [32m"Skull anchor"[39m
+    Received string:    [31m"Target full model | Rotation 20 degrees | Elevation 10 degrees | Zoom 100 percent"[39m
+    Timeout: 15000ms
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 15000ms[22m
+    [2m  - waiting for locator('.dinolab-3d-camera-readout')[22m
+    [2m    27 × locator resolved to <div class="dinolab-3d-camera-readout" aria-label="Current 3D camera view">Target full model | Rotation 20 degrees | Elevati…</div>[22m
+    [2m       - unexpected value "Target full model | Rotation 20 degrees | Elevation 10 degrees | Zoom 100 percent"[22m
+
+
+      164 |     await focus.focus(); await page.keyboard.press('Enter'); await settle(page);
+      165 |     await expect(focus).toHaveAttribute('aria-current', 'step');
+    > 166 |     await expect(page.locator('.dinolab-3d-camera-readout')).toContainText(label + ' anchor');
+          |                                                              ^
+      167 |     await page.getByRole('button', { name: 'Log ' + label + ' observation', exact: true }).click(); await settle(page);
+      168 |   }
+      169 |   await expect(page.locator('.dinolab-3d-evidence-route')).toContainText('3/3');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-evidence-scale.spec.ts:166:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-evidence-scale\acceptance\dinolab-3d-evidence-scale--f7e20-ocuses-and-logs-each-anchor-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-evidence-scale\acceptance\dinolab-3d-evidence-scale--f7e20-ocuses-and-logs-each-anchor-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-evidence-scale\acceptance\dinolab-3d-evidence-scale--f7e20-ocuses-and-logs-each-anchor-chromium\error-context.md
+
+  3 failed
+    [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:86:56 › anchiornis keeps evidence proportionate in close-up and whole views
+    [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:86:56 › brachiosaurus keeps evidence proportionate in close-up and whole views
+    [chromium] › tests\e2e\dinolab-3d-evidence-scale.spec.ts:159:5 › phone evidence route still focuses and logs each anchor
+  5 passed (4.4m)

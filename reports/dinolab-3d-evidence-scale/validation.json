@@ -1,0 +1,60 @@
+{
+  "date": "2026-09-12",
+  "focusedChecksPassed": 121,
+  "focusedTestFiles": 5,
+  "browserScenariosPassed": 10,
+  "newBrowserScenarios": 8,
+  "existingBrowserScenarios": 2,
+  "species": [
+    "microraptor",
+    "anchiornis",
+    "sinosauropteryx",
+    "tyrannosaurus",
+    "brachiosaurus"
+  ],
+  "initialFocused": {
+    "passed": 96,
+    "failed": 25,
+    "snapshotUpdates": 18,
+    "accessibilityTimeouts": 3,
+    "subsequentDomFailures": 4
+  },
+  "finalAccessibilityPassed": 15,
+  "finalGoldenPassed": 73,
+  "snapshotDiff": "Only reviewed mobile route CSS in 18 tab snapshots",
+  "initialBrowser": {
+    "passed": 5,
+    "failed": 3
+  },
+  "correctedBrowserPassed": 3,
+  "microraptor": {
+    "markerRadiusBefore": 0.09,
+    "markerRadiusAfter": 0.01125,
+    "scanHaloRadiusBefore": 0.22,
+    "scanHaloRadiusAfter": 0.0275,
+    "beamHeightBefore": 0.9,
+    "beamHeightAfter": 0.1125
+  },
+  "activeAnchorRecenter": true,
+  "phoneButtonMinHeight": 44,
+  "moduleCopies": 3,
+  "moduleSha256": "EBF9B3CE6E9B82DB74AC86428DF8365E16897D93958EEC4D026F353B23D5636B",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "deployed": false,
+  "pushed": false,
+  "hardwarePerformanceBenchmarked": false,
+  "commitStatus": "normal commit path restored after unrelated source drift cleared",
+  "commitHook": {
+    "unrelatedDrift": [
+      "content_engine_source.jsx",
+      "desktop/web-app/src/content_engine_source.jsx"
+    ],
+    "otherChecks": "pipeline integrity, staged file sizes, Lumen safeguard and localization staleness passed independently",
+    "bypassRequested": "--no-verify",
+    "bypassExecuted": false,
+    "automaticApprovalReview": "rejected; explicit authorization required",
+    "unrelatedFilesChanged": false,
+    "normalDriftRecheck": "passed"
+  }
+}
