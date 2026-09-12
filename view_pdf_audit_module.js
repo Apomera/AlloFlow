@@ -9312,7 +9312,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
           await _runFix();
           if (!_oneClickDocumentIsCurrent()) return;
         }
-        let r = _res || pdfFixResultRef.current;
+        const _handsAdoptReturned = () => {
+          if (!_res || !_res.accessibleHtml || typeof setPdfFixResult !== "function" || !_oneClickDocumentIsCurrent()) return false;
+          const _held = pdfFixResultRef.current;
+          if (_held && (_held === _res || _held.accessibleHtml === _res.accessibleHtml)) return false;
+          setPdfFixResult(_res);
+          _handsLog("adopted-returned-result", {
+            why: "the pipeline returned a result but this host's state ref did not hold it (the pipeline publishes through the page-global state bag, which another live host instance can own)",
+            returned: _handsShape(_res, "pipeline-return"),
+            refHeldBefore: _handsShape(_held, "state-ref"),
+            refHeldAfter: _handsShape(pdfFixResultRef.current, "state-ref")
+          });
+          return true;
+        };
+        _handsAdoptReturned();
+        let r = pdfFixResultRef.current || _res;
         if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) {
           addToast(t("toasts.auto_continue_no_axe") || "\u26A0 Auto-continue to target unavailable for this run \u2014 the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.", "warning");
         }
@@ -9352,7 +9366,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
           }
           if (!_oneClickDocumentIsCurrent()) return;
           if (_stopped()) break;
-          r = pdfFixResultRef.current;
+          r = pdfFixResultRef.current || r;
           const _s = r ? r.afterScore || 0 : 0;
           const _nextEvidence = _handsProgressState(r);
           const _evidenceProgressed = _handsEvidenceProgressed(_previousEvidence, _nextEvidence);

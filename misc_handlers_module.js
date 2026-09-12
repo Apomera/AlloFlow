@@ -1528,6 +1528,10 @@ async function runAutoFixLoop(maxRounds, deps) {
     // shown progress rounds that never executed, and the wrapper's bounded retry budget was spent
     // on no-ops.
     if (pdfAutoContinueAbortCtrlRef.current) { addToast(t('toasts.auto_continue_already_running') || 'Auto-continue is already running — use Stop first if you want to restart.', 'info'); return { started: false, reason: 'already-running' }; }
+    // No-result sentinel (field log 2026-09-11): with an EMPTY ref the round loop below broke on
+    // its first line and this resolved undefined, so the hands-off wrapper read a settled promise,
+    // saw no result, and stopped as "no result" without ever saying the loop never ran. Say so.
+    if (!pdfFixResultRef.current || !pdfFixResultRef.current.accessibleHtml) return { started: false, reason: 'no-result' };
     pdfAutoContinueAbortRef.current = false;
     const _abortCtrl = new AbortController();
     pdfAutoContinueAbortCtrlRef.current = _abortCtrl;

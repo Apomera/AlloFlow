@@ -8887,7 +8887,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       await _runFix();
                       if (!_oneClickDocumentIsCurrent()) return;
                     }
-                    let r = _res || pdfFixResultRef.current;
+                    // Adopt the returned result into THIS host's state (field log 2026-09-11): the
+                    // pipeline publishes setPdfFixResult through window.__docPipelineState, a page-global
+                    // that the LAST-RENDERED host instance owns. With two live hosts (host-2 / host-4 in
+                    // the log) the result reached this wrapper only as a return value while this host's
+                    // ref stayed empty; runAutoFixLoop then read the empty ref, ran zero rounds, the loop
+                    // stopped as "no result", and the final full audit was skipped. The view's own
+                    // setPdfFixResult prop is bound to the correct instance, so publish through it first.
+                    const _handsAdoptReturned = () => {
+                      if (!_res || !_res.accessibleHtml || typeof setPdfFixResult !== 'function' || !_oneClickDocumentIsCurrent()) return false;
+                      const _held = pdfFixResultRef.current;
+                      if (_held && (_held === _res || _held.accessibleHtml === _res.accessibleHtml)) return false;
+                      setPdfFixResult(_res);
+                      _handsLog('adopted-returned-result', {
+                        why: "the pipeline returned a result but this host's state ref did not hold it (the pipeline publishes through the page-global state bag, which another live host instance can own)",
+                        returned: _handsShape(_res, 'pipeline-return'),
+                        refHeldBefore: _handsShape(_held, 'state-ref'),
+                        refHeldAfter: _handsShape(pdfFixResultRef.current, 'state-ref'),
+                      });
+                      return true;
+                    };
+                    _handsAdoptReturned();
+                    let r = pdfFixResultRef.current || _res;
                     if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); }
                     // (2) Resume the auto-continue loop while it KEEPS IMPROVING — bounded, progress-gated, and
                     // STOP-AWARE: the user's Stop must be durable across the retry boundary (runAutoFixLoop
@@ -8955,7 +8976,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       }
                       if (!_oneClickDocumentIsCurrent()) return;
                       if (_stopped()) break; // user pressed Stop during the loop — honor it, don't relaunch
-                      r = pdfFixResultRef.current;
+                      // An empty ref after a round is "no progress", never "no result" — the loop
+                      // above already proved this host holds (or adopted) a result.
+                      r = pdfFixResultRef.current || r;
                       const _s = r ? (r.afterScore || 0) : 0;
                       const _nextEvidence = _handsProgressState(r);
                       const _evidenceProgressed = _handsEvidenceProgressed(_previousEvidence, _nextEvidence);
