@@ -1,0 +1,53 @@
+{
+  "date": "2026-09-12",
+  "pass": 23,
+  "scope": "Creative Goal Setter plans, starter prompts and optional feedback disclosures",
+  "creativePlans": 9,
+  "creativeStarters": 6,
+  "feedbackPrompts": 9,
+  "focusedBrowser": {
+    "passed": 14
+  },
+  "regressions": {
+    "files": 17,
+    "passed": 594,
+    "preExistingSkipped": 2
+  },
+  "actualHub": {
+    "passed": 4,
+    "filteredOut": 87
+  },
+  "uniqueTestsPassed": 612,
+  "accessibility": {
+    "region": "SMART example library with feedback expanded",
+    "viewportWidth": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scans": 3,
+    "violations": 0,
+    "certification": false
+  },
+  "visualReview": {
+    "captures": 9,
+    "reviewed": true
+  },
+  "sourcePublicSha256": "cb30aa2efabe833e325946934c071dff0ed7e244b502b32b5534cc8c92ff98ca",
+  "otherExampleAndStarterCategoriesUnchanged": true,
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "syntax": "passed",
+  "whitespace": "passed",
+  "initialFailure": "Nine focused cases incorrectly expected no XP after mounting an existing goal fixture. Corrected to compare XP before and after opening optional feedback; product reward behavior unchanged. Final 14 cases pass.",
+  "deployment": "none",
+  "limitations": [
+    "Targeted browser and accessibility scope, not full-app certification.",
+    "Authored planning models, not outcome-validated curriculum.",
+    "Existing saved goal wording preserved.",
+    "Ignored generated desktop/app-build output not rebuilt."
+  ]
+}

@@ -75,8 +75,8 @@ window.SelHub = window.SelHub || {
       {"cat": "health", "text": "Ask for help getting drinking water at school", "hint": "An adult can help with water, a cup and access; owning a bottle is not required."},
       {"cat": "health", "text": "Choose a way to move or join in that fits me", "hint": "You can ask for changes, try a smaller part or rest."},
       {"cat": "health", "text": "Ask for help getting ready to rest", "hint": "Choose one step together; falling asleep is not a test."},
-      { cat: 'creative', text: 'Draw or color for 15 minutes every day', hint: 'Art helps you express feelings!' },
-      { cat: 'creative', text: 'Learn a new song or dance this week', hint: 'Music and movement are brain boosters!' },
+      {"cat": "creative", "text": "Try two ways to show an idea in art", "hint": "Use materials and support available to you; notice what each choice shows."},
+      {"cat": "creative", "text": "Explore a short musical pattern with a helpful cue", "hint": "Choose a comfortable way to take part and ask for a model if needed."},
       { cat: 'community', text: 'Help with one chore at home without being asked', hint: 'Being helpful makes everyone\'s day better!' },
       { cat: 'community', text: 'Pick up 5 pieces of litter at school or outside', hint: 'Small actions make a big difference!' }
     ],
@@ -95,8 +95,8 @@ window.SelHub = window.SelHub || {
       {"cat": "health", "text": "Plan one practical change for drinking access", "hint": "Consider a usable refill point and bathroom access; no intake total is required."},
       {"cat": "health", "text": "Explore an accessible movement option I enjoy", "hint": "Check space, energy and support; minutes and repetitions are optional."},
       {"cat": "health", "text": "Ask for support with one barrier to preparing for sleep", "hint": "Shared space and workload matter; you do not have to solve them alone."},
-      { cat: 'creative', text: 'Start a creative project (art, music, writing, coding)', hint: 'Creating something from nothing is powerful!' },
-      { cat: 'creative', text: 'Learn a new skill on YouTube (coding, drawing, music)', hint: 'Free learning is everywhere!' },
+      {"cat": "creative", "text": "Revise one part of a creative project for a reason", "hint": "Compare what changed and whether it fits your intention; sharing is optional."},
+      {"cat": "creative", "text": "Practise one creative skill with a model or support", "hint": "Choose a manageable part and review what the strategy helps you do."},
       { cat: 'community', text: 'Volunteer for ___ hours this month', hint: 'Helping others helps you find purpose.' },
       { cat: 'community', text: 'Organize a study group for a difficult class', hint: 'Teaching others helps you learn too!' }
     ],
@@ -114,8 +114,8 @@ window.SelHub = window.SelHub || {
       {"cat": "health", "text": "Arrange drinking access that fits my day and individual needs", "hint": "Choose a setting and practical support; this tool does not set fluid targets."},
       {"cat": "health", "text": "Plan a suitable movement opportunity with room to adapt", "hint": "Check access and any individual guidance; stopping or resting is allowed."},
       {"cat": "health", "text": "Request one feasible change to support preparation for rest", "hint": "Consider schedules, responsibilities and shared space; sleep data is optional."},
-      { cat: 'creative', text: 'Complete and share one creative project this month', hint: 'Shipping beats perfecting.' },
-      { cat: 'creative', text: 'Start a blog, podcast, or YouTube channel about something I care about', hint: 'Your perspective is unique and valuable.' },
+      {"cat": "creative", "text": "Test an artistic choice and use focused feedback", "hint": "Decide what effect you want and what to keep or revise; public sharing is a separate choice."},
+      {"cat": "creative", "text": "Develop a creative piece for an audience I choose", "hint": "A private draft can be worthwhile; choose a format, support and review point that fit."},
       { cat: 'community', text: 'Organize or participate in a community service project', hint: 'Leadership is action, not title.' },
       { cat: 'community', text: 'Mentor a younger student in something I\'m good at', hint: 'Teaching is the highest form of understanding.' },
       { cat: 'community', text: 'Start or join a club aligned with my passions', hint: 'Find your people.' }
@@ -811,33 +811,198 @@ window.SelHub = window.SelHub || {
     ],
     creative: [
       {
-        title: 'Daily Art',
-        smart: {
-          S: { elementary: 'I will draw one picture every day for 2 weeks.', middle: 'I will create one piece of art (drawing, painting, digital) every day for a month.', high: 'I will complete a 30-day creative challenge in my chosen medium.' },
-          M: { elementary: 'I will put each drawing in my art folder and count them.', middle: 'I\'ll photograph each piece and post it in my digital portfolio.', high: 'I\'ll document each piece with date, medium, time spent, and a brief artist\'s statement.' },
-          A: { elementary: 'I have crayons, paper, and markers at home!', middle: 'I have art supplies and 20 minutes of free time each evening.', high: 'I have materials, a workspace, and daily prompts from an art challenge list.' },
-          R: { elementary: 'Drawing makes me happy and helps me show my feelings!', middle: 'Consistent practice is how skills grow \u2014 I want to get better at art.', high: 'Building a creative practice develops discipline, self-expression, and original thinking.' },
-          T: { elementary: 'I will draw every day for 14 days straight.', middle: 'I will create one piece daily for 30 consecutive days.', high: 'I will complete all 30 days of the challenge and curate a final portfolio.' }
+        "id": "example-0",
+        "title": "Explore an artistic choice",
+        "smart": {
+          "S": {
+            "elementary": "At my next art time, I will try two ways to show wind, such as swirly lines and torn-paper shapes.",
+            "middle": "During my next project session, I will make two small versions of a poster detail, changing its size or contrast.",
+            "high": "In my next available studio session, I will make two brief studies that vary one feature, such as framing, texture or color, for a chosen effect."
+          },
+          "M": {
+            "elementary": "I will point to or describe a difference and choose which way I want to use. Both trials can be small.",
+            "middle": "I will compare where my attention goes in each version and name one choice to keep or revise.",
+            "high": "I will compare the studies against that effect and identify a feature to retain, revise or investigate. I can keep brief notes or explain the comparison."
+          },
+          "A": {
+            "elementary": "I can use available materials, ask someone to help place pieces, or try one part first.",
+            "middle": "I can use paper scraps or an available digital tool and ask for support with access. I will keep the comparison small enough for the time available.",
+            "high": "I will use materials and access supports available to me, limit the study size and ask for a model if the technique is unfamiliar."
+          },
+          "R": {
+            "elementary": "I want to find a way to show an idea I chose.",
+            "middle": "I want to understand how a visual choice helps communicate my idea.",
+            "high": "I want my artistic decisions to serve my purpose while leaving room for exploration."
+          },
+          "T": {
+            "elementary": "After the trials, I will choose a next step or ask for another art time if I need it.",
+            "middle": "At the end of that session, I will decide whether to develop one version, try another contrast or revise the scope.",
+            "high": "After the studies, or at a check-in next week if access delays them, I will choose the next experiment, a revision or a pause."
+          }
+        },
+        "context": {
+          "elementary": {
+            "situation": "A learner wants to show a windy day in a picture and is unsure which marks to use.",
+            "agency": "Choose drawing, collage or another usable tool. The picture can be imagined and kept private.",
+            "support": "A teacher can offer materials or model different marks; using adapted tools or help is welcome.",
+            "review": "Compare what the marks show. If the tools make trying difficult, change the tool or ask for support."
+          },
+          "middle": {
+            "situation": "A learner wants a poster to draw attention to one detail but has limited materials and time.",
+            "agency": "Choose the subject and a visual feature to explore; a finished poster or online portfolio is optional.",
+            "support": "Borrow materials, use an accessible digital tool or ask for a model. The comparison can use small rough versions.",
+            "review": "Review whether the chosen feature serves the idea, rather than counting finished pieces or likes."
+          },
+          "high": {
+            "situation": "A learner is developing a visual piece and wants to test an expressive choice before investing in a finished version.",
+            "agency": "Choose the medium, intended effect and audience, including private study. Personal disclosure is optional.",
+            "support": "A model, accessible materials or a mentor can help isolate one artistic variable without requiring new equipment.",
+            "review": "An unexpected effect can inform the next experiment; popularity and daily output do not establish artistic quality."
+          }
+        },
+        "feedback": {
+          "elementary": {
+            "question": "Which part looks windy to you? Can you point to what gave you that idea?",
+            "response": "I can compare their answer with my idea and choose a mark to keep or change. Different people may notice different things."
+          },
+          "middle": {
+            "question": "What did you notice first in these versions, and what drew your attention?",
+            "response": "I can use a specific observation to make a revision. A preference without a reason is only one opinion; I can also review the versions myself."
+          },
+          "high": {
+            "question": "What effect do you notice, and which specific choice creates it? I am looking for feedback on this feature today.",
+            "response": "I can compare observations with my intention, try a suggestion or keep a deliberate choice. I decide the next step and whether to seek another perspective."
+          }
         }
       },
       {
-        title: 'Learn an Instrument',
-        smart: {
-          S: { elementary: 'I will practice my instrument for 10 minutes every day.', middle: 'I will learn 2 new songs on my instrument this month.', high: 'I will master 3 pieces of increasing difficulty and perform one publicly.' },
-          M: { elementary: 'I will set a timer and practice until it beeps!', middle: 'I\'ll track practice time daily and record myself playing each song when finished.', high: 'I\'ll log daily practice (scales, technique, repertoire) and record progress weekly.' },
-          A: { elementary: 'I have my instrument at home and I know how to hold it!', middle: 'I have lessons, an instrument, and tutorial videos to help me learn.', high: 'I have an instrument, a teacher/online course, and a structured practice routine.' },
-          R: { elementary: 'Music makes me feel awesome and I want to play songs!', middle: 'Learning music improves focus, math skills, and self-discipline.', high: 'Musical mastery develops grit, performance skills, and creative expression.' },
-          T: { elementary: 'I will practice every day for 3 weeks.', middle: 'I will learn both songs within 4 weeks.', high: 'I will complete all 3 pieces in 8 weeks, with the performance in week 9.' }
+        "id": "example-1",
+        "title": "Practise a musical passage",
+        "smart": {
+          "S": {
+            "elementary": "At my next music time, I will try a short rhythm with a cue that helps me find the pauses.",
+            "middle": "At my next available music session, I will practise one short transition using a slower pace or a cue from a model.",
+            "high": "In my next available practice session, I will explore one passage with a chosen focus, such as phrasing, articulation or rhythmic clarity."
+          },
+          "M": {
+            "elementary": "I will show or point to where a pause belongs and choose one part to try again or ask about.",
+            "middle": "I will compare an early and a later attempt on the chosen transition and identify what became clearer or still needs help.",
+            "high": "I will compare an early and later attempt against that focus and describe one effect of the strategy, including uncertainty or an unresolved difficulty."
+          },
+          "A": {
+            "elementary": "I can use an available instrument, a comfortable tapping surface or visual rhythm cards, with help if needed.",
+            "middle": "I will arrange access to an instrument or an appropriate adapted tool and choose a comfortable amount of practice. I can ask for a demonstration.",
+            "high": "I will check instrument and space access, use an appropriate model or support, and keep the passage manageable. Recording is optional and I can take breaks."
+          },
+          "R": {
+            "elementary": "I want to explore a musical pattern I enjoy.",
+            "middle": "I want to understand a part of the music I chose, rather than only accumulate practice minutes.",
+            "high": "I want to make a more deliberate musical choice in a piece that matters to me."
+          },
+          "T": {
+            "elementary": "At the end of music time, I will choose whether to repeat the pattern, change a cue or try a smaller part.",
+            "middle": "After that session, I will choose a next step; if equipment is unavailable this week, I will review the access plan with my teacher.",
+            "high": "After the session, or at a check-in next week if access is delayed, I will retain, adapt or replace the strategy before expanding the passage."
+          }
+        },
+        "context": {
+          "elementary": {
+            "situation": "A learner wants to try a short rhythm but the whole song feels too big.",
+            "agency": "Choose a short pattern and a comfortable way to take part. Recording and performing for a group are optional.",
+            "support": "A teacher can model the pattern with sound, movement, visual cues or an adapted instrument.",
+            "review": "Check whether the pattern and support fit. A shorter pattern or another cue may help more than a longer timer."
+          },
+          "middle": {
+            "situation": "A learner wants to play a phrase but gets stuck at one transition and has limited access to an instrument.",
+            "agency": "Choose the phrase and one feature to practise. The evidence can be a live check, a private note or an optional recording.",
+            "support": "A teacher or model can demonstrate the transition; shared equipment, visual cues or a smaller section may fit.",
+            "review": "Review the strategy and available access before adding more practice time. A break or changed support is an option."
+          },
+          "high": {
+            "situation": "A learner wants a more intentional musical interpretation but a whole-piece mastery target hides the specific challenge.",
+            "agency": "Choose a passage, a musical intention and a review method. A public performance is a separate choice.",
+            "support": "A teacher, accessible score, model or adapted instrument can support the selected technique; private lessons are not assumed.",
+            "review": "Compare the effect of a strategy, not just repetitions. Access, comfort and competing commitments can change the plan."
+          }
+        },
+        "feedback": {
+          "elementary": {
+            "question": "Can you show me where the pause goes in this part?",
+            "response": "I can try the cue in a way that works for me or ask for a different example. I do not need to perform for a group."
+          },
+          "middle": {
+            "question": "At this transition, what stayed steady and where could a cue help?",
+            "response": "I can ask for a demonstration and test one suggestion. If the feedback is too broad, I can ask to focus on the transition I chose."
+          },
+          "high": {
+            "question": "Where does the intended phrase or rhythm come through, and which specific moment could I explore differently?",
+            "response": "I can test one suggestion against my intention. I can ask for accessible, specific feedback and decide whether further practice or a different support would be useful."
+          }
         }
       },
       {
-        title: 'Writing Project',
-        smart: {
-          S: { elementary: 'I will write a short story with a beginning, middle, and end.', middle: 'I will write a 5-page short story and share it with my class.', high: 'I will draft, revise, and submit a 10-page creative piece to a literary magazine.' },
-          M: { elementary: 'My story will be at least 1 page long with pictures.', middle: 'I\'ll write 1 page per day and track my word count.', high: 'I\'ll hit 500 words/day minimum and track progress through outline, draft, and revision stages.' },
-          A: { elementary: 'I know how to write sentences and my teacher helps me with spelling.', middle: 'I have a quiet writing space and story ideas in my brainstorm list.', high: 'I have writing experience, peer reviewers available, and submission guidelines researched.' },
-          R: { elementary: 'I love making up stories and I want to make a real book!', middle: 'Creative writing builds communication skills and lets me express my ideas.', high: 'Publishing builds my portfolio and develops professional communication skills.' },
-          T: { elementary: 'I will finish my story in 2 weeks.', middle: 'I will complete the 5-page story in 3 weeks: outline (week 1), draft (week 2), revision (week 3).', high: 'I will complete the draft in 4 weeks, revise in week 5-6, and submit by the end of month 2.' }
+        "id": "example-2",
+        "title": "Revise a story with purpose",
+        "smart": {
+          "S": {
+            "elementary": "At my next story time, I will show one thing my character wants and one thing they do about it.",
+            "middle": "During my next writing session, I will revise one scene so a chosen character motive or turning point is easier to follow.",
+            "high": "In my next available drafting session, I will revise one passage to explore a chosen effect, such as tension, voice or a clearer shift in perspective."
+          },
+          "M": {
+            "elementary": "I will point to the want and the action in my story, then choose one detail to add or change if the link is unclear.",
+            "middle": "I will compare before and after, pointing to one changed detail and explaining how it serves the scene. I can ask a trusted reader or review it myself.",
+            "high": "I will compare the original and revision, identify one consequential change and explain whether it serves my intention. I can keep the evidence private."
+          },
+          "A": {
+            "elementary": "I can draw, use symbols, tell an adult what to write or use another communication tool. My story can be short and imagined.",
+            "middle": "I can use words, images, audio or supported dictation, and request a model or a smaller task if time or access is limited.",
+            "high": "I will choose an accessible composing method and manageable passage. I can request focused feedback from a willing reader or compare the versions myself."
+          },
+          "R": {
+            "elementary": "I want someone, or my future self, to understand my character idea.",
+            "middle": "I want the choices in my story to create the effect I intend.",
+            "high": "I want to make purposeful choices about how my piece works for its intended audience, including an audience of one."
+          },
+          "T": {
+            "elementary": "After story time, I will decide whether this part says what I want or needs another supported try.",
+            "middle": "At the end of the session, I will keep the change, try a different detail or schedule another supported review. Sharing with the class is optional.",
+            "high": "After the revision, or at a check-in next week if access is delayed, I will keep, undo or extend the change. Any submission or public sharing needs a separate decision."
+          }
+        },
+        "context": {
+          "elementary": {
+            "situation": "A learner has an idea for a story but is unsure how to show why a character does something.",
+            "agency": "Choose an invented character and tell the story through words, pictures, symbols or speech with support.",
+            "support": "An adult can scribe, offer story cards or ask a question while keeping the learner in charge of the idea.",
+            "review": "Check whether the character choice makes sense in the story. More sentences are not automatically more helpful."
+          },
+          "middle": {
+            "situation": "A learner has a story scene but feedback such as make it better gives no clear direction for revision.",
+            "agency": "Choose a scene and intended effect. A comic, audio story or written draft can work; class sharing is optional.",
+            "support": "A model scene, speech-to-text, a scribe or a trusted reader can support revision without requiring a quiet home workspace.",
+            "review": "Review the effect of a change. A useful revision may shorten a scene or retain a deliberate ambiguity."
+          },
+          "high": {
+            "situation": "A learner is developing a creative piece and wants useful revision without treating publication or word count as the goal.",
+            "agency": "Choose the piece, language, form and intended effect; submission and public sharing are separate decisions.",
+            "support": "A peer, mentor, accessible composing tool or model can support a focused revision. Feedback on voice should consider the intended audience and language choices.",
+            "review": "A revision can improve clarity, preserve deliberate ambiguity or reveal a new question. Acceptance by a publisher is outside the learner's control."
+          }
+        },
+        "feedback": {
+          "elementary": {
+            "question": "What do you think my character wants? What part of the story helped you know?",
+            "response": "I can add a clue, explain my choice or leave the question open on purpose. I choose whether to show the story to anyone."
+          },
+          "middle": {
+            "question": "What do you think changed for the character in this scene, and what detail led you to that idea?",
+            "response": "I can compare that reading with my intention and decide what to revise. I can request feedback on the scene instead of spelling or presentation at this stage."
+          },
+          "high": {
+            "question": "What effect did this passage have for you, and which detail shaped that response? Please focus on the feature I am revising.",
+            "response": "I can weigh the response against my purpose and audience, ask for clarification, or test a suggestion. Feedback is information to consider; it does not transfer authorship."
+          }
         }
       }
     ],
@@ -1695,6 +1860,11 @@ window.SelHub = window.SelHub || {
                     h('p', null, h('strong', null, 'What the learner can choose: '), context.agency),
                     h('p', null, h('strong', null, 'Support and access: '), context.support),
                     h('p', null, h('strong', null, 'When to adapt the plan: '), context.review)),
+                  selected.feedback && selected.feedback[band] && h('details', { style: { borderTop: '1px solid ' + edge } },
+                    h('summary', { style: { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 } }, 'Ask for useful feedback (optional)'),
+                    h('p', null, 'Choose someone willing to respond, or use the question to review your own work. You decide what to share and which suggestions to try.'),
+                    h('p', null, h('strong', null, 'A question to try: '), selected.feedback[band].question),
+                    h('p', null, h('strong', null, 'What to do with the response: '), selected.feedback[band].response)),
                   h('details', { open: true, style: { borderTop: '1px solid ' + edge } },
                     h('summary', { style: { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 } }, 'Read the SMART plan'),
                     h('dl', null, ['S', 'M', 'A', 'R', 'T'].map(function(key) {
@@ -1706,6 +1876,7 @@ window.SelHub = window.SelHub || {
                 smartExampleCat === 'social' && h('p', null, 'For social goals, another person\'s response is not your score. You can choose support, a different approach or a pause. Threats, repeated targeting or unsafe pressure need adult support, not a communication deadline.'),
                 smartExampleCat === 'personal' && h('p', null, 'These are optional ways to explore a goal. A daily streak, a positive feeling or a fixed amount of writing does not prove that a plan fits. You can change the support, choose another approach or pause.'),
                 smartExampleCat === 'health' && h('p', null, 'These examples help you plan access, support and choices. They do not set medical targets. Keep individual care guidance in place; health details and tracking are optional. Review what fits, what needs help and whether to change or pause the plan.'),
+                smartExampleCat === 'creative' && h('p', null, 'Choose what you want to explore, a manageable practice step and a way to review it. Feedback can guide a revision; you decide what to keep. Recording, publishing and public performance are optional choices.'),
                 h('p', null, 'Use as Template creates a new editable goal with these five SMART fields. It keeps your existing goals. Review the copied wording before using or sharing it.'),
                 h('button', { type: 'button', 'aria-label': 'Use as Template', onClick: function() { loadSmartExample(smartExampleCat, index); }, style: Object.assign({}, control, { width: '100%', cursor: 'pointer', fontWeight: 700 }) }, 'Use as Template')
               )

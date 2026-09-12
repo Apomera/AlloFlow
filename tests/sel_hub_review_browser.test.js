@@ -357,6 +357,37 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   },120000);
 
+  it('creative feedback stays optional and revised goal fields survive the hub return flow',async()=>{
+    await mount();
+    await page.locator('[data-sel-tool-card-id="goals"]').click();
+    await page.getByRole('tab',{name:/SMART/}).click();
+    await page.getByRole('button',{name:'SMART Goal Examples Library',exact:true}).click();
+    const library=page.getByRole('region',{name:'SMART example library',exact:true});
+    await library.getByRole('button',{name:'Filter SMART examples by Creative',exact:true}).click();
+    await library.getByLabel('Choose a worked goal example',{exact:true}).selectOption('example-2');
+    const before=await page.evaluate(()=>JSON.stringify(window.__alloflowSelToolData.goals_tool));
+    const feedback=library.getByText('Ask for useful feedback (optional)',{exact:true});
+    await feedback.focus();await page.keyboard.press('Enter');
+    expect(await library.innerText()).toContain('What do you think changed for the character');
+    expect(await page.evaluate(()=>JSON.stringify(window.__alloflowSelToolData.goals_tool))).toBe(before);
+    await library.getByRole('button',{name:'Use as Template',exact:true}).click();
+    await page.waitForFunction(()=>window.__alloflowSelToolData.goals_tool.goals?.length===1);
+    const original=await page.evaluate(()=>window.__alloflowSelToolData.goals_tool.goals[0]);
+    expect(original.category).toBe('creative');
+    expect(original.smart.M).toContain('compare before and after');
+    expect(original.smart.T).toContain('Sharing with the class is optional');
+    await page.locator('#smart-field-'+original.id+'-S').fill('Revise one comic panel to make the character choice clearer.');
+    const support=page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="goals"]').click();
+    expect(await page.locator('#smart-field-'+original.id+'-S').inputValue()).toContain('one comic panel');
+    const restored=await page.evaluate(()=>window.__alloflowSelToolData.goals_tool.goals[0]);
+    expect(restored.smart.M).toBe(original.smart.M);expect(restored.smart.T).toBe(original.smart.T);
+    expect(restored.completed).toBe(false);expect(restored.progress).toBe(0);
+    expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {
