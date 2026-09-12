@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-12",
+  "focusedChecksPassed": 155,
+  "focusedTestFiles": 9,
+  "newCranialGeometryTests": 9,
+  "browserScenariosPassed": 7,
+  "species": [
+    "tyrannosaurus",
+    "triceratops",
+    "anchiornis",
+    "sinosauropteryx",
+    "microraptor",
+    "parasaurolophus",
+    "brachiosaurus"
+  ],
+  "invalidGeometry": 0,
+  "headStudyBoundsOutside": 0,
+  "shaderFailures": 0,
+  "maxSeamNormalDifference": 0,
+  "minEyeClearanceRadii": 0.31999999999999124,
+  "moduleCopies": 3,
+  "moduleSha256": "4291FE2498FBF81DA9B370AE244EFE310FCA5756E8215CCF056C2C2E8BB63C33",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "rendering": "Local Three.js r128 / Chromium software WebGL",
+  "hardwarePerformanceBenchmarked": false,
+  "deployed": false,
+  "pushed": false,
+  "initialTestCorrections": [
+    "Numeric browser matcher",
+    "Extended mesh-helper source contract"
+  ]
+}

@@ -6190,10 +6190,23 @@ window.StemLab = window.StemLab || {
     return lines.join('\n');
   }
 
+  // Monotone cubic radii keep a smooth slope through loft stations without overshoot.
+  function dinoLoftRadius(radii, station, axis) {
+    function value(i) { var r = radii[Math.max(0, Math.min(radii.length - 1, i))]; return Array.isArray(r) ? r[axis] : r; }
+    var i = Math.min(radii.length - 2, Math.floor(station)), t = station - i;
+    var a = value(i), b = value(i + 1), delta = b - a;
+    function slope(left, right) { return left * right > 0 ? 2 * left * right / (left + right) : 0; }
+    var m0 = i === 0 ? delta : slope(a - value(i - 1), delta);
+    var m1 = i === radii.length - 2 ? delta : slope(delta, value(i + 2) - b);
+    var t2 = t * t, t3 = t2 * t;
+    return (2 * t3 - 3 * t2 + 1) * a + (t3 - 2 * t2 + t) * m0 + (-2 * t3 + 3 * t2) * b + (t3 - t2) * m1;
+  }
+
   // Continuous elliptical skin lofts, independent of the fossil skeleton.
-  function dinoSurfaceGeometry(THREE, points, radii) {
+  function dinoSurfaceGeometry(THREE, points, radii, options) {
     var curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
-    var rings = 48, sides = 24, vertices = [], uv = [], indices = [];
+    options = options || {};
+    var rings = options.rings || 48, sides = options.sides || 24, vertices = [], uv = [], indices = [];
     for (var i = 0; i <= rings; i++) {
       var t = i / rings, center = curve.getPoint(t), tangent = curve.getTangent(t).normalize();
       var normal = new THREE.Vector3().crossVectors(Math.abs(tangent.z) < 0.9 ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(0, 1, 0), tangent).normalize();
@@ -6202,10 +6215,12 @@ window.StemLab = window.StemLab || {
       mix = mix * mix * (3 - 2 * mix);
       var a = Array.isArray(radii[ri]) ? radii[ri] : [radii[ri], radii[ri]];
       var b = Array.isArray(radii[ri + 1]) ? radii[ri + 1] : [radii[ri + 1], radii[ri + 1]];
-      var ry = Math.max(0.001, a[0] + (b[0] - a[0]) * mix), rz = Math.max(0.001, a[1] + (b[1] - a[1]) * mix);
+      var ry = Math.max(0.001, options.smoothProfile ? dinoLoftRadius(radii, rt, 0) : a[0] + (b[0] - a[0]) * mix);
+      var rz = Math.max(0.001, options.smoothProfile ? dinoLoftRadius(radii, rt, 1) : a[1] + (b[1] - a[1]) * mix);
       for (var j = 0; j <= sides; j++) {
         var angle = j / sides * Math.PI * 2;
         var vertex = center.clone().addScaledVector(normal, Math.cos(angle) * ry).addScaledVector(binormal, Math.sin(angle) * rz);
+        if (options.sculpt) options.sculpt(vertex);
         vertices.push(vertex.x, vertex.y, vertex.z); uv.push(t, j / sides);
         if (i < rings && j < sides) {
           var n = i * (sides + 1) + j;
@@ -6235,6 +6250,24 @@ window.StemLab = window.StemLab || {
     geometry.computeBoundingBox(); geometry.computeBoundingSphere();
     return geometry;
   }
+  // Broad cheek relief is part of the head skin, with no overlapping cheek pieces.
+  function dinoCranialGeometry(THREE, points, radii, shape) {
+    var geometry = dinoSurfaceGeometry(THREE, points, radii, {
+      rings: 72, sides: 40, smoothProfile: true,
+      sculpt: function (vertex) {
+        var x = (vertex.x - shape.center.x) / (shape.length * 0.85);
+        var y = (vertex.y - shape.center.y) / (shape.height * 0.62);
+        var falloff = Math.max(0, 1 - x * x - y * y);
+        var z = vertex.z - shape.center.z;
+        var sideWeight = Math.min(1, Math.abs(z) / (shape.depth * 0.6));
+        sideWeight = sideWeight * sideWeight * (3 - 2 * sideWeight);
+        vertex.z += Math.sign(z) * shape.depth * 0.15 * shape.cheek * falloff * falloff * falloff * sideWeight;
+      }
+    });
+    geometry.userData.dinoCranialSurface = { rings: 72, sides: 40, cheekRelief: shape.cheek };
+    return geometry;
+  }
+
   // Find a surface point in world space, with its smooth outward normal.
   function dinoSurfaceAnchor(THREE, mesh, origin, direction, distance) {
     if (!mesh || direction.lengthSq() < 0.000001 || !(distance > 0)) return null;
@@ -7988,9 +8021,9 @@ window.StemLab = window.StemLab || {
               model.add(mesh);
               return mesh;
             }
-            function addSoftTissueChain(points, radii, mat) {
+            function addSoftTissueChain(points, radii, mat, cranialShape) {
               if (!props.showBody || !points || points.length < 2) return [];
-              var surfaceGeometry = dinoSurfaceGeometry(THREE, points, radii);
+              var surfaceGeometry = cranialShape ? dinoCranialGeometry(THREE, points, radii, cranialShape) : dinoSurfaceGeometry(THREE, points, radii);
               surfaceGeometry.translate(-points[0].x, -points[0].y, -points[0].z);
               var mesh = new THREE.Mesh(surfaceGeometry, mat || bodyMat);
               mesh.position.copy(points[0]);
@@ -8362,6 +8395,8 @@ window.StemLab = window.StemLab || {
             var surfaceHeadHeight = Math.max(0.045 * detailScale, ht * (/Tyrannosaur|Abelisaur/i.test(cladeName) ? 0.12 : (isTheropod ? 0.085 : (isSauropod ? 0.030 : 0.055)))) * surfaceHeadFactor * cranialSurface.headHeightScale;
             var surfaceHeadDepth = Math.max(0.035 * detailScale, ht * (isTheropod ? 0.082 : 0.050)) * surfaceHeadFactor * cranialSurface.headDepthScale;
             var surfaceSnout = head.clone().add(new THREE.Vector3().subVectors(snout, head).multiplyScalar(cranialSurface.muzzleLengthScale));
+            var cranialShape = { center: head.clone().lerp(surfaceSnout, 0.28).add(vec(0, -surfaceHeadHeight * 0.24, 0)),
+              length: surfaceHeadLength, height: surfaceHeadHeight, depth: surfaceHeadDepth, cheek: isSauropod ? 0 : cranialSurface.cheekScale };
             var headShell = isTheropod ? addSoftTissueChain([
               head.clone().add(vec(surfaceHeadLength * 0.65, 0, 0)), head,
               head.clone().lerp(surfaceSnout, 0.58), surfaceSnout, surfaceSnout.clone().add(vec(-surfaceHeadLength * 0.28, 0, 0))
@@ -8369,7 +8404,7 @@ window.StemLab = window.StemLab || {
               [surfaceHeadHeight * 0.40, surfaceHeadDepth * 0.40], [surfaceHeadHeight * 0.86, surfaceHeadDepth],
               [surfaceHeadHeight * 0.70, surfaceHeadDepth * 0.72], [surfaceHeadHeight * 0.48, surfaceHeadDepth * 0.60],
               [surfaceHeadHeight * 0.025, surfaceHeadDepth * 0.04]
-            ], headMat)[0] : addSoftTissueChain([
+            ], headMat, cranialShape)[0] : addSoftTissueChain([
               head.clone().add(vec(surfaceHeadLength * 0.82, 0, 0)),
               head.clone().add(vec(surfaceHeadLength * 0.32, 0, 0)), head,
               head.clone().lerp(surfaceSnout, 0.58), surfaceSnout,
@@ -8380,8 +8415,8 @@ window.StemLab = window.StemLab || {
               [surfaceHeadHeight * 0.62 * cranialSurface.muzzleHeightScale, surfaceHeadDepth * 0.72 * cranialSurface.muzzleDepthScale],
               [surfaceHeadHeight * 0.45 * cranialSurface.muzzleTipScale, surfaceHeadDepth * 0.62 * cranialSurface.muzzleTipScale],
               [surfaceHeadHeight * 0.025, surfaceHeadDepth * 0.04]
-            ], headMat)[0];
-            if (headShell) headShell.userData.dinoRegion = 'head';
+            ], headMat, cranialShape)[0];
+            if (headShell) { headShell.userData.dinoRegion = 'head'; headShell.name = 'continuous-cranial-surface'; }
             // Seat surface details on the rendered head, including narrow and deep species profiles.
             function faceSurfacePoint(point, side, inset) {
               if (!headShell) return point;
@@ -8598,11 +8633,7 @@ window.StemLab = window.StemLab || {
               var lowerJawShell = addSoftTissueChain([lowerJawStart, lowerJawStart.clone().lerp(lowerJawEnd, 0.5), lowerJawEnd],
                 [[surfaceHeadHeight * 0.30, jawDepth * 0.72], [surfaceHeadHeight * 0.24, jawDepth * 0.58], [surfaceHeadHeight * 0.12, jawDepth * 0.40]], headMat)[0];
               addBodyContour(lowerJawShell);
-              if (!isSauropod) [-1, 1].forEach(function (cheekSide) {
-                var cheekCenter = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.28).add(vec(0, -surfaceHeadHeight * 0.24, cheekSide * surfaceHeadDepth * 0.64));
-                var cheekShell = addEllipsoid(cheekCenter, vec(surfaceHeadLength * 0.34, surfaceHeadHeight * 0.34 * cranialSurface.cheekScale, surfaceHeadDepth * 0.32 * cranialSurface.cheekScale), headMat);
-                addBodyContour(cheekShell);
-              });
+              if (lowerJawShell) { lowerJawShell.userData.dinoRegion = 'head'; lowerJawShell.name = 'lower-jaw-surface'; }
               [-1, 1].forEach(function (faceSide) {
                 var eyeRadius = Math.min(Math.max(0.022 * detailScale, ht * 0.012) * faceScale * cranialSurface.eyeScale, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.21);
                 var eyePos = head.clone().add(vec(-surfaceHeadLength * 0.20 * cranialSurface.eyeForwardScale, surfaceHeadHeight * 0.30 * cranialSurface.eyeHeightScale, faceSide * surfaceHeadDepth * 0.94));

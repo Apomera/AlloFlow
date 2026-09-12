@@ -1,0 +1,72 @@
+
+Running 2 tests using 1 worker
+
+(node:30292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › tyrannosaurus has a continuous face in head studies (33.7s)
+(node:16140) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16140) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › triceratops has a continuous face in head studies (28.7s)
+
+
+  1) [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › tyrannosaurus has a continuous face in head studies
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    [2mIf it should pass with deep equality, replace "toBe" with "toStrictEqual"[22m
+
+    Expected: [32mAny<Number>[39m
+    Received: [31m1.18[39m
+
+      37 | });}
+      38 | function check(r,species){expect(r.errors).toEqual([]);expect(r.invalid).toBe(0);expect(r.outside).toBe(0);expect(r.lost).toBe(false);expect(r.shaderFailures).toBe(0);
+    > 39 |  expect(r.vertices).toBe(2995);expect(r.seam).toBeLessThan(1e-6);expect(r.profile.cheekRelief).toBe(species==='brachiosaurus'?0:expect.any(Number));
+         |                                                                                                ^
+      40 |  expect(r.eyeClearances).toHaveLength(2);for(const clearance of r.eyeClearances){expect(clearance).not.toBeNull();expect(clearance).toBeGreaterThan(.04);}
+      41 | }
+      42 | for(const species of ['tyrannosaurus','triceratops','anchiornis','sinosauropteryx','microraptor','parasaurolophus','brachiosaurus'])test(species+' has a continuous face in head studies',async({page})=>{
+        at check (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-cranial.spec.ts:39:96)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-cranial.spec.ts:44:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-cranial\first-review\dinolab-3d-cranial-tyranno-3b056-inuous-face-in-head-studies-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-cranial\first-review\dinolab-3d-cranial-tyranno-3b056-inuous-face-in-head-studies-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-cranial\first-review\dinolab-3d-cranial-tyranno-3b056-inuous-face-in-head-studies-chromium\error-context.md
+
+  2) [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › triceratops has a continuous face in head studies
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    [2mIf it should pass with deep equality, replace "toBe" with "toStrictEqual"[22m
+
+    Expected: [32mAny<Number>[39m
+    Received: [31m1.34[39m
+
+      37 | });}
+      38 | function check(r,species){expect(r.errors).toEqual([]);expect(r.invalid).toBe(0);expect(r.outside).toBe(0);expect(r.lost).toBe(false);expect(r.shaderFailures).toBe(0);
+    > 39 |  expect(r.vertices).toBe(2995);expect(r.seam).toBeLessThan(1e-6);expect(r.profile.cheekRelief).toBe(species==='brachiosaurus'?0:expect.any(Number));
+         |                                                                                                ^
+      40 |  expect(r.eyeClearances).toHaveLength(2);for(const clearance of r.eyeClearances){expect(clearance).not.toBeNull();expect(clearance).toBeGreaterThan(.04);}
+      41 | }
+      42 | for(const species of ['tyrannosaurus','triceratops','anchiornis','sinosauropteryx','microraptor','parasaurolophus','brachiosaurus'])test(species+' has a continuous face in head studies',async({page})=>{
+        at check (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-cranial.spec.ts:39:96)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-cranial.spec.ts:44:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-cranial\first-review\dinolab-3d-cranial-tricera-ce85a-inuous-face-in-head-studies-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-cranial\first-review\dinolab-3d-cranial-tricera-ce85a-inuous-face-in-head-studies-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-cranial\first-review\dinolab-3d-cranial-tricera-ce85a-inuous-face-in-head-studies-chromium\error-context.md
+
+  2 failed
+    [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › tyrannosaurus has a continuous face in head studies
+    [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › triceratops has a continuous face in head studies

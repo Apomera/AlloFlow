@@ -1,0 +1,48 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/dinolab_3d_accessibility.test.js
+[PureHelpers] 7 helpers registered
+
+ ❯ tests/dinolab_3d_accessibility.test.js (15 tests | 1 failed | 14 skipped) 687ms
+     × supports focused keyboard rotation with live status and cleanup 685ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > supports focused keyboard rotation with live status and cleanup
+AssertionError: expected '/**\n * stem_tool_dinolab.js — Dino L…' to contain 'function addSoftTissueChain(points, r…'
+
+- Expected
++ Received
+
+- function addSoftTissueChain(points, radii, mat)
++ /**
++  * stem_tool_dinolab.js — Dino Lab (Paleontology Studio)
++  *
++  * An interactive paleontology lab for exploring dinosaurs and the science
+
+[Echoed renderer source omitted; failure summary follows.]
+
++         '@media(max-width:480px){.dinolab-root #dinopanel{padding:10px!important}.dinolab-root .dinolab-tablist{padding:8px!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:thin}.dinolab-root .dinolab-section-cue{padding-left:10px!important;padding-right:10px!important}.dinolab-root .dinolab-3d-viewer{min-height:340px!important}.dinolab-root .dinolab-3d-canvas{height:340px!important}.dinolab-root .dinolab-3d-readouts{left:7px!important;right:7px!important;top:7px!important;gap:4px!important;max-height:70px}.dinolab-root .dinolab-3d-camera-readout{right:7px!important;bottom:58px!important;font-size:10px!important}.dinolab-root .dinolab-3d-status{left:7px!important;right:7px!important;bottom:7px!important;font-size:10px!important;padding:6px 8px!important}.dinolab-root .dinolab-3d-view-controls{align-items:stretch!important}.dinolab-root .dinolab-3d-view-controls>button{flex:1 1 72px}}';
++       var fieldFocusActive = tab === 'field3d' && d.field3dFocusMode === true;
++       return el('div', { className: 'dinolab-root', style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), fieldFocusActive ? null : tabNavigation, el('div', { id: 'dinopanel', role: fieldFocusActive ? 'region' : 'tabpanel', 'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab, 'aria-label': fieldFocusActive ? '3D Field Station focused workspace' : null, style: { padding: fieldFocusActive ? 10 : 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
++     }
++   });
++ })();
++
+
+ ❯ tests/dinolab_3d_accessibility.test.js:208:20
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 skipped (15)
+   Start at  14:59:55
+   Duration  17.08s (transform 1.74s, setup 575ms, import 2.56s, tests 687ms, environment 10.40s)
+
+    206|     expect(source).toContain("id: 'high-shouldered-sauropod', shortLab…
+    207|     expect(source).toContain("id: 'low-armored-barrel', shortLabel: 'L…
+    208|     expect(source).toContain('function addSoftTissueChain(points, radi…
+       |                    ^
+    209|     expect(source).toContain('var thoraxCenter = new THREE.Vector3()');
+    210|     expect(source).toContain("var torsoRadii = [");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

@@ -1,0 +1,10 @@
+{
+  "previousHeadTriangles": 2352,
+  "newHeadTriangles": 5840,
+  "previousCheekTriangles": 3312,
+  "nonSauropodSkinTriangleDelta": 176,
+  "removedNonSauropodCheekMeshes": 2,
+  "removedNonSauropodCheekContourMeshes": 2,
+  "sauropodHeadTriangleDelta": 3488,
+  "note": "Static surface counts, excluding contour draws and all other anatomy. Hardware performance was not benchmarked."
+}

@@ -1,0 +1,21 @@
+{
+  "profile": {
+    "rings": 72,
+    "sides": 40,
+    "cheekRelief": 1.28
+  },
+  "vertices": 2995,
+  "invalid": 0,
+  "seam": 0,
+  "outside": 0,
+  "eyeClearances": [
+    0.31999999999999845,
+    0.3200000000000038
+  ],
+  "meshes": 79,
+  "drawCalls": 83,
+  "triangles": 105904,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

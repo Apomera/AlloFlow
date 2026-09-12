@@ -1,0 +1,18 @@
+
+Running 7 tests using 1 worker
+
+(node:8200) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:8200) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › tyrannosaurus has a continuous face in head studies (1.5m)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › triceratops has a continuous face in head studies (1.1m)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › anchiornis has a continuous face in head studies (40.6s)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › sinosauropteryx has a continuous face in head studies (24.3s)
+  ok 5 [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › microraptor has a continuous face in head studies (23.1s)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › parasaurolophus has a continuous face in head studies (48.9s)
+  ok 7 [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts:42:137 › brachiosaurus has a continuous face in head studies (36.9s)
+
+  Slow test file: [chromium] › tests\e2e\dinolab-3d-cranial.spec.ts (5.6m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  7 passed (5.6m)
