@@ -109,6 +109,27 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   }, 120000);
 
+  it('conflict repair draft survives the real hub return and reopen flow', async () => {
+    await mount();
+    await page.locator('[data-sel-tool-card-id="conflict"]').click();
+    const activity = page.getByRole('region', { name: 'Apology and repair practice', exact: true });
+    await activity.getByLabel('Choose a repair scenario', { exact: true }).selectOption('ap14');
+    await activity.getByRole('button', { name: 'Pause and plan trusted support', exact: true }).click();
+    await activity.getByLabel('A support route (optional)', { exact: true }).fill('Ask a trusted adult to help stop the targeting.');
+    await activity.getByRole('button', { name: 'Explore a response', exact: true }).click();
+    await activity.getByLabel('What would you do next? (optional)', { exact: true }).fill('Do not add them to another chat.');
+    const support = page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button', { name: 'Return to activities', exact: true }).click();
+    await page.locator('[data-sel-tool-card-id="conflict"]').click();
+    expect(await activity.getByLabel('Choose a repair scenario', { exact: true }).inputValue()).toBe('ap14');
+    expect(await activity.getByLabel('A support route (optional)', { exact: true }).inputValue()).toContain('trusted adult');
+    expect(await activity.getByLabel('What would you do next? (optional)', { exact: true }).inputValue()).toBe('Do not add them to another chat.');
+    expect(await activity.getByRole('button', { name: 'Response shown', exact: true }).getAttribute('aria-expanded')).toBe('true');
+    expect(await page.evaluate(() => window.__alloflowSelToolData.conflict.apCompleted)).toBeUndefined();
+    expect(errors).toEqual([]);
+  }, 120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

@@ -1,0 +1,71 @@
+{
+  "date": "2026-09-12",
+  "scope": "Deepened Conflict Resolution Apology Lab across 15 revised scenarios",
+  "scenario_ids": {
+    "elementary": [
+      "ap1",
+      "ap2",
+      "ap3",
+      "ap4",
+      "ap13"
+    ],
+    "middle": [
+      "ap5",
+      "ap6",
+      "ap7",
+      "ap8",
+      "ap14"
+    ],
+    "high": [
+      "ap9",
+      "ap10",
+      "ap11",
+      "ap12",
+      "ap15"
+    ]
+  },
+  "distinct_passed_checks": 590,
+  "existing_regressions_passed": 567,
+  "existing_skips": 2,
+  "focused_browser_workflows": 21,
+  "actual_hub_browser_workflows": 2,
+  "initial_render_smokes": 72,
+  "rechecks": {
+    "badge_dialog_tests": 40
+  },
+  "axe_scope": "All enabled rules within the apology/repair region at 320 px, including support planning, open draft and follow-through",
+  "axe_violations": {
+    "contrast-axe.json": [],
+    "dark-axe.json": [],
+    "light-axe.json": []
+  },
+  "visually_reviewed": [
+    "dark-support-phone.png",
+    "contrast-follow-through-phone.png"
+  ],
+  "source_public_byte_parity": true,
+  "source_public_sha256": "35da32eec177dee29ff89559038ce09e21455cc22be82b43e7a647ea1bc3e3be",
+  "syntax": "passed",
+  "scoped_whitespace": "passed",
+  "validation_notes": [
+    "Initial broad run: 558 passed, nine cascading badge-dialog failures after a timeout and overlapping React act calls. Isolated rerun passed all 40 badge tests; distinct existing count is 567, not 598.",
+    "Initial hub-test worker timed out on startup. Sequential rerun passed both hub cases.",
+    "First focused browser run passed 18 of 21; three phone captures stopped at an ambiguous group locator. Named-fieldset locator corrected, and final run passed all 21.",
+    "Product source unchanged during test locator correction and final reruns."
+  ],
+  "logs": [
+    "reports/sel-conflict-depth-regression.log",
+    "reports/sel-conflict-depth-badges-recheck.log",
+    "reports/sel-conflict-depth-browser-final.log",
+    "reports/sel-conflict-depth-hub-final.log",
+    "reports/sel-conflict-depth-render.log"
+  ],
+  "limitations": [
+    "Isolated actual-renderer tests use simulated callbacks; actual hub bridge checked separately",
+    "Serialized state restore, not a real project-file round trip",
+    "Other Conflict Resolution tabs, legacy repair prompts and AI outputs outside this pass",
+    "No packaged Desktop, live assistive-technology sessions, classroom outcomes or clinical validation"
+  ],
+  "pushed": false,
+  "deployed": false
+}

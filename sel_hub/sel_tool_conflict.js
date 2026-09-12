@@ -624,103 +624,208 @@ window.SelHub = window.SelHub || {
   // Practice structured, meaningful apologies
   // ══════════════════════════════════════════════════════════════
   var APOLOGY_SCENARIOS = {
-    elementary: [
-      { id: 'ap1', title: 'The Broken Promise', situation: 'You promised to save a seat for your friend at lunch, but when your other friends sat down first, you didn\'t say anything. Now your friend has nowhere to sit and looks hurt.',
-        acknowledge: 'I didn\'t save you a seat like I promised.',
-        responsibility: 'That was my fault. I should have spoken up when others sat down.',
-        empathy: 'You probably felt forgotten and like our friendship doesn\'t matter.',
-        repair: 'Can I save you a seat tomorrow and make sure no one takes it?',
-        promise: 'Next time I make a promise, I\'ll follow through even if it feels awkward.' },
-      { id: 'ap2', title: 'The Harsh Words', situation: 'During a game, you got frustrated and yelled "You\'re terrible at this!" at a teammate. They stopped playing and went to sit alone.',
-        acknowledge: 'I yelled at you and said something really hurtful during the game.',
-        responsibility: 'I was frustrated, but that\'s no excuse. I shouldn\'t have said that.',
-        empathy: 'That probably made you feel embarrassed in front of everyone and like you\'re not good enough.',
-        repair: 'I want you on my team. Can I tell the group I was wrong?',
-        promise: 'When I get frustrated, I\'ll take a breath instead of yelling at someone.' },
-      { id: 'ap3', title: 'The Excluded Friend', situation: 'You had a birthday party and didn\'t invite one friend from your group. They found out from the photos you posted.',
-        acknowledge: 'I had a party and didn\'t invite you, and you had to find out from photos.',
-        responsibility: 'That was my choice and it was hurtful. I should have talked to you.',
-        empathy: 'Seeing those photos must have felt terrible \u2014 like you were left out on purpose.',
-        repair: 'Can we do something special together, just the two of us?',
-        promise: 'I\'ll be more thoughtful about how my choices affect people I care about.' },
-      { id: 'ap4', title: 'The Lie That Grew', situation: 'You told a small lie about why you couldn\'t come to your friend\'s house. They found out you just didn\'t feel like going and now they\'re upset.',
-        acknowledge: 'I lied to you about why I couldn\'t come over.',
-        responsibility: 'I chose to lie instead of being honest. That was wrong.',
-        empathy: 'Finding out I lied probably makes you wonder what else I haven\'t been honest about.',
-        repair: 'From now on, I\'ll tell you the truth, even if it\'s just "I need a quiet day."',
-        promise: 'It\'s okay to need space \u2014 I\'ll be honest about it instead of making up stories.' },
-      { id: 'ap13', title: 'The Left-Out Friend', situation: 'You and two friends were playing a game that only has room for three players. A fourth friend came over and you said "Sorry, there\'s no room" without trying to include them.',
-        acknowledge: 'I turned you away without trying to find a way to include you.',
-        responsibility: 'I could have tried to adjust the game or taken turns, but I chose the easy option.',
-        empathy: 'Walking up to your friends and being told there\'s no room for you probably felt like being rejected.',
-        repair: 'Next time, let\'s play something everyone can do. And today — do you want to join the next round?',
-        promise: 'I\'ll think about how it feels to be left out before I tell someone there\'s no space for them.' }
-    ],
-    middle: [
-      { id: 'ap5', title: 'The Public Roast', situation: 'You made a joke about your friend in the group chat. Everyone laughed, but your friend went quiet. You realize the joke was about something they\'re insecure about.',
-        acknowledge: 'I made a joke about something you\'re sensitive about in front of everyone.',
-        responsibility: 'I knew it was personal and went for the laugh anyway. That was selfish.',
-        empathy: 'Being laughed at about something you\'re insecure about is humiliating. I made an unsafe space for you.',
-        repair: 'I\'ll message the group that I went too far. What else do you need from me?',
-        promise: 'Your insecurities are not my material. I\'ll never use personal stuff for laughs.' },
-      { id: 'ap6', title: 'The Shared Secret', situation: 'Your friend told you they had a crush on someone. You told one person "in confidence" and now the whole grade knows.',
-        acknowledge: 'I told someone your secret even though you trusted me with it.',
-        responsibility: 'There\'s no excuse. You trusted me and I broke that trust.',
-        empathy: 'Having your crush announced to everyone probably felt like a complete betrayal.',
-        repair: 'I can\'t undo it, but I\'ll shut down any gossip about it that I hear.',
-        promise: 'When someone trusts me with something private, it stays private. Period.' },
-      { id: 'ap7', title: 'The Two-Faced Text', situation: 'You texted negative things about a friend while being nice to their face. A screenshot got shared and they saw everything.',
-        acknowledge: 'I said things about you behind your back that I would never say to your face.',
-        responsibility: 'I was being fake and cowardly. The things I texted were cruel and unfair.',
-        empathy: 'Seeing those texts must have made you question every nice thing I\'ve ever said.',
-        repair: 'I need to earn your trust back. Can we talk about what I said so I can own all of it?',
-        promise: 'If I have a problem with someone, I\'ll talk TO them, not ABOUT them.' },
-      { id: 'ap8', title: 'The Ditched Plans', situation: 'You committed to a project with your partner this weekend, then bailed last minute to hang out with someone else. They did the whole thing alone.',
-        acknowledge: 'I ditched our project plans at the last minute to do something else.',
-        responsibility: 'I prioritized fun over a commitment I made to you. That was disrespectful.',
-        empathy: 'You probably felt used and unimportant, doing my share because I was unreliable.',
-        repair: 'I\'ll talk to the teacher about what happened so you get full credit.',
-        promise: 'A commitment is a commitment. If I need to cancel, I\'ll give real notice.' },
-      { id: 'ap14', title: 'The Pile-On', situation: 'When someone was being teased in the group chat, you added a laughing emoji and a snarky comment. Later you realized the person was genuinely hurt and went offline for days.',
-        acknowledge: 'I added to the pile-on when you were being teased. My emoji and comment made it worse.',
-        responsibility: 'I chose to join in instead of standing up for you or staying neutral.',
-        empathy: 'Seeing people you trust laughing at you \u2014 and then going silent \u2014 must have felt like nobody had your back.',
-        repair: 'I want to message the group and say that wasn\'t cool. I\'m also here to talk whenever you want.',
-        promise: 'Next time I see someone being dogpiled, I\'ll speak up or DM them privately. Silence is participation.' }
-    ],
-    high: [
-      { id: 'ap9', title: 'The Microaggression', situation: 'You made a comment about a classmate\'s accent that you thought was funny. They told you it was hurtful and something they hear constantly.',
-        acknowledge: 'I made a comment about your accent that was hurtful.',
-        responsibility: 'I thought it was harmless, but my intent doesn\'t change the impact.',
-        empathy: 'Hearing comments about your accent constantly must be exhausting. My "joke" added to that pile.',
-        repair: 'I\'m educating myself about microaggressions. If I do this again, please tell me \u2014 I\'ll listen without being defensive.',
-        promise: 'I\'ll think about the weight of my words, especially about things tied to identity.' },
-      { id: 'ap10', title: 'The Emotional Neglect', situation: 'Your partner has been saying they feel emotionally neglected. You\'ve been dismissive, calling them "too needy." They finally broke down crying.',
-        acknowledge: 'I\'ve been dismissing your feelings and calling you needy when you were asking for basic connection.',
-        responsibility: 'I was being defensive because facing your pain meant facing my shortcomings.',
-        empathy: 'Being told you\'re "too much" by someone who\'s supposed to be your safe person must feel incredibly lonely.',
-        repair: 'Can we set aside time each day to actually talk? I\'d also like to look into counseling together.',
-        promise: 'Your needs are not a burden. I\'ll see your requests as invitations to connect, not criticisms.' },
-      { id: 'ap11', title: 'The Credit Theft', situation: 'In a team presentation, you presented a classmate\'s framework as your own idea. The professor praised "your" insight. They confronted you after class.',
-        acknowledge: 'I presented your framework as my own during the presentation.',
-        responsibility: 'There\'s no gray area. I took credit for your intellectual work.',
-        empathy: 'Watching someone get praised for YOUR idea while you sit there must have been infuriating.',
-        repair: 'I\'m emailing the professor today to clarify the attribution. I\'ll CC you.',
-        promise: 'Going forward, I will credit ideas to their source. Always.' },
-      { id: 'ap12', title: 'The Boundary Violation', situation: 'You shared a friend\'s personal struggle with others because you were "worried." They didn\'t ask you to involve anyone and feel exposed.',
-        acknowledge: 'I shared your personal information with others without your consent.',
-        responsibility: 'Even though I was worried, it wasn\'t my story to share. I took away your control over your own narrative.',
-        empathy: 'Having something so personal spread without your knowledge must feel like a violation of trust.',
-        repair: 'I\'ll tell everyone I spoke to that I shouldn\'t have shared that, and ask them to respect your privacy.',
-        promise: 'If I\'m worried about you, I\'ll talk TO you about it. If I think you need help, I\'ll ask YOU first.' },
-      { id: 'ap15', title: 'The Ghosting', situation: 'You ended a close friendship by simply stopping all communication. No explanation, no closure. Months later, they reach out asking what happened.',
-        acknowledge: 'I disappeared from your life without any explanation.',
-        responsibility: 'I chose silence because it was easier for me. But ghosting isn\'t a breakup strategy \u2014 it\'s abandonment.',
-        empathy: 'You probably spent months wondering what you did wrong. The uncertainty is often worse than any honest conversation would have been.',
-        repair: 'I owe you the truth about what happened, even if it\'s late. Can we talk about it?',
-        promise: 'I\'ll have the uncomfortable conversation instead of vanishing. People deserve closure, even when the conversation is hard.' }
-    ]
-  };
+  "elementary": [
+    {
+      "id": "ap1",
+      "title": "The broken promise",
+      "situation": "In this fictional case, you promised to save a lunch seat for a friend. You did not tell them when the table filled up, and they arrived expecting a seat. Practice taking responsibility for your promise, not for controlling who sits where.",
+      "acknowledge": "I said I would save a seat and did not let you know when I could not.",
+      "responsibility": "I can own the promise I made and the update I did not give.",
+      "empathy": "You arrived expecting a seat. I do not know exactly how that felt for you.",
+      "repair": "Would help finding another place today be useful, or would you prefer space?",
+      "promise": "I will check what I can offer and let you know if the plan changes.",
+      "boundary": "A repair cannot guarantee a particular seat or require someone to sit with you.",
+      "response": "The friend says, \"I want to sit somewhere else today. Please just tell me sooner next time.\"",
+      "followUp": "Respect the choice of another table. A useful change is timely information, not insisting on a new invitation."
+    },
+    {
+      "id": "ap2",
+      "title": "The harsh words",
+      "situation": "During a fictional game, you shouted, \"You are terrible at this!\" at a teammate. They stopped playing. Practice repairing the comment without requiring them to return to the game.",
+      "acknowledge": "I shouted an insult at you during the game.",
+      "responsibility": "I was frustrated, and I am responsible for the words I used.",
+      "empathy": "You stopped playing after the comment. I can listen if you want to say more.",
+      "repair": "I can correct what I said to the group without repeating the insult. Would that be helpful?",
+      "promise": "If I feel ready to shout, I will step out of the game and ask for a pause.",
+      "boundary": "Returning to play, accepting an apology, or forgiving you are not required.",
+      "response": "The teammate says, \"Tell the group to stop repeating it. I do not want to play again today.\"",
+      "followUp": "Correct the comment briefly and get adult help if others keep repeating it. Respect the decision to stop playing."
+    },
+    {
+      "id": "ap3",
+      "title": "A smaller party",
+      "situation": "In this fictional case, your family could invite only a few people to a party. You told a friend there was no party instead of saying you could not invite everyone. They later saw photos. Practice owning the untrue statement while keeping family details private.",
+      "acknowledge": "I said there was no party when there was one.",
+      "responsibility": "I chose an untrue explanation. Having a small party did not require that choice.",
+      "empathy": "The photos did not match what I told you. That could make my words harder to trust.",
+      "repair": "I can correct what I said without making another promise about an invitation.",
+      "promise": "I will say what I can honestly share, such as that plans are limited.",
+      "boundary": "Nobody owes every friend an invitation or private family information. The repair here concerns the untrue explanation.",
+      "response": "The friend says, \"I understand not everyone could come. I do not want to discuss the party again.\"",
+      "followUp": "Acknowledge the correction and stop discussing it. Do not turn an invitation into a payment for forgiveness."
+    },
+    {
+      "id": "ap4",
+      "title": "Needing a quiet day",
+      "situation": "You told a fictional friend an invented story about why you could not visit. You actually wanted a quiet day. They found out. Practice honesty without apologizing for needing space.",
+      "acknowledge": "I gave an invented reason for not coming over.",
+      "responsibility": "I can own that explanation while still needing a quiet day.",
+      "empathy": "The different explanations may have been confusing. I can hear what you want to tell me.",
+      "repair": "I can clarify that I needed space and did not know how to say it.",
+      "promise": "Next time I can say, \"I cannot come today,\" without inventing a reason.",
+      "boundary": "You can decline an invitation without giving personal details. If saying no feels unsafe, get trusted support.",
+      "response": "The friend says, \"You can say no. Please do not make up a reason.\"",
+      "followUp": "Practice a short, honest decline. There is no need to promise unlimited availability."
+    },
+    {
+      "id": "ap13",
+      "title": "The next round",
+      "situation": "A fictional game has three places. When a fourth friend asks to play, you laugh and say, \"Nobody wants you here.\" Practice owning the hurtful comment while recognizing the real limit on places.",
+      "acknowledge": "I laughed and said nobody wanted you here.",
+      "responsibility": "I spoke for everyone and used a hurtful comment instead of explaining the game.",
+      "empathy": "My words treated you as unwanted. You can tell me more if you choose.",
+      "repair": "I can correct my comment. If everyone agrees, we could offer a later turn or choose another game.",
+      "promise": "I will explain limits without putting someone down.",
+      "boundary": "Inclusion should not require forced friendship, an unwanted game, or one person always giving up a turn.",
+      "response": "The friend says, \"I do not want a turn now. Please do not say that about me again.\"",
+      "followUp": "Respect the no and stop the exclusionary language. A future invitation remains optional."
+    }
+  ],
+  "middle": [
+    {
+      "id": "ap5",
+      "title": "The public joke",
+      "situation": "In a fictional group chat, you posted a joke about a friend. They asked you to stop making jokes about that subject. Practice responding to the stated boundary without deciding how upset they should be.",
+      "acknowledge": "I made that joke in the group chat after the subject had become personal.",
+      "responsibility": "I am responsible for my post, even if I hoped people would laugh.",
+      "empathy": "You asked me to stop. I can respect that without asking you to justify the request.",
+      "repair": "I can remove my post and correct it briefly without repeating the personal detail.",
+      "promise": "I will leave that subject out of jokes and ask before sharing someone else's personal story.",
+      "boundary": "A public apology can repeat the harm or draw more attention. Ask about preferences when possible, without making repair depend on a reply.",
+      "response": "The friend says, \"Remove it. Do not tag me in an apology or start another discussion.\"",
+      "followUp": "Remove your own post and avoid tagging or quoting the friend. You cannot promise that every copied message will disappear."
+    },
+    {
+      "id": "ap6",
+      "title": "The shared secret",
+      "situation": "A fictional friend told you who they liked. You passed that private detail to another person, and it spread. This case concerns gossip, not asking a trusted adult for help with danger.",
+      "acknowledge": "I shared the private detail you told me.",
+      "responsibility": "I made that choice even though you had trusted me to keep it private.",
+      "empathy": "You lost control over who knew. I will not ask you to explain or confirm the detail again.",
+      "repair": "I can stop discussing it and ask people not to pass on private information, without repeating it.",
+      "promise": "I will check permission before sharing personal details. If someone may be unsafe, I will seek appropriate trusted help.",
+      "boundary": "Do not promise absolute secrecy about safety concerns. Sharing necessary information with trusted support is different from spreading gossip.",
+      "response": "The friend says, \"Please stop bringing it up. I am not ready to tell you private things.\"",
+      "followUp": "Respect the changed boundary and stop discussing the detail. Trust is not something you can demand back."
+    },
+    {
+      "id": "ap7",
+      "title": "The hurtful screenshot",
+      "situation": "In a fictional chat, you wrote insults about a friend. A screenshot reached them. Practice owning the insults while remembering that a private request for help would be different from a put-down.",
+      "acknowledge": "I wrote insults about you in that chat.",
+      "responsibility": "Those were my words. I can take responsibility without calling myself names.",
+      "empathy": "You saw words that contradicted how I treated you in person. I do not know what you want from me now.",
+      "repair": "I can stop the insults and correct claims I made, without forwarding the screenshot again.",
+      "promise": "I will describe a problem respectfully and seek support when a direct conversation is not appropriate.",
+      "boundary": "You may seek confidential support about a difficult relationship. Accountability does not mean promising to talk only to the person involved.",
+      "response": "The friend says, \"Do not contact me for now. Correct what you said to the people who read it.\"",
+      "followUp": "Correct the claims without asking the friend to supervise you. Respect the request for no contact."
+    },
+    {
+      "id": "ap8",
+      "title": "The missed project work",
+      "situation": "You agreed to do part of a fictional project, then chose another activity without telling your partner. They did the remaining work alone. Practice a repair that addresses labor and credit, not just words.",
+      "acknowledge": "I did not do the part I agreed to and did not give you an update.",
+      "responsibility": "That was my decision. It left you with work we had not agreed you would do.",
+      "empathy": "You spent time covering the missing work. I can acknowledge that without guessing every feeling involved.",
+      "repair": "I can explain my contribution accurately to the teacher and offer a specific remaining task.",
+      "promise": "I will agree on a check-in time and say early if I cannot finish my part.",
+      "boundary": "You cannot guarantee a grade change or make the partner accept more collaboration.",
+      "response": "The partner says, \"Please tell the teacher what happened. I do not want another project together right now.\"",
+      "followUp": "Give an accurate account and respect the collaboration boundary. Ask the teacher about a fair process rather than promising a result."
+    },
+    {
+      "id": "ap14",
+      "title": "Joining a pile-on",
+      "situation": "In a fictional group chat, several people repeatedly target one student. You added an insulting comment. Practice stopping your own contribution and seeking support; this is not a request for the targeted student to mediate with the group.",
+      "acknowledge": "I added an insulting comment while others were targeting you.",
+      "responsibility": "I chose to add to what was happening. The group's behavior does not remove my responsibility.",
+      "empathy": "You were being targeted by several people. You do not have to explain the impact to me.",
+      "repair": "I can stop posting, remove my comment where possible, and seek adult help to stop the targeting.",
+      "promise": "I will not join or amplify targeted comments, and I will use a safer support route when direct interruption is risky.",
+      "boundary": "Repeated targeting and power differences call for adult support, not forced peer mediation, equal blame, or a group apology meeting.",
+      "response": "The student says, \"Do not add me to another chat. I want help making it stop.\"",
+      "followUp": "Respect the request and use trusted adult support without making the student organize the response or retell everything to the group."
+    }
+  ],
+  "high": [
+    {
+      "id": "ap9",
+      "title": "The repeated accent comment",
+      "situation": "In this fictional case, you made a joke about a classmate's accent. They told you it was hurtful and that they hear similar comments often. Practice taking responsibility without making them teach or reassure you.",
+      "acknowledge": "I made a joke about your accent.",
+      "responsibility": "I am responsible for that comment. Thinking it was funny does not undo the impact you described.",
+      "empathy": "You said this happens often. I can take that seriously without asking you to repeat the experience for me.",
+      "repair": "I can stop the comments and correct my own words where others heard them, without putting you on display.",
+      "promise": "I will learn from appropriate resources and change my behavior without relying on you to correct me each time.",
+      "boundary": "Do not make the affected person responsible for educating you, tracking your improvement, or reassuring you that you are a good person.",
+      "response": "The classmate says, \"I do not want to explain it again. Just stop doing it.\"",
+      "followUp": "Stop the comments and do the learning independently. Changed behavior matters even without acknowledgment from the classmate."
+    },
+    {
+      "id": "ap10",
+      "title": "A dismissed request",
+      "situation": "In a fictional relationship, someone asked for more time together. You called them \"too needy\" rather than discussing what each of you could offer. Practice owning the put-down while keeping the right to limits on your time and contact.",
+      "acknowledge": "I called you needy when you asked for more time together.",
+      "responsibility": "I can take responsibility for the put-down without promising availability I cannot offer.",
+      "empathy": "You made a request and I dismissed it. I can listen if you choose to say more.",
+      "repair": "If we both want to talk, we could discuss what time together and time apart would work for each of us.",
+      "promise": "I will state my limits respectfully rather than label your needs.",
+      "boundary": "An apology does not require either person to accept unwanted contact, abandon boundaries, remain in a relationship, or attend counseling together. If there is fear or control, seek individual trusted support.",
+      "response": "The person says, \"I want space this week. I do not want a daily check-in.\"",
+      "followUp": "Respect that limit rather than treating more contact as the repair. You can work privately on how to communicate your own limits."
+    },
+    {
+      "id": "ap11",
+      "title": "Credit for an idea",
+      "situation": "In a fictional team presentation, you presented a classmate's framework without crediting them. The teacher praised it as your idea. They raised the issue afterward. Practice correcting the attribution without promising control over the teacher's response.",
+      "acknowledge": "I presented your framework without crediting you.",
+      "responsibility": "I am responsible for making its source clear and correcting what I left out.",
+      "empathy": "The praise went to me for work you contributed. I can address that even if you do not want a longer conversation.",
+      "repair": "I can correct the source with the teacher and in the shared materials. Would you prefer to review the wording or not be involved?",
+      "promise": "Before presenting, I will check that ideas and contributions are credited to their sources.",
+      "boundary": "Do not require the classmate to join an apology meeting or include them in messages without checking. You can correct your own attribution without asking them to do the work.",
+      "response": "The classmate says, \"Correct it in the slides and tell the teacher. You do not need to copy me on a long apology.\"",
+      "followUp": "Make the factual corrections. Do not promise a grade change, praise, or restored trust from someone else."
+    },
+    {
+      "id": "ap12",
+      "title": "Privacy and necessary support",
+      "situation": "You discussed a fictional friend's personal difficulty with classmates who did not need the information. Your friend says they feel exposed. Distinguish this gossip from sharing necessary information with a trusted adult when safety may be at risk.",
+      "acknowledge": "I shared your personal information with classmates who did not need it.",
+      "responsibility": "I can own that unnecessary sharing. Being concerned did not make a wider audience helpful.",
+      "empathy": "You said you feel exposed. I can respect that without asking you to disclose more.",
+      "repair": "I can stop the discussion and ask people not to repeat private information, without restating the details.",
+      "promise": "I will limit personal information to appropriate support. If safety may be at risk, I will seek trusted help rather than promise secrecy.",
+      "boundary": "Do not apologize for appropriately seeking help with danger. You do not need permission to get necessary safety support; share only what is needed with someone able to help.",
+      "response": "The friend says, \"Please stop talking about it with classmates. I may want help finding an adult I trust.\"",
+      "followUp": "Stop the peer discussion and offer the requested help without taking over. A new safety concern still warrants trusted support."
+    },
+    {
+      "id": "ap15",
+      "title": "A friendship ending",
+      "situation": "In a fictional case, you stopped replying to a friend after deciding to end the friendship. Months later, they ask what happened. The story does not tell us whether contact felt safe. Explore what you can acknowledge without assuming a duty to resume contact.",
+      "acknowledge": "I stopped replying instead of explaining that I wanted to end the friendship.",
+      "responsibility": "If contact was safe, I can acknowledge the lack of an explanation. I am not required to remain in the friendship.",
+      "empathy": "The silence may have left questions. I do not know their full experience, and I do not need to resume contact to reflect on mine.",
+      "repair": "If contact is safe and wanted, I could send one brief boundary statement. Practicing it privately or seeking support is also an option.",
+      "promise": "When it is safe, I will communicate boundaries clearly. When it is not, I will prioritize safety and appropriate support.",
+      "boundary": "No one owes renewed contact or a face-to-face conversation when there is fear, coercion, harassment, or a request for no contact. Closure cannot be guaranteed.",
+      "response": "The person says, \"I do not want to restart the friendship. Please do not keep messaging me.\"",
+      "followUp": "Respect the no-contact request. A useful next step may be private reflection or trusted support, rather than another message."
+    }
+  ]
+};
 
   // ══════════════════════════════════════════════════════════════
   // ── Role-Play Scenarios (AI-powered 1-on-1 practice) ──
@@ -913,7 +1018,7 @@ window.SelHub = window.SelHub || {
       };
 
       // Navigation
-      var activeTab     = d.activeTab || 'theater';
+      var activeTab     = d.activeTab || 'apology';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Conflict Theater state
@@ -1150,7 +1255,7 @@ window.SelHub = window.SelHub || {
           deescalate: { accent: _cflFg('#10b981'), soft: 'rgba(16,185,129,0.14)', icon: '\u270B',         title: 'De-Escalation \u2014 lower the temperature first',     hint: 'When activated, the prefrontal cortex goes offline. No solution lands until you\u2019re back below threshold. CPI techniques: tone, pace, distance, voice. Dr. Bruce Perry\u2019s 3 R\u2019s: regulate \u2192 relate \u2192 reason.' },
           repair:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDC9A', title: 'Repair \u2014 rebuild after the rupture',                hint: 'Gottman: every relationship has rupture; thriving ones have repair attempts. The bid (\u201Chey, are we OK?\u201D) matters more than perfection. Restorative practice loops: name harm \u2192 hear impact \u2192 plan repair \u2192 follow up.' },
           styles:     { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83E\uDDE9', title: 'My Style \u2014 know your defaults',                     hint: 'Thomas-Kilmann: 5 styles \u2014 competing, accommodating, avoiding, collaborating, compromising. Each fits some moments; trouble comes when you only have ONE. Self-knowledge is half the battle.' },
-          apology:    { accent: _cflFg('#ec4899'), soft: 'rgba(236,72,153,0.14)', icon: '\uD83D\uDC8C', title: 'Apology Lab \u2014 the 6 elements',                       hint: 'Lewicki 2016: name what you did, take responsibility (no \u201Cif/but\u201D), express regret, explain, offer repair, ask forgiveness. \u201CSorry IF\u201D is not an apology. The most healing move: do all 6.' },
+          apology:    { accent: _cflFg('#ec4899'), soft: 'rgba(236,72,153,0.14)', icon: '\uD83D\uDC8C', title: 'Apology Lab - accountability, boundaries and repair', hint: 'Practice owning a specific action, considering its impact, and following through. An apology does not require forgiveness, renewed contact, or taking responsibility for everything.' },
           cooldown:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83E\uDDD8', title: 'Cool Down \u2014 buy yourself a window',                  hint: 'Cortisol/adrenaline drop ~20 min after the trigger ends. Walk away IS the strategy, not the failure. \u201CCan we talk after lunch?\u201D works on parents, partners, principals \u2014 anyone with a brain.' },
           mediator:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\u2728',         title: 'AI Mediator \u2014 a third voice in the room',           hint: 'Mediators don\u2019t pick winners; they help both sides be heard. Type both perspectives; the AI surfaces shared interests + reframes positions into needs. Practice ground for the harder real conversation.' },
           roleplay:   { accent: _cflFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFAD', title: 'Role-Play \u2014 rehearse before you live it',          hint: 'Worst case scripted in advance lowers in-the-moment activation. Bandura: behavioral rehearsal is one of the strongest predictors of self-efficacy. Try the hard talk here first; do it for real second.' },
@@ -1714,97 +1819,108 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var apologyContent = null;
       if (activeTab === 'apology') {
-        var apScenarios = APOLOGY_SCENARIOS[band] || APOLOGY_SCENARIOS.elementary;
-        var curAp = apScenarios[apIdx % apScenarios.length];
+        var apBand = APOLOGY_SCENARIOS[band] ? band : 'elementary';
+        var apScenarios = APOLOGY_SCENARIOS[apBand];
+        var apSelected = d.apSelected && typeof d.apSelected === 'object' ? d.apSelected : {};
+        var oldApIndex = Number.isInteger(apIdx) && apIdx >= 0 ? apIdx % apScenarios.length : 0;
+        var curAp = apScenarios.find(function(item) { return item.id === apSelected[apBand]; }) || apScenarios[oldApIndex];
+        var apDrafts = d.apDrafts && typeof d.apDrafts === 'object' ? d.apDrafts : {};
+        var apDraft = apDrafts[curAp.id] && typeof apDrafts[curAp.id] === 'object' ? apDrafts[curAp.id] : {};
+        var apText = function(key) { return typeof apDraft[key] === 'string' ? apDraft[key] : ''; };
+        var apSet = function(values) {
+          var next = Object.assign({}, apDrafts);
+          next[curAp.id] = Object.assign({}, apDraft, values);
+          upd('apDrafts', next);
+        };
         var apParts = [
-          { key: 'apAcknowledge', label: 'Acknowledge', prompt: 'What exactly did you do? Name the specific action.', val: apAcknowledge, icon: '\uD83D\uDC41\uFE0F', color: _cflFg('#ef4444') },
-          { key: 'apResponsibility', label: 'Take Responsibility', prompt: 'Own it. No "but" or "if" \u2014 just responsibility.', val: apResponsibility, icon: '\u270B', color: _cflFg('#f59e0b') },
-          { key: 'apEmpathy', label: 'Show Empathy', prompt: 'How did your action make THEM feel? (Not how YOU feel about it.)', val: apEmpathy, icon: '\u2764\uFE0F', color: _cflFg('#ec4899') },
-          { key: 'apRepair', label: 'Offer Repair', prompt: 'What specific action will you take to make it right?', val: apRepair, icon: '\uD83D\uDD27', color: _cflFg('#3b82f6') },
-          { key: 'apPromise', label: 'Promise Change', prompt: 'What will you do differently next time?', val: apPromise, icon: '\uD83C\uDF1F', color: _cflFg('#10b981') }
+          { key: 'acknowledge', label: 'Name the action', help: 'Describe the specific action, not a label about who you are.' },
+          { key: 'responsibility', label: 'Own your part', help: 'What is yours to take responsibility for? An explanation can add context without canceling the impact.' },
+          { key: 'empathy', label: 'Acknowledge the impact', help: 'Use what was said or observed. Leave room for feelings you cannot know, and do not require a reply.' },
+          { key: 'repair', label: 'Offer a realistic repair', help: 'Name something within your control. Ask about preferences when appropriate; do not promise forgiveness or another person\'s decision.' },
+          { key: 'promise', label: 'Plan a change', help: 'Choose an action or support you can use next time, rather than promising you will never make a mistake.' }
         ];
-
-        apologyContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _cflFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDC8C Apology Workshop'),
-          h('p', { style: { textAlign: 'center', color: _cflFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Learn the 5 parts of a real apology \u2014 not just "sorry."'),
-          h('div', { style: { textAlign: 'center', color: _cflFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
-            'Scenario ' + ((apIdx % apScenarios.length) + 1) + ' of ' + apScenarios.length + (apCompleted > 0 ? ' \u00B7 ' + apCompleted + ' completed' : '')
-          ),
-          // Scenario card
-          h('div', { style: { padding: 16, borderRadius: 14, background: _cflBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('h4', { style: { color: _cflFg(ACCENT), fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curAp.title),
-            h('p', { style: { fontSize: 13, color: _cflFg('#e2e8f0'), lineHeight: 1.7 } }, curAp.situation)
-          ),
-          // 5-part apology builder
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 } },
-            apParts.map(function(part, pi) {
-              return h('div', { key: pi, style: { padding: 14, borderRadius: 12, background: _cflBg('#1e293b'), border: '1px solid ' + part.color + '33' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                  h('div', { style: { width: 24, height: 24, borderRadius: '50%', background: part.color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 } }, part.icon),
-                  h('span', { style: { fontSize: 12, fontWeight: 700, color: _cflFg(part.color) } }, (pi + 1) + '. ' + part.label)
-                ),
-                h('p', { style: { fontSize: 11, color: _cflFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic' } }, part.prompt),
-                h('textarea', {
-                  value: part.val,
-                  'aria-label': part.label + ' apology section',
-                  onChange: function(e) { upd(part.key, e.target.value); },
-                  placeholder: band === 'elementary' ? 'Write your words here...' : 'Write your response...',
-                  rows: 2,
-                  style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _cflBg('#0f172a'), color: _cflFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
-                })
-              );
+        var legacyAp = { acknowledge: apAcknowledge, responsibility: apResponsibility, empathy: apEmpathy, repair: apRepair, promise: apPromise };
+        var hasLegacyAp = apParts.some(function(part) { return typeof legacyAp[part.key] === 'string' && legacyAp[part.key].trim(); });
+        var apRoute = ['message', 'private', 'support'].indexOf(apDraft.route) >= 0 ? apDraft.route : '';
+        var apRoutes = [
+          { id: 'message', label: 'Rehearse an optional message', detail: 'Use only for contact that is safe and welcome. This practice sends nothing. The other person may decline a conversation or an apology.' },
+          { id: 'private', label: 'Practice without contacting anyone', detail: 'You can reflect, write privately, or change your behavior without asking someone to receive a message or reassure you.' },
+          { id: 'support', label: 'Pause and plan trusted support', detail: 'For threats, repeated targeting, pressure to meet, or a power difference that makes speaking up unsafe, seek appropriate trusted support. Do not use a forced apology or peer mediation to address bullying.' }
+        ];
+        var apRouteInfo = apRoutes.find(function(route) { return route.id === apRoute; });
+        var apBorder = _cflBd('#334155');
+        var apCard = { padding: 16, marginTop: 16, border: '1px solid ' + apBorder, borderRadius: 12, background: _cflBg('#0f172a') };
+        var apButton = { minHeight: 44, width: '100%', padding: '10px 12px', border: '1px solid ' + apBorder, borderRadius: 8, background: _cflBg('#1e293b'), color: _cflFg('#f1f5f9'), fontSize: 14, textAlign: 'left', cursor: 'pointer', overflowWrap: 'anywhere' };
+        var apSummary = { minHeight: 44, padding: '10px 0', fontWeight: 700, cursor: 'pointer' };
+        var apField = function(key, label, help) {
+          var id = 'cfl-ap-' + key;
+          return h('div', { key: key, style: { marginTop: 14 } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, label + ' (optional)'),
+            h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, help),
+            h('textarea', { id: id, rows: 3, value: apText(key), 'aria-describedby': id + '-help',
+              onChange: function(event) { var change = {}; change[key] = event.target.value; apSet(change); },
+              style: { boxSizing: 'border-box', minHeight: 90, width: '100%', maxWidth: '100%', padding: 10, border: '1px solid ' + apBorder, borderRadius: 8, fontSize: 16, lineHeight: 1.5, fontFamily: 'inherit', color: _cflFg('#f1f5f9'), background: _cflBg('#1e293b'), resize: 'vertical' }
             })
+          );
+        };
+        apologyContent = h('section', { 'aria-label': 'Apology and repair practice', style: { padding: '12px 16px 24px', maxWidth: 720, margin: '0 auto', background: _cflBg('#1e293b'), color: _cflFg('#f1f5f9'), fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere' } },
+          h('h3', { style: { fontSize: 21, margin: '8px 0' } }, 'Apology and repair practice'),
+          h('p', null, 'Use a fictional case and choose how to practice. Thinking, discussion, drawing, signing, and AAC can replace typing. There is no required apology, score, or completion claim.'),
+          h('p', null, 'Drafts stay in the current tool state. Use the Hub save/export controls to keep a project copy. Choosing another case keeps your notes; this activity sends nothing.'),
+          h('label', { htmlFor: 'cfl-ap-case', style: { display: 'block', fontWeight: 700 } }, 'Choose a repair scenario'),
+          h('select', { id: 'cfl-ap-case', value: curAp.id, style: Object.assign({}, apButton, { fontSize: 16 }), onChange: function(event) {
+            var next = Object.assign({}, apSelected); next[apBand] = event.target.value; upd('apSelected', next);
+            announceToSR && announceToSR('Repair scenario changed. Other case drafts are kept.');
+          } }, apScenarios.map(function(item, index) { return h('option', { key: item.id, value: item.id }, (index + 1) + '. ' + item.title); })),
+          hasLegacyAp && h('details', { style: apCard },
+            h('summary', { style: apSummary }, 'An earlier unassigned draft is available'),
+            h('p', null, 'Older drafts did not store a reliable case or grade-band link. Review this draft before copying it. Copying fills only blank fields in the current case and keeps this earlier copy.'),
+            apParts.map(function(part) { return typeof legacyAp[part.key] === 'string' && legacyAp[part.key].trim() ? h('p', { key: part.key, style: { whiteSpace: 'pre-wrap' } }, h('strong', null, part.label + ': '), legacyAp[part.key]) : null; }),
+            h('button', { type: 'button', style: apButton, onClick: function() {
+              var copied = {};
+              apParts.forEach(function(part) { if (!apText(part.key).trim() && typeof legacyAp[part.key] === 'string') copied[part.key] = legacyAp[part.key]; });
+              apSet(copied);
+              announceToSR && announceToSR('Earlier draft copied into empty fields only. Existing writing and the earlier copy were kept.');
+            } }, 'Copy earlier draft into empty fields')
           ),
-          // Full apology preview
-          (apAcknowledge || apResponsibility || apEmpathy) && h('div', { style: { padding: 14, borderRadius: 12, background: '#22c55e08', border: '1px solid #22c55e33', marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: _cflFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Your Full Apology'),
-            h('p', { style: { fontSize: 13, color: _cflFg('#e2e8f0'), lineHeight: 1.8 } },
-              (apAcknowledge ? apAcknowledge + ' ' : '') +
-              (apResponsibility ? apResponsibility + ' ' : '') +
-              (apEmpathy ? apEmpathy + ' ' : '') +
-              (apRepair ? apRepair + ' ' : '') +
-              (apPromise || '')
+          h('section', { style: apCard, 'aria-labelledby': 'cfl-ap-scenario-title' },
+            h('h4', { id: 'cfl-ap-scenario-title', style: { fontSize: 18, margin: '0 0 8px' } }, curAp.title),
+            h('p', null, curAp.situation),
+            h('p', { style: { borderLeft: '3px solid ' + apBorder, paddingLeft: 12 } }, h('strong', null, 'Boundary to consider: '), curAp.boundary)
+          ),
+          h('fieldset', { style: Object.assign({}, apCard, { minWidth: 0 }) },
+            h('legend', { style: { fontWeight: 700 } }, '1. Choose a way to practice (optional)'),
+            h('p', null, 'Responsibility for your actions does not make a conversation safe or welcome. A person can decline contact or forgiveness. You can change this choice without losing writing.'),
+            h('div', { style: { display: 'grid', gap: 8 } }, apRoutes.map(function(route) { return h('button', { key: route.id, type: 'button', 'aria-pressed': apRoute === route.id, onClick: function() { apSet({ route: apRoute === route.id ? '' : route.id }); }, style: Object.assign({}, apButton, { borderWidth: apRoute === route.id ? 3 : 1, fontWeight: apRoute === route.id ? 700 : 400 }) }, route.label); })),
+            apRouteInfo && h('p', { role: 'status' }, apRouteInfo.detail),
+            apRoute === 'support' && apField('support', 'A support route', 'For the fictional case, who could help with safety, boundaries, access, or a fair process? You do not need to contact the other person first.')
+          ),
+          h('details', { style: apCard, key: 'model-' + curAp.id },
+            h('summary', { style: apSummary }, '2. Compare a model and its limits'),
+            h('p', null, 'This is one possible draft, not words someone must say or send. Use only the parts that fit the case and the chosen boundaries.'),
+            apParts.map(function(part) { return h('div', { key: part.key }, h('h5', { style: { fontSize: 15, margin: '12px 0 4px' } }, part.label), h('p', { style: { margin: '0 0 12px' } }, curAp[part.key])); }),
+            h('p', null, 'Discuss: What action is owned? What remains uncertain? Who would have to do the repair work? Does this draft ask for reassurance, disclosure, or contact that is not wanted?')
+          ),
+          h('details', { style: apCard, key: 'draft-' + curAp.id },
+            h('summary', { style: apSummary }, '3. Build a practice draft'),
+            h('p', null, apRoute === 'support' ? 'Keep this private while planning support. Writing is not a commitment to contact someone.' : 'Use any helpful parts. A boundary or a repair action can matter more than a complete speech. This draft is not sent.'),
+            apParts.map(function(part) { return apField(part.key, part.label, part.help); }),
+            apParts.some(function(part) { return apText(part.key).trim(); }) && h('section', { 'aria-label': 'Practice draft preview', style: apCard },
+              h('h5', { style: { fontSize: 15, marginTop: 0 } }, 'Practice draft preview'),
+              h('p', { style: { whiteSpace: 'pre-wrap' } }, apParts.map(function(part) { return apText(part.key); }).filter(function(text) { return text.trim(); }).join('\n\n')),
+              h('p', null, 'A draft does not show that harm was repaired or that someone accepted an apology.')
             )
           ),
-          // Actions
-          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
-            h('button', { 'aria-label': 'Complete & Next',
-              onClick: function() { upd('apRevealed', true); if (soundEnabled) sfxReveal(); },
-              disabled: apRevealed,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: apRevealed ? _cflBg('#334155') : _cflFg('#6366f1'), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: apRevealed ? 'default' : 'pointer' }
-            }, apRevealed ? 'Example shown \u2193' : '\uD83D\uDCA1 Show Example'),
-            h('button', { 'aria-label': 'Complete & Next',
-              onClick: function() {
-                if (!apAcknowledge.trim() || !apResponsibility.trim()) { addToast('Fill in at least Acknowledge and Responsibility!', 'info'); return; }
-                var newDone = apCompleted + 1;
-                upd('apCompleted', newDone);
-                logPractice('apology', curAp.id);
-                awardXP(20);
-                tryAwardBadge('first_apology');
-                if (newDone >= 3) tryAwardBadge('apology_3');
-                if (soundEnabled) sfxResolve();
-                addToast('Apology completed! Well done.', 'success');
-                upd({ apIdx: apIdx + 1, apAcknowledge: '', apResponsibility: '', apEmpathy: '', apRepair: '', apPromise: '', apRevealed: false });
-                ctx.announceToSR && ctx.announceToSR('Next apology scenario loaded');
-              },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
-            }, '\u2705 Complete & Next')
-          ),
-          // Example reveal
-          apRevealed && h('div', { style: { padding: 16, borderRadius: 12, background: _cflBg('#0f172a'), border: '1px solid ' + ACCENT_MED } },
-            h('p', { style: { fontSize: 10, color: _cflFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Example Apology'),
-            [
-              { label: '1. Acknowledge', text: curAp.acknowledge, color: _cflFg('#ef4444') },
-              { label: '2. Responsibility', text: curAp.responsibility, color: _cflFg('#f59e0b') },
-              { label: '3. Empathy', text: curAp.empathy, color: _cflFg('#ec4899') },
-              { label: '4. Repair', text: curAp.repair, color: _cflFg('#3b82f6') },
-              { label: '5. Promise', text: curAp.promise, color: _cflFg('#10b981') }
-            ].map(function(ex, ei) {
-              return h('div', { key: ei, style: { marginBottom: 8 } },
-                h('span', { style: { fontSize: 10, fontWeight: 700, color: _cflFg(ex.color), marginRight: 6 } }, ex.label + ':'),
-                h('span', { style: { fontSize: 12, color: _cflFg('#e2e8f0') } }, '"' + ex.text + '"')
-              );
-            })
+          h('section', { style: apCard, 'aria-labelledby': 'cfl-ap-follow-title' },
+            h('h4', { id: 'cfl-ap-follow-title', style: { fontSize: 17, marginTop: 0 } }, '4. Follow through when the response has limits'),
+            h('p', null, 'Explore a fictional response, even without drafting first. The other person does not have to reply this way or reply at all.'),
+            h('button', { type: 'button', style: apButton, 'aria-expanded': apDraft.responseSeen === true, 'aria-controls': 'cfl-ap-response', onClick: function() { if (apDraft.responseSeen !== true) { apSet({ responseSeen: true }); announceToSR && announceToSR('A fictional response is available. Consider what action would respect its limits.'); } } }, apDraft.responseSeen === true ? 'Response shown' : 'Explore a response'),
+            h('div', { id: 'cfl-ap-response', hidden: apDraft.responseSeen !== true },
+              h('p', { style: { paddingLeft: 12, borderLeft: '3px solid ' + apBorder } }, curAp.response),
+              apField('followThrough', 'What would you do next?', 'Name an action within your control. Explain how it respects the stated limit, including a request for space or no contact.'),
+              h('details', { key: 'follow-' + curAp.id }, h('summary', { style: apSummary }, 'Compare a follow-through example'), h('p', null, curAp.followUp)),
+              apField('reviewStep', 'How could you check your follow-through?', 'Choose something observable, such as correcting a credit or stopping a repeated comment. Do not use forgiveness or another person\'s feelings as the test.')
+            )
           )
         );
       }
