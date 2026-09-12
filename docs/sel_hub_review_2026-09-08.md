@@ -258,3 +258,14 @@ Deepened the core Three Roles and Break the Cycle sections with nine role exampl
 Each example has separate noticing, responsibility and follow-through notes. Selection and notes survive band changes and the hub return/reopen flow. Earlier reflections stay unassigned until explicitly copied into an empty note; old answers and badges remain intact. No new scoring or completion is tied to these reflections. Specialized deep dives and the repair pathway remain outside this pass.
 
 Validation: 19 new focused browser tests, 544 existing regression tests and two selected actual-hub workflows passed (565 total). Two pre-existing regression skips and 84 hub cases excluded by the targeted filter are separate from passes. Six automated accessibility scans reported zero violations in the two revised regions across light, dark and high-contrast themes at 320px. All six phone captures were visually reviewed. See [the educator and implementation note](sel_upstander_foundations_2026-09-12.md) and `reports/sel-upstander-foundations/validation.json` for evidence and scope. Local source/public copies are synchronized; no push or deployment is included.
+
+
+## Nineteenth pass: Upstander repair planning (2026-09-12)
+
+Replaced the linear repair walkthrough with six fictional situations and six revisitable questions: stop harm, name known behavior and impact, check contact, choose a fitting repair, practice an alternative, and review change. Each grade band has its own guidance and the collection includes 36 case-specific applications. Optional notes stay separate by situation and grade band.
+
+The guide no longer treats clicking through as evidence of repair or awards a completion badge. It distinguishes apology, contact, forgiveness and changed behavior; it avoids mandatory public corrections or meetings. Existing notes and badges are preserved. The adjacent AI apology feature now describes explicit data submission, accepts fictional practice, respects unsent drafts and no-contact boundaries, and no longer rewards a feedback request. Its safety checks remain in place.
+
+The 15 focused repair browser tests and 566 compatibility tests passed, with two pre-existing regression skips. Three automated accessibility scans found no violations in the repair guide at 320px across light, dark and high-contrast themes, and six phone captures were reviewed. Full evidence, final hub/render checks and scope limits are recorded in `reports/sel-upstander-repair/validation.json`. See [the repair design note](sel_upstander_repair_2026-09-12.md). No push or deployment is included.
+
+Final nineteenth-pass checks: all three selected actual-hub workflows passed (the earlier Practice workflow required one unchanged retry after a tab-click timeout), for 584 unique passing tests in this pass. All 72 SEL tools passed the render smoke check. Source/public parity, syntax and scoped whitespace checks passed.

@@ -1,0 +1,82 @@
+{
+  "date": "2026-09-12",
+  "scope": "Upstander repair pathway and adjacent apology-coach consent/prompt/reward wording",
+  "cases": 6,
+  "gradeBands": 3,
+  "questionsPerCase": 6,
+  "contextualApplications": 36,
+  "tests": {
+    "focusedRepair": {
+      "passed": 15,
+      "log": "reports/sel-upstander-repair-browser.log"
+    },
+    "regressions": {
+      "passed": 566,
+      "skipped": 2,
+      "log": "reports/sel-upstander-repair-regressions.log"
+    },
+    "realHub": {
+      "uniquePassed": 3,
+      "initialRun": {
+        "passed": 2,
+        "failed": 1,
+        "filteredOut": 84,
+        "log": "reports/sel-upstander-repair-hub.log"
+      },
+      "retry": {
+        "passed": 1,
+        "filteredOut": 86,
+        "log": "reports/sel-upstander-repair-hub-retry.log"
+      },
+      "note": "Existing support-practice test timed out during a tab click in the slow initial run, then passed unchanged on a targeted retry. Core-reflection and new repair workflows passed initially."
+    },
+    "uniqueTotalPassed": 584
+  },
+  "renderSmoke": {
+    "toolsPassed": 72,
+    "log": "reports/sel-upstander-repair-render.log"
+  },
+  "accessibility": {
+    "region": "Repair planning practice",
+    "viewportWidth": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scans": 3,
+    "violations": 0,
+    "evidence": [
+      "contrast-repair-axe.json",
+      "dark-repair-axe.json",
+      "light-repair-axe.json"
+    ],
+    "scope": "Revised repair region only; adjacent AI controls and the whole tool were not certified."
+  },
+  "visualReview": {
+    "reviewed": [
+      "contrast-consent-phone.png",
+      "contrast-overview-phone.png",
+      "dark-consent-phone.png",
+      "dark-overview-phone.png",
+      "light-consent-phone.png",
+      "light-overview-phone.png"
+    ],
+    "findings": "Text, labels and notes wrap at 320px; all visible guide controls are at least 44px tall. The selected case title is repeated in full below the native select."
+  },
+  "sourcePublicByteParity": true,
+  "sha256": "f4673b44fbd3683f984d9d7ca7ff267eb2321a3c8317a1c656f720727530d3c2",
+  "syntaxChecks": [
+    "sel_hub/sel_tool_upstander.js",
+    "desktop/web-app/public/sel_hub/sel_tool_upstander.js",
+    "tests/sel_upstander_repair_browser.test.js",
+    "tests/sel_hub_review_browser.test.js"
+  ],
+  "limitations": [
+    "The authored activity is not a validated intervention.",
+    "AI request behavior used a stubbed provider; no live provider response quality was tested.",
+    "Specialized role/cycle deep dives and other generated workflows remain outside this pass."
+  ],
+  "pushed": false,
+  "deployed": false
+}

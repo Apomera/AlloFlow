@@ -616,41 +616,208 @@ window.SelHub = window.SelHub || {
   // Restorative practice, not performative apology.
   // ══════════════════════════════════════════════════════════════
   var REPAIR_STEPS = {
-    elementary: [
-      { n: 1, icon: '🪞', title: 'Tell yourself the truth',
-        body: 'Say out loud what you did. Not "I might have" or "they think I". Just the real words: "I made fun of them. I hurt them." Owning it is step one. You cannot fix something you will not name.' },
-      { n: 2, icon: '🤲', title: 'Say a real sorry — to them',
-        body: 'A real sorry has three parts: 1) what you did, 2) that you know it hurt them, 3) what you will do differently. "I am sorry I called you that name. I know it hurt your feelings. I will not do it again." That is it. No buts.' },
-      { n: 3, icon: '🛠️', title: 'Repair what you can',
-        body: 'If you broke something, help fix it. If you spread a rumor, tell people it was not true. If they lost a friend because of you, do not push to be that friend right away — let them choose if and when.' },
-      { n: 4, icon: '🌱', title: 'Change what comes next',
-        body: 'The biggest part of repair is what you do tomorrow, and the day after that. Treat the person well even if you are not friends. Stand up for others when you see what you used to do. Be the kid who broke the pattern.' }
-    ],
-    middle: [
-      { n: 1, icon: '🪞', title: 'Acknowledge what you did, without softening it',
-        body: 'The hardest part: actually look at it. Not "things got weird with them" — "I was cruel to them on purpose, for weeks." Soft language protects you, not them. The first move in repair is letting the truth land in your own body.' },
-      { n: 2, icon: '🧭', title: 'Get curious about why',
-        body: 'You did this for a reason. Maybe you were hurt and passed it on. Maybe you wanted to belong somewhere and they were the cost. Maybe it felt powerful. Knowing why is not an excuse — it is what lets you stop. Patterns you do not understand keep running you.' },
-      { n: 3, icon: '🤲', title: 'Make a real apology — on their terms',
-        body: 'A real apology has no "but," no "if you felt that way," no "I was going through stuff." It has: 1) what you did, named clearly, 2) recognition of what it cost them, 3) what you are doing to make sure it does not happen again. And then — and this is the hard part — you let them decide if they want to accept it. Or talk to you at all.' },
-      { n: 4, icon: '🔧', title: 'Repair where you can, accept where you cannot',
-        body: 'If you spread a rumor, correct the record publicly. If a group ran with your lead in excluding someone, talk to the group. If they do not want contact with you anymore, that is part of the cost. Repair is not about getting forgiveness — it is about doing the work whether or not forgiveness comes.' },
-      { n: 5, icon: '🌱', title: 'Become the person you wish you had been',
-        body: 'The most meaningful apology is your behavior over the next six months. Speak up when you see other people doing what you used to do. Choose kindness in moments where you would have chosen cruelty. The repair is the rest of your life, not one conversation.' }
-    ],
-    high: [
-      { n: 1, icon: '🪞', title: 'Sit with it — really sit with it',
-        body: 'There is a kind of person who hurts someone, feels bad for a day, and then absolves themselves so they can move on. Do not be that person. Let it land. Notice the part of you that wants to look away. The looking-away IS the pattern that lets people keep doing harm.' },
-      { n: 2, icon: '🧭', title: 'Trace the why — but do not trade it for accountability',
-        body: 'You did this because of something. Maybe pain you were carrying. Maybe a status game. Maybe a model you grew up watching. Understanding the source is essential AND it is not a moral pass. Both can be true. "Hurt people hurt people" is a description of how cycles work, not a permission slip.' },
-      { n: 3, icon: '🤲', title: 'Repair on their terms — even if it costs you',
-        body: 'A genuine apology centers the person you hurt, not your need to feel forgiven. Name what you did with no qualifiers. Acknowledge the specific impact, not the generic "if you were hurt." Offer concrete repair (correction, distance, public defense, financial restitution if relevant). And then accept that they may not want anything from you ever again. That is part of what your action cost.' },
-      { n: 4, icon: '🔧', title: 'Address the systems you used',
-        body: 'You probably did not do this in a vacuum. A group laughed along. A norm let it happen. An institution looked away. Part of real repair is dismantling what enabled it: leaving the friend group that bonds through cruelty, calling out a coach who looks the other way, pushing for restorative policy at your school. The harm is bigger than you and so is the repair.' },
-      { n: 5, icon: '🌱', title: 'Track the long arc',
-        body: 'Repair is measured in years, not apologies. The person you become — over months and years of consistent behavior — is the only evidence anyone has that the apology was real. James Baldwin: "Not everything that is faced can be changed, but nothing can be changed until it is faced." You have faced it. Now keep going.' }
-    ]
-  };
+  "elementary": [
+    {
+      "id": "stop",
+      "title": "Stop harm and get support",
+      "body": "Stop the action first. An adult can help everyone get space and help anyone who is hurt. You can ask for help with your own feelings without asking the other child to comfort you.",
+      "question": "What needs to stop, and who can help? (optional)"
+    },
+    {
+      "id": "name",
+      "title": "Name behavior and known impact",
+      "body": "Say what happened using words you know are true. Name what you did, not what kind of person you are. You do not have to guess how someone feels or say you did something you did not do.",
+      "question": "What is known, and what should stay uncertain? (optional)"
+    },
+    {
+      "id": "contact",
+      "title": "Check contact and consent",
+      "body": "An apology is an offer, not a reason to follow someone or make them listen. An adult can help check whether a message is welcome. No answer does not mean yes. You can change your actions without talking to the person.",
+      "question": "What contact boundary needs to be respected? (optional)"
+    },
+    {
+      "id": "repair",
+      "title": "Choose a practical repair",
+      "body": "Work with an adult on something that helps with the actual problem. Returning a belonging may help; a gift does not buy friendship. The other child does not have to join in, forgive you, or do the fixing.",
+      "question": "What repair might fit, and what could make it worse? (optional)"
+    },
+    {
+      "id": "practice",
+      "title": "Practice a different response",
+      "body": "Choose one action to practice and someone who can help you remember it. Feeling upset or wanting friends to laugh may help explain a choice, but it does not make hurting someone okay.",
+      "question": "What could the learner practice with support? (optional)"
+    },
+    {
+      "id": "review",
+      "title": "Review what changed",
+      "body": "Pick a time for an adult to check what happened next. Look for changed actions, not a smile or a thank-you. If harm continues, stop and get more help. You can revise a plan without giving up on change.",
+      "question": "Who will check what changed, and when? (optional)"
+    }
+  ],
+  "middle": [
+    {
+      "id": "stop",
+      "title": "Stop harm and get support",
+      "body": "Stop participating, respect separation, and involve an appropriate adult if harm or danger continues. Support for your own distress can happen separately. The person affected is not responsible for helping you feel better.",
+      "question": "What needs to stop, and who can help? (optional)"
+    },
+    {
+      "id": "name",
+      "title": "Name behavior and known impact",
+      "body": "Describe your action and its known effects specifically. Separate intention from impact and facts from uncertainty. Accountability does not require inventing a motive, accepting an inaccurate accusation, or calling yourself a bad person.",
+      "question": "What is known, and what should stay uncertain? (optional)"
+    },
+    {
+      "id": "contact",
+      "title": "Check contact and consent",
+      "body": "Check whether contact is wanted and permitted before offering an apology. Respect a refusal, silence or a no-contact direction; do not use friends to get around it. An adult can support separate conversations without arranging forced mediation.",
+      "question": "What contact boundary needs to be respected? (optional)"
+    },
+    {
+      "id": "repair",
+      "title": "Choose a practical repair",
+      "body": "Match repair to the harm and check possible side effects. A correction can spread a rumor further; a group meeting can create pressure. With adult support, choose a proportionate route that protects privacy and restores access where possible.",
+      "question": "What repair might fit, and what could make it worse? (optional)"
+    },
+    {
+      "id": "practice",
+      "title": "Practice a different response",
+      "body": "Identify a situation where the behavior could recur and rehearse an alternative. Context such as peer pressure can guide a support plan without becoming an excuse. Adults can teach skills and set clear limits at the same time.",
+      "question": "What could the learner practice with support? (optional)"
+    },
+    {
+      "id": "review",
+      "title": "Review what changed",
+      "body": "Agree on who will check, when, and what evidence matters: behavior, access and retaliation. The affected person need not monitor you or approve your progress. An apology or a completed worksheet does not show that harm stopped.",
+      "question": "Who will check what changed, and when? (optional)"
+    }
+  ],
+  "high": [
+    {
+      "id": "stop",
+      "title": "Stop harm and get support",
+      "body": "Stop the behavior and any recruitment of others into it. Follow appropriate adult support and response procedures when harm continues. Do not delay help to complete a reflection or try to resolve an unsafe situation through a private meeting.",
+      "question": "What needs to stop, and who can help? (optional)"
+    },
+    {
+      "id": "name",
+      "title": "Name behavior and known impact",
+      "body": "Name your specific contribution and the impact you can substantiate. Be clear about what you do not know. Intention does not erase impact, and accountability does not require a coerced confession or speculation about your history.",
+      "question": "What is known, and what should stay uncertain? (optional)"
+    },
+    {
+      "id": "contact",
+      "title": "Check contact and consent",
+      "body": "Contact, reconciliation and forgiveness are separate choices. Respect refusal, silence and no-contact boundaries across in-person, online and indirect routes. Any facilitated conversation requires appropriate safeguards and willing participation; it is not a required step in repair.",
+      "question": "What contact boundary needs to be respected? (optional)"
+    },
+    {
+      "id": "repair",
+      "title": "Choose a practical repair",
+      "body": "Consider who needs a correction or practical restoration, what details they need, and what further exposure it could cause. Plan with appropriate adult support. Public defense, a gift, payment or a policy campaign is not automatically a fitting repair.",
+      "question": "What repair might fit, and what could make it worse? (optional)"
+    },
+    {
+      "id": "practice",
+      "title": "Practice a different response",
+      "body": "Build a specific alternative for the next pressure point, including who can support it and what conditions adults should change. Support needs and consequences can coexist. You are responsible for your actions without being responsible for fixing every institutional condition.",
+      "question": "What could the learner practice with support? (optional)"
+    },
+    {
+      "id": "review",
+      "title": "Review what changed",
+      "body": "Review whether behavior changed and access improved, including less visible harm or retaliation. Set a concrete check-in with an appropriate adult. Trust may remain limited even when behavior improves; neither forgiveness nor a fixed timeline certifies repair.",
+      "question": "Who will check what changed, and when? (optional)"
+    }
+  ]
+};
+
+  var REPAIR_CASES = {
+  "elementary": [
+    {
+      "id": "name",
+      "title": "An unwanted nickname",
+      "scenario": "A child keeps using a nickname after a classmate asks them to stop. The classmate now wants space.",
+      "applications": [
+        "Stop using the nickname and ask an adult for help keeping the space requested.",
+        "The child knows they kept using an unwanted name. They do not know every feeling the classmate has.",
+        "Do not follow the classmate to say sorry. An adult can help find out later whether a message is wanted.",
+        "Use the name the classmate wants. An adult can address others repeating the nickname without putting the classmate on the spot.",
+        "Practice using the wanted name even when friends use the nickname. Ask an adult for help if the group keeps it going.",
+        "An adult can check at the next class and again later whether the nickname stopped. The classmate does not need to become a friend."
+      ]
+    },
+    {
+      "id": "supplies",
+      "title": "Taking supplies during art",
+      "scenario": "A child has repeatedly taken a classmate's art supplies without asking. One brush is damaged. The child wants to give the classmate a present.",
+      "applications": [
+        "Stop taking the supplies. Ask the teacher to help return what belongs to the classmate and make sure they can continue the activity.",
+        "Name the taking and the damaged brush. Do not assume the classmate will feel better because a present is offered.",
+        "The classmate can decline a conversation or a gift. Returning belongings through the teacher does not require a meeting.",
+        "The teacher can help arrange a suitable repair or replacement and access to supplies. A gift does not replace that responsibility.",
+        "Practice asking to borrow and accepting no. The teacher can help the child find supplies of their own.",
+        "Check at the next art lesson whether the classmate has usable materials and the taking has stopped. A thank-you is not the test."
+      ]
+    }
+  ],
+  "middle": [
+    {
+      "id": "rumor",
+      "title": "A rumor and an unwanted message",
+      "scenario": "A student repeated an unverified rumor in a small group. The peer affected has asked for no messages. The student proposes a public apology post.",
+      "applications": [
+        "Stop repeating the claim and asking others to defend it. Tell an appropriate adult if the group is continuing the harassment.",
+        "The student knows they repeated an unverified claim. They should not claim to know all of its effects or declare the rumor true.",
+        "Respect the request for no messages, including messages sent through friends. A draft can remain unsent.",
+        "With adult guidance, consider a correction to the people who received the claim without repeating private details. A public post could introduce it to a new audience.",
+        "Rehearse refusing to pass along unverified claims and asking for help when the group pressures the student to join in.",
+        "An adult checks whether circulation and retaliation continue. Removing one post or receiving no reply does not establish that the harm stopped."
+      ]
+    },
+    {
+      "id": "project",
+      "title": "Restoring a teammate's work",
+      "scenario": "A student repeatedly deleted a teammate's contributions and claimed the work as their own. The teammate wants the teacher's help and declines a joint meeting.",
+      "applications": [
+        "Stop deleting or claiming the work. The teacher can protect access and review the contribution record.",
+        "Name the deletions and the credit claimed. The teacher can establish disputed details separately rather than requiring the teammate to argue their case.",
+        "Respect the declined meeting. The student can cooperate with a teacher-led correction without contacting the teammate.",
+        "Restore recoverable work and correct credit through the teacher's agreed process. The teammate should not have to redo the lost work as the repair.",
+        "Practice asking before editing someone else's contribution. The teacher can set permissions and a review process.",
+        "At the next project checkpoint, the teacher checks access, accurate credit and whether exclusion continues. A new group assignment alone does not prove repair."
+      ]
+    }
+  ],
+  "high": [
+    {
+      "id": "privacy",
+      "title": "Repair without further disclosure",
+      "scenario": "A student shared a peer's private identity information in a group chat without permission. The peer asks for no contact and fears a public correction would spread it further.",
+      "applications": [
+        "Stop sharing the information and do not recruit others to explain or defend the disclosure. Seek appropriate adult support that takes privacy concerns seriously.",
+        "Name the unauthorized disclosure. Do not infer the peer's identity beyond what they choose to share or claim to know how every recipient used the information.",
+        "Respect no contact across channels. Do not ask friends to deliver an apology or ask the peer to reassure you.",
+        "Discuss a limited response with an appropriate adult, sharing only details needed for support. A public explanation or repost of a screenshot could amplify the exposure.",
+        "Practice checking permission before sharing another person's information. Adults can address group norms and ongoing harassment without making the peer a public example.",
+        "Agree on an adult check-in about further sharing, access and retaliation. Deleted content cannot guarantee that copies are gone; revise the plan if exposure continues."
+      ]
+    },
+    {
+      "id": "exclusion",
+      "title": "An apology accepted, harm continuing",
+      "scenario": "A student organized repeated exclusion from a club. They apologized and the peer accepted, but other members still block the peer from activities.",
+      "applications": [
+        "Stop supporting the exclusion and ask the club adviser to address the continuing barriers. An accepted apology does not end that responsibility.",
+        "Name the organizing and the continuing access problem. Do not assume the peer's acceptance means trust is restored or every effect is resolved.",
+        "Do not seek repeated reassurance or ask the peer to attend a reconciliation event. Acceptance of an apology is not permission for every kind of contact.",
+        "Work with the adviser on fair activity access and correcting the exclusionary directions. The peer should not have to earn readmission or lead the repair.",
+        "Practice responding when members repeat the exclusion. The adviser sets and enforces participation expectations rather than leaving the student to manage the group alone.",
+        "At the next two activities, the adviser checks actual participation and retaliation, with a private feedback route available. If barriers remain, the plan needs further action."
+      ]
+    }
+  ]
+};
 
   // ══════════════════════════════════════════════════════════════
   // ── Self-Check: which role(s) do I find myself in? ──
@@ -17976,86 +18143,49 @@ window.SelHub = window.SelHub || {
           renderCoreReflection('cycle', CYCLE_BREAKERS, 'Shared responsibility for stopping harm', 'Stopping harm can take clear limits, support, changes to the setting, and repeated follow-through. No learner has to absorb harm or solve it alone.', 'Choose a shared-responsibility example', cycleIdx),
           // ── REPAIR pathway (for students who have been the one causing harm) ──
           (function() {
-            var steps = REPAIR_STEPS[band] || REPAIR_STEPS.elementary;
-            var curStep = steps[Math.min(repairStep, steps.length - 1)];
-            return h('div', { style: { marginTop: 28 } },
+            var repairBand = Object.prototype.hasOwnProperty.call(REPAIR_STEPS, band) ? band : 'elementary';
+            var steps = REPAIR_STEPS[repairBand], cases = REPAIR_CASES[repairBand];
+            function record(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+            var selections = record(d.repairCaseSelections), drafts = record(d.repairDrafts);
+            var current = cases.find(function(item) { return item.id === selections[repairBand]; }) || cases[0];
+            var draftKey = repairBand + ':' + current.id, draft = record(drafts[draftKey]);
+            var initialStep = Number.isInteger(repairStep) && repairStep >= 0 && repairStep < steps.length ? repairStep : 0;
+            var edge = _upCHC ? '#ffff00' : _upCDark ? '#94a3b8' : '#64748b';
+            var control = { width: '100%', minHeight: 44, boxSizing: 'border-box', padding: 10, border: '1px solid ' + edge, borderRadius: 8, background: _upC('#fff'), color: _upC('#0f172a'), fontFamily: 'inherit', fontSize: 16 };
+            return h('div', { style: { marginTop: 24 } },
               h('button', {
-                onClick: function() { upd('repairOpen', !repairOpen); if (soundOn) sfxClick(); },
-                'aria-expanded': repairOpen ? 'true' : 'false',
-                style: {
-                  width: '100%', padding: '14px 16px', textAlign: 'left',
-                  border: '2px solid ' + (repairOpen ? '#fca5a5' : '#fecaca'),
-                  background: repairOpen ? _upC('#fff1f2') : _upC('#fef2f2'),
-                  borderRadius: 14, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 12, font: 'inherit', color: 'inherit'
-                }
-              },
-                h('span', { 'aria-hidden': 'true', style: {
-                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                  background: 'linear-gradient(135deg, #fca5a5 0%, #dc2626 100%)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 22, color: '#fff',
-                  boxShadow: '0 4px 10px rgba(220, 38, 38, 0.22)'
-                } }, '🔧'),
-                h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#991b1b'), marginBottom: 2 } },
-                    'If you have been the one doing the hurting'),
-                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
-                    'The hardest tab in this tool. Real repair, not performative apology. ' + steps.length + ' steps.')
-                ),
-                h('span', { 'aria-hidden': 'true', style: { color: _upC('#dc2626'), fontSize: 18 } }, repairOpen ? '▾' : '▸')
-              ),
-              repairOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #fecaca', borderRadius: 14 } },
-                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: _upC('#475569') } },
-                  h('strong', { style: { color: _upC('#991b1b') } }, 'One thing first: '),
-                  'recognizing you have hurt someone is a really hard thing to do, and it is what people who can change actually do. This section assumes you are here in good faith. None of these steps are about getting forgiven — they are about doing the work whether or not forgiveness comes.'),
-                // Step indicator
-                h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
-                  steps.map(function(s, i) {
-                    return h('div', { key: i, 'aria-hidden': 'true', style: {
-                      flex: 1, height: 6, borderRadius: 3,
-                      background: i <= repairStep ? 'linear-gradient(90deg, #dc2626, #b91c1c)' : _upC('#fee2e2')
-                    } });
-                  })
-                ),
-                h('div', { 'aria-live': 'polite', className: 'us-pop us-card', style: {
-                  padding: 16, borderRadius: 12, background: _upC('#fff1f2'), border: '1px solid #fca5a5'
-                } },
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
-                    h('div', { 'aria-hidden': 'true', style: {
-                      width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                      background: 'linear-gradient(135deg, #fca5a5 0%, #dc2626 100%)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 20, color: '#fff'
-                    } }, curStep.icon),
-                    h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontSize: 11, color: _upC('#991b1b'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Step ' + curStep.n + ' of ' + steps.length),
-                      h('div', { style: { fontSize: 15, fontWeight: 700, color: _upC('#0f172a') } }, curStep.title)
-                    )
-                  ),
-                  h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _upC('#1f2937') } }, curStep.body)
-                ),
-                h('div', { style: { display: 'flex', gap: 8, marginTop: 12, justifyContent: 'space-between' } },
-                  h('button', {
-                    onClick: function() { if (repairStep > 0) upd('repairStep', repairStep - 1); },
-                    disabled: repairStep === 0,
-                    style: { padding: '8px 14px', background: _upC('#fff'), color: repairStep === 0 ? _upC('#94a3b8') : _upC('#0f172a'),
-                      border: '1px solid #fecaca', borderRadius: 8, fontWeight: 600,
-                      cursor: repairStep === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }
-                  }, '← Back'),
-                  repairStep < steps.length - 1
-                    ? h('button', {
-                        onClick: function() { upd('repairStep', repairStep + 1); if (soundOn) sfxClick(); },
-                        style: { padding: '8px 14px', background: _upC('#dc2626'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
-                      }, 'Next step →')
-                    : h('button', {
-                        onClick: function() {
-                          upd({ repairStep: 0, repairOpen: false });
-                          if (soundOn) sfxBrave();
-                          tryAwardBadge('repair_walked', 30);
-                        },
-                        style: { padding: '8px 14px', background: '#059669', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
-                      }, 'Done — close')
+                type: 'button', onClick: function() { upd('repairOpen', !repairOpen); },
+                'aria-expanded': repairOpen ? 'true' : 'false', 'aria-controls': 'up-repair-body',
+                style: Object.assign({}, control, { textAlign: 'left', cursor: 'pointer', fontWeight: 700 })
+              }, 'Repair: choices, consent and follow-through'),
+              h('div', { id: 'up-repair-body', hidden: !repairOpen }, repairOpen && h('div', { style: { marginTop: 12 } },
+                h('section', { role: 'region', 'aria-label': 'Repair planning practice', style: { padding: 16, borderRadius: 14, border: '1px solid ' + edge, background: _upC('#fff'), color: _upC('#0f172a'), fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+                  h('h2', { style: { margin: '0 0 8px', fontSize: 22, lineHeight: 1.3 } }, 'Repair is more than an apology'),
+                  h('p', null, 'Explore a fictional situation without identifying yourself as someone who caused harm. Read, discuss, think, or write; all notes are optional. These questions can be revisited in any order.'),
+                  h('p', null, 'The aim is changed behavior and appropriate support. Contact, forgiveness and friendship are not requirements. Reading or filling this out does not prove repair, earn a badge, or send an apology.'),
+                  h('label', { htmlFor: 'up-repair-case', style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, 'Choose a repair situation'),
+                  h('select', { id: 'up-repair-case', value: current.id, style: control, onChange: function(e) { var next = Object.assign({}, selections); next[repairBand] = e.target.value; upd('repairCaseSelections', next); } }, cases.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
+                  h('h3', { style: { fontSize: 18, lineHeight: 1.4 } }, current.title),
+                  h('p', null, current.scenario),
+                  h('div', { key: draftKey }, steps.map(function(step, index) {
+                    var fieldId = 'up-repair-note-' + step.id;
+                    return h('details', { key: step.id, open: index === initialStep, style: { borderTop: '1px solid ' + edge } },
+                      h('summary', { style: { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 } }, step.title),
+                      h('p', null, step.body),
+                      h('p', null, h('strong', null, 'In this situation: '), current.applications[index]),
+                      h('label', { htmlFor: fieldId, style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, step.question),
+                      h('textarea', { id: fieldId, rows: 3, value: typeof draft[step.id] === 'string' ? draft[step.id] : '', style: Object.assign({}, control, { resize: 'vertical', marginBottom: 16 }), onChange: function(e) {
+                        var next = Object.assign({}, drafts); next[draftKey] = Object.assign({}, draft); next[draftKey][step.id] = e.target.value; upd('repairDrafts', next);
+                      } })
+                    );
+                  })),
+                  h('p', null, 'Notes stay separate for each situation and grade band in this project. Use the hub save controls to keep them. Review personal details before sharing.'),
+                  h('button', { type: 'button', style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }), onClick: function() {
+                    upd('repairOpen', false);
+                    // The trigger stays mounted; return focus after hiding the guide.
+                    var body = document.getElementById('up-repair-body');
+                    if (body && body.previousElementSibling) body.previousElementSibling.focus();
+                  } }, 'Close repair guide')
                 ),
                 // ── AI Apology Coach (sub-feature inside Repair) ──
                 h('div', { style: { marginTop: 16 } },
@@ -18076,15 +18206,15 @@ window.SelHub = window.SelHub || {
                       h('div', { style: { fontWeight: 800, fontSize: 13, color: _upC('#991b1b'), marginBottom: 2 } },
                         'Rehearse your apology with AI feedback'),
                       h('div', { style: { fontSize: 11, color: _upC('#64748b'), lineHeight: 1.4 } },
-                        'Type who you hurt + your draft. Coach tells you what would land, what might backfire, one tweak.')
+                        'Use a fictional situation and an optional draft. Feedback cannot establish consent or predict a response.')
                     ),
                     h('span', { 'aria-hidden': 'true', style: { color: _upC('#dc2626'), fontSize: 16 } }, apOpen ? '▾' : '▸')
                   ),
                   apOpen && h('div', { style: { marginTop: 10, padding: 14, background: _upC('#fff'), border: '1px solid #fecaca', borderRadius: 12 } },
                     h('p', { style: { margin: '0 0 12px', fontSize: 12, lineHeight: 1.55, color: _upC('#475569') } },
-                      'A real apology has no "but," no "if you felt that way." Practice here, then have the conversation for real. The AI cannot make this easier than it is, but it can help you notice what you are actually saying.'),
+                      'Use fictional names and omit identifying details. Requesting feedback sends the situation and draft to the configured AI service. A draft can stay unsent. Respect refusal, silence and no-contact boundaries; an apology does not require a conversation.'),
                     h('label', { htmlFor: 'us-ap-hurt', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
-                      'Who you hurt and what happened (brief)'),
+                      'Fictional situation (omit identifying details)'),
                     h('textarea', { id: 'us-ap-hurt', value: apHurt,
                       onChange: function(e) { upd('apHurt', e.target.value); },
                       placeholder: 'Example: My friend J — I told the group their secret as a joke and they heard about it.',
@@ -18092,7 +18222,7 @@ window.SelHub = window.SelHub || {
                       style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
                     }),
                     h('label', { htmlFor: 'us-ap-draft', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
-                      'Your draft apology — the exact words you would say'),
+                      'Optional apology draft for feedback'),
                     h('textarea', { id: 'us-ap-draft', value: apDraft,
                       onChange: function(e) { upd('apDraft', e.target.value); },
                       placeholder: 'Type your apology as if you were saying it out loud...',
@@ -18121,18 +18251,17 @@ window.SelHub = window.SelHub || {
                             'You are a kind, grounded coach helping a ' + band + ' school student rehearse an APOLOGY for harm they caused. ' +
                             'They have given you what happened and their draft apology. ' +
                             'Give feedback in exactly three short labeled parts (each 1–2 sentences, total under 130 words):\n\n' +
-                            '1) What in this draft would probably land well — what shows real accountability\n' +
-                            '2) What might backfire — \"but,\" minimizing, centering yourself, asking for forgiveness too early\n' +
+                            '1) What the draft clearly acknowledges — specific actions and known impact\n' +
+                            '2) What needs checking — consent, privacy, uncertainty, \"but,\" minimizing, centering yourself, asking for forgiveness too early\n' +
                             '3) One concrete tweak that would strengthen it\n\n' +
                             'Be specific. Use the actual words from their draft when you reference them. ' +
                             'Do not write the perfect apology for them — their voice matters more than yours. ' +
-                            'Do not promise forgiveness will come. Tone: warm, real, no emojis.\n\n' +
+                            'Do not predict how the recipient will respond or promise forgiveness. Respect refusal, silence and no-contact directions; never suggest contacting through friends or another channel. An unsent draft and changed behavior are valid options. Do not require a meeting, public correction or disclosure. Describe known impact without inventing feelings or motives. Tone: warm, real, no emojis.\n\n' +
                             'WHAT HAPPENED: \"' + apHurt.trim().replace(/"/g, '\\\"') + '\"\n' +
                             'THEIR DRAFT: \"' + apDraft.trim().replace(/"/g, '\\\"') + '\"';
                           callGemini(prompt, false).then(function(r) {
                             upd({ apLoading: false, apFeedback: (r || '').trim(), _lastTier: apSafety.action === 'nudge' ? 2 : 0 });
                             if (soundOn) sfxBrave();
-                            tryAwardBadge('rehearsed', 10);
                             if (announceToSR) announceToSR('Apology feedback ready');
                           }).catch(function() {
                             upd({ apLoading: false, apFeedback: 'The AI is not reachable right now. While you wait, read your draft out loud. Notice any "but," any "if you felt that way," any place where you are explaining yourself instead of acknowledging impact. Those are the edits to make.' });
@@ -18160,10 +18289,10 @@ window.SelHub = window.SelHub || {
                       borderRadius: 8, fontSize: 13, lineHeight: 1.6, color: _upC('#0f172a'), whiteSpace: 'pre-wrap'
                     } }, apFeedback),
                     apFeedback && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#991b1b'), fontStyle: 'italic' } },
-                      'AI-generated. The rehearsal is not the apology — the conversation with the real person is.')
+                      'AI-generated feedback may be mistaken. It cannot establish consent, certify repair, or decide whether contact is appropriate. No message is sent to the person in the situation.')
                   )
                 )
-              )
+              ))
             );
           })(),
 

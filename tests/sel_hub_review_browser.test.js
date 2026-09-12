@@ -248,6 +248,32 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   },120000);
 
+  it('upstander repair planning survives closing and the real hub return flow',async()=>{
+    await mount();
+    await page.locator('[data-sel-tool-card-id="upstander"]').click();
+    await page.getByRole('tab',{name:/Break the Cycle/}).click();
+    const trigger=page.getByRole('button',{name:'Repair: choices, consent and follow-through',exact:true});
+    await trigger.click();
+    const guide=page.getByRole('region',{name:'Repair planning practice',exact:true});
+    await guide.getByLabel('Choose a repair situation',{exact:true}).selectOption('project');
+    await guide.getByLabel('What needs to stop, and who can help? (optional)',{exact:true}).fill('Stop deleting work and ask the teacher to restore access.');
+    await guide.getByText('Check contact and consent',{exact:true}).click();
+    await guide.getByLabel('What contact boundary needs to be respected? (optional)',{exact:true}).fill('Respect the declined meeting.');
+    await guide.getByRole('button',{name:'Close repair guide',exact:true}).click();
+    const support=page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="upstander"]').click();
+    expect(await trigger.getAttribute('aria-expanded')).toBe('false');
+    await trigger.click();
+    expect(await guide.getByLabel('Choose a repair situation',{exact:true}).inputValue()).toBe('project');
+    expect(await guide.getByLabel('What needs to stop, and who can help? (optional)',{exact:true}).inputValue()).toContain('restore access');
+    await guide.getByText('Check contact and consent',{exact:true}).click();
+    expect(await guide.getByLabel('What contact boundary needs to be respected? (optional)',{exact:true}).inputValue()).toContain('declined meeting');
+    expect(await page.evaluate(()=>window.__alloflowSelToolData.upstander.earnedBadges?.repair_walked)).toBeUndefined();
+    expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {
