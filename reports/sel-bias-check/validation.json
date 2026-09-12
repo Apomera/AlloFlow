@@ -50,7 +50,8 @@
     "Ignored generated desktop/app-build output not rebuilt."
   ],
   "commit": {
-    "status": "ready",
-    "reason": "Unrelated source-pair mismatch cleared on recheck; scoped commit uses the normal hook."
+    "status": "committed",
+    "hash": "5e0964c45",
+    "reason": "Unrelated source-pair mismatch cleared on recheck; the scoped commit passed the normal hook."
   }
 }

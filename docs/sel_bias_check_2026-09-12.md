@@ -64,4 +64,4 @@ No push, deployment or packaged build is included. The ignored generated `deskto
 
 Final validation: all 30 focused cases, 581 regression checks and three selected actual-hub workflows passed (614 unique checks). Ninety filtered hub cases and two pre-existing regression skips are excluded. All 72 SEL tools rendered. Syntax, whitespace and source/public parity passed.
 
-Commit status: the unrelated source-pair mismatch cleared on recheck. The completed pass is being committed with its scoped files; the hook is not bypassed.
+Commit status: committed as `5e0964c45` after the unrelated source-pair mismatch cleared on recheck. The normal pre-commit hook passed without bypass.

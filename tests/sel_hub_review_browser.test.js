@@ -436,6 +436,35 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(data.biasViewed).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
+  it('values priorities and notes survive context changes and the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="decisions"]').click();
+    await page.getByRole('tab',{name:/Values Sort/}).click();
+    const practice=page.getByRole('region',{name:'Values in context practice',exact:true});
+    await practice.getByText('Map what matters (optional)',{exact:true}).click();
+    await practice.getByLabel('honesty — role in this situation',{exact:true}).selectOption('protect');
+    await practice.getByLabel('boundaries — role in this situation',{exact:true}).selectOption('protect');
+    await practice.getByLabel('A boundary or support to protect (optional)',{exact:true}).fill('Confirm plans without personal details.');
+    await practice.getByLabel('Choose a values context',{exact:true}).selectOption('vs9');
+    await practice.getByText('Map what matters (optional)',{exact:true}).click();
+    await practice.getByLabel('consent — role in this situation',{exact:true}).selectOption('protect');
+    await practice.getByText('Explore the tension and a change',{exact:true}).click();
+    await practice.getByLabel('What I would keep or change, and why (optional)',{exact:true}).fill('Use the scenery version.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="decisions"]').click();
+    expect(await practice.getByLabel('Choose a values context',{exact:true}).inputValue()).toBe('vs9');
+    await practice.getByText('Map what matters (optional)',{exact:true}).click();
+    expect(await practice.getByLabel('consent — role in this situation',{exact:true}).inputValue()).toBe('protect');
+    await practice.getByText('Explore the tension and a change',{exact:true}).click();
+    expect(await practice.getByLabel('What I would keep or change, and why (optional)',{exact:true}).inputValue()).toBe('Use the scenery version.');
+    await practice.getByLabel('Choose a values context',{exact:true}).selectOption('vs7');
+    await practice.getByText('Map what matters (optional)',{exact:true}).click();
+    for(const value of ['honesty','boundaries'])expect(await practice.getByLabel(value+' — role in this situation',{exact:true}).inputValue()).toBe('protect');
+    expect(await practice.getByLabel('A boundary or support to protect (optional)',{exact:true}).inputValue()).toContain('personal details');
+    const data=await page.evaluate(()=>window.__alloflowSelToolData.decisions);
+    expect(data.vsCompleted).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

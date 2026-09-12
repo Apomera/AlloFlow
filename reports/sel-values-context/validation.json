@@ -1,0 +1,51 @@
+{
+  "date": "2026-09-12",
+  "tool": "Decision Workshop / Values Sort",
+  "contexts": 24,
+  "gradeBands": [
+    "elementary",
+    "middle",
+    "high"
+  ],
+  "focused": {
+    "passed": 30,
+    "files": 1
+  },
+  "regressions": {
+    "passed": 611,
+    "skipped": 2,
+    "files": 13
+  },
+  "actualHub": {
+    "passed": 4,
+    "filtered": 90
+  },
+  "totalUniquePassed": 645,
+  "accessibility": {
+    "width": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scopedAxeViolations": 0,
+    "screenshotsReviewed": 9,
+    "minimumControlHeight": 44
+  },
+  "sourcePublicSha256": "7e3d6349d1505533884973fd14bc78ca22b4115044e07d55d17d630ab602bad8",
+  "legacyCompatibility": "All 24 IDs, band ordering and word lists unchanged; earlier ranking, index, save flag, counters, badges and logs preserved without assigning new priorities.",
+  "persistence": "Six optional notes and priority choices retained independently by context and band, including serialized restoration and real-hub return.",
+  "syntax": "passed",
+  "whitespace": "passed",
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "deployment": "none",
+  "limitations": [
+    "Scoped browser/accessibility checks are not full-app certification.",
+    "Authored scenarios and priority roles are not a validated assessment.",
+    "Long native select options truncate at phone width; full selected context appears below.",
+    "Ignored generated desktop/app-build output not rebuilt."
+  ]
+}

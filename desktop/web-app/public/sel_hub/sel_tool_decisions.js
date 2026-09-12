@@ -937,15 +937,163 @@ window.SelHub = window.SelHub || {
 };
 
   // ══════════════════════════════════════════════════════════════
+  // Authored fictional practice; priorities are contextual, not a personality assessment.
+  var VALUES_PRACTICE = {
+  "vs1": {
+    "situation": "A friend wants to play the same game again. Another friend has not had a turn choosing.",
+    "tension": "Loyalty can mean staying with a friend and helping the group make room for others. Fun and fairness may fit together.",
+    "change": "One friend says the new game has rules they cannot follow yet.",
+    "model": "Ask what would make the game easier to join. Try teaching a short round before taking turns choosing; check that everyone has a real way to participate."
+  },
+  "vs2": {
+    "situation": "A student has worked hard on a puzzle but is stuck. A partner offers an answer without explaining it.",
+    "tension": "Effort does not have to mean working alone. Curiosity and honest help can support learning together.",
+    "change": "The student understands spoken steps better than the printed instructions.",
+    "model": "Ask the partner or teacher to explain one step aloud, then try the next step. Check understanding instead of judging how much struggle counts as effort."
+  },
+  "vs3": {
+    "situation": "A child promised to help tidy a shared space but feels worn out after school.",
+    "tension": "Responsibility can include asking for help or a different time. Caring for family does not mean having no limits.",
+    "change": "A grown-up says the space must be clear for someone to walk safely.",
+    "model": "Tell the grown-up about being tired. Ask to clear a small safe path together now and agree on a manageable time for the rest."
+  },
+  "vs4": {
+    "situation": "A team keeps giving one player the ball because they score most often. Another player wants a chance.",
+    "tension": "Trying to win and including teammates both matter. Equal turns alone may not give everyone the support they need.",
+    "change": "The quieter player says a shorter pass would help them take part.",
+    "model": "Try shorter passes and shared roles in the next round. Ask whether players got a meaningful chance, rather than only counting the score."
+  },
+  "vs5": {
+    "situation": "Friends choose a group name that makes fun of someone. A child wants to belong but feels uneasy.",
+    "tension": "Belonging matters; it does not make hurtful treatment acceptable. Courage can include getting support instead of speaking alone.",
+    "change": "A second friend quietly says they also dislike the name.",
+    "model": "Suggest a different name together or ask a trusted adult for help. Check that the person targeted is supported without making them explain their feelings to the group."
+  },
+  "vs6": {
+    "situation": "A class wants to reduce lunch waste. Some students need individually wrapped food.",
+    "tension": "Care for the planet and care for classmates belong in the same plan. A rule can affect people differently.",
+    "change": "The teacher can ask for a food-scrap bin and reusable supplies.",
+    "model": "Choose changes the class can actually use, with exceptions for food needs. Count what the class reduces without blaming students for packaging they need."
+  },
+  "vs6b": {
+    "situation": "A child sees repeated teasing near the playground. They want to help but worry about becoming a target.",
+    "tension": "Helping does not require putting yourself in danger. Safety, kindness and getting adult support can work together.",
+    "change": "The teasing continues after a student asks for it to stop.",
+    "model": "Move toward a safe adult and report what happened. Offer company to the targeted child if they want it. Check that an adult follows up; stopping repeated harm is not a child's job alone."
+  },
+  "vs6c": {
+    "situation": "A child accidentally damages a borrowed book and worries that telling the owner will upset them.",
+    "tension": "Honesty and kindness can shape how the child explains what happened. Repair needs the owner's input.",
+    "change": "The owner says the book was a special gift and cannot simply be replaced.",
+    "model": "Explain the damage without excuses, listen, and ask a grown-up to help discuss repair. The owner may still feel upset; an apology does not require immediate forgiveness."
+  },
+  "vs7": {
+    "situation": "A friend asks why you did not answer a private message. You want to rebuild trust but do not want to share a personal family detail.",
+    "tension": "Honesty does not require full disclosure. Consistency and a clear boundary can support trust without unwanted vulnerability.",
+    "change": "Your friend says they mainly need to know whether tomorrow's plan is still happening.",
+    "model": "Confirm the plan and say you were unavailable without sharing private details. Agree on a practical way to confirm plans; check whether the expectation is manageable for both people."
+  },
+  "vs8": {
+    "situation": "Students want a club to offer an accessible meeting space. One student is asked to tell their personal story publicly to persuade the group.",
+    "tension": "Solidarity means supporting access while respecting who chooses to speak. Someone else should not set the level of risk a student must accept.",
+    "change": "The student wants the room changed but does not want to be named.",
+    "model": "Ask the adviser to review meeting access without naming the student. Share responsibility for follow-up and check that the new space actually works for participants."
+  },
+  "vs9": {
+    "situation": "A group wants to post a funny video from a trip. One person in the clip has not agreed to have it shared.",
+    "tension": "Self-expression and connection do not replace another person's choice about appearing online. Silence is not agreement.",
+    "change": "The person says no, but the group has a version showing only the scenery.",
+    "model": "Use the scenery version if everyone shown has agreed. Keep the original private and check the post before sharing. A popular response would not erase the consent issue."
+  },
+  "vs10": {
+    "situation": "Friends plan a challenge that feels unsafe to one student. They say backing out means not being part of the group.",
+    "tension": "Belonging is a real need, but a demand to accept harm is pressure. Independence can include choosing an ally or adult support.",
+    "change": "One friend offers to leave with the student and do something else.",
+    "model": "Leave together for a safer activity. If the challenge could hurt someone, seek adult help. Later, consider which friendships allow a no without punishment."
+  },
+  "vs11": {
+    "situation": "A club leader must choose speaking roles. Their closest friends expect the biggest parts.",
+    "tension": "Fairness involves a clear process and support to participate. Being decisive does not mean ignoring concerns about that process.",
+    "change": "A member wants a role but needs to use recorded audio instead of speaking live.",
+    "model": "Agree on role criteria and include a recorded contribution where workable. Explain the process without disclosing private needs, then check whether members had a meaningful choice."
+  },
+  "vs12": {
+    "situation": "A student has a group deadline, a family commitment and little time to rest. They cannot do everything as originally planned.",
+    "tension": "Responsibility includes making realistic commitments. Rest is a need, and support or changed expectations may be necessary.",
+    "change": "A teacher offers a deadline extension if the group agrees on a revised plan.",
+    "model": "Discuss a smaller task and the extension with the group. Communicate what can be done and when. Review whether the plan leaves enough rest instead of measuring success by doing everything."
+  },
+  "vs12b": {
+    "situation": "Someone who spread a rumor apologizes and asks to become close friends again immediately.",
+    "tension": "Repair, forgiveness and renewed trust are different choices. Empathy does not require dropping boundaries.",
+    "change": "The person has corrected the rumor but keeps asking for an immediate answer.",
+    "model": "Acknowledge the correction if you wish, while asking for time and space. If pressure continues, seek support. Look for consistent respect for boundaries before deciding about closeness."
+  },
+  "vs12c": {
+    "situation": "A group wants to use an app that would upload classmates' voices to make a project more entertaining.",
+    "tension": "Convenience and creativity need to be considered alongside permission and privacy. Being able to upload a recording is not permission to do so.",
+    "change": "The teacher offers a version that uses invented dialogue and no recordings.",
+    "model": "Use the invented dialogue or ask for another approved approach. Check the project for identifying details and explain the creative choices without uploading classmates' voices."
+  },
+  "vs13": {
+    "situation": "A student is choosing between a paid local opportunity and an unpaid program connected to a favorite field. Transport and household income matter.",
+    "tension": "Passion and financial security are not measures of moral worth. Access, costs and other responsibilities change which options are realistic.",
+    "change": "The unpaid program offers a small travel grant but still requires many unpaid hours.",
+    "model": "Calculate the remaining costs and time with a trusted adviser. Ask about paid or shorter alternatives. Revisit the choice if support changes instead of treating sacrifice as proof of commitment."
+  },
+  "vs14": {
+    "situation": "A student is offered recognition for a successful project but the nomination leaves out the group's contributions.",
+    "tension": "Achievement and integrity can reinforce each other through accurate credit. Kindness does not mean leaving an unfair account unchallenged.",
+    "change": "The organizer says the nomination can be revised before publication.",
+    "model": "Request a factual correction and ask teammates how they want to be credited. Check the revised text; accepting recognition can still be reasonable when contributions are represented accurately."
+  },
+  "vs15": {
+    "situation": "Students learn that a school opportunity requires fees some families cannot afford. They are asked to share personal financial stories to support a change.",
+    "tension": "Justice and solidarity include changing access without requiring disclosure. Students affected by a barrier should not carry all the work of removing it.",
+    "change": "The school can review fee waivers, but the current process publicly identifies recipients.",
+    "model": "Request a confidential access process and a review of the fees themselves. Invite voluntary feedback through a trusted staff member, then check who can participate after the change."
+  },
+  "vs16": {
+    "situation": "A teammate asks a student to leave an inconvenient result out of a report so the team looks successful.",
+    "tension": "Loyalty can include protecting the team from a misleading claim. Honesty may require support when challenging someone with more influence.",
+    "change": "The teacher offers a private way to raise concerns before submission.",
+    "model": "Use the private route if needed and propose including the result with its limits. Check that the final report is accurate and that no student is left to manage retaliation alone."
+  },
+  "vs17": {
+    "situation": "A student feels pulled between a demanding activity, time with people they care about and unstructured rest.",
+    "tension": "Purpose can come from relationships, enjoyment and contribution as well as achievement. A meaningful life need not have one fixed priority order.",
+    "change": "The activity offers a smaller role for the next month.",
+    "model": "Try the smaller role and reserve time for connection and rest. Set a review point to notice what is workable; changing a commitment is not automatically giving up on a value."
+  },
+  "vs18": {
+    "situation": "A group has a rule against late entries, but a participant could not use the submission system with their access tools.",
+    "tension": "Consistency matters, yet applying the same process can preserve an access barrier. Compassion should not depend on a public personal disclosure.",
+    "change": "The organizer confirms the system failed and can reopen submissions fairly.",
+    "model": "Correct the access problem and provide a clear revised process. Explain the procedural change without naming private details. Check that affected participants can use it before enforcing the new deadline."
+  },
+  "vs18b": {
+    "situation": "A student with easy access to a school leader is asked to raise a concern affecting peers. They do not know what those peers want shared.",
+    "tension": "Action and humility can work together. Having access does not give someone authority to speak for everyone or reveal another person's story.",
+    "change": "Peers agree on a specific request but ask to stay unnamed.",
+    "model": "Present the agreed request without identifying stories and be clear about whose permission you have. Report back on the response and let peers choose whether the next step fits their aims."
+  },
+  "vs18c": {
+    "situation": "A student cares about a cause but is being pressed to join an action that could put their housing or job at risk.",
+    "tension": "Conviction does not require equal exposure to consequences. Community action can include different roles and protect people with fewer options.",
+    "change": "Organizers offer a lower-risk support role with a clear time limit.",
+    "model": "Assess the actual demands and choose a role, another contribution or a pause. Clarify limits in advance and review if the risk changes; respect others' decisions about their own participation."
+  }
+};
+
   // ── Values Sort Contexts ──
-  // Students rank values by importance in different life contexts
+  // Context words retained from the earlier sort; learners now consider their roles together.
   // ══════════════════════════════════════════════════════════════
   var VALUES_SORT = {
     elementary: [
-      { id: 'vs1', context: 'Being a good friend', values: ['honesty', 'kindness', 'loyalty', 'fairness', 'fun', 'sharing'] },
-      { id: 'vs2', context: 'Being a good student', values: ['hard work', 'curiosity', 'honesty', 'respect', 'helpfulness', 'courage'] },
-      { id: 'vs3', context: 'Being a good family member', values: ['love', 'responsibility', 'patience', 'helping out', 'honesty', 'forgiveness'] },
-      { id: 'vs4', context: 'Being a good teammate', values: ['fairness', 'encouragement', 'effort', 'sportsmanship', 'teamwork', 'respect'] },
+      { id: 'vs1', context: 'Caring for a friendship', values: ['honesty', 'kindness', 'loyalty', 'fairness', 'fun', 'sharing'] },
+      { id: 'vs2', context: 'Learning with support', values: ['hard work', 'curiosity', 'honesty', 'respect', 'helpfulness', 'courage'] },
+      { id: 'vs3', context: 'Sharing family responsibilities', values: ['love', 'responsibility', 'patience', 'helping out', 'honesty', 'forgiveness'] },
+      { id: 'vs4', context: 'Including teammates', values: ['fairness', 'encouragement', 'effort', 'sportsmanship', 'teamwork', 'respect'] },
       { id: 'vs5', context: 'Choosing what\'s right vs. what\'s popular', values: ['courage', 'kindness', 'honesty', 'belonging', 'self-respect', 'peer approval'] },
       { id: 'vs6', context: 'Taking care of the planet', values: ['responsibility', 'care', 'sacrifice', 'creativity', 'teamwork', 'hope'] },
       { id: 'vs6b', context: 'Helping someone who is being bullied', values: ['courage', 'safety', 'kindness', 'loyalty', 'justice', 'self-protection'] },
@@ -1171,8 +1319,8 @@ window.SelHub = window.SelHub || {
     { id: 'total_10',          icon: '\uD83C\uDFC6', name: 'Master Decider',       desc: 'Complete 10 activities across all tabs' },
     { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Decision Streak',      desc: 'Practice 3 days in a row' },
     { id: 'values_explorer',   icon: '\uD83D\uDC9C', name: 'Values Explorer',      desc: 'Consider 3+ different values in one decision' },
-    { id: 'first_sort',        icon: '\uD83C\uDCCF', name: 'Priority Setter',      desc: 'Complete your first values sort' },
-    { id: 'sort_3',            icon: '\uD83C\uDFAF', name: 'Values Architect',     desc: 'Complete 3 values sorts' },
+    { id: 'first_sort',        icon: '\uD83C\uDCCF', name: 'Priority Setter',      desc: 'Earlier activity: completed a values sort' },
+    { id: 'sort_3',            icon: '\uD83C\uDFAF', name: 'Values Architect',     desc: 'Earlier activity: completed 3 values sorts' },
     { id: 'first_realworld',   icon: '\uD83C\uDF0D', name: 'History Student',      desc: 'Analyze your first real-world decision' },
     { id: 'realworld_all',     icon: '\uD83C\uDFDB\uFE0F', name: 'Moral Historian', desc: 'Study all real-world decisions in your grade band' },
     { id: 'compass_done',      icon: '\uD83E\uDDED', name: 'Moral Compass',     desc: 'Historical award from the earlier Moral Compass quiz' },
@@ -1263,7 +1411,6 @@ window.SelHub = window.SelHub || {
       // Values Sort state
       var vsIdx          = d.vsIdx || 0;
       var vsRanking      = d.vsRanking || [];
-      var vsSaved        = d.vsSaved || false;
       var vsCompleted    = d.vsCompleted || 0;
 
       // Moral Compass state
@@ -1450,7 +1597,7 @@ window.SelHub = window.SelHub || {
           dilemma:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\u2696',         title: 'Ethical Dilemmas \u2014 trolley problems + Heinz', hint: 'Kohlberg 1958: 6 stages of moral reasoning, from \u201Cwill I get caught\u201D up through universal principles. Most adults reason at stages 3-4 day-to-day. Practicing dilemmas raises the ceiling without forcing one answer.' },
           consequence: { accent: _decFg('#fbbf24'), soft: 'rgba(234,88,12,0.14)', icon: '\uD83D\uDD17', title: 'Consequence Map - possibilities, not predictions', hint: 'Consider different outcomes, whose needs are affected, and what the plan depends on. New information can justify a change. An outcome alone does not tell you whether the original reasoning was sound.' },
           bias:        { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)', icon: '\uD83E\uDDE0', title: 'Bias Check — test an interpretation', hint: 'Separate observations from guesses, consider another explanation and choose a relevant check. Recognizing a pattern does not prove a person is biased or make an answer correct.' },
-          values:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDCCF', title: 'Values Sort \u2014 what actually matters to YOU',     hint: 'Schwartz 1992: 10 universal values in 4 clusters. Decisions feel \u201Cright\u201D when they line up with your top values; \u201Coff\u201D when they don\u2019t \u2014 even if they look good on paper. Sort yours, then test against past choices.' },
+          values:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)', icon: '\uD83C\uDCCF', title: 'Values Sort — values in context', hint: 'Explore what matters together, where priorities pull apart and what boundaries need protection. Try a changed situation and explain your next step.' },
           realworld:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF0D', title: 'Real-World \u2014 college, money, relationships',     hint: 'Higher-stakes practice scenarios. Pre-rehearse decisions you\u2019ll actually face: which college, asking someone out, whether to share something on social. \u201CFuture self interview\u201D \u2014 ask the version of you in 5 years what they wish you\u2019d done.' },
           compass:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDDED', title: 'Moral reasoning — compare the reasons', hint: 'Explore a fictional case through several lenses. Notice uncertainty, boundaries and support, then reconsider when the context changes. You can think or discuss without writing.' },
           advisor:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\u2728',         title: 'AI Advisor \u2014 a sounding board, not the boss',     hint: 'Type the situation; the AI walks the framework with you. Use it to see angles you missed, not to outsource the call. Final decisions still go through YOUR values + your context, not a model\u2019s training data.' },
@@ -2096,97 +2243,77 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var vsContent = null;
       if (activeTab === 'values') {
+        function valuesRecord(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
         var vsSorts = VALUES_SORT[band] || VALUES_SORT.elementary;
-        var curVs = vsSorts[vsIdx % vsSorts.length];
-        // Initialize ranking if empty or wrong context
-        var ranking = vsRanking.length === curVs.values.length ? vsRanking : curVs.values.slice();
-
-        function moveValue(fromIdx, toIdx) {
-          if (toIdx < 0 || toIdx >= ranking.length) return;
-          var newRanking = ranking.slice();
-          var item = newRanking.splice(fromIdx, 1)[0];
-          newRanking.splice(toIdx, 0, item);
-          upd('vsRanking', newRanking);
-          if (soundEnabled) sfxClick();
+        var valuesSelections = valuesRecord(d.valuesSelections);
+        var oldVsIndex = typeof vsIdx === 'number' && isFinite(vsIdx) && vsIdx >= 0 ? Math.floor(vsIdx) % vsSorts.length : 0;
+        var chosenVsId = Object.prototype.hasOwnProperty.call(valuesSelections, band) ? valuesSelections[band] : null;
+        var curVs = vsSorts.find(function(item) { return item.id === chosenVsId; }) || vsSorts[oldVsIndex];
+        var valuesCase = VALUES_PRACTICE[curVs.id];
+        var valuesKey = band + ':' + curVs.id;
+        var valuesDrafts = valuesRecord(d.valuesDrafts);
+        var valuesDraft = valuesRecord(Object.prototype.hasOwnProperty.call(valuesDrafts, valuesKey) ? valuesDrafts[valuesKey] : null);
+        var valuesPriorities = valuesRecord(valuesDraft.priorities);
+        var valuesSurface = _decHC ? '#000000' : _decL ? '#ffffff' : '#0f172a';
+        var valuesInk = _decHC ? '#ffff00' : _decL ? '#0f172a' : '#e2e8f0';
+        var valuesEdge = _decHC ? '#ffff00' : '#64748b';
+        var valuesControl = { width: '100%', minHeight: 44, padding: 10, border: '1px solid ' + valuesEdge, borderRadius: 8, background: valuesSurface, color: valuesInk, font: 'inherit', fontSize: 16, boxSizing: 'border-box' };
+        var priorityChoices = [['', 'Still deciding'], ['protect', 'Protect here'], ['support', 'Support if possible'], ['less', 'Less central here']];
+        function updateValuesDraft(key, value) {
+          var next = Object.assign({}, valuesDrafts);
+          next[valuesKey] = Object.assign({}, valuesDraft);
+          next[valuesKey][key] = value;
+          upd('valuesDrafts', next);
         }
-
-        vsContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDCCF Values Sort'),
-          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
-            'Rank these values from MOST to LEAST important for this situation. There are no wrong answers!'
+        function valuesNote(key, label, help) {
+          var id = 'dec-values-note-' + key;
+          var value = Object.prototype.hasOwnProperty.call(valuesDraft, key) && typeof valuesDraft[key] === 'string' ? valuesDraft[key] : '';
+          return h('div', { style: { margin: '12px 0' } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, label + ' (optional)'),
+            h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, help),
+            h('textarea', { id: id, rows: 3, value: value, 'aria-describedby': id + '-help', onChange: function(e) { updateValuesDraft(key, e.target.value); }, style: Object.assign({}, valuesControl, { resize: 'vertical', lineHeight: 1.6 }) }));
+        }
+        var oldValuesRanking = Array.isArray(vsRanking) ? vsRanking.filter(function(value) { return typeof value === 'string'; }) : [];
+        vsContent = h('section', { role: 'region', 'aria-label': 'Values in context practice', style: { padding: 16, maxWidth: 760, margin: '0 auto', background: valuesSurface, color: valuesInk, border: '1px solid ' + valuesEdge, borderRadius: 12, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+          h('h2', { style: { fontSize: 22, lineHeight: 1.3, marginTop: 0 } }, 'Explore what matters in this situation'),
+          h('p', null, 'Values are things we care about. Several can matter together, and the situation can change how we act on them. Explore, talk or write; there is no score or required ranking.'),
+          h('label', { htmlFor: 'dec-values-choice', style: { display: 'block', fontWeight: 700 } }, 'Choose a values context'),
+          h('select', { id: 'dec-values-choice', value: curVs.id, onChange: function(e) { var next = Object.assign({}, valuesSelections); next[band] = e.target.value; upd('valuesSelections', next); }, style: valuesControl }, vsSorts.map(function(item) { return h('option', { key: item.id, value: item.id }, item.context); })),
+          h('div', { key: valuesKey },
+            h('h3', { style: { fontSize: 18 } }, curVs.context),
+            h('h4', { style: { fontSize: 16 } }, 'A fictional situation'), h('p', null, valuesCase.situation),
+            h('p', null, 'Use this example or imagine another situation. You do not need to share a personal experience.'),
+            h('details', { style: { borderTop: '1px solid ' + valuesEdge } },
+              h('summary', { style: { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' } }, 'Map what matters (optional)'),
+              valuesNote('context', 'The situation I am considering', band === 'elementary' ? 'Use the example or make up a situation. Who is involved?' : 'Use the example or specify the choice, people affected and relevant constraints. Avoid identifying details.'),
+              h('p', { id: 'dec-values-priority-help' }, 'These words are starting points: some name values, needs, pressures or possible consequences. Choose a role for any word that helps. Several can share a role; leave others undecided. Less central here does not mean unimportant in your life.'),
+              h('p', null, 'A preference cannot make harm or ignored consent acceptable. Name safety, access and boundaries even if they are missing from this list.'),
+              curVs.values.map(function(value, index) {
+                var selected = Object.prototype.hasOwnProperty.call(valuesPriorities, value) && priorityChoices.some(function(item) { return item[0] === valuesPriorities[value]; }) ? valuesPriorities[value] : '';
+                return h('div', { key: value, style: { margin: '12px 0' } },
+                  h('label', { htmlFor: 'dec-values-priority-' + index, style: { display: 'block', fontWeight: 700 } }, value + ' — role in this situation'),
+                  h('select', { id: 'dec-values-priority-' + index, value: selected, 'aria-describedby': 'dec-values-priority-help', onChange: function(e) { var next = Object.assign({}, valuesPriorities); next[value] = e.target.value; updateValuesDraft('priorities', next); }, style: valuesControl }, priorityChoices.map(function(item) { return h('option', { key: item[0], value: item[0] }, item[1]); })));
+              }),
+              valuesNote('meaning', 'What these words mean here', band === 'elementary' ? 'Pick one or two words. What could someone do to show them? Add a word that is missing if you want.' : 'Define one or two priorities in observable actions. Add a missing value or need; people may use the same word differently.'),
+              valuesNote('tension', 'What fits together or pulls apart', band === 'elementary' ? 'Can one action help with two things you care about? What might be hard to do together?' : 'Identify a genuine tension and a way to support more than one value. Whose needs or costs might the first plan miss?'),
+              valuesNote('boundary', 'A boundary or support to protect', band === 'elementary' ? 'What needs to stay safe or fair? Who could help? You do not have to solve it alone.' : 'Name consent, access, safety or another limit the plan must respect. Identify who has responsibility and what support is needed.'),
+              valuesNote('action', 'A possible next step and reason', band === 'elementary' ? 'What small step could help? Say how it shows what matters and who can help.' : 'Choose a workable action and explain which priorities it serves, what remains unresolved and whose input you need.')
+            ),
+            h('details', { style: { borderTop: '1px solid ' + valuesEdge } },
+              h('summary', { style: { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' } }, 'Explore the tension and a change'),
+              h('p', null, h('strong', null, 'A tension to consider: '), valuesCase.tension),
+              h('p', null, h('strong', null, 'Now imagine: '), valuesCase.change),
+              valuesNote('review', 'What I would keep or change, and why', band === 'elementary' ? 'Does this new detail change your plan? What still matters? You can keep your idea and explain why.' : 'Separate a changed action from a changed value. What would you revise or keep, and what feedback or later check would help?')),
+            h('details', { style: { borderTop: '1px solid ' + valuesEdge } },
+              h('summary', { style: { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' } }, 'Compare one possible response'),
+              h('p', null, valuesCase.model),
+              h('p', null, 'This is one response to the changed situation, not an answer key. Compare its reasons, limits and needed support with your own. Different choices still need to account for their effects on people.')),
+            h('p', null, 'Choices and notes stay with this context and grade band in the current project. Use the hub save or export controls to keep them beyond this session. Review private details before sharing.')
           ),
-          h('div', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
-            'Context ' + ((vsIdx % vsSorts.length) + 1) + ' of ' + vsSorts.length +
-            (vsCompleted > 0 ? ' \u00B7 ' + vsCompleted + ' completed' : '')
-          ),
-          // Context card
-          h('div', { style: { padding: 16, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
-            h('p', { style: { fontSize: 11, color: _decFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'What matters most when...'),
-            h('p', { style: { fontSize: 16, color: _decFg('#f1f5f9'), fontWeight: 700 } }, curVs.context + '?')
-          ),
-          // Ranking list
-          h('div', { style: { marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 6 } },
-            ranking.map(function(val, i) {
-              var medalColors = [_decFg('#f59e0b'), _decFg('#94a3b8'), '#cd7f32', _decFg('#94a3b8'), _decFg('#475569'), _decBg('#334155')];
-              var medalLabels = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
-              return h('div', {
-                key: val,
-                style: {
-                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10,
-                  background: _decBg('#1e293b'), border: '1px solid ' + (i === 0 ? '#f59e0b44' : _decBg('#334155')),
-                  transition: 'all 0.15s'
-                }
-              },
-                // Rank medal
-                h('div', {                   style: { width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, background: medalColors[i] + '33', color: _decFg(medalColors)[i], flexShrink: 0 }
-                }, medalLabels[i]),
-                // Value name
-                h('span', { style: { flex: 1, color: _decFg('#e2e8f0'), fontSize: 14, fontWeight: i === 0 ? 700 : 500 } }, val),
-                // Move buttons
-                h('button', { 'aria-label': 'Move buttons',
-                  onClick: function() { moveValue(i, i - 1); },
-                  disabled: i === 0,
-                  style: { width: 28, height: 28, borderRadius: 6, border: 'none', background: i === 0 ? _decBg('#1e293b') : _decBg('#334155'), color: _decFg(i) === 0 ? _decBg('#334155') : _decFg('#e2e8f0'), cursor: i === 0 ? 'default' : 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }
-                }, '\u25B2'),
-                h('button', { 'aria-label': 'Values sort saved',
-                  onClick: function() { moveValue(i, i + 1); },
-                  disabled: i === ranking.length - 1,
-                  style: { width: 28, height: 28, borderRadius: 6, border: 'none', background: i === ranking.length - 1 ? _decBg('#1e293b') : _decBg('#334155'), color: _decFg(i) === ranking.length - 1 ? _decBg('#334155') : _decFg('#e2e8f0'), cursor: i === ranking.length - 1 ? 'default' : 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }
-                }, '\u25BC')
-              );
-            })
-          ),
-          // Actions
-          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', { 'aria-label': 'Next Context',
-              onClick: function() {
-                var newDone = vsCompleted + 1;
-                upd({ vsSaved: true, vsCompleted: newDone });
-                logPractice('values', curVs.id);
-                awardXP(15);
-                tryAwardBadge('first_sort');
-                if (newDone >= 3) tryAwardBadge('sort_3');
-                if (soundEnabled) sfxCorrect();
-                addToast('Values sort saved! Your #1: ' + ranking[0], 'success');
-                ctx.announceToSR && ctx.announceToSR('Values sort saved');
-              },
-              disabled: vsSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: vsSaved ? _decFg('#22c55e') : ACCENT, color: vsSaved ? _decFg('#fff') : '#0f172a', fontWeight: 600, fontSize: 13, cursor: vsSaved ? 'default' : 'pointer' }
-            }, vsSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Ranking'),
-            vsSaved && h('button', { 'aria-label': 'Next Context',
-              onClick: function() {
-                upd({ vsIdx: vsIdx + 1, vsRanking: [], vsSaved: false });
-                if (soundEnabled) sfxClick();
-              },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _decBg('#334155'), color: _decFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
-            }, 'Next Context \u2192')
-          ),
-          // Reflection prompt
-          vsSaved && h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED } },
-            h('p', { style: { fontSize: 10, color: _decFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Reflect'),
-            h('p', { style: { fontSize: 12, color: _decFg('#e2e8f0'), lineHeight: 1.6 } },
-              'You ranked "' + ranking[0] + '" as most important and "' + ranking[ranking.length - 1] + '" as least. Would someone else rank them the same way? Why might their ranking be different?'
-            )
+          oldValuesRanking.length > 0 && h('details', { style: { borderTop: '1px solid ' + valuesEdge } },
+            h('summary', { style: { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' } }, 'Earlier values ranking'),
+            h('p', null, 'The earlier activity kept one ranking without a reliable grade-band link. It is shown as a historical note and is not assigned to this context or converted into priorities.'),
+            h('ol', null, oldValuesRanking.map(function(value, index) { return h('li', { key: index }, value); }))
           )
         );
       }
@@ -2493,7 +2620,7 @@ window.SelHub = window.SelHub || {
           { label: 'Ethical Dilemmas', value: edCompleted, icon: '\u2696\uFE0F', color: _decFg('#8b5cf6') },
           { label: 'Consequence Maps', value: csCompleted, icon: '\uD83D\uDD17', color: _decFg('#ef4444') },
           { label: 'Earlier bias card reveals', value: biasViewed, icon: '\uD83E\uDDE0', color: _decFg('#3b82f6') },
-          { label: 'Values Sorted', value: vsCompleted, icon: '\uD83C\uDCCF', color: _decFg('#22c55e') },
+          { label: 'Earlier values sorts', value: vsCompleted, icon: '\uD83C\uDCCF', color: _decFg('#22c55e') },
           { label: 'Real-World Cases', value: rwCompleted, icon: '\uD83C\uDF0D', color: _decFg('#60a5fa') }
         ];
 
