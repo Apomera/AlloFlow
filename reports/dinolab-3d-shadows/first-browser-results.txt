@@ -1,0 +1,66 @@
+
+Running 2 tests using 1 worker
+
+(node:16096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:66:6 › anchiornis keeps its shadows grounded through rotation (11.4s)
+(node:18696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:18696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:66:6 › tyrannosaurus keeps its shadows grounded through rotation (16.0s)
+
+
+  1) [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:66:6 › anchiornis keeps its shadows grounded through rotation
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m10[39m
+    Received:   [31m0[39m
+
+      68 |   expect(a.contact).not.toBeNull();expect(a.contact.height).toBeLessThan(.01);
+      69 |   if(species==='anchiornis'){expect(a.fit.texelSize).toBeLessThan(.002);expect(a.normalBias).toBeLessThan(.001);expect(a.contact.size[0]).toBeLessThan(1);}
+    > 70 |   const pixels=await groundShadowPixels(page);expect(pixels.pixels).toBeGreaterThan(10);expect(pixels.maxDifference).toBeGreaterThan(5);
+         |                                                                     ^
+      71 |   await page.locator('.dinolab-3d-canvas').screenshot({path:report+'/'+species+'-life.png'});
+      72 |   const canvas=page.locator('.dinolab-3d-canvas canvas');await canvas.focus();await canvas.press('ArrowRight');await canvas.press('ArrowRight');await canvas.press('ArrowUp');
+      73 |   await expect.poll(async()=>(await inspect(page)).modelYaw).not.toBe(a.modelYaw);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-shadows.spec.ts:70:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-shadows\first-review\dinolab-3d-shadows-anchior-5f1fa-s-grounded-through-rotation-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-shadows\first-review\dinolab-3d-shadows-anchior-5f1fa-s-grounded-through-rotation-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-shadows\first-review\dinolab-3d-shadows-anchior-5f1fa-s-grounded-through-rotation-chromium\error-context.md
+
+  2) [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:66:6 › tyrannosaurus keeps its shadows grounded through rotation
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m10[39m
+    Received:   [31m0[39m
+
+      68 |   expect(a.contact).not.toBeNull();expect(a.contact.height).toBeLessThan(.01);
+      69 |   if(species==='anchiornis'){expect(a.fit.texelSize).toBeLessThan(.002);expect(a.normalBias).toBeLessThan(.001);expect(a.contact.size[0]).toBeLessThan(1);}
+    > 70 |   const pixels=await groundShadowPixels(page);expect(pixels.pixels).toBeGreaterThan(10);expect(pixels.maxDifference).toBeGreaterThan(5);
+         |                                                                     ^
+      71 |   await page.locator('.dinolab-3d-canvas').screenshot({path:report+'/'+species+'-life.png'});
+      72 |   const canvas=page.locator('.dinolab-3d-canvas canvas');await canvas.focus();await canvas.press('ArrowRight');await canvas.press('ArrowRight');await canvas.press('ArrowUp');
+      73 |   await expect.poll(async()=>(await inspect(page)).modelYaw).not.toBe(a.modelYaw);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-shadows.spec.ts:70:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-shadows\first-review\dinolab-3d-shadows-tyranno-e051a-s-grounded-through-rotation-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-shadows\first-review\dinolab-3d-shadows-tyranno-e051a-s-grounded-through-rotation-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-shadows\first-review\dinolab-3d-shadows-tyranno-e051a-s-grounded-through-rotation-chromium\error-context.md
+
+  2 failed
+    [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:66:6 › anchiornis keeps its shadows grounded through rotation
+    [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:66:6 › tyrannosaurus keeps its shadows grounded through rotation

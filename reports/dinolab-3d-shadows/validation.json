@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-12",
+  "scope": "Dino Lab specimen-scaled shadows",
+  "focusedTestsPassed": 174,
+  "focusedTestFiles": 9,
+  "newShadowTests": 14,
+  "browserScenariosPassed": 10,
+  "testedSpecies": [
+    "anchiornis",
+    "sinosauropteryx",
+    "tyrannosaurus",
+    "brachiosaurus",
+    "triceratops",
+    "argentinosaurus"
+  ],
+  "motionVerified": true,
+  "rotationShadowMatrixStable": true,
+  "sampledCasterAndReceiverClipping": 0,
+  "moduleCopies": 3,
+  "moduleSha256": "AE7D3717A124CB2EEF25D84143656CAAD9B432428BDF896D190205A5E6C9D234",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "rendering": "Three.js r128 in Chromium with software WebGL",
+  "hardwarePerformance": "Not benchmarked",
+  "deployment": "No deployment or push performed"
+}

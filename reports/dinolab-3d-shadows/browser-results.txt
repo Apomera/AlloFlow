@@ -1,0 +1,21 @@
+
+Running 8 tests using 1 worker
+
+(node:27104) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27104) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:68:6 › sinosauropteryx keeps its shadows grounded through rotation (17.0s)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:68:6 › brachiosaurus keeps its shadows grounded through rotation (29.7s)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:68:6 › triceratops keeps its shadows grounded through rotation (35.1s)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:68:6 › argentinosaurus keeps its shadows grounded through rotation (31.1s)
+  ok 5 [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:87:5 › human reference and habitat casters stay in the shadow volume (13.1s)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-shadows.spec.ts:93:5 › the fitted shadow camera remains stable during live anatomy motion (8.9s)
+(node:35756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 7 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:19:5 › catalog, notebook export, keyboard return, responsive layout, and contrast (15.3s)
+  ok 8 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:73:5 › species-file entry resets stale 3D evidence and connects the live station to the notebook (39.5s)
+
+  8 passed (3.3m)

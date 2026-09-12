@@ -6254,6 +6254,55 @@ window.StemLab = window.StemLab || {
     return { point: hit.point, normal: normal };
   }
 
+  // The specimen turns about the origin. Fit once around its whole orbit so the
+  // shadow texel grid stays still while the camera and idle anatomy move.
+  function dinoShadowOrbitBounds(THREE, bounds) {
+    if (bounds.isEmpty()) return bounds.clone();
+    var x = Math.max(Math.abs(bounds.min.x), Math.abs(bounds.max.x));
+    var z = Math.max(Math.abs(bounds.min.z), Math.abs(bounds.max.z));
+    var radius = Math.sqrt(x * x + z * z);
+    var padding = Math.max(radius, bounds.max.y - bounds.min.y) * 0.035;
+    return new THREE.Box3(new THREE.Vector3(-radius - padding, bounds.min.y - padding, -radius - padding),
+      new THREE.Vector3(radius + padding, bounds.max.y + padding, radius + padding));
+  }
+
+  function dinoFitShadow(THREE, light, bounds, floorY, specimenHeight) {
+    if (bounds.isEmpty()) return null;
+    var size = bounds.getSize(new THREE.Vector3()), span = Math.max(size.length(), 0.001);
+    var center = bounds.getCenter(new THREE.Vector3());
+    var direction = light.position.clone().sub(light.target.position).normalize();
+    if (direction.y < 0.05) direction.set(-1, 2, 1).normalize();
+    // Preserve the light direction, but move its camera far enough back to include
+    // casters and their ground projections, including tall animals in low light.
+    light.target.position.copy(center);
+    light.position.copy(center).addScaledVector(direction, span * (2 + 1 / direction.y));
+    light.updateMatrixWorld(true); light.target.updateMatrixWorld(true);
+    light.shadow.updateMatrices(light);
+    var camera = light.shadow.camera, viewBounds = new THREE.Box3();
+    [bounds.min.x, bounds.max.x].forEach(function (x) {
+      [bounds.min.y, bounds.max.y].forEach(function (y) {
+        [bounds.min.z, bounds.max.z].forEach(function (z) {
+          var point = new THREE.Vector3(x, y, z);
+          viewBounds.expandByPoint(point.clone().applyMatrix4(camera.matrixWorldInverse));
+          point.addScaledVector(direction, -(y - floorY) / direction.y);
+          viewBounds.expandByPoint(point.applyMatrix4(camera.matrixWorldInverse));
+        });
+      });
+    });
+    var margin = span * 0.025;
+    camera.left = viewBounds.min.x - margin; camera.right = viewBounds.max.x + margin;
+    camera.bottom = viewBounds.min.y - margin; camera.top = viewBounds.max.y + margin;
+    camera.near = Math.max(span * 0.001, -viewBounds.max.z - margin);
+    camera.far = Math.max(camera.near + span, -viewBounds.min.z + margin);
+    camera.updateProjectionMatrix();
+    var texel = Math.max((camera.right - camera.left) / light.shadow.mapSize.x,
+      (camera.top - camera.bottom) / light.shadow.mapSize.y);
+    light.shadow.normalBias = Math.min(texel * 1.1, Math.max(0.001, specimenHeight) * 0.008);
+    light.shadow.bias = -texel * 0.55 / (camera.far - camera.near);
+    light.shadow.updateMatrices(light);
+    return { texelSize: texel, floorY: floorY, min: bounds.min.toArray(), max: bounds.max.toArray() };
+  }
+
   function dinoFrameDistance(halfWidth, halfHeight, halfDepth, verticalFov, aspect) {
     var tangent = Math.tan(verticalFov * Math.PI / 360);
     return Math.max(halfHeight / tangent, halfWidth / (tangent * Math.max(0.1, aspect))) * 1.24 + halfDepth;
@@ -7345,16 +7394,9 @@ window.StemLab = window.StemLab || {
               sun.shadow.mapSize.width = 2048;
               sun.shadow.mapSize.height = 2048;
             }
-            sun.shadow.camera.near = 0.05;
-            sun.shadow.camera.far = Math.max(60, len * 3.2);
-            var shadowSpan = Math.max(12, len * 0.82);
-            sun.shadow.camera.left = -shadowSpan;
-            sun.shadow.camera.right = shadowSpan;
-            sun.shadow.camera.top = shadowSpan;
-            sun.shadow.camera.bottom = -shadowSpan;
-            sun.shadow.bias = -0.0005;
-            if (sun.shadow.normalBias !== undefined) sun.shadow.normalBias = 0.025;
+            sun.name = 'dinolab-key-light';
             scene.add(sun);
+            scene.add(sun.target);
             var fill = new THREE.DirectionalLight(habitat.fill, habitat.fillIntensity);
             fill.position.set(habitat.fillPosition[0], habitat.fillPosition[1], habitat.fillPosition[2]);
             scene.add(fill);
@@ -7491,28 +7533,6 @@ window.StemLab = window.StemLab || {
                 leaf.castShadow = true;
                 scene.add(leaf);
               }
-            }
-
-            var contactShadowCanvas = document.createElement('canvas');
-            contactShadowCanvas.width = 128;
-            contactShadowCanvas.height = 128;
-            var contactShadowContext = contactShadowCanvas.getContext('2d');
-            if (contactShadowContext) {
-              var contactShadowGradient = contactShadowContext.createRadialGradient(64, 64, 8, 64, 64, 62);
-              contactShadowGradient.addColorStop(0, 'rgba(0,0,0,0.50)');
-              contactShadowGradient.addColorStop(0.62, 'rgba(0,0,0,0.20)');
-              contactShadowGradient.addColorStop(1, 'rgba(0,0,0,0)');
-              contactShadowContext.fillStyle = contactShadowGradient;
-              contactShadowContext.fillRect(0, 0, 128, 128);
-              var contactShadowTexture = new THREE.CanvasTexture(contactShadowCanvas);
-              var contactShadow = new THREE.Mesh(
-                new THREE.PlaneGeometry(Math.max(5.5, len * 0.92), Math.max(2.8, ht * 1.18)),
-                new THREE.MeshBasicMaterial({ map: contactShadowTexture, transparent: true, opacity: 0.76, depthWrite: false })
-              );
-              contactShadow.rotation.x = -Math.PI / 2;
-              contactShadow.position.set(len * 0.03, 0.066, 0);
-              contactShadow.renderOrder = 1;
-              scene.add(contactShadow);
             }
 
             model = new THREE.Group();
@@ -9494,6 +9514,37 @@ window.StemLab = window.StemLab || {
             });
             if (specimenBounds.isEmpty()) specimenBounds.set(vec(-len * 0.55, 0, -ht * 0.3), vec(len * 0.55, ht, ht * 0.3));
             model.userData.specimenBounds = { min: specimenBounds.min.toArray(), max: specimenBounds.max.toArray() };
+
+            var contactShadowRig = null;
+            if (studio && (props.showBody || props.showSkeleton)) {
+              var contactShadowCanvas = document.createElement('canvas');
+              contactShadowCanvas.width = 128;
+              contactShadowCanvas.height = 128;
+              var contactShadowContext = contactShadowCanvas.getContext('2d');
+              if (contactShadowContext) {
+                var contactShadowGradient = contactShadowContext.createRadialGradient(64, 64, 8, 64, 64, 62);
+                contactShadowGradient.addColorStop(0, 'rgba(0,0,0,0.50)');
+                contactShadowGradient.addColorStop(0.62, 'rgba(0,0,0,0.20)');
+                contactShadowGradient.addColorStop(1, 'rgba(0,0,0,0)');
+                contactShadowContext.fillStyle = contactShadowGradient;
+                contactShadowContext.fillRect(0, 0, 128, 128);
+                var contactShadowTexture = new THREE.CanvasTexture(contactShadowCanvas);
+                var contactShadow = new THREE.Mesh(
+                  new THREE.PlaneGeometry(1, 1),
+                  new THREE.MeshBasicMaterial({ map: contactShadowTexture, transparent: true, opacity: 0.32, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })
+                );
+                contactShadow.rotation.x = -Math.PI / 2;
+                var contactSize = specimenBounds.getSize(new THREE.Vector3());
+                contactShadow.scale.set(contactSize.x * 0.72, Math.max(contactSize.z * 1.05, contactSize.y * 0.45), 1);
+                contactShadow.position.set(bodyCenter.x, Math.max(0.00001, ht * 0.0002), 0);
+                contactShadow.name = 'dinolab-contact-shadow';
+                contactShadow.renderOrder = 1;
+                contactShadowRig = new THREE.Group();
+                contactShadowRig.add(contactShadow);
+                scene.add(contactShadowRig);
+              }
+            }
+
             function addAssemblySocket(piece, active, placed) {
               var point = piece.point.clone();
               point.y += Math.max(0.09, ht * 0.028);
@@ -9698,6 +9749,20 @@ window.StemLab = window.StemLab || {
               human.updateMatrixWorld(true);
               specimenBounds.union(new THREE.Box3().setFromObject(human));
             }
+            var shadowBounds = dinoShadowOrbitBounds(THREE, specimenBounds);
+            if (!studio) {
+              // Fixed habitat scenery casts shadows too, but does not join the orbit.
+              scene.updateMatrixWorld(true);
+              scene.children.forEach(function (part) {
+                if (part === model) return;
+                part.traverse(function (caster) {
+                  if (!caster.isMesh || !caster.castShadow || !caster.geometry) return;
+                  if (!caster.geometry.boundingBox) caster.geometry.computeBoundingBox();
+                  shadowBounds.union(caster.geometry.boundingBox.clone().applyMatrix4(caster.matrixWorld));
+                });
+              });
+            }
+            sun.userData.dinoShadowFit = dinoFitShadow(THREE, sun, shadowBounds, studio ? 0 : -0.25, ht);
             var modelCenter = specimenBounds.getCenter(new THREE.Vector3());
             var modelHalf = specimenBounds.getSize(new THREE.Vector3()).multiplyScalar(0.5);
             var scanKey = props.showEvidence && props.scanActive ? scanTargetId : '';
@@ -9930,6 +9995,7 @@ window.StemLab = window.StemLab || {
                 }
                 yawRef.current.value = yaw;
                 model.rotation.y = yaw;
+                if (contactShadowRig) contactShadowRig.rotation.y = yaw;
                 updateCameraView();
                 if (!reducedMotion && scanPulse) {
                   var pulse = 1 + Math.sin(performance.now() * 0.006) * 0.10;
