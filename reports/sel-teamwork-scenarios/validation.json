@@ -1,0 +1,55 @@
+{
+  "date": "2026-09-12",
+  "tool": "Teamwork Builder / Scenarios",
+  "situations": 10,
+  "gradeSpecificSetups": 30,
+  "routesWithBenefitsAndLimits": 30,
+  "gradeBands": [
+    "elementary",
+    "middle",
+    "high"
+  ],
+  "focused": {
+    "passed": 38,
+    "files": 1
+  },
+  "regressions": {
+    "passed": 586,
+    "skipped": 2,
+    "files": 13
+  },
+  "actualHub": {
+    "passed": 2,
+    "filtered": 93
+  },
+  "totalUniquePassed": 626,
+  "accessibility": {
+    "width": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scopedAxeViolations": 0,
+    "screenshotsReviewed": 9,
+    "minimumControlHeight": 44
+  },
+  "sourcePublicSha256": "30017bec731c995951459ac860c6a26a932047afdbcb04bce87ac527c901d876",
+  "legacyCompatibility": "All 10 original quiz definitions unchanged; IDs and order preserved. Earlier answers, indices, reveal flags, reflection records, coach history and badges retained. Invalid historical indices ignored safely in Progress.",
+  "persistence": "Six notes and an editable route choice remain independent by situation and grade, including serialized restoration and real-hub return.",
+  "coachValidation": "Mocked explicit request excludes rehearsal notes; mocked blocked safety check makes no provider call. Live model responses not tested.",
+  "syntax": "passed",
+  "whitespace": "passed",
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "deployment": "none",
+  "limitations": [
+    "Accessibility scans cover the revised practice region, not the entire Teamwork tool or hub.",
+    "Authored routes and examples are not a validated skill assessment.",
+    "Shared route explanations may benefit from adult discussion in elementary grades.",
+    "Long native dropdown labels may truncate on narrow screens; full situation titles appear below.",
+    "Ignored generated desktop/app-build output not rebuilt."
+  ]
+}

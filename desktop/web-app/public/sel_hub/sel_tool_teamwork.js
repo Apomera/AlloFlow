@@ -163,6 +163,330 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Teamwork Conflict Scenarios (5 scenarios, 3 choices each) ──
   // ══════════════════════════════════════════════════════════════
+  // Original quiz records below are retained only to interpret earlier saved answers.
+  var TEAMWORK_PRACTICE = [
+  {
+    "id": "sc1",
+    "title": "Making room for ideas",
+    "situations": {
+      "elementary": "A group is planning a class poster. One child keeps starting to speak before others finish. Two children have not shared an idea yet.",
+      "middle": "A project group is choosing its topic. One member interrupts and announces a choice before everyone has contributed. Some ideas remain unheard.",
+      "high": "A student project coordinator closes a planning discussion before quieter members contribute. The coordinator also controls the shared document, so others cannot add their ideas afterward."
+    },
+    "check": "We can notice interruptions and who has had a way to contribute. We do not yet know why someone interrupted or whether everyone wants to speak aloud.",
+    "routes": [
+      {
+        "id": "route1",
+        "title": "Offer ways to share",
+        "helps": "Try spoken turns with a pass option, a written idea or a drawing. This creates more than one way into the discussion.",
+        "limits": "A turn is only useful if ideas are considered. Do not require someone to speak or explain why they pass."
+      },
+      {
+        "id": "route2",
+        "title": "Ask to pause the decision",
+        "helps": "Name the process: \"We have not heard every idea yet. Can we pause before choosing?\"",
+        "limits": "A pause alone does not change who has access or influence. Agree on how ideas will be reviewed and how the group will decide."
+      },
+      {
+        "id": "route3",
+        "title": "Ask for adult support",
+        "helps": "A teacher or facilitator can help reopen the process, restore access and protect participation.",
+        "limits": "Students do not have to confront someone first. Tell the adult what happened and ask for a specific change rather than a label for the person."
+      }
+    ],
+    "change": "A member says they would rather add an idea in writing. The group agrees to read it, but then moves on without discussing it.",
+    "model": "Ask the group to put every submitted idea into the comparison before deciding. If that is ignored, request a teacher-supported review. Check whether the idea influenced the discussion; receiving a turn is not the same as being heard."
+  },
+  {
+    "id": "sc2",
+    "title": "Finding a way to contribute",
+    "situations": {
+      "elementary": "A group is making a model. One child has been quiet, and the group cannot find their part. The teacher says there is one more work period.",
+      "middle": "A group cannot find one member's section in the shared project. The member has been quiet during meetings. The deadline is approaching.",
+      "high": "A team sees no contribution from one member in its main document. Participation affects the group assessment, but the team has not checked for offline work or access problems."
+    },
+    "check": "Quietness does not show how much someone understands or cares. Check what work exists, whether instructions and materials are accessible, and what the person is willing to share.",
+    "routes": [
+      {
+        "id": "route1",
+        "title": "Check what is already done",
+        "helps": "Ask privately, or through a chosen communication method, whether work is stored elsewhere and what is still needed.",
+        "limits": "Do not demand a personal explanation. Offer time to respond; a public spotlight may make participation harder."
+      },
+      {
+        "id": "route2",
+        "title": "Offer a workable contribution",
+        "helps": "Agree on a clear, manageable part with a choice of format and the resources to do it.",
+        "limits": "Offering only leftover or low-status jobs can still exclude someone. Ask which contribution fits and make its purpose clear."
+      },
+      {
+        "id": "route3",
+        "title": "Make a plan with the teacher",
+        "helps": "A teacher can check access, clarify learning expectations and help the group plan within the time available.",
+        "limits": "Seeking help is a valid first step, especially when students cannot solve an access or assessment issue themselves."
+      }
+    ],
+    "change": "The member has useful notes on paper but cannot open the shared file.",
+    "model": "Ask how they want their notes included and give accurate credit. Request help with access or an agreed alternative. Check that they can continue contributing; fixing the file should not become a test of willingness."
+  },
+  {
+    "id": "sc3",
+    "title": "Choosing a project format",
+    "situations": {
+      "elementary": "A group can make a poster or a short video. Some children like each idea. They have time to finish only one.",
+      "middle": "A group is divided between a poster and a video. Both could meet the assignment, but time and equipment are limited.",
+      "high": "A project team must choose a format for an audience presentation. Members disagree about impact, production time and whether everyone can access the editing tools."
+    },
+    "check": "Separate preferences from requirements: what must the work show, what tools are available, and how can each person participate? Feelings about the choice are relevant information.",
+    "routes": [
+      {
+        "id": "route1",
+        "title": "Compare against shared needs",
+        "helps": "List the assignment requirements, time, audience and access needs, then compare each format.",
+        "limits": "A list does not remove feelings or automatically produce a fair answer. Discuss what matters and whose constraints the comparison misses."
+      },
+      {
+        "id": "route2",
+        "title": "Try a small sample",
+        "helps": "Make a short sketch or test clip to learn what each format would involve.",
+        "limits": "Keep the test small enough to be useful. Do not spend the whole work period preparing two complete versions."
+      },
+      {
+        "id": "route3",
+        "title": "Agree on a decision process",
+        "helps": "After checking access and requirements, agree to use a vote, a trial or a teacher-supported decision.",
+        "limits": "A majority vote cannot remove someone's access needs. Explain how people can raise a concern and when the choice can be reviewed."
+      }
+    ],
+    "change": "The preferred video editor does not work with one member's access tools. A simpler format could meet the learning goal.",
+    "model": "Ask the teacher about an accessible alternative and compare it with the poster. Choose a format everyone can use meaningfully. Review whether the work shows the intended learning, not whether everyone initially preferred the format."
+  },
+  {
+    "id": "sc4",
+    "title": "Giving accurate credit",
+    "situations": {
+      "elementary": "During a presentation, a child says \"I made this\" about a part two children made together. The other child wants their work noticed.",
+      "middle": "A group presentation credits one person for an idea developed by several members. The slides are about to be shared with the class.",
+      "high": "A team submission lists one member as the creator of shared work. The credit may affect assessment and future opportunities, and the public version has not been corrected."
+    },
+    "check": "Check the actual contributions and what was said or written. An inaccurate credit needs correction even when you cannot know whether it was intentional.",
+    "routes": [
+      {
+        "id": "route1",
+        "title": "Make a brief factual correction",
+        "helps": "If it feels workable, add: \"Several of us developed that part; here is who contributed.\"",
+        "limits": "You may ask someone to support you. Correcting the record publicly is not automatically wrong when the inaccurate credit was public."
+      },
+      {
+        "id": "route2",
+        "title": "Request a corrected record",
+        "helps": "Ask for the slides, credits or submission to describe contributions accurately.",
+        "limits": "Replacing every name with \"we\" can hide specific work. Check how contributors want their work acknowledged."
+      },
+      {
+        "id": "route3",
+        "title": "Ask the teacher to help",
+        "helps": "Bring the draft or contribution record to a teacher and ask for accurate credit and fair assessment.",
+        "limits": "You do not need a private confrontation first. Avoid sharing unrelated messages or personal details as proof."
+      }
+    ],
+    "change": "The group apologizes, but the shared slides still show the wrong credit.",
+    "model": "Agree who will correct the shared version and when. Check the actual revision and ask the teacher for help if needed. An apology and an accurate record are separate parts of repair."
+  },
+  {
+    "id": "sc5",
+    "title": "Facing an unfinished section",
+    "situations": {
+      "elementary": "A group project has an unfinished part. The last classroom work time is nearly over. The group is worried it will not be ready.",
+      "middle": "A project is due tomorrow and one section is unfinished. The group does not yet know what remains or what support is available. Members have other commitments tonight.",
+      "high": "A team is near a deadline with one section incomplete. Members have different work and care commitments, and taking on extra hours may not be possible. The reason for the delay is unclear."
+    },
+    "check": "Check what is unfinished, what is essential and who has capacity. An unfinished task alone does not establish that someone is lazy or does not care.",
+    "routes": [
+      {
+        "id": "route1",
+        "title": "Agree on limited shared help",
+        "helps": "Offer a specific piece of help only if people have the time and resources. Agree who will do what.",
+        "limits": "No one has to give up sleep or other essential commitments to prove they are a teammate. Do not quietly transfer all the work to one person."
+      },
+      {
+        "id": "route2",
+        "title": "Ask to change the deadline or scope",
+        "helps": "A teacher can help decide what is essential and whether the deadline, task size or assessment needs adjustment.",
+        "limits": "Explain the work remaining and propose a realistic plan. Students should not have to negotiate assessment fairness on their own."
+      },
+      {
+        "id": "route3",
+        "title": "Show what is complete",
+        "helps": "If more work is not feasible, ask how to submit the finished parts with a factual note about what is still needed.",
+        "limits": "Check the assignment expectations with the teacher. Avoid a public blame list or claiming that incomplete work is finished."
+      }
+    ],
+    "change": "The teacher allows a smaller final product if the group identifies the essential learning and reports remaining work honestly.",
+    "model": "Choose the essential parts with the teacher, divide only the work people can realistically do, and record what remains. Set a brief check-in during available work time. A smaller honest product can be a responsible plan."
+  },
+  {
+    "id": "sc6",
+    "title": "Repairing a message mix-up",
+    "situations": {
+      "elementary": "A teacher-supported class group reads different instructions and makes two versions of the same part. A message says, \"You did it wrong.\" One child stops joining in.",
+      "middle": "A shared document and a group message give different instructions. Two people duplicate work, and a harsh message follows. Some members have not replied.",
+      "high": "A remote project team has conflicting instructions in different channels. After a critical message, replies stop. Members have different schedules and access to calls."
+    },
+    "check": "Check which instructions were current and what the message actually said. A delayed reply does not prove someone is refusing to help. Both unclear instructions and hurtful communication can need attention.",
+    "routes": [
+      {
+        "id": "route1",
+        "title": "Write a clear reset",
+        "helps": "Create one agreed task list, acknowledge the conflicting instructions and set a realistic time for replies.",
+        "limits": "Clear tasks do not repair the harsh message by themselves. Name its impact and ask for respectful communication."
+      },
+      {
+        "id": "route2",
+        "title": "Offer a choice of check-in",
+        "helps": "Ask whether written replies, a supported conversation or a call would work for the group.",
+        "limits": "Video is not automatically better. Do not require cameras, immediate replies or a communication method someone cannot access."
+      },
+      {
+        "id": "route3",
+        "title": "Get supported repair",
+        "helps": "Ask a teacher or facilitator to help clarify roles and address hurtful messages.",
+        "limits": "A student who was targeted does not have to mediate or meet privately with the sender. Support can happen separately."
+      }
+    ],
+    "change": "One member can respond in writing but cannot join a call. Another says they need the harsh message addressed before returning.",
+    "model": "Use an agreed written check-in and ask the facilitator to address the message separately. Confirm one task list and a reasonable response window. Check whether people can rejoin with boundaries respected, not merely whether the chat becomes busy."
+  },
+  {
+    "id": "sc7",
+    "title": "Recognizing different contributions",
+    "situations": {
+      "elementary": "A child adds ideas with drawings instead of talking much. Another child says, \"You are not helping because you do not talk.\"",
+      "middle": "A teammate contributes written ideas but rarely speaks during fast discussions. Another member says their silence means they are not doing enough.",
+      "high": "A team judges participation mainly by speaking time. A member has added useful written ideas, but those contributions are missing from the group's account of the work."
+    },
+    "check": "Notice the actual work and how the group recognizes it. Do not infer a person's ability, culture, confidence or interest from how much they speak.",
+    "routes": [
+      {
+        "id": "route1",
+        "title": "Name the contribution",
+        "helps": "Point to the drawing, note or other contribution: \"That helped our plan. Talking is one way to contribute.\"",
+        "limits": "Ask before sharing private work. Acknowledgment should lead to considering the idea, not treating it as a token contribution."
+      },
+      {
+        "id": "route2",
+        "title": "Change the participation process",
+        "helps": "Offer written, drawn and spoken ways to contribute, with time to think and a pass option.",
+        "limits": "Do not require a diagnosis or explanation to use a different format. Agree how all formats feed into the decision."
+      },
+      {
+        "id": "route3",
+        "title": "Ask for fair recognition",
+        "helps": "Ask the teacher to help the group recognize contributions and address the dismissive comment.",
+        "limits": "The person excluded should not have to educate the group or reveal personal information to receive support."
+      }
+    ],
+    "change": "The teacher says contributions in different formats can count, but the group still reads only spoken ideas into its plan.",
+    "model": "Add time to review written and drawn ideas before deciding, and record how each was considered. Ask the teacher to check participation if exclusion continues. Offering a format is only a start; the contribution needs a real place in the work."
+  },
+  {
+    "id": "sc8",
+    "title": "Sharing coordination",
+    "situations": {
+      "elementary": "A group picked someone to keep track of the plan, but nobody knows what to do next. Two work times have passed without a clear list.",
+      "middle": "A group coordinator has canceled meetings and has not shared a task plan. Members are unsure about responsibilities, and the deadline is getting closer.",
+      "high": "A project coordinator controls scheduling but repeatedly cancels without an alternative. Other members lack the permissions and information needed to keep the project moving."
+    },
+    "check": "Check what the coordination role actually included, what tools or support were provided and which decisions need shared access. Do not assume a title came with clear instructions.",
+    "routes": [
+      {
+        "id": "route1",
+        "title": "Clarify the next small step",
+        "helps": "Ask what is blocked and agree on one immediate task with an owner and a check-in time.",
+        "limits": "Clarifying a task is not the same as taking on the whole coordination role. Keep your own capacity visible."
+      },
+      {
+        "id": "route2",
+        "title": "Share the coordination tasks",
+        "helps": "With the group, divide scheduling, record keeping and resource access instead of assigning everything to one person.",
+        "limits": "People need to agree to the roles and have the means to do them. Shared responsibility still needs clear ownership."
+      },
+      {
+        "id": "route3",
+        "title": "Ask the teacher to reset the plan",
+        "helps": "A teacher can clarify roles, restore access or help change the coordinator when needed.",
+        "limits": "Getting help is not going behind someone's back. Be specific about blocked work and the support required, rather than judging the person."
+      }
+    ],
+    "change": "The coordinator says they were never shown how to use the planning tool. The teacher can offer a simple shared checklist.",
+    "model": "Use the checklist, agree on a small set of coordination tasks and decide who has access. Ask the teacher to demonstrate the tool. Review whether people can find their next step and whether the workload is manageable."
+  },
+  {
+    "id": "sc9",
+    "title": "Reviewing changes together",
+    "situations": {
+      "elementary": "A child changes another child's part of a poster without asking. The original maker says their idea has disappeared.",
+      "middle": "A teammate repeatedly rewrites shared work without discussion. Some edits fix errors, while others change the group's meaning or style.",
+      "high": "A team member replaces other contributions shortly before submission. The edits mix factual corrections and personal preferences, and the originals are difficult to recover."
+    },
+    "check": "Check what changed and why it matters. Quality concerns can be real, and changing another person's work without a process can still remove their voice.",
+    "routes": [
+      {
+        "id": "route1",
+        "title": "Pause and compare versions",
+        "helps": "Keep or recover earlier work and review the changes together before submission.",
+        "limits": "Do not undo a valid factual correction just to restore ownership. Separate evidence of an error from a style preference."
+      },
+      {
+        "id": "route2",
+        "title": "Agree on review rules",
+        "helps": "Use suggestions or comments and agree which edits need discussion, using the assignment criteria.",
+        "limits": "Rules need to be usable under time pressure. Make sure all contributors can access and understand the review process."
+      },
+      {
+        "id": "route3",
+        "title": "Get a supported review",
+        "helps": "Ask the teacher to help resolve disputed edits or restore access to the work.",
+        "limits": "The student whose work was replaced does not have to prove the editor had bad intentions before asking for help."
+      }
+    ],
+    "change": "One edit fixes a calculation error, while another removes a teammate's explanation without changing the facts.",
+    "model": "Keep the correction after checking it, and discuss the explanation with its author using the task criteria. Agree who approves the final version. Review both accuracy and whether contributors had a meaningful voice."
+  },
+  {
+    "id": "sc10",
+    "title": "Rebalancing the workload",
+    "situations": {
+      "elementary": "A group split a project into four parts. One part turns out to take much longer. The child doing it asks for help.",
+      "middle": "A group divided a project into equal numbers of sections, but one section needs far more time and resources. Its owner feels overwhelmed, and the deadline is in three days.",
+      "high": "A team divided the work by section count. Research access and technical demands make one section much larger than expected. Other members also have fixed limits on their time."
+    },
+    "check": "Compare actual effort, access and complexity instead of only counting sections. Rebalancing should consider everyone's capacity and the support the task requires.",
+    "routes": [
+      {
+        "id": "route1",
+        "title": "Make the remaining work visible",
+        "helps": "List the smaller tasks, what is blocked and which parts are essential.",
+        "limits": "Estimates are for planning, not proving who worked hardest. Do not require someone to disclose private reasons for a limit."
+      },
+      {
+        "id": "route2",
+        "title": "Agree on a realistic redistribution",
+        "helps": "Ask who can take on a specific task or offer a resource, then update the shared plan.",
+        "limits": "Redistribution is not fair if it overloads another person. Keep limits explicit and get agreement before assigning more work."
+      },
+      {
+        "id": "route3",
+        "title": "Ask to adjust the assignment",
+        "helps": "A teacher can reduce scope, provide resources or review timing when the work exceeds the group's capacity.",
+        "limits": "It is appropriate to question task design. Students are not responsible for making an unworkable assignment feasible through extra time outside the agreed work periods."
+      }
+    ],
+    "change": "After listing the work, the group finds that nobody can take on all the remaining tasks within the available time.",
+    "model": "Take the task list to the teacher and ask which parts can be reduced or supported. Agree on a revised plan and review actual progress at the next work period. Fairness can require changing the task, not just moving it to another person."
+  }
+];
+
   var SCENARIOS = [
     { id: 'sc1', title: 'The Dominator', icon: '\uD83D\uDDE3\uFE0F',
       setup: 'One person in your group keeps talking over everyone else. They make all the decisions without asking and get frustrated when anyone disagrees.',
@@ -245,12 +569,12 @@ window.SelHub = window.SelHub || {
     { id: 'challenge_accepted', icon: '\uD83C\uDFD7\uFE0F', name: 'Challenge Accepted', desc: 'Complete a collaborative challenge' },
     { id: 'collab_expert',     icon: '\uD83C\uDF1F', name: 'Collaboration Expert', desc: 'Complete 3 collaborative challenges' },
     { id: 'all_roles',         icon: '\uD83C\uDFAD', name: 'All Roles Explored',   desc: 'Explore every role in your grade band' },
-    { id: 'scenario_pro',      icon: '\uD83C\uDFAF', name: 'Scenario Pro',         desc: 'Answer all 5 teamwork scenarios' },
+    { id: 'scenario_pro',      icon: '\uD83C\uDFAF', name: 'Scenario Pro',         desc: 'Earlier quiz: answered the teamwork scenarios' },
     { id: 'ai_coach',          icon: '\u2728',        name: 'AI Team Coach',        desc: 'Get advice from the AI team coach' },
     { id: 'reflective_leader', icon: '\uD83D\uDCDD', name: 'Reflective Leader',    desc: 'Write a team role reflection' },
     { id: 'full_explorer',     icon: '\uD83D\uDE80', name: 'Full Explorer',        desc: 'Visit all 4 tabs' },
     { id: 'teamwork_champion', icon: '\uD83C\uDFC6', name: 'Teamwork Champion',    desc: 'Earn 7 or more badges' },
-    { id: 'perfect_scenarios', icon: '\u2B50',        name: 'Perfect Insight',      desc: 'Get 3 stars on all scenarios' },
+    { id: 'perfect_scenarios', icon: '\u2B50',        name: 'Perfect Insight',      desc: 'Earlier quiz: received full scenario ratings' },
     { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Teamwork Streak',      desc: 'Practice 3 days in a row' },
     { id: 'skills_assessor',   icon: '\uD83D\uDCCA', name: 'Skills Assessor',      desc: 'Complete the Team Skills Quiz' },
     { id: 'contract_creator',  icon: '\uD83D\uDCDC', name: 'Contract Creator',     desc: 'Build a team contract' },
@@ -484,7 +808,7 @@ window.SelHub = window.SelHub || {
 
         // Scenarios state
         var scenarioIdx   = d.scenarioIdx || 0;
-        var scenarioAnswers = d.scenarioAnswers || {};
+        var scenarioAnswers = d.scenarioAnswers && typeof d.scenarioAnswers === 'object' && !Array.isArray(d.scenarioAnswers) ? d.scenarioAnswers : {};
         var scenarioRevealed = d.scenarioRevealed || {};
 
         // AI Coach state
@@ -762,7 +1086,7 @@ window.SelHub = window.SelHub || {
           var TAB_META = {
             roles:        { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDC51', title: 'Roles \u2014 Belbin\u2019s 9 team archetypes',                  hint: 'Belbin 1981: Plant, Resource Investigator, Coordinator, Shaper, Monitor Evaluator, Teamworker, Implementer, Completer Finisher, Specialist. Balanced teams beat all-stars; complementary roles outperform homogeneous talent.' },
             challenges:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDFD7', title: 'Challenges \u2014 the 5 dysfunctions',                       hint: 'Lencioni 2002: absence of trust \u2192 fear of conflict \u2192 lack of commitment \u2192 avoidance of accountability \u2192 inattention to results. Each layer rests on the one below; teams fail bottom-up.' },
-            scenarios:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 practice on others first',                hint: 'Behavioral rehearsal (Bandura) lowers in-the-moment freezing. Free-rider, dominator, missed deadline, idea-stealer \u2014 the patterns repeat. Walking through them off-stage builds the script for on-stage moments.' },
+            scenarios:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios — rehearse a supported response', hint: 'Notice what happened, compare possible routes and plan a workable next step. Consider access, boundaries and shared responsibility; asking for help is part of teamwork.' },
             commstyle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDDE3', title: 'Comm Style \u2014 know your default',                       hint: 'DiSC, MBTI-style preferences. Each style has gifts + traps. Driver gets things done but bulldozes; analytical thinks deeply but slows. Pair complementary styles + name them \u2014 the friction disappears.' },
             virtualteam:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDCBB', title: 'Virtual Team \u2014 distance changes the rules',           hint: 'Async-first beats sync-first; written norms matter more without hallway clarification. Mark-of-attention (camera on / quick reply) IS the trust signal. Watson 2018: virtual teams underperform on creativity, beat in-person on focused output.' },
             conflicttool: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u267B',         title: 'Conflict \u2192 Collab \u2014 turn friction into output',  hint: 'Task conflict (about ideas) helps; relationship conflict (about people) hurts. Jehn 1995: high-performing teams have MORE task conflict than average ones. Reframe \u201Cwe disagree\u201D from threat to data.' },
@@ -1147,110 +1471,88 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var scenariosContent = null;
         if (activeTab === 'scenarios') {
-          var curSc = SCENARIOS[scenarioIdx % SCENARIOS.length];
-          var answered = scenarioAnswers[curSc.id] != null;
-          var revealed = !!scenarioRevealed[curSc.id];
-          var answeredCount = Object.keys(scenarioAnswers).length;
-
-          scenariosContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFAD Teamwork Scenarios'),
-            h('p', { role: 'status', style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
-              'Scenario ' + ((scenarioIdx % SCENARIOS.length) + 1) + ' of ' + SCENARIOS.length + ' \u00B7 ' + answeredCount + ' answered'
+          function teamScenarioRecord(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+          var scenarioSelections = teamScenarioRecord(d.scenarioSelections);
+          var oldScenarioIndex = typeof scenarioIdx === 'number' && isFinite(scenarioIdx) && scenarioIdx >= 0 ? Math.floor(scenarioIdx) % TEAMWORK_PRACTICE.length : 0;
+          var selectedScenarioId = Object.prototype.hasOwnProperty.call(scenarioSelections, band) ? scenarioSelections[band] : null;
+          var curTeamScenario = TEAMWORK_PRACTICE.find(function(item) { return item.id === selectedScenarioId; }) || TEAMWORK_PRACTICE[oldScenarioIndex];
+          var teamScenarioKey = band + ':' + curTeamScenario.id;
+          var scenarioDrafts = teamScenarioRecord(d.scenarioDrafts);
+          var scenarioDraft = teamScenarioRecord(Object.prototype.hasOwnProperty.call(scenarioDrafts, teamScenarioKey) ? scenarioDrafts[teamScenarioKey] : null);
+          var scenarioSurface = _teaHC ? '#000000' : _teaL ? '#ffffff' : '#0f172a';
+          var scenarioInk = _teaHC ? '#ffff00' : _teaL ? '#0f172a' : '#e2e8f0';
+          var scenarioEdge = _teaHC ? '#ffff00' : '#64748b';
+          var scenarioControl = { width: '100%', minHeight: 44, padding: 10, border: '1px solid ' + scenarioEdge, borderRadius: 8, background: scenarioSurface, color: scenarioInk, font: 'inherit', fontSize: 16, boxSizing: 'border-box' };
+          var scenarioDisclosure = { borderTop: '1px solid ' + scenarioEdge };
+          var scenarioSummary = { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' };
+          function updateTeamScenario(key, value) {
+            var next = Object.assign({}, scenarioDrafts);
+            next[teamScenarioKey] = Object.assign({}, scenarioDraft);
+            next[teamScenarioKey][key] = value;
+            upd('scenarioDrafts', next);
+          }
+          function teamScenarioNote(key, label, help) {
+            var id = 'teamwork-scenario-note-' + key;
+            var value = Object.prototype.hasOwnProperty.call(scenarioDraft, key) && typeof scenarioDraft[key] === 'string' ? scenarioDraft[key] : '';
+            return h('div', { style: { margin: '12px 0' } },
+              h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, label + ' (optional)'),
+              h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, help),
+              h('textarea', { id: id, rows: 3, value: value, 'aria-describedby': id + '-help', onChange: function(e) { updateTeamScenario(key, e.target.value); }, style: Object.assign({}, scenarioControl, { resize: 'vertical', lineHeight: 1.6 }) }));
+          }
+          var chosenTeamRoute = curTeamScenario.routes.some(function(route) { return route.id === scenarioDraft.route; }) || scenarioDraft.route === 'own' ? scenarioDraft.route : '';
+          var oldScenarioResponses = teamScenarioRecord(scenarioAnswers);
+          var earlierTeamChoices = SCENARIOS.filter(function(item) { var value = oldScenarioResponses[item.id]; return Number.isInteger(value) && value >= 0 && value < item.choices.length; });
+          scenariosContent = h('div', null,
+            h('section', { role: 'region', 'aria-label': 'Teamwork scenario practice', style: { padding: 16, maxWidth: 760, margin: '0 auto', background: scenarioSurface, color: scenarioInk, border: '1px solid ' + scenarioEdge, borderRadius: 12, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+              h('h2', { style: { fontSize: 22, lineHeight: 1.3, marginTop: 0 } }, 'Work through a teamwork challenge'),
+              h('p', null, band === 'elementary' ? 'Read a made-up situation together. Open an idea to see how it might help and what to be careful about. You can talk, draw, write or ask an adult to help. There is no score.' : 'Explore a fictional situation, compare possible responses and rehearse a next step. You can think, talk, draw or write. There is no single best script or score.'),
+              h('p', null, 'You can ask a teacher or trusted adult for help at any point. If there are threats, repeated targeting or unsafe pressure, seek support; you do not have to confront someone or mediate first.'),
+              h('label', { htmlFor: 'teamwork-scenario-choice', style: { display: 'block', fontWeight: 700 } }, 'Choose a teamwork situation'),
+              h('select', { id: 'teamwork-scenario-choice', value: curTeamScenario.id, onChange: function(e) { var next = Object.assign({}, scenarioSelections); next[band] = e.target.value; upd('scenarioSelections', next); }, style: scenarioControl }, TEAMWORK_PRACTICE.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
+              h('div', { key: teamScenarioKey },
+                h('h3', { style: { fontSize: 18 } }, curTeamScenario.title),
+                h('p', null, curTeamScenario.situations[band] || curTeamScenario.situations.elementary),
+                h('details', { style: scenarioDisclosure },
+                  h('summary', { style: scenarioSummary }, 'Notice what we know and what to check'),
+                  h('p', null, curTeamScenario.check)),
+                h('h4', { style: { fontSize: 16 } }, 'Compare possible routes'),
+                h('p', null, 'Open any route to consider how it could help and what it needs. You may combine routes or propose another. Respect for access, safety and boundaries still matters.'),
+                curTeamScenario.routes.map(function(route) {
+                  return h('details', { key: route.id, style: scenarioDisclosure },
+                    h('summary', { style: scenarioSummary }, route.title),
+                    h('p', null, h('strong', null, 'How it could help: '), route.helps),
+                    h('p', null, h('strong', null, 'What to watch for: '), route.limits));
+                }),
+                h('details', { style: scenarioDisclosure },
+                  h('summary', { style: scenarioSummary }, 'Build a response (optional)'),
+                  h('p', null, 'Use the fictional situation or another example you choose. Personal disclosure is optional. Your words can be spoken, written or shared with support.'),
+                  h('label', { htmlFor: 'teamwork-scenario-route', style: { display: 'block', fontWeight: 700 } }, 'A route to rehearse (optional)'),
+                  h('select', { id: 'teamwork-scenario-route', value: chosenTeamRoute, onChange: function(e) { updateTeamScenario('route', e.target.value); }, style: scenarioControl },
+                    h('option', { value: '' }, 'Still deciding'), curTeamScenario.routes.map(function(route) { return h('option', { key: route.id, value: route.id }, route.title); }), h('option', { value: 'own' }, 'Combine routes or use my own')),
+                  teamScenarioNote('notice', 'What I notice without guessing motives', band === 'elementary' ? 'What happened? Say what someone did, rather than calling them a name.' : 'Separate what was seen or recorded from assumptions about effort, intentions or personality.'),
+                  teamScenarioNote('check', 'What I need to check', band === 'elementary' ? 'What is missing from the story? Who could help you find out?' : 'Name an unknown, an access need or a task expectation. Ask only for information needed to plan; no personal explanation is required.'),
+                  teamScenarioNote('words', 'Words or another way to respond', band === 'elementary' ? 'What could you say, write or show? You can ask an adult to help.' : 'Rehearse a specific observation and request. Choose a communication method and support that are workable for the people involved.'),
+                  teamScenarioNote('support', 'A boundary or support we need', band === 'elementary' ? 'What should stay safe or fair? Who can help? You do not have to fix this alone.' : 'Name a limit, permission, resource or adult responsibility. Consider power differences and whether direct discussion is appropriate.'),
+                  teamScenarioNote('plan', 'A next step and check-in', band === 'elementary' ? 'Who will do what next? When can you check whether it helped?' : 'Agree on a realistic action, who owns it and when to review. Look for changed participation, access or workload, not just agreement.')),
+                h('details', { style: scenarioDisclosure },
+                  h('summary', { style: scenarioSummary }, 'Try a changed situation'),
+                  h('p', null, curTeamScenario.change),
+                  teamScenarioNote('review', 'What I would keep or change, and why', band === 'elementary' ? 'Does the new detail change your idea? What help is needed now?' : 'Reconsider the route and needed support. Explain what to keep or revise and what evidence would show the new plan is working.')),
+                h('details', { style: scenarioDisclosure },
+                  h('summary', { style: scenarioSummary }, 'Compare one possible plan'),
+                  h('p', null, curTeamScenario.model),
+                  h('p', null, 'This plan responds to the changed situation. It is an example to discuss, not a promise of cooperation or an answer key. Other plans need reasons and attention to the people affected.')),
+                h('p', null, 'Notes stay with this situation and grade band in the current project. Use the hub save or export controls to keep them beyond this session. Review personal details before sharing.')
+              ),
+              earlierTeamChoices.length > 0 && h('details', { style: scenarioDisclosure },
+                h('summary', { style: scenarioSummary }, 'Earlier scenario choices'),
+                h('p', null, 'These choices came from the earlier scored quiz. They are historical records, not recommended responses or a measure of teamwork skill. They have not been copied into the new practice.'),
+                earlierTeamChoices.map(function(item) { return h('p', { key: item.id }, h('strong', null, TEAMWORK_PRACTICE.find(function(current) { return current.id === item.id; }).title + ': '), item.choices[oldScenarioResponses[item.id]].label); }))
             ),
-
-            // Scenario card
-            h('div', { style: { padding: 20, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
-                h('span', { style: { fontSize: 28 } }, curSc.icon),
-                h('h4', { style: { fontSize: 16, fontWeight: 700, color: _teaFg('#f1f5f9'), margin: 0 } }, curSc.title)
-              ),
-              h('p', { style: { fontSize: 13, color: _teaFg('#cbd5e1'), lineHeight: 1.7, marginBottom: 16 } }, curSc.setup),
-
-              // Choices
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-                curSc.choices.map(function(ch, ci) {
-                  var isChosen = scenarioAnswers[curSc.id] === ci;
-                  var showFeedback = revealed && isChosen;
-                  return h('div', { key: ci },
-                    h('button', {
-                      onClick: function() {
-                        if (answered) return;
-                        var newAnswers = Object.assign({}, scenarioAnswers);
-                        newAnswers[curSc.id] = ci;
-                        var newRevealed = Object.assign({}, scenarioRevealed);
-                        newRevealed[curSc.id] = true;
-                        upd({ scenarioAnswers: newAnswers, scenarioRevealed: newRevealed });
-                        logPractice('scenario', curSc.id);
-                        awardXP(10);
-                        if (ch.rating === 3) {
-                          if (soundEnabled) sfxCorrect();
-                          addToast('\u2B50\u2B50\u2B50 Great choice!', 'success');
-                        } else if (ch.rating === 2) {
-                          if (soundEnabled) sfxReveal();
-                          addToast('\u2B50\u2B50 Good thinking!', 'info');
-                        } else {
-                          if (soundEnabled) sfxWrong();
-                          addToast('\u2B50 There\'s a better approach.', 'info');
-                        }
-                        // Check all answered
-                        var totalAnswered = Object.keys(newAnswers).length;
-                        if (totalAnswered >= SCENARIOS.length) tryAwardBadge('scenario_pro');
-                        // Check all perfect
-                        if (totalAnswered >= SCENARIOS.length) {
-                          var allPerfect = true;
-                          SCENARIOS.forEach(function(s) {
-                            var a = newAnswers[s.id];
-                            if (a == null || s.choices[a].rating !== 3) allPerfect = false;
-                          });
-                          if (allPerfect) tryAwardBadge('perfect_scenarios');
-                        }
-                        ctx.announceToSR && ctx.announceToSR('Choice selected. ' + ch.rating + ' out of 3 stars.');
-                        if (totalAnswered >= SCENARIOS.length && announceToSR) announceToSR('All teamwork scenarios completed');
-                      },
-                      disabled: answered,
-                      style: {
-                        width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + (isChosen ? (ch.rating === 3 ? _teaFg('#22c55e') : ch.rating === 2 ? _teaFg('#f59e0b') : _teaFg('#ef4444')) : _teaBg('#334155')),
-                        background: isChosen ? (ch.rating === 3 ? '#22c55e11' : ch.rating === 2 ? '#f59e0b11' : '#ef444411') : '#0f172a',
-                        color: _teaFg('#e2e8f0'), fontSize: 13, textAlign: 'left', cursor: answered ? 'default' : 'pointer', lineHeight: 1.5
-                      }
-                    },
-                      h('span', null, ch.label),
-                      isChosen && h('span', { style: { marginLeft: 8 } }, renderStars(ch.rating))
-                    ),
-                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: _teaBg('#0f172a'), borderLeft: '3px solid ' + (ch.rating === 3 ? _teaFg('#22c55e') : ch.rating === 2 ? _teaFg('#f59e0b') : _teaFg('#ef4444')), marginTop: -2, fontSize: 12, color: _teaFg('#94a3b8'), lineHeight: 1.6 } },
-                      ch.feedback
-                    )
-                  );
-                })
-              ),
-
-              // Show all feedback after answering
-              revealed && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #334155' } },
-                h('div', { style: { fontSize: 11, fontWeight: 600, color: _teaFg('#94a3b8'), marginBottom: 6 } }, 'All response ratings:'),
-                curSc.choices.map(function(ch, ci) {
-                  var isChosen = scenarioAnswers[curSc.id] === ci;
-                  return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? _teaFg('#f1f5f9') : _teaFg('#94a3b8') } },
-                    renderStars(ch.rating),
-                    h('span', { style: { marginLeft: 4 } }, ch.label.substring(0, 50) + (ch.label.length > 50 ? '...' : '')),
-                    isChosen && h('span', { style: { color: ACCENT, marginLeft: 4, fontWeight: 700 } }, '\u2190 your pick')
-                  );
-                })
-              ),
-
-              // Navigation
-              h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
-                scenarioIdx > 0 && h('button', { 'aria-label': 'Previous',
-                  onClick: function() { upd('scenarioIdx', scenarioIdx - 1); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _teaBg('#334155'), color: _teaFg('#f1f5f9'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
-                }, '\u2190 Previous'),
-                scenarioIdx < SCENARIOS.length - 1 && h('button', { 'aria-label': 'Next',
-                  onClick: function() { upd('scenarioIdx', scenarioIdx + 1); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _teaBg('#334155'), color: _teaFg('#f1f5f9'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
-                }, 'Next \u2192')
-              )
-            ),
-
-            // AI Team Coach section
+            h('details', { style: { margin: '16px auto', padding: 16, maxWidth: 760, background: scenarioSurface, color: scenarioInk, border: '1px solid ' + scenarioEdge, borderRadius: 12 } },
+              h('summary', { style: scenarioSummary }, 'Optional AI teamwork coach'),
+              h('p', null, 'Use a fictional or non-identifying example if you choose to ask the coach. Select Ask Coach to request a response. Your rehearsal notes are not added to the coach prompt.'),
+// AI Team Coach section
             h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #6366f133' } },
               h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\u2728 AI Team Coach'),
               h('p', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginBottom: 10 } }, 'Ask the AI coach about any teamwork challenge you\'re facing.'),
@@ -1282,7 +1584,7 @@ window.SelHub = window.SelHub || {
                     'STUDENT\'S TEAMWORK CHALLENGE: "' + coachPrompt + '"\n\n' +
                     'Respond with:\n1. Validate their experience\n2. Name the specific teamwork skill involved (communication, delegation, conflict resolution, etc.)\n3. Give 2-3 concrete strategies they can try immediately\n4. End with encouragement\n\n' +
                     'Use ' + (band === 'elementary' ? 'simple, friendly language for ages 5-10.' : band === 'middle' ? 'supportive, practical language for ages 11-14.' : 'professional coaching language for ages 15-18.') +
-                    '\nKeep it under 180 words.';
+                    '\nDo not infer motives from quietness or unfinished work. Offer conditional options rather than one best script. Respect access, consent, safety and realistic capacity. Asking a teacher or trusted adult for help can be a first step; do not require confrontation, mediation or extra work outside agreed limits.\nKeep it under 180 words.';
                   callGemini(prompt).then(function(result) {
                     var resp = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
                     upd('coachResponse', resp);
@@ -1303,10 +1605,8 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 13, color: _teaFg('#e2e8f0'), lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
                 )
               )
-            ),
-
-            // Quick reflection after scenario
-            renderQuickReflection('scenario')
+            )
+            )
           );
         }
 
@@ -2222,24 +2522,24 @@ window.SelHub = window.SelHub || {
         if (activeTab === 'progress') {
           var roles2 = TEAM_ROLES[band] || TEAM_ROLES.elementary;
           var chList2 = CHALLENGES[band] || CHALLENGES.elementary;
-          var answeredScenarios = Object.keys(scenarioAnswers).length;
+          var answeredScenarios = SCENARIOS.filter(function(s) { var a = scenarioAnswers[s.id]; return Number.isInteger(a) && a >= 0 && a < s.choices.length; }).length;
           var perfectScenarios = 0;
           SCENARIOS.forEach(function(s) {
             var a = scenarioAnswers[s.id];
-            if (a != null && s.choices[a].rating === 3) perfectScenarios++;
+            if (Number.isInteger(a) && a >= 0 && a < s.choices.length && s.choices[a].rating === 3) perfectScenarios++;
           });
           var totalStars = 0;
           SCENARIOS.forEach(function(s) {
             var a = scenarioAnswers[s.id];
-            if (a != null) totalStars += s.choices[a].rating;
+            if (Number.isInteger(a) && a >= 0 && a < s.choices.length) totalStars += s.choices[a].rating;
           });
 
           var vtAnsweredTotal = Object.keys(vtAnswers).length;
           var stats = [
             { icon: '\uD83D\uDC51', label: 'Roles Selected', value: selectedRoles.length + '/' + roles2.length, color: ACCENT },
             { icon: '\uD83C\uDFD7\uFE0F', label: 'Challenges Done', value: String(challengesCompleted), color: _teaFg('#f59e0b') },
-            { icon: '\uD83C\uDFAD', label: 'Scenarios Answered', value: answeredScenarios + '/' + SCENARIOS.length, color: _teaFg('#8b5cf6') },
-            { icon: '\u2B50', label: 'Stars Earned', value: totalStars + '/' + (SCENARIOS.length * 3), color: _teaFg('#facc15') },
+            { icon: '\uD83C\uDFAD', label: 'Earlier scenario answers', value: answeredScenarios + '/' + SCENARIOS.length, color: _teaFg('#8b5cf6') },
+            { icon: '\u2B50', label: 'Earlier scenario stars', value: totalStars + '/' + (SCENARIOS.length * 3), color: _teaFg('#facc15') },
             { icon: '\uD83D\uDDE3\uFE0F', label: 'Comm Style', value: commStyleDone ? 'Done' : 'Not yet', color: _teaFg('#ef4444') },
             { icon: '\uD83D\uDCBB', label: 'Virtual Team', value: vtAnsweredTotal + '/' + VIRTUAL_TEAM_SCENARIOS.length, color: _teaFg('#3b82f6') },
             { icon: '\u267B\uFE0F', label: 'Conflicts Conv.', value: String(conflictCount), color: _teaFg('#f59e0b') },

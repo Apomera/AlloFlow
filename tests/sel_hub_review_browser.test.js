@@ -465,6 +465,35 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(data.vsCompleted).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
+  it('teamwork rehearsal routes and notes survive situation changes and the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="teamwork"]').click();
+    await page.getByRole('tab',{name:/Scenarios/}).click();
+    const practice=page.getByRole('region',{name:'Teamwork scenario practice',exact:true});
+    await practice.getByText('Build a response (optional)',{exact:true}).click();
+    await practice.getByLabel('A route to rehearse (optional)',{exact:true}).selectOption('route3');
+    await practice.getByLabel('Words or another way to respond (optional)',{exact:true}).fill('Could we read the written ideas before deciding?');
+    await practice.getByLabel('Choose a teamwork situation',{exact:true}).selectOption('sc5');
+    await practice.getByText('Build a response (optional)',{exact:true}).click();
+    await practice.getByLabel('A route to rehearse (optional)',{exact:true}).selectOption('own');
+    await practice.getByLabel('A boundary or support we need (optional)',{exact:true}).fill('Ask the teacher about a smaller task.');
+    await practice.getByText('Try a changed situation',{exact:true}).click();
+    await practice.getByLabel('What I would keep or change, and why (optional)',{exact:true}).fill('Choose the essential parts together.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="teamwork"]').click();
+    expect(await practice.getByLabel('Choose a teamwork situation',{exact:true}).inputValue()).toBe('sc5');
+    await practice.getByText('Build a response (optional)',{exact:true}).click();
+    expect(await practice.getByLabel('A route to rehearse (optional)',{exact:true}).inputValue()).toBe('own');
+    expect(await practice.getByLabel('A boundary or support we need (optional)',{exact:true}).inputValue()).toContain('smaller task');
+    await practice.getByText('Try a changed situation',{exact:true}).click();
+    expect(await practice.getByLabel('What I would keep or change, and why (optional)',{exact:true}).inputValue()).toContain('essential parts');
+    await practice.getByLabel('Choose a teamwork situation',{exact:true}).selectOption('sc1');
+    await practice.getByText('Build a response (optional)',{exact:true}).click();
+    expect(await practice.getByLabel('A route to rehearse (optional)',{exact:true}).inputValue()).toBe('route3');
+    expect(await practice.getByLabel('Words or another way to respond (optional)',{exact:true}).inputValue()).toContain('written ideas');
+    expect(await page.evaluate(()=>window.__alloflowSelToolData.teamwork.scenarioAnswers)).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {
