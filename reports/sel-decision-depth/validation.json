@@ -1,0 +1,53 @@
+{
+  "date": "2026-09-12",
+  "tool": "Decision Workshop",
+  "activity": "Consequence Map",
+  "scenarioCoverage": {
+    "total": 30,
+    "elementary": 10,
+    "middle": 10,
+    "high": 10
+  },
+  "tests": {
+    "distinctPassed": 565,
+    "existingRegressionPassed": 527,
+    "focusedBrowserPassed": 36,
+    "actualHubPassed": 2,
+    "existingRegressionSkipped": 2,
+    "hubTestsExcludedByNameFilter": 80,
+    "initialRenderSmokeToolsPassed": 72
+  },
+  "accessibility": {
+    "scope": "Consequence reasoning map region; all enabled axe rules in the focused browser harness",
+    "themes": [
+      "dark",
+      "light",
+      "contrast"
+    ],
+    "violationsPerTheme": 0,
+    "phoneWidth": 320,
+    "visualReview": [
+      "dark-effects-phone.png",
+      "contrast-revision-phone.png"
+    ]
+  },
+  "checks": {
+    "sourceAndPublicByteIdentical": true,
+    "sha256": "84f5a16814be9275b8a5f91a0e7280c444f4aba1602e02b318b4615bd63f7452",
+    "sourceAndBrowserTestSyntax": "passed",
+    "scopedWhitespace": "passed"
+  },
+  "logs": [
+    "reports/sel-decision-depth-validation.log",
+    "reports/sel-decision-depth-hub.log",
+    "reports/sel-decision-depth-render.log"
+  ],
+  "limits": [
+    "Focused browser tests use the actual tool renderer with simulated callbacks.",
+    "Actual hub return and reopen checked separately.",
+    "Serialized state restoration is not a real project-file round trip.",
+    "Packaged Desktop, live assistive technology, classroom outcomes and other Decision Workshop tabs were not validated."
+  ],
+  "pushed": false,
+  "deployed": false
+}

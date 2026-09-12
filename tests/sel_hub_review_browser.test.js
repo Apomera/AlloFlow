@@ -130,6 +130,28 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   }, 120000);
 
+  it('decision consequence draft and earlier version survive the real hub return and reopen flow', async () => {
+    await mount();
+    await page.locator('[data-sel-tool-card-id="decisions"]').click();
+    const activity = page.getByRole('region', { name: 'Consequence reasoning map', exact: true });
+    await activity.getByLabel('Choose a consequence scenario', { exact: true }).selectOption('cs9');
+    await activity.getByLabel('A possible near-term effect (optional)', { exact: true }).fill('A petition may gather useful experiences.');
+    await activity.getByRole('button', { name: 'Keep this version for comparison', exact: true }).click();
+    await activity.getByLabel('A possible near-term effect (optional)', { exact: true }).fill('The process must include access needs.');
+    await activity.getByRole('button', { name: 'Explore a changed condition', exact: true }).click();
+    await activity.getByLabel('What would you keep or change, and why? (optional)', { exact: true }).fill('Check whose communication needs the rule affects.');
+    const support = page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button', { name: 'Return to activities', exact: true }).click();
+    await page.locator('[data-sel-tool-card-id="decisions"]').click();
+    expect(await activity.getByLabel('Choose a consequence scenario', { exact: true }).inputValue()).toBe('cs9');
+    expect(await activity.getByLabel('A possible near-term effect (optional)', { exact: true }).inputValue()).toBe('The process must include access needs.');
+    expect(await activity.getByLabel('What would you keep or change, and why? (optional)', { exact: true }).inputValue()).toContain('communication needs');
+    expect(await page.evaluate(() => window.__alloflowSelToolData.decisions.mapDrafts.cs9.snapshot.near)).toBe('A petition may gather useful experiences.');
+    expect(await page.evaluate(() => window.__alloflowSelToolData.decisions.csCompleted)).toBeUndefined();
+    expect(errors).toEqual([]);
+  }, 120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

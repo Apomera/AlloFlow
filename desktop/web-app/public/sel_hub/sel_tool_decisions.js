@@ -159,43 +159,505 @@ window.SelHub = window.SelHub || {
   // Students trace short-term and long-term consequences
   // ══════════════════════════════════════════════════════════════
   var CONSEQUENCE_SCENARIOS = {
-    elementary: [
-      { id: 'cs1', title: 'Telling a Lie', action: 'You tell your teacher that your dog ate your homework (it didn\'t — you forgot to do it).', categories: ['right away', 'this week', 'over time'], affectedPeople: ['you', 'your teacher', 'your parents'] },
-      { id: 'cs2', title: 'Standing Up for Someone', action: 'A kid is getting made fun of at the bus stop. You say, "Hey, that\'s not cool. Stop it."', categories: ['right away', 'this week', 'over time'], affectedPeople: ['you', 'the bullied kid', 'the bully'] },
-      { id: 'cs3', title: 'Sharing Your Lunch', action: 'You notice a classmate never has lunch. You start sharing half of yours every day without telling anyone.', categories: ['right away', 'this week', 'over time'], affectedPeople: ['you', 'your classmate', 'their family'] },
-      { id: 'cs4', title: 'Excluding Someone', action: 'You tell the new kid they can\'t sit at your lunch table because "it\'s full" (it isn\'t).', categories: ['right away', 'this week', 'over time'], affectedPeople: ['the new kid', 'you', 'your table group'] },
-      { id: 'cs5', title: 'Saying Sorry', action: 'You broke your friend\'s toy by accident. Instead of hiding it, you go and say "I\'m sorry, I broke it. Can I help fix it?"', categories: ['right away', 'this week', 'over time'], affectedPeople: ['you', 'your friend', 'the friendship'] },
-      { id: 'cs6', title: 'Copying Homework', action: 'You copy your friend\'s math homework every morning because you don\'t understand the material.', categories: ['right away', 'this week', 'over time'], affectedPeople: ['you', 'your friend', 'your math skills'] },
-      { id: 'cs6b', title: 'Being the Includer', action: 'Every day at recess, you invite the kid who always plays alone to join your group, even when your friends roll their eyes.', categories: ['right away', 'this week', 'over time'], affectedPeople: ['the lonely kid', 'you', 'your friend group', 'the school culture'] },
-      { id: 'cs6c', title: 'The Silent Treatment', action: 'You\'re mad at your friend so you stop talking to them completely. You won\'t tell them why.', categories: ['right away', 'this week', 'over time'], affectedPeople: ['your friend', 'you', 'the friendship', 'other friends caught in the middle'] },
-      { id: 'cs6d', title: 'Practicing Every Day', action: 'You decide to practice piano for 15 minutes every single day, even when you don\'t feel like it.', categories: ['right away', 'this week', 'over time'], affectedPeople: ['you', 'your family (hearing practice)', 'your future self'] },
-      { id: 'cs6e', title: 'The Tattletale', action: 'Every time a classmate breaks a small rule, you raise your hand and tell the teacher.', categories: ['right away', 'this week', 'over time'], affectedPeople: ['you', 'your classmates', 'the teacher', 'your social reputation'] }
-    ],
-    middle: [
-      { id: 'cs7', title: 'Posting Without Thinking', action: 'You post a rant about a teacher on social media. You name them directly and call them unfair.', categories: ['within hours', 'within weeks', 'long-term'], affectedPeople: ['you', 'the teacher', 'your school reputation', 'future you'] },
-      { id: 'cs8', title: 'Choosing Honesty', action: 'You tell your parent the truth about a bad grade instead of hiding the report card.', categories: ['within hours', 'within weeks', 'long-term'], affectedPeople: ['you', 'your parents', 'your academic future'] },
-      { id: 'cs9', title: 'Starting a Petition', action: 'You start a petition to change a school rule you think is unfair (no phones at lunch).', categories: ['within hours', 'within weeks', 'long-term'], affectedPeople: ['you', 'students', 'teachers', 'school admin'] },
-      { id: 'cs10', title: 'Ignoring a Friend\'s Pain', action: 'Your friend tells you they\'ve been feeling really down lately. You say "You\'ll be fine" and change the subject.', categories: ['within hours', 'within weeks', 'long-term'], affectedPeople: ['your friend', 'you', 'the friendship', 'their mental health'] },
-      { id: 'cs11', title: 'Defending the Unpopular Kid', action: 'When everyone is mocking a classmate\'s presentation, you say "Actually, I thought that took guts. Nice job."', categories: ['within hours', 'within weeks', 'long-term'], affectedPeople: ['the presenting student', 'you', 'the classroom culture', 'the mockers'] },
-      { id: 'cs12', title: 'Quitting the Team', action: 'You quit the basketball team mid-season because you\'re not getting enough playing time.', categories: ['within hours', 'within weeks', 'long-term'], affectedPeople: ['you', 'your coach', 'your teammates', 'your commitment reputation'] },
-      { id: 'cs12b', title: 'The Apology Text', action: 'After a fight with a friend, you send a long, genuine apology text. You mean every word.', categories: ['within hours', 'within weeks', 'long-term'], affectedPeople: ['you', 'your friend', 'the friendship', 'your self-respect'] },
-      { id: 'cs12c', title: 'Skipping the Hard Class', action: 'You switch from Honors Math to regular Math because it\'s easier and your GPA will be higher.', categories: ['within hours', 'within weeks', 'long-term'], affectedPeople: ['you', 'your college applications', 'your math readiness', 'your confidence'] },
-      { id: 'cs12d', title: 'The Bystander Choice', action: 'You see someone getting bullied in the hallway. You record it on your phone instead of intervening.', categories: ['within hours', 'within weeks', 'long-term'], affectedPeople: ['the bullied student', 'you', 'the bully', 'other bystanders', 'the school climate'] },
-      { id: 'cs12e', title: 'Volunteering Regularly', action: 'You sign up to volunteer at the animal shelter every Saturday morning, even though it means missing sleeping in.', categories: ['within hours', 'within weeks', 'long-term'], affectedPeople: ['you', 'the animals', 'the shelter staff', 'your character', 'your college app'] }
-    ],
-    high: [
-      { id: 'cs13', title: 'Taking the Shortcut', action: 'You use AI to write your college application essay instead of writing it yourself.', categories: ['immediately', 'this year', '5 years from now'], affectedPeople: ['you', 'admissions', 'other applicants', 'your self-knowledge'] },
-      { id: 'cs14', title: 'Calling Out Injustice', action: 'You write an editorial for the school paper about racial bias in disciplinary practices, naming specific patterns you\'ve observed.', categories: ['immediately', 'this year', '5 years from now'], affectedPeople: ['you', 'affected students', 'administration', 'school culture'] },
-      { id: 'cs15', title: 'Cutting Off a Toxic Friend', action: 'You end a long friendship because the person has become manipulative and draining. You tell them why honestly.', categories: ['immediately', 'this year', '5 years from now'], affectedPeople: ['you', 'the friend', 'mutual friends', 'your mental health'] },
-      { id: 'cs16', title: 'Choosing Money Over Mission', action: 'You turn down a nonprofit internship aligned with your values to take a corporate job that pays three times more.', categories: ['immediately', 'this year', '5 years from now'], affectedPeople: ['you', 'the nonprofit', 'your career trajectory', 'your sense of purpose'] },
-      { id: 'cs17', title: 'The Gap Year', action: 'Instead of going straight to college, you take a year off to travel and work, against your parents\' wishes.', categories: ['immediately', 'this year', '5 years from now'], affectedPeople: ['you', 'your parents', 'your future self', 'your financial situation'] },
-      { id: 'cs18', title: 'Reporting a Friend', action: 'You report your close friend for selling drugs at school because you\'re genuinely worried about them and the other students.', categories: ['immediately', 'this year', '5 years from now'], affectedPeople: ['your friend', 'you', 'the friendship', 'other students', 'your friend\'s future'] },
-      { id: 'cs18b', title: 'The Honest College Essay', action: 'You write a raw, honest college essay about your family\'s struggles with addiction instead of the "safe" essay about a volunteer trip.', categories: ['immediately', 'this year', '5 years from now'], affectedPeople: ['you', 'admissions readers', 'your family', 'your authenticity'] },
-      { id: 'cs18c', title: 'Confronting a Mentor', action: 'You tell your favorite teacher that their grading seems biased — certain students consistently get harsher feedback for the same quality of work.', categories: ['immediately', 'this year', '5 years from now'], affectedPeople: ['you', 'the teacher', 'affected students', 'the teacher-student relationship', 'school culture'] },
-      { id: 'cs18d', title: 'The Social Media Cleanse', action: 'You delete all social media apps for a month to focus on real-life relationships and mental health.', categories: ['immediately', 'this year', '5 years from now'], affectedPeople: ['you', 'your online friends', 'your mental health', 'your real-life relationships'] },
-      { id: 'cs18e', title: 'Taking the Blame', action: 'Your younger sibling broke something valuable. You take the blame because you know they\'ll get in more trouble than you would.', categories: ['immediately', 'this year', '5 years from now'], affectedPeople: ['you', 'your sibling', 'your parents', 'the sibling relationship', 'your sibling\'s accountability'] }
-    ]
-  };
+  "elementary": [
+    {
+      "id": "cs1",
+      "title": "Explaining unfinished homework",
+      "action": "In a fictional case, you invent a reason for unfinished homework instead of saying you forgot.",
+      "affectedPeople": [
+        "you",
+        "your teacher",
+        "someone who helps with schoolwork"
+      ],
+      "benefit": "The explanation might postpone an uncomfortable conversation.",
+      "cost": "It could hide the actual support or planning problem and create a need to correct the story.",
+      "depends": "The teacher's response and the reason the work was difficult are not yet known.",
+      "adjustment": "Describe what happened and ask about one manageable next step, with support if needed.",
+      "change": "What if several students misunderstood the instructions?",
+      "review": "Check whether the instructions and next step are clear; do not judge the plan only by whether a consequence is avoided."
+    },
+    {
+      "id": "cs2",
+      "title": "Supporting someone at the bus stop",
+      "action": "Someone is being targeted at a fictional bus stop. You consider telling the others to stop.",
+      "affectedPeople": [
+        "you",
+        "the targeted student",
+        "other students",
+        "the supervising adult"
+      ],
+      "benefit": "An interruption might show support and stop the immediate comment.",
+      "cost": "A direct challenge could escalate the situation or draw more attention to the targeted student.",
+      "depends": "Power differences, nearby adult support, and what feels safe affect the options.",
+      "adjustment": "Get a supervising adult, move toward safety, or offer private support rather than requiring a confrontation.",
+      "change": "What if the targeting continued after an interruption?",
+      "review": "Check whether trusted support has helped stop the behavior. Do not make the targeted student organize a mediation."
+    },
+    {
+      "id": "cs3",
+      "title": "A sustainable lunch plan",
+      "action": "You notice a fictional classmate has no lunch and consider sharing yours every day.",
+      "affectedPeople": [
+        "you",
+        "your classmate",
+        "school meal staff"
+      ],
+      "benefit": "Sharing may help in the moment if it is safe and welcome.",
+      "cost": "Daily sharing could leave you short of food, conflict with food needs, or leave the underlying access problem unresolved.",
+      "depends": "You do not know why lunch is missing or what school meal support is available.",
+      "adjustment": "Ask a trusted adult or meal staff for a private, dependable support route without demanding family details.",
+      "change": "What if the classmate did not want their situation discussed with other students?",
+      "review": "Check whether both students can access enough suitable food without making one child responsible for another's meals."
+    },
+    {
+      "id": "cs4",
+      "title": "A place at the table",
+      "action": "In a fictional case, you say a lunch table is full when there is space because you do not want a new classmate to sit there.",
+      "affectedPeople": [
+        "you",
+        "the new classmate",
+        "the table group"
+      ],
+      "benefit": "You might avoid an interaction you feel unsure about.",
+      "cost": "The untrue explanation may communicate exclusion and make later interactions harder.",
+      "depends": "You cannot know how the classmate feels or what seating choices they prefer.",
+      "adjustment": "Correct the explanation and offer an optional place without demanding friendship or conversation.",
+      "change": "What if they preferred another table after the correction?",
+      "review": "Check whether the choice was real and the untrue exclusion stopped, rather than requiring acceptance of the invitation."
+    },
+    {
+      "id": "cs5",
+      "title": "Repair after an accident",
+      "action": "You accidentally break a fictional friend's toy and offer to help repair it.",
+      "affectedPeople": [
+        "you",
+        "your friend",
+        "an adult who can help with the toy"
+      ],
+      "benefit": "Acknowledging the damage may make a practical repair possible.",
+      "cost": "A repair attempt without permission could make damage worse; an apology does not guarantee forgiveness.",
+      "depends": "The type of damage and your friend's preferred next step matter.",
+      "adjustment": "Ask before touching the toy and get adult help for repairs beyond your ability.",
+      "change": "What if the friend wanted space and did not want you to fix it?",
+      "review": "Check whether you respected the request and followed through on an agreed action, not whether the friendship immediately felt the same."
+    },
+    {
+      "id": "cs6",
+      "title": "Getting help with the work",
+      "action": "You copy a fictional friend's homework because you do not understand the task.",
+      "affectedPeople": [
+        "you",
+        "your friend",
+        "your teacher"
+      ],
+      "benefit": "Copying might produce a finished page quickly.",
+      "cost": "It may conceal the learning difficulty and put pressure on the friend without improving understanding.",
+      "depends": "The unclear step, available explanations, and assignment expectations are not yet known.",
+      "adjustment": "Identify one confusing step and ask for an example or another explanation.",
+      "change": "What if the example used a format you could not access?",
+      "review": "Check whether you can explain or demonstrate a step with suitable support, rather than just count completed pages."
+    },
+    {
+      "id": "cs6b",
+      "title": "Inviting without pressure",
+      "action": "You regularly invite a fictional classmate who plays alone to join a group.",
+      "affectedPeople": [
+        "you",
+        "the classmate",
+        "the group"
+      ],
+      "benefit": "An invitation can open a choice that was not obvious.",
+      "cost": "Repeated invitations can become pressure if the classmate has asked for solitude.",
+      "depends": "Playing alone does not tell you whether someone wants company.",
+      "adjustment": "Offer a brief invitation with a real way to decline and respect the response.",
+      "change": "What if they said they wanted quiet today but might join tomorrow?",
+      "review": "Check whether the invitation respected their preference. Joining the group is not the only successful outcome."
+    },
+    {
+      "id": "cs6c",
+      "title": "Taking space after disagreement",
+      "action": "After a fictional disagreement, you stop responding to a friend and have not explained what you need.",
+      "affectedPeople": [
+        "you",
+        "your friend",
+        "a trusted support person"
+      ],
+      "benefit": "Time apart may help you feel ready to think or maintain a needed boundary.",
+      "cost": "Unexplained silence can create uncertainty; repeated requests for an explanation can also become pressure.",
+      "depends": "Whether contact is safe and welcome is not given in the story.",
+      "adjustment": "If safe, consider a brief boundary statement. Private reflection or trusted support may fit better when contact is not appropriate.",
+      "change": "What if the friend kept messaging after a clear request for space?",
+      "review": "Check whether the boundary is being respected and whether additional support is needed. Do not measure success by renewed contact."
+    },
+    {
+      "id": "cs6d",
+      "title": "A practice routine that can change",
+      "action": "You plan a short piano practice every day in a fictional week.",
+      "affectedPeople": [
+        "you",
+        "people sharing the space",
+        "your teacher or practice partner"
+      ],
+      "benefit": "Regular opportunities may help you become familiar with a skill.",
+      "cost": "A rigid routine could conflict with rest, access, enjoyment, or other people's use of the space.",
+      "depends": "The goal, available time, instrument access, and feedback affect what practice can do.",
+      "adjustment": "Choose a manageable trial and allow breaks, different methods, or a quieter time.",
+      "change": "What if the practice time stopped fitting the household schedule?",
+      "review": "Review what you learned and what support helped; missing a day does not prove no effort or lost learning."
+    },
+    {
+      "id": "cs6e",
+      "title": "Deciding when to ask for help",
+      "action": "You tell a teacher whenever you notice a fictional classmate breaking a rule.",
+      "affectedPeople": [
+        "you",
+        "your classmates",
+        "the teacher"
+      ],
+      "benefit": "An adult may be able to help with harm, confusion, or access to the task.",
+      "cost": "Reporting every minor difference without context may interrupt learning or mistake an allowed support for a broken rule.",
+      "depends": "You may not know someone's arrangement or whether anyone is at risk.",
+      "adjustment": "Describe what you observed and ask for help when needed, without using labels or investigating private information.",
+      "change": "What if there were a safety concern rather than a minor classroom difference?",
+      "review": "Get trusted help for safety concerns promptly. Review what information was useful without discouraging future help-seeking."
+    }
+  ],
+  "middle": [
+    {
+      "id": "cs7",
+      "title": "Raising a concern publicly",
+      "action": "You consider posting a public complaint naming a fictional teacher after a grading disagreement.",
+      "affectedPeople": [
+        "you",
+        "the teacher",
+        "other students"
+      ],
+      "benefit": "Public discussion might bring attention to a concern that has not been addressed.",
+      "cost": "A post could spread incomplete claims or private details, and its audience may become hard to control.",
+      "depends": "What evidence exists and which support routes have already been tried are not yet known.",
+      "adjustment": "Separate observations from interpretations and consider a supported, factual request through an appropriate channel.",
+      "change": "What if a private request had already failed and several students described a pattern?",
+      "review": "Review whether the concern was documented and reached someone able to respond; attention alone does not show a fair resolution."
+    },
+    {
+      "id": "cs8",
+      "title": "Discussing a difficult grade",
+      "action": "In a fictional case, you consider telling a caregiver about a grade that disappointed you.",
+      "affectedPeople": [
+        "you",
+        "your caregiver",
+        "a trusted school adult"
+      ],
+      "benefit": "An honest conversation may make useful support possible.",
+      "cost": "You cannot guarantee a supportive response, and a conversation could focus on blame rather than the barrier.",
+      "depends": "The relationship, safety, task demands, and available support affect the next step.",
+      "adjustment": "Describe one difficulty and a support request; involve a trusted adult if you fear an unsafe response.",
+      "change": "What if the grade reflected inaccessible instructions rather than lack of study?",
+      "review": "Check whether the actual barrier is addressed and whether the plan is manageable. The grade alone does not describe effort or ability."
+    },
+    {
+      "id": "cs9",
+      "title": "Asking to change a school rule",
+      "action": "You start a fictional petition about phone use at lunch.",
+      "affectedPeople": [
+        "you",
+        "students with different access needs",
+        "teachers",
+        "school leaders"
+      ],
+      "benefit": "A petition may gather experiences and show that a rule has effects worth discussing.",
+      "cost": "A simple vote might overlook privacy, safety, or access needs held by a smaller group.",
+      "depends": "The reasons for the rule and the range of student needs need investigation.",
+      "adjustment": "Gather perspectives without collecting private details and propose a limited trial with clear review criteria.",
+      "change": "What if some students needed devices for communication or other access support?",
+      "review": "Review participation, access, and practical effects rather than treating the number of signatures as the whole decision."
+    },
+    {
+      "id": "cs10",
+      "title": "Responding to a friend who is struggling",
+      "action": "A fictional friend says they have been feeling down. You say they will be fine and change the subject.",
+      "affectedPeople": [
+        "you",
+        "your friend",
+        "a trusted support person"
+      ],
+      "benefit": "You might intend to offer reassurance or reduce an awkward moment.",
+      "cost": "The reply may close off an opportunity to listen or help the friend reach appropriate support.",
+      "depends": "You do not know what kind of support they want or the full situation.",
+      "adjustment": "Offer to listen without promising to solve it. Seek trusted help for safety concerns rather than promising secrecy.",
+      "change": "What if the friend did not want to talk to you but wanted help finding an adult?",
+      "review": "Check whether you respected the request and offered an appropriate support route; do not treat a better mood as your responsibility."
+    },
+    {
+      "id": "cs11",
+      "title": "Support after a presentation",
+      "action": "Other students mock a fictional classmate's presentation. You consider offering public encouragement.",
+      "affectedPeople": [
+        "you",
+        "the presenter",
+        "other students",
+        "the teacher"
+      ],
+      "benefit": "Encouragement may interrupt the mocking and show that it is not accepted by everyone.",
+      "cost": "A spotlight on the presenter may be unwanted, and praise alone may not stop repeated targeting.",
+      "depends": "The presenter's preferences and the teacher's response matter.",
+      "adjustment": "Consider a brief interruption, private support, or adult help instead of making the presenter answer publicly.",
+      "change": "What if the mocking continued the next day?",
+      "review": "Check whether the behavior stopped and support is available, not whether the presenter appeared grateful."
+    },
+    {
+      "id": "cs12",
+      "title": "Leaving a team",
+      "action": "In a fictional case, you consider leaving a team because the role and time commitment no longer fit.",
+      "affectedPeople": [
+        "you",
+        "the coach",
+        "teammates",
+        "people who help with transport"
+      ],
+      "benefit": "Leaving could make room for rest, another interest, or a better fit.",
+      "cost": "A sudden change may disrupt arrangements or close an opportunity you still value.",
+      "depends": "Your reasons, alternatives, safety, and whether the role can change are not fully known.",
+      "adjustment": "Discuss options if safe, including a changed role or planned departure; staying is not automatically the responsible choice.",
+      "change": "What if an injury, inaccessible practice, or unsafe treatment were involved?",
+      "review": "Review wellbeing, access, and practical arrangements without using continued participation as a measure of character."
+    },
+    {
+      "id": "cs12b",
+      "title": "Sending an apology",
+      "action": "You write a long apology to a fictional friend after a disagreement and consider sending it.",
+      "affectedPeople": [
+        "you",
+        "your friend"
+      ],
+      "benefit": "It may acknowledge an action and offer a concrete repair.",
+      "cost": "Length and sincerity do not guarantee that contact is welcome or that the message will be accepted.",
+      "depends": "The friend's contact preferences and what repair is possible matter.",
+      "adjustment": "Check boundaries and consider a brief message, changed behavior, or private practice instead.",
+      "change": "What if the friend had already asked for no contact?",
+      "review": "Respect that request. Check your follow-through rather than counting replies or forgiveness."
+    },
+    {
+      "id": "cs12c",
+      "title": "Choosing a course that fits",
+      "action": "You consider changing math courses in a fictional school because the current workload is difficult to sustain.",
+      "affectedPeople": [
+        "you",
+        "teachers",
+        "an advisor",
+        "people supporting your schedule"
+      ],
+      "benefit": "A different course may offer a more workable pace or room for other priorities.",
+      "cost": "A change might affect prerequisites or remove a challenge you value; staying may also have costs.",
+      "depends": "Actual course content, support, workload, and future requirements need checking.",
+      "adjustment": "Ask an advisor about supports, course expectations, and whether a trial or later change is possible.",
+      "change": "What if a support change made the current course accessible without increasing total workload?",
+      "review": "Review access, learning, workload, and future options. A course label alone does not measure ambition or ability."
+    },
+    {
+      "id": "cs12d",
+      "title": "Witnessing hallway targeting",
+      "action": "You see a fictional student being targeted and consider recording the incident.",
+      "affectedPeople": [
+        "you",
+        "the targeted student",
+        "other witnesses",
+        "a supervising adult"
+      ],
+      "benefit": "You may hope a record helps explain what happened.",
+      "cost": "Filming or sharing can delay help, increase risk, or amplify humiliation. A recording is not required before seeking support.",
+      "depends": "Immediate safety, school procedures, and what an adult can do are not fully known.",
+      "adjustment": "Prioritize safety and get an adult; do not investigate, circulate a clip, or require the targeted student to confront the group.",
+      "change": "What if the incident was still happening while others were filming?",
+      "review": "Seek prompt help. Review whether the targeting stopped and support followed, not the reach or popularity of a video."
+    },
+    {
+      "id": "cs12e",
+      "title": "A sustainable volunteer commitment",
+      "action": "You consider volunteering every Saturday at a fictional animal shelter.",
+      "affectedPeople": [
+        "you",
+        "shelter staff",
+        "other volunteers",
+        "people supporting transport"
+      ],
+      "benefit": "A regular role may let you contribute and learn useful tasks.",
+      "cost": "The commitment may exceed available time, transport, or energy, and unreliable coverage can affect the shelter.",
+      "depends": "Training, age requirements, task access, and scheduling flexibility need checking.",
+      "adjustment": "Ask about a realistic trial or less frequent role before promising every week.",
+      "change": "What if transport became unavailable for part of the month?",
+      "review": "Review the agreed responsibilities and supports, and communicate changes early. Frequency alone does not measure care."
+    }
+  ],
+  "high": [
+    {
+      "id": "cs13",
+      "title": "AI assistance and authorship",
+      "action": "You consider using AI-generated text in a fictional application essay.",
+      "affectedPeople": [
+        "you",
+        "application reviewers",
+        "other applicants"
+      ],
+      "benefit": "A tool might help organize ideas or lower a writing barrier if the rules allow that use.",
+      "cost": "Generated text may misrepresent your experiences, contain errors, or violate the specific application rules.",
+      "depends": "Allowed assistance, disclosure requirements, and what work must be your own need checking.",
+      "adjustment": "Read the actual rules and seek permitted support; keep claims accurate and avoid entering private information unnecessarily.",
+      "change": "What if brainstorming was allowed but generated personal statements were not?",
+      "review": "Check the final work against the rules and your actual experience, not whether it sounds impressive or receives an offer."
+    },
+    {
+      "id": "cs14",
+      "title": "Documenting an unfair pattern",
+      "action": "You consider writing a fictional school-paper article about differences you observed in disciplinary treatment.",
+      "affectedPeople": [
+        "you",
+        "affected students",
+        "school staff",
+        "readers"
+      ],
+      "benefit": "A careful account may make a pattern visible and support a request for change.",
+      "cost": "An incomplete account could misstate a pattern or expose students who do not want their experiences published.",
+      "depends": "Evidence, missing perspectives, consent, and risks from the power difference need attention.",
+      "adjustment": "Distinguish observations from conclusions, protect identities, and seek editorial or trusted support.",
+      "change": "What if students supported the concern but did not consent to being named?",
+      "review": "Review accuracy, privacy, and whether the concern reached a process able to respond; publicity alone does not show change."
+    },
+    {
+      "id": "cs15",
+      "title": "Ending a difficult friendship",
+      "action": "You consider ending a fictional friendship after repeated pressure to ignore your boundaries.",
+      "affectedPeople": [
+        "you",
+        "the friend",
+        "mutual friends",
+        "a trusted support person"
+      ],
+      "benefit": "Ending contact may protect a boundary and create space.",
+      "cost": "Mutual relationships or practical arrangements may become difficult; explaining in person could be unsafe or unwanted.",
+      "depends": "Safety, contact preferences, and shared responsibilities affect the next step.",
+      "adjustment": "Choose a safe boundary and appropriate support. A face-to-face explanation is not required.",
+      "change": "What if the person kept contacting you after being asked to stop?",
+      "review": "Review whether the boundary is respected and support is sufficient, rather than judging the choice by reconciliation."
+    },
+    {
+      "id": "cs16",
+      "title": "Comparing paid work and an internship",
+      "action": "You compare a paid job with a lower-paid internship tied to an interest in a fictional case.",
+      "affectedPeople": [
+        "you",
+        "people relying on your time or income",
+        "coworkers or supervisors"
+      ],
+      "benefit": "The paid role may support essential costs and offer useful experience.",
+      "cost": "Either option may limit time, access, or a learning opportunity you value.",
+      "depends": "Actual costs, work conditions, learning opportunities, and responsibilities matter more than labels about purpose.",
+      "adjustment": "Compare the real conditions and ask about flexibility or another way to explore the interest.",
+      "change": "What if the internship gained reliable funding or the paid job offered mentoring?",
+      "review": "Review needs, conditions, and options using updated information. Choosing income does not mean abandoning values."
+    },
+    {
+      "id": "cs17",
+      "title": "Planning a year before college",
+      "action": "You consider a fictional year of work or other activity before starting college.",
+      "affectedPeople": [
+        "you",
+        "family or supporters",
+        "advisors",
+        "people involved in the plan"
+      ],
+      "benefit": "A planned year may offer income, rest, exploration, or experience.",
+      "cost": "Deadlines, funding, housing, or re-entry requirements could create constraints that are hard to undo.",
+      "depends": "Actual deferral rules, costs, supports, and what the year would involve need verification.",
+      "adjustment": "Check requirements with the relevant institutions and identify a feasible plan and backup before committing.",
+      "change": "What if a funding offer could not be deferred?",
+      "review": "Revisit the plan before deadlines using confirmed information; neither immediate enrollment nor a gap is automatically superior."
+    },
+    {
+      "id": "cs18",
+      "title": "Seeking help about a safety concern",
+      "action": "You have a concern about a fictional friend distributing an unknown substance at school and consider telling a trusted adult.",
+      "affectedPeople": [
+        "you",
+        "your friend",
+        "other students",
+        "a trusted adult"
+      ],
+      "benefit": "Appropriate adult support may help address a safety concern.",
+      "cost": "You cannot control every response, and spreading accusations could add harm.",
+      "depends": "You may have incomplete information; uncertainty is a reason to describe what you know, not to investigate personally.",
+      "adjustment": "Seek trusted support, share relevant observations privately, and avoid confrontation or promises of secrecy.",
+      "change": "What if someone appeared to need urgent help right now?",
+      "review": "Prioritize immediate help through local emergency or school procedures. Later, review whether appropriate support followed; do not delay help to finish this exercise."
+    },
+    {
+      "id": "cs18b",
+      "title": "Choosing what to share in an essay",
+      "action": "You consider describing a fictional family difficulty in an application essay.",
+      "affectedPeople": [
+        "you",
+        "family members",
+        "application readers"
+      ],
+      "benefit": "A personal example may express something you choose to communicate.",
+      "cost": "It may disclose information about you or others that cannot be made private again. Painful disclosure is not required to be authentic.",
+      "depends": "Your comfort, other people's privacy, the prompt, and the audience matter.",
+      "adjustment": "Consider another topic, fewer identifying details, or a private draft before deciding what to share.",
+      "change": "What if a family member did not consent to identifiable details?",
+      "review": "Review what you actually want readers to know. An acceptance or rejection cannot establish whether disclosure was a good choice for you."
+    },
+    {
+      "id": "cs18c",
+      "title": "Requesting a fair grading review",
+      "action": "You consider telling a fictional teacher that similar work appears to receive different feedback.",
+      "affectedPeople": [
+        "you",
+        "the teacher",
+        "affected classmates",
+        "a support person"
+      ],
+      "benefit": "A factual request may clarify criteria or lead to a fairer process.",
+      "cost": "A direct conversation can carry risk when the teacher controls grades, and private student work should not be shared without permission.",
+      "depends": "Criteria, evidence, missing context, and available support routes need checking.",
+      "adjustment": "Use specific observations and a supported review route; do not require affected students to confront the teacher alone.",
+      "change": "What if an earlier request was dismissed or you feared retaliation?",
+      "review": "Consider another trusted support route. Review whether consistent criteria and a fair process were provided, not just whether the meeting felt friendly."
+    },
+    {
+      "id": "cs18d",
+      "title": "Changing social-media use",
+      "action": "You consider removing social-media apps for a month in a fictional case.",
+      "affectedPeople": [
+        "you",
+        "online friends",
+        "people relying on those channels"
+      ],
+      "benefit": "A change may reduce interruptions or create time for something else.",
+      "cost": "It could also interrupt meaningful relationships, community access, or practical communication.",
+      "depends": "How you use each service and which functions you rely on matter.",
+      "adjustment": "Try a selective or reversible change and arrange another contact route where needed.",
+      "change": "What if one app was your main accessible connection to a community?",
+      "review": "Review actual effects on time, access, and connection. A complete break is not the only useful option."
+    },
+    {
+      "id": "cs18e",
+      "title": "Supporting a sibling without taking their blame",
+      "action": "A fictional younger sibling breaks something valuable. You consider saying you did it because you fear they will be treated harshly.",
+      "affectedPeople": [
+        "you",
+        "your sibling",
+        "caregivers",
+        "a trusted support person"
+      ],
+      "benefit": "Taking blame might seem to protect the sibling in the moment.",
+      "cost": "It can obscure what happened, transfer consequences to you, and leave fear of harsh treatment unresolved.",
+      "depends": "The level of risk and who can help safely are not clear.",
+      "adjustment": "Seek trusted support if harm is feared. You can support the sibling without being required to accept blame for their action.",
+      "change": "What if either sibling feared being hurt rather than receiving a routine consequence?",
+      "review": "Prioritize safety and appropriate help; do not turn honesty or accountability into a demand for unsafe disclosure."
+    }
+  ]
+};
 
   // ══════════════════════════════════════════════════════════════
   // ── Cognitive Biases ──
@@ -518,7 +980,7 @@ window.SelHub = window.SelHub || {
       };
 
       // Navigation
-      var activeTab     = d.activeTab || 'decision';
+      var activeTab     = d.activeTab || 'consequence';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Decision Tree state
@@ -748,7 +1210,7 @@ window.SelHub = window.SelHub || {
         var TAB_META = {
           decision:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83C\uDF33', title: 'Decision Tree \u2014 branch the choice + the consequences', hint: 'List options \u2192 list outcomes per option \u2192 weight by likelihood + magnitude. Decision-theory framework (Howard 1968) used by everyone from doctors to portfolio managers. Slows snap judgments without paralyzing them.' },
           dilemma:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\u2696',         title: 'Ethical Dilemmas \u2014 trolley problems + Heinz', hint: 'Kohlberg 1958: 6 stages of moral reasoning, from \u201Cwill I get caught\u201D up through universal principles. Most adults reason at stages 3-4 day-to-day. Practicing dilemmas raises the ceiling without forcing one answer.' },
-          consequence: { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '\uD83D\uDD17', title: 'Consequence Map \u2014 ripples in 4 directions',     hint: 'Self, others, near, far. Most regret is from underweighting one of the four. \u201CIt\u2019s just me\u201D usually misses ripple effects on family / friends. \u201CIt won\u2019t matter\u201D usually misses 6-months-from-now you.' },
+          consequence: { accent: _decFg('#fbbf24'), soft: 'rgba(234,88,12,0.14)', icon: '\uD83D\uDD17', title: 'Consequence Map - possibilities, not predictions', hint: 'Consider different outcomes, whose needs are affected, and what the plan depends on. New information can justify a change. An outcome alone does not tell you whether the original reasoning was sound.' },
           bias:        { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83E\uDDE0', title: 'Bias Check \u2014 spot your shortcuts',               hint: 'Confirmation bias, sunk cost, availability, anchoring, dunning-kruger. Kahneman + Tversky\u2019s decades of research (1974\u20132011): we\u2019re predictably irrational. Knowing the trap is half the work \u2014 the other half is asking a friend.' },
           values:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDCCF', title: 'Values Sort \u2014 what actually matters to YOU',     hint: 'Schwartz 1992: 10 universal values in 4 clusters. Decisions feel \u201Cright\u201D when they line up with your top values; \u201Coff\u201D when they don\u2019t \u2014 even if they look good on paper. Sort yours, then test against past choices.' },
           realworld:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF0D', title: 'Real-World \u2014 college, money, relationships',     hint: 'Higher-stakes practice scenarios. Pre-rehearse decisions you\u2019ll actually face: which college, asking someone out, whether to share something on social. \u201CFuture self interview\u201D \u2014 ask the version of you in 5 years what they wish you\u2019d done.' },
@@ -1223,101 +1685,84 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var csContent = null;
       if (activeTab === 'consequence') {
-        var csScenarios = CONSEQUENCE_SCENARIOS[band] || CONSEQUENCE_SCENARIOS.elementary;
-        var curCs = csScenarios[csIdx % csScenarios.length];
-
-        csContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDD17 Consequence Map'),
-          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
-            'Trace the ripple effects of a choice across time and people.'
+        var mapBand = CONSEQUENCE_SCENARIOS[band] ? band : 'elementary';
+        var csScenarios = CONSEQUENCE_SCENARIOS[mapBand];
+        var mapSelected = d.mapSelected && typeof d.mapSelected === 'object' ? d.mapSelected : {};
+        var legacyIndex = Number.isInteger(csIdx) && csIdx >= 0 ? csIdx % csScenarios.length : 0;
+        var curCs = csScenarios.find(function(item) { return item.id === mapSelected[mapBand]; }) || csScenarios[legacyIndex];
+        var mapDrafts = d.mapDrafts && typeof d.mapDrafts === 'object' ? d.mapDrafts : {};
+        var mapDraft = mapDrafts[curCs.id] && typeof mapDrafts[curCs.id] === 'object' ? mapDrafts[curCs.id] : {};
+        var mapText = function(key) { return typeof mapDraft[key] === 'string' ? mapDraft[key] : ''; };
+        var mapSet = function(values) { var next = Object.assign({}, mapDrafts); next[curCs.id] = Object.assign({}, mapDraft, values); upd('mapDrafts', next); };
+        var mapParts = [
+          { key: 'near', label: 'A possible near-term effect', help: 'What might happen soon, for whom, and why? Use could or might when the outcome is uncertain.' },
+          { key: 'later', label: 'A different possible path', help: 'Describe another plausible outcome. What condition would make it more or less likely?' },
+          { key: 'long', label: 'If this became a pattern', help: 'What might accumulate or change over time? Avoid treating a distant outcome as certain.' },
+          { key: 'people', label: 'Whose needs or effort are affected?', help: 'Consider who benefits, who carries costs, and whose perspective is missing. Do not assume their feelings.' },
+          { key: 'uncertainty', label: 'What would you need to check?', help: 'Separate what the case states from assumptions. Name information, permission, or support that could matter.' },
+          { key: 'adjustment', label: 'An adjustment within your control', help: 'Consider a smaller trial, a different route, or trusted support. Some effects cannot be undone; safety should not wait for this exercise.' },
+          { key: 'review', label: 'When would you revisit the plan?', help: 'Name a change in circumstances or something observable to check. A good or bad outcome alone does not prove a good or bad decision.' }
+        ];
+        var mapSnapshot = mapDraft.snapshot && typeof mapDraft.snapshot === 'object' && !Array.isArray(mapDraft.snapshot) ? mapDraft.snapshot : null;
+        var hasMapWriting = mapParts.some(function(part) { return mapText(part.key).trim(); });
+        var mapLegacy = { near: csShort, later: csMid, long: csLong };
+        var hasMapLegacy = Object.keys(mapLegacy).some(function(key) { return typeof mapLegacy[key] === 'string' && mapLegacy[key].trim(); });
+        var mapBorder = _decBd('#334155');
+        var mapCard = { padding: 16, marginTop: 16, border: '1px solid ' + mapBorder, borderRadius: 12, background: _decBg('#0f172a') };
+        var mapButton = { width: '100%', minHeight: 44, padding: '10px 12px', border: '1px solid ' + mapBorder, borderRadius: 8, background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 14, textAlign: 'left', cursor: 'pointer', overflowWrap: 'anywhere' };
+        var mapSummary = { minHeight: 44, padding: '10px 0', fontWeight: 700, cursor: 'pointer' };
+        var mapField = function(part) {
+          var id = 'dec-map-' + part.key;
+          return h('div', { key: part.key, style: { marginTop: 14 } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, part.label + ' (optional)'),
+            h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, part.help),
+            h('textarea', { id: id, rows: 3, value: mapText(part.key), 'aria-describedby': id + '-help', onChange: function(event) { var values = {}; values[part.key] = event.target.value; mapSet(values); },
+              style: { width: '100%', maxWidth: '100%', minHeight: 90, boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid ' + mapBorder, background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 16, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical' }
+            })
+          );
+        };
+        csContent = h('section', { 'aria-label': 'Consequence reasoning map', style: { maxWidth: 740, margin: '0 auto', padding: '12px 16px 24px', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere' } },
+          h('h3', { style: { fontSize: 21, margin: '8px 0' } }, 'Consequence Map'),
+          h('p', null, 'Explore possible effects, not a fixed future. Use a fictional case and respond by thinking, discussing, drawing, signing, AAC, or optional notes. No score or completed-map claim is attached to navigation.'),
+          h('p', null, 'Notes and an optional earlier version stay in the current tool state. Use the Hub save/export controls to keep a project copy. This activity sends nothing and does not verify a real-world outcome.'),
+          h('label', { htmlFor: 'dec-map-case', style: { display: 'block', fontWeight: 700 } }, 'Choose a consequence scenario'),
+          h('select', { id: 'dec-map-case', value: curCs.id, style: Object.assign({}, mapButton, { fontSize: 16 }), onChange: function(event) { var next = Object.assign({}, mapSelected); next[mapBand] = event.target.value; upd('mapSelected', next); announceToSR && announceToSR('Consequence scenario changed. Other drafts and earlier versions are kept.'); } }, csScenarios.map(function(item, index) { return h('option', { key: item.id, value: item.id }, (index + 1) + '. ' + item.title); })),
+          hasMapLegacy && h('details', { style: mapCard }, h('summary', { style: mapSummary }, 'An earlier unassigned map is available'),
+            h('p', null, 'Older notes did not store a reliable case and grade-band link. Review them before copying into a revised case. Existing writing and this earlier copy are kept.'),
+            ['near', 'later', 'long'].map(function(key, index) { return typeof mapLegacy[key] === 'string' && mapLegacy[key].trim() ? h('p', { key: key, style: { whiteSpace: 'pre-wrap' } }, h('strong', null, ['Earlier short-term note: ', 'Earlier medium-term note: ', 'Earlier long-term note: '][index]), mapLegacy[key]) : null; }),
+            h('button', { type: 'button', style: mapButton, onClick: function() { var copied = {}; Object.keys(mapLegacy).forEach(function(key) { if (!mapText(key).trim() && typeof mapLegacy[key] === 'string') copied[key] = mapLegacy[key]; }); mapSet(copied); announceToSR && announceToSR('Earlier notes copied into empty fields. Existing writing and the earlier copy were kept.'); } }, 'Copy earlier notes into empty fields')
           ),
-          h('div', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
-            'Scenario ' + ((csIdx % csScenarios.length) + 1) + ' of ' + csScenarios.length +
-            (csCompleted > 0 ? ' \u00B7 ' + csCompleted + ' mapped' : '')
-          ),
-          // Action card
-          h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('h4', { style: { color: _decFg(ACCENT), fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curCs.title),
-            h('p', { style: { fontSize: 14, color: _decFg('#e2e8f0'), lineHeight: 1.7, marginBottom: 10 } }, curCs.action),
-            h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-              curCs.affectedPeople.map(function(p) {
-                return h('span', {
-                  key: p,
-                  style: { fontSize: 10, color: _decFg('#94a3b8'), background: _decBg('#1e293b'), padding: '3px 8px', borderRadius: 6 }
-                }, '\uD83D\uDC64 ' + p);
-              })
+          h('section', { style: mapCard, 'aria-labelledby': 'dec-map-case-title' },
+            h('h4', { id: 'dec-map-case-title', style: { marginTop: 0, fontSize: 18 } }, curCs.title), h('p', null, curCs.action),
+            h('p', null, h('strong', null, 'People to consider: '), curCs.affectedPeople.join(', ')),
+            h('details', { key: 'model-' + curCs.id }, h('summary', { style: mapSummary }, 'Compare possible effects and their limits'),
+              h('p', null, h('strong', null, 'A possible benefit or intended effect: '), curCs.benefit),
+              h('p', null, h('strong', null, 'A possible cost or limitation: '), curCs.cost),
+              h('p', null, h('strong', null, 'What this depends on: '), curCs.depends),
+              h('p', null, 'These examples are not equally likely predictions or a balance that makes harm acceptable. Consider safety, rights, and consent alongside possible benefits.')
             )
           ),
-          // Time-based consequence inputs
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 } },
-            // Short-term
-            h('div', null,
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: _decFg('#fbbf24'), marginBottom: 4 } },
-                '\u26A1', curCs.categories[0]
-              ),
-              h('textarea', {
-                value: csShort,
-                onChange: function(e) { upd('csShort', e.target.value); },
-                'aria-label': 'Short-term consequences',
-                placeholder: 'What happens ' + curCs.categories[0] + '? Who is affected and how?',
-                rows: 2,
-                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #fbbf2444', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
-              })
-            ),
-            // Medium-term
-            h('div', null,
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: _decFg('#fb923c'), marginBottom: 4 } },
-                '\uD83D\uDD52', curCs.categories[1]
-              ),
-              h('textarea', {
-                value: csMid,
-                onChange: function(e) { upd('csMid', e.target.value); },
-                'aria-label': 'Medium-term consequences',
-                placeholder: 'What happens ' + curCs.categories[1] + '? How do things change?',
-                rows: 2,
-                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #fb923c44', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
-              })
-            ),
-            // Long-term
-            h('div', null,
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: _decFg('#f87171'), marginBottom: 4 } },
-                '\uD83C\uDF0D', curCs.categories[2]
-              ),
-              h('textarea', {
-                value: csLong,
-                onChange: function(e) { upd('csLong', e.target.value); },
-                'aria-label': 'Long-term consequences',
-                placeholder: 'What happens ' + curCs.categories[2] + '? What lasting effects might there be?',
-                rows: 2,
-                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #f8717144', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
-              })
-            )
+          h('details', { key: 'effects-' + curCs.id, open: true, style: mapCard }, h('summary', { style: mapSummary }, '1. Explore more than one possible path'), mapParts.slice(0,3).map(mapField)),
+          h('details', { key: 'needs-' + curCs.id, style: mapCard }, h('summary', { style: mapSummary }, '2. Consider people and missing information'), mapParts.slice(3,5).map(mapField)),
+          h('details', { key: 'plan-' + curCs.id, style: mapCard }, h('summary', { style: mapSummary }, '3. Adjust the plan and choose a review point'),
+            mapParts.slice(5).map(mapField),
+            h('details', null, h('summary', { style: mapSummary }, 'Compare an adjustment and review example'), h('p', null, curCs.adjustment), h('p', null, curCs.review))
           ),
-          // Actions
-          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', { 'aria-label': 'Next Scenario',
-              onClick: function() {
-                if (!csShort.trim() && !csMid.trim() && !csLong.trim()) { addToast('Fill in at least one time period!', 'info'); return; }
-                var newDone = csCompleted + 1;
-                upd({ csSaved: true, csCompleted: newDone });
-                logPractice('consequence', curCs.id);
-                awardXP(15);
-                tryAwardBadge('first_consequence');
-                if (newDone >= 3) tryAwardBadge('consequence_3');
-                if (soundEnabled) sfxCorrect();
-                addToast('Consequence map saved!', 'success');
-                ctx.announceToSR && ctx.announceToSR('Consequence map saved');
-              },
-              disabled: csSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: csSaved ? _decFg('#22c55e') : ACCENT, color: csSaved ? _decFg('#fff') : '#0f172a', fontWeight: 600, fontSize: 13, cursor: csSaved ? 'default' : 'pointer' }
-            }, csSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Map'),
-            csSaved && h('button', { 'aria-label': 'Next Scenario',
-              onClick: function() {
-                upd({ csIdx: csIdx + 1, csShort: '', csMid: '', csLong: '', csSaved: false });
-                if (soundEnabled) sfxClick();
-              },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _decBg('#334155'), color: _decFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
-            }, 'Next Scenario \u2192')
+          h('section', { style: mapCard, 'aria-label': 'Earlier reasoning version' },
+            h('p', null, 'Optionally keep one version before revising. This copies your current notes for comparison; it does not record completion or save a project file.'),
+            !hasMapWriting && !mapSnapshot && h('p', { id: 'dec-map-version-help' }, 'Available after adding any note. You can explore without writing or keeping a version.'),
+            h('button', { type: 'button', style: mapButton, disabled: !hasMapWriting && !mapSnapshot, 'aria-describedby': !hasMapWriting && !mapSnapshot ? 'dec-map-version-help' : undefined, onClick: function() {
+              if (!mapSnapshot && hasMapWriting) { var copy = {}; mapParts.forEach(function(part) { copy[part.key] = mapText(part.key); }); mapSet({ snapshot: copy }); announceToSR && announceToSR('Earlier version kept in this tool. You can edit the current notes without changing it.'); }
+            } }, mapSnapshot ? 'Earlier version kept' : 'Keep this version for comparison'),
+            mapSnapshot && h('details', null, h('summary', { style: mapSummary }, 'Read the earlier version'), mapParts.map(function(part) {
+              return h('p', { key: part.key, style: { whiteSpace: 'pre-wrap' } }, h('strong', null, part.label + ': '), typeof mapSnapshot[part.key] === 'string' && mapSnapshot[part.key].trim() ? mapSnapshot[part.key] : 'Not recorded');
+            }))
+          ),
+          h('section', { style: mapCard, 'aria-labelledby': 'dec-map-change-title' },
+            h('h4', { id: 'dec-map-change-title', style: { fontSize: 17, marginTop: 0 } }, '4. Reconsider when a condition changes'),
+            h('p', null, 'You can explore this without writing or keeping a version. The change below is hypothetical, not an outcome that has happened.'),
+            h('button', { type: 'button', style: mapButton, 'aria-expanded': mapDraft.changeSeen === true, 'aria-controls': 'dec-map-change', onClick: function() { if (mapDraft.changeSeen !== true) { mapSet({ changeSeen: true }); announceToSR && announceToSR('A hypothetical change is available. Consider what it changes in your reasoning.'); } } }, mapDraft.changeSeen === true ? 'Changed condition shown' : 'Explore a changed condition'),
+            h('div', { id: 'dec-map-change', hidden: mapDraft.changeSeen !== true }, h('p', null, curCs.change), mapField({ key: 'revised', label: 'What would you keep or change, and why?', help: 'Refer to the changed condition, a boundary, or new support. Keeping a plan can be reasonable; explain what still makes it fit.' }))
           )
         );
       }
