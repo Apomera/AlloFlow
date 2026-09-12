@@ -1,0 +1,22 @@
+
+Running 9 tests using 1 worker
+
+(node:24716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:24716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-attachments.spec.ts:78:7 › sinosauropteryx neck and surface details remain connected (15.4s)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-attachments.spec.ts:78:7 › brachiosaurus neck and surface details remain connected (1.2m)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-attachments.spec.ts:78:7 › stegosaurus neck and surface details remain connected (27.2s)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-attachments.spec.ts:78:7 › microraptor neck and surface details remain connected (10.5s)
+  ok 5 [chromium] › tests\e2e\dinolab-3d-attachments.spec.ts:78:7 › psittacosaurus neck and surface details remain connected (18.8s)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-attachments.spec.ts:78:7 › tyrannosaurus neck and surface details remain connected (16.7s)
+  ok 7 [chromium] › tests\e2e\dinolab-3d-attachments.spec.ts:125:5 › surface details follow live breathing and tail motion without moving their roots (12.0s)
+(node:29080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 8 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:19:5 › catalog, notebook export, keyboard return, responsive layout, and contrast (11.1s)
+  ok 9 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:73:5 › species-file entry resets stale 3D evidence and connects the live station to the notebook (33.0s)
+
+  9 passed (3.7m)

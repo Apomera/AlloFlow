@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-12",
+  "scope": "Dino Lab neck joins and connected surface details",
+  "focusedTestsPassed": 135,
+  "focusedTestFiles": 6,
+  "newGeometryTests": 8,
+  "browserTestsPassed": 9,
+  "speciesTestsPassed": 6,
+  "liveMotionTestsPassed": 1,
+  "workflowTestsPassed": 2,
+  "testedSpecies": [
+    "sinosauropteryx",
+    "brachiosaurus",
+    "stegosaurus",
+    "microraptor",
+    "psittacosaurus",
+    "tyrannosaurus"
+  ],
+  "neckRimVerticesCheckedPerSpecies": 24,
+  "moduleCopies": 3,
+  "moduleSha256": "CF2850049B032C3108EDC9666A964A3FE8E197E319A9EBA78BB4DC88FEFF9816",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "rendering": "Three.js r128 in Chromium with software WebGL",
+  "deployment": "No deployment or push performed by this task"
+}

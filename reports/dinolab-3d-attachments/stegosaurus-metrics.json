@@ -1,0 +1,24 @@
+{
+  "attachmentCounts": {
+    "torso": 42
+  },
+  "rootError": 0,
+  "scaleGap": 0.30000000000005167,
+  "neckOutside": 0,
+  "neckRim": 24,
+  "mapped": 99,
+  "coordinates": 143784,
+  "eyes": [
+    0.21,
+    0.21
+  ],
+  "eyeClearances": [
+    0.3200000000000096,
+    0.3200000000000142
+  ],
+  "invalid": 0,
+  "outside": 0,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

@@ -6235,6 +6235,25 @@ window.StemLab = window.StemLab || {
     geometry.computeBoundingBox(); geometry.computeBoundingSphere();
     return geometry;
   }
+  // Find a surface point in world space, with its smooth outward normal.
+  function dinoSurfaceAnchor(THREE, mesh, origin, direction, distance) {
+    if (!mesh || direction.lengthSq() < 0.000001 || !(distance > 0)) return null;
+    mesh.updateWorldMatrix(true, false);
+    var hit = new THREE.Raycaster(origin, direction.clone().normalize(), 0, distance).intersectObject(mesh, false)[0];
+    if (!hit || !hit.face) return null;
+    var positions = mesh.geometry.attributes.position, normals = mesh.geometry.attributes.normal;
+    var localPoint = mesh.worldToLocal(hit.point.clone());
+    var barycentric = THREE.Triangle.getBarycoord(localPoint,
+      new THREE.Vector3().fromBufferAttribute(positions, hit.face.a),
+      new THREE.Vector3().fromBufferAttribute(positions, hit.face.b),
+      new THREE.Vector3().fromBufferAttribute(positions, hit.face.c), new THREE.Vector3());
+    var normal = new THREE.Vector3().fromBufferAttribute(normals, hit.face.a).multiplyScalar(barycentric.x)
+      .addScaledVector(new THREE.Vector3().fromBufferAttribute(normals, hit.face.b), barycentric.y)
+      .addScaledVector(new THREE.Vector3().fromBufferAttribute(normals, hit.face.c), barycentric.z)
+      .applyMatrix3(new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld)).normalize();
+    return { point: hit.point, normal: normal };
+  }
+
   function dinoFrameDistance(halfWidth, halfHeight, halfDepth, verticalFov, aspect) {
     var tangent = Math.tan(verticalFov * Math.PI / 360);
     return Math.max(halfHeight / tangent, halfWidth / (tangent * Math.max(0.1, aspect))) * 1.24 + halfDepth;
@@ -7621,7 +7640,12 @@ window.StemLab = window.StemLab || {
             var keratinMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x4b3525, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.94, 0.58 + inferenceOpacity * 0.48), roughness: 0.90, metalness: 0, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: 0x4b3525, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.94, 0.58 + inferenceOpacity * 0.48), shininess: 5, depthWrite: lifeSurface });
             var filamentMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.90, 0.44 + inferenceOpacity * 0.58), roughness: 0.96, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.90, 0.44 + inferenceOpacity * 0.58), shininess: 2, side: THREE.DoubleSide, depthWrite: lifeSurface });
             var featherVaneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(integument.pattern === 'iridescent' ? bodyColor : fieldPalette.accent), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), roughness: 0.92, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(integument.pattern === 'iridescent' ? bodyColor : fieldPalette.accent), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), shininess: 3, side: THREE.DoubleSide, depthWrite: lifeSurface });
-            var scaleReliefMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.72, 0.18 + inferenceOpacity * 0.62), roughness: 0.98, metalness: 0, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.72, 0.18 + inferenceOpacity * 0.62), shininess: 1, depthWrite: lifeSurface });
+            var scaleReliefMat = bodyMat.clone();
+            scaleReliefMat.roughness = 0.98;
+            scaleReliefMat.bumpScale *= 0.5;
+            dinoSkinMapping(THREE, scaleReliefMat, Math.max(len * 0.20, ht * 0.60), integument.pattern === 'iridescent' ? 0.07 : 0.22, integument);
+            // Palette swatches are sRGB, like the skin canvas; lighting operates in linear color.
+            filamentMat.color.convertSRGBToLinear();
             activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat, muscle: muscleMat, lung: lungMat, airSac: airSacMat, keratin: keratinMat, filament: filamentMat, feather: featherVaneMat, scaleRelief: scaleReliefMat };
             activeMaterialSet.callout = anatomyCalloutMat;
             [muscleMat, lungMat, airSacMat, anatomyCalloutMat].forEach(function (material) { material.visible = !lifeSurface; });
@@ -7959,8 +7983,11 @@ window.StemLab = window.StemLab || {
               var dir = new THREE.Vector3().subVectors(tip, base);
               var dist = dir.length();
               if (!dist) return null;
-              var mesh = new THREE.Mesh(new THREE.ConeGeometry(radius, dist, 7), filamentMat);
-              mesh.position.copy(base).add(tip).multiplyScalar(0.5);
+              var filamentGeometry = new THREE.ConeGeometry(radius, dist, 7);
+              filamentGeometry.translate(0, dist * 0.5, 0);
+              var mesh = new THREE.Mesh(filamentGeometry, filamentMat);
+              mesh.position.copy(base);
+              mesh.userData.dinoFeature = 'filament';
               mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
               mesh.castShadow = true;
               mesh.renderOrder = 11;
@@ -8164,6 +8191,7 @@ window.StemLab = window.StemLab || {
               [surfaceBodyHeight * 0.12, surfaceBodyDepth * 0.16]
             ];
             var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat)[0] || null;
+            if (bodyShell) bodyShell.userData.dinoRegion = 'torso';
             if (bodyShell) bodyShell.name = 'continuous-torso';
             if (bodyShell) {
               idleMotion.body = bodyShell;
@@ -8265,6 +8293,7 @@ window.StemLab = window.StemLab || {
               [surfaceHeadHeight * 0.45 * cranialSurface.muzzleTipScale, surfaceHeadDepth * 0.62 * cranialSurface.muzzleTipScale],
               [surfaceHeadHeight * 0.025, surfaceHeadDepth * 0.04]
             ], headMat)[0];
+            if (headShell) headShell.userData.dinoRegion = 'head';
             // Seat surface details on the rendered head, including narrow and deep species profiles.
             function faceSurfacePoint(point, side, inset) {
               if (!headShell) return point;
@@ -8281,12 +8310,17 @@ window.StemLab = window.StemLab || {
             if (props.showBody) {
               var neckBaseRadius = Math.max(0.035 * detailScale, surfaceBodyHeight * 0.42) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckBase * postcranialSurface.neckFullness;
               var neckTipRadius = Math.max(0.028 * detailScale, ht * (isTheropod ? 0.085 : 0.038)) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckTip * Math.max(0.82, postcranialSurface.neckFullness);
-              if (isSauropod) neckTipRadius = Math.min(neckTipRadius, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.72);
+              neckTipRadius = Math.min(neckTipRadius, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.66);
               var tailBaseRadius = Math.max(0.045 * detailScale, ht * (isTheropod ? 0.105 : 0.075)) * surfaceHypothesis.tailSoftTissueScale * reconstructionProfile.tailBase * postcranialSurface.tailBaseFullness;
               // Neck and tail overlap the continuous trunk within its tapered ends.
               var neckMidA = new THREE.Vector3().copy(shoulder).lerp(head, 0.34).add(vec(0, surfaceBodyHeight * postcranialSurface.neckBaseCurve, 0));
               var neckMidB = new THREE.Vector3().copy(shoulder).lerp(head, 0.70).add(vec(0, surfaceBodyHeight * postcranialSurface.neckMidCurve, 0));
               var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head], [neckBaseRadius, neckBaseRadius * 0.82, neckTipRadius * 1.22, neckTipRadius], bodyMat);
+              if (neckMeshes[0]) {
+                neckMeshes[0].userData.dinoRegion = 'neck';
+                neckMeshes[0].userData.dinoNeckTip = head.toArray();
+              }
+              var neckSurfaceCurve = new THREE.CatmullRomCurve3([shoulder, neckMidA, neckMidB, head], false, 'centripetal');
               var neckContours = addContourGroup(neckMeshes);
               if (neckMeshes.length) {
                 idleMotion.neck = neckMeshes[0];
@@ -8299,6 +8333,8 @@ window.StemLab = window.StemLab || {
               var tailTipRadius = Math.max(0.006 * detailScale, ht * 0.005) * surfaceHypothesis.tailSoftTissueScale * reconstructionProfile.tailTip;
               var tailRadii = [tailBaseRadius, tailBaseRadius * 0.72, tailBaseRadius * 0.38, tailTipRadius];
               var tailMeshes = addSoftTissueChain([hip, tailMidA, tailMidB, tail], tailRadii.map(function (r) { return [r * postcranialSurface.tailHeightScale, r * postcranialSurface.tailDepthScale]; }), bodyMat);
+              if (tailMeshes[0]) tailMeshes[0].userData.dinoRegion = 'tail';
+              var tailSurfaceCurve = new THREE.CatmullRomCurve3([hip, tailMidA, tailMidB, tail], false, 'centripetal');
               var tailContours = addContourGroup(tailMeshes);
               var tailRootBlend = addEllipsoid(new THREE.Vector3().copy(hip).lerp(tailMidA, 0.24), vec(tailBaseRadius * 1.38, tailBaseRadius * 1.16 * postcranialSurface.tailHeightScale, tailBaseRadius * 1.16 * postcranialSurface.tailDepthScale), bodyMat);
               addBodyContour(tailRootBlend);
@@ -8373,24 +8409,21 @@ window.StemLab = window.StemLab || {
               var integumentSeed = String(dn.id || '').split('').reduce(function (seed, char) { return ((seed * 43) + char.charCodeAt(0)) >>> 0; }, 211);
               var integumentRng = mulberry32(integumentSeed);
               if (surfaceHypothesis.featureScales) {
-                // Overlapping flank rows and a low dorsal ridge break up the single-shell look at field-station opacity.
                 [-1, 1].forEach(function (scaleSide) {
                   for (var featureScaleIndex = 0; featureScaleIndex < 15; featureScaleIndex++) {
                     var featureScaleT = (featureScaleIndex + 0.7) / 15.8;
-                    var featureScalePos = new THREE.Vector3().copy(shoulder).lerp(hip, featureScaleT);
-                    featureScalePos.y = bodyCenter.y + surfaceBodyHeight * (-0.22 + (featureScaleIndex % 4) * 0.16);
-                    featureScalePos.z = scaleSide * surfaceBodyDepth * (0.82 + (featureScaleIndex % 2) * 0.075);
+                    var featureScalePos = shoulder.clone().lerp(hip, featureScaleT);
+                    featureScalePos.y += surfaceBodyHeight * (-0.22 + (featureScaleIndex % 4) * 0.16);
                     var featureScaleSize = Math.max(0.018 * detailScale, ht * (0.0055 + integumentRng() * 0.0045));
-                    addEllipsoid(featureScalePos, vec(featureScaleSize * 1.22, featureScaleSize, featureScaleSize * 0.24), scaleReliefMat);
+                    addSeatedScale(bodyShell, surfaceAnchor(bodyShell, featureScalePos, vec(0, 0, scaleSide)), featureScaleSize, false);
                   }
                 });
                 for (var dorsalScaleIndex = 0; dorsalScaleIndex < 12; dorsalScaleIndex++) {
                   var dorsalScaleT = (dorsalScaleIndex + 0.5) / 12.4;
-                  var dorsalScalePos = new THREE.Vector3().copy(shoulder).lerp(hip, dorsalScaleT);
-                  dorsalScalePos.y = bodyCenter.y + surfaceBodyHeight * (0.66 + (dorsalScaleIndex % 2) * 0.08);
+                  var dorsalScalePos = shoulder.clone().lerp(hip, dorsalScaleT);
                   dorsalScalePos.z = (dorsalScaleIndex % 2 ? -1 : 1) * surfaceBodyDepth * 0.18;
                   var dorsalScaleSize = Math.max(0.016 * detailScale, ht * (0.0045 + integumentRng() * 0.003));
-                  addEllipsoid(dorsalScalePos, vec(dorsalScaleSize * 1.45, dorsalScaleSize * 0.82, dorsalScaleSize * 0.36), scaleReliefMat);
+                  addSeatedScale(bodyShell, surfaceAnchor(bodyShell, dorsalScalePos, vec(0, 1, 0)), dorsalScaleSize, true);
                 }
               }
               if (surfaceHypothesis.filamentCoverage > 0) {
@@ -8398,38 +8431,35 @@ window.StemLab = window.StemLab || {
                 for (var coatIndex = 0; coatIndex < filamentCount; coatIndex++) {
                   var coatT = (coatIndex + integumentRng() * 0.72) / filamentCount;
                   var coatAngle = -1.24 + integumentRng() * 2.48;
-                  var coatBase = new THREE.Vector3().copy(shoulder).lerp(hip, coatT);
-                  coatBase.y = bodyCenter.y + Math.cos(coatAngle) * surfaceBodyHeight * 0.78;
-                  coatBase.z = Math.sin(coatAngle) * surfaceBodyDepth * 0.87;
-                  var coatNormal = vec(0, Math.cos(coatAngle), Math.sin(coatAngle)).normalize();
                   var coatLength = Math.max(0.035 * detailScale, ht * 0.014) * (0.72 + integumentRng() * 0.82) * (0.72 + surfaceHypothesis.filamentCoverage * 0.44);
-                  var coatTip = coatBase.clone().add(coatNormal.multiplyScalar(coatLength)).add(vec(Math.max(0.006 * detailScale, len * 0.0035), 0, 0));
-                  addIntegumentFilament(coatBase, coatTip, Math.max(0.004 * detailScale, ht * 0.0017));
+                  addSeatedFilament(bodyShell, shoulder.clone().lerp(hip, coatT), vec(0, Math.cos(coatAngle), Math.sin(coatAngle)),
+                    coatLength, Math.max(0.004 * detailScale, ht * 0.0017), Math.max(0.006 * detailScale, len * 0.0035));
                 }
                 for (var neckFilamentIndex = 0; neckFilamentIndex < 18; neckFilamentIndex++) {
                   var neckFilamentT = (neckFilamentIndex + 0.45) / 18.5;
-                  var neckBase = new THREE.Vector3().copy(shoulder).lerp(head, neckFilamentT);
+                  var neckCenter = neckSurfaceCurve.getPoint(neckFilamentT);
                   var neckSide = neckFilamentIndex % 2 ? 1 : -1;
-                  neckBase.add(vec(0, Math.max(0.025 * detailScale, surfaceBodyHeight * 0.17), neckSide * surfaceBodyDepth * 0.19));
-                  var neckTip = neckBase.clone().add(vec(Math.max(0.008 * detailScale, len * 0.003), Math.max(0.040 * detailScale, ht * 0.019) * (0.75 + integumentRng() * 0.55), neckSide * Math.max(0.012 * detailScale, surfaceBodyDepth * 0.08)));
-                  addIntegumentFilament(neckBase, neckTip, Math.max(0.004 * detailScale, ht * 0.0016));
+                  addSeatedFilament(neckMeshes[0], neckCenter, vec(0, 0.7, neckSide),
+                    Math.max(0.040 * detailScale, ht * 0.019) * (0.75 + integumentRng() * 0.55),
+                    Math.max(0.004 * detailScale, ht * 0.0016), Math.max(0.008 * detailScale, len * 0.003));
                 }
                 for (var tailFilamentIndex = 0; tailFilamentIndex < 22; tailFilamentIndex++) {
                   var tailFilamentT = 0.08 + tailFilamentIndex / 25;
-                  var tailCoatBase = new THREE.Vector3().copy(hip).lerp(tail, tailFilamentT);
+                  var tailCoatCenter = tailSurfaceCurve.getPoint(tailFilamentT);
                   var tailCoatSide = tailFilamentIndex % 2 ? 1 : -1;
-                  tailCoatBase.add(vec(0, Math.max(0.016 * detailScale, surfaceBodyHeight * (0.14 - tailFilamentT * 0.07)), tailCoatSide * surfaceBodyDepth * (0.20 - tailFilamentT * 0.10)));
-                  var tailCoatTip = tailCoatBase.clone().add(vec(Math.max(0.008 * detailScale, len * 0.003), Math.max(0.028 * detailScale, ht * 0.014) * (0.72 + integumentRng() * 0.46), tailCoatSide * Math.max(0.008 * detailScale, surfaceBodyDepth * 0.05)));
-                  addIntegumentFilament(tailCoatBase, tailCoatTip, Math.max(0.0035 * detailScale, ht * 0.0014));
+                  addSeatedFilament(tailMeshes[0], tailCoatCenter, vec(0, 1, tailCoatSide * 0.55),
+                    Math.max(0.028 * detailScale, ht * 0.014) * (0.72 + integumentRng() * 0.46),
+                    Math.max(0.0035 * detailScale, ht * 0.0014), Math.max(0.008 * detailScale, len * 0.003));
                 }
               }
               if (surfaceHypothesis.dorsalBristles) {
                 var bristleLengthScale = /^psittacosaurus$/i.test(String(dn.id || '')) ? 1.34 : 0.88;
                 for (var bristleIndex = 0; bristleIndex < 12; bristleIndex++) {
                   var bristleT = 0.16 + bristleIndex * 0.052;
-                  var bristleBase = new THREE.Vector3().copy(hip).lerp(tail, bristleT).add(vec(0, Math.max(0.025 * detailScale, surfaceBodyHeight * (0.22 - bristleT * 0.08)), 0));
-                  var bristleTip = bristleBase.clone().add(vec(Math.max(0.010 * detailScale, len * 0.004), Math.max(0.07 * detailScale, ht * 0.055) * bristleLengthScale * (0.80 + bristleIndex * 0.018), 0));
-                  addIntegumentFilament(bristleBase, bristleTip, Math.max(0.004 * detailScale, ht * 0.0018));
+                  var bristleCenter = tailSurfaceCurve.getPoint(bristleT);
+                  addSeatedFilament(tailMeshes[0], bristleCenter, vec(0, 1, 0),
+                    Math.max(0.07 * detailScale, ht * 0.055) * bristleLengthScale * (0.80 + bristleIndex * 0.018),
+                    Math.max(0.004 * detailScale, ht * 0.0018), Math.max(0.010 * detailScale, len * 0.004));
                 }
               }
               if (dn.id === 'microraptor' && surfaceHypothesis.tailFrond) {
@@ -8437,7 +8467,10 @@ window.StemLab = window.StemLab || {
                   var terminalRoot = hip.clone().lerp(tail, 0.86).add(vec(0, 0, tailSide * bodyDepth * 0.08));
                   var terminalTip = terminalRoot.clone().add(vec(len * 0.15, ht * 0.010, tailSide * bodyDepth * 0.07));
                   var terminalFeather = addFeatherVane(terminalRoot, terminalTip, len * 0.012);
-                  if (terminalFeather) terminalFeather.userData.featherTract = 'terminal-tail';
+                  if (terminalFeather) {
+                    terminalFeather.userData.featherTract = 'terminal-tail';
+                    bindSurfaceDetail(terminalFeather, tailMeshes[0], { point: terminalRoot });
+                  }
                 });
               } else if (surfaceHypothesis.tailFan) {
                 var tailFanBase = new THREE.Vector3().copy(hip).lerp(tail, 0.86);
@@ -9190,6 +9223,39 @@ window.StemLab = window.StemLab || {
                 addKeratinCone(halluxTip, halluxTip.clone().add(vec(baseLength * 0.16, -Math.max(0.012 * detailScale, ht * 0.005), sideSign * Math.max(0.006 * detailScale, bodyDepth * 0.018))), Math.max(0.006 * detailScale, ht * 0.0024));
               }
             }
+            function surfaceAnchor(surface, center, outward) {
+              var reach = Math.max(surfaceBodyHeight, surfaceBodyDepth, neckBaseRadius, tailBaseRadius) * 4;
+              var direction = outward.clone().normalize();
+              return dinoSurfaceAnchor(THREE, surface, center.clone().addScaledVector(direction, reach), direction.negate(), reach * 2);
+            }
+            function bindSurfaceDetail(detail, surface, anchor) {
+              if (!detail || !surface || !anchor) return detail;
+              surface.attach(detail);
+              detail.userData.dinoAttachment = {
+                surface: surface.userData.dinoRegion,
+                point: surface.worldToLocal(anchor.point.clone()).toArray()
+              };
+              var motion = idleMotion.feathers.find(function (entry) { return entry.mesh === detail; });
+              if (motion) motion.baseRotation.copy(detail.rotation);
+              return detail;
+            }
+            function addSeatedScale(surface, anchor, size, dorsal) {
+              if (!anchor) return;
+              var thickness = size * 0.20;
+              var scale = addEllipsoid(anchor.point.clone().addScaledVector(anchor.normal, -thickness * 0.30),
+                vec(size * (dorsal ? 1.45 : 1.22), size * (dorsal ? 0.82 : 1), thickness), scaleReliefMat);
+              scale.quaternion.setFromUnitVectors(vec(0, 0, 1), anchor.normal);
+              scale.userData.dinoFeature = 'surface-scale';
+              bindSurfaceDetail(scale, surface, anchor);
+            }
+            function addSeatedFilament(surface, center, outward, length, radius, sweep) {
+              var anchor = surfaceAnchor(surface, center, outward);
+              if (!anchor) return;
+              var root = anchor.point.clone().addScaledVector(anchor.normal, -radius * 0.20);
+              var tip = root.clone().addScaledVector(anchor.normal, length).add(vec(sweep, 0, 0));
+              return bindSurfaceDetail(addIntegumentFilament(root, tip, radius), surface, anchor);
+            }
+
             function addLeg(x, z, front) {
               var top = front ? shoulder : hip;
               var sideSign = z >= 0 ? 1 : -1;
@@ -9755,7 +9821,7 @@ window.StemLab = window.StemLab || {
                     if (idleMotion.bodyContour) idleMotion.bodyContour.scale.copy(idleMotion.body.scale);
                   }
                   if (idleMotion.neck && idleMotion.neckBaseScale) {
-                    idleMotion.neck.scale.x = idleMotion.neckBaseScale.x * (1 + breathAmount * 0.014);
+                    idleMotion.neck.scale.x = idleMotion.neckBaseScale.x;
                     idleMotion.neck.scale.z = idleMotion.neckBaseScale.z * (1 + breathAmount * 0.014);
                     if (idleMotion.neckContour) idleMotion.neckContour.scale.copy(idleMotion.neck.scale);
                   }
