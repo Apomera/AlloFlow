@@ -1,0 +1,25 @@
+
+Running 10 tests using 1 worker
+
+(node:15412) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15412) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:38:6 › anchiornis offers framed anatomical studies (2.4m)
+  ok  2 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:38:6 › sinosauropteryx offers framed anatomical studies (48.6s)
+  ok  3 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:38:6 › microraptor offers framed anatomical studies (44.8s)
+  ok  4 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:38:6 › tyrannosaurus offers framed anatomical studies (44.0s)
+  ok  5 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:38:6 › triceratops offers framed anatomical studies (45.0s)
+  ok  6 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:38:6 › brachiosaurus offers framed anatomical studies (50.2s)
+  ok  7 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:66:5 › keyboard study selection resets on species change and keeps evidence data intact (24.7s)
+  ok  8 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:76:5 › explicit scan target takes priority while layer changes preserve the study (28.1s)
+(node:35656) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35656) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:19:5 › catalog, notebook export, keyboard return, responsive layout, and contrast (11.3s)
+  ok 10 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:73:5 › species-file entry resets stale 3D evidence and connects the live station to the notebook (44.9s)
+
+  Slow test file: [chromium] › tests\e2e\dinolab-3d-studies.spec.ts (7.2m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  10 passed (9.3m)

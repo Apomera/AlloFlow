@@ -1,0 +1,47 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/dinolab_3d_accessibility.test.js
+[PureHelpers] 7 helpers registered
+
+ ❯ tests/dinolab_3d_accessibility.test.js (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js [ tests/dinolab_3d_accessibility.test.js ]
+RolldownError: Parse failure: Parse failed with 1 error:
+Expected `,` or `)` but found `Identifier`
+183:     expect(source).toContain('var bodyOpacityRef = React.useRef(requestedBodyOpacity);');
+184:     expect(source).toContain('activeCameraControl = function (nextYaw, nextPitch, nextZoom, message, nextStudy)');
+185:     expect(source).toContain('cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message, preset === 'reset' ? '...
+                                                                                                                       ^
+186:     expect(source).toContain('materials.body.opacity = opaqueSurface ? 1 : alpha;');
+187:     expect(source).toContain('material.depthWrite = opaqueSurface;');
+183:     expect(source).toContain('var bodyOpacityRef = React.useRef(requestedBodyOpacity);');
+184:     expect(source).toContain('activeCameraControl = function (nextYaw, nextPitch, nextZoom, message, nextStudy)');
+185:     expect(source).toContain('cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message, preset === 'res...
+                                 ^
+186:     expect(source).toContain('materials.body.opacity = opaqueSurface ? 1 : alpha;');
+187:     expect(source).toContain('material.depthWrite = opaqueSurface;');
+At file: /tests/dinolab_3d_accessibility.test.js:185:114
+  File: /tests/dinolab_3d_accessibility.test.js:185:114
+  183 |      expect(source).toContain('var bodyOpacityRef = React.useRef(requestedBodyOpacity);');
+  184 |      expect(source).toContain('activeCameraControl = function (nextYaw, nextPitch, nextZoom, message, nextStudy)');
+  185 |  ...(view.yaw, view.pitch, view.zoom, view.message, preset === 'reset' ? 'full' : null);');
+      |                                                                 ^
+  186 |      expect(source).toContain('materials.body.opacity = opaqueSurface ? 1 : alpha;');
+  187 |      expect(source).toContain('material.depthWrite = opaqueSurface;');
+ ❯ error node_modules/rolldown/dist/shared/logs-ZGEh6uhb.mjs:152:24
+ ❯ normalizeParseError node_modules/rolldown/dist/parse-ast-index.mjs:25:9
+ ❯ wrap node_modules/rolldown/dist/parse-ast-index.mjs:5:39
+ ❯ parseAstAsync node_modules/rolldown/dist/parse-ast-index.mjs:54:9
+ ❯ ssrTransformScript node_modules/vite/dist/node/chunks/node.js:11866:9
+ ❯ loadAndTransform node_modules/vite/dist/node/chunks/node.js:20132:64
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  14:40:29
+   Duration  1.44s (transform 31ms, setup 50ms, import 0ms, tests 0ms, environment 1.09s)

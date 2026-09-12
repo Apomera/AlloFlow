@@ -6303,6 +6303,28 @@ window.StemLab = window.StemLab || {
     return { texelSize: texel, floorY: floorY, min: bounds.min.toArray(), max: bounds.max.toArray() };
   }
 
+  function dinoStudyBounds(THREE, model, region, seed) {
+    var bounds = seed.clone();
+    model.updateMatrixWorld(true);
+    model.traverse(function (part) {
+      if (!part.isMesh || !part.userData.dinoAnatomy || part.userData.dinoContour || !part.geometry) return;
+      var owner = part, ownerRegion = '';
+      while (owner && owner !== model) {
+        if (owner.userData.dinoRegion) { ownerRegion = owner.userData.dinoRegion; break; }
+        owner = owner.parent;
+      }
+      var feature = part.userData.dinoFeature || '';
+      var featureRegion = /^(frill|crest-feather|eye|keratin-beak)$/.test(feature) ? 'head' :
+        (/^(sail|sail-support|dorsal-plate)$/.test(feature) ? 'torso' : (feature === 'tail-spike' ? 'tail' : ''));
+      var assigned = featureRegion || ownerRegion;
+      if (assigned && assigned !== region) return;
+      if (!part.geometry.boundingBox) part.geometry.computeBoundingBox();
+      var box = part.geometry.boundingBox.clone().applyMatrix4(part.matrixWorld);
+      if (assigned === region || seed.containsPoint(box.getCenter(new THREE.Vector3()))) bounds.union(box);
+    });
+    return bounds;
+  }
+
   function dinoFrameDistance(halfWidth, halfHeight, halfDepth, verticalFov, aspect) {
     var tangent = Math.tan(verticalFov * Math.PI / 360);
     return Math.max(halfHeight / tangent, halfWidth / (tangent * Math.max(0.1, aspect))) * 1.24 + halfDepth;
@@ -7206,6 +7228,8 @@ window.StemLab = window.StemLab || {
         var habitat = habitatProfileFor(props.species);
         var posture = postureProfileFor(props.species);
         var integumentEvidence = integumentEvidenceFor(props.species);
+        var studyViewState = React.useState({ speciesId: props.species.id, region: 'full' }), studyView = studyViewState[0], setStudyView = studyViewState[1];
+        var activeStudy = studyView.speciesId === props.species.id ? studyView.region : 'full';
         var cameraPresetState = React.useState(null), cameraPreset = cameraPresetState[0], setCameraPreset = cameraPresetState[1];
         var hypothesisSet = reconstructionHypothesesFor(props.species, skeletalProfile, props.reconstructionMode);
         var surfaceHypothesis = hypothesisSet.active;
@@ -9515,6 +9539,21 @@ window.StemLab = window.StemLab || {
             if (specimenBounds.isEmpty()) specimenBounds.set(vec(-len * 0.55, 0, -ht * 0.3), vec(len * 0.55, ht, ht * 0.3));
             model.userData.specimenBounds = { min: specimenBounds.min.toArray(), max: specimenBounds.max.toArray() };
 
+            var studyBounds = {
+              head: dinoStudyBounds(THREE, model, 'head', new THREE.Box3().setFromPoints([
+                head.clone().add(vec(surfaceHeadLength, surfaceHeadHeight * 1.35, surfaceHeadDepth * 1.35)),
+                surfaceSnout.clone().add(vec(-surfaceHeadLength * 0.35, -surfaceHeadHeight, -surfaceHeadDepth * 1.35))
+              ])),
+              body: dinoStudyBounds(THREE, model, 'torso', new THREE.Box3(
+                bodyCenter.clone().sub(vec(bodyLen, surfaceBodyHeight, surfaceBodyDepth)),
+                bodyCenter.clone().add(vec(bodyLen, surfaceBodyHeight, surfaceBodyDepth)))),
+              tail: dinoStudyBounds(THREE, model, 'tail', new THREE.Box3().setFromPoints([hip, tail]).expandByScalar(Math.max(ht * 0.07, len * 0.012)))
+            };
+            model.userData.studyBounds = {};
+            Object.keys(studyBounds).forEach(function (region) {
+              model.userData.studyBounds[region] = { min: studyBounds[region].min.toArray(), max: studyBounds[region].max.toArray() };
+            });
+
             var contactShadowRig = null;
             if (studio && (props.showBody || props.showSkeleton)) {
               var contactShadowCanvas = document.createElement('canvas');
@@ -9767,39 +9806,51 @@ window.StemLab = window.StemLab || {
             var modelHalf = specimenBounds.getSize(new THREE.Vector3()).multiplyScalar(0.5);
             var scanKey = props.showEvidence && props.scanActive ? scanTargetId : '';
             var focusChanged = yawRef.current.scanKey !== scanKey;
-            if (focusChanged) { yawRef.current.scanKey = scanKey; yawRef.current.framing = scanKey ? 'evidence' : 'full'; }
-            var cameraTargetIsEvidence = !!(scanKey && yawRef.current.framing === 'evidence' && evidenceAnchorPoints[scanTargetId]);
-            var cameraTarget = cameraTargetIsEvidence ? evidenceAnchorPoints[scanTargetId].clone() : modelCenter.clone();
+            if (focusChanged) {
+              yawRef.current.scanKey = scanKey;
+              yawRef.current.framing = scanKey ? 'evidence' : 'full';
+              if (scanKey && yawRef.current.studyScanTarget && yawRef.current.studyScanTarget !== scanTargetId) yawRef.current.study = 'full';
+            }
+            yawRef.current.studyScanTarget = scanTargetId;
+            var cameraStudy = studyBounds[yawRef.current.study] ? yawRef.current.study : 'full';
+            var cameraTargetIsEvidence = !!(cameraStudy === 'full' && scanKey && yawRef.current.framing === 'evidence' && evidenceAnchorPoints[scanTargetId]);
+            setStudyView({ speciesId: props.species.id, region: cameraTargetIsEvidence ? 'evidence' : cameraStudy });
+            var cameraTarget = cameraStudy !== 'full' ? studyBounds[cameraStudy].getCenter(new THREE.Vector3()) :
+              (cameraTargetIsEvidence ? evidenceAnchorPoints[scanTargetId].clone() : modelCenter.clone());
             function updateCameraReadout() {
               var rotationDegrees = Math.round((((yaw * 180 / Math.PI) + 180) % 360 + 360) % 360 - 180);
               var elevationDegrees = Math.round(pitch * 180 / Math.PI), zoomPercent = Math.round(100 / zoom);
-              var nextReadout = 'Target ' + (cameraTargetIsEvidence ? cap(scanTargetId) + ' anchor' : 'full model') + ' | Rotation ' + rotationDegrees + ' degrees | Elevation ' + elevationDegrees + ' degrees | Zoom ' + zoomPercent + ' percent';
+              var nextReadout = 'Target ' + (cameraStudy !== 'full' ? cap(cameraStudy) + ' study' : (cameraTargetIsEvidence ? cap(scanTargetId) + ' anchor' : 'full model')) + ' | Rotation ' + rotationDegrees + ' degrees | Elevation ' + elevationDegrees + ' degrees | Zoom ' + zoomPercent + ' percent';
               if (nextReadout !== lastCameraReadout && cameraReadoutRef.current) {
                 cameraReadoutRef.current.textContent = nextReadout; lastCameraReadout = nextReadout;
               }
             }
             function updateCameraView() {
-              var rotatedWidth = Math.abs(Math.cos(yaw)) * modelHalf.x + Math.abs(Math.sin(yaw)) * modelHalf.z;
-              var rotatedDepth = Math.abs(Math.sin(yaw)) * modelHalf.x + Math.abs(Math.cos(yaw)) * modelHalf.z;
-              var verticalSpan = modelHalf.y * Math.cos(pitch) + rotatedDepth * Math.sin(pitch);
-              var depthSpan = modelHalf.y * Math.sin(pitch) + rotatedDepth * Math.cos(pitch);
+              var viewHalf = cameraStudy === 'full' ? modelHalf : studyBounds[cameraStudy].getSize(new THREE.Vector3()).multiplyScalar(0.5);
+              var rotatedWidth = Math.abs(Math.cos(yaw)) * viewHalf.x + Math.abs(Math.sin(yaw)) * viewHalf.z;
+              var rotatedDepth = Math.abs(Math.sin(yaw)) * viewHalf.x + Math.abs(Math.cos(yaw)) * viewHalf.z;
+              var verticalSpan = viewHalf.y * Math.cos(pitch) + rotatedDepth * Math.sin(pitch);
+              var depthSpan = viewHalf.y * Math.sin(pitch) + rotatedDepth * Math.cos(pitch);
               var fitDistance = dinoFrameDistance(rotatedWidth, verticalSpan, depthSpan, camera.fov, camera.aspect);
-              var distance = Math.max(0.4, fitDistance) * zoom * (cameraTargetIsEvidence ? 0.76 : 1);
+              var distance = Math.max(cameraStudy === 'full' ? 0.4 : 0.015, fitDistance) * zoom * (cameraTargetIsEvidence ? 0.76 : 1);
               var targetForView = cameraTarget.clone();
               targetForView.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
               camera.position.set(targetForView.x, targetForView.y + Math.sin(pitch) * distance, targetForView.z + Math.cos(pitch) * distance);
-              camera.near = Math.max(0.005, distance / 500);
+              camera.near = Math.max(cameraStudy === 'full' ? 0.005 : 0.0001, distance / 500);
               camera.far = Math.max(200, distance * 8, len * 20);
               camera.updateProjectionMatrix(); camera.lookAt(targetForView); camera.updateMatrixWorld(true);
               yawRef.current.pitch = pitch; yawRef.current.zoom = zoom;
               updateCameraReadout();
             }
-            activeCameraControl = function (nextYaw, nextPitch, nextZoom, message) {
+            activeCameraControl = function (nextYaw, nextPitch, nextZoom, message, nextStudy) {
+              if (nextStudy) cameraStudy = studyBounds[nextStudy] ? nextStudy : 'full';
+              yawRef.current.study = cameraStudy;
+              setStudyView({ speciesId: props.species.id, region: cameraStudy });
               cameraTargetIsEvidence = false;
-              cameraTarget = modelCenter.clone();
+              cameraTarget = cameraStudy === 'full' ? modelCenter.clone() : studyBounds[cameraStudy].getCenter(new THREE.Vector3());
               yawRef.current.framing = 'full';
               yaw = nextYaw; pitch = clampView(nextPitch, 0.04, 1.50); zoom = clampView(nextZoom, 0.68, 1.65);
-              yawRef.current.value = yaw; interactionPauseUntil = performance.now() + 3000;
+              yawRef.current.value = yaw; interactionPauseUntil = performance.now() + (cameraStudy === 'full' ? 3000 : 30000);
               updateCameraView(); setStatus(message);
             };
             cameraControlRef.current = activeCameraControl;
@@ -9905,6 +9956,8 @@ window.StemLab = window.StemLab || {
                 ev.preventDefault(); zoom = clampView(zoom * 1.10, 0.68, 1.65); updateCameraView(); setStatus('Camera zoomed out.');
               } else if (key === 'Home') {
                 setCameraPreset('reset');
+                cameraStudy = 'full'; yawRef.current.study = 'full';
+                setStudyView({ speciesId: props.species.id, region: 'full' });
                 cameraTargetIsEvidence = false;
                 cameraTarget = modelCenter.clone();
                 yawRef.current.framing = 'full';
@@ -9934,6 +9987,7 @@ window.StemLab = window.StemLab || {
             });
 
             var sameSpeciesRefresh = readySpeciesRef.current === props.species.id;
+            if (!sameSpeciesRefresh) setCameraPreset(null);
             setStatus(cameraTargetIsEvidence ? 'Camera centered on ' + cap(scanTargetId) + ' evidence anchor.' : (sameSpeciesRefresh ? '3D evidence view updated. Camera view preserved.' : '3D reconstruction loaded. Drag to orbit, use the wheel to zoom, or use the arrow keys.'));
             readySpeciesRef.current = props.species.id;
             function syncAnimation() {
@@ -10061,6 +10115,7 @@ window.StemLab = window.StemLab || {
 
         function applyCameraPreset(preset) { notifyOrientationInteraction();
           setCameraPreset(preset);
+          if (preset === 'reset') { yawRef.current.study = 'full'; setStudyView({ speciesId: props.species.id, region: 'full' }); }
           if (!cameraControlRef.current) return;
           var presets = {
             front: { yaw: Math.PI / 2, pitch: 0.16, zoom: 1, message: 'Front reconstruction view selected.' },
@@ -10069,7 +10124,13 @@ window.StemLab = window.StemLab || {
             reset: { yaw: 0.35, pitch: 0.18, zoom: 1, message: 'Reconstruction returned to its starting view.' }
           };
           var view = presets[preset] || presets.reset;
-          cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message);
+          cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message, preset === 'reset' ? 'full' : null);
+        }
+        function applyStudyView(region) { notifyOrientationInteraction();
+          setCameraPreset(null);
+          yawRef.current.study = region;
+          setStudyView({ speciesId: props.species.id, region: region });
+          if (cameraControlRef.current) cameraControlRef.current(yawRef.current.value, yawRef.current.pitch, 1, cap(region) + ' study selected. Drag to rotate this region.', region);
         }
         function applyBodyOpacityValue(nextOpacity, announce) {
           nextOpacity = Math.max(10, Math.min(100, Number(nextOpacity) || 28));
@@ -10174,6 +10235,17 @@ var evidenceRoute = [
           el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': __alloT('stem.dinolab.a11y_current_3d_camera_view', 'Current 3D camera view'), style: { position: 'absolute', right: 10, bottom: 56, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
           el('div', { id: statusId, ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
         ),
+          el('div', { className: 'dinolab-study-controls', role: 'group', 'aria-label': __alloT('stem.dinolab.study_details', 'Study details'), style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 7, marginTop: 10, maxWidth: 560 } },
+            el('span', { style: { color: T.soft, fontSize: 12, fontWeight: 800, gridColumn: '1 / -1' } }, __alloT('stem.dinolab.study_details', 'Study details')),
+            ['full', 'head', 'body', 'tail'].map(function (region) {
+              var label = region === 'full' ? __alloT('stem.dinolab.whole_animal', 'Whole animal') : __alloT('stem.dinolab.study_' + region, cap(region));
+              var selected = activeStudy === region;
+              return el('button', { key: region, type: 'button', 'aria-label': region === 'full' ? 'Study whole animal' : 'Study ' + region + ' details', 'aria-pressed': selected ? 'true' : 'false',
+                disabled: region !== 'full' && !props.showBody && !props.showSkeleton,
+                onClick: function () { if (region === 'full') applyCameraPreset('reset'); else applyStudyView(region); },
+                style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (selected ? '#0f766e' : T.border), background: selected ? '#0f766e' : T.deeper, color: selected ? '#ffffff' : T.text, cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, label);
+            })
+          ),
           renderEvidenceRoute(),
           el('details', { className: 'dinolab-3d-controls-disclosure', open: props.focusMode ? true : null, style: { marginTop: 8 } },
             el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 12.5, fontWeight: 900, padding: '6px 0' } }, 'View controls & layers', el('span', { className: 'dinolab-camera-state', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'inline-flex', alignItems: 'center', marginLeft: 8, padding: '2px 7px', borderRadius: 999, border: '1px solid ' + (cameraPreset ? 'rgba(94,234,212,0.55)' : T.border), background: cameraPreset ? 'rgba(20,184,166,0.12)' : 'transparent', color: cameraPreset ? T.text : T.soft, fontSize: 11.5, fontWeight: 800 } }, cameraPreset ? (cameraPreset === 'reset' ? 'Reset view' : 'Preset: ' + cap(cameraPreset)) : 'Free orbit | drag + wheel')),

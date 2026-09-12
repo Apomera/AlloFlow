@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-12",
+  "scope": "Dino Lab anatomical study views",
+  "focusedTestsPassed": 113,
+  "focusedTestFiles": 4,
+  "newStudyBoundsTests": 6,
+  "initialAccessibilityRun": {
+    "passed": 14,
+    "failed": 1,
+    "reason": "Outdated camera source contract"
+  },
+  "accessibilitySourceContractRecheck": "passed",
+  "browserScenariosPassed": 10,
+  "finalScanPriorityRecheck": "passed",
+  "testedSpecies": [
+    "anchiornis",
+    "sinosauropteryx",
+    "microraptor",
+    "tyrannosaurus",
+    "triceratops",
+    "brachiosaurus"
+  ],
+  "testedStudies": [
+    "head",
+    "body",
+    "tail"
+  ],
+  "selectedRegionClipping": 0,
+  "moduleCopies": 3,
+  "moduleSha256": "683D92E133A7A536D3108788FBB4CEB638F3F8AC7DEB5711C525E272CF90F8DC",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "rendering": "Three.js r128 in Chromium with software WebGL",
+  "deployment": "No deployment or push performed"
+}

@@ -16,7 +16,7 @@ const AXE_AUDIT_TIMEOUT_MS = 180000;
 
 describe('Dino Lab 3D Field Station accessibility contract', () => {
   it('supports focused keyboard rotation with live status and cleanup', () => {
-    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_dinolab.js'), 'utf8');
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_dinolab.js'), 'utf8').replace(/\r\n/g, '\n');
     expect(source).toContain("tabIndex: 0, role: 'application'");
     expect(source).toContain("'aria-roledescription': 'Interactive 3D dinosaur reconstruction'");
     expect(source).toContain("'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home'");
@@ -74,7 +74,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var cameraPresetState = React.useState(null)');
     expect(source).toContain("'aria-label': label + ' camera view'");
     expect(source).toContain("'aria-pressed': active ? 'true' : 'false'");
-    expect(source).toContain("setCameraPreset('reset');\n                cameraTargetIsEvidence = false;\n                cameraTarget = modelCenter.clone();\n                yawRef.current.framing = 'full';\n                ev.preventDefault(); yaw = 0.35; pitch = 0.18; zoom = 1;");
+    expect(source).toContain("setCameraPreset('reset');\n                cameraStudy = 'full'; yawRef.current.study = 'full';\n                setStudyView({ speciesId: props.species.id, region: 'full' });\n                cameraTargetIsEvidence = false;\n                cameraTarget = modelCenter.clone();\n                yawRef.current.framing = 'full';\n                ev.preventDefault(); yaw = 0.35; pitch = 0.18; zoom = 1;");
     expect(source).toContain("className: 'dinolab-3d-controls-disclosure'");
     expect(source).toContain('open: props.focusMode ? true : null');
     expect(source).toContain("id: 'dinolab-3d-canvas-' + props.species.id");
@@ -166,11 +166,11 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('new Blob([summary]');
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_copy_dino_lab_investigation_summary_to_clipboar', 'Copy Dino Lab investigation summary to clipboard')`);
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_download_dino_lab_investigation_summary', 'Download Dino Lab investigation summary')`);
-    expect(source).toContain("var cameraTargetIsEvidence = !!(scanKey && yawRef.current.framing === 'evidence' && evidenceAnchorPoints[scanTargetId]);");
+    expect(source).toContain("var cameraTargetIsEvidence = !!(cameraStudy === 'full' && scanKey && yawRef.current.framing === 'evidence' && evidenceAnchorPoints[scanTargetId]);");
     expect(source).toContain('var targetForView = cameraTarget.clone();');
     expect(source).toContain("camera.position.set(targetForView.x, targetForView.y");
     expect(source).toContain('camera.lookAt(targetForView);');
-    expect(source).toContain("Target ' + (cameraTargetIsEvidence ? cap(scanTargetId) + ' anchor' : 'full model')");
+    expect(source).toContain("Target ' + (cameraStudy !== 'full' ? cap(cameraStudy) + ' study' : (cameraTargetIsEvidence ? cap(scanTargetId) + ' anchor' : 'full model'))");
     expect(source).toContain('cameraTargetIsEvidence = false;');
     expect(source).toContain("Camera centered on ' + cap(scanTargetId) + ' evidence anchor.");
     expect(source).toContain("Camera centered on the evidence anchor.");
@@ -181,8 +181,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var visualMaterialsRef = React.useRef(null);');
     expect(source).toContain('var requestedBodyOpacity = Math.max(10, Math.min(100, Number(props.bodyOpacity) || 28));');
     expect(source).toContain('var bodyOpacityRef = React.useRef(requestedBodyOpacity);');
-    expect(source).toContain('activeCameraControl = function (nextYaw, nextPitch, nextZoom, message)');
-    expect(source).toContain('cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message);');
+    expect(source).toContain('activeCameraControl = function (nextYaw, nextPitch, nextZoom, message, nextStudy)');
+    expect(source).toContain("cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message, preset === 'reset' ? 'full' : null);");
     expect(source).toContain('materials.body.opacity = opaqueSurface ? 1 : alpha;');
     expect(source).toContain('material.depthWrite = opaqueSurface;');
     expect(source).toContain("{ id: 'life', label: 'Life view', detail: 'Opaque surface'");

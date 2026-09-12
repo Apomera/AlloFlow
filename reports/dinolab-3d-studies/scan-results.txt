@@ -1,0 +1,10 @@
+
+Running 1 test using 1 worker
+
+(node:29512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:76:5 › explicit scan target takes priority while layer changes preserve the study (41.7s)
+
+  1 passed (43.6s)
