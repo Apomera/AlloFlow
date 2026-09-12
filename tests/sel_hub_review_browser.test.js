@@ -388,6 +388,30 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   },120000);
 
+  it('moral reasoning notes and changed context survive the real hub return flow',async()=>{
+    await mount();
+    await page.locator('[data-sel-tool-card-id="decisions"]').click();
+    await page.getByRole('tab',{name:/Moral reasoning/}).click();
+    const practice=page.getByRole('region',{name:'Moral reasoning practice',exact:true});
+    await practice.getByLabel('Choose a moral reasoning case',{exact:true}).selectOption('deadline');
+    await practice.getByLabel('My starting thought and reason (optional)',{exact:true}).fill('Check access before judging the missing work.');
+    await practice.getByText('Care and relationships',{exact:true}).click();
+    await practice.getByLabel('Care and relationships note (optional)',{exact:true}).fill('Offer a private route with teacher support.');
+    await practice.getByRole('button',{name:'Explore a changed condition',exact:true}).click();
+    await practice.getByLabel('What I would keep or change, and why (optional)',{exact:true}).fill('Ask whether handwritten notes can be included with credit.');
+    const support=page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="decisions"]').click();
+    expect(await practice.getByLabel('Choose a moral reasoning case',{exact:true}).inputValue()).toBe('deadline');
+    expect(await practice.getByLabel('My starting thought and reason (optional)',{exact:true}).inputValue()).toContain('Check access');
+    expect(await practice.getByLabel('What I would keep or change, and why (optional)',{exact:true}).inputValue()).toContain('handwritten notes');
+    const data=await page.evaluate(()=>window.__alloflowSelToolData.decisions);
+    expect(data.compassDrafts['middle:deadline'].care).toContain('teacher support');
+    expect(data.mcDone).toBeUndefined();
+    expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

@@ -1,0 +1,50 @@
+{
+  "date": "2026-09-12",
+  "pass": 24,
+  "scope": "Decision Workshop Moral Compass replaced with contextual moral reasoning",
+  "cases": 6,
+  "situatedLensApplications": 24,
+  "focusedBrowser": {
+    "passed": 12
+  },
+  "regressions": {
+    "files": 11,
+    "passed": 569,
+    "preExistingSkipped": 2
+  },
+  "actualHub": {
+    "passed": 2,
+    "filteredOut": 90
+  },
+  "uniqueTestsPassed": 583,
+  "accessibility": {
+    "region": "Moral reasoning practice",
+    "viewportWidth": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scans": 3,
+    "violations": 0,
+    "certification": false
+  },
+  "visualReview": {
+    "captures": 9,
+    "reviewed": true
+  },
+  "sourcePublicSha256": "3c88805947bd403db3a1ecb917bdd29ee9610d2c14f6d555a7474ee708615d2a",
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "syntax": "passed",
+  "whitespace": "passed",
+  "historicalData": "Quiz answers, generated text, completion flag, practice log and badges preserved; no new scoring or profiling.",
+  "deployment": "none",
+  "limitations": [
+    "Targeted browser and accessibility scope, not full-app certification.",
+    "Authored reasoning practice, not a validated assessment or complete ethics curriculum.",
+    "Ignored generated desktop/app-build output not rebuilt."
+  ]
+}

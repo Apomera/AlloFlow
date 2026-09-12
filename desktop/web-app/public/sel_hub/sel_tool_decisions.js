@@ -861,6 +861,100 @@ window.SelHub = window.SelHub || {
   };
 
   // ══════════════════════════════════════════════════════════════
+  // Case-based reasoning uses multiple questions without assigning a learner profile.
+  var MORAL_REASONING_CASES = {
+  "elementary": [
+    {
+      "id": "materials",
+      "title": "One set of materials",
+      "situation": "Two groups want the same large drawing tools. One group arrived first; another says the smaller tools are hard for a member to use. The teacher has not heard the request yet.",
+      "options": "The groups could ask about suitable tools, plan a turn with support, or change the activity together. Arriving first is one consideration; being able to take part also matters.",
+      "lenses": {
+        "outcomes": "Taking turns might let both groups work, but waiting could leave too little time. Check how long each group needs and what other tools are usable.",
+        "rights": "Everyone needs a usable way to participate. A student does not need to explain private health details to classmates to ask for a tool.",
+        "care": "Ask what would help without deciding for the other student. The teacher can arrange support so children do not have to solve the access problem alone.",
+        "commitments": "A fair turn-taking plan should also work for someone who needs a particular tool. Ask the teacher to help adapt the plan and explain the next step."
+      },
+      "change": "The teacher finds another usable set, but preparing it will take a few minutes. Both groups can start planning their pictures while they wait.",
+      "model": "The groups could keep planning and ask the teacher to arrange the second set. Check that it really works for the student and that both groups still have enough making time."
+    },
+    {
+      "id": "promise",
+      "title": "A promise and a changed need",
+      "situation": "A student promised to help tidy the classroom display. Just before cleanup, they learn that their ride is leaving early. Another student worries about doing all the work.",
+      "options": "The student could tell the teacher, ask to do a smaller part now, or help plan another way to finish. Leaving without explanation and missing the ride have different costs.",
+      "lenses": {
+        "outcomes": "Staying might finish the display but miss the ride. Leaving the whole task to a classmate adds work. An adult may be able to arrange a smaller task or another helper.",
+        "rights": "The student needs a safe way home, and the classmate deserves a chance to explain the extra workload. The teacher can help with both needs.",
+        "care": "Listen to the classmate without making one child responsible for fixing transport or adult schedules. A brief explanation can be enough.",
+        "commitments": "Being responsible can mean saying that a promise needs to change and arranging a realistic next step. A promise does not require ignoring a changed need."
+      },
+      "change": "The teacher says the display can wait until tomorrow, but loose materials must be put somewhere safe before everyone leaves.",
+      "model": "Ask the teacher for a quick, shared way to put loose materials away and agree what can wait. Check that the plan fits the ride time and does not quietly leave the whole job to one classmate."
+    }
+  ],
+  "middle": [
+    {
+      "id": "photo",
+      "title": "A photo for the class project",
+      "situation": "A group wants to use a funny rehearsal photo in its class presentation. One person pictured says they do not want that image shown. The group likes the photo and has little time left.",
+      "options": "The group could use a different image, redesign the slide, or ask the teacher for a brief extension. A majority vote does not settle the pictured person's boundary.",
+      "lenses": {
+        "outcomes": "Keeping the photo saves editing time but could damage trust and expose someone to unwanted attention. Replacing it costs time; check whether the slide needs a photo at all.",
+        "rights": "Respect the person's stated boundary about this image. Permission for a rehearsal photo is not automatically permission to present or post it.",
+        "care": "Ask privately what alternative, if any, is comfortable. Do not require a personal explanation or make classmates argue about whether the concern is serious enough.",
+        "commitments": "The group committed to a presentation and to working respectfully. A practical redesign can support both; ask the teacher for help if the deadline creates pressure."
+      },
+      "change": "A teammate finds a photo of the stage with no people in it. It fits the topic, but replacing the slide means changing one sentence in the script.",
+      "model": "Use the stage image if it is appropriate for the project and revise the sentence. Confirm that the unwanted image is removed from the presentation; do not pressure the person to approve it to save time."
+    },
+    {
+      "id": "deadline",
+      "title": "The unfinished group section",
+      "situation": "A group project is due tomorrow. One member has not submitted their section and has stopped replying. Others are frustrated. The group does not know why the section is missing.",
+      "options": "They could send one clear check-in, ask the teacher for a workable plan, or redistribute a limited amount of work with agreement. Guessing someone's motive may lead to an unfair response.",
+      "lenses": {
+        "outcomes": "Redistributing everything might meet the deadline but overload others. Waiting indefinitely also has costs. Check what is essential and what support or extension is possible.",
+        "rights": "Describe the missing work accurately without publicly labeling the student lazy. Others can set limits on taking extra work, and credit should reflect contributions fairly.",
+        "care": "Offer a private route to explain what support is needed without demanding personal details. The teacher can help when the group cannot contact the member.",
+        "commitments": "A shared task needs reliable communication and a fair process for revising roles. Separate the immediate submission plan from a later conversation about what happened."
+      },
+      "change": "The member replies that they lost access to their device. They have handwritten notes and can share them with the teacher, but cannot type tonight.",
+      "model": "Ask whether the notes can be submitted or incorporated with agreed help. Keep credit accurate, check the workload with everyone and ask the teacher to coordinate access rather than assuming classmates must absorb all the work."
+    }
+  ],
+  "high": [
+    {
+      "id": "event",
+      "title": "An event that not everyone can attend",
+      "situation": "A student committee has nearly finished planning a low-cost evening event. A member points out that the venue entrance and last bus times may exclude some students. No booking is final yet.",
+      "options": "The committee could verify access and transport, compare another venue or time, or revise the event format. Keeping the plan unchanged is also a decision with costs for particular people.",
+      "lenses": {
+        "outcomes": "Compare who benefits and who carries travel, time or access costs. An attractive attendance estimate can hide exclusion; confirm the details before predicting outcomes.",
+        "rights": "A majority preference does not remove the need to address participation barriers. Ask about access needs without requiring students to disclose diagnoses to the committee.",
+        "care": "Consult affected students in a way they can choose to use, and include their suggestions without making them responsible for all the planning work.",
+        "commitments": "The committee promised a welcoming event and has budget limits. Explain the tradeoff openly, ask staff about available support and set a checkpoint before committing funds."
+      },
+      "change": "Staff confirm that a different school space is accessible and free earlier in the day, but the planned performer is unavailable then.",
+      "model": "Compare whether the event's purpose can be met with a different activity or performer at the accessible time. Seek affected students' input and verify remaining barriers before treating the alternative as inclusive."
+    },
+    {
+      "id": "sponsor",
+      "title": "Support with strings attached",
+      "situation": "A club is offered supplies for a student exhibition. The sponsor asks for all exhibitors' contact details and personal stories for publicity. Some students want the supplies but are uncomfortable sharing those details.",
+      "options": "The club could request different terms, find a smaller plan using available supplies, or decline the offer. Students can distinguish accepting resources from agreeing to publicity.",
+      "lenses": {
+        "outcomes": "The supplies could improve the exhibition, while unwanted publicity may have lasting effects. Consider a smaller event and check what the sponsor would collect, share and retain.",
+        "rights": "Do not trade someone else's personal information for a group benefit. A student should be able to decline publicity without pressure; ask the school to review the proposed arrangement.",
+        "care": "Listen privately to concerns and avoid making students justify why disclosure is uncomfortable. Share the work of finding an alternative rather than blaming those who object.",
+        "commitments": "Consider honesty with the sponsor, stewardship of resources and the club's responsibility to participants. Staff can help negotiate an arrangement that fits school expectations and student choices."
+      },
+      "change": "The sponsor agrees to provide fewer supplies in return for a simple acknowledgment on the event sign, with no student information requested.",
+      "model": "Ask staff to confirm the revised terms and compare whether the smaller supply amount still supports a worthwhile exhibition. Check that no participant information is collected through another route and communicate the agreed acknowledgment clearly."
+    }
+  ]
+};
+
   // ── Moral Compass Statements ──
   // Quick-fire agree/disagree to reveal ethical framework
   // Tags: U=utilitarian, D=deontological, V=virtue, C=care
@@ -937,8 +1031,8 @@ window.SelHub = window.SelHub || {
     { id: 'sort_3',            icon: '\uD83C\uDFAF', name: 'Values Architect',     desc: 'Complete 3 values sorts' },
     { id: 'first_realworld',   icon: '\uD83C\uDF0D', name: 'History Student',      desc: 'Analyze your first real-world decision' },
     { id: 'realworld_all',     icon: '\uD83C\uDFDB\uFE0F', name: 'Moral Historian', desc: 'Study all real-world decisions in your grade band' },
-    { id: 'compass_done',      icon: '\uD83E\uDDED', name: 'Moral Compass',     desc: 'Complete the Moral Compass assessment' },
-    { id: 'compass_balanced',  icon: '\u2696\uFE0F', name: 'Balanced Thinker',  desc: 'Score within 2 points across all ethical frameworks' }
+    { id: 'compass_done',      icon: '\uD83E\uDDED', name: 'Moral Compass',     desc: 'Historical award from the earlier Moral Compass quiz' },
+    { id: 'compass_balanced',  icon: '\u2696\uFE0F', name: 'Balanced Thinker',  desc: 'Historical award from earlier quiz scores; not a measure of reasoning quality' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -1162,7 +1256,7 @@ window.SelHub = window.SelHub || {
         { id: 'bias',     label: '\uD83E\uDDE0 Bias Check' },
         { id: 'values',   label: '\uD83C\uDCCF Values Sort' },
         { id: 'realworld', label: '\uD83C\uDF0D Real-World Decisions' },
-        { id: 'compass',  label: '\uD83E\uDDED Moral Compass' },
+        { id: 'compass',  label: '\uD83E\uDDED Moral reasoning' },
         { id: 'advisor',  label: '\u2728 AI Advisor' },
         { id: 'progress', label: '\uD83D\uDCCA Progress' },
         { id: 'print',    label: '\uD83D\uDDA8 Print' }
@@ -1214,7 +1308,7 @@ window.SelHub = window.SelHub || {
           bias:        { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83E\uDDE0', title: 'Bias Check \u2014 spot your shortcuts',               hint: 'Confirmation bias, sunk cost, availability, anchoring, dunning-kruger. Kahneman + Tversky\u2019s decades of research (1974\u20132011): we\u2019re predictably irrational. Knowing the trap is half the work \u2014 the other half is asking a friend.' },
           values:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDCCF', title: 'Values Sort \u2014 what actually matters to YOU',     hint: 'Schwartz 1992: 10 universal values in 4 clusters. Decisions feel \u201Cright\u201D when they line up with your top values; \u201Coff\u201D when they don\u2019t \u2014 even if they look good on paper. Sort yours, then test against past choices.' },
           realworld:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF0D', title: 'Real-World \u2014 college, money, relationships',     hint: 'Higher-stakes practice scenarios. Pre-rehearse decisions you\u2019ll actually face: which college, asking someone out, whether to share something on social. \u201CFuture self interview\u201D \u2014 ask the version of you in 5 years what they wish you\u2019d done.' },
-          compass:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDDED', title: 'Moral Compass \u2014 quick gut-check',                  hint: 'Three-question test: would I tell my grandmother? would I want it on the front page? does it match who I say I am? Imperfect but fast. Used by ethics boards, journalists, military codes \u2014 and you, in 30 seconds.' },
+          compass:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDDED', title: 'Moral reasoning — compare the reasons', hint: 'Explore a fictional case through several lenses. Notice uncertainty, boundaries and support, then reconsider when the context changes. You can think or discuss without writing.' },
           advisor:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\u2728',         title: 'AI Advisor \u2014 a sounding board, not the boss',     hint: 'Type the situation; the AI walks the framework with you. Use it to see angles you missed, not to outsource the call. Final decisions still go through YOUR values + your context, not a model\u2019s training data.' },
           progress:    { accent: _decFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Progress \u2014 patterns over time',                   hint: 'Which decisions did you regret? Which felt right? Track over weeks: most patterns repeat. Spotting your patterns turns reactive choices into deliberate ones. Self-knowledge IS the upgrade.' }
         };
@@ -2103,194 +2197,70 @@ window.SelHub = window.SelHub || {
 
       // ══════════════════════════════════════════════════════════
       // ── TAB: Moral Compass ──
-      // Quick-fire agree/disagree → reveals ethical framework
-      // ══════════════════════════════════════════════════════════
+      // Compare reasons in context; no profile, moral score or completion reward.
       var compassContent = null;
       if (activeTab === 'compass') {
-        var mcStatements = COMPASS_STATEMENTS[band] || COMPASS_STATEMENTS.elementary;
-        var answeredCount = Object.keys(mcAnswers).length;
-        var allAnswered = answeredCount >= mcStatements.length;
-
-        // Calculate scores
-        var scores = { U: 0, D: 0, V: 0, C: 0 };
-        if (allAnswered) {
-          mcStatements.forEach(function(s) {
-            var ans = mcAnswers[s.id];
-            if (ans === 'agree') scores[s.tag] += 2;
-            else if (ans === 'sometimes') scores[s.tag] += 1;
-            // disagree = 0
-          });
+        function compassRecord(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+        var reasoningCases = MORAL_REASONING_CASES[band] || MORAL_REASONING_CASES.elementary;
+        var reasoningSelections = compassRecord(d.compassSelections);
+        var selectedReasoningId = Object.prototype.hasOwnProperty.call(reasoningSelections, band) ? reasoningSelections[band] : null;
+        var reasoningCase = reasoningCases.find(function(item) { return item.id === selectedReasoningId; }) || reasoningCases[0];
+        var reasoningKey = band + ':' + reasoningCase.id;
+        var reasoningDrafts = compassRecord(d.compassDrafts);
+        var reasoningDraft = compassRecord(Object.prototype.hasOwnProperty.call(reasoningDrafts, reasoningKey) ? reasoningDrafts[reasoningKey] : null);
+        var reasoningSurface = _decHC ? '#000000' : _decL ? '#ffffff' : '#0f172a';
+        var reasoningInk = _decHC ? '#ffff00' : _decL ? '#0f172a' : '#e2e8f0';
+        var reasoningEdge = _decHC ? '#ffff00' : '#64748b';
+        var reasoningControl = { width: '100%', minHeight: 44, padding: 10, border: '1px solid ' + reasoningEdge, borderRadius: 8, background: reasoningSurface, color: reasoningInk, font: 'inherit', fontSize: 16, boxSizing: 'border-box' };
+        function reasoningUpdate(key, value) {
+          var next = Object.assign({}, reasoningDrafts);
+          next[reasoningKey] = Object.assign({}, reasoningDraft);
+          next[reasoningKey][key] = value;
+          upd('compassDrafts', next);
         }
-        var maxScore = Math.max(scores.U, scores.D, scores.V, scores.C);
-        var dominant = Object.keys(scores).filter(function(k) { return scores[k] === maxScore; });
-        var totalScore = scores.U + scores.D + scores.V + scores.C;
-        var scoreRange = maxScore - Math.min(scores.U, scores.D, scores.V, scores.C);
-
-        compassContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83E\uDDED Moral Compass'),
-          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
-            allAnswered && !mcDone
-              ? 'All questions answered! See your results below.'
-              : mcDone
-              ? 'Your ethical framework profile is below.'
-              : 'Answer these quick moral questions to discover your ethical thinking style. There are no wrong answers!'
+        function reasoningField(key, label, help) {
+          var id = 'dec-reasoning-' + key;
+          var value = Object.prototype.hasOwnProperty.call(reasoningDraft, key) && typeof reasoningDraft[key] === 'string' ? reasoningDraft[key] : '';
+          return h('div', { style: { margin: '12px 0' } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, label + ' (optional)'),
+            h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, help),
+            h('textarea', { id: id, rows: 3, value: value, 'aria-describedby': id + '-help', onChange: function(e) { reasoningUpdate(key, e.target.value); }, style: Object.assign({}, reasoningControl, { resize: 'vertical', lineHeight: 1.6 }) }));
+        }
+        var reasoningLenses = [
+          { key: 'outcomes', label: 'Possible outcomes', question: band === 'elementary' ? 'What could happen, and who might it help or make things harder for?' : 'What benefits and costs are plausible, for whom, and what do those predictions depend on?' },
+          { key: 'rights', label: 'Rights and fairness', question: band === 'elementary' ? 'What choice, privacy or chance to join in needs respect?' : 'What boundaries, consent and access needs matter even when the majority prefers an option?' },
+          { key: 'care', label: 'Care and relationships', question: band === 'elementary' ? 'Who needs to be heard, and who could help?' : 'Whose perspective is missing, what support is wanted, and who should share responsibility?' },
+          { key: 'commitments', label: 'Commitments and integrity', question: band === 'elementary' ? 'What did people agree to, and what might need to change?' : 'Which responsibilities or commitments matter, and how could they be revised honestly if circumstances change?' }
+        ];
+        var earlierAnswers = compassRecord(mcAnswers);
+        var earlierStatements = [].concat(COMPASS_STATEMENTS.elementary, COMPASS_STATEMENTS.middle, COMPASS_STATEMENTS.high).filter(function(item) { return Object.prototype.hasOwnProperty.call(earlierAnswers, item.id) && ['agree', 'sometimes', 'disagree'].indexOf(earlierAnswers[item.id]) >= 0; });
+        compassContent = h('section', { role: 'region', 'aria-label': 'Moral reasoning practice', style: { padding: 16, maxWidth: 760, margin: '0 auto', background: reasoningSurface, color: reasoningInk, border: '1px solid ' + reasoningEdge, borderRadius: 12, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+          h('h2', { style: { fontSize: 22, lineHeight: 1.3, marginTop: 0 } }, 'Compare reasons, then reconsider'),
+          h('p', null, 'A lens is a question to help you notice something. Use several lenses together; they do not assign you a moral type or produce a score. Some boundaries need to be respected even when a choice has benefits.'),
+          h('label', { htmlFor: 'dec-reasoning-case', style: { display: 'block', fontWeight: 700 } }, 'Choose a moral reasoning case'),
+          h('select', { id: 'dec-reasoning-case', value: reasoningCase.id, onChange: function(e) { var next = Object.assign({}, reasoningSelections); next[band] = e.target.value; upd('compassSelections', next); }, style: reasoningControl }, reasoningCases.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
+          h('div', { key: reasoningKey },
+            h('h3', { style: { fontSize: 18 } }, reasoningCase.title), h('p', null, reasoningCase.situation),
+            h('details', null, h('summary', { style: { minHeight: 44, padding: '10px 0', fontWeight: 700, cursor: 'pointer' } }, 'Consider possible routes'), h('p', null, reasoningCase.options)),
+            reasoningField('initial', 'My starting thought and reason', 'Think, discuss, draw elsewhere or add a note. You do not need to decide yet.'),
+            h('h3', { style: { fontSize: 18 } }, 'Explore four lenses'),
+            reasoningLenses.map(function(lens) { return h('details', { key: lens.key, style: { borderTop: '1px solid ' + reasoningEdge } },
+              h('summary', { style: { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' } }, lens.label),
+              h('p', null, lens.question), h('p', null, h('strong', null, 'In this case: '), reasoningCase.lenses[lens.key]),
+              reasoningField(lens.key, lens.label + ' note', 'What does this lens add or leave unresolved? It does not have to support a different answer.')); }),
+            reasoningField('unknown', 'What I would need to check', 'Separate stated facts from guesses. Consider missing perspectives, permission and practical support.'),
+            h('button', { type: 'button', 'aria-expanded': reasoningDraft.changeSeen === true, 'aria-controls': 'dec-reasoning-change', onClick: function() { reasoningUpdate('changeSeen', reasoningDraft.changeSeen !== true); }, style: Object.assign({}, reasoningControl, { cursor: 'pointer', fontWeight: 700 }) }, 'Explore a changed condition'),
+            h('div', { id: 'dec-reasoning-change', hidden: reasoningDraft.changeSeen !== true },
+              h('p', null, reasoningCase.change),
+              reasoningField('revised', 'What I would keep or change, and why', 'Name what changed your reasoning or why the original reason still holds. A different answer is not automatically better.'),
+              h('details', null, h('summary', { style: { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' } }, 'Compare one possible response'), h('p', null, reasoningCase.model))),
+            reasoningField('review', 'A next step and review point', 'Who could help, and what would you check before acting or continuing?'),
+            h('p', null, 'Notes are optional and stay with this case and grade band in the current project. Use the hub save or export controls to keep them beyond this session. Review private details before sharing.')
           ),
-
-          // Progress bar
-          !mcDone && h('div', { style: { marginBottom: 16 } },
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-              h('span', { style: { fontSize: 11, color: _decFg('#94a3b8') } }, answeredCount + ' of ' + mcStatements.length),
-              h('span', { style: { fontSize: 11, color: _decFg(ACCENT) } }, Math.round((answeredCount / mcStatements.length) * 100) + '%')
-            ),
-            h('div', { style: { height: 6, borderRadius: 3, background: _decBg('#334155'), overflow: 'hidden' } },
-              h('div', { style: { height: '100%', borderRadius: 3, background: ACCENT, width: Math.round((answeredCount / mcStatements.length) * 100) + '%', transition: 'width 0.3s' } })
-            )
-          ),
-
-          // Statements list (not done yet)
-          !mcDone && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 } },
-            mcStatements.map(function(s, i) {
-              var answered = mcAnswers[s.id];
-              return h('div', {
-                key: s.id,
-                style: { padding: '14px 16px', borderRadius: 12, background: _decBg('#0f172a'), border: '1px solid ' + (answered ? '#22c55e44' : _decBg('#334155')) }
-              },
-                h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), marginBottom: 10, lineHeight: 1.5 } },
-                  h('span', { style: { color: _decFg('#94a3b8'), fontWeight: 700, marginRight: 6 } }, (i + 1) + '.'),
-                  s.text
-                ),
-                h('div', { style: { display: 'flex', gap: 6 } },
-                  ['agree', 'sometimes', 'disagree'].map(function(choice) {
-                    var isSelected = answered === choice;
-                    var colors = { agree: _decFg('#22c55e'), sometimes: _decFg('#f59e0b'), disagree: _decFg('#ef4444') };
-                    var labels = { agree: 'Agree', sometimes: 'It Depends', disagree: 'Disagree' };
-                    return h('button', { 
-                      key: choice,
-                      onClick: function() {
-                        var newAnswers = Object.assign({}, mcAnswers);
-                        newAnswers[s.id] = choice;
-                        upd('mcAnswers', newAnswers);
-                        if (soundEnabled) sfxClick();
-                      },
-                      style: {
-                        flex: 1, padding: '6px 10px', borderRadius: 8, fontSize: 11, fontWeight: isSelected ? 700 : 500, cursor: 'pointer',
-                        border: '1px solid ' + (isSelected ? colors[choice] : _decBg('#334155')),
-                        background: isSelected ? colors[choice] + '22' : 'transparent',
-                        color: _decFg(isSelected) ? colors[choice] : _decFg('#94a3b8')
-                      }
-                    }, labels[choice]);
-                  })
-                )
-              );
-            })
-          ),
-
-          // Submit button (all answered but not done)
-          allAnswered && !mcDone && h('div', { style: { textAlign: 'center', marginBottom: 16 } },
-            h('button', { 'aria-label': 'Reveal My Moral Compass',
-              onClick: function() {
-                upd('mcDone', true);
-                logPractice('compass', 'assessment');
-                awardXP(25);
-                tryAwardBadge('compass_done');
-                if (scoreRange <= 2) tryAwardBadge('compass_balanced');
-                if (soundEnabled) sfxCorrect();
-                if (celebrate) celebrate();
-                ctx.announceToSR && ctx.announceToSR('Moral compass results ready');
-              },
-              style: { padding: '14px 32px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', color: _decFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
-            }, '\uD83E\uDDED Reveal My Moral Compass')
-          ),
-
-          // Results
-          mcDone && h('div', null,
-            // Framework bars
-            h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-              h('h4', { style: { color: _decFg('#f1f5f9'), fontSize: 14, marginBottom: 12, textAlign: 'center' } }, 'Your Ethical Framework Profile'),
-              ['U', 'D', 'V', 'C'].map(function(tag) {
-                var fw = COMPASS_FRAMEWORKS[tag];
-                var pct = totalScore > 0 ? Math.round((scores[tag] / (mcStatements.filter(function(s) { return s.tag === tag; }).length * 2)) * 100) : 0;
-                var isDominant = dominant.indexOf(tag) >= 0;
-                return h('div', { key: tag, style: { marginBottom: 14 } },
-                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
-                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                      h('span', { style: { fontSize: 16 } }, fw.icon),
-                      h('span', { style: { fontSize: 12, fontWeight: isDominant ? 700 : 500, color: isDominant ? _decFg(fw.color) : _decFg('#94a3b8') } }, fw.name)
-                    ),
-                    h('span', { style: { fontSize: 12, fontWeight: 700, color: _decFg(fw.color) } }, pct + '%')
-                  ),
-                  h('div', { style: { height: 10, borderRadius: 5, background: _decBg('#334155'), overflow: 'hidden' } },
-                    h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: { height: '100%', borderRadius: 5, background: fw.color, width: pct + '%', transition: 'width 0.5s' } })
-                  )
-                );
-              })
-            ),
-            // Dominant framework explanation
-            dominant.length > 0 && h('div', { style: { padding: 16, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid ' + COMPASS_FRAMEWORKS[dominant[0]].color + '44', marginBottom: 16 } },
-              h('p', { style: { fontSize: 10, color: _decFg(COMPASS_FRAMEWORKS)[dominant[0]].color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } },
-                dominant.length > 1 ? 'Your blend' : 'Your primary framework'
-              ),
-              dominant.map(function(tag) {
-                var fw = COMPASS_FRAMEWORKS[tag];
-                return h('div', { key: tag, style: { marginBottom: dominant.length > 1 ? 10 : 0 } },
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
-                    h('span', { style: { fontSize: 24 } }, fw.icon),
-                    h('span', { style: { fontSize: 15, fontWeight: 700, color: _decFg(fw.color) } }, fw.name)
-                  ),
-                  h('p', { style: { fontSize: 12, color: _decFg('#e2e8f0'), lineHeight: 1.7 } }, fw.desc)
-                );
-              })
-            ),
-            // Get AI deeper analysis
-            h('div', { style: { textAlign: 'center', marginBottom: 16 } },
-              h('button', { 'aria-label': 'Get AI deeper analysis',
-                onClick: function() {
-                  if (!callGemini) { addToast('AI not available.', 'error'); return; }
-                  upd('mcAiLoad', true);
-                  upd('mcAiResp', null);
-                  var agreePairs = mcStatements.filter(function(s) { return mcAnswers[s.id] === 'agree'; }).map(function(s) { return '"' + s.text + '" (' + s.tag + ')'; });
-                  var disagreePairs = mcStatements.filter(function(s) { return mcAnswers[s.id] === 'disagree'; }).map(function(s) { return '"' + s.text + '" (' + s.tag + ')'; });
-                  var prompt = 'You are a philosophy teacher for ' + band + ' school students.\n\n' +
-                    'A student just completed a moral compass assessment. Here are their scores:\n' +
-                    'Consequentialist (U): ' + scores.U + '\nPrincipled (D): ' + scores.D + '\nVirtue (V): ' + scores.V + '\nCare (C): ' + scores.C + '\n\n' +
-                    'They AGREED with: ' + (agreePairs.length > 0 ? agreePairs.join('; ') : 'none') + '\n' +
-                    'They DISAGREED with: ' + (disagreePairs.length > 0 ? disagreePairs.join('; ') : 'none') + '\n\n' +
-                    'Provide a thoughtful, personal analysis:\n' +
-                    '1. Name their dominant ethical style and explain what it means in everyday life\n' +
-                    '2. Point out one interesting tension or surprise in their answers (where they broke from their pattern)\n' +
-                    '3. Describe a real situation where their framework would serve them well\n' +
-                    '4. Describe one situation where it might be challenged\n' +
-                    '5. End with an empowering observation about their moral thinking\n\n' +
-                    'Use ' + (band === 'elementary' ? 'simple, warm language for ages 5-10.' : band === 'middle' ? 'engaging language for ages 11-14.' : 'intellectually stimulating language for ages 15-18.') + '\n' +
-                    'Keep it under 250 words. Be affirming — every framework has strengths.';
-                  callGemini(prompt).then(function(result) {
-                    var resp = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
-                    upd('mcAiResp', resp);
-                    upd('mcAiLoad', false);
-                  }).catch(function(err) {
-                    upd('mcAiLoad', false);
-                    addToast('Error: ' + err.message, 'error');
-                  });
-                },
-                disabled: mcAiLoad,
-                style: { padding: '12px 24px', borderRadius: 10, border: 'none', background: mcAiLoad ? _decBg('#334155') : '#6366f1', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: mcAiLoad ? 'default' : 'pointer' }
-              }, mcAiLoad ? 'Analyzing your ethics...' : '\u2728 Get Personalized Analysis')
-            ),
-            mcAiResp && h('div', { style: { padding: 20, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid #6366f144', marginBottom: 16 } },
-              h('p', { style: { fontSize: 10, color: _decFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, '\u2728 Your Moral Profile'),
-              h('div', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, mcAiResp)
-            ),
-            // Retake
-            h('div', { style: { textAlign: 'center' } },
-              h('button', { 'aria-label': 'Retake the assessment',
-                onClick: function() {
-                  upd({ mcAnswers: {}, mcDone: false, mcAiResp: null });
-                  if (soundEnabled) sfxClick();
-                },
-                style: { background: 'none', border: 'none', color: _decFg('#94a3b8'), fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
-              }, 'Retake the assessment')
-            )
-          )
+          (earlierStatements.length > 0 || mcDone || typeof mcAiResp === 'string') && h('details', { style: { borderTop: '1px solid ' + reasoningEdge } },
+            h('summary', { style: { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' } }, 'Earlier quiz records'),
+            h('p', null, 'Your earlier answers, generated text and badges remain in project data. That quiz is no longer used to assign a moral profile. The statements below are historical prompts, not guidance for action.'),
+            h('ul', null, earlierStatements.map(function(item) { return h('li', { key: item.id, style: { marginBottom: 10 } }, item.text + ' — Earlier response: ' + ({ agree: 'Agree', sometimes: 'It depends', disagree: 'Disagree' })[earlierAnswers[item.id]]); })))
         );
       }
 
