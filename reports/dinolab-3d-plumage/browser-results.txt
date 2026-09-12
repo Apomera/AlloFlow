@@ -1,0 +1,53 @@
+
+Running 9 tests using 1 worker
+
+(node:27804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:64:7 › microraptor plumage has connected broad surfaces (1.2m)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:64:7 › archaeopteryx plumage has connected broad surfaces (15.3s)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:64:7 › caudipteryx plumage has connected broad surfaces (1.1m)
+  x  4 [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:64:7 › anchiornis plumage has connected broad surfaces (11.0s)
+(node:30152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:64:7 › sinosauropteryx plumage has connected broad surfaces (10.6s)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:64:7 › tyrannosaurus plumage has connected broad surfaces (17.0s)
+  ok 7 [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:111:5 › tail fans remain rooted during live motion (10.5s)
+(node:32568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 8 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:19:5 › catalog, notebook export, keyboard return, responsive layout, and contrast (19.0s)
+  ok 9 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:73:5 › species-file entry resets stale 3D evidence and connects the live station to the notebook (1.3m)
+
+
+  1) [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:64:7 › anchiornis plumage has connected broad surfaces
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m20[39m
+    Received: [31mundefined[39m
+
+      67 |     if(['sinosauropteryx','tyrannosaurus'].includes(species))expect(result.tracts).toEqual({});
+      68 |     else{
+    > 69 |       expect(result.tracts.forewing).toBe(20);expect(result.tracts['forewing-coverts']).toBe(20);
+         |                                      ^
+      70 |       expect(result.wingSides).toEqual({'forearm--1':10,'forearm-1':10});expect(result.wingArea).toBeGreaterThan(0.002);
+      71 |       expect(result.featherMaps).toBe(1);expect(result.materials).toHaveLength(1);
+      72 |       if(species==='microraptor')for(const channel of result.materials[0].color)expect(channel).toBeLessThan(0.025);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-plumage.spec.ts:69:38
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-plumage\acceptance\dinolab-3d-plumage-anchior-25d7e-as-connected-broad-surfaces-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-plumage\acceptance\dinolab-3d-plumage-anchior-25d7e-as-connected-broad-surfaces-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-plumage\acceptance\dinolab-3d-plumage-anchior-25d7e-as-connected-broad-surfaces-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:64:7 › anchiornis plumage has connected broad surfaces
+  8 passed (5.8m)

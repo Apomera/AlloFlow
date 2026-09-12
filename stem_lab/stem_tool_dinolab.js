@@ -5818,7 +5818,7 @@ window.StemLab = window.StemLab || {
       profile.cranialEvidence = 'Most non-avian theropod quadrates were not freely streptostylic; a synovial upper contact alone does not establish bird-like cranial kinesis.';
     }
     var directFeatherEvidence = /^(archaeopteryx|microraptor|anchiornis|caudipteryx|sinornithosaurus|changyuraptor|jianianhualong|yutyrannus|dilong|sinosauropteryx|beipiaosaurus|ornithomimus|shuvuuia)$/i.test(speciesId) || /preserved (?:with )?(?:filament|feather)|feather impressions|quill knobs confirm/i.test(String((dn && dn.howKnow) || '') + ' ' + String((dn && dn.facts) || ''));
-    var isPennaraptoran = /Dromaeosaur|Troodont|Oviraptor|Caenagnath|Avialae|Scansoriopteryg/i.test(clade);
+    var isPennaraptoran = /Dromaeosaur|Troodont|Oviraptor|Caenagnath|Avialae|Paraves|Scansoriopteryg/i.test(clade);
     if (isPennaraptoran) {
       profile.integumentMode = 'pennaceous';
       profile.filamentCoverage = 0.88;
@@ -6025,7 +6025,7 @@ window.StemLab = window.StemLab || {
     var evidenceText = String((skeletalProfile && skeletalProfile.integumentEvidence) || '').toLowerCase();
     var directFeatherEvidence = /direct|preserv|quill-knob|quill knob|exceptional/.test(evidenceText) && /feather|filament|bristle/.test(evidenceText);
     var directScaleEvidence = /direct|preserv|impression|exceptional/.test(evidenceText) && /scale|skin/.test(evidenceText);
-    var pennaraptoran = /Dromaeosaur|Troodont|Oviraptor|Caenagnath|Avialae|Scansoriopteryg/i.test(clade);
+    var pennaraptoran = /Dromaeosaur|Troodont|Oviraptor|Caenagnath|Avialae|Paraves|Scansoriopteryg/i.test(clade);
     var avianEligible = group === 'theropod' || /^(kulindadromeus|tianyulong|psittacosaurus)$/i.test(speciesId) || /Heterodontosaur/i.test(clade);
     var evidenceMode = {
       id: 'evidence',
@@ -6259,6 +6259,20 @@ window.StemLab = window.StemLab || {
     return Math.max(halfHeight / tangent, halfWidth / (tangent * Math.max(0.1, aspect))) * 1.24 + halfDepth;
   }
 
+  // Align vanes with their feather tract instead of a fixed world-up plane.
+  function dinoFeatherFrame(THREE, direction, spreadAxis) {
+    if (direction.lengthSq() < 0.000001) return null;
+    var along = direction.clone().normalize();
+    var across = (spreadAxis || new THREE.Vector3(0, 0, 1)).clone();
+    across.addScaledVector(along, -across.dot(along));
+    if (across.lengthSq() < 0.000001) {
+      across.set(Math.abs(along.x) < 0.8 ? 1 : 0, Math.abs(along.x) < 0.8 ? 0 : 1, 0);
+      across.addScaledVector(along, -across.dot(along));
+    }
+    across.normalize();
+    var normal = new THREE.Vector3().crossVectors(across, along).normalize();
+    return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(across, along, normal));
+  }
   // Curved, asymmetric feather vane with a root pivot and tapered tip.
   function dinoFeatherGeometry(THREE, length, width) {
     var positions = [], uvs = [], indices = [], rows = 20, columns = 4;
@@ -7639,13 +7653,40 @@ window.StemLab = window.StemLab || {
             var pneumaticMarkerMat = new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.72, side: THREE.DoubleSide, depthWrite: false });
             var keratinMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x4b3525, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.94, 0.58 + inferenceOpacity * 0.48), roughness: 0.90, metalness: 0, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: 0x4b3525, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.94, 0.58 + inferenceOpacity * 0.48), shininess: 5, depthWrite: lifeSurface });
             var filamentMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.90, 0.44 + inferenceOpacity * 0.58), roughness: 0.96, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.90, 0.44 + inferenceOpacity * 0.58), shininess: 2, side: THREE.DoubleSide, depthWrite: lifeSurface });
-            var featherVaneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(integument.pattern === 'iridescent' ? bodyColor : fieldPalette.accent), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), roughness: 0.92, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(integument.pattern === 'iridescent' ? bodyColor : fieldPalette.accent), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), shininess: 3, side: THREE.DoubleSide, depthWrite: lifeSurface });
+            var featherVaneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(integument.pattern === 'white-banded' ? '#dadcd8' : (integument.pattern === 'iridescent' ? bodyColor : fieldPalette.accent)), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), roughness: 0.92, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(integument.pattern === 'white-banded' ? '#dadcd8' : (integument.pattern === 'iridescent' ? bodyColor : fieldPalette.accent)), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), shininess: 3, side: THREE.DoubleSide, depthWrite: lifeSurface });
             var scaleReliefMat = bodyMat.clone();
             scaleReliefMat.roughness = 0.98;
             scaleReliefMat.bumpScale *= 0.5;
             dinoSkinMapping(THREE, scaleReliefMat, Math.max(len * 0.20, ht * 0.60), integument.pattern === 'iridescent' ? 0.07 : 0.22, integument);
             // Palette swatches are sRGB, like the skin canvas; lighting operates in linear color.
             filamentMat.color.convertSRGBToLinear();
+            featherVaneMat.color.convertSRGBToLinear();
+            // A shared, restrained barb pattern follows each vane's own UVs.
+            if (props.showBody && (surfaceHypothesis.wingFeathers || surfaceHypothesis.hindWingFeathers || surfaceHypothesis.tailFan || surfaceHypothesis.tailFrond)) {
+              var featherCanvas = document.createElement('canvas');
+              featherCanvas.width = 128; featherCanvas.height = 512;
+              var featherContext = featherCanvas.getContext('2d');
+              if (featherContext) {
+                featherContext.fillStyle = '#ffffff'; featherContext.fillRect(0, 0, 128, 512);
+                if (integument.pattern === 'white-banded') {
+                  // Keep wing markings monochrome; the warm accent belongs to the crest.
+                  featherContext.fillStyle = '#41464f'; featherContext.fillRect(0, 0, 128, 112);
+                }
+                featherContext.lineWidth = 1.2;
+                for (var barb = -12; barb < 100; barb++) {
+                  var barbY = barb * 6;
+                  featherContext.strokeStyle = barb % 4 ? 'rgba(30,30,30,0.10)' : 'rgba(30,30,30,0.17)';
+                  featherContext.beginPath();
+                  featherContext.moveTo(0, barbY - 27); featherContext.lineTo(64, barbY);
+                  featherContext.lineTo(128, barbY - 36); featherContext.stroke();
+                }
+                var featherTexture = new THREE.CanvasTexture(featherCanvas);
+                if (THREE.sRGBEncoding !== undefined) featherTexture.encoding = THREE.sRGBEncoding;
+                if (THREE.SRGBColorSpace !== undefined) featherTexture.colorSpace = THREE.SRGBColorSpace;
+                if (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) featherTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+                featherVaneMat.map = featherTexture;
+              }
+            }
             activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat, muscle: muscleMat, lung: lungMat, airSac: airSacMat, keratin: keratinMat, filament: filamentMat, feather: featherVaneMat, scaleRelief: scaleReliefMat };
             activeMaterialSet.callout = anatomyCalloutMat;
             [muscleMat, lungMat, airSacMat, anatomyCalloutMat].forEach(function (material) { material.visible = !lifeSurface; });
@@ -7995,20 +8036,18 @@ window.StemLab = window.StemLab || {
               idleMotion.feathers.push({ mesh: mesh, baseRotation: mesh.rotation.clone(), phase: idleMotion.phase + idleMotion.feathers.length * 0.23, amount: 0.010 + (idleMotion.feathers.length % 3) * 0.003 });
               return mesh;
             }
-            function addFeatherVane(base, tip, width) {
+            function addFeatherVane(base, tip, width, spreadAxis, tract) {
               if (!props.showBody) return null;
               var dir = new THREE.Vector3().subVectors(tip, base), dist = dir.length();
               if (!dist) return null;
               var vane = new THREE.Mesh(dinoFeatherGeometry(THREE, dist, width), featherVaneMat);
               vane.position.copy(base);
-              dir.normalize();
-              var featherWidthAxis = new THREE.Vector3().crossVectors(dir, vec(0, 1, 0));
-              if (featherWidthAxis.lengthSq() < 0.000001) featherWidthAxis.set(1, 0, 0);
-              featherWidthAxis.normalize();
-              var featherNormal = new THREE.Vector3().crossVectors(featherWidthAxis, dir).normalize();
-              vane.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(featherWidthAxis, dir, featherNormal));
+              vane.quaternion.copy(dinoFeatherFrame(THREE, dir, spreadAxis));
               vane.castShadow = true; vane.receiveShadow = true; vane.renderOrder = 12;
               vane.userData.dinoFeature = 'feather';
+              vane.userData.featherTract = tract || 'tail';
+              vane.userData.featherLength = dist;
+              vane.userData.featherWidth = width;
               var shaftCurve = new THREE.CatmullRomCurve3([vec(0, 0, 0), vec(0, dist * 0.5, dist * 0.045), vec(0, dist, 0)]);
               var shaft = new THREE.Mesh(new THREE.TubeGeometry(shaftCurve, 12, width * 0.028, 4, false), filamentMat);
               shaft.renderOrder = 13; vane.add(shaft);
@@ -8464,29 +8503,27 @@ window.StemLab = window.StemLab || {
               }
               if (dn.id === 'microraptor' && surfaceHypothesis.tailFrond) {
                 [-1, 1].forEach(function (tailSide) {
-                  var terminalRoot = hip.clone().lerp(tail, 0.86).add(vec(0, 0, tailSide * bodyDepth * 0.08));
-                  var terminalTip = terminalRoot.clone().add(vec(len * 0.15, ht * 0.010, tailSide * bodyDepth * 0.07));
-                  var terminalFeather = addFeatherVane(terminalRoot, terminalTip, len * 0.012);
-                  if (terminalFeather) {
-                    terminalFeather.userData.featherTract = 'terminal-tail';
-                    bindSurfaceDetail(terminalFeather, tailMeshes[0], { point: terminalRoot });
-                  }
+                  addSeatedFeather(tailMeshes[0], tailSurfaceCurve.getPoint(0.88), vec(0, 0.2, tailSide),
+                    vec(len * 0.15, ht * 0.010, tailSide * bodyDepth * 0.07), len * 0.012, vec(0, 0, tailSide), 'terminal-tail');
                 });
               } else if (surfaceHypothesis.tailFan) {
-                var tailFanBase = new THREE.Vector3().copy(hip).lerp(tail, 0.86);
+                var tailFanBase = tailSurfaceCurve.getPoint(0.86);
                 for (var tailFanIndex = 0; tailFanIndex < 9; tailFanIndex++) {
                   var fanOffset = tailFanIndex - 4;
-                  var tailFanRoot = tailFanBase.clone().add(vec(fanOffset * Math.max(0.006 * detailScale, len * 0.0013), 0, 0));
-                  var tailFanTip = tailFanRoot.clone().add(vec(Math.max(0.18 * detailScale, len * 0.12) * (0.90 + (4 - Math.abs(fanOffset)) * 0.025), fanOffset * Math.max(0.020 * detailScale, ht * 0.036), fanOffset * Math.max(0.030 * detailScale, surfaceBodyDepth * 0.18)));
-                  addFeatherVane(tailFanRoot, tailFanTip, Math.max(0.020 * detailScale, ht * 0.010));
+                  var fanDirection = vec(Math.max(0.18 * detailScale, len * 0.12) * (1 - Math.abs(fanOffset) * 0.05),
+                    ht * 0.01, fanOffset * Math.max(0.030 * detailScale, surfaceBodyDepth * 0.18));
+                  addSeatedFeather(tailMeshes[0], tailFanBase, vec(0, 0.6, fanOffset * 0.3),
+                    fanDirection, Math.max(0.020 * detailScale, ht * 0.018), vec(0, 0, 1), 'tail-fan');
                 }
               } else if (surfaceHypothesis.tailFrond) {
                 for (var tailFrondIndex = 0; tailFrondIndex < 8; tailFrondIndex++) {
                   var tailFrondT = 0.26 + tailFrondIndex * 0.085;
                   [-1, 1].forEach(function (frondSide) {
-                    var tailFrondBase = new THREE.Vector3().copy(hip).lerp(tail, tailFrondT);
-                    var tailFrondTip = tailFrondBase.clone().add(vec(Math.max(0.025 * detailScale, len * 0.010), Math.max(0.018 * detailScale, ht * 0.008), frondSide * Math.max(0.10 * detailScale, surfaceBodyDepth * (0.50 - tailFrondT * 0.16))));
-                    addFeatherVane(tailFrondBase, tailFrondTip, Math.max(0.014 * detailScale, ht * 0.0065));
+                    var tailFrondBase = tailSurfaceCurve.getPoint(tailFrondT);
+                    var frondDirection = vec(Math.max(0.025 * detailScale, len * 0.025), ht * 0.008,
+                      frondSide * Math.max(0.10 * detailScale, surfaceBodyDepth * (0.65 - tailFrondT * 0.28)));
+                    addSeatedFeather(tailMeshes[0], tailFrondBase, vec(0, 0.1, frondSide),
+                      frondDirection, Math.max(0.014 * detailScale, len * 0.018), vec(frondSide, 0, 0), 'tail-frond');
                   });
                 }
               }
@@ -9256,6 +9293,31 @@ window.StemLab = window.StemLab || {
               return bindSurfaceDetail(addIntegumentFilament(root, tip, radius), surface, anchor);
             }
 
+            function addSeatedFeather(surface, center, outward, direction, width, spread, tract) {
+              var anchor = surfaceAnchor(surface, center, outward);
+              if (!anchor) return null;
+              var root = anchor.point.clone().addScaledVector(anchor.normal, -width * 0.03);
+              var vane = addFeatherVane(root, root.clone().add(direction), width, spread, tract);
+              return bindSurfaceDetail(vane, surface, anchor);
+            }
+            function addLimbPlumage(surface, start, end, side, hind) {
+              var spread = end.clone().sub(start), span = spread.length();
+              var count = hind ? 8 : 10, tract = hind ? 'hind-wing' : 'forewing';
+              for (var featherIndex = 0; featherIndex < count; featherIndex++) {
+                var t = 0.08 + featherIndex / (count - 1) * 0.86;
+                var center = start.clone().lerp(end, t);
+                var fanLength = len * (hind ? 0.075 : 0.085) * (0.82 + Math.sin(t * Math.PI * 0.72) * 0.48);
+                var direction = vec(fanLength, -fanLength * (0.14 + t * 0.10), side * fanLength * (0.25 + t * 0.22));
+                var width = Math.max(span / count * 1.08, fanLength * 0.14);
+                var outward = vec(1, 0.05, side * 0.4);
+                addSeatedFeather(surface, center, outward, direction, width, spread, tract);
+                // Short overlapping coverts soften the transition into the long vanes.
+                var covertDirection = direction.clone().multiplyScalar(0.46).add(vec(0, width * 0.16, side * width * 0.16));
+                addSeatedFeather(surface, center, vec(1, 0.18, side * 0.6),
+                  covertDirection, width * 0.88, spread, tract + '-coverts');
+              }
+            }
+
             function addLeg(x, z, front) {
               var top = front ? shoulder : hip;
               var sideSign = z >= 0 ? 1 : -1;
@@ -9302,14 +9364,6 @@ window.StemLab = window.StemLab || {
               addLimbJoint(ankle, new THREE.Vector3().subVectors(foot, ankle), Math.max(0.034 * detailScale, ht * 0.012) * limbRobustness, 1.20);
               addDigitFan(foot, front, sideSign);
               addSoftTissueDigitFan(foot, front, sideSign, distalScale);
-              if (props.showBody && !front && surfaceHypothesis.hindWingFeathers) {
-                for (var hindFeatherIndex = 0; hindFeatherIndex < 6; hindFeatherIndex++) {
-                  var hindFeatherT = 0.12 + hindFeatherIndex * 0.13;
-                  var hindFeatherRoot = new THREE.Vector3().copy(knee).lerp(ankle, hindFeatherT);
-                  var hindFeatherTip = hindFeatherRoot.clone().add(vec(Math.max(0.06 * detailScale, len * (0.075 + hindFeatherIndex * 0.006)), -Math.max(0.025 * detailScale, ht * 0.012), sideSign * Math.max(0.08 * detailScale, bodyDepth * (0.34 + hindFeatherIndex * 0.035))));
-                  addFeatherVane(hindFeatherRoot, hindFeatherTip, Math.max(0.012 * detailScale, ht * 0.040));
-                }
-              }
               if (props.showBody) {
                 var upperMuscleScale = front ? skeletalProfile.chestMuscleScale * 0.68 : skeletalProfile.thighMuscleScale;
                 var lowerMuscleScale = front ? skeletalProfile.chestMuscleScale * 0.54 : skeletalProfile.calfMuscleScale;
@@ -9328,7 +9382,9 @@ window.StemLab = window.StemLab || {
                 var limbSkinRoot = topPoint.clone(); limbSkinRoot.z *= 0.40;
                 var upperLimbShell = addSoftTissueChain([limbSkinRoot, thighMid, knee, calfMid, ankle, foot],
                   [thighRadius * 0.88, thighRadius, kneeRadius, kneeRadius * 1.02, ankleRadius, ankleRadius * 0.68], bodyMat)[0];
+                upperLimbShell.userData.dinoRegion = (front ? 'foreleg-' : 'hindleg-') + sideSign;
                 addBodyContour(upperLimbShell);
+                if (!front && surfaceHypothesis.hindWingFeathers) addLimbPlumage(upperLimbShell, knee, ankle, sideSign, true);
               }
             }
             var stance = Math.max(0.055 * detailScale, bodyDepth * 0.68) * skeletalProfile.stanceWidth;
@@ -9390,17 +9446,16 @@ window.StemLab = window.StemLab || {
                     if (props.showBody) addBodyContour(addEllipsoid(fingerTip, vec(Math.max(0.010 * detailScale, handLength * 0.11), Math.max(0.007 * detailScale, ht * 0.0030), Math.max(0.008 * detailScale, bodyDepth * 0.030)), headMat));
                   }
                 }
-                if (props.showBody && surfaceHypothesis.wingFeathers) {
-                  for (var wingFeatherIndex = 0; wingFeatherIndex < 7; wingFeatherIndex++) {
-                    var wingFeatherT = 0.10 + wingFeatherIndex * 0.13;
-                    var wingFeatherRoot = new THREE.Vector3().copy(elbow).lerp(wrist, wingFeatherT);
-                    var wingFeatherTip = wingFeatherRoot.clone().add(vec(Math.max(0.08 * detailScale, len * (0.080 + wingFeatherIndex * 0.008)), -Math.max(0.04 * detailScale, ht * (0.016 + wingFeatherIndex * 0.0018)), armSide * Math.max(0.06 * detailScale, bodyDepth * (0.30 + wingFeatherIndex * 0.035))));
-                    addFeatherVane(wingFeatherRoot, wingFeatherTip, Math.max(0.014 * detailScale, ht * 0.045));
-                  }
-                }
                 if (props.showBody) {
-                  addBodyContour(addSoftTissueCylinder(armStart, elbow, Math.max(0.025 * detailScale, ht * 0.010) * armRobustness, Math.max(0.020 * detailScale, ht * 0.008) * armRobustness));
-                  addBodyContour(addSoftTissueCylinder(elbow, wrist, Math.max(0.020 * detailScale, ht * 0.008) * armRobustness, Math.max(0.014 * detailScale, ht * 0.0055) * armRobustness));
+                  var armShell = addSoftTissueChain([armStart, armStart.clone().lerp(elbow, 0.55), elbow, elbow.clone().lerp(wrist, 0.55), wrist],
+                    [Math.max(0.025 * detailScale, ht * 0.010) * armRobustness,
+                     Math.max(0.024 * detailScale, ht * 0.010) * armRobustness,
+                     Math.max(0.020 * detailScale, ht * 0.008) * armRobustness,
+                     Math.max(0.017 * detailScale, ht * 0.007) * armRobustness,
+                     Math.max(0.014 * detailScale, ht * 0.0055) * armRobustness], bodyMat)[0];
+                  armShell.userData.dinoRegion = 'forearm-' + armSide;
+                  addBodyContour(armShell);
+                  if (surfaceHypothesis.wingFeathers) addLimbPlumage(armShell, elbow, wrist, armSide, false);
                 }
               });
             }

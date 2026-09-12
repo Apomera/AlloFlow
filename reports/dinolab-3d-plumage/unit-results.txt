@@ -1,0 +1,151 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/dinolab_3d_accessibility.test.js
+[PureHelpers] 7 helpers registered
+
+ ❯ tests/dinolab_3d_accessibility.test.js (15 tests | 1 failed) 171341ms
+     × supports focused keyboard rotation with live status and cleanup 109ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > supports focused keyboard rotation with live status and cleanup
+AssertionError: expected '/**\n * stem_tool_dinolab.js — Dino L…' to contain 'addSoftTissueCylinder(armStart, elbow'
+
+
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
+
+ ❯ tests/dinolab_3d_accessibility.test.js:249:20
+    247|     expect(source).toContain("side: THREE.BackSide, depthWrite: false"…
+    248|     expect(source).toContain('var neckMeshes = addSoftTissueChain([sho…
+    249|     expect(source).toContain('addSoftTissueCylinder(armStart, elbow');
+       |                    ^
+    250|     expect(source).toContain('function addTextLabel(text, pos, color, …
+    251|     expect(source).toContain('(parent || model).add(sprite);');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 144 passed (145)
+   Start at  11:58:23
+   Duration  289.46s (transform 5.74s, setup 3.67s, import 5.57s, tests 192.59s, environment 64.08s)

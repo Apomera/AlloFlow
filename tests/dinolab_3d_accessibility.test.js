@@ -246,7 +246,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('function addBodyContour(mesh)');
     expect(source).toContain("side: THREE.BackSide, depthWrite: false");
     expect(source).toContain('var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head]');
-    expect(source).toContain('addSoftTissueCylinder(armStart, elbow');
+    expect(source).toContain('var armShell = addSoftTissueChain([armStart');
     expect(source).toContain('function addTextLabel(text, pos, color, scaleFactor, parent)');
     expect(source).toContain('(parent || model).add(sprite);');
     expect(source).toContain("addTextLabel(rt + ' m'");
@@ -524,7 +524,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var filamentMat = THREE.MeshStandardMaterial');
     expect(source).toContain('var featherVaneMat = THREE.MeshStandardMaterial');
     expect(source).toContain('function addIntegumentFilament(base, tip, radius)');
-    expect(source).toContain('function addFeatherVane(base, tip, width)');
+    expect(source).toContain('function addFeatherVane(base, tip, width, spreadAxis, tract)');
     expect(source).toContain('if (surfaceHypothesis.dorsalBristles)');
     expect(source).toContain('if (surfaceHypothesis.tailFan)');
     expect(source).toContain('else if (surfaceHypothesis.tailFrond)');

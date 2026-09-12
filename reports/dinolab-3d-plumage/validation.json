@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-12",
+  "scope": "Dino Lab feather surfaces and profile eligibility",
+  "focusedTestsPassed": 149,
+  "focusedTestFiles": 7,
+  "newFeatherTests": 14,
+  "broadRun": {
+    "passed": 144,
+    "failed": 1
+  },
+  "targetedReruns": {
+    "featherAndProfilePassed": 14,
+    "rendererContractPassed": 1
+  },
+  "browserScenariosPassed": 9,
+  "browserAcceptance": {
+    "passed": 8,
+    "failed": 1
+  },
+  "finalAnchiornisRecheck": "passed",
+  "testedSpecies": [
+    "microraptor",
+    "archaeopteryx",
+    "caudipteryx",
+    "anchiornis",
+    "sinosauropteryx",
+    "tyrannosaurus"
+  ],
+  "moduleCopies": 3,
+  "moduleSha256": "61A7EF09D5ABCF90193DD03213BD14996359CC5EB1D9134B37BC26BA001D6F3C",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "rendering": "Three.js r128 in Chromium with software WebGL",
+  "deployment": "No deployment or push performed"
+}

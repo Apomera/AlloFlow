@@ -1,0 +1,41 @@
+{
+  "tracts": {
+    "terminal-tail": 2,
+    "hind-wing": 16,
+    "hind-wing-coverts": 16,
+    "forewing": 20,
+    "forewing-coverts": 20
+  },
+  "owners": {
+    "tail": 2,
+    "hindleg-1": 16,
+    "hindleg--1": 16,
+    "forearm--1": 20,
+    "forearm-1": 20
+  },
+  "rootGap": 0.030000000000001616,
+  "wingArea": 0.08642676422511975,
+  "wingSides": {
+    "forearm--1": 10,
+    "forearm-1": 10
+  },
+  "materials": [
+    {
+      "uuid": "331AE7E0-4AC6-4EF7-A1D9-1466150C0777",
+      "color": [
+        0.008568125615105716,
+        0.00972121731707524,
+        0.015996293361446288
+      ],
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true
+    }
+  ],
+  "featherMaps": 1,
+  "invalid": 0,
+  "outside": 0,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}
