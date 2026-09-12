@@ -152,6 +152,29 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   }, 120000);
 
+  it('growth reframe notes and chosen support survive the real hub return and reopen flow', async () => {
+    await mount();
+    await page.locator('[data-sel-tool-card-id="growthmindset"]').click();
+    const activity=page.getByRole('region',{name:'Grounded reframe practice',exact:true});
+    await activity.getByLabel('Choose a reframe scenario',{exact:true}).selectOption('m3');
+    await activity.getByLabel('A fair response to the thought (optional)',{exact:true}).fill('Ask for the criterion and a specific example.');
+    await activity.getByText('2. Choose a strategy, support or pause',{exact:true}).click();
+    await activity.getByLabel('A route to explore (optional)',{exact:true}).selectOption('support');
+    await activity.getByRole('button',{name:'Explore a changed situation',exact:true}).click();
+    await activity.getByLabel('What would you keep or change now? (optional)',{exact:true}).fill('Use the clear correction; question the unexplained judgment.');
+    const support=page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="growthmindset"]').click();
+    expect(await activity.getByLabel('Choose a reframe scenario',{exact:true}).inputValue()).toBe('m3');
+    expect(await activity.getByLabel('A fair response to the thought (optional)',{exact:true}).inputValue()).toContain('specific example');
+    expect(await activity.getByLabel('What would you keep or change now? (optional)',{exact:true}).inputValue()).toContain('unexplained judgment');
+    await activity.getByText('2. Choose a strategy, support or pause',{exact:true}).click();
+    expect(await activity.getByLabel('A route to explore (optional)',{exact:true}).inputValue()).toBe('support');
+    expect(await page.evaluate(()=>window.__alloflowSelToolData.growthmindset.reframeScore)).toBeUndefined();
+    expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

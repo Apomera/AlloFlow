@@ -131,62 +131,410 @@ window.SelHub = window.SelHub || {
 
   // Brain Science facts — grade-adaptive
   var BRAIN_FACTS = {
-    elementary: [
-      { title: 'Your Brain Grows!', text: 'Every time you practice something hard, tiny connections in your brain called neurons get stronger. It\u2019s like building a bridge \u2014 the more you walk across it, the stronger it gets.', emoji: '\uD83E\uDDE0' },
-      { title: 'Mistakes Make You Smarter', text: 'When you make a mistake, your brain actually fires MORE signals than when you get something right. Mistakes are your brain\u2019s favorite way to learn!', emoji: '\u26A1' },
-      { title: 'The Power of Practice', text: 'Nobody is born knowing how to read, ride a bike, or do math. Every skill you have was once something you couldn\u2019t do. Your brain learned it through practice.', emoji: '\uD83D\uDCAA' },
-      { title: 'Brain Muscles', text: 'Your brain isn\u2019t actually a muscle, but it works like one. The more you exercise it by trying hard things, the stronger and better it gets at learning.', emoji: '\uD83C\uDFCB\uFE0F' },
-      { title: 'Neurons That Fire Together', text: 'When you practice something, your brain cells connect to each other. The more you practice, the faster the signals travel. That\u2019s why things get easier!', emoji: '\uD83C\uDF1F' },
-    ],
-    middle: [
-      { title: 'Neuroplasticity', text: 'The brain shows some plasticity throughout life \u2014 synapses strengthen and weaken with use. Popular claims that your brain "literally rewires itself when you struggle" often overstate what the research shows; the changes are real but slower and more specific than the rewiring metaphor suggests.', emoji: '\uD83E\uDDE0' },
-      { title: 'The Effort Effect', text: 'Early studies linked growth mindset to greater persistence on hard tasks. Whether mindset itself causes higher grades is contested \u2014 a large meta-analysis (Sisk et al., 2018) found average effects on achievement are small, and Dweck herself has acknowledged the impact is smaller than early framing suggested. Persistence is still worth practicing.', emoji: '\uD83D\uDCCA' },
-      { title: 'Productive Struggle', text: 'The feeling of struggling with something difficult isn\u2019t failure \u2014 it\u2019s the feeling of your brain growing. Neuroscientists call this "desirable difficulty." Easy tasks don\u2019t build new pathways.', emoji: '\uD83E\uDDD7' },
-      { title: 'The Feedback Loop', text: 'When you try, fail, adjust, and try again, you\u2019re running the most powerful learning algorithm nature ever built. Each iteration strengthens the neural pathway. Persistence isn\u2019t just character \u2014 it\u2019s neuroscience.', emoji: '\uD83D\uDD04' },
-      { title: 'Myelin: The Speed Coating', text: 'When you repeat a skill, your brain wraps the neural pathway in myelin \u2014 a fatty coating that makes signals travel up to 100x faster. That\u2019s why practice doesn\u2019t just help you remember; it makes you genuinely faster.', emoji: '\u26A1' },
-    ],
-    high: [
-      { title: 'Neuroplasticity & Identity', text: 'Carol Dweck\u2019s research reveals that mindset isn\u2019t just about academic performance \u2014 it shapes identity. People with growth mindsets don\u2019t just learn more; they respond to setbacks differently, seek harder challenges, and maintain motivation through failure.', emoji: '\uD83E\uDDE0' },
-      { title: 'The Neuroscience of Effort', text: 'fMRI studies show that growth-mindset individuals show increased activity in the anterior cingulate cortex (error monitoring) and dorsolateral prefrontal cortex (strategy adjustment) when facing challenges. Fixed-mindset brains disengage.', emoji: '\uD83D\uDCCA' },
-      { title: 'Experience Shapes the Brain', text: 'Behavior and environment can influence health and gene expression over time, but specific epigenetic claims tied to mindset interventions are not well-supported by current evidence. What is well-established: practice, sleep, and stress regulation measurably affect how your brain learns.', emoji: '\uD83E\uDDEC' },
-      { title: 'Transfer & Metacognition', text: 'Growth mindset enables metacognitive monitoring \u2014 the ability to observe your own thinking. This meta-awareness is what allows you to transfer strategies from one domain to another, making you a better learner across every subject.', emoji: '\uD83D\uDD0D' },
-      { title: 'The Social Dimension', text: 'Mindset is contagious. Research by Mary Murphy shows that organizations and classrooms develop "mindset cultures." When a teacher communicates growth mindset, students\u2019 stress hormones decrease and performance improves.', emoji: '\uD83C\uDF10' },
-    ]
-  };
+  "elementary": [
+    {
+      "title": "Learning takes different paths",
+      "text": "People learn in different ways and at different speeds. Notice one part you understand and one part where you need help.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Use an error as a clue",
+      "text": "A mistake can show a step to check. Ask for an explanation or example; making the mistake by itself does not tell you how to fix it.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Change something useful",
+      "text": "If the same practice is not helping, try a clearer example, different materials or support. More effort is not the only choice.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Hard is a signal to check",
+      "text": "Hard work can be interesting, frustrating or too much. Feeling overwhelmed is not proof that your brain is growing. You can pause and ask for help.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Show what you understand",
+      "text": "Try explaining, drawing or showing one thing you learned. Needing a tool or another person does not make your understanding less valuable.",
+      "emoji": "\ud83c\udf31"
+    }
+  ],
+  "middle": [
+    {
+      "title": "Learning and the brain",
+      "text": "Brains change with experience, but a difficult feeling cannot tell you how much learning has happened. Look for what you can explain or do with appropriate support.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "A belief is not a guarantee",
+      "text": "Believing improvement is possible may support trying a useful approach. It cannot guarantee a grade or remove barriers such as missing instruction or inaccessible materials.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Find a manageable challenge",
+      "text": "Ask whether a task offers a useful challenge and enough support. Continuing confusion without useful feedback is a reason to change the task or seek help.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Make feedback actionable",
+      "text": "Useful feedback identifies a feature of the work and a possible next step. Ask for specifics and question comments that are inaccurate, unfair or insulting.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Review the strategy",
+      "text": "After a short trial, check what changed in your understanding. Keep, adjust or stop a strategy based on what it helps you do, not how much effort it costs.",
+      "emoji": "\ud83c\udf31"
+    }
+  ],
+  "high": [
+    {
+      "title": "Change without a fixed label",
+      "text": "People can develop knowledge and skills over time. Avoid sorting people into fixed and growth brain types; a statement in one situation does not define a person.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Context matters",
+      "text": "A large school experiment found that growth-mindset intervention effects varied with context. A belief-focused activity is not a substitute for instruction, access or supportive conditions.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Interpret evidence carefully",
+      "text": "A brain image or a story about neurons does not establish what an individual learner needs. Examine the task, prior knowledge, feedback and available supports.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Test transfer",
+      "text": "Success on a familiar example does not guarantee use in a new setting. Explain when a strategy fits and check it on a different example with feedback.",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "title": "Share responsibility for access",
+      "text": "Invite learners to identify useful strategies while adults address instruction and unfair conditions. Choosing a sustainable goal or leaving an unsuitable route can be a thoughtful decision.",
+      "emoji": "\ud83c\udf31"
+    }
+  ]
+};
 
   // Fixed → Growth reframe challenges
   var REFRAMES = {
-    elementary: [
-      { fixed: 'I can\u2019t do math.', growth: 'I can\u2019t do math YET. I\u2019m still learning.', hint: 'Add the word "yet" \u2014 it changes everything!' },
-      { fixed: 'I\u2019m not smart.', growth: 'I\u2019m getting smarter every time I try.', hint: 'Smart isn\u2019t something you ARE \u2014 it\u2019s something you BECOME.' },
-      { fixed: 'This is too hard.', growth: 'This is hard, and that means my brain is growing.', hint: 'Hard things are the ones that make you stronger.' },
-      { fixed: 'She\u2019s better than me.', growth: 'She\u2019s been practicing longer. I can learn from her.', hint: 'Other people\u2019s success shows you what\u2019s possible.' },
-      { fixed: 'I give up.', growth: 'I\u2019ll try a different way.', hint: 'Giving up stops the learning. Trying differently IS learning.' },
-      { fixed: 'I already know this.', growth: 'I can always learn more about this.', hint: 'Even experts keep learning.' },
-      { fixed: 'I made a mistake.', growth: 'Mistakes help me learn what to do next.', hint: 'Every expert was once a beginner who made lots of mistakes.' },
-      { fixed: 'I\u2019ll never be good at reading.', growth: 'Reading gets easier the more I practice.', hint: 'Your favorite author once struggled with the alphabet too.' },
-      { fixed: 'I don\u2019t want to try because I might fail.', growth: 'I\u2019ll try because even if I fail, I\u2019ll learn something.', hint: 'The only real failure is not trying.' },
-      { fixed: 'My drawing looks bad.', growth: 'My drawing is getting better with each one I make.', hint: 'Compare yourself to yesterday, not to someone else.' },
-    ],
-    middle: [
-      { fixed: 'I\u2019m just not a math person.', growth: 'I haven\u2019t found my strategy for math yet. Let me try a different approach.', hint: '"Math person" isn\u2019t a type of person \u2014 it\u2019s a skill anyone can develop.' },
-      { fixed: 'I\u2019m terrible at public speaking.', growth: 'Public speaking feels uncomfortable because I haven\u2019t practiced enough yet. Each time gets easier.', hint: 'Discomfort is the feeling of a skill being built.' },
-      { fixed: 'That feedback is unfair.', growth: 'Even if the feedback stings, there might be something useful in it I can learn from.', hint: 'Feedback is data, not judgment.' },
-      { fixed: 'If I have to work hard, it means I\u2019m not talented.', growth: 'Hard work is how talent is built. Even prodigies practice for thousands of hours.', hint: 'Effort isn\u2019t the opposite of talent \u2014 it\u2019s the engine of talent.' },
-      { fixed: 'Other people make it look easy.', growth: 'I\u2019m seeing their performance, not their practice. Everyone struggles behind the scenes.', hint: 'You\u2019re comparing your behind-the-scenes to their highlight reel.' },
-      { fixed: 'I failed the test, so I\u2019m dumb.', growth: 'The test showed me what I need to study next. Now I have a map.', hint: 'A test score is a GPS coordinate, not a life sentence.' },
-      { fixed: 'Why bother? I\u2019ll never be as good as them.', growth: 'My goal isn\u2019t to be them. It\u2019s to be better than I was yesterday.', hint: 'The only meaningful comparison is with your past self.' },
-      { fixed: 'I don\u2019t belong in this advanced class.', growth: 'I\u2019m here because someone saw potential in me. Let me prove them right.', hint: 'Imposter syndrome is growth mindset\u2019s shadow. It means you\u2019re stretching.' },
-    ],
-    high: [
-      { fixed: 'I\u2019m not creative.', growth: 'Creativity is a practice, not a trait. I can develop it through experimentation and embracing failure.', hint: 'Every creative breakthrough was preceded by hundreds of bad ideas.' },
-      { fixed: 'I should already know this by now.', growth: 'Learning doesn\u2019t follow a schedule. Understanding has its own timeline.', hint: 'Einstein didn\u2019t publish general relativity until age 36 \u2014 after years of wrong turns.' },
-      { fixed: 'If I ask for help, people will think I\u2019m incompetent.', growth: 'Asking for help is a sign of self-awareness and strategic thinking. The strongest learners leverage every resource.', hint: 'No significant achievement in human history was accomplished alone.' },
-      { fixed: 'My SAT score defines my potential.', growth: 'A standardized test measures a narrow set of skills on a single day. My potential is defined by what I choose to work toward.', hint: 'The correlation between test scores and life success is weaker than most people think.' },
-      { fixed: 'I\u2019m not the kind of person who can do this.', growth: 'Identity isn\u2019t destiny. I can choose to become the kind of person who does this, one decision at a time.', hint: 'James Clear: "Every action is a vote for the type of person you want to become."' },
-      { fixed: 'Some people are just naturally better.', growth: 'Natural ability gives a head start, not a ceiling. Deliberate practice is the equalizer.', hint: 'K. Anders Ericsson\u2019s research: expertise requires ~10,000 hours regardless of initial talent.' },
-    ]
-  };
+  "elementary": [
+    {
+      "id": "e1",
+      "title": "Getting started in math",
+      "thought": "I cannot do math.",
+      "context": "A learner gets stuck on regrouping in two subtraction problems.",
+      "valid": "Those steps really are confusing right now.",
+      "check": "Do two problems tell us about every kind of math?",
+      "model": "I am stuck on regrouping. I can ask someone to show that step with blocks.",
+      "step": "Try one example with blocks, then explain where a group of ten went.",
+      "support": "Ask the teacher for a worked example and time to use the blocks.",
+      "review": "After one supported example, check whether the step makes sense; ask for another explanation if needed.",
+      "change": "The blocks help, but the written symbols are still confusing."
+    },
+    {
+      "id": "e2",
+      "title": "A label after a hard task",
+      "thought": "I am not smart.",
+      "context": "A learner cannot finish a puzzle that classmates completed.",
+      "valid": "Being left behind can feel disappointing.",
+      "check": "What parts were understandable? Were the instructions clear?",
+      "model": "This puzzle was hard for me today. It does not tell everything about how I learn.",
+      "step": "Find one piece that fits and explain the clue used.",
+      "support": "Ask a partner to explain a clue without finishing the puzzle for you.",
+      "review": "After a few pieces, decide whether a new clue or a break would help.",
+      "change": "The learner notices that some pieces are missing."
+    },
+    {
+      "id": "e3",
+      "title": "When hard means too much",
+      "thought": "This is too hard.",
+      "context": "A learner tries a long worksheet while the room is noisy.",
+      "valid": "Noise and a long task can make starting harder.",
+      "check": "Is the difficulty the skill, the amount, the setting, or more than one?",
+      "model": "I need a smaller starting point and less noise. Being overwhelmed does not mean I am learning more.",
+      "step": "Try one item in a quieter agreed space.",
+      "support": "Ask an adult to help reduce noise or split the task.",
+      "review": "After the first item, check whether the setting helps; pause and seek support if it is still too much.",
+      "change": "The quiet space is unavailable today."
+    },
+    {
+      "id": "e4",
+      "title": "Comparing with a classmate",
+      "thought": "She is better than me.",
+      "context": "A classmate finishes a drawing quickly.",
+      "valid": "The drawings may look different, and that can feel discouraging.",
+      "check": "Do we know the classmate's experience, tools or goal?",
+      "model": "I can notice something I like in her drawing and choose one thing I want to try in mine.",
+      "step": "Try one kind of line or shading that interests you.",
+      "support": "Ask permission before asking the classmate to explain a technique.",
+      "review": "Compare one chosen feature with your own goal, not who finished first.",
+      "change": "The classmate does not want to teach the technique."
+    },
+    {
+      "id": "e5",
+      "title": "Choosing a pause",
+      "thought": "I give up.",
+      "context": "A learner's paper tower falls repeatedly and they are tired.",
+      "valid": "Repeated attempts can be tiring and frustrating.",
+      "check": "Would another identical attempt help, or is a pause or new design needed?",
+      "model": "I can stop for now. If I return, I can change the base instead of repeating the same design.",
+      "step": "After a chosen pause, try a wider base if you still want to.",
+      "support": "Ask for a demonstration or help finding suitable materials.",
+      "review": "Check stability after one changed design; returning today is optional.",
+      "change": "The available paper cannot support the planned height."
+    },
+    {
+      "id": "e6",
+      "title": "Already knowing part of it",
+      "thought": "I already know this.",
+      "context": "A learner can solve the first problems in a practice set.",
+      "valid": "Some practice may be familiar.",
+      "check": "Can the learner explain the method and use it in a different example?",
+      "model": "I know this part. I can check my understanding and ask for a useful next challenge.",
+      "step": "Explain one solution, then try an example with a small change.",
+      "support": "Ask the teacher for appropriate extension work if the skill is secure.",
+      "review": "Use the explanation to decide whether to extend or review a particular step.",
+      "change": "The changed example reveals a step the learner cannot explain."
+    },
+    {
+      "id": "e7",
+      "title": "Learning after an error",
+      "thought": "I made a mistake.",
+      "context": "A learner uses the wrong unit in a measurement.",
+      "valid": "The answer needs a correction; feeling annoyed is understandable.",
+      "check": "Which step produced the error? A mistake alone does not teach the next step.",
+      "model": "I used the wrong unit. I can check the label and correct that part.",
+      "step": "Compare the tool's unit label with the answer, then measure once more.",
+      "support": "Ask someone to model reading the unit if the label is unclear.",
+      "review": "Check whether the new answer uses the correct unit and makes sense.",
+      "change": "The label is too small to read comfortably."
+    },
+    {
+      "id": "e8",
+      "title": "Reading with support",
+      "thought": "I will never be good at reading.",
+      "context": "A learner keeps losing their place in a passage.",
+      "valid": "Reading this passage is difficult right now.",
+      "check": "Would clearer print, a guide, audio or reading instruction help?",
+      "model": "I need help with this passage. I can use a support while learning the part that is hard.",
+      "step": "Try a line guide or accessible text for a short section.",
+      "support": "Ask the teacher to identify the difficulty and provide appropriate instruction.",
+      "review": "Check understanding and comfort after the section; speed is not the only sign of progress.",
+      "change": "A line guide helps tracking but some words remain unfamiliar."
+    },
+    {
+      "id": "e9",
+      "title": "Trying with enough safety",
+      "thought": "I do not want to try because I might fail.",
+      "context": "A learner avoids sharing a first attempt in front of the class.",
+      "valid": "A public first attempt can feel risky.",
+      "check": "Could the learner practice privately or choose another way to show the idea?",
+      "model": "I do not have to make my first attempt in front of everyone. I can choose a supported start.",
+      "step": "Rehearse one part privately or show a drawing instead.",
+      "support": "Ask the teacher for an agreed way to practice without public exposure.",
+      "review": "Check whether the route makes trying manageable; more exposure is not required.",
+      "change": "Someone laughs during a practice attempt."
+    },
+    {
+      "id": "e10",
+      "title": "An artwork that does not fit the plan",
+      "thought": "My drawing looks bad.",
+      "context": "A learner wanted a recognizable animal but is unhappy with the shape.",
+      "valid": "The drawing does not yet match the learner's intention.",
+      "check": "Which feature matters to the learner? Art can have different goals.",
+      "model": "I do not like this shape. I can change one feature, keep it as an experiment, or start another version.",
+      "step": "Choose one feature to adjust using a reference if useful.",
+      "support": "Ask for specific feedback about that feature rather than a good-or-bad rating.",
+      "review": "Decide whether the change serves your intention; keeping an unusual result is allowed.",
+      "change": "The learner decides the unusual shape is something they like."
+    }
+  ],
+  "middle": [
+    {
+      "id": "m1",
+      "title": "Finding the missing math step",
+      "thought": "I am just not a math person.",
+      "context": "A learner repeatedly loses track when solving equations.",
+      "valid": "The current method is not working well.",
+      "check": "Which step breaks down? Are examples and notation accessible?",
+      "model": "I am stuck on keeping the equation balanced. I can learn that step with a clearer example.",
+      "step": "Annotate one worked equation, then try a similar one with feedback.",
+      "support": "Ask for a model that explains why each side changes.",
+      "review": "Check the same step in a new example; repeated errors suggest the explanation needs changing.",
+      "change": "The learner understands the example but cannot start a differently worded problem."
+    },
+    {
+      "id": "m2",
+      "title": "Speaking with options",
+      "thought": "I am terrible at public speaking.",
+      "context": "A learner knows the material but freezes during a class presentation.",
+      "valid": "Speaking in this setting is difficult; practice does not guarantee it will feel easy.",
+      "check": "Is the barrier preparation, audience pressure, communication access, or something else?",
+      "model": "I understand my topic. I can ask for a way to present that lets me communicate it.",
+      "step": "Rehearse a short part with notes, or propose an agreed recording or supported format.",
+      "support": "Ask the teacher to clarify the learning goal and available participation options.",
+      "review": "Check whether the chosen format communicates the idea; comfort and access matter too.",
+      "change": "The presentation must include questions from an audience."
+    },
+    {
+      "id": "m3",
+      "title": "Questioning feedback fairly",
+      "thought": "That feedback is unfair.",
+      "context": "A teacher writes 'careless' on a project without identifying an example.",
+      "valid": "Vague or unfair feedback is reasonable to question.",
+      "check": "What criterion was used? Which part of the work does the comment refer to?",
+      "model": "I need specific feedback before I can use it. I can ask for an example and question a judgment that is not supported.",
+      "step": "Compare one comment with the rubric and ask a factual question about the mismatch.",
+      "support": "Seek a trusted adult's support if asking directly feels unsafe or the concern is dismissed.",
+      "review": "Check whether the response identifies something actionable and applies criteria consistently.",
+      "change": "The teacher supplies a valid correction but leaves another concern unexplained."
+    },
+    {
+      "id": "m4",
+      "title": "Effort without a verdict",
+      "thought": "If I have to work hard, I am not talented.",
+      "context": "A learner spends a long time on a science explanation without making progress.",
+      "valid": "The work is taking real effort.",
+      "check": "Is the time producing understanding, or repeating an unhelpful approach?",
+      "model": "Time spent is not a verdict on ability. I can change how I study and ask where my explanation breaks down.",
+      "step": "Explain one process using a diagram, then compare it with a worked model.",
+      "support": "Ask for feedback on the first unclear link rather than a rating of talent.",
+      "review": "Check whether the link becomes clearer; more time alone is not the target.",
+      "change": "The learner has less study time because of responsibilities at home."
+    },
+    {
+      "id": "m5",
+      "title": "The part we cannot see",
+      "thought": "Other people make it look easy.",
+      "context": "Classmates solve a task quickly while one learner needs more time.",
+      "valid": "Their current speed differs from the learner's.",
+      "check": "Do we know their preparation, supports or familiarity? We cannot assume everyone struggles privately.",
+      "model": "I can see their speed, but not everything behind it. I can focus on understanding the step I need.",
+      "step": "Work through one step accurately and explain the reasoning.",
+      "support": "Ask for enough time and an example at the right level.",
+      "review": "Review understanding, not whether speed matches someone else's.",
+      "change": "A timed format is preventing the learner from showing what they understand."
+    },
+    {
+      "id": "m6",
+      "title": "Interpreting a test result",
+      "thought": "I failed the test, so I am dumb.",
+      "context": "A learner receives a low score after studying.",
+      "valid": "The result is disappointing and may have consequences.",
+      "check": "Which items show missing knowledge, misunderstood directions or access barriers?",
+      "model": "This score is one result. I can examine what happened and choose a specific next step.",
+      "step": "Sort a few errors by cause before choosing one concept to revisit.",
+      "support": "Ask to review the marked work and discuss unclear directions or missing supports.",
+      "review": "Try a related item with feedback; check whether the chosen cause was accurate.",
+      "change": "Most errors came from misreading the instructions rather than the studied concept."
+    },
+    {
+      "id": "m7",
+      "title": "A goal worth choosing",
+      "thought": "Why bother? I will never be as good as them.",
+      "context": "A learner considers leaving a club after comparing performances.",
+      "valid": "Comparison can make an activity less enjoyable.",
+      "check": "Does the learner still value this activity? Staying and leaving both deserve thought.",
+      "model": "I can choose what I want from this club. I do not have to outperform someone to participate, and I can choose another activity.",
+      "step": "Try one personally meaningful goal if the learner wants to continue.",
+      "support": "Discuss workload, access or alternative roles with a supportive adult.",
+      "review": "Revisit enjoyment, energy and the chosen goal after an agreed trial; leaving remains an option.",
+      "change": "A new responsibility makes the club schedule unmanageable."
+    },
+    {
+      "id": "m8",
+      "title": "Belonging and classroom conditions",
+      "thought": "I do not belong in this advanced class.",
+      "context": "A learner struggles with an unfamiliar topic and hears classmates make excluding remarks.",
+      "valid": "The topic is difficult, and exclusion needs a response.",
+      "check": "Which learning support is missing? Which classroom behavior needs to change?",
+      "model": "I deserve respectful access to learning. I can seek help with the topic and support with the exclusion.",
+      "step": "Identify one prerequisite to review without accepting classmates' exclusion as a verdict.",
+      "support": "Ask a trusted adult to help address the remarks and arrange learning support.",
+      "review": "Review whether both instruction and classroom conditions improve; the learner need not prove worth by enduring mistreatment.",
+      "change": "Extra instruction helps the topic, but the excluding remarks continue."
+    }
+  ],
+  "high": [
+    {
+      "id": "h1",
+      "title": "Creating within constraints",
+      "thought": "I am not creative.",
+      "context": "A learner cannot develop an idea for an open-ended design assignment.",
+      "valid": "An open brief can make starting difficult.",
+      "check": "Is the barrier generating ideas, choosing one, unclear criteria or missing resources?",
+      "model": "I am stuck at the idea stage. I can narrow the brief and test a small variation rather than judge my identity.",
+      "step": "Choose one constraint and sketch two variations.",
+      "support": "Ask for examples of different valid approaches and access to suitable materials.",
+      "review": "Compare the variations with one criterion; revise the approach if neither fits.",
+      "change": "The preferred idea requires materials the learner cannot access."
+    },
+    {
+      "id": "h2",
+      "title": "A missing prerequisite",
+      "thought": "I should already know this by now.",
+      "context": "A learner encounters a prerequisite not taught in their previous course.",
+      "valid": "The missing knowledge is real; shame does not explain the gap.",
+      "check": "What was taught, and what does the new task assume?",
+      "model": "I have a specific gap to address. I can ask for an explanation and a realistic plan without blaming myself for missing instruction.",
+      "step": "Work through a short prerequisite example before returning to the task.",
+      "support": "Ask for targeted instruction and an appropriate timeline.",
+      "review": "Check whether the prerequisite can be used in the current task; revise the plan if more instruction is needed.",
+      "change": "The deadline arrives before the needed instruction is available."
+    },
+    {
+      "id": "h3",
+      "title": "Help that is safe to request",
+      "thought": "If I ask for help, people will think I am incompetent.",
+      "context": "A learner has a question but worries about a dismissive response.",
+      "valid": "Other people's reactions are uncertain, and previous dismissal may matter.",
+      "check": "Who has responded constructively? Is a private or supported request possible?",
+      "model": "I can choose whom and how to ask. Needing an explanation is not a full account of my competence.",
+      "step": "Prepare a specific question, using only details needed for the request.",
+      "support": "Choose a trusted person or ask someone to help make the request.",
+      "review": "Check whether the response is respectful and useful; seek another route if it is not.",
+      "change": "The first person dismisses the question instead of answering it."
+    },
+    {
+      "id": "h4",
+      "title": "A score and a wider plan",
+      "thought": "My test score defines my potential.",
+      "context": "A learner receives a standardized-test result below a program's stated target.",
+      "valid": "The score may affect this application; disappointment makes sense.",
+      "check": "What does the program actually require, and what choices are available?",
+      "model": "This score can matter for this route, but it does not describe all of me. I can check requirements and consider feasible options.",
+      "step": "Verify current criteria before deciding whether a retake or another route fits.",
+      "support": "Ask a counselor to compare costs, access needs, deadlines and alternatives.",
+      "review": "Review the plan when requirements and resources are known; a retake is optional.",
+      "change": "A retake would cost money or time needed for something else."
+    },
+    {
+      "id": "h5",
+      "title": "Trying without changing identity",
+      "thought": "I am not the kind of person who can do this.",
+      "context": "A learner is interested in a technical club but rarely sees people like them represented.",
+      "valid": "Representation and belonging can affect whether a space feels welcoming.",
+      "check": "What experience is required? Are there barriers in the group, rather than in the learner's identity?",
+      "model": "I can explore this interest as myself. I can ask about an accessible starting role and whether the group will support me.",
+      "step": "Try an optional introductory task if the setting feels suitable.",
+      "support": "Ask a trusted mentor about entry routes and how the group handles exclusion.",
+      "review": "Review interest, access and treatment after the trial; leaving an unwelcoming space is valid.",
+      "change": "A member makes a stereotype-based comment during the visit."
+    },
+    {
+      "id": "h6",
+      "title": "Practice with unequal resources",
+      "thought": "Some people are just naturally better.",
+      "context": "A learner compares their progress with someone who has more instruction and equipment.",
+      "valid": "People differ in experience, circumstances and current skill.",
+      "check": "Which resources and opportunities differ? Practice does not guarantee equal outcomes.",
+      "model": "I can work on a chosen skill while recognizing unequal access. I do not need to explain every difference as talent or effort.",
+      "step": "Choose a focused practice task that fits the available time and equipment.",
+      "support": "Ask about shared equipment, affordable instruction or a different way to participate.",
+      "review": "Check the chosen skill after a feasible trial; adjust the goal or support instead of endlessly adding hours.",
+      "change": "The learner loses access to the equipment used for practice."
+    }
+  ]
+};
 
   // Famous "Yet" Stories — real people who persisted
   var YET_STORIES = {
@@ -220,7 +568,7 @@ window.SelHub = window.SelHub || {
   window.SelHub.registerTool('growthmindset', {
     icon: '\uD83C\uDF31',
     label: 'Growth Mindset Workshop',
-    desc: 'Discover how your brain grows through effort \u2014 learn to transform "I can\u2019t" into "I can\u2019t yet."',
+    desc: 'Explore learning strategies, fair self-talk, support and thoughtful changes of direction.',
     color: 'emerald',
     category: 'self-direction',
     render: function(ctx) {
@@ -245,7 +593,7 @@ window.SelHub = window.SelHub || {
       };
 
       // Navigation
-      var activeTab     = d.activeTab || 'brain';
+      var activeTab     = d.activeTab || 'reframe';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Brain Science state
@@ -323,7 +671,7 @@ window.SelHub = window.SelHub || {
       // ── Tab Bar ──
       // ══════════════════════════════════════════════════════════
       var TABS = [
-        { id: 'brain',    icon: '\uD83E\uDDE0', label: 'Brain Science' },
+        { id: 'brain',    icon: '\uD83E\uDDE0', label: 'Learning & Practice' },
         { id: 'reframe',  icon: '\uD83D\uDD04', label: 'Reframe It' },
         { id: 'stories',  icon: '\uD83C\uDF1F', label: 'Yet Stories' },
         { id: 'map',      icon: '\uD83D\uDDFA\uFE0F', label: 'My Growth Map' },
@@ -394,8 +742,8 @@ window.SelHub = window.SelHub || {
       // ── Topic-accent hero band per tab ──
       var heroBand = (function() {
         var TAB_META = {
-          brain:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',   icon: '\uD83E\uDDE0', title: 'Brain Science \u2014 the brain changes with practice',     hint: 'Neuroplasticity is real but often oversold: synapses do strengthen with practice, and Kandel\u2019s Nobel work showed learning leaves physical traces in neurons. The popular "rewires itself" framing exceeds what the evidence supports for most everyday learning.' },
-          reframe:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83D\uDD04', title: 'Reframe It \u2014 fixed thought \u2192 growth thought',     hint: 'Carol Dweck (Mindset, 2006): \u201CI can\u2019t do this\u201D \u2192 \u201CI can\u2019t do this YET.\u201D The reframe is a useful self-talk practice. Note: Dweck has acknowledged that achievement effects in replication studies (e.g., Sisk et al., 2018 meta-analysis) are smaller than early popular framing suggested \u2014 the value is in stance toward struggle, not a guaranteed grade boost.' },
+          brain:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)', icon: '\uD83E\uDDE0', title: 'Learning & Practice - conditions that help', hint: 'Explore practice, feedback and access. Effort and a positive belief alone do not guarantee learning; check what support and changes are useful.' },
+          reframe:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDD04', title: 'Reframe It - honest, specific and workable', hint: 'Acknowledge what is hard. Question broad judgments, choose support or a strategy, and revisit the plan when conditions change.' },
           stories:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)',  icon: '\uD83C\uDF1F', title: 'Yet Stories \u2014 the world\u2019s late bloomers',         hint: 'Edison\u2019s 10,000 light-bulb attempts, J.K. Rowling\u2019s 12 rejections, Michael Jordan cut from varsity, Einstein didn\u2019t speak till 4. Survivor narratives \u2014 but the pattern (struggle \u2192 persistence \u2192 mastery) is real research too.' },
           map:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDDFA', title: 'My Growth Map \u2014 your own then-now-next',              hint: 'Pick something you can do now that you couldn\u2019t a year ago. That\u2019s your living evidence of growth-mindset working. Bandura: vicarious self-efficacy is real, but personal mastery experience is the strongest source.' },
           coach:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\uD83E\uDD16', title: 'AI Coach \u2014 reframe partner on demand',                hint: 'Type a stuck thought; the coach helps you find the growth-language version. Repeated exposure builds the habit. NOT a substitute for therapy or hard conversations \u2014 a rehearsal space for the easier reframes.' },
@@ -448,11 +796,11 @@ window.SelHub = window.SelHub || {
               })
             ),
             h('div', { className: 'sel-hero-icon', style: { fontSize: '56px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(5,150,105,0.3))' } }, '\uD83E\uDDE0'),
-            h('h3', { style: { fontSize: '20px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px', letterSpacing: '-0.3px' } }, 'Your Brain is Amazing'),
+            h('h3', { style: { fontSize: '20px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px', letterSpacing: '-0.3px' } }, 'Conditions for learning'),
             h('p', { style: { fontSize: '13px', color: _gmC('#94a3b8'), margin: 0, maxWidth: '400px', marginLeft: 'auto', marginRight: 'auto' } },
-              band === 'elementary' ? 'Discover how your brain grows stronger every day!'
-              : band === 'middle' ? 'The neuroscience behind why effort changes your brain.'
-              : 'How mindset research is reshaping our understanding of human potential.')
+              band === 'elementary' ? 'Explore what helps you understand, practice and ask for help.'
+              : band === 'middle' ? 'Explore how strategies, feedback and access support learning.'
+              : 'Consider evidence, context and the limits of any one approach.')
           ),
           // Fact card with enhanced visuals
           h('div', {
@@ -472,7 +820,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: '36px', background: 'rgba(255,255,255,0.6)', borderRadius: '14px', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' } }, currentFact.emoji),
                 h('div', null,
                   h('h4', { style: { fontSize: '17px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 2px' } }, currentFact.title),
-                  h('div', { style: { fontSize: '10px', color: EMERALD, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' } }, 'Fact ' + (brainFactIdx % facts.length + 1) + ' of ' + facts.length)
+                  h('div', { style: { fontSize: '10px', color: EMERALD, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' } }, 'Idea ' + (brainFactIdx % facts.length + 1) + ' of ' + facts.length)
                 )
               ),
               h('p', { style: { fontSize: '14px', lineHeight: 1.8, color: _gmC('#1f2937'), margin: 0 } }, currentFact.text)
@@ -499,7 +847,7 @@ window.SelHub = window.SelHub || {
                 upd({ brainFactIdx: next, brainExplored: Object.assign({}, brainExplored, (function() { var o = {}; o[next] = true; return o; })()) });
                 if (soundEnabled) sfxNeuron();
                 if (Object.keys(Object.assign({}, brainExplored, (function() { var o = {}; o[next] = true; return o; })())).length >= facts.length) {
-                  if (awardXP) awardXP(15, 'Explored all Brain Science facts!');
+                  if (awardXP) awardXP(15, 'Explored all learning ideas!');
                 }
               },
               style: { padding: '10px 20px', background: 'linear-gradient(135deg, ' + EMERALD + ', #047857)', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: '#fff', boxShadow: '0 4px 12px rgba(5,150,105,0.3)' }
@@ -539,99 +887,113 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var reframeContent = null;
       if (activeTab === 'reframe') {
-        var reframes = REFRAMES[band] || REFRAMES.elementary;
-        var current = reframes[reframeIdx % reframes.length];
-
-        reframeContent = h('div', { className: 'sel-hero', style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(5,150,105,0.3))' } }, '\uD83D\uDD04'),
-            h('h3', { style: { fontSize: '20px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px', letterSpacing: '-0.3px' } }, 'The Reframe Engine'),
-            h('p', { style: { fontSize: '13px', color: _gmC('#94a3b8'), margin: 0 } }, 'Transform fixed mindset thoughts into growth mindset power.')
+        var practiceBand = Object.prototype.hasOwnProperty.call(REFRAMES, band) ? band : 'elementary';
+        var reframes = REFRAMES[practiceBand];
+        var selected = d.practiceSelected && d.practiceSelected[practiceBand];
+        var legacyIndex = Number.isInteger(d.reframeIdx) && d.reframeIdx >= 0 ? d.reframeIdx % reframes.length : 0;
+        var current = reframes.find(function(item) { return item.id === selected; }) || reframes[legacyIndex];
+        var practiceDrafts = d.practiceDrafts && typeof d.practiceDrafts === 'object' && !Array.isArray(d.practiceDrafts) ? d.practiceDrafts : {};
+        var savedPractice = practiceDrafts[current.id];
+        var practice = savedPractice && typeof savedPractice === 'object' && !Array.isArray(savedPractice) ? savedPractice : {};
+        var note = function(key) { return typeof practice[key] === 'string' ? practice[key] : ''; };
+        var savePractice = function(values) {
+          var next = Object.assign({}, practiceDrafts);
+          next[current.id] = Object.assign({}, practice, values);
+          upd('practiceDrafts', next);
+        };
+        var surface = _gmC('#fff'), ink = _gmC('#1f2937');
+        var edge = _gmHC ? '#ffff00' : _gmDark ? '#94a3b8' : '#64748b';
+        var cardStyle = { padding: '16px', margin: '14px 0', background: surface, color: ink, border: '1px solid ' + edge, borderRadius: '12px', minWidth: 0 };
+        var controlStyle = { minHeight: '44px', maxWidth: '100%', width: '100%', padding: '10px', border: '1px solid ' + edge, borderRadius: '8px', background: surface, color: ink, font: 'inherit', fontSize: '16px', boxSizing: 'border-box' };
+        var buttonStyle = { minHeight: '44px', padding: '10px 14px', border: '2px solid ' + edge, borderRadius: '8px', background: surface, color: ink, font: 'inherit', fontWeight: 700, cursor: 'pointer', maxWidth: '100%', whiteSpace: 'normal' };
+        var summaryStyle = { minHeight: '44px', padding: '10px 0', fontWeight: 700, cursor: 'pointer', boxSizing: 'border-box' };
+        var field = function(key, label, hint) {
+          var id = 'gm-practice-' + key;
+          return h('div', { key: key, style: { margin: '14px 0' } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, label),
+            hint && h('p', { id: id + '-hint', style: { margin: '4px 0 8px' } }, hint),
+            h('textarea', { id: id, rows: 3, value: note(key), 'aria-describedby': hint ? id + '-hint' : undefined,
+              onChange: function(ev) { var values = {}; values[key] = ev.target.value; savePractice(values); },
+              style: Object.assign({}, controlStyle, { resize: 'vertical' }) })
+          );
+        };
+        var routes = [
+          { id: 'adjust', label: 'Try an adjustment', guidance: 'Change one part of the method and check what it helps. Repeating the same effort is not the only option.' },
+          { id: 'support', label: 'Ask for support', guidance: 'Name the explanation, access change or adult action needed. A learner does not have to solve an unfair condition alone.' },
+          { id: 'pause', label: 'Pause and review', guidance: 'A pause does not need to be earned. Choose whether and when to reconsider; stopping is not a character judgment.' },
+          { id: 'change', label: 'Change the goal or route', guidance: 'Consider what matters, available resources and competing needs. Changing direction can be a considered decision.' }
+        ];
+        var route = routes.find(function(item) { return item.id === note('route'); });
+        var oldDraft = typeof d.reframeInput === 'string' ? d.reframeInput : '';
+        reframeContent = h('section', { 'aria-label': 'Grounded reframe practice', style: { padding: '16px', maxWidth: '760px', margin: '0 auto', background: surface, color: ink, fontSize: '14px', lineHeight: 1.65, overflowWrap: 'anywhere' } },
+          h('h3', { style: { fontSize: '22px', margin: '0 0 8px' } }, 'A fair thought, a workable next step'),
+          h('p', null, 'Explore fictional situations. A useful reframe can acknowledge frustration, unfairness or limits. You do not have to feel positive, add "yet", or keep pursuing a goal.'),
+          h('p', null, 'Writing and every step are optional. Think, draw or discuss instead. Models are examples to examine, not answers to match. Your notes stay in this tool state; use the project save controls if you want to keep a project copy.'),
+          h('label', { htmlFor: 'gm-practice-case', style: { display: 'block', fontWeight: 700 } }, 'Choose a reframe scenario'),
+          h('select', { id: 'gm-practice-case', value: current.id, style: controlStyle,
+            onChange: function(ev) { var next = Object.assign({}, d.practiceSelected || {}); next[practiceBand] = ev.target.value; upd('practiceSelected', next); } },
+            reframes.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })
           ),
-          // Score with visual progress ring
-          reframeTotal > 0 && h('div', { className: 'sel-card', style: { display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '20px' } },
-            h('div', { style: { background: 'linear-gradient(135deg, ' + _gmC('#ecfdf5') + ', ' + _gmC('#d1fae5') + ')', borderRadius: '14px', padding: '10px 20px', textAlign: 'center', boxShadow: '0 2px 8px rgba(5,150,105,0.1)' } },
-              h('div', { style: { fontSize: '24px', fontWeight: 800, color: EMERALD } }, reframeScore),
-              h('div', { style: { fontSize: '9px', color: _gmC('#065f46'), fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'reframed')
+          h('div', { key: current.id },
+            h('article', { style: cardStyle, 'aria-labelledby': 'gm-practice-case-title' },
+              h('h4', { id: 'gm-practice-case-title', style: { fontSize: '18px', margin: '0 0 8px' } }, current.title),
+              h('p', null, current.context),
+              h('p', null, h('strong', null, 'A thought in this situation: '), current.thought)
             ),
-            h('div', { style: { display: 'flex', alignItems: 'center', fontSize: '24px', color: '#d1d5db' } }, '/'),
-            h('div', { style: { background: 'linear-gradient(135deg, ' + _gmC('#fffbeb') + ', ' + _gmC('#fef3c7') + ')', borderRadius: '14px', padding: '10px 20px', textAlign: 'center', boxShadow: '0 2px 8px rgba(217,119,6,0.1)' } },
-              h('div', { style: { fontSize: '24px', fontWeight: 800, color: AMBER } }, reframeTotal),
-              h('div', { style: { fontSize: '9px', color: _gmC('#92400e'), fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'attempted')
+            h('details', { open: true, style: cardStyle },
+              h('summary', { style: summaryStyle }, '1. Notice what is real and what is assumed'),
+              h('p', null, h('strong', null, 'What deserves acknowledgment: '), current.valid),
+              h('p', null, h('strong', null, 'A question to investigate: '), current.check),
+              field('evidence', 'What is known, and what needs checking? (optional)', 'Keep observations separate from guesses about ability, motives or the future.'),
+              field('first', 'A fair response to the thought (optional)', 'Keep the real concern. Make the claim specific and leave room for support or a different choice.')
+            ),
+            h('div', { style: cardStyle },
+              h('button', { type: 'button', style: buttonStyle, 'aria-expanded': practice.modelSeen === true, 'aria-controls': 'gm-practice-model',
+                onClick: function() { savePractice({ modelSeen: true }); } }, practice.modelSeen === true ? 'Example is open' : 'Compare a grounded example'),
+              h('div', { id: 'gm-practice-model', hidden: practice.modelSeen !== true },
+                h('p', null, current.model),
+                h('p', null, 'Compare: Does this acknowledge the difficulty? Does it avoid a sweeping judgment? Does it suggest a feasible choice? You may disagree with or adapt the example.')
+              )
+            ),
+            h('details', { style: cardStyle },
+              h('summary', { style: summaryStyle }, '2. Choose a strategy, support or pause'),
+              h('details', null,
+                h('summary', { style: summaryStyle }, 'Explore a step and support for this case'),
+                h('p', null, h('strong', null, 'A possible step: '), current.step),
+                h('p', null, h('strong', null, 'Support or a change around the learner: '), current.support),
+                h('p', null, h('strong', null, 'A useful review point: '), current.review)
+              ),
+              h('label', { htmlFor: 'gm-practice-route', style: { display: 'block', fontWeight: 700 } }, 'A route to explore (optional)'),
+              h('select', { id: 'gm-practice-route', style: controlStyle, value: route ? route.id : '',
+                onChange: function(ev) { savePractice({ route: ev.target.value }); } },
+                h('option', { value: '' }, 'Choose when useful'), routes.map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); })
+              ),
+              h('p', { role: 'status', 'aria-live': 'polite' }, route ? route.guidance : 'More than one route may fit. You can change your selection or leave it blank.'),
+              field('plan', 'A step or support that fits (optional)', 'What could the learner try, request, pause or change? Who else needs to act?'),
+              field('review', 'What would make you review the plan? (optional)', 'Look for understanding, access or a useful result, not just more effort. Include a reason to stop or seek different support.')
+            ),
+            h('div', { style: cardStyle },
+              h('h4', { id: 'gm-practice-change-title', style: { fontSize: '18px', margin: '0 0 8px' } }, '3. Revisit when the situation changes'),
+              h('button', { type: 'button', style: buttonStyle, 'aria-expanded': practice.changeSeen === true, 'aria-controls': 'gm-practice-change',
+                onClick: function() { savePractice({ changeSeen: true }); } }, practice.changeSeen === true ? 'Changed situation shown' : 'Explore a changed situation'),
+              h('div', { id: 'gm-practice-change', hidden: practice.changeSeen !== true },
+                h('p', null, h('strong', null, 'Imagine this happens: '), current.change),
+                field('revised', 'What would you keep or change now? (optional)', 'Explain what still fits or what needs adjusting. Your earlier response remains above; it does not need to be replaced.')
+              )
+            ),
+            oldDraft.trim() && h('details', { style: cardStyle },
+              h('summary', { style: summaryStyle }, 'An earlier unassigned response is available'),
+              h('p', null, 'The older activity did not record which case or grade band this response belonged to. Check the context before copying it.'),
+              h('p', { style: { whiteSpace: 'pre-wrap' } }, oldDraft),
+              h('button', { type: 'button', style: buttonStyle,
+                onClick: function() { if (!note('first').trim()) savePractice({ first: oldDraft }); } }, 'Copy earlier response into an empty draft'),
+              h('p', null, 'Copying keeps the earlier response and never replaces current writing.')
             )
-          ),
-          // Fixed mindset thought — dramatic red card with visual weight
-          h('div', {
-            className: 'sel-card',
-            key: 'fixed-' + reframeIdx,
-            style: {
-              background: 'linear-gradient(135deg, ' + _gmC('#fef2f2') + ', ' + _gmC('#fee2e2') + ')', border: '2px solid #fca5a5',
-              borderRadius: '20px', padding: '24px', marginBottom: '14px', position: 'relative',
-              boxShadow: '0 4px 16px rgba(220,38,38,0.1)'
-            }
-          },
-            // Visual "thought cloud" connector
-            h('div', { style: { position: 'absolute', top: '-10px', left: '24px' } },
-              h('div', { style: { width: '20px', height: '20px', borderRadius: '50%', background: _gmC('#fef2f2'), border: '2px solid #fca5a5' } }),
-              h('div', { style: { width: '10px', height: '10px', borderRadius: '50%', background: _gmC('#fef2f2'), border: '1.5px solid #fca5a5', position: 'absolute', top: '-8px', left: '6px' } })
-            ),
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
-              h('div', { style: { fontSize: '20px', background: 'rgba(220,38,38,0.1)', borderRadius: '8px', padding: '4px 8px' } }, '\uD83D\uDED1'),
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _gmC('#dc2626'), textTransform: 'uppercase', letterSpacing: '0.1em' } }, 'Fixed Mindset Thought')
-            ),
-            h('p', { style: { fontSize: '17px', fontWeight: 700, color: _gmC('#7f1d1d'), margin: 0, fontStyle: 'italic', lineHeight: 1.5 } }, '\u201C' + current.fixed + '\u201D')
-          ),
-          // Transformation arrow
-          !reframeRevealed && h('div', { style: { textAlign: 'center', margin: '4px 0', fontSize: '24px', color: '#d1d5db' } }, '\u2193'),
-          // Input area with enhanced styling
-          !reframeRevealed && h('div', { style: { marginBottom: '12px' } },
-            h('label', { style: { fontSize: '12px', fontWeight: 700, color: EMERALD_DARK, display: 'block', marginBottom: '6px' } }, '\u2728 How would you reframe this with a growth mindset?'),
-            h('textarea', {
-              value: reframeInput,
-              onChange: function(ev) { upd('reframeInput', ev.target.value); },
-              placeholder: 'Type your growth mindset version...',
-              'aria-label': 'Reframe the fixed mindset thought',
-              style: { width: '100%', border: '2px solid #6ee7b7', borderRadius: '14px', padding: '14px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', minHeight: '70px', boxSizing: 'border-box', background: _gmC('#f0fdf4'), transition: 'border-color 0.2s, box-shadow 0.2s' }
-            }),
-            h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', alignItems: 'center' } },
-              h('button', {
-                className: 'sel-btn',
-                onClick: function() {
-                  upd({ reframeRevealed: true, reframeTotal: reframeTotal + 1, reframeScore: reframeInput.trim() ? reframeScore + 1 : reframeScore });
-                  if (soundEnabled) sfxReframe();
-                  if (reframeInput.trim() && awardXP) awardXP(10, 'Reframed a fixed mindset thought!');
-                  if (announceToSR) announceToSR('Growth mindset reframe revealed');
-                },
-                style: { padding: '10px 24px', background: 'linear-gradient(135deg, ' + EMERALD + ', #047857)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(5,150,105,0.3)' }
-              }, '\u2728 Show Growth Version'),
-              h('p', { style: { fontSize: '11px', color: _gmC('#94a3b8'), margin: 0, display: 'flex', alignItems: 'center', gap: '4px' } }, '\uD83D\uDCA1 ', h('em', null, current.hint))
-            )
-          ),
-          // Revealed growth mindset version
-          reframeRevealed && h('div', null,
-            reframeInput.trim() && h('div', { style: { background: _gmC('#eff6ff'), border: '2px solid #93c5fd', borderRadius: '12px', padding: '14px', marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 600, color: _gmC('#2563eb'), marginBottom: '4px' } }, '\uD83D\uDCAD Your reframe:'),
-              h('p', { style: { fontSize: '14px', color: _gmC('#1e3a8a'), margin: 0, fontStyle: 'italic' } }, '"' + reframeInput + '"')
-            ),
-            h('div', { style: { background: EMERALD_LIGHT, border: '2px solid #6ee7b7', borderRadius: '16px', padding: '20px', marginBottom: '12px', position: 'relative' } },
-              h('div', { style: { position: 'absolute', top: '-12px', left: '20px', background: EMERALD_LIGHT, borderTop: '2px solid #6ee7b7', borderRight: '2px solid #6ee7b7', borderLeft: '2px solid #6ee7b7', borderBottom: 'none', borderRight: 'none', borderRadius: '8px 0 0 0', width: '20px', height: '12px', transform: 'rotate(45deg)' } }),
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: EMERALD, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, '\uD83C\uDF31 Growth Mindset Version'),
-              h('p', { style: { fontSize: '16px', fontWeight: 700, color: EMERALD_DARK, margin: 0 } }, '"' + current.growth + '"')
-            ),
-            h('button', {
-              onClick: function() {
-                var next = (reframeIdx + 1) % reframes.length;
-                upd({ reframeIdx: next, reframeInput: '', reframeRevealed: false });
-              },
-              style: { padding: '10px 24px', background: EMERALD, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'block', margin: '0 auto' }
-            }, 'Next Challenge \u2192')
           )
         );
       }
 
-      // ══════════════════════════════════════════════════════════
-      // ── Section: Yet Stories ──
-      // ══════════════════════════════════════════════════════════
+      // Yet Stories retains its existing saved state and rendering.
       var storiesContent = null;
       if (activeTab === 'stories') {
         var stories = YET_STORIES[band] || YET_STORIES.elementary;

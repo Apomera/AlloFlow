@@ -1,0 +1,55 @@
+{
+  "date": "2026-09-12",
+  "tool": "Growth Mindset Workshop",
+  "activity": "Reframe It",
+  "coverage": {
+    "reframeCases": 24,
+    "elementary": 10,
+    "middle": 8,
+    "high": 6,
+    "learningCards": 15
+  },
+  "tests": {
+    "distinctPassed": 562,
+    "existingRegressionPassed": 527,
+    "focusedBrowserPassed": 33,
+    "actualHubPassed": 2,
+    "existingRegressionSkipped": 2,
+    "hubTestsExcludedByNameFilter": 81,
+    "initialRenderSmokeToolsPassed": 72
+  },
+  "accessibility": {
+    "scope": "Grounded reframe practice region, all enabled axe rules",
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "violationsPerTheme": 0,
+    "phoneWidth": 320,
+    "visualReview": [
+      "dark-evidence-phone.png",
+      "contrast-revision-phone.png"
+    ]
+  },
+  "checks": {
+    "sourceAndPublicByteIdentical": true,
+    "sha256": "9e5c037ea793b13efdec792cf1b2b5f127ec703699282a93acc551330c93d1d7",
+    "sourceAndBrowserTestSyntax": "passed",
+    "scopedWhitespace": "passed"
+  },
+  "logs": [
+    "reports/sel-growth-depth-focused.log",
+    "reports/sel-growth-depth-regressions.log",
+    "reports/sel-growth-depth-hub.log",
+    "reports/sel-growth-depth-render.log"
+  ],
+  "limits": [
+    "Focused browser tests use the actual renderer with simulated callbacks.",
+    "Actual hub return and reopen checked separately.",
+    "Serialized restoration is not a real project-file round trip.",
+    "Other Growth Mindset Workshop workflows, packaged Desktop, live assistive technology and classroom outcomes were not validated."
+  ],
+  "pushed": false,
+  "deployed": false
+}
