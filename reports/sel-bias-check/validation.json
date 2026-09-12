@@ -1,0 +1,56 @@
+{
+  "date": "2026-09-12",
+  "pass": 25,
+  "scope": "Decision Workshop Bias Check evidence practice",
+  "refinedExamples": 24,
+  "originalIdsAndBandOrderRetained": true,
+  "optionalNoteFields": 5,
+  "focusedBrowser": {
+    "passed": 30,
+    "finalCopyFocusAndAnnouncementVerified": true
+  },
+  "regressions": {
+    "files": 12,
+    "passed": 581,
+    "preExistingSkipped": 2
+  },
+  "actualHub": {
+    "passed": 3,
+    "filteredOut": 90
+  },
+  "uniqueTestsPassed": 614,
+  "accessibility": {
+    "region": "Bias evidence practice including expanded notes and legacy copy controls",
+    "viewportWidth": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scans": 3,
+    "violations": 0,
+    "certification": false
+  },
+  "visualReview": {
+    "captures": 9,
+    "reviewed": true
+  },
+  "sourcePublicSha256": "b00217284b872cb35b5b3974e7663db8b2bfb6bb587a9189db0caa86d6c31613",
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "syntax": "passed",
+  "whitespace": "passed",
+  "historicalData": "Reflection, index, reveal flag, count, log and badges preserved. Copy into an empty working thought only. No new reading rewards.",
+  "deployment": "none",
+  "limitations": [
+    "Targeted browser and accessibility checks, not full-app certification.",
+    "Authored evidence practice, not a validated assessment or guarantee of debiasing.",
+    "Ignored generated desktop/app-build output not rebuilt."
+  ],
+  "commit": {
+    "status": "ready",
+    "reason": "Unrelated source-pair mismatch cleared on recheck; scoped commit uses the normal hook."
+  }
+}

@@ -412,6 +412,30 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   },120000);
 
+  it('bias evidence notes survive example changes and the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="decisions"]').click();
+    await page.getByRole('tab',{name:/Bias Check/}).click();
+    const practice=page.getByRole('region',{name:'Bias evidence practice',exact:true});
+    await practice.getByText('Build an evidence check (optional)',{exact:true}).click();
+    await practice.getByLabel('What we know (optional)',{exact:true}).fill('A reader could not find the event time.');
+    await practice.getByLabel('A useful check or support (optional)',{exact:true}).fill('Ask a willing reader to locate the time without a hint.');
+    await practice.getByLabel('Choose a thinking pattern',{exact:true}).selectOption('b8');
+    await practice.getByText('Build an evidence check (optional)',{exact:true}).click();
+    await practice.getByLabel('A working thought (optional)',{exact:true}).fill('Compare the remaining work with the requirements.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="decisions"]').click();
+    expect(await practice.getByLabel('Choose a thinking pattern',{exact:true}).inputValue()).toBe('b8');
+    await practice.getByText('Build an evidence check (optional)',{exact:true}).click();
+    expect(await practice.getByLabel('A working thought (optional)',{exact:true}).inputValue()).toContain('remaining work');
+    await practice.getByLabel('Choose a thinking pattern',{exact:true}).selectOption('b7');
+    await practice.getByText('Build an evidence check (optional)',{exact:true}).click();
+    expect(await practice.getByLabel('What we know (optional)',{exact:true}).inputValue()).toContain('event time');
+    expect(await practice.getByLabel('A useful check or support (optional)',{exact:true}).inputValue()).toContain('without a hint');
+    const data=await page.evaluate(()=>window.__alloflowSelToolData.decisions);
+    expect(data.biasViewed).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

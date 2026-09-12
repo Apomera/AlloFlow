@@ -664,133 +664,277 @@ window.SelHub = window.SelHub || {
   // Students learn to recognize thinking traps
   // ══════════════════════════════════════════════════════════════
   var BIAS_DATA = {
-    elementary: [
-      { id: 'b1', name: 'The Bandwagon Effect', simple: 'Following the Crowd', icon: '\uD83D\uDE8C',
-        desc: 'Doing something just because everyone else is doing it, without thinking about whether it\'s right for you.',
-        example: 'All your friends say the new movie is amazing, so you say it\'s your favorite too — even though you actually thought it was just okay.',
-        question: 'Can you think of a time you changed your opinion to match the group? What did you really think?',
-        antidote: 'Before agreeing, ask yourself: "Is this really what I think, or am I just going along?"' },
-      { id: 'b2', name: 'Black-and-White Thinking', simple: 'All or Nothing', icon: '\u26AB',
-        desc: 'Seeing things as only good or bad, with nothing in between.',
-        example: 'You get a B on a test and say "I\'m terrible at math" — even though a B is actually good.',
-        question: 'Is there a time you said "always" or "never" about something that was really only "sometimes"?',
-        antidote: 'Try replacing "always" and "never" with "sometimes" or "this time."' },
-      { id: 'b3', name: 'The Halo Effect', simple: 'Judging by First Look', icon: '\uD83D\uDE07',
-        desc: 'Thinking someone is all-good (or all-bad) based on one thing about them.',
-        example: 'A new kid has cool shoes, so you assume they\'re nice and fun to play with — before you even talk to them.',
-        question: 'Have you ever been surprised that someone was different than you expected?',
-        antidote: 'Remember: cool on the outside doesn\'t always mean kind on the inside (and vice versa!).' },
-      { id: 'b4', name: 'Wishful Thinking', simple: 'Believing What You Want', icon: '\u2B50',
-        desc: 'Believing something is true just because you want it to be true.',
-        example: 'You didn\'t study for the spelling test, but you tell yourself "I\'ll just know the words" because you really want to do well.',
-        question: 'Has wishing something were true ever gotten in the way of preparing for it?',
-        antidote: 'Ask: "Is this what I hope will happen, or what I actually think will happen?"' },
-      { id: 'b5', name: 'Blame Shifting', simple: 'It\'s Not My Fault', icon: '\uD83D\uDC48',
-        desc: 'Always finding a reason why problems are someone else\'s fault, never your own.',
-        example: 'You got in trouble for talking in class, but you say "He started talking to ME first!" — even though you kept the conversation going.',
-        question: 'Think of a time you got in trouble. What was YOUR part in what happened?',
-        antidote: 'Before blaming someone else, ask: "What was my part in this?"' },
-      { id: 'b6', name: 'The Spotlight Effect', simple: 'Everyone Is Watching Me', icon: '\uD83D\uDD26',
-        desc: 'Thinking everyone notices your mistakes or embarrassing moments more than they actually do.',
-        example: 'You trip in the hallway and think everyone saw. In reality, most people didn\'t even notice.',
-        question: 'Do you remember the last time someone else tripped or made a mistake? (Probably not!)',
-        antidote: 'Remember: people are usually too busy thinking about themselves to notice your small mistakes.' },
-      { id: 'b6b', name: 'The Recency Effect', simple: 'Last Thing Wins', icon: '\uD83D\uDD1D',
-        desc: 'Judging something based mostly on the most recent thing that happened, ignoring everything before it.',
-        example: 'Your teacher was kind all year, but they gave you a bad grade on one assignment. Now you think they\'re unfair.',
-        question: 'Is there someone you\'re judging based only on the last thing they did?',
-        antidote: 'Zoom out. Think about the WHOLE picture, not just the last frame.' },
-      { id: 'b6c', name: 'The Fairness Fallacy', simple: 'It Should Be Equal', icon: '\u2696\uFE0F',
-        desc: 'Believing that everything should always be perfectly equal, even when situations are different.',
-        example: 'Your brother gets to stay up later because he\'s older. You say "That\'s not fair!" But fairness doesn\'t always mean same-ness.',
-        question: 'Can you think of a time when "equal" and "fair" were actually different things?',
-        antidote: 'Fair doesn\'t always mean equal. Sometimes different people need different things.' }
-    ],
-    middle: [
-      { id: 'b7', name: 'Confirmation Bias', simple: 'Seeing What You Expect', icon: '\uD83D\uDD0D',
-        desc: 'Only noticing information that agrees with what you already believe, and ignoring anything that doesn\'t.',
-        example: 'You think a certain teacher is unfair. You notice every time they\'re strict, but you ignore the times they\'re generous with grades or second chances.',
-        question: 'Think about an opinion you hold strongly. What evidence have you been ignoring?',
-        antidote: 'Actively look for evidence AGAINST your belief. If your opinion survives, it\'s stronger. If it doesn\'t, you learned something.' },
-      { id: 'b8', name: 'Sunk Cost Fallacy', simple: 'Too Far to Quit', icon: '\uD83D\uDCB8',
-        desc: 'Continuing something because you\'ve already invested time or effort, even though quitting would be better.',
-        example: 'You\'ve watched 4 episodes of a show you hate because you keep hoping it gets better. You\'ve already "invested" the time.',
-        question: 'Is there something in your life you keep doing only because you\'ve already put time into it?',
-        antidote: 'Ask: "If I were starting fresh today, would I choose this?" If no, it\'s okay to stop.' },
-      { id: 'b9', name: 'False Consensus Effect', simple: 'Everyone Agrees With Me', icon: '\uD83D\uDC65',
-        desc: 'Assuming that most people share your opinions, values, or behaviors.',
-        example: 'You think everyone finds a certain type of music annoying. Then you discover it\'s actually the most popular genre in your grade.',
-        question: 'Have you ever been shocked to discover your opinion was actually the minority view?',
-        antidote: 'Before saying "everyone thinks..." try asking actual people what they think.' },
-      { id: 'b10', name: 'Anchoring Bias', simple: 'Stuck on the First Thing', icon: '\u2693',
-        desc: 'Relying too heavily on the first piece of information you receive.',
-        example: 'Someone tells you a new student got suspended at their last school. Now everything they do seems suspicious, even though you don\'t know the full story.',
-        question: 'Has a first impression ever been completely wrong? What "anchor" were you holding onto?',
-        antidote: 'Deliberately seek a SECOND source of information before forming a judgment.' },
-      { id: 'b11', name: 'Just-World Fallacy', simple: 'People Get What They Deserve', icon: '\u2696\uFE0F',
-        desc: 'Believing that good things happen to good people and bad things happen to bad people — that the world is inherently fair.',
-        example: 'A classmate\'s family loses their home. Someone says, "They must have made bad choices." In reality, a medical emergency caused the financial crisis.',
-        question: 'Why is it comforting to believe the world is fair? What happens to our empathy when we assume victims "deserved it"?',
-        antidote: 'When something bad happens to someone, resist the urge to find a reason they "deserved" it. Sometimes bad things happen to good people.' },
-      { id: 'b12', name: 'In-Group Bias', simple: 'My Group Is Better', icon: '\uD83D\uDEE1\uFE0F',
-        desc: 'Automatically favoring people who are in your group (friends, team, school) over those who aren\'t.',
-        example: 'Your school plays a rival in basketball. A player on your team commits a foul — you say it was nothing. The rival team does the same thing — you say it\'s dirty play.',
-        question: 'Have you ever judged the exact same behavior differently based on who did it?',
-        antidote: 'Swap the roles in your mind. Would you judge this the same way if the "other side" did it?' },
-      { id: 'b12b', name: 'Negativity Bias', simple: 'Bad Sticks More Than Good', icon: '\u2796',
-        desc: 'Remembering negative experiences more vividly and letting them weigh more heavily than positive ones.',
-        example: 'You get 9 compliments on your outfit and 1 negative comment. At the end of the day, you only think about the negative one.',
-        question: 'Think about your day. Are you giving more mental space to the bad moments than the good ones?',
-        antidote: 'For every negative thought you catch, deliberately recall two positive things from the same day.' },
-      { id: 'b12c', name: 'The Planning Fallacy', simple: 'It\'ll Take Less Time Than You Think', icon: '\u23F0',
-        desc: 'Consistently underestimating how long things will take, even when you\'ve been wrong before.',
-        example: 'You tell yourself the project will take 2 hours. It took 5 hours last time. It takes 5 hours again. Next time, you\'ll still say 2.',
-        question: 'Think about the last big assignment. How long did you think it would take vs. how long it actually took?',
-        antidote: 'When estimating time, take your best guess and multiply by 1.5. Your past experience is more reliable than your optimism.' }
-    ],
-    high: [
-      { id: 'b13', name: 'Fundamental Attribution Error', simple: 'Character vs. Circumstance', icon: '\uD83C\uDFAD',
-        desc: 'Blaming other people\'s behavior on their character while excusing your own behavior as situational.',
-        example: 'When someone cuts you off in traffic, they\'re a terrible driver. When you cut someone off, you were late for something important.',
-        question: 'Think of the last time you judged someone harshly. What situation might they have been in?',
-        antidote: 'When you catch yourself labeling someone (lazy, rude, selfish), pause and ask: "What circumstances might explain this behavior?"' },
-      { id: 'b14', name: 'Availability Heuristic', simple: 'If I Can Remember It, It\'s Common', icon: '\uD83D\uDCF0',
-        desc: 'Judging how likely something is based on how easily you can think of examples — which is influenced by media, not statistics.',
-        example: 'You\'re afraid of flying but not of driving, even though driving is statistically far more dangerous. Plane crashes make the news; car accidents don\'t.',
-        question: 'What risks do you overestimate because of social media or news coverage?',
-        antidote: 'Ask: "Am I afraid of this because it\'s common, or because it\'s dramatic and memorable?"' },
-      { id: 'b15', name: 'Dunning-Kruger Effect', simple: 'The Less You Know, The More Confident You Feel', icon: '\uD83D\uDCC8',
-        desc: 'People with limited knowledge in an area tend to overestimate their competence, while experts tend to underestimate theirs.',
-        example: 'After reading one article about economics, someone confidently explains how to fix inflation. An economist with 30 years of experience says "It\'s complicated."',
-        question: 'In what areas of your life might you be overconfident? Where might you be underestimating yourself?',
-        antidote: 'The more certain you feel about a complex topic, the more important it is to seek out people who disagree with you.' },
-      { id: 'b16', name: 'Status Quo Bias', simple: 'Change Is Scary, So Don\'t', icon: '\uD83D\uDFE2',
-        desc: 'Preferring things to stay the same, even when change would be better, simply because the current state feels safe.',
-        example: 'You stay in a friend group that makes you feel bad because "at least I have friends" — even though making new friends might make you happier.',
-        question: 'What in your life are you keeping simply because it\'s familiar, not because it\'s good?',
-        antidote: 'Evaluate your current situation as if you were choosing it for the first time. Would you choose this today?' },
-      { id: 'b17', name: 'Moral Licensing', simple: 'I Was Good, So I Can Be Bad', icon: '\uD83C\uDF96\uFE0F',
-        desc: 'Using past good behavior as permission for future bad behavior.',
-        example: 'You volunteered at a food bank on Saturday, so you feel justified being rude to a cashier on Sunday. "I\'m a good person" becomes a free pass.',
-        question: 'Have you ever used a good deed as justification for something you know wasn\'t right?',
-        antidote: 'Each decision stands alone. Being kind yesterday doesn\'t earn you cruelty credits today.' },
-      { id: 'b18', name: 'Narrative Fallacy', simple: 'Making Stories That Aren\'t There', icon: '\uD83D\uDCDA',
-        desc: 'Creating a neat, logical story to explain events that were actually random or complex.',
-        example: 'A successful CEO drops out of college, so people say "dropping out made them successful." In reality, thousands of dropouts didn\'t become CEOs. The story ignores luck, privilege, and timing.',
-        question: 'What "success stories" have you accepted without questioning the hidden factors?',
-        antidote: 'When you hear a compelling story about why something happened, ask: "What\'s being left out?"' },
-      { id: 'b18b', name: 'Projection Bias', simple: 'Everyone Thinks Like Me', icon: '\uD83D\uDE36',
-        desc: 'Assuming other people have the same thoughts, values, and priorities as you do.',
-        example: 'You love spontaneity and assume your friend does too. You surprise them with a plan change and they get upset because they value predictability.',
-        question: 'When was the last time you assumed someone else wanted what you want — and were wrong?',
-        antidote: 'Before assuming what someone wants, ask them. Their inner world is as complex and different as yours.' },
-      { id: 'b18c', name: 'The Empathy Gap', simple: 'I Can\'t Imagine Feeling That Way', icon: '\uD83C\uDF21\uFE0F',
-        desc: 'Underestimating how emotions affect decisions — both your own future emotions and other people\'s current ones.',
-        example: 'When you\'re calm, you say "I\'d never yell at someone over something small." But when you\'re stressed and hungry and tired? You yell.',
-        question: 'Think of a time you said "I\'d never do that" about something you later did. What was different about the emotional state?',
-        antidote: 'When judging someone\'s behavior, first ask: "What emotional state might they be in?" And when making rules for yourself, plan for your worst day, not your best.' }
-    ]
-  };
+  "elementary": [
+    {
+      "id": "b1",
+      "name": "The Bandwagon Effect",
+      "simple": "Following the crowd",
+      "icon": "🚌",
+      "desc": "A group opinion can influence what we say or choose, even before we check whether it fits.",
+      "example": "Friends all choose a game. One learner says it is their favorite before trying it, because they want to join in.",
+      "question": "What does the learner know about the game, and what are they guessing?",
+      "antidote": "Try a small part if it is comfortable, or ask what the game is like. The learner can enjoy being with friends and have a different preference.",
+      "limits": "Agreeing with friends is not automatically a mistake. Pressure or exclusion needs adult support, not just a stronger opinion."
+    },
+    {
+      "id": "b2",
+      "name": "Black-and-White Thinking",
+      "simple": "All or nothing",
+      "icon": "⚫",
+      "desc": "One result can turn into a much bigger claim, such as being unable to do anything in a subject.",
+      "example": "After one difficult puzzle, a learner says, \"I cannot do puzzles.\" They solved part of it but got stuck on a new step.",
+      "question": "What happened in this puzzle, and what does it not tell us yet?",
+      "antidote": "Name the step that was difficult and ask for a clue, an example or another way to try it.",
+      "limits": "A real difficulty should not be brushed away with positive words. The learner may need different teaching, access or more support."
+    },
+    {
+      "id": "b3",
+      "name": "Halo effect",
+      "simple": "One detail becomes the whole picture",
+      "icon": "😇",
+      "desc": "An impression about one feature can spill over into judgments about unrelated qualities.",
+      "example": "A learner sees a classmate make a beautiful drawing and assumes they will also be good at explaining game rules.",
+      "question": "What does the drawing show, and what would need a separate check?",
+      "antidote": "Ask who wants to explain the game and whether a model or shared explanation would help.",
+      "limits": "One skill does not prove another. A first impression is a starting guess, not a complete account of a person."
+    },
+    {
+      "id": "b4",
+      "name": "Wishful Thinking",
+      "simple": "Hope and evidence",
+      "icon": "⭐",
+      "desc": "Wanting an outcome can make it harder to notice what still needs preparation or checking.",
+      "example": "A group hopes its paper bridge will hold a toy. It has not tested the middle section yet.",
+      "question": "What is the group hoping, and what has it checked?",
+      "antidote": "Try a small, suitable test with available materials and notice where support is needed.",
+      "limits": "Hope can motivate a project. Testing may also require adult help, materials or a smaller plan."
+    },
+    {
+      "id": "b5",
+      "name": "Responsibility and blame",
+      "simple": "Sorting out responsibility",
+      "icon": "👈",
+      "desc": "An explanation can leave out our own action, or put too much responsibility on someone who had little control.",
+      "example": "Two learners talk during directions. One says the other started it. The teacher also needs to check whether the directions were accessible.",
+      "question": "Which actions are known, and who could change each part?",
+      "antidote": "Describe what each person did, what support was missing and one next step within the learner's control.",
+      "limits": "Taking responsibility does not mean accepting blame for someone else's harm. Adults remain responsible for safety and appropriate support."
+    },
+    {
+      "id": "b6",
+      "name": "The Spotlight Effect",
+      "simple": "Guessing how much others noticed",
+      "icon": "🔦",
+      "desc": "We can overestimate how much attention other people give to a mistake, but we cannot know their thoughts from a guess.",
+      "example": "A learner drops their pencil case and worries everyone will keep thinking about it. They heard a noise but do not know who noticed.",
+      "question": "What did the learner actually observe, and what remains unknown?",
+      "antidote": "Ask for help gathering the pencils and choose whether a trusted adult could help with the worry.",
+      "limits": "Do not promise that nobody noticed. If there is teasing or repeated targeting, take it seriously and seek adult support."
+    },
+    {
+      "id": "b6b",
+      "name": "The Recency Effect",
+      "simple": "The latest event gets extra weight",
+      "icon": "🔝",
+      "desc": "A recent event can take up more space in our judgment than earlier relevant information.",
+      "example": "After a team loses its latest game, a learner says the team never works together, although earlier games included good cooperation.",
+      "question": "Which examples would help describe the team fairly?",
+      "antidote": "Look at specific cooperation in more than one game and identify a part that needs work now.",
+      "limits": "Recent evidence can matter a lot if something has changed. Older good moments do not cancel a current harmful pattern."
+    },
+    {
+      "id": "b6c",
+      "name": "Fairness and equal treatment",
+      "simple": "Fair does not always mean identical",
+      "icon": "⚖️",
+      "desc": "Giving everyone the same thing may not give everyone a usable way to participate. Different arrangements still need a fair reason.",
+      "example": "One student uses larger picture cards to join a game. Another asks why the cards are not all the same size.",
+      "question": "What helps each person use the game?",
+      "antidote": "Ask an adult to explain the purpose of access supports without sharing private details about a student.",
+      "limits": "A concern about fairness deserves a hearing. Do not assume every difference is justified, or require someone to disclose a diagnosis."
+    }
+  ],
+  "middle": [
+    {
+      "id": "b7",
+      "name": "Confirmation Bias",
+      "simple": "Testing what I expect",
+      "icon": "🔍",
+      "desc": "Existing beliefs can influence which evidence we seek, notice or interpret as convincing.",
+      "example": "A group believes its poster is already clear. It asks only friends who helped make it and overlooks a reader who cannot find the event time.",
+      "question": "What specific evidence would support or challenge the clarity claim?",
+      "antidote": "Ask a willing reader to find the event time without prompting. Compare the result with the group's expectation and revise if useful.",
+      "limits": "Disagreement alone is not better evidence. Use relevant, credible observations; reports of unfair treatment should be examined, not dismissed as bias."
+    },
+    {
+      "id": "b8",
+      "name": "Sunk Cost Fallacy",
+      "simple": "Past effort and the next choice",
+      "icon": "💸",
+      "desc": "Time or resources already spent can pull us toward continuing, even when the next steps no longer serve the purpose.",
+      "example": "A group has decorated a model that does not fit the assignment. It wants to keep the design only because it took so long.",
+      "question": "What would continuing, adapting or stopping each require from this point?",
+      "antidote": "Check the actual requirements and compare future effort, useful parts and switching costs. Ask for help choosing a workable scope.",
+      "limits": "Past work can leave skills or reusable materials. Continuing can be reasonable; the check is not an automatic instruction to quit."
+    },
+    {
+      "id": "b9",
+      "name": "False Consensus Effect",
+      "simple": "Checking whose view is represented",
+      "icon": "👥",
+      "desc": "We may assume our own preferences are more widely shared than the available evidence shows.",
+      "example": "A class representative says everyone wants music during work because their closest friends do. Other classmates have not been asked.",
+      "question": "Whose views are included and whose are missing?",
+      "antidote": "Offer an accessible way to give input, including privately, and consider options such as quiet space as well as a majority preference.",
+      "limits": "A poll can miss people or hide access needs. Popularity does not settle consent, safety or participation barriers."
+    },
+    {
+      "id": "b10",
+      "name": "Anchoring Bias",
+      "simple": "The first number or idea holds us",
+      "icon": "⚓",
+      "desc": "An early suggestion can influence later estimates or judgments more than its relevance warrants.",
+      "example": "The first group member says a display will take ten minutes. Others repeat that estimate before listing the actual tasks.",
+      "question": "Where did the first estimate come from?",
+      "antidote": "Estimate the tasks from comparable work and available resources before comparing with the first suggestion.",
+      "limits": "The first estimate may be useful if it has a sound basis. A second unsupported guess is not automatically more reliable."
+    },
+    {
+      "id": "b11",
+      "name": "Just-World Fallacy",
+      "simple": "Outcomes do not prove deservingness",
+      "icon": "⚖️",
+      "desc": "A wish for the world to be fair can lead us to assume that people caused or deserved their misfortune.",
+      "example": "A student misses a trip because transport fell through. A classmate assumes they did not care enough to organize it.",
+      "question": "What is known about the transport, and what has been inferred about the person?",
+      "antidote": "Avoid judging character from the outcome. Ask what practical support is wanted and who can help.",
+      "limits": "Understanding circumstances does not require private disclosure. A bad outcome alone is not evidence of bad character."
+    },
+    {
+      "id": "b12",
+      "name": "In-Group Bias",
+      "simple": "Checking double standards",
+      "icon": "🛡️",
+      "desc": "Group membership can influence whose behavior we excuse or criticize.",
+      "example": "Two teams interrupt a speaker in the same way. A learner excuses their own team and calls the other team disrespectful.",
+      "question": "Would the same description and standard apply if the team names changed?",
+      "antidote": "Compare the actual behavior and relevant context, then apply a consistent standard with needed supports.",
+      "limits": "Context can justify different responses. Consistency is not an excuse to ignore power, access needs or unequal harm."
+    },
+    {
+      "id": "b12b",
+      "name": "Negativity Bias",
+      "simple": "When a negative moment dominates",
+      "icon": "➖",
+      "desc": "Unpleasant information can receive strong attention and influence how we remember an experience.",
+      "example": "After useful project feedback and one dismissive comment, a learner remembers only the comment and decides the whole project was worthless.",
+      "question": "What information helps judge the project, and what support is needed for the comment?",
+      "antidote": "Separate specific feedback from a hurtful remark. Review the work against its purpose and decide whether to seek support.",
+      "limits": "Positive moments do not erase harm. There is no required ratio of positive to negative thoughts, and upsetting feelings need not be replaced."
+    },
+    {
+      "id": "b12c",
+      "name": "The Planning Fallacy",
+      "simple": "Estimating with evidence",
+      "icon": "⏰",
+      "desc": "Plans can underestimate time or obstacles when they focus on an ideal sequence and miss past experience.",
+      "example": "A group budgets one lesson for a presentation, leaving out research, accessible materials and rehearsal.",
+      "question": "Which steps, dependencies and possible delays are missing?",
+      "antidote": "Compare with similar tasks, break down the work, include a realistic buffer and set a point to revise the estimate.",
+      "limits": "There is no universal multiplier that fixes an estimate. Workload, resources and support may need changing as well as the schedule."
+    }
+  ],
+  "high": [
+    {
+      "id": "b13",
+      "name": "Fundamental Attribution Error",
+      "simple": "Behavior and circumstances",
+      "icon": "🎭",
+      "desc": "We can give too much weight to personal qualities and too little to the situation when explaining someone's behavior.",
+      "example": "A partner arrives late and is called unreliable before anyone checks the changed bus timetable.",
+      "question": "What behavior was observed, and which explanation is still a hypothesis?",
+      "antidote": "Consider plausible circumstances, ask a respectful question if appropriate and agree how to handle the immediate task.",
+      "limits": "Circumstances do not automatically excuse harm. Keep boundaries and accountability while avoiding unsupported character judgments."
+    },
+    {
+      "id": "b14",
+      "name": "Availability Heuristic",
+      "simple": "Memorable is not the same as frequent",
+      "icon": "📰",
+      "desc": "Examples that come easily to mind can influence estimates of how often something happens.",
+      "example": "After seeing several reposts of one stolen-bike report, a student assumes theft has risen sharply at school.",
+      "question": "Are these independent events, repeated reports, or evidence of a wider pattern?",
+      "antidote": "Check the original report and relevant information over a comparable time period. Separate the count of posts from the count of events.",
+      "limits": "A vivid report may describe a real risk. Sensible precautions need not wait for perfect data; frequency still needs relevant evidence."
+    },
+    {
+      "id": "b15",
+      "name": "Confidence calibration (Dunning-Kruger)",
+      "simple": "Checking confidence against performance",
+      "icon": "📈",
+      "desc": "Self-assessment can differ from demonstrated performance on a particular task. Limited skill can make some errors harder to recognize.",
+      "example": "After one tutorial, a student feels certain their spreadsheet formula is correct but has not checked it with known examples.",
+      "question": "What task-specific test or feedback could show whether the formula works?",
+      "antidote": "Try known inputs, inspect errors and ask someone with relevant expertise to review the reasoning. Adjust confidence to the evidence.",
+      "limits": "Confidence alone does not reveal skill. The Dunning-Kruger effect is not a label for a person you disagree with, and experts are not always underconfident."
+    },
+    {
+      "id": "b16",
+      "name": "Status Quo Bias",
+      "simple": "Checking the familiar option",
+      "icon": "🟢",
+      "desc": "A familiar arrangement can get an advantage simply because it is already in place, rather than because its current benefits outweigh its costs.",
+      "example": "A club keeps a signup process that some members cannot use because changing it would be unfamiliar.",
+      "question": "What are the current barriers and the real costs of an alternative?",
+      "antidote": "Compare the existing process with an accessible alternative, including transition support and a review point.",
+      "limits": "Familiar routines can provide predictability and access. Change is not automatically better; compare actual needs and risks."
+    },
+    {
+      "id": "b17",
+      "name": "Moral Licensing",
+      "simple": "Past good actions are not permission",
+      "icon": "🎖️",
+      "desc": "A positive view of our earlier actions can become a reason to overlook harm in a new choice.",
+      "example": "After helping organize an event, a student says they have earned the right to mock a teammate's mistake.",
+      "question": "What does the new action do, regardless of earlier help?",
+      "antidote": "Address the mocking behavior, stop it and consider appropriate repair. Keep appreciation for earlier help separate from permission to harm.",
+      "limits": "A person is more than one action, but praise should not prevent accountability. Repair does not require forgiveness or renewed contact."
+    },
+    {
+      "id": "b18",
+      "name": "Narrative Fallacy",
+      "simple": "A tidy story may leave things out",
+      "icon": "📚",
+      "desc": "A compelling explanation can make complex or uncertain events seem to have a single clear cause.",
+      "example": "An article credits one study habit for a student's exam result without discussing teaching, prior knowledge, resources or other students who used it.",
+      "question": "Which causes are supported, and which alternatives or comparison cases are missing?",
+      "antidote": "Check what the source actually shows and consider other relevant factors before recommending the habit as a guarantee.",
+      "limits": "Stories can convey meaningful experience. A useful account of one person does not by itself establish a general cause."
+    },
+    {
+      "id": "b18b",
+      "name": "Assumed preferences",
+      "simple": "Ask about another person's preferences",
+      "icon": "😶",
+      "desc": "Our own preferences can become a shortcut for guessing what someone else wants.",
+      "example": "A student likes surprise plans and changes a group meeting time without asking whether the others can adapt.",
+      "question": "What was agreed, and whose preference or constraint has not been checked?",
+      "antidote": "Ask about timing and needed notice before changing the plan. Offer a way to decline or suggest an alternative.",
+      "limits": "This is a practice example about assumed preferences, not a diagnosis or proof of what another person feels."
+    },
+    {
+      "id": "b18c",
+      "name": "The Empathy Gap",
+      "simple": "Needs can change with context",
+      "icon": "🌡️",
+      "desc": "Our current state can make it difficult to anticipate how needs and choices may differ in another state or situation.",
+      "example": "During a quiet planning session, a group schedules hours of work without breaks. During the busy event, some members need a pause or help.",
+      "question": "What demands were hard to imagine during planning?",
+      "antidote": "Plan flexible breaks, backup roles and a way to ask for support. Review the arrangement with the people using it.",
+      "limits": "Do not infer someone's emotional state or excuse harmful behavior. Ask what is needed and keep boundaries in place."
+    }
+  ]
+};
 
   // ══════════════════════════════════════════════════════════════
   // ── Values Sort Contexts ──
@@ -1021,8 +1165,8 @@ window.SelHub = window.SelHub || {
     { id: 'dilemma_5',         icon: '\uD83D\uDCA1', name: 'Ethics Scholar',       desc: 'Engage with 5 ethical dilemmas' },
     { id: 'first_consequence', icon: '\uD83D\uDD17', name: 'Consequence Tracker',  desc: 'Complete your first consequence map' },
     { id: 'consequence_3',     icon: '\uD83C\uDF10', name: 'Ripple Effect Master', desc: 'Complete 3 consequence maps' },
-    { id: 'first_bias',        icon: '\uD83D\uDD0D', name: 'Bias Spotter',         desc: 'Learn about your first cognitive bias' },
-    { id: 'bias_all',          icon: '\uD83E\uDDD0', name: 'Clear Thinker',        desc: 'Study all biases in your grade band' },
+    { id: 'first_bias',        icon: '\uD83D\uDD0D', name: 'Bias Spotter',         desc: 'Historical award for revealing an earlier bias card' },
+    { id: 'bias_all',          icon: '\uD83E\uDDD0', name: 'Clear Thinker',        desc: 'Historical award based on earlier card reveals; not evidence of bias-free thinking' },
     { id: 'ai_advisor',        icon: '\u2728',        name: 'Wisdom Seeker',        desc: 'Use the AI decision advisor' },
     { id: 'total_10',          icon: '\uD83C\uDFC6', name: 'Master Decider',       desc: 'Complete 10 activities across all tabs' },
     { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Decision Streak',      desc: 'Practice 3 days in a row' },
@@ -1305,7 +1449,7 @@ window.SelHub = window.SelHub || {
           decision:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83C\uDF33', title: 'Decision Tree \u2014 branch the choice + the consequences', hint: 'List options \u2192 list outcomes per option \u2192 weight by likelihood + magnitude. Decision-theory framework (Howard 1968) used by everyone from doctors to portfolio managers. Slows snap judgments without paralyzing them.' },
           dilemma:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\u2696',         title: 'Ethical Dilemmas \u2014 trolley problems + Heinz', hint: 'Kohlberg 1958: 6 stages of moral reasoning, from \u201Cwill I get caught\u201D up through universal principles. Most adults reason at stages 3-4 day-to-day. Practicing dilemmas raises the ceiling without forcing one answer.' },
           consequence: { accent: _decFg('#fbbf24'), soft: 'rgba(234,88,12,0.14)', icon: '\uD83D\uDD17', title: 'Consequence Map - possibilities, not predictions', hint: 'Consider different outcomes, whose needs are affected, and what the plan depends on. New information can justify a change. An outcome alone does not tell you whether the original reasoning was sound.' },
-          bias:        { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83E\uDDE0', title: 'Bias Check \u2014 spot your shortcuts',               hint: 'Confirmation bias, sunk cost, availability, anchoring, dunning-kruger. Kahneman + Tversky\u2019s decades of research (1974\u20132011): we\u2019re predictably irrational. Knowing the trap is half the work \u2014 the other half is asking a friend.' },
+          bias:        { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)', icon: '\uD83E\uDDE0', title: 'Bias Check — test an interpretation', hint: 'Separate observations from guesses, consider another explanation and choose a relevant check. Recognizing a pattern does not prove a person is biased or make an answer correct.' },
           values:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDCCF', title: 'Values Sort \u2014 what actually matters to YOU',     hint: 'Schwartz 1992: 10 universal values in 4 clusters. Decisions feel \u201Cright\u201D when they line up with your top values; \u201Coff\u201D when they don\u2019t \u2014 even if they look good on paper. Sort yours, then test against past choices.' },
           realworld:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF0D', title: 'Real-World \u2014 college, money, relationships',     hint: 'Higher-stakes practice scenarios. Pre-rehearse decisions you\u2019ll actually face: which college, asking someone out, whether to share something on social. \u201CFuture self interview\u201D \u2014 ask the version of you in 5 years what they wish you\u2019d done.' },
           compass:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDDED', title: 'Moral reasoning — compare the reasons', hint: 'Explore a fictional case through several lenses. Notice uncertainty, boundaries and support, then reconsider when the context changes. You can think or discuss without writing.' },
@@ -1866,98 +2010,82 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var biasContent = null;
       if (activeTab === 'bias') {
+        function biasRecord(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
         var biases = BIAS_DATA[band] || BIAS_DATA.elementary;
-        var curBias = biases[biasIdx % biases.length];
-
-        biasContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83E\uDDE0 Bias Check'),
-          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
-            'Learn to recognize the thinking traps that lead to bad decisions.'
-          ),
-          h('div', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
-            'Bias ' + ((biasIdx % biases.length) + 1) + ' of ' + biases.length +
-            (biasViewed > 0 ? ' \u00B7 ' + biasViewed + ' studied' : '')
-          ),
-          // Bias card - name only (click to reveal)
-          !biasRevealed && h('div', { onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-            onClick: function() {
-              upd('biasRevealed', true);
-              if (soundEnabled) sfxReveal();
-              var newViewed = biasViewed + 1;
-              upd('biasViewed', newViewed);
-              logPractice('bias', curBias.id);
-              awardXP(10);
-              tryAwardBadge('first_bias');
-              if (newViewed >= biases.length) tryAwardBadge('bias_all');
-            },
-            style: { padding: 30, borderRadius: 14, background: _decBg('#0f172a'), border: '2px dashed ' + ACCENT_MED, cursor: 'pointer', textAlign: 'center', marginBottom: 16 },
-            role: 'button', tabIndex: 0
-          },
-            h('div', { style: { fontSize: 40, marginBottom: 8 } }, curBias.icon),
-            h('div', { style: { fontSize: 18, fontWeight: 700, color: _decFg('#f1f5f9'), marginBottom: 4 } }, curBias.simple),
-            h('div', { style: { fontSize: 12, color: _decFg('#94a3b8') } }, 'Tap to learn about this thinking trap')
-          ),
-          // Revealed bias detail
-          biasRevealed && h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
-              h('span', { style: { fontSize: 32 } }, curBias.icon),
-              h('div', null,
-                h('div', { style: { fontSize: 16, fontWeight: 700, color: _decFg('#f1f5f9') } }, curBias.name),
-                h('div', { style: { fontSize: 12, color: _decFg(ACCENT) } }, curBias.simple)
-              )
-            ),
-            // What is it?
-            h('div', { style: { marginBottom: 14 } },
-              h('p', { style: { fontSize: 10, color: _decFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'What is it?'),
-              h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.7 } }, curBias.desc)
-            ),
-            // Example
-            h('div', { style: { marginBottom: 14 } },
-              h('p', { style: { fontSize: 10, color: _decFg('#60a5fa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Example'),
-              h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.7, fontStyle: 'italic' } }, curBias.example)
-            ),
-            // Self-check question
-            h('div', { style: { padding: 14, borderRadius: 10, background: _decBg('#1e293b'), border: '1px solid #334155', marginBottom: 14 } },
-              h('p', { style: { fontSize: 10, color: _decFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Ask yourself'),
-              h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.6 } }, curBias.question)
-            ),
-            // Antidote
-            h('div', { style: { padding: 14, borderRadius: 10, background: '#22c55e11', border: '1px solid #22c55e33' } },
-              h('p', { style: { fontSize: 10, color: _decFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Antidote'),
-              h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.6 } }, curBias.antidote)
+        var biasSelections = biasRecord(d.biasSelections);
+        var oldBiasIndex = typeof biasIdx === 'number' && isFinite(biasIdx) && biasIdx >= 0 ? Math.floor(biasIdx) % biases.length : 0;
+        var selectedBiasId = Object.prototype.hasOwnProperty.call(biasSelections, band) ? biasSelections[band] : null;
+        var curBias = biases.find(function(item) { return item.id === selectedBiasId; }) || biases[oldBiasIndex];
+        var biasKey = band + ':' + curBias.id;
+        var biasDrafts = biasRecord(d.biasDrafts);
+        var biasDraft = biasRecord(Object.prototype.hasOwnProperty.call(biasDrafts, biasKey) ? biasDrafts[biasKey] : null);
+        var biasSurface = _decHC ? '#000000' : _decL ? '#ffffff' : '#0f172a';
+        var biasInk = _decHC ? '#ffff00' : _decL ? '#0f172a' : '#e2e8f0';
+        var biasEdge = _decHC ? '#ffff00' : '#64748b';
+        var biasControl = { width: '100%', minHeight: 44, padding: 10, border: '1px solid ' + biasEdge, borderRadius: 8, background: biasSurface, color: biasInk, font: 'inherit', fontSize: 16, boxSizing: 'border-box' };
+        function updateBiasDraft(key, value) {
+          var next = Object.assign({}, biasDrafts);
+          next[biasKey] = Object.assign({}, biasDraft);
+          next[biasKey][key] = value;
+          upd('biasDrafts', next);
+        }
+        var biasFields = band === 'elementary' ? [
+          { key: 'facts', label: 'What we know', help: 'Name what happened in the example. What did someone actually see or hear?' },
+          { key: 'interpretation', label: 'A working thought', help: 'What is someone thinking it means? A thought can still be a guess.' },
+          { key: 'alternative', label: 'Another possible explanation', help: 'What else could fit? You can also say that you need more information.' },
+          { key: 'check', label: 'A useful check or support', help: 'What could you look at or ask? A trusted adult can help.' },
+          { key: 'review', label: 'What I would keep or change', help: 'What would help you decide? You do not have to change your mind just to finish.' }
+        ] : [
+          { key: 'facts', label: 'What we know', help: 'Separate observations and source claims from interpretations. Note what the example does not establish.' },
+          { key: 'interpretation', label: 'A working thought', help: 'State a tentative interpretation. A pattern name alone is not evidence that it applies.' },
+          { key: 'alternative', label: 'Another possible explanation', help: 'Consider an alternative that fits the facts, or identify why the evidence is still insufficient.' },
+          { key: 'check', label: 'A useful check or support', help: 'Choose relevant evidence, a respectful question or practical support. Another opinion is not automatically a better source.' },
+          { key: 'review', label: 'What I would keep or change', help: 'Identify what finding would support, weaken or leave your interpretation unresolved. Keep appropriate boundaries while checking.' }
+        ];
+        var biasHasWorkingThought = typeof biasDraft.interpretation === 'string' && biasDraft.interpretation.trim().length > 0;
+        var oldBiasReflection = typeof biasReflection === 'string' ? biasReflection : '';
+        biasContent = h('section', { role: 'region', 'aria-label': 'Bias evidence practice', style: { padding: 16, maxWidth: 760, margin: '0 auto', background: biasSurface, color: biasInk, border: '1px solid ' + biasEdge, borderRadius: 12, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+          h('h2', { style: { fontSize: 22, lineHeight: 1.3, marginTop: 0 } }, 'Check the evidence behind a thought'),
+          h('p', null, 'Use these pattern names as prompts to inspect reasoning, not labels for people. Explore a fictional example, a useful check and its limits. You can think or discuss without writing.'),
+          h('label', { htmlFor: 'dec-bias-choice', style: { display: 'block', fontWeight: 700 } }, 'Choose a thinking pattern'),
+          h('select', { id: 'dec-bias-choice', value: curBias.id, onChange: function(e) { var next = Object.assign({}, biasSelections); next[band] = e.target.value; upd('biasSelections', next); }, style: biasControl }, biases.map(function(item) { return h('option', { key: item.id, value: item.id }, item.simple); })),
+          h('div', { key: biasKey },
+            h('h3', { style: { fontSize: 18 } }, curBias.simple), h('p', { style: { fontWeight: 700 } }, curBias.name), h('p', null, curBias.desc),
+            h('h4', { style: { fontSize: 16 } }, 'A fictional example'), h('p', null, curBias.example),
+            h('details', { style: { borderTop: '1px solid ' + biasEdge } },
+              h('summary', { style: { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' } }, 'Compare a checking approach'),
+              h('p', null, h('strong', null, 'A question to explore: '), curBias.question),
+              h('p', null, h('strong', null, 'A check to try: '), curBias.antidote),
+              h('p', null, h('strong', null, 'Limits and care: '), curBias.limits)),
+            h('details', { id: 'dec-bias-evidence-notes', style: { borderTop: '1px solid ' + biasEdge } },
+              h('summary', { style: { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' } }, 'Build an evidence check (optional)'),
+              h('p', null, 'Use the fictional example or another situation you choose. Personal disclosure is optional.'),
+              biasFields.map(function(field) {
+                var id = 'dec-bias-note-' + field.key;
+                var value = Object.prototype.hasOwnProperty.call(biasDraft, field.key) && typeof biasDraft[field.key] === 'string' ? biasDraft[field.key] : '';
+                return h('div', { key: field.key, style: { margin: '12px 0' } },
+                  h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
+                  h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, field.help),
+                  h('textarea', { id: id, rows: 3, value: value, 'aria-describedby': id + '-help', onChange: function(e) { updateBiasDraft(field.key, e.target.value); }, style: Object.assign({}, biasControl, { resize: 'vertical', lineHeight: 1.6 }) }));
+              }),
+              h('p', null, 'Notes stay with this example and grade band in the current project. Use the hub save or export controls to keep them beyond this session. Review private details before sharing.')
             )
           ),
-          // Reflection area (after reveal)
-          biasRevealed && h('div', { style: { marginBottom: 16 } },
-            h('textarea', {
-              value: biasReflection,
-              onChange: function(e) { upd('biasReflection', e.target.value); },
-              'aria-label': 'Bias reflection',
-              placeholder: 'Can you think of a time this bias affected YOUR thinking?',
-              rows: 3,
-              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
-            })
-          ),
-          // Next bias
-          biasRevealed && h('div', { style: { textAlign: 'center' } },
-            h('button', { 'aria-label': 'Next Bias',
-              onClick: function() {
-                upd({ biasIdx: biasIdx + 1, biasRevealed: false, biasReflection: '' });
-                if (soundEnabled) sfxClick();
-                ctx.announceToSR && ctx.announceToSR('Next bias loaded');
-              },
-              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _decBg('#334155'), color: _decFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
-            }, 'Next Bias \u2192')
-          ),
-          // Skip
-          !biasRevealed && h('div', { style: { textAlign: 'center', marginTop: 4 } },
-            h('button', { 'aria-label': 'Skip to another bias',
-              onClick: function() {
-                upd({ biasIdx: biasIdx + 1, biasRevealed: false, biasReflection: '' });
-                if (soundEnabled) sfxClick();
-              },
-              style: { background: 'none', border: 'none', color: _decFg('#94a3b8'), fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
-            }, 'Skip to another bias \u2192')
+          oldBiasReflection.trim().length > 0 && h('details', { style: { borderTop: '1px solid ' + biasEdge } },
+            h('summary', { style: { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' } }, 'Earlier Bias Check reflection'),
+            h('p', null, 'This earlier note has not been assigned to a new example. You can copy it into an empty working thought; the original stays in project data.'),
+            h('p', { style: { whiteSpace: 'pre-wrap' } }, oldBiasReflection),
+            h('button', { type: 'button', disabled: biasHasWorkingThought, onClick: function() {
+              if (biasHasWorkingThought) return;
+              updateBiasDraft('interpretation', oldBiasReflection);
+              if (announceToSR) announceToSR('Earlier reflection copied into the working thought. The original is unchanged.');
+              setTimeout(function() {
+                var notes = document.getElementById('dec-bias-evidence-notes');
+                var field = document.getElementById('dec-bias-note-interpretation');
+                if (notes && field) { notes.open = true; field.focus(); }
+              }, 0);
+            }, style: Object.assign({}, biasControl, { cursor: biasHasWorkingThought ? 'default' : 'pointer', fontWeight: 700 }) }, 'Copy earlier reflection into this working thought'),
+            biasHasWorkingThought && h('p', null, 'This example already has a working thought. It will not be overwritten.')
           )
         );
       }
@@ -2364,7 +2492,7 @@ window.SelHub = window.SelHub || {
           { label: 'Decision Trees', value: dtCompleted, icon: '\uD83C\uDF33', color: _decFg('#f59e0b') },
           { label: 'Ethical Dilemmas', value: edCompleted, icon: '\u2696\uFE0F', color: _decFg('#8b5cf6') },
           { label: 'Consequence Maps', value: csCompleted, icon: '\uD83D\uDD17', color: _decFg('#ef4444') },
-          { label: 'Biases Studied', value: biasViewed, icon: '\uD83E\uDDE0', color: _decFg('#3b82f6') },
+          { label: 'Earlier bias card reveals', value: biasViewed, icon: '\uD83E\uDDE0', color: _decFg('#3b82f6') },
           { label: 'Values Sorted', value: vsCompleted, icon: '\uD83C\uDCCF', color: _decFg('#22c55e') },
           { label: 'Real-World Cases', value: rwCompleted, icon: '\uD83C\uDF0D', color: _decFg('#60a5fa') }
         ];
