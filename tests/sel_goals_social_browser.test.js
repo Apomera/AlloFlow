@@ -25,7 +25,7 @@ async function mount(band = 'middle', theme = 'light', width = 1100, initial = {
     function App() {
       const [data, setData] = R.useState({ goals_tool: { soundOn: false, tab: 'smart', showSmartExamples: true, smartExampleCat: 'social', ...initial } });
       const [gradeBand, setBand] = R.useState(band);
-      window.depthSnapshot = data; window.depthSetBand = setBand;
+      window.depthSnapshot = data; window.depthSetBand = next => window.ReactDOM.flushSync(() => setBand(next));
       const updateMulti = (id, values) => setData(previous => ({ ...previous, [id]: { ...previous[id], ...values } }));
       const ctx = { React: R, icons: new Proxy({}, { get: () => Icon }), toolData: data, setToolData: setData, gradeBand, gradeLevel: ({elementary:"4",middle:"7",high:"10"})[gradeBand],
         update: (id, key, value) => updateMulti(id, { [key]: value }), updateMulti,

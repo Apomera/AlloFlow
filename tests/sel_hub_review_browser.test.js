@@ -299,6 +299,37 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   },120000);
 
+  it('personal goal copies and routine plans survive the real hub return flow',async()=>{
+    await mount();
+    await page.locator('[data-sel-tool-card-id="goals"]').click();
+    await page.getByRole('tab',{name:/Habits/}).click();
+    await page.getByLabel('Routine to try',{exact:true}).fill('Review my learning plan');
+    await page.getByRole('button',{name:'Add routine',exact:true}).click();
+    const plan=page.getByRole('region',{name:'Routine planning: Review my learning plan',exact:true});
+    await plan.getByText('Plan and review this routine',{exact:true}).click();
+    await plan.getByLabel('How this plan fits now (optional)',{exact:true}).selectOption('paused');
+    await plan.getByLabel('Supports or changes needed (optional)',{exact:true}).fill('Ask for an example and a workable time.');
+    await page.getByRole('tab',{name:/SMART/}).click();
+    await page.getByRole('button',{name:'SMART Goal Examples Library',exact:true}).click();
+    const library=page.getByRole('region',{name:'SMART example library',exact:true});
+    await library.getByRole('button',{name:'Filter SMART examples by Personal Growth',exact:true}).click();
+    await library.getByLabel('Choose a worked goal example',{exact:true}).selectOption('example-2');
+    await library.getByRole('button',{name:'Use as Template',exact:true}).click();
+    await page.waitForFunction(()=>window.__alloflowSelToolData.goals_tool.goals?.length===1);
+    const id=await page.evaluate(()=>window.__alloflowSelToolData.goals_tool.goals[0].id);
+    await page.locator('#smart-field-'+id+'-S').fill('Ask for one worked example before trying another strategy.');
+    const support=page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="goals"]').click();
+    expect(await page.locator('#smart-field-'+id+'-S').inputValue()).toContain('one worked example');
+    await page.getByRole('tab',{name:/Habits/}).click();
+    await plan.getByText('Plan and review this routine',{exact:true}).click();
+    expect(await plan.getByLabel('How this plan fits now (optional)',{exact:true}).inputValue()).toBe('paused');
+    expect(await plan.getByLabel('Supports or changes needed (optional)',{exact:true}).inputValue()).toContain('workable time');
+    expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

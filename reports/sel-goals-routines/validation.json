@@ -1,0 +1,100 @@
+{
+  "date": "2026-09-12",
+  "scope": "Goal Setter personal-growth plans, flexible routine planning and shared routine/note control contrast",
+  "content": {
+    "personalPlans": 9,
+    "personalStarters": 11,
+    "optionalRoutineNotes": 5,
+    "routineStatuses": [
+      "Not chosen",
+      "Trying it",
+      "Paused",
+      "Reviewing the fit"
+    ],
+    "otherCategoryDataUnchanged": true
+  },
+  "tests": {
+    "focusedBrowser": {
+      "passed": 17,
+      "log": "reports/sel-goals-routines-browser-final.log",
+      "initialHarnessIssue": "Five tests waited for a SMART-library control while mounting the Habits tab; fixed to wait for the shared SMART tab.",
+      "initialLog": "reports/sel-goals-routines-browser.log"
+    },
+    "regressions": {
+      "passed": 564,
+      "skipped": 2,
+      "log": "reports/sel-goals-routines-regressions-final.log",
+      "initialHarnessIssue": "One prior social-library test read a stale grade before React rendered. Test grade changes now use flushSync; no app grade logic changed.",
+      "initialLog": "reports/sel-goals-routines-regressions.log"
+    },
+    "realHubAndFinalBadgeCheck": {
+      "passed": 17,
+      "uniqueHubWorkflows": 4,
+      "repeatedBadgeChecksAlreadyInRegressions": 13,
+      "filteredOut": 85,
+      "log": "reports/sel-goals-routines-hub.log"
+    },
+    "uniqueTotalPassed": 585
+  },
+  "renderSmoke": {
+    "toolsPassed": 72,
+    "log": "reports/sel-goals-routines-render.log"
+  },
+  "accessibility": {
+    "regions": [
+      "SMART example library (personal category)",
+      "Routine planning",
+      "Habit tracker"
+    ],
+    "viewportWidth": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scans": 9,
+    "violations": 0,
+    "evidence": [
+      "contrast-personal-axe.json",
+      "contrast-routine-axe.json",
+      "contrast-tracker-axe.json",
+      "dark-personal-axe.json",
+      "dark-routine-axe.json",
+      "dark-tracker-axe.json",
+      "light-personal-axe.json",
+      "light-routine-axe.json",
+      "light-tracker-axe.json"
+    ],
+    "scope": "These regions only, not the whole Goal Setter tool."
+  },
+  "visualReview": {
+    "reviewed": [
+      "contrast-personal-phone.png",
+      "contrast-review-phone.png",
+      "contrast-routine-phone.png",
+      "dark-personal-phone.png",
+      "dark-review-phone.png",
+      "dark-routine-phone.png",
+      "light-personal-phone.png",
+      "light-review-phone.png",
+      "light-routine-phone.png"
+    ],
+    "findings": "Readable wrapping and 44px minimum visible controls in audited regions. An existing light-theme contrast issue in dated routine and shared note controls was found and fixed; corrected light-review capture re-inspected."
+  },
+  "sourcePublicByteParity": true,
+  "sha256": "8267a9e912abbdc5dcc019d4f30c2404f940fbdc7e06c5fcce0673f3b95e5fbc",
+  "syntaxChecks": [
+    "sel_hub/sel_tool_goals.js",
+    "desktop/web-app/public/sel_hub/sel_tool_goals.js",
+    "tests/sel_goals_routines_browser.test.js",
+    "tests/sel_goals_social_browser.test.js",
+    "tests/sel_hub_review_browser.test.js"
+  ],
+  "limitations": [
+    "Authored plans are examples, not a validated intervention.",
+    "Health examples, other starter categories, general goal/check-in/accountability reward logic and AI coaching remain outside this pass.",
+    "Paused status is a planning note, not an automated schedule or recording lock."
+  ],
+  "pushed": false,
+  "deployed": false
+}

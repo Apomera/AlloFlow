@@ -68,10 +68,10 @@ window.SelHub = window.SelHub || {
       {"cat": "social", "text": "Choose a way to ask to join an activity", "hint": "An adult can help; a yes or a new friendship is not required."},
       {"cat": "social", "text": "Offer help and respect the answer", "hint": "Ask first. Someone working alone may want space."},
       {"cat": "social", "text": "Practice asking for a turn or for adult help", "hint": "Words, pictures and gestures all count as communication."},
-      { cat: 'personal', text: 'Try one new thing I\'ve never done before', hint: 'Trying new things helps your brain grow!' },
-      { cat: 'personal', text: 'Take 3 deep breaths when I feel frustrated', hint: 'Deep breaths help your brain calm down.' },
-      { cat: 'personal', text: 'Write in my journal every day for a week', hint: 'Writing helps you understand your feelings!' },
-      { cat: 'personal', text: 'Save $___ from my allowance this month', hint: 'Saving is a grown-up superpower!' },
+      {"cat": "personal", "text": "Choose a small new activity with support", "hint": "You can ask about it, try a part, or decide it does not fit."},
+      {"cat": "personal", "text": "Choose a comfortable pause or ask for help", "hint": "Movement, looking around or a different support can fit; calmness is not required."},
+      {"cat": "personal", "text": "Reflect in a way that works for me", "hint": "Draw, think or use a few words; personal sharing and daily writing are optional."},
+      {"cat": "personal", "text": "Plan how to use or save something available to me", "hint": "A trusted adult can help; having an allowance is not assumed."},
       { cat: 'health', text: 'Drink ___ glasses of water every day', hint: 'Your brain works better when you\'re hydrated!' },
       { cat: 'health', text: 'Go outside and play for 30 minutes every day', hint: 'Movement makes you feel happier!' },
       { cat: 'health', text: 'Learn to cook one new recipe with a grown-up', hint: 'Cooking is a life skill and it\'s fun!' },
@@ -89,9 +89,9 @@ window.SelHub = window.SelHub || {
       {"cat": "social", "text": "Try a connection opportunity that fits my interests and access needs", "hint": "Choose a suitable setting; another person's response is not your score."},
       {"cat": "social", "text": "Ask what support a friend wants before giving advice", "hint": "Respect space and your own limits; involve an adult when more help is needed."},
       {"cat": "social", "text": "Practice a request or boundary with support", "hint": "Agreement is not guaranteed, and you can ask for adult help."},
-      { cat: 'personal', text: 'Journal for 5 minutes before bed each night', hint: 'Writing clarifies thinking.' },
-      { cat: 'personal', text: 'Identify my emotion 3 times a day using the Emotion Zones', hint: 'Naming it tames it!' },
-      { cat: 'personal', text: 'Start a side project I\'m excited about', hint: 'Passion projects build skills and confidence!' },
+      {"cat": "personal", "text": "Try a reflection format that fits my privacy and time", "hint": "There is no page quota or daily streak to keep."},
+      {"cat": "personal", "text": "Notice what I need during one chosen moment", "hint": "An uncertain or mixed feeling is allowed; a label does not have to change it."},
+      {"cat": "personal", "text": "Choose a manageable part of a project I care about", "hint": "Check time, materials and support before deciding when to try."},
       { cat: 'health', text: 'Get 8+ hours of sleep on school nights', hint: 'Sleep is when your brain processes what you learned.' },
       { cat: 'health', text: 'Limit screen time to ___ hours on weekdays', hint: 'Balance is key.' },
       { cat: 'health', text: 'Try a new healthy recipe each week', hint: 'You are what you eat!' },
@@ -107,10 +107,10 @@ window.SelHub = window.SelHub || {
       {"cat": "social", "text": "Try a listening support that helps mutual understanding", "hint": "Notes, pauses and clarification can help; eye contact is not required."},
       {"cat": "social", "text": "Prepare a boundary that fits my responsibilities", "hint": "Choose the format and how much to explain; support is available if pressure continues."},
       {"cat": "social", "text": "Explore a connection opportunity with privacy and access in mind", "hint": "Choose a school-supported route if it fits; replies and popularity are not the measure."},
-      { cat: 'personal', text: 'Develop a morning routine and follow it for 21 days', hint: 'Habits compound. Small + consistent = transformative.' },
-      { cat: 'personal', text: 'Identify one limiting belief and actively challenge it', hint: 'Your narrative shapes your reality.' },
-      { cat: 'personal', text: 'Develop a morning/evening routine that supports my goals', hint: 'Routines reduce decision fatigue.' },
-      { cat: 'personal', text: 'Create a personal brand (portfolio, LinkedIn, website)', hint: 'Start building your reputation now.' },
+      {"cat": "personal", "text": "Try a routine with a flexible review point", "hint": "There is no fixed number of days that proves a routine is right for you."},
+      {"cat": "personal", "text": "Name a barrier and consider a strategy or support change", "hint": "Concerns can reflect real constraints; positive reframing is not always the answer."},
+      {"cat": "personal", "text": "Adapt a routine to my current responsibilities", "hint": "Consider a smaller option, practical help or a pause."},
+      {"cat": "personal", "text": "Choose work to keep in a private or shared portfolio", "hint": "Public branding and disclosure are optional; choose the purpose and audience."},
       { cat: 'health', text: 'Exercise 3+ times per week for 30+ minutes', hint: 'Exercise is the most underused antidepressant.' },
       { cat: 'health', text: 'Practice one mindfulness technique daily for 2 weeks', hint: 'Regular mindfulness practice is linked with better stress resilience.' },
       { cat: 'health', text: 'Track sleep, water, and exercise for 30 days', hint: 'What gets measured gets managed.' },
@@ -182,18 +182,18 @@ window.SelHub = window.SelHub || {
     allCategories: { icon: '\uD83C\uDF08', name: 'Balanced Life', desc: 'Goals in 3+ categories' },
     aiCoach: { icon: '\uD83E\uDD16', name: 'Coach Chat', desc: 'Ask the AI goal coach' },
     reflection: { icon: '\uD83D\uDCDD', name: 'Reflector', desc: 'Write a goal reflection' },
-    habitFormer: { icon: '\uD83D\uDD01', name: 'Habit Former', desc: '7-day habit streak' },
+    habitFormer: { icon: '\uD83D\uDD01', name: 'Habit Former', desc: 'Historical award for seven recorded days; new checks do not earn this award' },
     visionCreator: { icon: '\uD83C\uDF1F', name: 'Vision Creator', desc: 'Create a vision board entry' },
     reflectiveAchiever: { icon: '\uD83E\uDE9E', name: 'Reflective Achiever', desc: 'Write a reflection on a completed goal' },
     accountabilityPartner: { icon: '\uD83E\uDD1D', name: 'Accountability Partner', desc: 'Share a goal with a buddy' },
-    habitMaster: { icon: '\uD83C\uDFC5', name: 'Habit Master', desc: 'Complete all habits for a full week' },
+    habitMaster: { icon: '\uD83C\uDFC5', name: 'Habit Master', desc: 'Historical award for a full week of records; new checks do not earn this award' },
     weeklyReviewer: { icon: '\uD83D\uDCDD', name: 'Weekly Reviewer', desc: 'Complete 3 weekly check-ins' },
     milestoneMaker: { icon: '\uD83D\uDDFC', name: 'Milestone Maker', desc: 'Reach a 50% milestone on any goal' },
     categoryExplorer: { icon: '\uD83E\uDDED', name: 'Category Explorer', desc: 'Set goals in 4+ categories' },
     habitHero: { icon: '\uD83E\uDDB8', name: 'Habit Hero', desc: '14-day accountability streak' },
     visionAchiever: { icon: '\uD83C\uDF20', name: 'Vision Achiever', desc: 'Fill all vision board sections' },
     // v4.0 badges
-    habitChampion: { icon: '\uD83E\uDD47', name: 'Habit Champion', desc: 'Complete all habits 3 days in a row' },
+    habitChampion: { icon: '\uD83E\uDD47', name: 'Habit Champion', desc: 'Historical award for three days of records; new checks do not earn this award' },
     difficultySeeker: { icon: '\uD83D\uDD25', name: 'Difficulty Seeker', desc: 'Complete a hard goal (difficulty 4+)' },
     smartExampleUser: { icon: '\uD83D\uDCD6', name: 'SMART Learner', desc: 'Use a SMART example as template' },
     journey25: { icon: '\uD83D\uDEA9', name: 'Journey 25%', desc: 'Complete 25% of all goals' },
@@ -239,28 +239,28 @@ window.SelHub = window.SelHub || {
 
   // ── Motivational Boost Messages (for streak breaks / stalls) ──
   var MOTIVATIONAL_BOOSTS = {
-    elementary: [
-      'Missing a day doesn\'t erase your progress! You still did great! \uD83C\uDF1F',
-      'The best time to restart is right now! Let\'s go! \uD83D\uDE80',
-      'Even superheroes take a break sometimes. You\'ve got this! \uD83E\uDDB8',
-      'Every day is a new chance to try again! \uD83C\uDF08',
-      'It\'s okay to go slow \u2014 you\'re still going! \uD83D\uDC22'
-    ],
-    middle: [
-      'Missing a day doesn\'t erase your progress! \uD83D\uDCAA',
-      'The best time to restart is right now. \uD83D\uDD25',
-      'Setbacks are setups for comebacks. Keep pushing! \uD83C\uDFC3',
-      'You don\'t need motivation to start \u2014 just start, and motivation follows. \u2B50',
-      'One bad day doesn\'t define your journey. Tomorrow is fresh. \uD83C\uDF05'
-    ],
-    high: [
-      'Missing a day doesn\'t erase your progress. Consistency isn\'t perfection. \uD83D\uDCCA',
-      'The best time to restart is right now. No guilt, just action. \uD83C\uDFAF',
-      'Resilience isn\'t about never falling \u2014 it\'s about always getting back up. \uD83D\uDDFF',
-      'Even the most successful people have off days. What matters is the trend line. \uD83D\uDCC8',
-      'Progress is non-linear. Trust the process. \uD83C\uDF31'
-    ]
-  };
+  "elementary": [
+    "A blank day does not erase earlier tries. You can ask what would help next.",
+    "You can restart at a time that fits, choose a smaller try or take a break.",
+    "If the routine is hard to use, an adult can help change the plan.",
+    "A plan can change when your day changes.",
+    "You do not need to catch up on every missed day."
+  ],
+  "middle": [
+    "A missing record does not explain what happened. Consider time, access and support.",
+    "Restarting can wait until the plan fits; a smaller option or pause is available.",
+    "If the same barrier keeps returning, change the strategy or ask for support.",
+    "You can keep useful learning even when you stop a routine.",
+    "Review what matters now before deciding to continue."
+  ],
+  "high": [
+    "A streak is a record pattern, not a measure of your worth or learning.",
+    "Consider the fit, resources and costs before restarting a routine.",
+    "A pause, changed scope or different goal can be a deliberate decision.",
+    "Recurring barriers may call for practical support or changed conditions.",
+    "Review what the routine contributes, not just how often it is recorded."
+  ]
+};
 
   // ── Category AI Tips (per category, grade-adaptive) ──
   var CATEGORY_TIPS = {
@@ -298,17 +298,17 @@ window.SelHub = window.SelHub || {
 
   // ── Daily Nudge Messages ──
   var DAILY_NUDGE_MESSAGES = [
-    'Hey! You haven\u2019t completed any steps today. Even one small step counts! \uD83D\uDC63',
-    'Just 5 minutes on your goal can build unstoppable momentum. Start now! \uD83D\uDE80',
-    'Your future self is cheering you on. Take one step today! \uD83C\uDF1F',
-    'Progress isn\u2019t always big leaps \u2014 tiny steps add up. What can you do right now? \uD83C\uDFAF',
-    'You\u2019ve got goals waiting for you! Pick one step and crush it! \uD83D\uDCAA',
-    'Consistency beats intensity. Even 2 minutes on your goal matters today! \u23F0',
-    'Remember why you started. One step closer is still closer! \u2764\uFE0F',
-    'The hardest part is starting. Once you begin, momentum takes over! \uD83C\uDFC3',
-    'You\u2019re building something amazing, one step at a time. Don\u2019t stop now! \uD83C\uDFD7\uFE0F',
-    'A goal without daily action is just a wish. Make it real today! \u2728'
-  ];
+  "You can review whether this goal still matters to you.",
+  "Consider one manageable action, a support request or a pause.",
+  "Check whether the time and resources you need are available.",
+  "A smaller option can help you test whether a plan fits.",
+  "A missing record is not a judgment about your day.",
+  "You can revise the plan before deciding to restart.",
+  "Notice what has helped, including people and changes in the setting.",
+  "If a barrier keeps returning, consider a different strategy or more support.",
+  "Rest and other responsibilities can be part of the plan.",
+  "You do not need daily action for every goal. Choose a review point that fits."
+];
 
   // ── SMART Goal Examples Library (3 per category, grade-adaptive) ──
   var SMART_EXAMPLES = {
@@ -500,37 +500,160 @@ window.SelHub = window.SelHub || {
   }
 ],
     personal: [
-      {
-        title: 'Journaling Habit',
-        smart: {
-          S: { elementary: 'I will draw or write about my day for 5 minutes before bed.', middle: 'I will journal for 10 minutes each evening about my thoughts and feelings.', high: 'I will maintain a structured daily journal with gratitude, reflection, and intention-setting.' },
-          M: { elementary: 'I will fill one page in my journal every night.', middle: 'I\'ll write at least half a page each night and track my streak.', high: 'I\'ll complete 3 sections (gratitude, reflection, tomorrow\'s intention) each evening.' },
-          A: { elementary: 'I have a journal and crayons on my nightstand!', middle: 'I have a dedicated journal and 10 minutes of quiet time each evening.', high: 'I have a structured template and a consistent pre-sleep routine already established.' },
-          R: { elementary: 'Writing helps me understand my feelings better!', middle: 'Journaling reduces stress and helps me process my day.', high: 'Daily reflection builds self-awareness \u2014 the foundation of emotional intelligence.' },
-          T: { elementary: 'I will journal every night for 7 days.', middle: 'I will journal for 21 consecutive days to build the habit.', high: 'I will maintain this practice for 30 days, then assess and refine my template.' }
-        }
+  {
+    "id": "example-0",
+    "title": "Reflection in a form that fits",
+    "smart": {
+      "S": {
+        "elementary": "I will choose a way to notice one part of my day, such as a drawing, a few words or quiet thought.",
+        "middle": "I will try a brief reflection in a form and setting that fit my privacy and access needs.",
+        "high": "I will choose one question about the week and a reflection format that fits my time and privacy preferences."
       },
-      {
-        title: 'Mindfulness Practice',
-        smart: {
-          S: { elementary: 'I will take 5 deep belly breaths every morning when I wake up.', middle: 'I will practice 5 minutes of guided mindfulness each morning.', high: 'I will meditate for 10 minutes daily using a mindfulness app.' },
-          M: { elementary: 'I will color a box on my chart each day I do my breaths.', middle: 'I\'ll track each session in my habit tracker and note how I feel after.', high: 'I\'ll log session length, technique used, and subjective stress level pre/post.' },
-          A: { elementary: 'I can do it right when my alarm goes off!', middle: 'I have 5 minutes before breakfast and a quiet spot in my room.', high: 'I have a meditation app (Headspace/Calm) and a consistent morning routine.' },
-          R: { elementary: 'Deep breathing helps me start my day feeling calm and ready!', middle: 'Mindfulness helps me focus better in class and manage stress.', high: 'Meditation has evidence-based benefits for focus, stress reduction, and emotional regulation.' },
-          T: { elementary: 'I will do this every morning for 5 days.', middle: 'I will practice for 14 consecutive mornings.', high: 'I will meditate daily for 30 days, then evaluate the impact on my wellbeing.' }
-        }
+      "M": {
+        "elementary": "I will notice whether the way I chose helped me reflect; there is no required amount to write.",
+        "middle": "I will review whether it helped me notice something useful, without counting pages or collecting a streak.",
+        "high": "I will consider whether the reflection clarified a choice, a support need or something still uncertain."
       },
-      {
-        title: 'Growth Mindset',
-        smart: {
-          S: { elementary: 'I will say "I can\'t do it YET" instead of "I can\'t do it."', middle: 'I will reframe 1 negative thought per day into a growth mindset statement.', high: 'I will identify and challenge one limiting belief each week through journaling.' },
-          M: { elementary: 'I will put a sticker on my chart each time I use the word "yet."', middle: 'I\'ll write each reframe in my journal: original thought \u2192 growth version.', high: 'I\'ll document the belief, evidence for/against, and the reframed version weekly.' },
-          A: { elementary: 'I just need to remember the magic word "yet"!', middle: 'I notice negative thoughts throughout the day and have my journal nearby.', high: 'I have a CBT-informed framework and dedicated weekly reflection time.' },
-          R: { elementary: 'The word "yet" reminds me that I\'m still learning and growing!', middle: 'A growth mindset helps me see challenges as opportunities, not threats.', high: 'Cognitive reframing is a proven technique for resilience and peak performance.' },
-          T: { elementary: 'I will practice this every day for 2 weeks.', middle: 'I will reframe one thought daily for 21 days.', high: 'I will complete 8 weekly belief-challenge entries over the next 2 months.' }
-        }
+      "A": {
+        "elementary": "I can ask for materials or a little time and choose what I keep private.",
+        "middle": "I can choose quiet thought, a drawing or a short note, and ask for an appropriate time or space.",
+        "high": "I can use a short note or unrecorded thought without a paid app, fixed daily time or disclosure requirement."
+      },
+      "R": {
+        "elementary": "I want a way to remember or understand something that matters to me.",
+        "middle": "I want room to reflect without pressure to disclose personal experiences.",
+        "high": "I value understanding my experience while keeping reflection manageable."
+      },
+      "T": {
+        "elementary": "I will try at one suitable time this week and decide with support whether to keep, change or pause it.",
+        "middle": "I will review after two chosen opportunities, or at the end of next week, and adapt or pause if it does not fit.",
+        "high": "I will review the fit after one week and decide whether to continue, simplify or pause."
       }
-    ],
+    },
+    "context": {
+      "elementary": {
+        "situation": "A child wants to remember something from the day but does not enjoy writing long pages.",
+        "agency": "The child can draw, use a few words, talk with someone they choose, or think without making a record.",
+        "support": "An adult can help find materials or time. The child does not have to describe private events.",
+        "review": "If the activity feels too long or unhelpful, try another form or pause; a full page is not the goal."
+      },
+      "middle": {
+        "situation": "A learner wants time to reflect but does not have a reliably quiet evening or a private place to keep a journal.",
+        "agency": "The learner can choose an unrecorded reflection or a brief note without names. Daily writing is not required.",
+        "support": "A school space or another time may fit better. Do not assume a device, notebook or conversation is private.",
+        "review": "Check whether the format and privacy arrangements work. Change the plan rather than treating missing entries as a failure."
+      },
+      "high": {
+        "situation": "A student wants to review a demanding week but finds a structured daily journal burdensome.",
+        "agency": "The student can choose one useful question and leave other topics alone. More detail is not necessarily more useful.",
+        "support": "A brief unrecorded review, a private note or a chosen conversation can be options; access and privacy need checking.",
+        "review": "Look for a useful decision or question, not a required positive feeling. Reduce the task, change format or stop if it is not helping."
+      }
+    }
+  },
+  {
+    "id": "example-1",
+    "title": "A pause with options",
+    "smart": {
+      "S": {
+        "elementary": "I will choose a short pause that feels comfortable, such as looking around, moving gently or asking for help.",
+        "middle": "I will try one comfortable transition option, such as noticing my surroundings, stretching or asking what comes next.",
+        "high": "I will choose one comfortable break or attention shift that fits a work period."
+      },
+      "M": {
+        "elementary": "I will notice whether the option was comfortable and useful, even if my feelings stayed the same.",
+        "middle": "I will check comfort and usefulness rather than a number of minutes or a target calmness score.",
+        "high": "I will review whether it supported participation or clarified a need for another kind of help."
+      },
+      "A": {
+        "elementary": "I can keep my eyes open and breathe normally; an adult can help me choose a different option.",
+        "middle": "I can keep breathing normally, stop an uncomfortable option and ask staff for transition support.",
+        "high": "I can use a brief movement or external focus without a paid app, breath exercise or requirement to close my eyes."
+      },
+      "R": {
+        "elementary": "I want a little room to get ready in a way that works for me.",
+        "middle": "I want transitions that allow me to participate with the support I need.",
+        "high": "I want a workable way to notice my needs during a demanding task."
+      },
+      "T": {
+        "elementary": "I will try before one suitable activity and review the choice with an adult afterward.",
+        "middle": "After one chosen transition this week, I will consider what to keep, change or ask for.",
+        "high": "I will review after two suitable opportunities and choose whether to keep, adapt or stop the approach."
+      }
+    },
+    "context": {
+      "elementary": {
+        "situation": "A child wants a pause between activities but does not like being told to close their eyes or take deep breaths.",
+        "agency": "The child can choose a comfortable pause, movement or asking for help. They do not have to feel calm afterward.",
+        "support": "An adult can help make a little space, explain the next activity or offer a different option.",
+        "review": "Stop or change an option that feels uncomfortable. More quiet sitting is not automatically better."
+      },
+      "middle": {
+        "situation": "A learner wants a transition pause, but the usual breathing exercise feels uncomfortable and the hallway is crowded.",
+        "agency": "The learner can decline that exercise and try a different action. A pause does not require breath control or a particular feeling.",
+        "support": "A staff member can help with transition time, a clearer next step or a more suitable place.",
+        "review": "If access or comfort is still poor, change the environment or support rather than extending the exercise."
+      },
+      "high": {
+        "situation": "A student wants a brief pause during work but does not find silent meditation useful.",
+        "agency": "The student can try movement, an external focus or a practical break. They do not need to adopt meditation to have a valid plan.",
+        "support": "Break timing, task demands and access to a suitable space can be discussed with the relevant adult or team.",
+        "review": "If a pause does not address the barrier, revise workload, instructions or support. Do not interpret unchanged feelings as failed practice."
+      }
+    }
+  },
+  {
+    "id": "example-2",
+    "title": "Change the strategy, not just the words",
+    "smart": {
+      "S": {
+        "elementary": "I will name one part that is hard and choose a clue, a different approach or a break with support.",
+        "middle": "I will identify one difficult step and try a different strategy or request a specific support.",
+        "high": "I will identify one project barrier and compare a strategy change with a request for practical support."
+      },
+      "M": {
+        "elementary": "I will notice what helped me try or understand a step; using a special word is not the measure.",
+        "middle": "I will compare what I could understand or do before and after the change, without rating my attitude.",
+        "high": "I will review whether the change improved access, understanding or a concrete next step, not whether I felt positive."
+      },
+      "A": {
+        "elementary": "An adult can show one step or help change the task, materials or timing.",
+        "middle": "I can ask for an example, clearer directions or accessible materials and allow time for a response.",
+        "high": "I can discuss scope, timing or resources with an appropriate adult and keep personal details limited to what support needs."
+      },
+      "R": {
+        "elementary": "I want help with learning while making room for how I feel.",
+        "middle": "I want a workable learning approach without blaming myself for every barrier.",
+        "high": "I want to make an informed choice about learning and my other responsibilities."
+      },
+      "T": {
+        "elementary": "I will review after one supported try and decide what to do next.",
+        "middle": "I will review at the next work session and choose whether to keep the strategy, change it or ask for more help.",
+        "high": "I will review at the next agreed checkpoint and decide whether to continue, adjust scope or pause."
+      }
+    },
+    "context": {
+      "elementary": {
+        "situation": "A child says a puzzle is too hard. They are being encouraged to say yet, but they still do not know what to try.",
+        "agency": "The child can describe the difficulty, ask for a clue or take a break. They do not have to replace an honest feeling with a cheerful phrase.",
+        "support": "An adult can model a step, provide a different puzzle or help find another way to join in.",
+        "review": "Check whether the support helped with the task. If it did not, ask for a different explanation or adjust the task."
+      },
+      "middle": {
+        "situation": "A learner keeps rereading instructions without understanding them and thinks they are simply bad at the subject.",
+        "agency": "The learner can name a specific difficulty without forcing a positive belief. Access barriers and unclear teaching can be part of the problem.",
+        "support": "Ask for an example, chunked directions, accessible materials or another explanation. Practice does not replace needed support.",
+        "review": "Check whether the new strategy helped with the actual task. If it did not, revise it or seek more help rather than repeating reassuring words."
+      },
+      "high": {
+        "situation": "A student is struggling with a project while balancing other responsibilities. Reframing the problem as a limiting belief has not made the workload manageable.",
+        "agency": "The student can examine what is known, choose a next action and name constraints. Not every concern is a distorted thought.",
+        "support": "A teacher or adviser can help clarify priorities, adjust scope or address missing resources. Effort alone cannot provide unavailable time or access.",
+        "review": "Review both the strategy and the conditions. A different goal, reduced scope or a pause can be a reasoned choice."
+      }
+    }
+  }
+],
     health: [
       {
         title: 'Water Intake',
@@ -801,8 +924,8 @@ window.SelHub = window.SelHub || {
           { key: 'doDifferently', label: 'What might I keep or change? (optional)', hint: 'You could change the task, ask for support, or try a different way.' },
           { key: 'nextGoal', label: 'What might come next? (optional)', hint: 'A small step, more practice, a different goal, or a break are all options.' }
         ];
-        var noteFieldStyle = { width: '100%', minHeight: 88, padding: 12, borderRadius: 8, border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), background: _goaHC ? '#000000' : '#0f172a', color: _goaFg('#e2e8f0'), font: 'inherit', fontSize: 16, resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 };
-        var noteButtonStyle = { minHeight: 44, padding: '10px 14px', borderRadius: 8, background: _goaHC ? '#000000' : '#0f172a', border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), color: _goaFg('#e2e8f0'), font: 'inherit', fontSize: 14, cursor: 'pointer' };
+        var noteFieldStyle = { width: '100%', minHeight: 88, padding: 12, borderRadius: 8, border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), background: _goaBg('#0f172a'), color: _goaFg('#e2e8f0'), font: 'inherit', fontSize: 16, resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 };
+        var noteButtonStyle = { minHeight: 44, padding: '10px 14px', borderRadius: 8, background: _goaBg('#0f172a'), border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), color: _goaFg('#e2e8f0'), font: 'inherit', fontSize: 14, cursor: 'pointer' };
         var noteSaveStyle = Object.assign({}, noteButtonStyle, { background: _goaHC ? '#ffff00' : '#4338ca', color: _goaHC ? '#000000' : '#ffffff', fontWeight: 700 });
 
         // ── Accountability state ──
@@ -1090,39 +1213,13 @@ window.SelHub = window.SelHub || {
         var weekDates = goalHabitWeekDates(Date.now());
 
         var toggleHabit = function(habitIdx, dateStr) {
+          if (!Number.isInteger(habitIdx) || habitIdx < 0 || habitIdx >= habits.length || weekDates.indexOf(dateStr) < 0) return;
           sfxClick();
           var key = habitIdx + '-' + dateStr;
           var newLog = Object.assign({}, habitLog);
           newLog[key] = !newLog[key];
-          // Check for 7-day streak on any habit
-          var hasStreak7 = false;
-          var allHabitsComplete = habits.length > 0;
-          habits.forEach(function(hab, hi) {
-            var consecutive = 0;
-            var allWeek = true;
-            weekDates.forEach(function(wd) {
-              if (newLog[hi + '-' + wd]) { consecutive++; } else { consecutive = 0; allWeek = false; }
-            });
-            if (consecutive >= 7) hasStreak7 = true;
-            if (!allWeek) allHabitsComplete = false;
-          });
-          // Check for 3-day all-habits-complete champion badge
-          var champion3Day = false;
-          if (habits.length > 0) {
-            var last3 = weekDates.slice(-3);
-            var all3Done = true;
-            last3.forEach(function(wd) {
-              habits.forEach(function(hab, hi) {
-                if (!newLog[hi + '-' + wd]) all3Done = false;
-              });
-            });
-            if (all3Done) champion3Day = true;
-          }
-          var updates = { habitLog: newLog };
-          if (hasStreak7) updates.habitStreak7 = true;
-          if (allHabitsComplete && habits.length > 0) updates.habitWeekComplete = true;
-          if (champion3Day) updates.habitChampion3Day = true;
-          upd(updates);
+          // Recording is optional; it does not establish a habit or earn a streak reward.
+          upd({ habitLog: newLog });
         };
 
         var addHabit = function(name, category) {
@@ -1142,6 +1239,60 @@ window.SelHub = window.SelHub || {
         var getHabitCategory = function(hab) {
           if (typeof hab === 'string') return 'health';
           return (hab && hab.category) || 'health';
+        };
+
+        var getRoutinePlan = function(habit) {
+          var plan = habit && typeof habit === 'object' && habit.plan;
+          return plan && typeof plan === 'object' && !Array.isArray(plan) ? plan : {};
+        };
+
+        var updateRoutinePlan = function(index, key, value) {
+          if (!Number.isInteger(index) || index < 0 || index >= habits.length) return;
+          var next = habits.map(function(habit, i) {
+            if (i !== index) return habit;
+            var base = habit && typeof habit === 'object' && !Array.isArray(habit) ? habit : { name: getHabitName(habit), category: getHabitCategory(habit) };
+            var plan = Object.assign({}, getRoutinePlan(habit));
+            plan[key] = value;
+            return Object.assign({}, base, { plan: plan });
+          });
+          upd({ habits: next });
+        };
+
+        var renderRoutinePlan = function(habit, index) {
+          var plan = getRoutinePlan(habit), name = getHabitName(habit) || 'Unnamed routine';
+          var statuses = { trying: 'Trying it', paused: 'Paused', reviewing: 'Reviewing the fit' };
+          var status = typeof plan.status === 'string' && Object.prototype.hasOwnProperty.call(statuses, plan.status) ? plan.status : '';
+          var surface = _goaHC ? '#000000' : _goaL ? '#ffffff' : '#0f172a';
+          var ink = _goaHC ? '#ffff00' : _goaL ? '#0f172a' : '#e2e8f0';
+          var edge = _goaHC ? '#ffff00' : '#64748b';
+          var fieldStyle = { width: '100%', minHeight: 44, boxSizing: 'border-box', padding: 10, border: '1px solid ' + edge, borderRadius: 8, background: surface, color: ink, font: 'inherit', fontSize: 16, lineHeight: 1.6 };
+          var fields = [
+            { key: 'purpose', label: 'Why this routine matters (optional)', hint: 'Choose a reason that matters to you. Keeping a routine is not the goal by itself.' },
+            { key: 'opportunity', label: 'When it might fit (optional)', hint: band === 'elementary' ? 'Choose a moment with an adult. It does not have to be every day.' : 'Name a suitable opportunity or a cue you can notice. Check whether the time and setting are available.' },
+            { key: 'support', label: 'Supports or changes needed (optional)', hint: 'Consider a person, materials, a reminder or a change to the setting. You do not need to share private reasons.' },
+            { key: 'alternative', label: 'A smaller or different option (optional)', hint: band === 'elementary' ? 'You could try one part, ask for help, choose another way or take a break.' : 'Plan for a day with less time or energy. A smaller action, another method, support or a pause can fit.' },
+            { key: 'review', label: 'What to check next, and when (optional)', hint: 'Check usefulness, comfort and access at a chosen time. Decide whether to keep, change or stop the routine.' }
+          ];
+          return h('section', { role: 'region', 'aria-label': 'Routine planning: ' + name, style: { margin: '12px 0', padding: 12, border: '1px solid ' + edge, borderRadius: 10, background: surface, color: ink, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+            h('p', { style: { margin: '0 0 8px' } }, 'Plan status: ' + (statuses[status] || 'Not chosen')),
+            h('details', null,
+              h('summary', { style: { minHeight: 44, padding: '10px 0', fontWeight: 700, cursor: 'pointer' } }, 'Plan and review this routine'),
+              h('p', null, 'This plan is optional. A routine can be useful without happening every day. A pause keeps your plan and records; it does not create missed-day entries or a catch-up task.'),
+              h('label', { htmlFor: 'routine-status-' + index, style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, 'How this plan fits now (optional)'),
+              h('select', { id: 'routine-status-' + index, value: status, style: fieldStyle, onChange: function(event) { updateRoutinePlan(index, 'status', event.target.value); } },
+                h('option', { value: '' }, 'Not chosen'),
+                Object.keys(statuses).map(function(key) { return h('option', { key: key, value: key }, statuses[key]); })),
+              h('p', null, 'Status is a planning note. You can still correct dated records while paused. Recording a day does not change this status.'),
+              fields.map(function(field) {
+                var id = 'routine-plan-' + index + '-' + field.key;
+                return h('div', { key: field.key, style: { marginTop: 16 } },
+                  h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, field.label),
+                  h('p', { id: id + '-help', style: { margin: '0 0 8px' } }, field.hint),
+                  h('textarea', { id: id, 'aria-describedby': id + '-help', rows: 3, value: typeof plan[field.key] === 'string' ? plan[field.key] : '', style: Object.assign({}, fieldStyle, { resize: 'vertical' }), onChange: function(event) { updateRoutinePlan(index, field.key, event.target.value); } }));
+              }),
+              h('p', null, 'Notes stay with this routine in your project. Use the Hub save/export controls to keep a copy and review personal details before sharing.')
+            )
+          );
         };
 
         var focusHabitControl = function(id) {
@@ -1167,7 +1318,7 @@ window.SelHub = window.SelHub || {
             if (hi < idx) { newLog[k] = habitLog[k]; }
             else if (hi > idx) { newLog[(hi - 1) + '-' + parts.slice(1).join('-')] = habitLog[k]; }
           });
-          upd({ habits: next, habitLog: newLog, pendingHabitRemoval: null, habitNotice: 'Routine and its dated records removed. Other routine records are unchanged.' });
+          upd({ habits: next, habitLog: newLog, pendingHabitRemoval: null, habitNotice: 'Routine, plan and dated records removed. Other routine records are unchanged.' });
           focusHabitControl('goal-habits-heading');
         };
 
@@ -1429,7 +1580,8 @@ window.SelHub = window.SelHub || {
                         h('dd', { style: { margin: '4px 0 0' } }, selected.smart[key][band] || selected.smart[key].elementary));
                     })))
                 ),
-                context && h('p', null, 'For social goals, another person\'s response is not your score. You can choose support, a different approach or a pause. Threats, repeated targeting or unsafe pressure need adult support, not a communication deadline.'),
+                smartExampleCat === 'social' && h('p', null, 'For social goals, another person\'s response is not your score. You can choose support, a different approach or a pause. Threats, repeated targeting or unsafe pressure need adult support, not a communication deadline.'),
+                smartExampleCat === 'personal' && h('p', null, 'These are optional ways to explore a goal. A daily streak, a positive feeling or a fixed amount of writing does not prove that a plan fits. You can change the support, choose another approach or pause.'),
                 h('p', null, 'Use as Template creates a new editable goal with these five SMART fields. It keeps your existing goals. Review the copied wording before using or sharing it.'),
                 h('button', { type: 'button', 'aria-label': 'Use as Template', onClick: function() { loadSmartExample(smartExampleCat, index); }, style: Object.assign({}, control, { width: '100%', cursor: 'pointer', fontWeight: 700 }) }, 'Use as Template')
               )
@@ -1944,6 +2096,7 @@ window.SelHub = window.SelHub || {
                 var pending = d.pendingHabitRemoval && d.pendingHabitRemoval.index === hi && d.pendingHabitRemoval.snapshot === JSON.stringify(habits);
                 return h('section', { key: hi, id: 'goal-habit-' + hi, tabIndex: -1, 'aria-label': 'Routine: ' + name, style: { marginBottom: 16, padding: 12, border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), borderRadius: 12, scrollMarginTop: 100 } },
                   h('h4', { id: 'goal-habit-name-' + hi, style: { fontSize: 16, margin: '0 0 8px' } }, name),
+                  renderRoutinePlan(hab, hi),
                   h('p', null, recorded + ' of 7 displayed days recorded.'),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8 } },
                     weekDates.map(function(date) {
@@ -1960,7 +2113,7 @@ window.SelHub = window.SelHub || {
                     })
                   ),
                   pending ? h('div', { role: 'group', 'aria-label': 'Confirm removal of ' + name, style: { marginTop: 12 } },
-                    h('p', null, 'Remove this routine and all its dated records? This cannot be undone here. Other routine records will stay.'),
+                    h('p', null, 'Remove this routine, its plan and all its dated records? This cannot be undone here. Other routine records will stay.'),
                     h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                       h('button', { id: 'goal-habit-remove-cancel-' + hi, onClick: function() { upd({ pendingHabitRemoval: null }); focusHabitControl('goal-habit-remove-' + hi); }, style: noteButtonStyle }, 'Keep routine'),
                       h('button', { onClick: function() { removeHabit(hi); }, style: noteButtonStyle }, 'Remove routine and records')
