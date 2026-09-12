@@ -65,9 +65,9 @@ window.SelHub = window.SelHub || {
       { cat: 'academic', text: 'Read ___ books this month', hint: 'Pick a number you can reach!' },
       { cat: 'academic', text: 'Raise my ___ grade by practicing every day', hint: 'What subject do you want to improve?' },
       { cat: 'academic', text: 'Learn 5 new vocabulary words each week', hint: 'Big words start small!' },
-      { cat: 'social', text: 'Make a new friend by saying hi to someone new', hint: 'One hello can change a whole day!' },
-      { cat: 'social', text: 'Say something kind to someone every day this week', hint: 'Kindness is a superpower!' },
-      { cat: 'social', text: 'Include someone who is sitting alone at lunch', hint: 'Everyone deserves a friend!' },
+      {"cat": "social", "text": "Choose a way to ask to join an activity", "hint": "An adult can help; a yes or a new friendship is not required."},
+      {"cat": "social", "text": "Offer help and respect the answer", "hint": "Ask first. Someone working alone may want space."},
+      {"cat": "social", "text": "Practice asking for a turn or for adult help", "hint": "Words, pictures and gestures all count as communication."},
       { cat: 'personal', text: 'Try one new thing I\'ve never done before', hint: 'Trying new things helps your brain grow!' },
       { cat: 'personal', text: 'Take 3 deep breaths when I feel frustrated', hint: 'Deep breaths help your brain calm down.' },
       { cat: 'personal', text: 'Write in my journal every day for a week', hint: 'Writing helps you understand your feelings!' },
@@ -86,9 +86,9 @@ window.SelHub = window.SelHub || {
       { cat: 'academic', text: 'Ask at least one question in class this week', hint: 'Curiosity is a strength, not a weakness.' },
       { cat: 'academic', text: 'Build a portfolio of my best work this semester', hint: 'Tracking your growth builds confidence!' },
       { cat: 'academic', text: 'Read 1 book per month outside of school assignments', hint: 'Readers are leaders!' },
-      { cat: 'social', text: 'Start a conversation with someone outside my friend group', hint: 'Expanding your circle builds empathy.' },
-      { cat: 'social', text: 'Compliment someone genuinely every day', hint: 'Specific compliments mean more than generic ones.' },
-      { cat: 'social', text: 'Practice saying no when I\'m uncomfortable', hint: 'Your voice matters.' },
+      {"cat": "social", "text": "Try a connection opportunity that fits my interests and access needs", "hint": "Choose a suitable setting; another person's response is not your score."},
+      {"cat": "social", "text": "Ask what support a friend wants before giving advice", "hint": "Respect space and your own limits; involve an adult when more help is needed."},
+      {"cat": "social", "text": "Practice a request or boundary with support", "hint": "Agreement is not guaranteed, and you can ask for adult help."},
       { cat: 'personal', text: 'Journal for 5 minutes before bed each night', hint: 'Writing clarifies thinking.' },
       { cat: 'personal', text: 'Identify my emotion 3 times a day using the Emotion Zones', hint: 'Naming it tames it!' },
       { cat: 'personal', text: 'Start a side project I\'m excited about', hint: 'Passion projects build skills and confidence!' },
@@ -104,9 +104,9 @@ window.SelHub = window.SelHub || {
       { cat: 'academic', text: 'Maintain a ___ GPA this semester through daily study habits', hint: 'Systems > willpower.' },
       { cat: 'academic', text: 'Research 3 colleges/programs aligned with my interests', hint: 'Clarity reduces anxiety.' },
       { cat: 'academic', text: 'Develop a study system (Cornell notes, spaced repetition, etc.)', hint: 'How you study matters more than how long.' },
-      { cat: 'social', text: 'Practice active listening in one conversation per day', hint: 'Listen to understand, not to respond.' },
-      { cat: 'social', text: 'Set a healthy boundary with someone this week', hint: 'Boundaries are acts of self-respect.' },
-      { cat: 'social', text: 'Build a professional network by connecting with 3 adults in my field', hint: 'Your network is your net worth.' },
+      {"cat": "social", "text": "Try a listening support that helps mutual understanding", "hint": "Notes, pauses and clarification can help; eye contact is not required."},
+      {"cat": "social", "text": "Prepare a boundary that fits my responsibilities", "hint": "Choose the format and how much to explain; support is available if pressure continues."},
+      {"cat": "social", "text": "Explore a connection opportunity with privacy and access in mind", "hint": "Choose a school-supported route if it fits; replies and popularity are not the measure."},
       { cat: 'personal', text: 'Develop a morning routine and follow it for 21 days', hint: 'Habits compound. Small + consistent = transformative.' },
       { cat: 'personal', text: 'Identify one limiting belief and actively challenge it', hint: 'Your narrative shapes your reality.' },
       { cat: 'personal', text: 'Develop a morning/evening routine that supports my goals', hint: 'Routines reduce decision fatigue.' },
@@ -345,37 +345,160 @@ window.SelHub = window.SelHub || {
       }
     ],
     social: [
-      {
-        title: 'Making Friends',
-        smart: {
-          S: { elementary: 'I will say hi to one new person at recess every day this week.', middle: 'I will start a conversation with someone outside my friend group twice this week.', high: 'I will initiate one meaningful conversation per week with someone I don\'t know well.' },
-          M: { elementary: 'I will tell my teacher the name of each new person I talk to.', middle: 'I\'ll journal about each conversation: who, what we talked about, how it felt.', high: 'I\'ll reflect weekly on the quality and depth of new connections made.' },
-          A: { elementary: 'Recess is the perfect time because everyone is playing!', middle: 'I see new people in the cafeteria and before classes start each day.', high: 'I have opportunities in classes, clubs, and community activities to meet people.' },
-          R: { elementary: 'Having more friends makes school more fun!', middle: 'Expanding my social circle builds empathy and communication skills.', high: 'Networking and relationship-building are critical life and career skills.' },
-          T: { elementary: 'I will do this every day for 5 school days.', middle: 'I will do this twice per week for the next 3 weeks.', high: 'I will sustain this practice weekly for the remainder of the semester.' }
-        }
+  {
+    "id": "invitation",
+    "title": "Connection with choice",
+    "smart": {
+      "S": {
+        "elementary": "I will choose a way to ask whether I can join a game I am interested in.",
+        "middle": "I will choose a setting that works for me and offer a greeting or shared activity when it seems welcome.",
+        "high": "I will explore one interest-based connection opportunity that fits my time, access and privacy preferences."
       },
-      {
-        title: 'Kindness Practice',
-        smart: {
-          S: { elementary: 'I will give one compliment to a classmate every single day.', middle: 'I will perform one deliberate act of kindness each day this week.', high: 'I will practice active listening in every conversation for 2 weeks.' },
-          M: { elementary: 'I will draw a star on my chart for each compliment I give.', middle: 'I\'ll keep a kindness log noting what I did and how the person reacted.', high: 'I\'ll self-assess my listening quality on a 1-5 scale after each key conversation.' },
-          A: { elementary: 'I see my classmates every day so I can always find someone to compliment!', middle: 'There are small opportunities every day: holding doors, sharing supplies, helping.', high: 'I interact with peers, teachers, and family daily \u2014 plenty of practice opportunities.' },
-          R: { elementary: 'Being kind makes everyone feel good, including me!', middle: 'Kindness strengthens relationships and makes me someone others trust.', high: 'Empathy and active listening are foundational to emotional intelligence and leadership.' },
-          T: { elementary: 'I will do this every school day for 2 weeks.', middle: 'I will complete 7 acts of kindness in the next 7 days.', high: 'I will practice for 14 consecutive days and review my journal at the end.' }
-        }
+      "M": {
+        "elementary": "I will notice whether I made my request or asked an adult to help; I do not need a yes to count my chosen action.",
+        "middle": "I will note whether I tried my chosen approach and whether the setting supported participation, without recording another person's private details.",
+        "high": "I will review whether I took a chosen action and respected contact boundaries, without measuring success by replies or popularity."
       },
-      {
-        title: 'Conflict Resolution',
-        smart: {
-          S: { elementary: 'I will use "I feel" words when I\'m upset instead of yelling.', middle: 'I will resolve one disagreement this week using I-statements and calm voice.', high: 'I will practice assertive communication techniques in 3 difficult conversations this month.' },
-          M: { elementary: 'I will count how many times I used my calm words on my feelings chart.', middle: 'I\'ll write down what happened, what I said, and the outcome each time.', high: 'I\'ll document each interaction: trigger, my response, the result, and what I\'d improve.' },
-          A: { elementary: 'My teacher taught me "I feel ___ when ___" and I can use it!', middle: 'I\'ve learned conflict resolution strategies in advisory and can apply them.', high: 'I have knowledge of NVC (nonviolent communication) and can practice deliberately.' },
-          R: { elementary: 'Using calm words helps me keep my friends and feel better.', middle: 'Handling conflict well earns respect and strengthens friendships.', high: 'Conflict resolution is essential for healthy relationships and professional success.' },
-          T: { elementary: 'I will practice this every day for 1 week.', middle: 'I will resolve at least 1 conflict this way within the next 7 days.', high: 'I will complete all 3 conversations within the next 30 days.' }
-        }
+      "A": {
+        "elementary": "I can use words, a gesture or a communication aid, with an adult nearby if needed.",
+        "middle": "I can ask staff about a quieter activity and choose speech, writing or another communication method.",
+        "high": "I can ask an adviser about an accessible school-hosted option and decline to exchange personal contact details."
+      },
+      "R": {
+        "elementary": "I want a chance to enjoy a shared activity while respecting my choice and other people's responses.",
+        "middle": "I want connection that fits my interests and comfort, rather than a required number of friends.",
+        "high": "I value shared interests and reciprocal connection while keeping room for my other priorities."
+      },
+      "T": {
+        "elementary": "I will try at one suitable recess this week and review the plan with an adult afterward.",
+        "middle": "I will review after one chosen opportunity this week and adjust or pause if the setting does not fit.",
+        "high": "I will review after the first opportunity or in two weeks, whichever comes first, and decide whether to continue, adapt or stop."
       }
-    ],
+    },
+    "context": {
+      "elementary": {
+        "situation": "A child wants to join a playground game but does not know whether there is room.",
+        "agency": "The child can choose a way to ask. Other children can answer; a yes or a new friendship is not something the child can guarantee.",
+        "support": "A playground adult can help explain the game, offer another activity, or address repeated exclusion. Speech, a gesture or a communication aid can all be used.",
+        "review": "If joining is not possible, consider another activity or adult help. Review whether there was a fair opportunity, not whether everyone became friends."
+      },
+      "middle": {
+        "situation": "A learner wants more connection at school but finds the cafeteria too noisy for conversation.",
+        "agency": "The learner can choose a setting and offer a greeting or shared activity. They cannot set a deadline for another person to become a friend.",
+        "support": "A quieter club or supported activity may fit better. Staff should address access barriers or repeated exclusion rather than requiring more social effort.",
+        "review": "After a trial, consider keeping the setting, choosing a different one, requesting access support or pausing. Count a chosen attempt, not conversations collected."
+      },
+      "high": {
+        "situation": "A student wants to connect with peers around an interest but has limited time and does not want to share personal contact information.",
+        "agency": "The student can choose one opportunity and a contact boundary. They cannot control replies or how quickly trust develops.",
+        "support": "A school-hosted activity may avoid travel costs or sharing personal accounts. An adviser can clarify access and expectations.",
+        "review": "If the opportunity requires unwanted disclosure or unavailable time, change the route. A lack of replies is information about fit, not a personal deficit."
+      }
+    }
+  },
+  {
+    "id": "support",
+    "title": "Support that respects preferences",
+    "smart": {
+      "S": {
+        "elementary": "I will ask whether a classmate wants help before joining in or touching their work.",
+        "middle": "I will ask what kind of support, if any, a friend wants before offering advice.",
+        "high": "I will try one listening support, such as a pause, written notes or a clarification question, during a suitable group discussion."
+      },
+      "M": {
+        "elementary": "I will notice whether I offered a choice and respected the answer, including no.",
+        "middle": "I will notice whether I listened to the preference and stayed within my own limits, without keeping a record of their private story.",
+        "high": "I will check my understanding in a way that works for me, rather than rating my eye contact or how still I sat."
+      },
+      "A": {
+        "elementary": "I can practice a short offer with an adult and keep my own materials and needs in mind.",
+        "middle": "I can offer a short check-in, respect a request for space and involve a trusted adult when the concern needs more support.",
+        "high": "I can ask the group or teacher to allow processing time and shared notes, and invite others to name access needs without disclosure pressure."
+      },
+      "R": {
+        "elementary": "I want to show care in a way the other child can choose.",
+        "middle": "I want to be supportive without taking responsibility for someone else's feelings or becoming their only support.",
+        "high": "I want mutual understanding and accessible participation, not a performance of looking attentive."
+      },
+      "T": {
+        "elementary": "I will try at one suitable moment and think with an adult about what to keep or change.",
+        "middle": "After one appropriate check-in this week, I will review whether the approach fit and whether more adult support is needed.",
+        "high": "I will review after the next group discussion and keep or change the support based on what helped understanding."
+      }
+    },
+    "context": {
+      "elementary": {
+        "situation": "A child sees a classmate working alone and wants to help, but does not know whether help is wanted.",
+        "agency": "The child can offer help once and listen to the answer. Working alone does not automatically mean someone is lonely or needs help.",
+        "support": "An adult can help find words or a gesture for an offer. The classmate can say no; the child can choose a different kind action or return to their own work.",
+        "review": "Check whether the offer left room for a real choice. A smile, thank-you or shared activity is not required."
+      },
+      "middle": {
+        "situation": "A learner wants to support a friend who seems upset, but the friend has not explained what happened.",
+        "agency": "The learner can offer company, listening or space. They cannot make the friend disclose, accept advice or feel better.",
+        "support": "Ask whether the friend wants listening or practical help, and keep personal limits. A serious safety concern needs appropriate adult support.",
+        "review": "Check whether both people had choices and manageable boundaries. Do not judge the effort by how quickly the friend feels better."
+      },
+      "high": {
+        "situation": "A student wants to listen well during group work. The group often talks quickly, and the student processes speech more easily with pauses or written notes.",
+        "agency": "Listening can involve clarification, notes and extra processing time. Eye contact, stillness and an immediate spoken response are not proof of attention.",
+        "support": "Agree on pauses or shared notes and ask what would help others participate too. A teacher can address a format that excludes people.",
+        "review": "Check whether the group understood one another and whether supports were available. If the format still blocks access, revise it rather than demanding more masking."
+      }
+    }
+  },
+  {
+    "id": "boundary",
+    "title": "Communicate a need or boundary",
+    "smart": {
+      "S": {
+        "elementary": "I will use a way that works for me to ask for a turn or ask an adult to help.",
+        "middle": "I will practice a specific request about dividing the project, then choose whether to use it or ask the teacher to help.",
+        "high": "I will prepare a brief limit on extra club duties and choose a suitable way to communicate it or get adviser support."
+      },
+      "M": {
+        "elementary": "I will notice whether I communicated my need or got support, not whether I felt calm the whole time.",
+        "middle": "I will check whether I expressed my concern or sought support, without requiring the teammate to agree.",
+        "high": "I will review whether I stated my limit or requested support, not whether the organizer approved."
+      },
+      "A": {
+        "elementary": "I can use words, a picture or a gesture; an adult can help arrange fair turns.",
+        "middle": "I can rehearse in writing, ask for time, or bring the request to the teacher if direct discussion does not fit.",
+        "high": "I can use a written message, a supported conversation or the adviser, and keep my reasons private."
+      },
+      "R": {
+        "elementary": "I want to share access while making room for my needs and feelings.",
+        "middle": "I want a fair, workable way to participate without having to hide disagreement.",
+        "high": "I want sustainable participation that fits my responsibilities and boundaries."
+      },
+      "T": {
+        "elementary": "I will practice with an adult once this week and review what support I might need in the classroom.",
+        "middle": "I will review before the next project checkpoint and adjust the plan if the division or support is still unclear.",
+        "high": "I will review after the next request or club meeting and seek further support if the pressure continues."
+      }
+    },
+    "context": {
+      "elementary": {
+        "situation": "Two children want the same classroom material. One child needs help asking for a turn.",
+        "agency": "The child can ask for a turn or adult help. They do not have to stop feeling upset before they deserve support.",
+        "support": "An adult can help arrange fair turns and support words, pictures or gestures. A learner is not responsible for settling an unsafe situation alone.",
+        "review": "Check whether there was a fair way to use the material. If a child is being threatened or repeatedly targeted, ask an adult to respond."
+      },
+      "middle": {
+        "situation": "A learner disagrees with a teammate about dividing a project. There are no threats, but the learner is unsure how to ask for a change.",
+        "agency": "The learner can describe a concern and request. Agreement depends on others too; resolving the disagreement is not a task the learner can guarantee.",
+        "support": "The teacher can clarify fair expectations or support separate input. If threats, repeated targeting or unequal power emerge, stop treating it as a shared negotiation.",
+        "review": "Review whether the request was understood and whether the task division is workable. A need for adult help is not failed communication."
+      },
+      "high": {
+        "situation": "A student wants to decline extra club duties while staying involved. They worry that an organizer may keep pushing after a refusal.",
+        "agency": "The student can set a limit in a suitable form and decide how much to explain. They cannot guarantee approval or prevent another person's disappointment.",
+        "support": "An adviser can clarify expectations and address pressure or retaliation. The student need not repeatedly negotiate a boundary or disclose personal circumstances.",
+        "review": "Check whether the limit was respected and participation remained accessible. If pressure continues, seek support or reconsider involvement rather than treating persistence as a communication test."
+      }
+    }
+  }
+],
     personal: [
       {
         title: 'Journaling Habit',
@@ -696,7 +819,7 @@ window.SelHub = window.SelHub || {
         // ── v4.0 Celebration & SMART Examples state ──
         var celebratingGoalId = d.celebratingGoalId || null;
         var showSmartExamples = d.showSmartExamples || false;
-        var smartExampleCat = d.smartExampleCat || 'academic';
+        var smartExampleCat = typeof d.smartExampleCat === 'string' && Object.prototype.hasOwnProperty.call(SMART_EXAMPLES, d.smartExampleCat) ? d.smartExampleCat : 'academic';
         var smartBuildMode = d.smartBuildMode === 'all' ? 'all' : 'guided';
         var parsedSmartStep = parseInt(d.smartStep, 10);
         var smartStep = isNaN(parsedSmartStep) ? 0 : Math.max(0, Math.min(4, parsedSmartStep));
@@ -833,6 +956,7 @@ window.SelHub = window.SelHub || {
           };
           upd({ goals: goals.concat([newGoal]), editingGoal: newGoal.id, expandedGoalId: newGoal.id, renamingGoalId: newGoal.id });
           focusGoalName(newGoal.id);
+          return newGoal.id;
         };
 
         var toggleGoalDetails = function(goalId) {
@@ -1264,6 +1388,55 @@ window.SelHub = window.SelHub || {
           }
         };
 
+        // Browse one worked plan at a time; creating a copy is an explicit action.
+        var renderSmartExamples = function() {
+          var surface = _goaHC ? '#000000' : _goaL ? '#ffffff' : '#0f172a';
+          var ink = _goaHC ? '#ffff00' : _goaL ? '#0f172a' : '#e2e8f0';
+          var edge = _goaHC ? '#ffff00' : '#64748b';
+          var control = { minHeight: 44, padding: '10px 12px', border: '1px solid ' + edge, borderRadius: 8, background: surface, color: ink, font: 'inherit', fontSize: 16, boxSizing: 'border-box' };
+          var selections = d.smartExampleSelections && typeof d.smartExampleSelections === 'object' && !Array.isArray(d.smartExampleSelections) ? d.smartExampleSelections : {};
+          var selectionKey = band + ':' + smartExampleCat;
+          var items = SMART_EXAMPLES[smartExampleCat];
+          function exampleId(item, index) { return item.id || 'example-' + index; }
+          var index = items.findIndex(function(item, i) { return exampleId(item, i) === selections[selectionKey]; });
+          if (index < 0) index = 0;
+          var selected = items[index], context = selected.context && selected.context[band];
+          return h('div', { style: { marginBottom: 16 } },
+            h('button', { type: 'button', 'aria-label': 'SMART Goal Examples Library', 'aria-expanded': !!showSmartExamples, 'aria-controls': 'goal-example-library-body', onClick: function() { upd({ showSmartExamples: !showSmartExamples }); }, style: Object.assign({}, control, { width: '100%', textAlign: 'left', cursor: 'pointer', fontWeight: 700 }) }, 'SMART Goal Examples Library'),
+            h('div', { id: 'goal-example-library-body', hidden: !showSmartExamples }, showSmartExamples &&
+              h('section', { role: 'region', 'aria-label': 'SMART example library', style: { padding: 16, marginTop: 10, border: '1px solid ' + edge, borderRadius: 12, background: surface, color: ink, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+                h('h2', { style: { fontSize: 22, lineHeight: 1.3, margin: '0 0 8px' } }, 'Explore a plan, then make it yours'),
+                h('p', null, 'Examples are starting points. Change the action, evidence, support and review time to fit what matters to you. Reading an example does not add a goal.'),
+                h('div', { role: 'group', 'aria-label': 'Example categories', style: { display: 'flex', flexWrap: 'wrap', gap: 8, margin: '12px 0' } }, GOAL_CATEGORIES.map(function(cat) {
+                  var active = smartExampleCat === cat.id;
+                  return h('button', { type: 'button', key: cat.id, 'aria-label': 'Filter SMART examples by ' + cat.label, 'aria-pressed': active, onClick: function() { upd({ smartExampleCat: cat.id }); }, style: Object.assign({}, control, { fontSize: 14, cursor: 'pointer', fontWeight: active ? 700 : 400, background: active ? (_goaHC ? '#ffff00' : '#4338ca') : surface, color: active ? (_goaHC ? '#000000' : '#ffffff') : ink }) }, cat.label);
+                })),
+                h('label', { htmlFor: 'goal-example-choice', style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, 'Choose a worked goal example'),
+                h('select', { id: 'goal-example-choice', style: Object.assign({}, control, { width: '100%' }), value: exampleId(selected, index), onChange: function(e) { var next = Object.assign({}, selections); next[selectionKey] = e.target.value; upd({ smartExampleSelections: next }); } }, items.map(function(item, i) { return h('option', { key: exampleId(item, i), value: exampleId(item, i) }, item.title); })),
+                h('div', { key: selectionKey + ':' + exampleId(selected, index) },
+                  h('h3', { style: { fontSize: 18, lineHeight: 1.4 } }, selected.title),
+                  context && h('p', null, context.situation),
+                  context && h('details', { open: true, style: { borderTop: '1px solid ' + edge } },
+                    h('summary', { style: { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 } }, 'Choices, support and a review point'),
+                    h('p', null, h('strong', null, 'What the learner can choose: '), context.agency),
+                    h('p', null, h('strong', null, 'Support and access: '), context.support),
+                    h('p', null, h('strong', null, 'When to adapt the plan: '), context.review)),
+                  h('details', { open: true, style: { borderTop: '1px solid ' + edge } },
+                    h('summary', { style: { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 } }, 'Read the SMART plan'),
+                    h('dl', null, ['S', 'M', 'A', 'R', 'T'].map(function(key) {
+                      return h('div', { key: key, style: { marginBottom: 14 } },
+                        h('dt', { style: { fontWeight: 700 } }, key + ' — ' + SMART_LABELS[key].label),
+                        h('dd', { style: { margin: '4px 0 0' } }, selected.smart[key][band] || selected.smart[key].elementary));
+                    })))
+                ),
+                context && h('p', null, 'For social goals, another person\'s response is not your score. You can choose support, a different approach or a pause. Threats, repeated targeting or unsafe pressure need adult support, not a communication deadline.'),
+                h('p', null, 'Use as Template creates a new editable goal with these five SMART fields. It keeps your existing goals. Review the copied wording before using or sharing it.'),
+                h('button', { type: 'button', 'aria-label': 'Use as Template', onClick: function() { loadSmartExample(smartExampleCat, index); }, style: Object.assign({}, control, { width: '100%', cursor: 'pointer', fontWeight: 700 }) }, 'Use as Template')
+              )
+            )
+          );
+        };
+
         // ── SMART Example helper ──
         var loadSmartExample = function(catId, exampleIdx) {
           var examples = SMART_EXAMPLES[catId];
@@ -1274,9 +1447,10 @@ window.SelHub = window.SelHub || {
             smartData[key] = ex.smart[key][band] || ex.smart[key].elementary || '';
           });
           sfxAdd();
-          addGoal(ex.title, catId, 1, smartData);
+          var createdGoalId = addGoal(ex.title, catId, 1, smartData);
           upd({ usedSmartExample: true, showSmartExamples: false, tab: 'smart', smartBuildMode: 'guided', smartStep: 0 });
-          if (addToast) addToast('\uD83D\uDCD6 SMART template loaded! Customize it to fit you.', 'info');
+          focusSmartField(createdGoalId, 'S');
+          if (addToast) addToast('New goal created from the example. Change any field to fit your plan.', 'info');
         };
 
         var getSmartFieldId = function(goalId, key) {
@@ -1860,47 +2034,7 @@ window.SelHub = window.SelHub || {
                 band === 'elementary' ? 'SMART goals help you think clearly about what you want to do. Fill in each section!' :
                 'SMART goals are Specific, Measurable, Achievable, Relevant, and Time-bound. Select a goal and build it out.'
               ),
-              // ── SMART Examples Library ──
-              h('div', { style: { marginBottom: 16 } },
-                h('button', { 'aria-label': 'SMART Goal Examples Library', onClick: function() { upd({ showSmartExamples: !showSmartExamples }); sfxClick(); }, style: { width: '100%', padding: '10px 16px', borderRadius: 10, background: showSmartExamples ? 'rgba(168,85,247,0.15)' : 'rgba(99,102,241,0.08)', border: '1px solid ' + (showSmartExamples ? 'rgba(168,85,247,0.3)' : 'rgba(99,102,241,0.15)'), color: showSmartExamples ? _goaFg('#c4b5fd') : _goaFg('#a5b4fc'), fontSize: 12, fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 } },
-                  h('span', null, '\uD83D\uDCD6'),
-                  h('span', { style: { flex: 1 } }, 'SMART Goal Examples Library'),
-                  h('span', { style: { fontSize: 10, opacity: 0.7 } }, showSmartExamples ? '\u25B2' : '\u25BC')
-                ),
-                showSmartExamples ? h('div', { style: { marginTop: 10, padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.12)' } },
-                  h('p', { style: { fontSize: 11, color: _goaFg('#94a3b8'), marginBottom: 10, lineHeight: 1.5 } },
-                    band === 'elementary' ? 'Pick an example to start with! You can change the words later.' :
-                    'Browse fully-filled SMART examples by category. Tap "Use as Template" to pre-fill and customize.'
-                  ),
-                  // Category selector
-                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-                    GOAL_CATEGORIES.map(function(cat) {
-                      var isActive = smartExampleCat === cat.id;
-                      var hasExamples = !!SMART_EXAMPLES[cat.id];
-                      if (!hasExamples) return null;
-                      return h('button', { 'aria-label': 'Filter SMART examples by ' + cat.label, 'aria-pressed': isActive, key: cat.id, onClick: function() { upd({ smartExampleCat: cat.id }); sfxClick(); }, style: { padding: '5px 12px', borderRadius: 16, background: isActive ? cat.color + '22' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (isActive ? cat.color + '44' : 'rgba(99,102,241,0.1)'), color: isActive ? cat.color : _goaFg('#94a3b8'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, cat.emoji + ' ' + cat.label);
-                    })
-                  ),
-                  // Examples for selected category
-                  (SMART_EXAMPLES[smartExampleCat] || []).map(function(ex, ei) {
-                    return h('div', { key: ei, style: { padding: 12, marginBottom: 10, borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.10)' } },
-                      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
-                        h('span', { style: { fontSize: 14, fontWeight: 'bold', color: _goaFg('#a5b4fc') } }, ex.title),
-                        h('button', { 'aria-label': 'Use as Template', onClick: function() { loadSmartExample(smartExampleCat, ei); }, style: { marginLeft: 'auto', padding: '4px 12px', borderRadius: 6, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\u2192 Use as Template')
-                      ),
-                      // Preview SMART fields
-                      ['S', 'M', 'A', 'R', 'T'].map(function(key) {
-                        var info = SMART_LABELS[key];
-                        var val = ex.smart[key][band] || ex.smart[key].elementary;
-                        return h('div', { key: key, style: { display: 'flex', gap: 6, marginBottom: 3, fontSize: 10, lineHeight: 1.5 } },
-                          h('span', { style: { fontWeight: 'bold', color: _goaFg('#818cf8'), minWidth: 14 } }, key + ':'),
-                          h('span', { style: { color: _goaFg('#94a3b8') } }, val)
-                        );
-                      })
-                    );
-                  })
-                ) : null
-              ),
+              renderSmartExamples(),
               goals.length === 0 && !showSmartExamples ?
                 h('div', { style: { textAlign: 'center', padding: 30 } },
                   h('p', { style: { color: _goaFg('#94a3b8') } }, 'Create a goal first, then come here to make it SMART!'),

@@ -269,3 +269,14 @@ The guide no longer treats clicking through as evidence of repair or awards a co
 The 15 focused repair browser tests and 566 compatibility tests passed, with two pre-existing regression skips. Three automated accessibility scans found no violations in the repair guide at 320px across light, dark and high-contrast themes, and six phone captures were reviewed. Full evidence, final hub/render checks and scope limits are recorded in `reports/sel-upstander-repair/validation.json`. See [the repair design note](sel_upstander_repair_2026-09-12.md). No push or deployment is included.
 
 Final nineteenth-pass checks: all three selected actual-hub workflows passed (the earlier Practice workflow required one unchanged retry after a tab-click timeout), for 584 unique passing tests in this pass. All 72 SEL tools passed the render smoke check. Source/public parity, syntax and scoped whitespace checks passed.
+
+
+## Twentieth pass: social goal planning and example-library clarity (2026-09-12)
+
+Deepened nine social SMART plans and nine social starter prompts across the three grade bands. The worked plans distinguish chosen actions from another person's response, include consent and access supports, and use review points that allow revision or a pause. Each social example now has a fictional context, agency limits, support options and an adaptation check.
+
+The example library shows one selected plan at a time with readable disclosures, labeled controls and remembered band/category selections. All six categories remain available. Use as Template explicitly creates an editable copy, preserves existing goals and notes, and moves keyboard focus to its first SMART field. Other categories' content and Goal Setter reward/habit systems remain outside this pass.
+
+The 17 focused browser tests and 547 existing SEL/Goal Setter tests passed, with two pre-existing skips. The library region passed three axe scans at 320px across light, dark and high-contrast themes; all six phone captures were visually reviewed. Syntax and source/public parity passed. Final actual-hub and render checks are recorded in `reports/sel-goals-social/validation.json`. See [the social goal design note](sel_goals_social_2026-09-12.md) for pedagogy and scope. No push or deployment is included.
+
+Final twentieth-pass checks: all three selected actual-hub workflows passed, bringing the total to 567 passing tests. All 72 SEL tools passed the render smoke check; all 54 grade-band library plans were exercised. Other categories' example and starter data were verified unchanged. Scoped whitespace checks passed.

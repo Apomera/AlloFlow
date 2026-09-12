@@ -1,0 +1,76 @@
+{
+  "date": "2026-09-12",
+  "scope": "Goal Setter social SMART examples, social starter prompts and shared example library UI",
+  "content": {
+    "revisedSocialPlans": 9,
+    "revisedSocialStarters": 9,
+    "libraryCategories": 6,
+    "libraryExamples": 18,
+    "bandSpecificLibraryPlansTested": 54,
+    "otherCategoryDataUnchanged": true
+  },
+  "tests": {
+    "focusedBrowser": {
+      "passed": 17,
+      "log": "reports/sel-goals-social-browser.log"
+    },
+    "regressions": {
+      "passed": 547,
+      "skipped": 2,
+      "log": "reports/sel-goals-social-regressions.log"
+    },
+    "realHub": {
+      "passed": 3,
+      "filteredOut": 85,
+      "log": "reports/sel-goals-social-hub.log"
+    },
+    "totalPassed": 567
+  },
+  "renderSmoke": {
+    "toolsPassed": 72,
+    "log": "reports/sel-goals-social-render.log"
+  },
+  "accessibility": {
+    "region": "SMART example library",
+    "viewportWidth": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scans": 3,
+    "violations": 0,
+    "evidence": [
+      "contrast-library-axe.json",
+      "dark-library-axe.json",
+      "light-library-axe.json"
+    ],
+    "scope": "Revised library region only; not a whole-tool certification."
+  },
+  "visualReview": {
+    "reviewed": [
+      "contrast-library-phone.png",
+      "contrast-plan-phone.png",
+      "dark-library-phone.png",
+      "dark-plan-phone.png",
+      "light-library-phone.png",
+      "light-plan-phone.png"
+    ],
+    "findings": "Labels, plans and context wrap at 320px. Visible library controls are at least 44px tall. The full selected title is repeated below the native select."
+  },
+  "sourcePublicByteParity": true,
+  "sha256": "84f025b12f8c28ad6e6e290daa03894e68cc78fa9857499f41d9e1e69c298445",
+  "syntaxChecks": [
+    "sel_hub/sel_tool_goals.js",
+    "desktop/web-app/public/sel_hub/sel_tool_goals.js",
+    "tests/sel_goals_social_browser.test.js",
+    "tests/sel_hub_review_browser.test.js"
+  ],
+  "limitations": [
+    "Authored plans are examples, not a validated intervention.",
+    "Non-social example content, reward logic, habit streaks, weekly review and AI coaching are outside this pass.",
+    "Creating a template retains existing goal-creation reward behavior; browsing does not create a goal or award XP."
+  ],
+  "pushed": false,
+  "deployed": false
+}
