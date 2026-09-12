@@ -72,9 +72,9 @@ window.SelHub = window.SelHub || {
       {"cat": "personal", "text": "Choose a comfortable pause or ask for help", "hint": "Movement, looking around or a different support can fit; calmness is not required."},
       {"cat": "personal", "text": "Reflect in a way that works for me", "hint": "Draw, think or use a few words; personal sharing and daily writing are optional."},
       {"cat": "personal", "text": "Plan how to use or save something available to me", "hint": "A trusted adult can help; having an allowance is not assumed."},
-      { cat: 'health', text: 'Drink ___ glasses of water every day', hint: 'Your brain works better when you\'re hydrated!' },
-      { cat: 'health', text: 'Go outside and play for 30 minutes every day', hint: 'Movement makes you feel happier!' },
-      { cat: 'health', text: 'Learn to cook one new recipe with a grown-up', hint: 'Cooking is a life skill and it\'s fun!' },
+      {"cat": "health", "text": "Ask for help getting drinking water at school", "hint": "An adult can help with water, a cup and access; owning a bottle is not required."},
+      {"cat": "health", "text": "Choose a way to move or join in that fits me", "hint": "You can ask for changes, try a smaller part or rest."},
+      {"cat": "health", "text": "Ask for help getting ready to rest", "hint": "Choose one step together; falling asleep is not a test."},
       { cat: 'creative', text: 'Draw or color for 15 minutes every day', hint: 'Art helps you express feelings!' },
       { cat: 'creative', text: 'Learn a new song or dance this week', hint: 'Music and movement are brain boosters!' },
       { cat: 'community', text: 'Help with one chore at home without being asked', hint: 'Being helpful makes everyone\'s day better!' },
@@ -92,9 +92,9 @@ window.SelHub = window.SelHub || {
       {"cat": "personal", "text": "Try a reflection format that fits my privacy and time", "hint": "There is no page quota or daily streak to keep."},
       {"cat": "personal", "text": "Notice what I need during one chosen moment", "hint": "An uncertain or mixed feeling is allowed; a label does not have to change it."},
       {"cat": "personal", "text": "Choose a manageable part of a project I care about", "hint": "Check time, materials and support before deciding when to try."},
-      { cat: 'health', text: 'Get 8+ hours of sleep on school nights', hint: 'Sleep is when your brain processes what you learned.' },
-      { cat: 'health', text: 'Limit screen time to ___ hours on weekdays', hint: 'Balance is key.' },
-      { cat: 'health', text: 'Try a new healthy recipe each week', hint: 'You are what you eat!' },
+      {"cat": "health", "text": "Plan one practical change for drinking access", "hint": "Consider a usable refill point and bathroom access; no intake total is required."},
+      {"cat": "health", "text": "Explore an accessible movement option I enjoy", "hint": "Check space, energy and support; minutes and repetitions are optional."},
+      {"cat": "health", "text": "Ask for support with one barrier to preparing for sleep", "hint": "Shared space and workload matter; you do not have to solve them alone."},
       { cat: 'creative', text: 'Start a creative project (art, music, writing, coding)', hint: 'Creating something from nothing is powerful!' },
       { cat: 'creative', text: 'Learn a new skill on YouTube (coding, drawing, music)', hint: 'Free learning is everywhere!' },
       { cat: 'community', text: 'Volunteer for ___ hours this month', hint: 'Helping others helps you find purpose.' },
@@ -111,9 +111,9 @@ window.SelHub = window.SelHub || {
       {"cat": "personal", "text": "Name a barrier and consider a strategy or support change", "hint": "Concerns can reflect real constraints; positive reframing is not always the answer."},
       {"cat": "personal", "text": "Adapt a routine to my current responsibilities", "hint": "Consider a smaller option, practical help or a pause."},
       {"cat": "personal", "text": "Choose work to keep in a private or shared portfolio", "hint": "Public branding and disclosure are optional; choose the purpose and audience."},
-      { cat: 'health', text: 'Exercise 3+ times per week for 30+ minutes', hint: 'Exercise is the most underused antidepressant.' },
-      { cat: 'health', text: 'Practice one mindfulness technique daily for 2 weeks', hint: 'Regular mindfulness practice is linked with better stress resilience.' },
-      { cat: 'health', text: 'Track sleep, water, and exercise for 30 days', hint: 'What gets measured gets managed.' },
+      {"cat": "health", "text": "Arrange drinking access that fits my day and individual needs", "hint": "Choose a setting and practical support; this tool does not set fluid targets."},
+      {"cat": "health", "text": "Plan a suitable movement opportunity with room to adapt", "hint": "Check access and any individual guidance; stopping or resting is allowed."},
+      {"cat": "health", "text": "Request one feasible change to support preparation for rest", "hint": "Consider schedules, responsibilities and shared space; sleep data is optional."},
       { cat: 'creative', text: 'Complete and share one creative project this month', hint: 'Shipping beats perfecting.' },
       { cat: 'creative', text: 'Start a blog, podcast, or YouTube channel about something I care about', hint: 'Your perspective is unique and valuable.' },
       { cat: 'community', text: 'Organize or participate in a community service project', hint: 'Leadership is action, not title.' },
@@ -656,33 +656,156 @@ window.SelHub = window.SelHub || {
 ],
     health: [
       {
-        title: 'Water Intake',
-        smart: {
-          S: { elementary: 'I will drink 4 glasses of water every day.', middle: 'I will drink 6 glasses (48 oz) of water daily.', high: 'I will consume at least 64 oz of water daily, spread across the day.' },
-          M: { elementary: 'I will mark each glass on my water tracker chart.', middle: 'I\'ll use a marked water bottle and log intake in my tracker.', high: 'I\'ll track daily intake in my health app and review weekly averages.' },
-          A: { elementary: 'I have a water bottle and my teacher lets us drink water in class!', middle: 'I have a reusable water bottle and access to water fountains all day.', high: 'I own a 32 oz bottle with time markers and can refill it twice daily.' },
-          R: { elementary: 'Water helps my brain work better for learning!', middle: 'Hydration improves focus, energy, and skin health.', high: 'Proper hydration is linked to improved cognitive function and physical performance.' },
-          T: { elementary: 'I will drink 4 glasses every day for 1 week.', middle: 'I will hit 48 oz daily for 14 days straight.', high: 'I will maintain 64 oz daily for 30 days and track the impact on my energy.' }
+        "id": "example-0",
+        "title": "Make drinking water easier to access",
+        "smart": {
+          "S": {
+            "elementary": "At a class check-in this week, I will ask how I can get drinking water when I need it.",
+            "middle": "This week I will ask a trusted school adult to help arrange a workable way to get drinking water and use the bathroom.",
+            "high": "By Friday I will identify one obstacle to drinking access in a chosen setting and request or arrange one practical change."
+          },
+          "M": {
+            "elementary": "I can name or point to the agreed place and way to ask, or say that I still need help. I do not need to count drinks.",
+            "middle": "I will check whether we agreed on a usable option, or whether another adult needs to help. No intake total is required.",
+            "high": "I will note whether the change is available, still pending or needs revision. I will not use a universal volume target."
+          },
+          "A": {
+            "elementary": "My teacher can help find an option I can use. Any drinking instructions in my care plan stay in place.",
+            "middle": "I can use a private note or conversation. The arrangement needs to fit my access needs and any individual care instructions.",
+            "high": "I can choose a low-cost option and ask for permission or access support. I will keep any individual fluid guidance already in place."
+          },
+          "R": {
+            "elementary": "I want it to be easier to ask for what my body needs during school.",
+            "middle": "I want school routines to make meeting my needs easier.",
+            "high": "I want a practical way to meet my needs without adding unnecessary monitoring."
+          },
+          "T": {
+            "elementary": "At our next class check-in, I will say whether the plan works or needs a change. I can ask for help sooner.",
+            "middle": "At the next agreed check-in, I will review what worked and what still needs support; I can revise or pause this goal.",
+            "high": "I will review the arrangement after the next opportunity to use it, or at a check-in next week if that opportunity does not happen."
+          }
+        },
+        "context": {
+          "elementary": {
+            "situation": "A learner wants a drink during school, but the nearest fountain or class rule makes that difficult.",
+            "agency": "Choose words, a picture or a trusted adult to help ask. Owning a bottle is not required.",
+            "support": "An adult helps find safe drinking water, a usable cup and a way to take a drink when needed.",
+            "review": "Check whether the access plan works; an unavailable drink is a problem adults need to help solve."
+          },
+          "middle": {
+            "situation": "A learner skips drinking at school because the refill point is hard to reach or bathroom access is uncertain.",
+            "agency": "Choose which access problem to discuss and how much to share; a daily intake log is optional.",
+            "support": "A teacher or school nurse can help coordinate drinking and bathroom access without requiring a special bottle.",
+            "review": "Review the arrangement, rather than scoring the amount consumed or blaming the learner for an access barrier."
+          },
+          "high": {
+            "situation": "A learner wants more reliable drinking access across classes, work or travel, without turning it into a tracking challenge.",
+            "agency": "Choose one setting and an optional reminder; body measurements and health details do not need to go in this tool.",
+            "support": "A responsible adult or relevant health professional can help with access or individual fluid instructions.",
+            "review": "An access plan can be successful even if a location or schedule still needs changes from someone else."
+          }
         }
       },
       {
-        title: 'Exercise Routine',
-        smart: {
-          S: { elementary: 'I will play outside for 30 minutes every day after school.', middle: 'I will exercise for 20 minutes 4 times a week (running, biking, or sports).', high: 'I will follow a structured workout plan 4x/week alternating cardio and strength.' },
-          M: { elementary: 'I will set a timer for 30 minutes and play until it goes off.', middle: 'I\'ll log each session: type, duration, and how I felt afterward.', high: 'I\'ll track sets, reps, duration, and progressive overload in a fitness journal.' },
-          A: { elementary: 'I have a yard and a bike and my neighborhood is safe to play in!', middle: 'I have PE class, after-school sports, and home workout videos available.', high: 'I have gym access, a workout plan from a reliable source, and a consistent schedule.' },
-          R: { elementary: 'Playing outside makes me feel happy and strong!', middle: 'Exercise improves my mood, sleep, and energy for school.', high: 'Regular exercise is the most effective natural intervention for mental and physical health.' },
-          T: { elementary: 'I will play outside every day for 2 weeks.', middle: 'I will complete 4 sessions per week for the next 4 weeks.', high: 'I will follow this plan for 8 weeks, then reassess and adjust.' }
+        "id": "example-1",
+        "title": "Movement that fits me",
+        "smart": {
+          "S": {
+            "elementary": "Before our next activity time, I will choose one way I might like to move or join in and ask for help if I need it.",
+            "middle": "This week I will explore one accessible movement option I am interested in, starting with a part that feels manageable.",
+            "high": "By the end of this week I will choose one suitable movement opportunity and plan the support or adaptations it needs."
+          },
+          "M": {
+            "elementary": "I can say, draw or point to what fit and what needs changing. Choosing to stop is allowed.",
+            "middle": "I can record one thing that fit and one change I want, or discuss them privately. Minutes and repetitions are optional.",
+            "high": "I will review whether the opportunity was accessible and worthwhile for my chosen purpose. I do not need a fitness score or body measurements."
+          },
+          "A": {
+            "elementary": "An adult can help change the space, rules or activity. I can rest and follow any activity guidance I already have.",
+            "middle": "I will check space, cost and support first. I can stop, rest or ask for an adaptation, and keep any existing activity guidance.",
+            "high": "I will check time, space and cost, follow existing individual guidance, and ask for qualified support if suitability is unclear. I can stop or rest."
+          },
+          "R": {
+            "elementary": "I want a way to take part that fits me and something I enjoy.",
+            "middle": "I want to find an activity that fits my interests and needs; a particular mood afterward is not required.",
+            "high": "I want movement to fit my life and interests without treating it as a test of willpower or a promised mental-health treatment."
+          },
+          "T": {
+            "elementary": "After that activity time, I will choose whether to try it again, change it or pause.",
+            "middle": "After one opportunity, or at the end of the week if none is available, I will decide whether to continue, adapt or pause.",
+            "high": "After the first opportunity, or at a check-in next week, I will decide what to keep, change or pause based on access and fit."
+          }
+        },
+        "context": {
+          "elementary": {
+            "situation": "A learner wants to join a movement activity, but the space, rules or equipment may not fit.",
+            "agency": "Choose an activity, a smaller part, an adapted role or a pause. Playing outside is not required.",
+            "support": "An adult can help find a safe space and adaptations that fit the learner; equipment is not assumed.",
+            "review": "Review access and comfort. Finishing a timer or feeling happier is not the measure."
+          },
+          "middle": {
+            "situation": "A learner wants a movement option but has changing energy, access needs or no sports equipment.",
+            "agency": "Choose the setting, duration and adaptations; rest or a different activity can be part of the plan.",
+            "support": "A teacher, caregiver or qualified professional can help when suitability or adaptations are uncertain.",
+            "review": "Consider whether the activity fits the learner, without ranking effort, appearance or classmates."
+          },
+          "high": {
+            "situation": "A learner wants a workable movement routine alongside fluctuating energy, responsibilities or disability-related access needs.",
+            "agency": "Choose a purpose and suitable activity; intensity, competition and public tracking are optional.",
+            "support": "Check practical access and seek qualified advice when unsure what activity or adaptation is appropriate.",
+            "review": "A review can lead to a smaller plan, more support, rest or a different choice without a failed-streak label."
+          }
         }
       },
       {
-        title: 'Sleep Hygiene',
-        smart: {
-          S: { elementary: 'I will be in bed with lights off by 8:30 PM on school nights.', middle: 'I will get 8+ hours of sleep on school nights by setting a 9:30 PM bedtime.', high: 'I will establish a consistent sleep schedule (10:30 PM - 6:30 AM) with a 30-min wind-down routine.' },
-          M: { elementary: 'My parent will check that I\'m in bed by 8:30 and put a star on my chart.', middle: 'I\'ll track bedtime, wake time, and sleep quality (1-5) daily.', high: 'I\'ll use a sleep tracking app to monitor sleep duration, quality, and consistency.' },
-          A: { elementary: 'I can start getting ready for bed at 8:00 PM.', middle: 'I can set a phone alarm at 9:00 PM to start my bedtime routine.', high: 'I can remove screens from my bedroom and use blue-light blockers after 9 PM.' },
-          R: { elementary: 'Good sleep helps me pay attention and be happy at school!', middle: 'Sleep is when my brain consolidates everything I learned that day.', high: 'Sleep is the single most impactful health behavior for cognitive performance and wellbeing.' },
-          T: { elementary: 'I will be in bed on time every school night for 2 weeks.', middle: 'I will follow this sleep schedule for 21 consecutive school nights.', high: 'I will maintain this schedule for 30 days and review my sleep data weekly.' }
+        "id": "example-2",
+        "title": "Support for getting ready to rest",
+        "smart": {
+          "S": {
+            "elementary": "This week I will ask a trusted adult to help choose one step that could make getting ready to rest easier.",
+            "middle": "This week I will choose one barrier to preparing for sleep and ask a trusted adult about a realistic change.",
+            "high": "By Friday I will identify one barrier to preparing for rest and request or try one feasible change with appropriate support."
+          },
+          "M": {
+            "elementary": "I can say whether we found a helpful step or still need help. I do not have to prove when I fell asleep.",
+            "middle": "I will check whether we found a workable support or next step. I will not grade myself on how quickly I fall asleep.",
+            "high": "I will review whether the change was workable and what support is still missing. A sleep app, exact bedtime or sleep-quality score is not required."
+          },
+          "A": {
+            "elementary": "We can choose something that fits our home, like preparing a needed item or asking about light or noise. I do not have to change the household alone.",
+            "middle": "I can ask about workload, light or noise and choose a step that fits my circumstances. A private bedroom or removing an assistive device is not assumed.",
+            "high": "I will consider responsibilities, shared space and access needs before choosing a step. I can ask for workload or schedule support and keep assistive technology I need."
+          },
+          "R": {
+            "elementary": "I want help making rest easier to prepare for.",
+            "middle": "I want support for rest that takes my actual circumstances seriously.",
+            "high": "I want a realistic plan for rest without blaming myself for circumstances I cannot control."
+          },
+          "T": {
+            "elementary": "At our next check-in this week, I will say what fit or what needs changing. If sleep keeps being hard, I will tell a trusted adult.",
+            "middle": "At an agreed check-in next week, I will review the change; if sleep problems continue, I will ask for help contacting a healthcare professional.",
+            "high": "At a check-in next week I will keep, revise or pause the plan. If sleep problems persist, I will seek healthcare support rather than extend a tracking challenge."
+          }
+        },
+        "context": {
+          "elementary": {
+            "situation": "A learner wants help getting ready to rest, but shares a room or cannot choose the household schedule.",
+            "agency": "Choose one comfortable preparation step or ask for help; falling asleep on command is not a goal.",
+            "support": "A trusted adult helps with the setting and routine. Repeated sleep trouble needs adult and health-professional support.",
+            "review": "Notice whether the step fits. Stars for falling asleep and a fixed bedtime are not needed."
+          },
+          "middle": {
+            "situation": "A learner has trouble preparing for sleep because of homework, a shared room or a changing family schedule.",
+            "agency": "Choose one part within reach; sleep times, apps and detailed sleep records are not required here.",
+            "support": "A trusted adult can help address noise, workload or other barriers; ongoing sleep problems can be discussed with a healthcare professional.",
+            "review": "Review the support and preparation step. Lying awake does not mean the learner failed."
+          },
+          "high": {
+            "situation": "A learner wants to prepare for rest while managing work, caregiving, school demands or a shared sleeping space.",
+            "agency": "Choose one feasible change and a private review format. Wearable data and disclosure of household details are optional.",
+            "support": "Support may involve schedule changes, workload adjustments or healthcare advice for ongoing sleep problems.",
+            "review": "Separate what the learner can influence from changes requiring other people; falling asleep is not a performance target."
+          }
         }
       }
     ],
@@ -1582,6 +1705,7 @@ window.SelHub = window.SelHub || {
                 ),
                 smartExampleCat === 'social' && h('p', null, 'For social goals, another person\'s response is not your score. You can choose support, a different approach or a pause. Threats, repeated targeting or unsafe pressure need adult support, not a communication deadline.'),
                 smartExampleCat === 'personal' && h('p', null, 'These are optional ways to explore a goal. A daily streak, a positive feeling or a fixed amount of writing does not prove that a plan fits. You can change the support, choose another approach or pause.'),
+                smartExampleCat === 'health' && h('p', null, 'These examples help you plan access, support and choices. They do not set medical targets. Keep individual care guidance in place; health details and tracking are optional. Review what fits, what needs help and whether to change or pause the plan.'),
                 h('p', null, 'Use as Template creates a new editable goal with these five SMART fields. It keeps your existing goals. Review the copied wording before using or sharing it.'),
                 h('button', { type: 'button', 'aria-label': 'Use as Template', onClick: function() { loadSmartExample(smartExampleCat, index); }, style: Object.assign({}, control, { width: '100%', cursor: 'pointer', fontWeight: 700 }) }, 'Use as Template')
               )

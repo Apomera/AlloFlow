@@ -1,0 +1,47 @@
+{
+  "date": "2026-09-12",
+  "pass": 22,
+  "scope": "Goal Setter health and wellness SMART examples and starter prompts",
+  "focusedBrowser": {
+    "passed": 13
+  },
+  "regressions": {
+    "files": 16,
+    "passed": 581,
+    "preExistingSkipped": 2
+  },
+  "actualHub": {
+    "passed": 3,
+    "filteredOut": 87
+  },
+  "uniqueTestsPassed": 597,
+  "accessibility": {
+    "region": "SMART example library",
+    "viewportWidth": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scans": 3,
+    "violations": 0,
+    "certification": false
+  },
+  "visualReview": {
+    "captures": 6,
+    "reviewed": true
+  },
+  "sourcePublicSha256": "70d783306136510da8b8f73906481d2877dc60de693e87ece3a981e4377b20c5",
+  "otherExampleAndStarterCategoriesUnchanged": true,
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "syntax": "passed",
+  "deployment": "none",
+  "limitations": [
+    "Targeted browser and accessibility scope, not a full-app certification.",
+    "Examples are authored SEL planning models, not clinically validated health interventions.",
+    "Existing health goals are preserved, including their original wording."
+  ]
+}

@@ -330,6 +330,33 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   },120000);
 
+  it('health goal support and review fields survive copying and returning through the hub',async()=>{
+    await mount();
+    await page.locator('[data-sel-tool-card-id="goals"]').click();
+    await page.getByRole('tab',{name:/SMART/}).click();
+    await page.getByRole('button',{name:'SMART Goal Examples Library',exact:true}).click();
+    const library=page.getByRole('region',{name:'SMART example library',exact:true});
+    await library.getByRole('button',{name:'Filter SMART examples by Health & Wellness',exact:true}).click();
+    await library.getByLabel('Choose a worked goal example',{exact:true}).selectOption('example-2');
+    expect(await library.innerText()).toContain('Lying awake does not mean the learner failed.');
+    await library.getByRole('button',{name:'Use as Template',exact:true}).click();
+    await page.waitForFunction(()=>window.__alloflowSelToolData.goals_tool.goals?.length===1);
+    const original=await page.evaluate(()=>window.__alloflowSelToolData.goals_tool.goals[0]);
+    expect(original.category).toBe('health');
+    expect(original.smart.A).toContain('assistive device');
+    expect(original.smart.T).toContain('healthcare professional');
+    await page.locator('#smart-field-'+original.id+'-S').fill('Ask about a realistic homework schedule at my next check-in.');
+    const support=page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="goals"]').click();
+    expect(await page.locator('#smart-field-'+original.id+'-S').inputValue()).toContain('realistic homework schedule');
+    const restored=await page.evaluate(()=>window.__alloflowSelToolData.goals_tool.goals[0]);
+    expect(restored.smart.A).toBe(original.smart.A);expect(restored.smart.T).toBe(original.smart.T);
+    expect(restored.completed).toBe(false);expect(restored.progress).toBe(0);
+    expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {
