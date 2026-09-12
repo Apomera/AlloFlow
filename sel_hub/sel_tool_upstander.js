@@ -84,31 +84,139 @@ window.SelHub = window.SelHub || {
 
   // Upstander strategies
   var UPSTANDER_MOVES = {
-    elementary: [
-      { move: 'Stand Next To Them', icon: '\uD83E\uDDF1', desc: 'Just walk over and stand next to the person being bullied. You don\u2019t even have to say anything. Your presence says "they\u2019re not alone."', risk: 'low' },
-      { move: 'Change the Subject', icon: '\uD83D\uDDE3\uFE0F', desc: '"Hey, did you hear about ___?" Interrupt the moment without directly confronting the bully. Sometimes distraction is the safest strategy.', risk: 'low' },
-      { move: 'Invite Them Away', icon: '\uD83D\uDC4B', desc: '"Hey, want to come play with us?" Give the target an exit that doesn\u2019t require them to "escape" \u2014 it\u2019s just a better offer.', risk: 'low' },
-      { move: 'Say Something', icon: '\uD83D\uDCAC', desc: '"That\u2019s not cool" or "Leave them alone." Simple, direct, not aggressive. You\u2019re not starting a fight \u2014 you\u2019re naming what\u2019s wrong.', risk: 'medium' },
-      { move: 'Get an Adult', icon: '\uD83C\uDFEB', desc: 'Telling a trusted adult is NOT snitching. It\u2019s protecting someone. If someone was bleeding, you\u2019d get help. This is the same.', risk: 'low' },
-      { move: 'Check In Later', icon: '\uD83D\uDC9B', desc: 'Even if you couldn\u2019t do anything in the moment, find the person later and say "Are you okay? That wasn\u2019t right." Delayed kindness still counts.', risk: 'low' },
-    ],
-    middle: [
-      { move: 'The Proximity Move', icon: '\uD83E\uDDF1', desc: 'Physical presence disrupts the dynamic. Walk over. Sit nearby. Make eye contact with the target. You\u2019re signaling: the audience is shifting.', risk: 'low' },
-      { move: 'The Redirect', icon: '\uD83D\uDDE3\uFE0F', desc: 'Create a diversion. "Hey, the teacher is looking." "Wasn\u2019t there a game starting?" You\u2019re not confronting \u2014 you\u2019re disrupting.', risk: 'low' },
-      { move: 'Name It Publicly', icon: '\uD83D\uDCAC', desc: '"That\u2019s bullying." Sometimes the most powerful thing is to name what everyone can see but nobody is saying. Labels carry social weight.', risk: 'medium' },
-      { move: 'Private Support', icon: '\uD83D\uDCF1', desc: 'DM or text the target: "I saw what happened. I\u2019m sorry. Want to talk?" Sometimes the support that matters most comes after the moment.', risk: 'low' },
-      { move: 'Refuse the Audience', icon: '\uD83D\uDEB6', desc: 'Walk away visibly. If others follow, the bully loses their stage. Bullying requires an audience. Remove the audience, reduce the power.', risk: 'low' },
-      { move: 'Report Strategically', icon: '\uD83D\uDCDD', desc: 'Document what you witnessed. Times, words, who was there. Give this to a trusted adult. Anonymous reporting works too. Evidence changes outcomes.', risk: 'low' },
-    ],
-    high: [
-      { move: 'Strategic Presence', icon: '\uD83E\uDDF1', desc: 'In social dynamics, presence is power. Positioning yourself with the target signals alliance. It doesn\u2019t require words \u2014 proximity IS the message.', risk: 'low' },
-      { move: 'The Direct Challenge', icon: '\uD83D\uDCAC', desc: '"What you\u2019re doing isn\u2019t okay." This requires courage and social capital. It works best when you have standing with the group. The risk is real but so is the impact.', risk: 'high' },
-      { move: 'Coalition Building', icon: '\uD83E\uDD1D', desc: 'Talk to other bystanders privately. "Did you see that? It\u2019s not right. What if we all said something?" Collective action reduces individual risk.', risk: 'medium' },
-      { move: 'The Humanizing Move', icon: '\u2764\uFE0F', desc: 'Sometimes the most radical act is humanizing the target publicly: "They\u2019re actually a really good person. You should get to know them." This challenges the dehumanization that bullying requires.', risk: 'medium' },
-      { move: 'Systemic Advocacy', icon: '\uD83D\uDCE2', desc: 'Push for restorative practices at the school level. Advocate for anti-bullying policy that focuses on restoration, not just punishment. Change the system, not just the incident.', risk: 'low' },
-      { move: 'After-the-Fact Connection', icon: '\uD83D\uDC9B', desc: '"I should have said something and I didn\u2019t. I\u2019m sorry. I\u2019m here now." Acknowledging your inaction honestly is more healing than performing bravery you didn\u2019t have in the moment.', risk: 'low' },
-    ]
-  };
+  "elementary": [
+    {
+      "move": "Offer company with permission",
+      "desc": "If approaching is safe, ask whether the person wants company or some space.",
+      "fit": "This may help when someone wants a friendly person nearby.",
+      "limit": "Do not assume they want you close, touching them or speaking for them. Get adult help for ongoing danger.",
+      "icon": ""
+    },
+    {
+      "move": "Offer a simple redirect",
+      "desc": "If it feels safe, invite a change of activity without making anyone the joke.",
+      "fit": "A redirect may provide a pause when there is no immediate physical danger.",
+      "limit": "It might not work. Do not use distraction instead of adult help during a chase, grabbing or threats.",
+      "icon": ""
+    },
+    {
+      "move": "Offer an exit, not a demand",
+      "desc": "Ask whether they want to join another activity or go toward an adult with you.",
+      "fit": "This may help when the person wants to leave and the route is safe.",
+      "limit": "Accept no. Do not pull them away or make them leave an activity they have a right to enjoy.",
+      "icon": ""
+    },
+    {
+      "move": "Use a brief limit if safe",
+      "desc": "You might say, 'Please stop the name-calling,' then seek help or step away.",
+      "fit": "This may fit when speaking briefly feels safe.",
+      "limit": "You do not have to confront anyone. Do not argue, threaten or try to physically stop a group.",
+      "icon": ""
+    },
+    {
+      "move": "Get an adult's help",
+      "desc": "Tell an adult what you saw and where help is needed. If the first adult does not help, try another trusted adult.",
+      "fit": "This is useful when behavior continues or someone may be in danger.",
+      "limit": "You do not need a perfect account or proof. For danger happening now, seek help promptly rather than waiting until later.",
+      "icon": ""
+    },
+    {
+      "move": "Check in later",
+      "desc": "If welcome, say that what happened was not okay and ask whether they want company or help.",
+      "fit": "Later support can matter when you could not act in the moment.",
+      "limit": "You do not have to apologize for being scared or freezing. Later kindness does not replace urgent help for current danger.",
+      "icon": ""
+    }
+  ],
+  "middle": [
+    {
+      "move": "Company with consent",
+      "desc": "Ask before sitting nearby or accompanying someone. Offer choices about where and how to connect.",
+      "fit": "This may fit when company is wanted and approaching will not increase exposure.",
+      "limit": "Eye contact, touch and conversation are not required. Notice and respect a request for space.",
+      "icon": ""
+    },
+    {
+      "move": "Redirect without a spectacle",
+      "desc": "Suggest a change of activity or topic if doing so feels safe and does not mock anyone.",
+      "fit": "This can sometimes interrupt an audience's attention.",
+      "limit": "It is not a guarantee. Do not invent a threat or use a redirect instead of help when someone is being physically harmed.",
+      "icon": ""
+    },
+    {
+      "move": "Name the behavior briefly",
+      "desc": "If safe, name the action: 'Please stop mocking their answer.' You can stop there.",
+      "fit": "This may fit when a short statement can set a limit without a prolonged exchange.",
+      "limit": "A public label or debate can increase exposure. Direct speech is optional and is not a higher level of courage.",
+      "icon": ""
+    },
+    {
+      "move": "Private or delayed support",
+      "desc": "If welcome, offer a brief check-in and ask what kind of support is useful.",
+      "fit": "This may fit when immediate contact was unsafe or unwanted.",
+      "limit": "A private message may be shared. Do not demand details, promise secrecy or make the person reassure you.",
+      "icon": ""
+    },
+    {
+      "move": "Stop participating and seek help",
+      "desc": "Avoid adding laughter, reactions or forwarded content; step away if needed and consider a trusted support route.",
+      "fit": "This may reduce your participation and help you reach safety.",
+      "limit": "Bullying can continue without an audience. Leaving does not by itself protect someone; seek help when harm continues.",
+      "icon": ""
+    },
+    {
+      "move": "Report observations, not theories",
+      "desc": "Tell a trusted adult what you directly saw or heard, where it happened, and what help is needed.",
+      "fit": "This may fit repeated targeting, unsafe confrontation or an unresolved concern.",
+      "limit": "Do not investigate, gather evidence at personal risk or promise anonymity. Ask how information and retaliation concerns will be handled.",
+      "icon": ""
+    }
+  ],
+  "high": [
+    {
+      "move": "Consent before visible solidarity",
+      "desc": "Ask whether the person wants public company, quiet contact or a different kind of support.",
+      "fit": "This may fit when visible support is welcome and the setting is sufficiently safe.",
+      "limit": "Public association can reveal identity or draw attention. The person does not owe you a visible show of gratitude.",
+      "icon": ""
+    },
+    {
+      "move": "A direct limit is optional",
+      "desc": "If you judge it safe, name a specific behavior and set a brief limit without threats or personal attacks.",
+      "fit": "This may fit some settings where you have a safe exit and support.",
+      "limit": "Social standing does not guarantee safety. Do not physically intervene or keep debating as risk increases.",
+      "icon": ""
+    },
+    {
+      "move": "Plan support with others carefully",
+      "desc": "Ask a trusted adult or a small, appropriate support group how to help without adding exposure.",
+      "fit": "This may fit a repeated pattern that needs coordinated action.",
+      "limit": "More people can also mean more disclosure or retaliation. Do not assume a coalition is safer or organize a confrontation for the targeted person.",
+      "icon": ""
+    },
+    {
+      "move": "Respect dignity without a defense speech",
+      "desc": "Name harmful behavior without making the person's worth depend on being talented, kind or likeable.",
+      "fit": "This may fit when a response would otherwise become a public case for why someone deserves respect.",
+      "limit": "Do not reveal private identity or history to persuade an audience. Everyone deserves safety without earning it through good traits.",
+      "icon": ""
+    },
+    {
+      "move": "Request changes in the setting",
+      "desc": "With appropriate support, identify changes to supervision, reporting access or routines that could reduce repeated harm.",
+      "fit": "This may fit when individual support has not addressed the conditions around the behavior.",
+      "limit": "Adults remain responsible for responding. Do not require the targeted person to lead a campaign or face those harming them in mediation.",
+      "icon": ""
+    },
+    {
+      "move": "Offer support after the moment",
+      "desc": "If welcome, acknowledge the behavior was wrong and offer a bounded next step, such as company or help reaching support.",
+      "fit": "This may fit when you were unable to act earlier or the person wanted space.",
+      "limit": "You do not need to perform guilt or promise unlimited availability. If you joined the harm, own that specific action separately.",
+      "icon": ""
+    }
+  ]
+};
 
   // Breaking the cycle — what actually works
   var CYCLE_BREAKERS = {
@@ -130,112 +238,224 @@ window.SelHub = window.SelHub || {
   };
 
   // ── Practice Scenarios (branching) ──
-  // Each scenario: 4 choices rated 1 (risky/harmful) → 3 (strong upstander).
+  // Built-in scenarios compare conditional support routes without rating the learner.
   // Designed for in-person school contexts; cyberbullying is in Digital Wellbeing.
   var SCENARIOS = {
-    elementary: [
-      { id: 'lunch_alone', icon: '🍽️', title: 'Lunch alone',
-        setup: 'A kid in your class has been eating lunch alone every day this week. Today some kids at another table are pointing and laughing at them. The kid is looking down, not eating.',
-        choices: [
-          { label: 'Laugh along so the other kids do not turn on you.', rating: 1,
-            feedback: 'I get the fear, but laughing tells the kid being hurt that the whole room agrees with the cruelty. It also keeps the bullying alive. There is always another way.' },
-          { label: 'Get up, walk over, and sit with the kid eating alone.', rating: 3,
-            feedback: 'Big move. Your body said "this person is not alone" without you having to say a word. You did not have to fight the bullies. You just changed who had company.' },
-          { label: 'Tell a teacher quietly after lunch what you saw.', rating: 3,
-            feedback: 'This is upstander work too. Adults can only help if they know it is happening. Reporting bullying is not snitching, it is protecting.' },
-          { label: 'Do nothing because it is not your problem.', rating: 1,
-            feedback: 'Bullying only works when the audience stays silent. Doing nothing IS doing something, even if it does not feel that way.' }
-        ] },
-      { id: 'recess_chase', icon: '🏃', title: 'The chase at recess',
-        setup: 'A kid from your class is running away from a group of three boys at recess. The group is laughing and trying to grab their backpack. The kid looks scared.',
-        choices: [
-          { label: 'Run and grab a recess monitor right away.', rating: 3,
-            feedback: 'Perfect call. This is bigger than something you can handle alone. An adult has the authority to stop it, and the kid being chased needs help NOW.' },
-          { label: 'Run after the group and yell "leave them alone!"', rating: 2,
-            feedback: 'Brave but risky. Now you might become the next target. Sometimes shouting works, but for a chase situation, getting a monitor is faster AND safer.' },
-          { label: 'Pretend you didn’t see it.', rating: 1,
-            feedback: 'You saw it. Pretending you didn’t means the kid being chased is even more alone. Even one person noticing makes a difference.' },
-          { label: 'Tell the kid afterwards "I saw what happened. Are you ok?"', rating: 2,
-            feedback: 'This matters. After-the-fact kindness is real kindness. But for a chase happening RIGHT NOW, getting an adult is the highest-leverage move.' }
-        ] }
-    ],
-    middle: [
-      { id: 'locker_push', icon: '🏫', title: 'The locker incident',
-        setup: 'Between classes, you see a kid get shoved into a locker. The kid who did the shoving laughs and walks away. Two other kids watched and laughed too. The kid in the locker is trying to act like it is no big deal.',
-        choices: [
-          { label: 'Walk past — you do not want to get involved.', rating: 1,
-            feedback: 'Walking past sends the message that this is normal. It is not normal. Even small acknowledgment ("hey, you good?") matters more than silence.' },
-          { label: 'Stop, ask "are you ok?", and walk with them to class.', rating: 3,
-            feedback: 'Quietly powerful. You named what you saw without escalating. You offered company. The kid who shoved them just saw that the audience is not all on their side.' },
-          { label: 'Yell at the kid who did the shoving in the hallway.', rating: 2,
-            feedback: 'The instinct to confront is real, but public confrontation often makes the situation worse and can make the target feel MORE exposed. A private word later, or telling a teacher, often lands better.' },
-          { label: 'Quietly text the kid later: "saw what happened, that was not ok, here if you need to talk."', rating: 3,
-            feedback: 'Excellent. Sometimes the support that matters most is private, comes a few hours later, and asks for nothing back. You gave them a witness who knows their version is real.' }
-        ] },
-      { id: 'group_chat_real', icon: '👥', title: 'The group exclusion',
-        setup: 'Your friend group has decided to "freeze out" one person — no one talks to them, no one sits with them, no one invites them to anything. Today at lunch your friends laugh that they "finally got the hint." The frozen-out person is sitting two tables over alone.',
-        choices: [
-          { label: 'Stay quiet. Your friends will turn on you if you push back.', rating: 1,
-            feedback: 'The fear is real and the social cost is real. But silence is what makes group exclusion work. At minimum, you can choose not to participate even if you cannot stop it.' },
-          { label: 'Pick up your tray and go eat with the person who got frozen out.', rating: 3,
-            feedback: 'Major move. The whole "freeze out" only works because everyone goes along. The moment ONE person says no, the spell breaks. You might pay a social cost. You also might give other people permission to do the same thing tomorrow.' },
-          { label: 'Privately tell one trusted friend: "this is not okay, I am not doing it anymore." See if they will join you.', rating: 3,
-            feedback: 'Coalition building. Way more sustainable than going it alone. Two people leaving a "freeze out" is enough to start cracking it open. This is actually how social change usually happens.' },
-          { label: 'Pull the leader of the freeze-out aside and ask why.', rating: 2,
-            feedback: 'Sometimes this works. Sometimes the leader has a reason worth knowing. But often "we just don’t like them" is the whole reason, and a private question won’t change behavior. Pair it with one of the other moves.' }
-        ] },
-      { id: 'gym_mock', icon: '🏀', title: 'Public mocking in gym',
-        setup: 'In gym class, a kid keeps missing the layup drill. A group of kids start imitating them, exaggerating how badly they missed. The teacher is at the other end of the gym. The kid is turning red and starting to tear up.',
-        choices: [
-          { label: 'Loudly say "shut up — leave them alone."', rating: 2,
-            feedback: 'The protective instinct is right. The volume can backfire — it puts a spotlight on the kid being mocked AND on you. Try lower and more direct: a quiet "knock it off" that does not require the whole class as an audience.' },
-          { label: 'Walk over and casually say "want to try with me?" Do the next drill side by side.', rating: 3,
-            feedback: 'Beautiful move. You changed the dynamic without naming it. The kid being mocked is no longer alone in the drill. The mockers lost their audience. You did all of that without escalating.' },
-          { label: 'Do nothing and avoid eye contact with the kid being mocked.', rating: 1,
-            feedback: 'The avoidance of eye contact is the part that hurts. Even a small "I see you, I do not agree with this" look across the gym matters. You do not have to fix it. You just have to not look away.' },
-          { label: 'Go get the teacher right then.', rating: 3,
-            feedback: 'Right move when the situation is escalating and you cannot intervene safely yourself. Teachers have authority you do not. Telling them is helping the kid being mocked, not snitching.' }
-        ] }
-    ],
-    high: [
-      { id: 'rumor_text', icon: '🗣️', title: 'The rumor at the party',
-        setup: 'At a party, you hear someone you sort-of know start telling a graphic, untrue story about a girl in your grade. The story is sexual, dehumanizing, and people are laughing. The girl is not there.',
-        choices: [
-          { label: 'Laugh along quietly so you blend in.', rating: 1,
-            feedback: 'In rooms where rumors get told, the laughers are the audience that makes it worth telling. Even silent disengagement (turning away, leaving the group) costs the rumor energy.' },
-          { label: 'Say "that is not actually true, I know her." Then change the subject.', rating: 3,
-            feedback: 'Strong move. You named the lie without making a scene. You used social standing to defend someone who is not in the room. Most rumors deflate when one person breaks the consensus.' },
-          { label: 'Pull the storyteller aside later: "the thing you said about her — that was not okay."', rating: 3,
-            feedback: 'Private accountability often works better than public confrontation. They might brush it off, but you planted a real consequence: someone they know saw what they did and did not let it slide.' },
-          { label: 'Tell the girl what was said about her so she can defend herself.', rating: 2,
-            feedback: 'Sometimes she needs to know. Sometimes telling her just spreads the harm. If you tell her, frame it carefully ("I want to tell you what people are saying so you can decide what to do") and offer to back her up. Do not just hand her the wound.' }
-        ] },
-      { id: 'isolate_friend', icon: '⛓️', title: 'When your group becomes the problem',
-        setup: 'You have been part of a tight friend group for years. Lately the group has been systematically isolating one member — passive aggression, last-minute plan changes that exclude them, inside jokes designed to hurt. You see the target shrinking. You also have a lot to lose by speaking up.',
-        choices: [
-          { label: 'Just distance yourself from the group quietly.', rating: 2,
-            feedback: 'This protects you and breaks complicity. It does not help the person being isolated. If you can, name what you saw to them: "I noticed what was happening. I am sorry I did not say more sooner."' },
-          { label: 'Call the group out at the next hangout — name what you have been seeing.', rating: 3,
-            feedback: 'High risk, high impact. You may lose the group. You may also be the one who breaks a pattern that was hurting someone. Both can be true. Long-term, having said it usually matters more to who you become than the group fallout matters in the moment.' },
-          { label: 'Tell the isolated friend privately: "I have noticed. You are not crazy. I am sorry."', rating: 3,
-            feedback: 'Sometimes the most healing thing a witness can do is confirm reality. Being slowly isolated and gaslit is one of the lonelier human experiences. Naming it to the target is real solidarity.' },
-          { label: 'Wait it out — maybe the group dynamic will shift naturally.', rating: 1,
-            feedback: 'It rarely shifts on its own. Group isolation is a pattern that consolidates over time. The longer everyone stays silent, the more the target internalizes that there must be a reason.' }
-        ] },
-      { id: 'ally_target', icon: '🏳️‍🌈', title: 'When the harm is identity-based',
-        setup: 'A peer is being relentlessly mocked using slurs or jokes about their race, gender, sexuality, or disability. The harassment has been going on for weeks. School discipline has not stopped it. The target is starting to skip school.',
-        choices: [
-          { label: 'Stay out of it — identity is complicated and you might say the wrong thing.', rating: 1,
-            feedback: 'The fear of saying the wrong thing is understandable. But staying out makes the target carry it alone. Imperfect support is almost always better than silence.' },
-          { label: 'Talk to the target: ask what they actually want from people around them.', rating: 3,
-            feedback: 'Often the most useful thing. Some targets want public allyship. Some want quiet company. Some want help reporting. Some want you to leave it alone. Letting them lead is respect.' },
-          { label: 'Document everything you witness and bring it to the dean or a school psychologist together with allies.', rating: 3,
-            feedback: 'Identity-based harassment is often a Title VI or Title IX issue. Schools have legal obligations once they are formally notified. Documentation makes it harder for the system to claim it did not know.' },
-          { label: 'Publicly confront the harassers on social media to shame them.', rating: 2,
-            feedback: 'Sometimes warranted, often backfires. Public shaming can entrench the harassers and pull more attention to the target. Direct, documented reporting through formal channels usually does more.' }
-        ] }
-    ]
-  };
+  "elementary": [
+    {
+      "id": "lunch_alone",
+      "title": "Mocking at lunch",
+      "situation": "Some children point and laugh at a classmate sitting alone at lunch.",
+      "known": "You saw pointing and laughter directed toward the classmate.",
+      "unknown": "You do not know whether they want company or what happened earlier.",
+      "needs": "Check whether anyone is in immediate danger. Offer support without making the person the center of more attention.",
+      "change": "The classmate says they want to sit alone, but asks you to tell an adult about the mocking.",
+      "review": "Respect the request for space and help reach an adult. Sitting alone is not itself a problem to fix; the mocking is.",
+      "options": [
+        {
+          "label": "Ask before joining",
+          "response": "Would you like company, or would you prefer some space?",
+          "fit": "This can fit when approaching is safe and the person welcomes company.",
+          "limit": "Accept no without asking them to explain. Company alone does not stop ongoing targeting.",
+          "id": "a"
+        },
+        {
+          "label": "Get lunchroom support",
+          "response": "Tell a nearby adult what you saw and ask them to help stop the mocking.",
+          "fit": "This can fit when harm continues, approaching feels unsafe, or the classmate asks for help.",
+          "limit": "Describe the behavior without calling the classmate lonely or assuming how they feel. Check whether the adult follows up.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "recess_chase",
+      "title": "A chase that needs help",
+      "situation": "Three children chase a classmate and try to grab their backpack. The classmate calls for them to stop.",
+      "known": "The chase and grabbing attempts are happening now despite a request to stop.",
+      "unknown": "You cannot know whether approaching would be safe or whether someone is hurt.",
+      "needs": "Get adult help promptly from a safe position. Do not join the chase, physically separate people or wait until later to report ongoing danger.",
+      "change": "You cannot see the usual recess monitor from where you are.",
+      "review": "Use another nearby adult or the school's emergency-help route. If danger is immediate, call for urgent local help. Later kindness does not replace help during an active threat.",
+      "options": [
+        {
+          "label": "Alert a nearby adult",
+          "response": "From a safe place, call or signal a nearby adult and describe where the chase is happening.",
+          "fit": "This fits an active situation needing adult attention.",
+          "limit": "Do not run into the chase, grab someone, or film it instead of seeking help.",
+          "id": "a"
+        },
+        {
+          "label": "Reach another help route",
+          "response": "Move away from the chase toward a staffed area, or ask a nearby person to alert an adult while you stay safe.",
+          "fit": "This can fit when the usual monitor is not visible or approaching them would cross the chase.",
+          "limit": "Do not delay for a perfect account. Use the school's urgent-help procedure or urgent local help if danger is immediate.",
+          "id": "b"
+        }
+      ]
+    }
+  ],
+  "middle": [
+    {
+      "id": "locker_push",
+      "title": "A shove between classes",
+      "situation": "You see a student shove another student toward a locker and walk away. Two witnesses laugh.",
+      "known": "You saw the shove and the laughter.",
+      "unknown": "You do not know whether someone is injured or whether this is part of repeated targeting.",
+      "needs": "Help reach an adult promptly. Stay out of a confrontation and ask before offering company or touching someone.",
+      "change": "The student says they are hurt and do not want to walk to class.",
+      "review": "Get an adult to them rather than trying to move them yourself. Check that help arrived; you do not have to assess an injury.",
+      "options": [
+        {
+          "label": "Get adult attention now",
+          "response": "Tell a nearby adult about the shove and where the student is. Explain any request for help you hear.",
+          "fit": "This can fit when there may be injury, repeated targeting or risk of another incident.",
+          "limit": "Do not diagnose an injury or confront the student who shoved. Adult attention and follow-through matter.",
+          "id": "a"
+        },
+        {
+          "label": "Offer support while help is sought",
+          "response": "From a safe distance, ask whether they want company while someone alerts an adult.",
+          "fit": "This can fit when approaching is safe and support is welcome.",
+          "limit": "Do not touch, move or escort them without considering their request and adult help. Do not make them minimize the shove to accept support.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "group_chat_real",
+      "title": "Organized exclusion",
+      "situation": "Friends say they have agreed to ignore a classmate and laugh that the person has 'got the hint'.",
+      "known": "You heard an organized plan to isolate someone.",
+      "unknown": "You do not know what support the classmate wants or how your friends might respond if challenged.",
+      "needs": "Do not join the targeting. Consider power, retaliation and a trusted adult's help; the learner does not have to resolve the group dynamic alone.",
+      "change": "The classmate says a public invitation would draw more attention and asks for quiet support.",
+      "review": "Respect the preferred form of support. Ask an adult to address the pattern without making the classmate manage a public confrontation.",
+      "options": [
+        {
+          "label": "Refuse to take part quietly",
+          "response": "Stop joining the exclusion. If welcome, ask the classmate privately what kind of support would help.",
+          "fit": "This can fit when public action would expose the person or put you at risk.",
+          "limit": "Private contact can still be shared. Do not promise secrecy or take responsibility for fixing the whole group.",
+          "id": "a"
+        },
+        {
+          "label": "Plan supported action",
+          "response": "Describe the pattern to a trusted adult and ask for help addressing exclusion and possible retaliation.",
+          "fit": "This can fit when the group has social power or the behavior is repeated.",
+          "limit": "Do not organize forced mediation or ask the targeted person to win the group's approval.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "gym_mock",
+      "title": "Mocking during a drill",
+      "situation": "Several students imitate a classmate's missed shots during a gym drill. The teacher is across the room.",
+      "known": "The imitation targets a classmate's performance.",
+      "unknown": "You do not know whether the classmate wants a partner, a break, or another kind of support.",
+      "needs": "Get the teacher's attention if harm is continuing. Participation and eye contact are not requirements for receiving support.",
+      "change": "The classmate declines a partner and says they want the teacher's help to take a break.",
+      "review": "Respect the refusal and help contact the teacher. Do not make the person keep practicing to show confidence.",
+      "options": [
+        {
+          "label": "Ask the teacher to act",
+          "response": "Tell the teacher what the group is doing and where support is needed.",
+          "fit": "This can fit while the mocking is continuing or when direct intervention feels unsafe.",
+          "limit": "Do not require the classmate to demonstrate distress or identify themselves publicly before adults respond.",
+          "id": "a"
+        },
+        {
+          "label": "Offer a choice of company",
+          "response": "If it feels safe, ask whether they want to practice together or would prefer help reaching the teacher.",
+          "fit": "This can fit when the classmate wants company and the offer does not increase exposure.",
+          "limit": "Accept a refusal. Do not insist on eye contact, continued practice or an explanation of their feelings.",
+          "id": "b"
+        }
+      ]
+    }
+  ],
+  "high": [
+    {
+      "id": "rumor_text",
+      "title": "A degrading rumor",
+      "situation": "At a gathering, you hear a degrading personal rumor about an absent peer. Others laugh.",
+      "known": "A personal story is being circulated for ridicule.",
+      "unknown": "You may not know the facts or what the absent person already knows. You do not need to investigate their private life.",
+      "needs": "Avoid repeating details or claiming facts you cannot verify. Consider your own safety and a trusted support route.",
+      "change": "Someone suggests posting the rumor publicly so everyone can judge whether it is true.",
+      "review": "Do not amplify the rumor in a rebuttal or poll. Seek appropriate support if circulation or threats continue, and share only details needed for that purpose.",
+      "options": [
+        {
+          "label": "Set a brief boundary if safe",
+          "response": "I am not joining in or passing on personal rumors. Please stop sharing this.",
+          "fit": "This can fit when a brief response feels safe and does not repeat the details.",
+          "limit": "You do not have to claim the story is false if you cannot know, debate it, or pull the speaker aside alone.",
+          "id": "a"
+        },
+        {
+          "label": "Disengage and seek support",
+          "response": "Leave the exchange if useful, avoid forwarding details, and use a trusted support route if the harm continues.",
+          "fit": "This can fit when direct challenge would increase danger or spread the rumor.",
+          "limit": "If you contact the peer, offer a choice about hearing more and avoid unnecessary details. Do not turn them into an investigator of their own harassment.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "isolate_friend",
+      "title": "When a familiar group causes harm",
+      "situation": "A group you belong to repeatedly changes plans to exclude one member and uses jokes aimed at them.",
+      "known": "You have noticed repeated exclusion and targeted jokes.",
+      "unknown": "You do not know what contact the person wants or whether you would face retaliation for a public challenge.",
+      "needs": "Support can be private, delayed or assisted. You do not have to risk confrontation or offer unlimited access to be useful.",
+      "change": "When you quietly refuse to join in, the group begins threatening to target you too.",
+      "review": "Seek support for both people through a trusted adult or appropriate route. Retaliation changes the plan; escalating your confrontation is not a courage requirement.",
+      "options": [
+        {
+          "label": "Offer bounded private support",
+          "response": "I have noticed the excluding jokes. Would you like company, help finding support, or space?",
+          "fit": "This can fit when contact is welcome and a private approach is safer for the people involved.",
+          "limit": "You cannot promise to stop every incident. Respect no contact and do not make the peer comfort you about what you witnessed.",
+          "id": "a"
+        },
+        {
+          "label": "Get help with the pattern",
+          "response": "Ask a trusted adult or school support person to help address repeated exclusion and risks to those who report.",
+          "fit": "This can fit when the group holds power or a peer response has not helped.",
+          "limit": "A public coalition is not automatically safer. Plan what information is needed and how retaliation will be addressed.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "ally_target",
+      "title": "Identity-based harassment continues",
+      "situation": "A peer is repeatedly targeted with identity-based slurs or jokes. An earlier report has not stopped it.",
+      "known": "You have witnessed repeated harassment and know a report was made.",
+      "unknown": "You may not know who is safe to involve or which personal details the peer wants kept private.",
+      "needs": "The harassment needs adult action. Avoid outing the peer, making them prove harm, or treating this as an equal disagreement requiring mediation.",
+      "change": "The peer fears being outed to family and says the first adult dismissed the report.",
+      "review": "Look for another trusted school support route and explain the privacy and retaliation concerns. Do not promise secrecy you cannot control; immediate danger still needs urgent help.",
+      "options": [
+        {
+          "label": "Ask about support and privacy",
+          "response": "If welcome, ask which support person feels safe and what information should be shared for help.",
+          "fit": "This can fit when the peer wants assistance reaching a trusted adult.",
+          "limit": "They do not need to educate you about their identity or provide proof. You cannot promise to control how others handle a report.",
+          "id": "a"
+        },
+        {
+          "label": "Escalate the unresolved concern",
+          "response": "Describe what you witnessed to another trusted school support person, including that the earlier report did not stop the harassment.",
+          "fit": "This can fit when the first route did not respond adequately or harm continues.",
+          "limit": "Keep identity details limited to what support requires. Ask about privacy and retaliation safeguards; do not put the burden of confronting harassers on the peer.",
+          "id": "b"
+        }
+      ]
+    }
+  ]
+};
 
   // ══════════════════════════════════════════════════════════════
   // ── Repair pathway (for students who have caused harm) ──
@@ -17453,133 +17673,22 @@ window.SelHub = window.SelHub || {
       var movesContent = null;
       if (activeTab === 'moves') {
         var moves = UPSTANDER_MOVES[band] || UPSTANDER_MOVES.elementary;
-        var byRisk = { low: [], medium: [], high: [] };
-        moves.forEach(function(m, i) { (byRisk[m.risk] || byRisk.low).push({ m: m, i: i }); });
-        var riskTiers = [
-          { id: 'low',    label: 'Lower-risk moves',  sub: 'Almost everyone can do these. No public confrontation required.', tone: '#16a34a', bg: _upC('#f0fdf4'), border: '#bbf7d0' },
-          { id: 'medium', label: 'Moderate-risk moves', sub: 'Require some willingness to break the social spell.',           tone: '#d97706', bg: _upC('#fffbeb'), border: '#fcd34d' },
-          { id: 'high',   label: 'Higher-risk moves',  sub: 'These cost you something. The impact is also bigger.',         tone: _upC('#dc2626'), bg: _upC('#fef2f2'), border: '#fecaca' }
-        ];
-        movesContent = h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto' } },
-          // Hero card
-          h('div', { className: 'us-card', style: {
-            padding: '16px 18px', marginBottom: 16, borderRadius: 14,
-            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 60%, #e0f2fe 100%)',
-            border: '1px solid #bfdbfe',
-            display: 'flex', alignItems: 'center', gap: 14
-          } },
-            h('div', { 'aria-hidden': 'true', style: {
-              width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-              background: 'linear-gradient(135deg, ' + BLUE + ' 0%, #1e3a8a 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 28, color: '#fff',
-              boxShadow: '0 5px 12px rgba(37,99,235,0.30), inset 0 1px 0 rgba(255,255,255,0.30)'
-            } }, '\uD83E\uDDF1'),
-            h('div', { style: { flex: 1, minWidth: 0 } },
-              h('h2', { style: { margin: '0 0 2px', color: BD, fontSize: 20, lineHeight: 1.2 } }, 'Upstander Moves'),
-              h('p', { style: { margin: 0, color: _upC('#334155'), fontSize: 13, lineHeight: 1.5 } },
-                'Concrete actions, sorted by social risk. Start where you feel safe. Doing ANY of these makes you part of the answer.')
-            )
+        var guideSurface = _upC('#fff'), guideInk = _upC('#0f172a');
+        var guideEdge = ctx.theme && ctx.theme.isContrast ? '#ffff00' : ctx.theme && ctx.theme.isDark ? '#94a3b8' : '#64748b';
+        movesContent = h('div', { style: { padding: '16px', maxWidth: '760px', margin: '0 auto' } },
+          h('section', { 'aria-label': 'Contextual upstander strategies', style: { padding: '16px', background: guideSurface, color: guideInk, border: '1px solid ' + guideEdge, borderRadius: '12px', fontSize: '14px', lineHeight: 1.65, overflowWrap: 'anywhere' } },
+            h('h3', { style: { fontSize: '22px', margin: '0 0 8px' } }, 'Choose support that fits the situation'),
+            h('p', null, "These approaches are not a ladder of courage or fixed levels of risk. Consider immediate danger, power, possible retaliation, the person's wishes and available adult support. You can combine approaches or seek help before choosing."),
+            h('p', null, 'For current physical danger, move toward safety and alert an adult or urgent local help. Do not physically intervene or delay help to collect proof. Quiet and later support are meaningful; neither replaces urgent help when it is needed.'),
+            moves.map(function(move, index) {
+              return h('details', { key: index, open: index === 0, style: { margin: '14px 0', padding: '12px', border: '1px solid ' + guideEdge, borderRadius: '10px', minWidth: 0 } },
+                h('summary', { style: { minHeight: '44px', padding: '10px 0', boxSizing: 'border-box', fontWeight: 700, cursor: 'pointer' } }, move.move),
+                h('p', null, move.desc),
+                h('p', null, h('strong', null, 'When it may fit: '), move.fit),
+                h('p', null, h('strong', null, 'What to check: '), move.limit)
+              );
+            })
           ),
-          // ── Courage Hierarchy visual ladder ──
-          h('div', { className: 'us-card', style: {
-            padding: 14, marginBottom: 16, borderRadius: 12,
-            background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 30%, #eff6ff 70%, #faf5ff 100%)',
-            border: '1px solid #bbf7d0'
-          } },
-            h('div', { style: { fontSize: 12, color: _upC('#166534'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10, textAlign: 'center' } },
-              'The Courage Hierarchy — every level matters, start where you are'),
-            h('div', { style: { display: 'grid', gap: 4 } },
-              COURAGE_LADDER.map(function(rung, idx) {
-                // Visual: each rung indented progressively to suggest climbing
-                var indent = idx * 16;
-                return h('div', { key: rung.level, style: {
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  paddingLeft: indent,
-                  position: 'relative'
-                } },
-                  // Level badge
-                  h('div', { 'aria-hidden': 'true', style: {
-                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                    background: 'linear-gradient(135deg, ' + rung.color + ' 0%, ' + rung.color + 'cc 100%)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 14, fontWeight: 800, color: '#fff',
-                    boxShadow: '0 2px 6px ' + rung.color + '55, inset 0 1px 0 rgba(255,255,255,0.3)'
-                  } }, rung.level),
-                  // Content
-                  h('div', { style: {
-                    flex: 1, minWidth: 0,
-                    padding: '8px 12px',
-                    background: _upC('#fff'), borderRadius: 8,
-                    borderLeft: '3px solid ' + rung.color,
-                    boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)'
-                  } },
-                    h('div', { style: { fontWeight: 700, fontSize: 13, color: _upC('#0f172a'), marginBottom: 1 } }, rung.label),
-                    h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.5 } }, rung.desc)
-                  )
-                );
-              })
-            ),
-            h('p', { style: { margin: '12px 0 0', fontSize: 12, color: _upC('#0f172a'), lineHeight: 1.55, textAlign: 'center', fontStyle: 'italic' } },
-              'Climbing one rung at a time is the work. You do not have to skip to the top.')
-          ),
-          riskTiers.map(function(tier) {
-            var tierMoves = byRisk[tier.id] || [];
-            if (tierMoves.length === 0) return null;
-            return h('div', { key: tier.id, style: { marginBottom: 16 } },
-              h('div', { style: {
-                padding: '8px 12px', marginBottom: 8,
-                background: tier.bg, border: '1px solid ' + tier.border, borderRadius: 10,
-                display: 'flex', alignItems: 'center', gap: 10
-              } },
-                h('span', { 'aria-hidden': 'true', style: {
-                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                  background: tier.tone, color: '#fff',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, fontWeight: 800
-                } }, tier.id === 'low' ? '1' : tier.id === 'medium' ? '2' : '3'),
-                h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 14, color: tier.tone } }, tier.label),
-                  h('div', { style: { fontSize: 12, color: _upC('#475569') } }, tier.sub)
-                )
-              ),
-              h('div', { style: { display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' } },
-                tierMoves.map(function(entry) {
-                  var m = entry.m;
-                  var active = moveIdx === entry.i;
-                  return h('button', {
-                    key: entry.i, 'aria-pressed': active ? 'true' : 'false',
-                    onClick: function() { upd('moveIdx', entry.i); if (soundOn) sfxClick(); },
-                    className: 'us-card',
-                    style: {
-                      padding: 14, textAlign: 'left', width: '100%',
-                      background: active ? tier.bg : _upC('#fff'),
-                      border: '2px solid ' + (active ? tier.tone : _upC('#e5e7eb')),
-                      borderRadius: 12, cursor: 'pointer',
-                      font: 'inherit', color: 'inherit',
-                      display: 'flex', gap: 10
-                    }
-                  },
-                    h('div', { 'aria-hidden': 'true', style: {
-                      width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                      background: 'linear-gradient(135deg, ' + tier.tone + '88 0%, ' + tier.tone + ' 100%)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 20, color: '#fff'
-                    } }, m.icon),
-                    h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontWeight: 700, fontSize: 14, color: _upC('#0f172a'), marginBottom: 2 } }, m.move),
-                      h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.5,
-                        display: '-webkit-box', WebkitLineClamp: active ? 'unset' : 2, WebkitBoxOrient: 'vertical',
-                        overflow: active ? 'visible' : 'hidden'
-                      } }, m.desc)
-                    )
-                  );
-                })
-              )
-            );
-          }),
-          h('p', { style: { textAlign: 'center', marginTop: 14, fontSize: 12, color: _upC('#64748b'), fontStyle: 'italic' } },
-            'Tap a card to expand and read the full description.'),
 
           // ── AI Rehearsal — practice what you would actually say ──
           h('div', { style: { marginTop: 24 } },
@@ -19226,120 +19335,109 @@ window.SelHub = window.SelHub || {
       // ── Practice Scenarios (branching) ──
       var pracContent = null;
       if (activeTab === 'practice') {
-        var scenList = SCENARIOS[band] || SCENARIOS.elementary;
-        var scen = scenList[pracIdx % scenList.length];
-        var totalDone = Object.keys(pracDone).length;
-        var topRated = 0;
-        Object.keys(pracDone).forEach(function(k) { if (pracDone[k] >= 3) topRated++; });
-        pracContent = h('div', { style: { padding: '20px', maxWidth: '640px', margin: '0 auto' } },
-          // Hero card
-          h('div', { className: 'us-card', style: {
-            padding: '16px 18px', marginBottom: 16, borderRadius: 14,
-            background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 60%, #ede9fe 100%)',
-            border: '1px solid #d8b4fe',
-            display: 'flex', alignItems: 'center', gap: 14
-          } },
-            h('div', { 'aria-hidden': 'true', style: {
-              width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-              background: 'linear-gradient(135deg, #a78bfa 0%, #6b21a8 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 28, color: '#fff',
-              boxShadow: '0 5px 12px rgba(124, 58, 237, 0.30), inset 0 1px 0 rgba(255,255,255,0.30)'
-            } }, '🎭'),
-            h('div', { style: { flex: 1, minWidth: 0 } },
-              h('h2', { style: { margin: '0 0 2px', color: _upC('#6b21a8'), fontSize: 20, lineHeight: 1.2 } }, 'Practice — what would you actually do?'),
-              h('p', { style: { margin: 0, color: _upC('#334155'), fontSize: 13, lineHeight: 1.5 } },
-                'Real scenarios. Pick a response. See how it lands. There are no perfect answers, but some choices help and some make things worse.')
-            )
+        var practiceBand = Object.prototype.hasOwnProperty.call(SCENARIOS, band) ? band : 'elementary';
+        var dilemmas = SCENARIOS[practiceBand];
+        var selectedPractice = d.practiceSelections && d.practiceSelections[practiceBand];
+        var legacyPracticeIndex = Number.isInteger(d.pracIdx) && d.pracIdx >= 0 ? d.pracIdx % dilemmas.length : 0;
+        var curD = dilemmas.find(function(item) { return item.id === selectedPractice; }) || dilemmas[legacyPracticeIndex];
+        // Grade band is part of the key, so similarly named future cases stay independent.
+        var practiceKey = practiceBand + ':' + curD.id;
+        var practiceCases = d.practiceCases && typeof d.practiceCases === 'object' && !Array.isArray(d.practiceCases) ? d.practiceCases : {};
+        var savedPractice = practiceCases[practiceKey];
+        var practiceCase = savedPractice && typeof savedPractice === 'object' && !Array.isArray(savedPractice) ? savedPractice : {};
+        var practiceNote = function(key) { return typeof practiceCase[key] === 'string' ? practiceCase[key] : ''; };
+        var savePractice = function(values) {
+          var next = Object.assign({}, practiceCases);
+          next[practiceKey] = Object.assign({}, practiceCase, values);
+          upd('practiceCases', next);
+        };
+        var practiceSurface = _upC('#fff'), practiceInk = _upC('#1f2937');
+        var practiceEdge = ctx.theme && ctx.theme.isContrast ? '#ffff00' : ctx.theme && ctx.theme.isDark ? '#94a3b8' : '#64748b';
+        var practiceCard = { padding: '16px', margin: '14px 0', background: practiceSurface, color: practiceInk, border: '1px solid ' + practiceEdge, borderRadius: '12px', minWidth: 0 };
+        var practiceControl = { minHeight: '44px', maxWidth: '100%', width: '100%', padding: '10px', border: '1px solid ' + practiceEdge, borderRadius: '8px', background: practiceSurface, color: practiceInk, font: 'inherit', fontSize: '16px', boxSizing: 'border-box' };
+        var practiceButton = { minHeight: '44px', padding: '10px 14px', border: '2px solid ' + practiceEdge, borderRadius: '8px', background: practiceSurface, color: practiceInk, font: 'inherit', fontWeight: 700, cursor: 'pointer', maxWidth: '100%', whiteSpace: 'normal' };
+        var practiceSummary = { minHeight: '44px', padding: '10px 0', fontWeight: 700, cursor: 'pointer', boxSizing: 'border-box' };
+        var practiceField = function(key, label, hint) {
+          var id = 'up-practice-' + key;
+          return h('div', { key: key, style: { margin: '14px 0' } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, label),
+            h('p', { id: id + '-hint', style: { margin: '4px 0 8px' } }, hint),
+            h('textarea', { id: id, rows: 3, value: practiceNote(key), 'aria-describedby': id + '-hint',
+              onChange: function(ev) { var values = {}; values[key] = ev.target.value; savePractice(values); },
+              style: Object.assign({}, practiceControl, { resize: 'vertical' }) })
+          );
+        };
+        var chosenPractice = curD.options.find(function(option) { return option.id === practiceNote('choice'); });
+        var revisedPractice = curD.options.find(function(option) { return option.id === practiceNote('revisedChoice'); });
+        var corePractice = h('section', { 'aria-label': "Upstander support practice", style: { padding: '16px', maxWidth: '760px', margin: '0 auto', background: practiceSurface, color: practiceInk, fontSize: '14px', lineHeight: 1.65, overflowWrap: 'anywhere' } },
+          h('h3', { style: { fontSize: '22px', margin: '0 0 8px' } }, "Upstander practice: support with care"),
+          h('p', null, "Explore fictional situations without acting them out. Check immediate danger, the person's wishes, power and available adult support. No single route is always safe or guaranteed to work."),
+          h('p', null, "All writing and choices are optional. Think, draw or discuss instead. Direct confrontation is not required. If danger is happening now, move toward safety and get adult or urgent local help; do not delay to finish this activity."),
+          h('p', null, "Notes stay in this tool state. Use the project save controls to keep a project copy. Avoid names or identifying details. This practice does not send a report or contact anyone."),
+          h('label', { htmlFor: 'up-practice-case', style: { display: 'block', fontWeight: 700 } }, "Choose an upstander scenario"),
+          h('select', { id: 'up-practice-case', value: curD.id, style: practiceControl,
+            onChange: function(ev) { var next = Object.assign({}, d.practiceSelections || {}); next[practiceBand] = ev.target.value; upd('practiceSelections', next); } },
+            dilemmas.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })
           ),
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', fontSize: '12px', color: _upC('#64748b') } },
-            h('span', null, 'Scenario ' + (pracIdx + 1) + ' of ' + scenList.length),
-            totalDone > 0 && h('span', { style: { fontWeight: 700, color: _upC(BLUE) } }, totalDone + ' answered · ' + topRated + ' strong response' + (topRated === 1 ? '' : 's'))
-          ),
-          h('div', { className: 'us-card', style: { background: _upC('#fff'), borderRadius: 14, padding: 18, border: '1px solid #e5e7eb', marginBottom: 14 } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
-              h('span', { 'aria-hidden': 'true', style: {
-                width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                background: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 24, color: '#fff',
-                boxShadow: '0 4px 10px rgba(37,99,235,0.25)'
-              } }, scen.icon),
-              h('h4', { style: { margin: 0, fontSize: 16, fontWeight: 800, color: BD } }, scen.title)
+          h('div', { key: practiceKey },
+            h('article', { style: practiceCard, 'aria-labelledby': 'up-practice-case-title' },
+              h('h4', { id: 'up-practice-case-title', style: { fontSize: '18px', margin: '0 0 8px' } }, curD.title),
+              h('p', null, curD.situation)
             ),
-            h('p', { 'aria-live': 'polite', style: { margin: '0 0 14px', fontSize: 14, lineHeight: 1.6, color: _upC('#1f2937') } }, scen.setup),
-            h('div', { role: 'radiogroup', 'aria-label': 'What would you do?', style: { display: 'grid', gap: 8 } },
-              scen.choices.map(function(c, idx) {
-                var picked = pracChoice === idx;
-                return h('button', {
-                  key: idx, role: 'radio', 'aria-checked': picked ? 'true' : 'false',
-                  onClick: function() { upd('pracChoice', idx); if (soundOn) sfxClick(); },
-                  style: {
-                    padding: '12px 14px', textAlign: 'left',
-                    background: picked ? _upC('#eff6ff') : _upC('#fff'),
-                    border: '2px solid ' + (picked ? BLUE : _upC('#cbd5e1')),
-                    borderRadius: 10, fontSize: 14, fontWeight: picked ? 700 : 500,
-                    color: _upC('#0f172a'), cursor: 'pointer',
-                    display: 'flex', alignItems: 'flex-start', gap: 10
-                  }
-                },
-                  h('span', { 'aria-hidden': 'true', style: {
-                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 1,
-                    border: '2px solid ' + (picked ? BLUE : _upC('#cbd5e1')),
-                    background: picked ? BLUE : _upC('#fff'),
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#fff', fontSize: 13, fontWeight: 800, lineHeight: 1,
-                    transition: 'all 0.18s ease'
-                  } }, picked ? '✓' : ''),
-                  h('span', { style: { flex: 1, lineHeight: 1.5 } }, c.label)
+            h('details', { open: true, style: practiceCard },
+              h('summary', { style: practiceSummary }, "1. Notice the situation and support needed"),
+              h('p', null, h('strong', null, 'What is known: '), curD.known),
+              h('p', null, h('strong', null, 'What remains uncertain: '), curD.unknown),
+              h('p', null, h('strong', null, "Safety and support priorities: "), curD.needs),
+              practiceField('notice', "What matters for safety and consent? (optional)", "Use what you directly noticed. You do not need to investigate motives or gather proof before asking for help."),
+              practiceField('first', "Your first support plan (optional)", "Describe a supported next step. Quiet support, getting help or stepping toward safety may fit better than speaking directly.")
+            ),
+            h('details', { style: practiceCard },
+              h('summary', { style: practiceSummary }, '2. Compare approaches and their limits'),
+              h('p', null, 'These are possible routes, not a right-answer pair. Compare both, choose one to explore, combine ideas in your notes, or use a different route.'),
+              curD.options.map(function(option) {
+                var selected = chosenPractice && chosenPractice.id === option.id;
+                return h('article', { key: option.id, style: practiceCard, 'aria-labelledby': 'up-practice-option-' + option.id },
+                  h('h4', { id: 'up-practice-option-' + option.id, style: { fontSize: '17px', margin: '0 0 8px' } }, option.label),
+                  h('p', null, option.response),
+                  h('p', null, h('strong', null, 'When this may fit: '), option.fit),
+                  h('p', null, h('strong', null, 'Limit to consider: '), option.limit),
+                  h('button', { type: 'button', style: practiceButton, 'aria-pressed': !!selected,
+                    onClick: function() { savePractice({ choice: selected ? '' : option.id }); } }, (selected ? 'Selected: ' : 'Explore: ') + option.label)
                 );
-              })
+              }),
+              h('p', { role: 'status', 'aria-live': 'polite' }, chosenPractice ? 'Route being explored: ' + chosenPractice.label + '. Select it again to leave the choice blank. Your own plan can be different.' : 'No route selected. You can compare without choosing.'),
+              practiceField('privacy', "Who should help, and what do they need to know? (optional)", "Name a support route and the observations needed for help. Consider privacy and retaliation; do not promise anonymity or require the person to prove harm.")
             ),
-            pracChoice != null && h('div', { 'aria-live': 'polite', className: 'us-pop', style: {
-              marginTop: 12, padding: 12, borderRadius: 10,
-              background: scen.choices[pracChoice].rating >= 3 ? _upC('#f0fdf4') : (scen.choices[pracChoice].rating === 2 ? _upC('#fefce8') : _upC('#fef2f2')),
-              border: '1px solid ' + (scen.choices[pracChoice].rating >= 3 ? '#bbf7d0' : (scen.choices[pracChoice].rating === 2 ? '#fde68a' : '#fecaca'))
-            } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5,
-                color: scen.choices[pracChoice].rating >= 3 ? _upC('#166534') : (scen.choices[pracChoice].rating === 2 ? _upC('#854d0e') : _upC('#991b1b')) } },
-                scen.choices[pracChoice].rating >= 3 ? 'Strong response' : (scen.choices[pracChoice].rating === 2 ? 'Partial — worth thinking about' : 'Risky — think this through')),
-              h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _upC('#0f172a') } }, scen.choices[pracChoice].feedback)
+            h('div', { style: practiceCard },
+              h('h4', { id: 'up-practice-change-title', style: { fontSize: '18px', margin: '0 0 8px' } }, '3. Reconsider after new information'),
+              h('button', { type: 'button', style: practiceButton, 'aria-expanded': practiceCase.changeSeen === true, 'aria-controls': 'up-practice-change',
+                onClick: function() { savePractice({ changeSeen: true }); } }, practiceCase.changeSeen === true ? 'New information shown' : 'Explore new information'),
+              h('div', { id: 'up-practice-change', hidden: practiceCase.changeSeen !== true },
+                h('p', null, h('strong', null, 'Imagine this happens: '), curD.change),
+                h('p', null, h('strong', null, 'Your earlier route: '), chosenPractice ? chosenPractice.label : 'No route selected. Your first notes remain above.'),
+                h('label', { htmlFor: 'up-practice-revised-choice', style: { display: 'block', fontWeight: 700 } }, 'A route after the change (optional)'),
+                h('select', { id: 'up-practice-revised-choice', style: practiceControl, value: revisedPractice ? revisedPractice.id : practiceNote('revisedChoice') === 'different' ? 'different' : '',
+                  onChange: function(ev) { savePractice({ revisedChoice: ev.target.value }); } },
+                  h('option', { value: '' }, 'Leave open for now'),
+                  curD.options.map(function(option) { return h('option', { key: option.id, value: option.id }, option.label); }),
+                  h('option', { value: 'different' }, 'A different or combined route')
+                ),
+                practiceField('revised', 'What would you keep or change, and why? (optional)', 'A reasoned choice can stay the same or change. Your first response and earlier selection remain separate and editable.'),
+                h('details', null,
+                  h('summary', { style: practiceSummary }, 'Consider a follow-through check'),
+                  h('p', null, curD.review),
+                  practiceField('followup', 'What would tell you that more support is needed? (optional)', "Check whether help arrived, harm continues or a new risk appeared. Adults remain responsible for responding; you do not have to resolve the situation alone.")
+                )
+              )
             )
-          ),
-          h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between', flexWrap: 'wrap' } },
-            h('button', {
-              onClick: function() { if (pracIdx > 0) upd({ pracIdx: pracIdx - 1, pracChoice: null }); },
-              disabled: pracIdx === 0,
-              style: { padding: '8px 14px', background: _upC('#fff'), color: pracIdx === 0 ? _upC('#94a3b8') : _upC('#0f172a'),
-                       border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600,
-                       cursor: pracIdx === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }
-            }, '← Previous'),
-            h('button', {
-              disabled: pracChoice == null,
-              onClick: function() {
-                if (pracChoice == null) return;
-                var np = Object.assign({}, pracDone);
-                np[scen.id] = scen.choices[pracChoice].rating;
-                var updates = { pracDone: np, pracChoice: null };
-                if (pracIdx < scenList.length - 1) updates.pracIdx = pracIdx + 1;
-                else {
-                  var goodCount = 0;
-                  Object.keys(np).forEach(function(k) { if (np[k] >= 3) goodCount++; });
-                  if (goodCount >= 2) {
-                    if (soundOn) sfxBrave();
-                    tryAwardBadge('practice_courage', 25);
-                  }
-                }
-                upd(updates);
-              },
-              style: {
-                padding: '8px 14px',
-                background: pracChoice == null ? _upC('#94a3b8') : BLUE,
-                color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
-                cursor: pracChoice == null ? 'not-allowed' : 'pointer', fontSize: 13
-              }
-            }, pracIdx < scenList.length - 1 ? 'Lock in answer →' : 'Finish practice')
-          ),
+            ,(d.pracChoice != null || (d.pracDone && typeof d.pracDone === 'object' && Object.keys(d.pracDone).length > 0)) && h('details', { style: practiceCard },
+              h('summary', { style: practiceSummary }, 'Earlier practice records are retained'),
+              h('p', null, 'Earlier choices and completion records remain saved. These revised routes have different meanings, so older rated answers are not assigned to the new choices.')
+            )
+          )
+        );
+        pracContent = h('div', { style: { padding: '0 0 16px' } }, corePractice,
 
           // ── Generative Scenarios — AI builds a 4-choice scenario from the
           // student's chosen setting + relationship + harm. Renders in the

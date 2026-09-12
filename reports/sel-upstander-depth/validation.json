@@ -1,0 +1,64 @@
+{
+  "date": "2026-09-12",
+  "tool": "Upstander Workshop",
+  "activities": [
+    "Built-in Practice",
+    "Core Upstander Moves guide"
+  ],
+  "coverage": {
+    "practiceCases": 8,
+    "elementary": 2,
+    "middle": 3,
+    "high": 3,
+    "responseRoutes": 16,
+    "strategyCards": 18
+  },
+  "tests": {
+    "distinctPassed": 546,
+    "existingRegressionPassed": 527,
+    "focusedBrowserPassed": 17,
+    "actualHubPassed": 2,
+    "existingRegressionSkipped": 2,
+    "hubTestsExcludedByNameFilter": 83,
+    "initialRenderSmokeToolsPassed": 72,
+    "focusedRunHistory": "Initial run passed 14 workflows and failed three phone workflows because opening disclosures changed a live indexed test locator. Replaced that locator with stable summary labels; all three affected phone workflows passed on rerun. No product change was needed for this failure."
+  },
+  "accessibility": {
+    "scope": "Upstander support practice and Contextual upstander strategies regions; all enabled axe rules",
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scans": 6,
+    "violationsPerScan": 0,
+    "phoneWidth": 320,
+    "visualReview": [
+      "dark-comparison-phone.png",
+      "contrast-revision-phone.png",
+      "light-strategies-phone.png"
+    ]
+  },
+  "checks": {
+    "sourceAndPublicByteIdentical": true,
+    "sha256": "ae9c4d3096fcb7c20b069a43d3a4cfe0175bdc0934b3c99f562ace7b1ecfc745",
+    "sourceAndBrowserTestSyntax": "passed",
+    "scopedWhitespace": "passed"
+  },
+  "logs": [
+    "reports/sel-upstander-depth-focused.log",
+    "reports/sel-upstander-depth-phone.log",
+    "reports/sel-upstander-depth-regressions.log",
+    "reports/sel-upstander-depth-hub.log",
+    "reports/sel-upstander-depth-render.log"
+  ],
+  "limits": [
+    "Focused browser tests use the actual renderer with simulated callbacks.",
+    "Actual hub return and reopen checked separately.",
+    "Serialized restoration is not a real project-file round trip.",
+    "Other Upstander guidance and AI activities remain outside this pass; generated scenarios retain their pre-existing rating format.",
+    "Packaged Desktop, live assistive technology and classroom outcomes were not validated."
+  ],
+  "pushed": false,
+  "deployed": false
+}

@@ -200,6 +200,31 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   },120000);
 
+  it('upstander support plan and revised route survive the real hub return and reopen flow',async () => {
+    await mount();
+    await page.locator('[data-sel-tool-card-id="upstander"]').click();
+    await page.getByRole('tab',{name:/Practice/}).click();
+    const activity=page.getByRole('region',{name:'Upstander support practice',exact:true});
+    await activity.getByLabel('Choose an upstander scenario',{exact:true}).selectOption('group_chat_real');
+    await activity.getByLabel('Your first support plan (optional)',{exact:true}).fill('Ask privately what support is welcome.');
+    await activity.getByText('2. Compare approaches and their limits',{exact:true}).click();
+    await activity.getByRole('button',{name:'Explore: Refuse to take part quietly',exact:true}).click();
+    await activity.getByRole('button',{name:'Explore new information',exact:true}).click();
+    await activity.getByLabel('A route after the change (optional)',{exact:true}).selectOption('b');
+    await activity.getByLabel('What would you keep or change, and why? (optional)',{exact:true}).fill('Respect the request for quiet support and involve a trusted adult.');
+    const support=page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="upstander"]').click();
+    expect(await activity.getByLabel('Choose an upstander scenario',{exact:true}).inputValue()).toBe('group_chat_real');
+    expect(await activity.getByLabel('Your first support plan (optional)',{exact:true}).inputValue()).toContain('privately');
+    expect(await activity.getByLabel('A route after the change (optional)',{exact:true}).inputValue()).toBe('b');
+    expect(await activity.getByLabel('What would you keep or change, and why? (optional)',{exact:true}).inputValue()).toContain('quiet support');
+    expect(await page.evaluate(()=>window.__alloflowSelToolData.upstander.practiceCases['middle:group_chat_real'].choice)).toBe('a');
+    expect(await page.evaluate(()=>window.__alloflowSelToolData.upstander.pracDone)).toBeUndefined();
+    expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {
