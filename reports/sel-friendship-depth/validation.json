@@ -1,0 +1,55 @@
+{
+  "date": "2026-09-12",
+  "tool": "Friendship Workshop",
+  "activity": "Digital Friendship",
+  "coverage": {
+    "cases": 14,
+    "elementary": 4,
+    "middle": 6,
+    "high": 4,
+    "responseRoutes": 28
+  },
+  "tests": {
+    "distinctPassed": 549,
+    "existingRegressionPassed": 527,
+    "focusedBrowserPassed": 20,
+    "actualHubPassed": 2,
+    "existingRegressionSkipped": 2,
+    "hubTestsExcludedByNameFilter": 82,
+    "initialRenderSmokeToolsPassed": 72
+  },
+  "accessibility": {
+    "scope": "Digital friendship choices region, all enabled axe rules",
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "violationsPerTheme": 0,
+    "phoneWidth": 320,
+    "visualReview": [
+      "dark-comparison-phone.png",
+      "contrast-revision-phone.png"
+    ]
+  },
+  "checks": {
+    "sourceAndPublicByteIdentical": true,
+    "sha256": "03338a2ac26d1af546a2439db932d23a5079e93605475a8ab706f6d9c4ab76cb",
+    "sourceAndBrowserTestSyntax": "passed",
+    "scopedWhitespace": "passed"
+  },
+  "logs": [
+    "reports/sel-friendship-depth-focused.log",
+    "reports/sel-friendship-depth-regressions.log",
+    "reports/sel-friendship-depth-hub.log",
+    "reports/sel-friendship-depth-render.log"
+  ],
+  "limits": [
+    "Focused browser tests use the actual renderer with simulated callbacks.",
+    "Actual hub return and reopen checked separately.",
+    "Serialized restoration is not a real project-file round trip.",
+    "Other Friendship Workshop tabs and AI outputs, packaged Desktop, live assistive technology and classroom outcomes were not validated."
+  ],
+  "pushed": false,
+  "deployed": false
+}

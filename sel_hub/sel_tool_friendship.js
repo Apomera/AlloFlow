@@ -133,27 +133,377 @@ window.SelHub = window.SelHub || {
 
   // Digital friendship dilemmas (middle-school first; bands degrade gracefully)
   var DIGITAL_DILEMMAS = {
-    elementary: [
-      { id: 'tone', icon: '🗺️', title: 'Tone got lost', situation: 'You sent a joke text. Your friend thought you were being mean. They are upset.', badMove: 'Say "it was just a joke, you are being too sensitive."', skill: 'Even if you did not mean it, the way it felt to them is real. Try: "I am sorry it sounded mean. That is not how I meant it. What can I do?"', note: 'Texts do not have faces or voices. Big jokes need big context, or a phone call.' },
-      { id: 'left_out', icon: '🌟', title: 'You see a post without you', situation: 'You scroll past a photo of two friends having fun without you. It stings.', badMove: 'Comment something passive-aggressive, or quietly stay mad.', skill: 'Two things: (1) people post the highlight, not the boring parts. (2) Friends having other friends does not subtract from you. If it still stings, talk to someone offline.', note: 'Phones make small feelings feel huge. Putting it down helps.' },
-      { id: 'group_drama', icon: '👥', title: 'Drama in the group chat', situation: 'Two of your friends start arguing in the group chat. Other kids pile on.', badMove: 'Pick a side in the chat to make one friend happy.', skill: 'DM each friend separately: "I love you both. I am not picking a side in the chat." Group chats are bad places for two-person fights.', note: 'Most chat blowups die fast if no one fans them.' },
-      { id: 'mean_screenshot', icon: '📸', title: 'Someone shows you a screenshot', situation: 'A friend shows you a screenshot of someone else’s message and laughs at them. They want you to laugh too.', badMove: 'Laugh along, or send it to someone else.', skill: 'You can be quiet and still be honest. "I am not really comfortable with this. Can we drop it?" Never forward it.', note: 'Screenshots last longer than friendships. Be careful what you laugh at.' },
-    ],
-    middle: [
-      { id: 'left_on_read', icon: '💬', title: 'Left on read', situation: 'You sent a long, vulnerable message to a friend two days ago. They have seen it (read receipt is on) but have not replied. You are starting to spiral.', badMove: 'Send "??" or "wow ok" or unfollow them.', skill: 'Read receipts are not real-time conversation. Your friend may be overwhelmed, busy, or unsure how to reply to something heavy. Wait one more day. Then try a low-stakes follow-up: "Hey, no pressure on the long message. Just wanted to say hi."', note: 'About 70% of "I think they hate me" stories are actually "they have not figured out what to say."' },
-      { id: 'group_chat_drama', icon: '👥', title: 'Drama in the group chat', situation: 'In your group chat with five friends, two of them start arguing. Others are taking sides. You are close with both.', badMove: 'Stay silent and screenshot it for someone else, or pick a side publicly to keep one friend happy.', skill: 'Group chats are a terrible place for two-person conflict. DM each friend separately: "I saw what is happening. I love you both. I am not picking a side in the chat." Then encourage them to handle it 1-on-1.', note: 'Most group-chat blowups die fast if no one fans them. Your job is to not be the wind.' },
-      { id: 'screenshot', icon: '📸', title: 'Someone screenshotted', situation: 'A friend sends you a screenshot of a private DM from another friend, with commentary mocking them. They want you to laugh along.', badMove: 'Laugh along to keep the peace, forward it to someone else, or confront them publicly.', skill: 'You do not have to be loud to be honest. "Hey, I am not really comfortable with this. Can we drop it?" If they push back, that tells you something about the friendship. You also do not share it onward, ever.', note: 'Screenshots outlive friendships. The thing you laugh at today can hurt someone for years.' },
-      { id: 'ghosted', icon: '👻', title: 'You got ghosted', situation: 'A friend who used to text you every day has stopped responding. No fight, no explanation. You are hurt and confused.', badMove: 'Spam them, post about it publicly, or pretend you do not care.', skill: 'Send one clear message: "Hey, I noticed we have not talked in a while. If something happened, I would rather know. If life got busy, that is okay too. Just want to be honest." Then let it go. Their response, or silence, is information.', note: 'Ghosting usually says more about the ghoster than the ghosted. Some people do not have the skills for hard conversations yet.' },
-      { id: 'highlight_reel', icon: '🌟', title: 'Compared to a feed', situation: 'You scroll past a friend’s post: them with a group of people you did not know they were close with, having an obviously great time. You feel a sting.', badMove: 'Subtweet, leave a passive-aggressive comment, or quietly resent them.', skill: 'Two things: (1) they posted the highlight, not the boring 23 hours. (2) Other people having other friendships does not subtract from yours. If the sting stays, the question is not about them; it is about a part of YOUR life that needs attention.', note: 'Comparison spirals are almost always solved offline. Get off the app. Call someone you actually love.' },
-      { id: 'misunderstood', icon: '🗺️', title: 'Tone got lost', situation: 'You sent a joke. Your friend took it as an insult. They are mad. You explain it was a joke. They are still mad.', badMove: 'Insist "it was just a joke, you are being too sensitive."', skill: 'Even if you did not mean it that way, the IMPACT is real. "I am sorry it landed that way. That was not what I meant, but I can see how it sounded. What can I do?" Intent and impact are both real, and impact is the one your friend is living.', note: 'Text strips out most of communication: face, tone, body. Big jokes need big context. Or a video call.' },
-    ],
-    high: [
-      { id: 'parasocial', icon: '📱', title: 'The parasocial drift', situation: 'You realize you know more about a stranger’s daily life from their feed than you do about a real friend you used to be close with.', badMove: 'Keep doom-scrolling and call it staying connected.', skill: 'Audit your feed once a month. Whose posts make you feel close to them? Whose posts give you the illusion of closeness without any actual reciprocity? Reach out to one real friend the time you would have spent on the second list.', note: 'Parasocial relationships are not bad in themselves, but they do not feed you the way real friendship does. Notice the difference.' },
-      { id: 'cancellation', icon: '⚡', title: 'A friend gets piled on', situation: 'A friend posts something that gets dragged. The pile-on is intense. They are clearly suffering. You agree their post was a misstep, but the response feels disproportionate.', badMove: 'Stay quiet to protect yourself. Or join the pile-on to seem on the right side.', skill: 'Mistakes deserve correction, not annihilation. DM your friend privately first to check on them as a human. If you have a critique of the post, share it with them, not the mob. In public, you can hold both: "I disagree with what they posted AND I do not think this response is helping anyone."', note: 'The internet rewards the loudest take. Real friendship rewards the most accurate one.' },
-      { id: 'long_distance', icon: '🌎', title: 'Friend drifting after they moved', situation: 'A close friend moved away. The texts have slowed. Neither of you has done anything wrong. It is just hard.', badMove: 'Wait passively, then quietly write the friendship off when nothing happens.', skill: 'Long-distance friendships die from neglect more often than from conflict. Schedule it: a 30-minute call once a month, on the calendar, treated like a meeting. Friendship at distance requires structure that friendship in proximity does not.', note: 'Most adult close friendships are 80% maintenance and 20% spontaneity. The math just shifts when distance is added.' },
-      { id: 'digital_breakup', icon: '✂️', title: 'Ending a friendship cleanly', situation: 'You have realized a friendship is hurting you more than helping you. You want out, but feel guilty just disappearing.', badMove: 'Slow-fade through unread messages until they get the hint.', skill: 'A clean ending is a kindness to both of you. "I have been thinking about us a lot. I do not think this friendship is working for me right now, and I want to be honest with you instead of disappearing. I am sorry." Then mute, mute, mute. Closure is a gift you can give yourself.', note: 'Slow-fades feel polite but leave the other person with a question they cannot answer. Honest endings are kinder.' },
-    ]
-  };
+  "elementary": [
+    {
+      "id": "tone",
+      "title": "When a joke hurts",
+      "situation": "You sent a joke in a message. Your friend says it was mean and asks you to stop.",
+      "known": "Your friend said the message hurt and asked for it to stop.",
+      "unknown": "You do not know whether they want to discuss it now. Your intention does not decide their response.",
+      "needs": "Your friend needs the joke to stop. You can own the message without demanding reassurance.",
+      "change": "Your friend says, 'I do not want to talk about it today.'",
+      "review": "Check whether you stopped the joke and respected their space. Forgiveness is not the measure of a useful response.",
+      "options": [
+        {
+          "label": "Own the message",
+          "response": "I sent that joke. I am sorry it hurt you. I will stop using it.",
+          "fit": "A brief acknowledgment can fit when the friend is willing to receive a message.",
+          "limit": "Do not repeat the joke, argue about their feelings or ask them to forgive you.",
+          "id": "a"
+        },
+        {
+          "label": "Give space first",
+          "response": "Stop the joke and leave the friend room. If needed, ask a trusted adult how to put things right without more messages.",
+          "fit": "This can fit when the friend wants space or another message could feel like pressure.",
+          "limit": "Space is not permission to keep joking elsewhere. You can still change your own behavior.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "left_out",
+      "title": "A photo without you",
+      "situation": "You see a photo of two friends playing together. You were not there and feel left out.",
+      "known": "The photo shows them together for one activity.",
+      "unknown": "You do not know who arranged it, why it was small, or what it says about other invitations.",
+      "needs": "Your hurt matters. Your friends can also spend time with different people without proving loyalty.",
+      "change": "You learn that a message mocking you was added to the photo.",
+      "review": "Distinguish an ordinary separate activity from repeated or deliberate targeting. Check whether you have support and a welcoming way to join activities.",
+      "options": [
+        {
+          "label": "Offer a new invitation",
+          "response": "Would you like to play another day? It is okay if not.",
+          "fit": "This can fit when you want contact and the photo is the only sign of being left out.",
+          "limit": "An invitation cannot make someone agree. You do not need to ask them to justify having other friends.",
+          "id": "a"
+        },
+        {
+          "label": "Get help with the hurt",
+          "response": "Talk with a trusted adult about the feeling, or choose another welcoming activity for now.",
+          "fit": "This can fit when you do not want to message or want help understanding a pattern.",
+          "limit": "A break from looking at the photo may help for now, but repeated targeting needs adult attention.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "group_drama",
+      "title": "A group chat turns hurtful",
+      "situation": "Two friends argue in a game chat. Others add insults and ask you to choose a side.",
+      "known": "Insults are being added in front of an audience.",
+      "unknown": "You may not know the original disagreement or whether someone is being repeatedly targeted.",
+      "needs": "People need the insults to stop. You do not have to settle the disagreement or contact both people.",
+      "change": "One person keeps being singled out after asking everyone to stop.",
+      "review": "Check whether the targeting stops and whether an adult has helped if it continues. Being neutral about friendship does not require ignoring harm.",
+      "options": [
+        {
+          "label": "Leave the insults unanswered",
+          "response": "Stop adding reactions, leave or mute the chat if useful, and tell an adult about the insults.",
+          "fit": "This can reduce your participation without asking you to settle the argument.",
+          "limit": "Muting alone does not stop harm to someone else. Ask an adult for help when targeting continues.",
+          "id": "a"
+        },
+        {
+          "label": "Set a brief limit",
+          "response": "I am not joining the insults. I am stepping away.",
+          "fit": "This can fit if speaking feels safe and a short limit is useful.",
+          "limit": "You do not have to announce your exit or contact both friends privately. Seek adult help if the pressure continues.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "mean_screenshot",
+      "title": "A private message becomes a joke",
+      "situation": "A friend shows you an ordinary private-message screenshot and laughs at the sender.",
+      "known": "A message is being shown to another person for ridicule.",
+      "unknown": "You do not know whether the sender agreed to sharing or how widely it has spread.",
+      "needs": "The sender's privacy matters. You need a way to avoid joining in without taking on an unsafe confrontation.",
+      "change": "The sender asks for help because the screenshot is now in a class chat.",
+      "review": "Check whether you avoided spreading it and whether the sender can reach support. You cannot promise to remove copies you do not control.",
+      "options": [
+        {
+          "label": "Decline to join in",
+          "response": "I do not want to laugh at their message or pass it around.",
+          "fit": "This can fit when a brief limit feels safe.",
+          "limit": "Do not forward it to prove a point or gather more people. You cannot control what the other person does next.",
+          "id": "a"
+        },
+        {
+          "label": "Ask an adult quietly",
+          "response": "Tell a trusted adult what you saw and ask how to help without spreading it.",
+          "fit": "This can fit when you feel pressured or think the sender is being targeted.",
+          "limit": "Share only what the adult needs to understand. Asking for help is different from sending the screenshot to classmates.",
+          "id": "b"
+        }
+      ]
+    }
+  ],
+  "middle": [
+    {
+      "id": "left_on_read",
+      "title": "A read receipt without a reply",
+      "situation": "You sent a personal message two days ago. The app shows a read receipt, but there is no reply.",
+      "known": "There is a receipt and no reply visible to you.",
+      "unknown": "The receipt does not tell you why there is no reply, whether the message was understood, or what support the friend can offer.",
+      "needs": "Your wish for a response matters. Your friend can have limits on timing and emotional support.",
+      "change": "The friend replies, 'I care, but I cannot be your main support for this.'",
+      "review": "Decide whether another support route or a mutual communication agreement would help. There is no universal number of days to wait.",
+      "options": [
+        {
+          "label": "Send an optional check-in",
+          "response": "No pressure to discuss the long message. Would you prefer a different time, or should I find support elsewhere?",
+          "fit": "This can fit when a follow-up is welcome and you want clarity about support.",
+          "limit": "A check-in does not create a deadline or require private explanations. Respect a request for less contact.",
+          "id": "a"
+        },
+        {
+          "label": "Choose support elsewhere",
+          "response": "Leave the message without another follow-up for now and contact a trusted support person if you need help.",
+          "fit": "This can fit when waiting is draining or the topic needs support your friend may not be able to give.",
+          "limit": "Choosing another support route does not establish why the friend did not reply. For immediate danger, seek urgent local help rather than waiting on a message.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "group_chat_drama",
+      "title": "An argument with an audience",
+      "situation": "Two friends argue in a group chat. Others take sides and one person asks you to defend them.",
+      "known": "The disagreement has an audience and pressure to join.",
+      "unknown": "You may be missing context, and equal responsibility cannot be assumed.",
+      "needs": "People need protection from insults or targeting. You do not have to mediate or make the friendship look balanced.",
+      "change": "You notice one person is being mocked repeatedly, including outside the chat.",
+      "review": "Check whether harm is addressed and support is available. Moving the same pressure into private messages does not resolve it.",
+      "options": [
+        {
+          "label": "Interrupt the insults briefly",
+          "response": "I am not joining insults. Please stop targeting people here.",
+          "fit": "This can fit when a brief response feels safe and can name harmful behavior without redistributing it.",
+          "limit": "You are not required to debate the whole disagreement, defend every action or promise neutrality about harm.",
+          "id": "a"
+        },
+        {
+          "label": "Support without public debate",
+          "response": "Step back from the argument and ask a trusted adult for help. If welcome, check privately what the targeted person needs.",
+          "fit": "This can fit when public replies could increase exposure or place you at risk.",
+          "limit": "Do not arrange mediation or ask the targeted person to negotiate with someone intimidating them. Do not promise secrecy about danger.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "screenshot",
+      "title": "Mocking a private conversation",
+      "situation": "A friend forwards you an ordinary private DM with mocking commentary and asks you to react.",
+      "known": "The private message has been shared with you for ridicule.",
+      "unknown": "You do not know the sender's consent, the whole context, or the reach of the screenshot.",
+      "needs": "Protect the person's privacy and your own safety. Asking for help is different from circulating gossip.",
+      "change": "The mocked person asks you to help them show a trusted adult what happened.",
+      "review": "Check who actually needs the information and whether sharing is limited to a support purpose. Do not promise absolute secrecy about safety concerns.",
+      "options": [
+        {
+          "label": "Set a sharing boundary",
+          "response": "I am not comfortable mocking a private message. Please do not send me more of these.",
+          "fit": "This can fit when stating a limit feels safe.",
+          "limit": "A private channel does not guarantee privacy. Avoid repeating or reposting the message in your response.",
+          "id": "a"
+        },
+        {
+          "label": "Help through a trusted route",
+          "response": "Describe what happened to a trusted adult, or help the targeted person reach one. Ask what limited information is needed.",
+          "fit": "This can fit when sharing is repeated, someone asks for support, or confrontation feels unsafe.",
+          "limit": "Do not circulate copies as gossip. For these ordinary messages, an adult can help preserve relevant evidence without spreading it further.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "ghosted",
+      "title": "Contact has stopped",
+      "situation": "A friend who used to message often no longer replies. You have no explanation.",
+      "known": "Messages have gone unanswered and contact has changed.",
+      "unknown": "You do not know whether they want distance, lack access, are busy, or something else is happening.",
+      "needs": "You can feel hurt and choose a boundary. The friend does not owe repeated access or an explanation on demand.",
+      "change": "You learn that they asked another friend to tell you they want no contact.",
+      "review": "Respect the stated limit and seek your own support. A reply is not proof of your worth, and no reply is not proof of their character.",
+      "options": [
+        {
+          "label": "Leave one low-pressure opening",
+          "response": "I miss talking with you. If you would like to reconnect sometime, you can let me know.",
+          "fit": "This can fit if no no-contact limit has been stated and you want to leave an opening.",
+          "limit": "It is optional, not a required final message. Do not send repeated follow-ups or recruit friends to get a reply.",
+          "id": "a"
+        },
+        {
+          "label": "Choose your own distance",
+          "response": "Stop checking for a reply for now and put attention into support or activities available to you.",
+          "fit": "This can fit when further contact would be unhelpful or a boundary has been stated.",
+          "limit": "You can feel hurt without deciding the other person is uncaring or immature. Genuine safety concerns can go to a trusted adult.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "highlight_reel",
+      "title": "A feed and a feeling of exclusion",
+      "situation": "You see a friend at an activity with people you do not know and feel left out.",
+      "known": "The post shows one activity with a particular group.",
+      "unknown": "You cannot infer their whole day, their motives, or the state of your friendship from the post.",
+      "needs": "Your feelings deserve attention without blaming you for them. Other friendships can coexist with yours.",
+      "change": "You realize this follows several invitations where your access needs were ignored.",
+      "review": "Review the pattern and whether access is addressed. Muting a post may ease viewing without solving an exclusion problem.",
+      "options": [
+        {
+          "label": "Invite connection without a loyalty test",
+          "response": "I would like to spend time together. Would you be interested in something we can both access?",
+          "fit": "This can fit when you want a shared activity and contact is welcome.",
+          "limit": "Do not make the friend prove loyalty or apologize simply for seeing other people. Their answer may still be no.",
+          "id": "a"
+        },
+        {
+          "label": "Look at the pattern with support",
+          "response": "Pause viewing if useful, then consider what has happened across several interactions with someone you trust.",
+          "fit": "This can fit when you are unsure whether the issue is one post or repeated exclusion.",
+          "limit": "An online community may be important support. You do not have to disconnect completely or blame your feelings on personal insecurity.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "misunderstood",
+      "title": "Intent, wording and repair",
+      "situation": "You sent a joke in a group chat. A friend says it insulted them; you reply that you were joking.",
+      "known": "You sent the message and your friend described its impact.",
+      "unknown": "You do not know all the meanings others read into it or whether they want a discussion.",
+      "needs": "You can own the wording and stop repeating it. The friend can ask for space and does not have to explain every detail.",
+      "change": "The friend asks you to correct the impression in the same group, without quoting the joke.",
+      "review": "Check whether your action addresses the original audience while avoiding fresh exposure. A successful repair does not require renewed closeness.",
+      "options": [
+        {
+          "label": "Acknowledge and stop",
+          "response": "I sent that message. I am sorry for the insult. I will stop using that joke.",
+          "fit": "This can fit when the friend is willing to receive a brief response.",
+          "limit": "Do not demand an explanation, immediate forgiveness or a switch to a call. Respect their preferred way to communicate.",
+          "id": "a"
+        },
+        {
+          "label": "Plan a limited correction",
+          "response": "If the friend wants it, agree on a brief correction that does not repeat the insult or expose more details.",
+          "fit": "This can fit when others saw the message and the impression needs correcting.",
+          "limit": "A private apology may not address a public effect. A public correction also needs care; avoid making the friend manage every part of your repair.",
+          "id": "b"
+        }
+      ]
+    }
+  ],
+  "high": [
+    {
+      "id": "parasocial",
+      "title": "Different kinds of online connection",
+      "situation": "You enjoy following a creator and notice you have had little contact with a friend you miss.",
+      "known": "You spend time with the creator's content and miss a particular friendship.",
+      "unknown": "You cannot infer that online interests are worthless or that an offline friendship would meet every need.",
+      "needs": "Enjoyment, community, reciprocal support and available energy can matter in different ways.",
+      "change": "You realize the creator's moderated community is your main accessible social space.",
+      "review": "Review whether your choices support connection and access. You need not give up a meaningful online community to reconnect elsewhere.",
+      "options": [
+        {
+          "label": "Reconnect in a manageable way",
+          "response": "Send the friend an optional invitation that fits your time and energy, while keeping online interests you value.",
+          "fit": "This can fit when reciprocal contact with this person is something you want.",
+          "limit": "Do not assume they are available, or that a creator's content and a mutual friendship meet the same need.",
+          "id": "a"
+        },
+        {
+          "label": "Review what each space offers",
+          "response": "Notice which spaces offer enjoyment, shared interests or mutual support, and decide whether one small adjustment would help.",
+          "fit": "This can fit when you want to understand your needs before changing habits.",
+          "limit": "Do not rank all offline contact above online connection. A creator may not know you personally even when their content is meaningful.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "cancellation",
+      "title": "Accountability during a pile-on",
+      "situation": "A friend's post caused harm. Some replies explain the concern; other replies insult or threaten them.",
+      "known": "The post has drawn criticism and some harmful responses.",
+      "unknown": "You may not know everyone affected, what repair they want, or the full safety context.",
+      "needs": "People affected by the post deserve acknowledgment. Your friend also deserves safety. Supporting one need need not erase the other.",
+      "change": "A reply shares the friend's location and encourages people to find them.",
+      "review": "Separate accountability from threats. Check whether appropriate support is involved and whether harm from the original post is still being addressed.",
+      "options": [
+        {
+          "label": "Offer care with accountability",
+          "response": "If welcome, check privately whether your friend has support. You can also name the specific harm without excusing it.",
+          "fit": "This can fit when direct contact is safe and you can offer limited support.",
+          "limit": "You do not have to defend the post, argue with an audience or dismiss people who were harmed.",
+          "id": "a"
+        },
+        {
+          "label": "Address dangerous behavior through support",
+          "response": "Use a trusted adult or appropriate reporting route for threats without reposting them to a wider audience.",
+          "fit": "This can fit when intimidation, threats or exposure of private details need action beyond a peer conversation.",
+          "limit": "Do not investigate or confront people making threats. If danger seems immediate, seek urgent local help; addressing threats does not cancel accountability for the post.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "long_distance",
+      "title": "Staying connected after a move",
+      "situation": "A close friend moved away. Your messages have become less frequent and schedules rarely line up.",
+      "known": "Contact is less frequent and scheduling is difficult.",
+      "unknown": "You do not know whether each person wants the same amount or form of contact.",
+      "needs": "Both people's energy, time zones, access and interest matter. Closeness is not measured by a fixed call schedule.",
+      "change": "The friend says video calls are exhausting and asks for occasional voice notes or text.",
+      "review": "Check whether the arrangement is mutual and manageable. A changing rhythm does not by itself mean neglect or rejection.",
+      "options": [
+        {
+          "label": "Agree on a flexible rhythm",
+          "response": "I miss you. What kind of contact works for you now: a message, a voice note, or something occasional?",
+          "fit": "This can fit when both people want contact but the old pattern is difficult.",
+          "limit": "Do not prescribe a fixed call length or treat missed contact as a test of care. Either person can change their availability.",
+          "id": "a"
+        },
+        {
+          "label": "Allow a lighter connection",
+          "response": "Keep an occasional, pressure-free opening if welcome and invest in other connections too.",
+          "fit": "This can fit when schedules or energy do not support regular exchanges.",
+          "limit": "A lighter connection can involve sadness without blame. Respect a request for no contact rather than treating silence as an invitation to keep trying.",
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "digital_breakup",
+      "title": "Choosing distance from a friendship",
+      "situation": "You want distance from a friendship where your limits have repeatedly been ignored.",
+      "known": "You have noticed repeated behavior that crosses your limits.",
+      "unknown": "You may not know how the friend will respond to a boundary or ending.",
+      "needs": "You can choose distance without providing closure, an apology or another conversation. Consider what contact feels safe.",
+      "change": "After you reduce contact, the person uses new accounts to keep messaging you.",
+      "review": "Check whether your boundary and safety are supported. You do not need to keep explaining or confront someone to justify blocking them.",
+      "options": [
+        {
+          "label": "State a boundary if safe",
+          "response": "I do not want further contact. Please do not message me.",
+          "fit": "This can fit when you choose to state a limit and believe a message is safe enough.",
+          "limit": "You do not owe an apology, a debate or another chance. A clear message cannot guarantee the person will respect it.",
+          "id": "a"
+        },
+        {
+          "label": "Reduce contact without another message",
+          "response": "Use available mute, block or privacy controls and ask a trusted person to help plan support if needed.",
+          "fit": "This can fit when another conversation feels unsafe or would repeat a limit already given.",
+          "limit": "You do not need to earn the right to block someone. Repeated unwanted contact or threats may need trusted support and reporting, not more explanations.",
+          "id": "b"
+        }
+      ]
+    }
+  ]
+};
 
   // ══════════════════════════════════════════════════════════════
   // ── Tool Registration ──
@@ -298,7 +648,7 @@ window.SelHub = window.SelHub || {
           compass: { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83E\uDDED', title: 'My Style \u2014 how you show you care',                hint: 'Loyalist, encourager, advisor, peacekeeper, jokester, listener, adventurer. Most people lean on 1-2. Knowing yours is half the work \u2014 the other half is recognizing your friend\u2019s default is probably different.' },
           start:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDCAC', title: 'Starting \u2014 the open + the follow-up',             hint: 'Mere-exposure effect (Zajonc 1968): repeated low-stakes contact predicts liking better than charm. Pair-share, lunch tables, shared activities. \u201CI like your shoes\u201D is corny because it WORKS.' },
           keep:    { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDC9B', title: 'Keeping \u2014 maintenance is everything',              hint: 'Dunbar 1992: humans top out at ~150 stable relationships, ~5 close ones. Sustaining ANY of those takes regular small bids \u2014 a text, a memory mentioned, a check-in. Drift is the default.' },
-          digital: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '📱',           title: 'Digital \u2014 different rules, same friendship',     hint: 'No tone-of-voice; punctuation matters more than you think. Read receipts feel like power moves but rarely intend to be. Posting + tagging = public; DM = private \u2014 picking the wrong channel breaks trust.' },
+          digital: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCF1', title: 'Digital - context, consent and considered choices', hint: 'Compare what a message shows with what remains uncertain. Consider boundaries, audience and trusted support. A private channel does not guarantee privacy.' },
           repair:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDE79', title: 'Repair \u2014 the strongest friendships have ruptures', hint: 'Gottman: rupture is universal; thriving relationships repair quickly. Name what you did, hear what landed, plan repair, follow up. Apologies that include \u201CIF\u201D are not apologies.' },
           endings: { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83C\uDF43', title: 'Endings \u2014 some friendships finish gracefully',  hint: 'Not every friendship is forever, and that\u2019s OK. Drift is normal; explicit goodbyes are sometimes kinder than ghosting. \u201CI think we\u2019ve grown different ways\u201D leaves both people room to be sad without being mad.' },
           coach:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83E\uDD16', title: 'Practice \u2014 rehearse the hard talks',             hint: 'Bandura 1977: behavioral rehearsal is one of the strongest predictors of self-efficacy. Try the difficult conversation here first. The AI plays the friend; you practice the script you\u2019ll use later.' }
@@ -698,71 +1048,116 @@ window.SelHub = window.SelHub || {
       // ── Digital Friendship ──
       var digitalContent = null;
       if (activeTab === 'digital') {
-        var dilemmas = DIGITAL_DILEMMAS[band] || DIGITAL_DILEMMAS.middle;
-        var curD = dilemmas[digitalIdx % dilemmas.length];
-        var doneCount = Object.keys(digitalDone).length;
-        digitalContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '📱'),
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Digital Friendship'),
-            h('p', { style: { fontSize: '13px', color: _frC('#94a3b8'), margin: 0 } }, 'Texting, group chats, posts, screenshots. The friendship rules still apply, but the medium changes the math.')
+        var digitalBand = Object.prototype.hasOwnProperty.call(DIGITAL_DILEMMAS, band) ? band : 'middle';
+        var dilemmas = DIGITAL_DILEMMAS[digitalBand];
+        var selectedDigital = d.digitalSelections && d.digitalSelections[digitalBand];
+        var legacyDigitalIndex = Number.isInteger(d.digitalIdx) && d.digitalIdx >= 0 ? d.digitalIdx % dilemmas.length : 0;
+        var curD = dilemmas.find(function(item) { return item.id === selectedDigital; }) || dilemmas[legacyDigitalIndex];
+        // Grade band is part of the key, so similarly named future cases stay independent.
+        var digitalKey = digitalBand + ':' + curD.id;
+        var digitalCases = d.digitalCases && typeof d.digitalCases === 'object' && !Array.isArray(d.digitalCases) ? d.digitalCases : {};
+        var savedDigital = digitalCases[digitalKey];
+        var digitalCase = savedDigital && typeof savedDigital === 'object' && !Array.isArray(savedDigital) ? savedDigital : {};
+        var digitalNote = function(key) { return typeof digitalCase[key] === 'string' ? digitalCase[key] : ''; };
+        var saveDigital = function(values) {
+          var next = Object.assign({}, digitalCases);
+          next[digitalKey] = Object.assign({}, digitalCase, values);
+          upd('digitalCases', next);
+        };
+        var digitalSurface = _frC('#fff'), digitalInk = _frC('#1f2937');
+        var digitalEdge = _frHC ? '#ffff00' : _frDark ? '#94a3b8' : '#64748b';
+        var digitalCard = { padding: '16px', margin: '14px 0', background: digitalSurface, color: digitalInk, border: '1px solid ' + digitalEdge, borderRadius: '12px', minWidth: 0 };
+        var digitalControl = { minHeight: '44px', maxWidth: '100%', width: '100%', padding: '10px', border: '1px solid ' + digitalEdge, borderRadius: '8px', background: digitalSurface, color: digitalInk, font: 'inherit', fontSize: '16px', boxSizing: 'border-box' };
+        var digitalButton = { minHeight: '44px', padding: '10px 14px', border: '2px solid ' + digitalEdge, borderRadius: '8px', background: digitalSurface, color: digitalInk, font: 'inherit', fontWeight: 700, cursor: 'pointer', maxWidth: '100%', whiteSpace: 'normal' };
+        var digitalSummary = { minHeight: '44px', padding: '10px 0', fontWeight: 700, cursor: 'pointer', boxSizing: 'border-box' };
+        var digitalField = function(key, label, hint) {
+          var id = 'fr-digital-' + key;
+          return h('div', { key: key, style: { margin: '14px 0' } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, label),
+            h('p', { id: id + '-hint', style: { margin: '4px 0 8px' } }, hint),
+            h('textarea', { id: id, rows: 3, value: digitalNote(key), 'aria-describedby': id + '-hint',
+              onChange: function(ev) { var values = {}; values[key] = ev.target.value; saveDigital(values); },
+              style: Object.assign({}, digitalControl, { resize: 'vertical' }) })
+          );
+        };
+        var chosenDigital = curD.options.find(function(option) { return option.id === digitalNote('choice'); });
+        var revisedDigital = curD.options.find(function(option) { return option.id === digitalNote('revisedChoice'); });
+        var oldDigitalDraft = typeof d.digitalDraft === 'string' ? d.digitalDraft : '';
+        digitalContent = h('section', { 'aria-label': 'Digital friendship choices', style: { padding: '16px', maxWidth: '760px', margin: '0 auto', background: digitalSurface, color: digitalInk, fontSize: '14px', lineHeight: 1.65, overflowWrap: 'anywhere' } },
+          h('h3', { style: { fontSize: '22px', margin: '0 0 8px' } }, 'Digital Friendship: choose with context'),
+          h('p', null, 'Practice with fictional messages and situations. A receipt, photo or silence rarely gives the whole context. Notice what is known, whose needs matter, and what a response might expose.'),
+          h('p', null, 'All writing and choices are optional. Think, draw or discuss instead. You can choose not to contact anyone. These examples are for rehearsal; nothing here sends a message.'),
+          h('p', null, 'Notes stay in this tool state. Use the project save controls if you want to keep a project copy. Avoid names or identifying details from real conversations.'),
+          h('label', { htmlFor: 'fr-digital-case', style: { display: 'block', fontWeight: 700 } }, 'Choose a digital friendship scenario'),
+          h('select', { id: 'fr-digital-case', value: curD.id, style: digitalControl,
+            onChange: function(ev) { var next = Object.assign({}, d.digitalSelections || {}); next[digitalBand] = ev.target.value; upd('digitalSelections', next); } },
+            dilemmas.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })
           ),
-          // Progress chip
-          h('div', { style: { textAlign: 'center', marginBottom: '12px' } },
-            h('span', { style: { background: AMBER_LIGHT, padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, color: AMBER, border: '1px solid #fde68a' } }, '📱 ' + doneCount + ' / ' + dilemmas.length + ' explored')
-          ),
-          // Situation card
-          h('div', { style: { background: _frC('#fff'), border: '2px solid #fde68a', borderRadius: '16px', padding: '20px', marginBottom: '12px' } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' } },
-              h('span', { style: { fontSize: '32px' } }, curD.icon),
-              h('h4', { style: { fontSize: '16px', fontWeight: 800, color: AMBER_DARK, margin: 0 } }, curD.title)
+          h('div', { key: digitalKey },
+            h('article', { style: digitalCard, 'aria-labelledby': 'fr-digital-case-title' },
+              h('h4', { id: 'fr-digital-case-title', style: { fontSize: '18px', margin: '0 0 8px' } }, curD.title),
+              h('p', null, curD.situation)
             ),
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: AMBER, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, 'The situation'),
-            h('p', { style: { fontSize: '14px', color: _frC('#374151'), margin: 0, lineHeight: 1.7 } }, curD.situation)
-          ),
-          // Common reaction (always shown, dimmed)
-          h('div', { style: { background: _frC('#fef2f2'), borderRadius: '12px', padding: '12px 14px', borderLeft: '4px solid #fca5a5', marginBottom: '10px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: _frC('#dc2626'), marginBottom: '2px' } }, 'Common reaction:'),
-            h('p', { style: { fontSize: '13px', color: _frC('#7f1d1d'), margin: 0, fontStyle: 'italic' } }, curD.badMove)
-          ),
-          // Student input (before reveal)
-          !digitalShown && h('div', { style: { background: AMBER_LIGHT, borderRadius: '12px', padding: '14px', border: '1px solid #fde68a', marginBottom: '10px' } },
-            h('label', { style: { fontSize: '12px', fontWeight: 700, color: AMBER_DARK, display: 'block', marginBottom: '6px' } }, '📝 What would YOU do or say?'),
-            h('textarea', {
-              value: digitalDraft,
-              onChange: function(ev) { upd('digitalDraft', ev.target.value); },
-              'aria-label': 'Your response to this digital dilemma',
-              placeholder: 'Type the message you would actually send...',
-              style: { width: '100%', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '70px', boxSizing: 'border-box', resize: 'vertical' }
-            }),
-            h('button', {
-              onClick: function() { upd({ digitalShown: true, digitalDone: Object.assign({}, digitalDone, (function() { var o = {}; o[curD.id] = true; return o; })()) }); if (soundEnabled) sfxClick(); if (digitalDraft.trim() && awardXP) awardXP(8, 'Worked through a digital dilemma'); },
-              style: { marginTop: '8px', padding: '8px 18px', background: AMBER, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
-            }, 'See a skillful response →')
-          ),
-          // Skill response (revealed)
-          digitalShown && h('div', null,
-            digitalDraft.trim() && h('div', { style: { background: _frC('#eff6ff'), border: '1px solid #93c5fd', borderRadius: '10px', padding: '12px', marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _frC('#2563eb'), marginBottom: '4px' } }, '💭 Your draft:'),
-              h('p', { style: { fontSize: '13px', color: _frC('#1e3a8a'), margin: 0, fontStyle: 'italic', whiteSpace: 'pre-wrap' } }, digitalDraft)
+            h('details', { open: true, style: digitalCard },
+              h('summary', { style: digitalSummary }, '1. Separate the signal from the story'),
+              h('p', null, h('strong', null, 'What is known: '), curD.known),
+              h('p', null, h('strong', null, 'What remains uncertain: '), curD.unknown),
+              h('p', null, h('strong', null, 'Needs and boundaries: '), curD.needs),
+              digitalField('notice', 'What needs checking before you respond? (optional)', 'Distinguish an observation from a guess about motives. You do not need to investigate someone or demand private explanations.'),
+              digitalField('first', 'Your first response or no-contact plan (optional)', 'Describe what you might do, say, pause or ask for. A message is not required.')
             ),
-            h('div', { style: { background: _frC('#f0fdf4'), borderRadius: '12px', padding: '14px', border: '2px solid #4ade80', marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _frC('#16a34a'), marginBottom: '2px' } }, 'A skillful response:'),
-              h('p', { style: { fontSize: '14px', color: _frC('#166534'), margin: 0, lineHeight: 1.6 } }, curD.skill)
+            h('details', { style: digitalCard },
+              h('summary', { style: digitalSummary }, '2. Compare approaches and their limits'),
+              h('p', null, 'These are possible routes, not a right-answer pair. Compare both, choose one to explore, combine ideas in your notes, or use a different route.'),
+              curD.options.map(function(option) {
+                var selected = chosenDigital && chosenDigital.id === option.id;
+                return h('article', { key: option.id, style: digitalCard, 'aria-labelledby': 'fr-digital-option-' + option.id },
+                  h('h4', { id: 'fr-digital-option-' + option.id, style: { fontSize: '17px', margin: '0 0 8px' } }, option.label),
+                  h('p', null, option.response),
+                  h('p', null, h('strong', null, 'When this may fit: '), option.fit),
+                  h('p', null, h('strong', null, 'Limit to consider: '), option.limit),
+                  h('button', { type: 'button', style: digitalButton, 'aria-pressed': !!selected,
+                    onClick: function() { saveDigital({ choice: selected ? '' : option.id }); } }, (selected ? 'Selected: ' : 'Explore: ') + option.label)
+                );
+              }),
+              h('p', { role: 'status', 'aria-live': 'polite' }, chosenDigital ? 'Route being explored: ' + chosenDigital.label + '. Select it again to leave the choice blank. Your own plan can be different.' : 'No route selected. You can compare without choosing.'),
+              digitalField('privacy', 'Who needs information, and what should stay private? (optional)', 'Consider the audience, permission and purpose. A direct message can still be copied. Limited sharing with trusted support is different from circulating a private message to peers.')
             ),
-            h('p', { style: { fontSize: '11px', color: _frC('#94a3b8'), fontStyle: 'italic', margin: '0 0 12px', paddingLeft: '8px', borderLeft: '2px solid ' + _frC('#e5e7eb') } }, curD.note),
-            h('button', {
-              onClick: function() { upd({ digitalIdx: (digitalIdx + 1) % dilemmas.length, digitalShown: false, digitalDraft: '' }); if (soundEnabled) sfxClick(); },
-              'aria-label': 'Next dilemma',
-              style: { padding: '10px 22px', background: AMBER, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'block', margin: '0 auto' }
-            }, 'Next dilemma →')
+            h('div', { style: digitalCard },
+              h('h4', { id: 'fr-digital-change-title', style: { fontSize: '18px', margin: '0 0 8px' } }, '3. Reconsider after new information'),
+              h('button', { type: 'button', style: digitalButton, 'aria-expanded': digitalCase.changeSeen === true, 'aria-controls': 'fr-digital-change',
+                onClick: function() { saveDigital({ changeSeen: true }); } }, digitalCase.changeSeen === true ? 'New information shown' : 'Explore new information'),
+              h('div', { id: 'fr-digital-change', hidden: digitalCase.changeSeen !== true },
+                h('p', null, h('strong', null, 'Imagine this happens: '), curD.change),
+                h('p', null, h('strong', null, 'Your earlier route: '), chosenDigital ? chosenDigital.label : 'No route selected. Your first notes remain above.'),
+                h('label', { htmlFor: 'fr-digital-revised-choice', style: { display: 'block', fontWeight: 700 } }, 'A route after the change (optional)'),
+                h('select', { id: 'fr-digital-revised-choice', style: digitalControl, value: revisedDigital ? revisedDigital.id : digitalNote('revisedChoice') === 'different' ? 'different' : '',
+                  onChange: function(ev) { saveDigital({ revisedChoice: ev.target.value }); } },
+                  h('option', { value: '' }, 'Leave open for now'),
+                  curD.options.map(function(option) { return h('option', { key: option.id, value: option.id }, option.label); }),
+                  h('option', { value: 'different' }, 'A different or combined route')
+                ),
+                digitalField('revised', 'What would you keep or change, and why? (optional)', 'A reasoned choice can stay the same or change. Your first response and earlier selection remain separate and editable.'),
+                h('details', null,
+                  h('summary', { style: digitalSummary }, 'Consider a follow-through check'),
+                  h('p', null, curD.review),
+                  digitalField('followup', 'What would tell you that more support is needed? (optional)', 'Look at boundaries, access and whether harm continues. Getting a reply, forgiveness or agreement is not fully within your control.')
+                )
+              )
+            ),
+            oldDigitalDraft.trim() && h('details', { style: digitalCard },
+              h('summary', { style: digitalSummary }, 'An earlier unassigned digital draft is available'),
+              h('p', null, 'The older activity did not save a case or grade band with this draft. Check its context before copying.'),
+              h('p', { style: { whiteSpace: 'pre-wrap' } }, oldDigitalDraft),
+              h('button', { type: 'button', style: digitalButton,
+                onClick: function() { if (!digitalNote('first').trim()) saveDigital({ first: oldDigitalDraft }); } }, 'Copy earlier writing into an empty draft'),
+              h('p', null, 'Copying preserves current writing and leaves the earlier copy available.')
+            )
           )
         );
       }
 
-      // ══════════════════════════════════════════════════════════
-      // ── Rehearse — multi-turn role-play (AI plays the friend/peer) ──
-      // ══════════════════════════════════════════════════════════
+      // Rehearse retains its separate conversation state and workflow.
       var rehearseContent = null;
       if (activeTab === 'rehearse') {
         var FRIEND_SCENARIOS = {

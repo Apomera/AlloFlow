@@ -175,6 +175,31 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   },120000);
 
+  it('digital friendship draft and separate route choices survive the real hub return and reopen flow', async () => {
+    await mount();
+    await page.locator('[data-sel-tool-card-id="friendship"]').click();
+    await page.getByRole('tab',{name:/Digital/}).click();
+    const activity=page.getByRole('region',{name:'Digital friendship choices',exact:true});
+    await activity.getByLabel('Choose a digital friendship scenario',{exact:true}).selectOption('screenshot');
+    await activity.getByLabel('Your first response or no-contact plan (optional)',{exact:true}).fill('Decline to join the ridicule.');
+    await activity.getByText('2. Compare approaches and their limits',{exact:true}).click();
+    await activity.getByRole('button',{name:'Explore: Set a sharing boundary',exact:true}).click();
+    await activity.getByRole('button',{name:'Explore new information',exact:true}).click();
+    await activity.getByLabel('A route after the change (optional)',{exact:true}).selectOption('b');
+    await activity.getByLabel('What would you keep or change, and why? (optional)',{exact:true}).fill('Help through a trusted adult without spreading the message.');
+    const support=page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="friendship"]').click();
+    expect(await activity.getByLabel('Choose a digital friendship scenario',{exact:true}).inputValue()).toBe('screenshot');
+    expect(await activity.getByLabel('Your first response or no-contact plan (optional)',{exact:true}).inputValue()).toBe('Decline to join the ridicule.');
+    expect(await activity.getByLabel('A route after the change (optional)',{exact:true}).inputValue()).toBe('b');
+    expect(await activity.getByLabel('What would you keep or change, and why? (optional)',{exact:true}).inputValue()).toContain('trusted adult');
+    expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.digitalCases['middle:screenshot'].choice)).toBe('a');
+    expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.digitalDone)).toBeUndefined();
+    expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {
