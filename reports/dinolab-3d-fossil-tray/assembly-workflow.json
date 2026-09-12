@@ -1,0 +1,27 @@
+[
+  {
+    "placed": 1,
+    "remaining": 5,
+    "occupied": 5
+  },
+  {
+    "placed": 2,
+    "remaining": 4,
+    "occupied": 4
+  },
+  {
+    "placed": 3,
+    "remaining": 3,
+    "occupied": 3
+  },
+  {
+    "placed": 4,
+    "remaining": 2,
+    "occupied": 2
+  },
+  {
+    "placed": 5,
+    "remaining": 1,
+    "occupied": 1
+  }
+]

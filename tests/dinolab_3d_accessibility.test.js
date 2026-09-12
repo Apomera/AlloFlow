@@ -167,7 +167,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_copy_dino_lab_investigation_summary_to_clipboar', 'Copy Dino Lab investigation summary to clipboard')`);
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_download_dino_lab_investigation_summary', 'Download Dino Lab investigation summary')`);
     expect(source).toContain("var cameraTargetIsEvidence = !!(cameraStudy === 'full' && scanKey && yawRef.current.framing === 'evidence' && evidenceAnchorPoints[scanTargetId]);");
-    expect(source).toContain('var targetForView = cameraTarget.clone();');
+    expect(source).toContain("var targetForView = cameraStudy === 'full' && trayVisible ? overviewCenter.clone() : cameraTarget.clone();");
     expect(source).toContain("camera.position.set(targetForView.x, targetForView.y");
     expect(source).toContain('camera.lookAt(targetForView);');
     expect(source).toContain("Target ' + (cameraStudy !== 'full' ? cap(cameraStudy) + ' study' : (cameraTargetIsEvidence ? cap(scanTargetId) + ' anchor' : 'full model'))");

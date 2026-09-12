@@ -1,0 +1,45 @@
+
+Running 8 tests using 1 worker
+
+(node:25456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:89:49 › microraptor has a fitted grounded fossil tray (13.3s)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:89:49 › anchiornis has a fitted grounded fossil tray (14.2s)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:89:49 › sinosauropteryx has a fitted grounded fossil tray (17.4s)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:89:49 › tyrannosaurus has a fitted grounded fossil tray (24.3s)
+  ok 5 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:89:49 › brachiosaurus has a fitted grounded fossil tray (23.9s)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:107:5 › phone tray view stays framed and hides during anatomy and anchor studies (28.5s)
+  ok 7 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:129:5 › placing fossils empties their slots and finishing returns to the animal (18.2s)
+  x  8 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:147:5 › tray survives layer changes and is unavailable before the scan or without markers (27.3s)
+
+
+  1) [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:147:5 › tray survives layer changes and is unavailable before the scan or without markers
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      81 | function check(result, remaining = 6) {
+      82 |   expect(result.errors).toEqual([]); expect(result.lost).toBe(false); expect(result.shaderFailures).toBe(0);
+    > 83 |   expect(result.invalid).toBe(0); expect(result.outside).toBe(0); expect(result.tray).toBe(true);
+         |                                                                                       ^
+      84 |   expect(result.parts).toHaveLength(remaining); expect(result.sockets).toHaveLength(6);
+      85 |   expect(result.parent).toBe('dinolab-specimen'); expect(result.shadowOutside).toBe(0);
+      86 |   for (const part of result.parts) { expect(Math.abs(part.baseGap)).toBeLessThan(1e-6); expect(part.slotOutside).toBe(false); }
+        at check (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-fossil-tray.spec.ts:83:87)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-fossil-tray.spec.ts:158:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-fossil-tray\acceptance\dinolab-3d-fossil-tray-tra-3457b-the-scan-or-without-markers-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-fossil-tray\acceptance\dinolab-3d-fossil-tray-tra-3457b-the-scan-or-without-markers-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-fossil-tray\acceptance\dinolab-3d-fossil-tray-tra-3457b-the-scan-or-without-markers-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:147:5 › tray survives layer changes and is unavailable before the scan or without markers
+  7 passed (2.8m)

@@ -1,0 +1,31 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+x······························································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > supports focused keyboard rotation with live status and cleanup
+AssertionError: expected '/**\n * stem_tool_dinolab.js — Dino L…' to contain 'var targetForView = cameraTarget.clon…'
+
+- Expected
++ Received
+
+- var targetForView = cameraTarget.clone();
+[Redundant full-renderer source dump omitted; expected expression and failure location retained.]
+
+ ❯ tests/dinolab_3d_accessibility.test.js:170:20
+    168|     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y…
+    169|     expect(source).toContain("var cameraTargetIsEvidence = !!(cameraSt…
+    170|     expect(source).toContain('var targetForView = cameraTarget.clone()…
+       |                    ^
+    171|     expect(source).toContain("camera.position.set(targetForView.x, tar…
+    172|     expect(source).toContain('camera.lookAt(targetForView);');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 126 passed (127)
+   Start at  19:31:17
+   Duration  77.35s (transform 269ms, setup 181ms, import 683ms, tests 60.26s, environment 12.20s)

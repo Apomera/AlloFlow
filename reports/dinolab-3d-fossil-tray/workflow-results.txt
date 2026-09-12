@@ -1,0 +1,42 @@
+
+Running 2 tests using 1 worker
+
+(node:6084) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6084) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:147:5 › tray survives layer changes and is unavailable before the scan or without markers (28.4s)
+(node:12564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:12564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:172:5 › assembly tools place every tray fossil and return to the completed specimen (42.9s)
+
+
+  1) [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:147:5 › tray survives layer changes and is unavailable before the scan or without markers
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m12[39m
+    Received:    [31m15[39m
+
+      163 |     expect(after.parts).toEqual(before.parts);
+      164 |     expect(after.memory.geometries).toBeLessThanOrEqual(before.memory.geometries + 2);
+    > 165 |     expect(after.memory.textures).toBeLessThanOrEqual(before.memory.textures + 1);
+          |                                   ^
+      166 |   }
+      167 |   await page.evaluate(() => (window as any).__ctx.update('dinoLab', 'field3dShowEvidence', false)); await settle(page);
+      168 |   expect((await inspect(page)).tray).toBe(false);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-fossil-tray.spec.ts:165:35
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-fossil-tray\workflow-acceptance\dinolab-3d-fossil-tray-tra-3457b-the-scan-or-without-markers-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-fossil-tray\workflow-acceptance\dinolab-3d-fossil-tray-tra-3457b-the-scan-or-without-markers-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-fossil-tray\workflow-acceptance\dinolab-3d-fossil-tray-tra-3457b-the-scan-or-without-markers-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:147:5 › tray survives layer changes and is unavailable before the scan or without markers
+  1 passed (1.2m)

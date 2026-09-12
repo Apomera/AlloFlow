@@ -7395,6 +7395,7 @@ window.StemLab = window.StemLab || {
           function disposeObject(obj) {
             if (!obj) return;
             obj.traverse(function (child) {
+              if (child.isLight && child.shadow && child.shadow.dispose) child.shadow.dispose();
               if (child.geometry && child.geometry.dispose) child.geometry.dispose();
               if (child.material) {
                 var materials = Array.isArray(child.material) ? child.material : [child.material];
@@ -7611,6 +7612,7 @@ window.StemLab = window.StemLab || {
               new THREE.BoxGeometry(Math.max(8, len * 0.72), 0.06, Math.max(3.4, len * 0.18)),
               THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: habitat.digPad, roughness: 1, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: habitat.digPad, shininess: 4 })
             );
+            digPad.name = 'dinolab-excavation-pad';
             digPad.position.set(0, 0.025, 0);
             digPad.receiveShadow = true;
             scene.add(digPad);
@@ -9640,31 +9642,95 @@ window.StemLab = window.StemLab || {
               model.add(ring);
               if (active) assemblyPulse = ring;
             }
+            var assemblyTray = null;
+            var assemblyTrayBounds = null;
+            function createAssemblyTray(pieces) {
+              var tray = new THREE.Group();
+              tray.name = 'dinolab-fossil-tray';
+              var trayScale = len / 4;
+              tray.scale.setScalar(trayScale);
+              tray.position.set((specimenBounds.min.x + specimenBounds.max.x) * 0.5, studio ? 0 : 0.055, specimenBounds.max.z + 0.61 * trayScale + len * 0.08);
+              tray.userData.dinoTrayScale = trayScale;
+              var frameMat = new THREE.MeshStandardMaterial({ color: 0x152731, roughness: 0.78, metalness: 0.18 });
+              var padMat = new THREE.MeshStandardMaterial({ color: 0x293d48, roughness: 0.96 });
+              var activePadMat = new THREE.MeshStandardMaterial({ color: 0x654326, roughness: 0.92 });
+              var placedPadMat = new THREE.MeshStandardMaterial({ color: 0x234b43, roughness: 0.92 });
+              function trayBox(name, x, y, z, width, height, depth, material) {
+                var part = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
+                part.name = name; part.position.set(x, y, z);
+                part.castShadow = true; part.receiveShadow = true; tray.add(part);
+                return part;
+              }
+              trayBox('fossil-tray-base', 0, 0.0275, 0, 2.04, 0.055, 1.22, frameMat);
+              [-1, 1].forEach(function (side) {
+                trayBox('fossil-tray-rim', side * 1, 0.105, 0, 0.04, 0.10, 1.22, frameMat);
+                trayBox('fossil-tray-rim', 0, 0.105, side * 0.59, 2.04, 0.10, 0.04, frameMat);
+              });
+              [-0.32, 0.32].forEach(function (x) { trayBox('fossil-tray-divider', x, 0.09, 0, 0.025, 0.07, 1.14, frameMat); });
+              trayBox('fossil-tray-divider', 0, 0.09, 0, 1.94, 0.07, 0.025, frameMat);
+              pieces.forEach(function (piece, idx) {
+                var placed = !!assemblyPlaced[piece.id], active = piece.id === assemblyFocusId;
+                var pad = trayBox('fossil-tray-slot-' + piece.id, (idx % 3 - 1) * 0.64, 0.061, (Math.floor(idx / 3) - 0.5) * 0.58, 0.59, 0.012, 0.51, placed ? placedPadMat : (active ? activePadMat : padMat));
+                pad.userData.dinoAssemblySlot = piece.id; pad.userData.placed = placed;
+              });
+              model.add(tray);
+              return tray;
+            }
             function addLooseAssemblyPiece(piece, idx, active) {
               var group = new THREE.Group();
-              var spacing = Math.max(0.58, Math.min(1.12, len * 0.09));
-              var trayZ = -Math.max(2.0, bodyDepth * 2.8);
-              group.position.set(-spacing * 2.5 + idx * spacing, 0.13, trayZ + (idx % 2 ? 0.26 : -0.02));
-              group.rotation.y = -0.35 + idx * 0.18;
+              group.name = 'fossil-tray-piece-' + piece.id;
+              group.userData.dinoTrayPiece = piece.id;
+              group.rotation.y = -0.18 + idx * 0.07;
               var mat = assemblyUnlocked ? (active ? assemblyFocusMat : assemblyLooseMat) : assemblyLockedMat;
               var order = active ? 28 : 14;
-              if (piece.id === 'skull') {
-                addAssemblyEllipsoid(group, vec(0, 0.05, 0), vec(0.18, 0.11, 0.12), mat, order);
-              } else if (piece.id === 'ribs') {
-                var looseRib = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.018, 8, 28), mat);
-                looseRib.rotation.y = Math.PI / 2;
-                looseRib.renderOrder = order;
-                group.add(looseRib);
-              } else if (piece.id === 'pelvis') {
-                addAssemblyEllipsoid(group, vec(-0.08, 0.03, 0), vec(0.13, 0.07, 0.11), mat, order);
-                addAssemblyEllipsoid(group, vec(0.10, 0.03, 0), vec(0.11, 0.06, 0.10), mat, order);
-              } else if (piece.id === 'hindlimb') {
-                addAssemblyCylinder(group, vec(-0.22, 0.02, -0.03), vec(0.02, 0.07, 0.03), 0.024, mat, order);
-                addAssemblyCylinder(group, vec(0.02, 0.07, 0.03), vec(0.24, 0.02, -0.02), 0.021, mat, order);
-              } else {
-                addAssemblyCylinder(group, vec(-0.24, 0.04, 0), vec(0.24, 0.04, 0), piece.id === 'tail' ? 0.028 : 0.024, mat, order);
+              function fossilBone(a, b, radius) {
+                addAssemblyCylinder(group, a, b, radius, mat, order);
+                [a, b].forEach(function (point) { addAssemblyEllipsoid(group, point, vec(radius * 1.35, radius * 1.15, radius * 1.35), mat, order); });
               }
-              scene.add(group);
+              if (piece.id === 'skull') {
+                addAssemblyEllipsoid(group, vec(-0.035, 0.065, 0), vec(0.15, 0.085, 0.115), mat, order);
+                addAssemblyEllipsoid(group, vec(0.115, 0.038, 0), vec(0.09, 0.045, 0.08), mat, order);
+                var socketMat = new THREE.MeshStandardMaterial({ color: 0x273034, roughness: 1 });
+                [-1, 1].forEach(function (side) {
+                  addAssemblyEllipsoid(group, vec(-0.01, 0.072, side * 0.109), vec(0.032, 0.027, 0.008), socketMat, order + 1);
+                  fossilBone(vec(-0.08, -0.008, side * 0.068), vec(0.18, -0.008, side * 0.055), 0.012);
+                });
+              } else if (piece.id === 'ribs') {
+                [0.17, 0.125, 0.08].forEach(function (radius) {
+                  var looseRib = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.012, 8, 24, Math.PI), mat);
+                  looseRib.rotation.x = -Math.PI / 2;
+                  looseRib.position.z = 0.07; looseRib.renderOrder = order; group.add(looseRib);
+                });
+                fossilBone(vec(-0.18, 0, 0.07), vec(0.18, 0, 0.07), 0.012);
+              } else if (piece.id === 'pelvis') {
+                [-1, 1].forEach(function (side) {
+                  addAssemblyEllipsoid(group, vec(0, 0.035, side * 0.07), vec(0.16, 0.045, 0.048), mat, order);
+                  fossilBone(vec(-0.075, 0.02, side * 0.07), vec(-0.13, 0, side * 0.17), 0.016);
+                  fossilBone(vec(0.05, 0.02, side * 0.07), vec(0.15, 0, side * 0.13), 0.016);
+                });
+                fossilBone(vec(-0.03, 0.025, -0.07), vec(-0.03, 0.025, 0.07), 0.020);
+              } else if (piece.id === 'hindlimb') {
+                fossilBone(vec(-0.21, 0.025, -0.025), vec(0.015, 0.045, 0.035), 0.024);
+                fossilBone(vec(0.015, 0.045, 0.035), vec(0.21, 0.02, -0.025), 0.018);
+                fossilBone(vec(0.20, 0.02, -0.025), vec(0.23, 0, 0.055), 0.012);
+              } else {
+                var previousVertebra = null;
+                for (var vi = 0; vi < 6; vi++) {
+                  var tailPiece = piece.id === 'tail';
+                  var radius = tailPiece ? 0.035 - vi * 0.0036 : 0.028;
+                  var point = vec(-0.20 + vi * 0.08, 0.032, tailPiece ? -0.028 + vi * vi * 0.0023 : Math.sin(vi * 0.65) * 0.012);
+                  addAssemblyEllipsoid(group, point, vec(0.031, radius * 0.72, radius), mat, order);
+                  if (previousVertebra) addAssemblyCylinder(group, previousVertebra, point, radius * 0.42, mat, order);
+                  if (!tailPiece || vi < 3) fossilBone(point.clone().add(vec(0, 0, -radius * 1.5)), point.clone().add(vec(0, 0, radius * 1.5)), radius * 0.22);
+                  previousVertebra = point;
+                }
+              }
+              // Seat each symbol on its pad using its actual rotated geometry.
+              group.updateMatrixWorld(true);
+              var pieceBounds = new THREE.Box3().setFromObject(group);
+              group.position.set((idx % 3 - 1) * 0.64, 0.067 - pieceBounds.min.y, (Math.floor(idx / 3) - 0.5) * 0.58);
+              group.traverse(function (part) { if (part.isMesh) { part.castShadow = true; part.receiveShadow = true; } });
+              assemblyTray.add(group);
             }
             function addPlacedAssemblyPiece(id, active, claimEvidence) {
               var firstPart = model.children.length;
@@ -9736,6 +9802,7 @@ window.StemLab = window.StemLab || {
                 { id: 'hindlimb', label: 'Hindlimb', point: vec(hip.x, Math.max(0.20 * detailScale, hip.y * 0.50), stance) },
                 { id: 'tail', label: 'Tail', point: new THREE.Vector3().copy(hip).add(tail).multiplyScalar(0.5) }
               ];
+              if (assemblyPieces3d.some(function (piece) { return !assemblyPlaced[piece.id]; })) assemblyTray = createAssemblyTray(assemblyPieces3d);
               assemblyPieces3d.forEach(function (piece, idx) {
                 var placed = !!assemblyPlaced[piece.id];
                 var active = piece.id === assemblyFocusId;
@@ -9844,7 +9911,18 @@ window.StemLab = window.StemLab || {
               human.updateMatrixWorld(true);
               specimenBounds.union(new THREE.Box3().setFromObject(human));
             }
-            var shadowBounds = dinoShadowOrbitBounds(THREE, specimenBounds);
+            var overviewBounds = specimenBounds.clone();
+            if (assemblyTray) {
+              model.updateMatrixWorld(true);
+              assemblyTrayBounds = new THREE.Box3().setFromObject(assemblyTray);
+              overviewBounds.union(assemblyTrayBounds);
+              studyBounds.tray = assemblyTrayBounds.clone();
+              model.userData.studyBounds.tray = { min: assemblyTrayBounds.min.toArray(), max: assemblyTrayBounds.max.toArray() };
+            }
+            model.userData.overviewBounds = { min: overviewBounds.min.toArray(), max: overviewBounds.max.toArray() };
+            var overviewCenter = overviewBounds.getCenter(new THREE.Vector3());
+            var overviewHalf = overviewBounds.getSize(new THREE.Vector3()).multiplyScalar(0.5);
+            var shadowBounds = dinoShadowOrbitBounds(THREE, overviewBounds);
             if (!studio) {
               // Fixed habitat scenery casts shadows too, but does not join the orbit.
               scene.updateMatrixWorld(true);
@@ -9869,6 +9947,7 @@ window.StemLab = window.StemLab || {
             }
             yawRef.current.studyScanTarget = scanTargetId;
             var cameraStudy = studyBounds[yawRef.current.study] ? yawRef.current.study : 'full';
+            yawRef.current.study = cameraStudy;
             var cameraTargetIsEvidence = !!(cameraStudy === 'full' && scanKey && yawRef.current.framing === 'evidence' && evidenceAnchorPoints[scanTargetId]);
             setStudyView({ speciesId: props.species.id, region: cameraTargetIsEvidence ? 'evidence' : cameraStudy });
             var cameraTarget = cameraStudy !== 'full' ? studyBounds[cameraStudy].getCenter(new THREE.Vector3()) :
@@ -9882,14 +9961,16 @@ window.StemLab = window.StemLab || {
               }
             }
             function updateCameraView() {
-              var viewHalf = cameraStudy === 'full' ? modelHalf : studyBounds[cameraStudy].getSize(new THREE.Vector3()).multiplyScalar(0.5);
+              var trayVisible = !!assemblyTray && (cameraStudy === 'tray' || (cameraStudy === 'full' && !cameraTargetIsEvidence));
+              if (assemblyTray) assemblyTray.visible = trayVisible;
+              var viewHalf = cameraStudy === 'full' ? (trayVisible ? overviewHalf : modelHalf) : studyBounds[cameraStudy].getSize(new THREE.Vector3()).multiplyScalar(0.5);
               var rotatedWidth = Math.abs(Math.cos(yaw)) * viewHalf.x + Math.abs(Math.sin(yaw)) * viewHalf.z;
               var rotatedDepth = Math.abs(Math.sin(yaw)) * viewHalf.x + Math.abs(Math.cos(yaw)) * viewHalf.z;
               var verticalSpan = viewHalf.y * Math.cos(pitch) + rotatedDepth * Math.sin(pitch);
               var depthSpan = viewHalf.y * Math.sin(pitch) + rotatedDepth * Math.cos(pitch);
               var fitDistance = dinoFrameDistance(rotatedWidth, verticalSpan, depthSpan, camera.fov, camera.aspect);
               var distance = Math.max(cameraStudy === 'full' ? 0.4 : 0.015, fitDistance) * zoom * (cameraTargetIsEvidence ? 0.76 : 1);
-              var targetForView = cameraTarget.clone();
+              var targetForView = cameraStudy === 'full' && trayVisible ? overviewCenter.clone() : cameraTarget.clone();
               targetForView.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
               camera.position.set(targetForView.x, targetForView.y + Math.sin(pitch) * distance, targetForView.z + Math.cos(pitch) * distance);
               camera.near = Math.max(cameraStudy === 'full' ? 0.005 : 0.0001, distance / 500);
@@ -10166,6 +10247,7 @@ window.StemLab = window.StemLab || {
             if (mountedScene && mountedScene.background && mountedScene.background.dispose) { try { mountedScene.background.dispose(); } catch (e) {} }
             if (mountedScene && mountedScene.traverse) {
               mountedScene.traverse(function (child) {
+                if (child.isLight && child.shadow && child.shadow.dispose) child.shadow.dispose();
                 if (child.geometry && child.geometry.dispose) child.geometry.dispose();
                 if (child.material) {
                   if (Array.isArray(child.material)) child.material.forEach(function (mat) { if (mat && mat.dispose) mat.dispose(); });
@@ -10200,7 +10282,7 @@ window.StemLab = window.StemLab || {
           setCameraPreset(null);
           yawRef.current.study = region;
           setStudyView({ speciesId: props.species.id, region: region });
-          if (cameraControlRef.current) cameraControlRef.current(yawRef.current.value, yawRef.current.pitch, 1, cap(region) + ' study selected. Drag to rotate this region.', region);
+          if (cameraControlRef.current) cameraControlRef.current(region === 'tray' ? 0 : yawRef.current.value, region === 'tray' ? 0.95 : yawRef.current.pitch, 1, region === 'tray' ? 'Fossil tray selected. Use the assembly tools to place each fossil.' : cap(region) + ' study selected. Drag to rotate this region.', region);
         }
         function applyBodyOpacityValue(nextOpacity, announce) {
           nextOpacity = Math.max(10, Math.min(100, Number(nextOpacity) || 28));
@@ -10316,6 +10398,11 @@ var evidenceRoute = [
                 style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (selected ? '#0f766e' : T.border), background: selected ? '#0f766e' : T.deeper, color: selected ? '#ffffff' : T.text, cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, label);
             })
           ),
+          props.showEvidence && props.assemblyUnlocked && (props.assemblyPlacedCount || 0) < (props.assemblyTotal || 0) ?
+            el('div', { className: 'dinolab-tray-controls', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
+              el('button', { type: 'button', onClick: function () { applyStudyView('tray'); }, 'aria-label': 'Study fossil tray', 'aria-pressed': activeStudy === 'tray' ? 'true' : 'false',
+                style: { padding: '9px 12px', minHeight: 44, borderRadius: 8, border: '1px solid ' + T.border, background: activeStudy === 'tray' ? '#0f766e' : T.deeper, color: activeStudy === 'tray' ? '#ffffff' : T.text, fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.fossil_tray', 'Fossil tray')),
+              el('span', { style: { fontSize: 11.5, color: T.soft, lineHeight: 1.4 } }, (props.assemblyTotal - (props.assemblyPlacedCount || 0)) + (props.assemblyTotal - (props.assemblyPlacedCount || 0) === 1 ? ' fossil left to place.' : ' fossils left to place.'))) : null,
           el('div', { className: 'dinolab-motion-controls', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
             el('button', { type: 'button', disabled: deviceReducedMotion, onClick: toggleMotionPause,
               'aria-pressed': motionPaused || deviceReducedMotion ? 'true' : 'false',

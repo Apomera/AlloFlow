@@ -1,0 +1,60 @@
+{
+  "date": "2026-09-12",
+  "focusedChecksPassed": 127,
+  "focusedFiles": 5,
+  "focusedCoverage": {
+    "geometry": 19,
+    "studies": 6,
+    "shadows": 14,
+    "accessibility": 15,
+    "golden": 73
+  },
+  "browserScenariosPassed": 12,
+  "newBrowserScenarios": 10,
+  "existingCameraScenarios": 2,
+  "species": [
+    "microraptor",
+    "anchiornis",
+    "sinosauropteryx",
+    "tyrannosaurus",
+    "brachiosaurus"
+  ],
+  "initialFocused": {
+    "passed": 126,
+    "failed": 1
+  },
+  "correctedCameraContractPassed": 1,
+  "initialBrowser": {
+    "passed": 7,
+    "failed": 1
+  },
+  "resourceAndRealWorkflowPassed": 2,
+  "habitatAndCameraRegressionPassed": 3,
+  "snapshotChanges": 0,
+  "maxFossilPadGapSceneMeters": 0.000001,
+  "shadowTargetsMounted": 1,
+  "shadowTargetsAfterUnmount": 0,
+  "layerResources": [
+    {
+      "geometries": 300,
+      "textures": 10
+    },
+    {
+      "geometries": 299,
+      "textures": 11
+    },
+    {
+      "geometries": 299,
+      "textures": 11
+    }
+  ],
+  "moduleCopies": 3,
+  "moduleSha256": "71268550F80DB7D73D072A72365F4D911D466B5E93184DEAEDA06AE9BDCC11EB",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "previousEnhancementCommit": "ba8028593",
+  "hookBypassUsed": false,
+  "pushed": false,
+  "deployed": false,
+  "hardwarePerformanceBenchmarked": false
+}

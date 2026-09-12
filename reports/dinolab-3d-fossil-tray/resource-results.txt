@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:4912) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4912) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:150:5 › tray survives layer changes and is unavailable before the scan or without markers (39.6s)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-fossil-tray.spec.ts:178:5 › assembly tools place every tray fossil and return to the completed specimen (59.5s)
+
+  2 passed (2.0m)
