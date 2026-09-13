@@ -57,4 +57,32 @@ test.describe('App boot + initial state', () => {
     });
     expect(swRegistered).toBeTruthy();
   });
+
+  // 2026-09-13: with the worker ACTIVE, a second navigation in the same tab
+  // failed with net::ERR_FAILED (a plain reload included) because the precached
+  // shell was a redirected response (Pages 308s /app/index.html to /app/). Every
+  // other spec navigates once in a fresh context, so none of them could see it.
+  // This one waits for the worker to take control and then reloads, twice.
+  test('a reload with the service worker active still loads (second navigation in one tab)', async ({ page }) => {
+    await page.goto('./', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(async () => {
+      const reg = await navigator.serviceWorker.getRegistration();
+      return !!(reg && reg.active);
+    }, null, { timeout: 60000 });
+    // Give the install step time to finish its precache before the reload.
+    await page.waitForTimeout(4000);
+    for (let i = 0; i < 2; i++) {
+      let failure: string | null = null;
+      try { await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }); } catch (e: any) { failure = String(e && e.message).split('\n')[0]; }
+      expect(failure, `reload ${i + 1} with the worker active`).toBeNull();
+      await expect(page).toHaveTitle(/Adaptive UDL Platform/);
+    }
+    const shell = await page.evaluate(async () => {
+      const url = new URL('./index.html', location.href).toString();
+      for (const k of await caches.keys()) { const r = await (await caches.open(k)).match(url); if (r) return { redirected: r.redirected, status: r.status }; }
+      return null;
+    });
+    expect(shell, 'the shell is precached').not.toBeNull();
+    expect(shell!.redirected, 'a redirected response must never be the cached shell').toBe(false);
+  });
 });
