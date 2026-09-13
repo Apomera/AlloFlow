@@ -108,7 +108,7 @@
       describe: 'The largest planet in the Solar System, a ball of gas with no solid surface to stand on.' },
     { id: 'earth', photo: 'earthrise', emoji: '🌍', name: 'The Earth', size: 1.2742e7, dim: 'across', group: 'cosmic',
       describe: 'Our planet, measured through the equator. It is very slightly wider than it is tall.' },
-    { id: 'moon', emoji: '🌕', name: 'The Moon', size: 3.475e6, dim: 'across', group: 'cosmic',
+    { id: 'moon', photo: 'farside', emoji: '🌕', name: 'The Moon', size: 3.475e6, dim: 'across', group: 'cosmic',
       describe: 'Earth\'s only natural satellite, a little over a quarter of Earth\'s width. It is large enough, relative to its planet, that some astronomers call the pair a double system.' },
     { id: 'reef', emoji: '🪸', name: 'The Great Barrier Reef', size: 2.3e6, dim: 'long', group: 'earth',
       describe: 'The largest structure built by living things, a chain of thousands of reefs off the Australian coast.' },

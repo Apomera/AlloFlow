@@ -56,6 +56,8 @@ const popupImages = extractLiteral(popupSrc, 'IMAGES');
 const toolWin = extractLiteral(toolSrc, 'WIN');
 const toolInl = extractLiteral(toolSrc, 'INL');
 const popupStr = extractLiteral(popupSrc, 'STR');
+// Parsed once: the registry is ~8 MB per copy, and a per-key parse timed the suite out.
+const UI_ZOOM_SECTIONS = UI_STRINGS_COPIES.map((rel) => [rel, JSON.parse(read(rel)).stem.zoomGallery]);
 
 describe('Zoom Gallery catalog', () => {
   it('has at least 13 images with the required fields', () => {
@@ -425,7 +427,7 @@ describe('Zoom Gallery shareable images', () => {
     expect(toolSrc).toMatch(/linkState === 'failed' && current \? h\('div'/);
     for (const k of ['copy_link', 'copy_link_title', 'link_copied', 'link_copied_sr', 'link_failed', 'link_field_aria']) {
       expect(toolInl[k], 'INL ' + k).toBeTruthy();
-      for (const rel of UI_STRINGS_COPIES) expect(JSON.parse(fs.readFileSync(path.join(process.cwd(), rel), 'utf8')).stem.zoomGallery[k], rel + ' ' + k).toBe(toolInl[k]);
+      for (const [rel, sec] of UI_ZOOM_SECTIONS) expect(sec[k], rel + ' ' + k).toBe(toolInl[k]);
     }
   });
 });
@@ -440,7 +442,7 @@ describe('Zoom Gallery shareable images', () => {
 describe('Zoom Gallery scale bar', () => {
   const withScale = toolImages.filter((i) => i.scale).map((i) => i.id).sort();
   it('only images with a defensible reference carry a scale, and each says how it was set', () => {
-    expect(withScale).toEqual(['carina', 'earthrise', 'pillars', 'solarflare']);
+    expect(withScale).toEqual(['carina', 'earthrise', 'farside', 'pillars', 'solarflare']);
     for (const it of toolImages.filter((i) => i.scale)) {
       expect(it.scale.px).toBeGreaterThan(100);
       expect(it.scale.metres).toBeGreaterThan(0);
@@ -451,6 +453,7 @@ describe('Zoom Gallery scale bar', () => {
     // the two discs are measured, not stated; the two nebulae are stated, and say so
     expect(toolImages.find((i) => i.id === 'earthrise').scale.approx).toBe(false);
     expect(toolImages.find((i) => i.id === 'solarflare').scale.approx).toBe(false);
+    expect(toolImages.find((i) => i.id === 'farside').scale.approx).toBe(false);
     expect(toolImages.find((i) => i.id === 'pillars').scale.approx).toBe(true);
     expect(toolImages.find((i) => i.id === 'carina').scale.approx).toBe(true);
     // the museum objects are photographed in perspective: deliberately no bar
@@ -463,6 +466,10 @@ describe('Zoom Gallery scale bar', () => {
     // measured 2026-09-13: circle fit 453 px (bright width 448) and 3277 px (bright height 3258-3340)
     expect(e.px).toBe(453);
     expect(s.px).toBe(3280);
+    // the far side is an orthographic map: the disc edge is the limb; circle fit r = 784 px
+    const f = toolImages.find((i) => i.id === 'farside').scale;
+    expect(Math.abs(f.metres / 3.4748e6 - 1)).toBeLessThan(0.001);
+    expect(f.px).toBe(1568);
   });
   it('formats lengths a person can read and picks a round bar between 60 and 180 px', () => {
     const lift = (a, b) => toolSrc.slice(toolSrc.indexOf('function ' + a + '('), toolSrc.indexOf('function ' + b + '('));
@@ -527,7 +534,7 @@ describe('Zoom Gallery measure tool', () => {
     expect(toolSrc).toMatch(/h\('svg', \{ ref: measureSvgRef, 'aria-hidden': 'true', focusable: 'false'/);
     for (const k of ['measure_btn', 'measure_active', 'measure_center', 'measure_clear', 'measure_hint', 'measure_first_sr', 'measure_sr', 'measure_result']) {
       expect(toolInl[k], 'INL ' + k).toBeTruthy();
-      for (const rel of UI_STRINGS_COPIES) expect(JSON.parse(fs.readFileSync(path.join(process.cwd(), rel), 'utf8')).stem.zoomGallery[k], rel + ' ' + k).toBe(toolInl[k]);
+      for (const [rel, sec] of UI_ZOOM_SECTIONS) expect(sec[k], rel + ' ' + k).toBe(toolInl[k]);
     }
   });
 });
@@ -568,7 +575,7 @@ describe('Zoom Gallery scale challenge', () => {
     expect((r.match(/lines\.length \? h\('div', \{ role: 'status'/g) || []).length).toBe(2);
     for (const k of ['chal_heading', 'chal_estimate_label', 'chal_lock', 'chal_locked', 'chal_show_answer', 'chal_answer', 'chal_answer_approx', 'chal_measured', 'chal_measured_far', 'chal_est_spot', 'chal_est_close', 'chal_est_off', 'chal_reset', 'chal_invalid', 'chal_locked_sr']) {
       expect(toolInl[k], 'INL ' + k).toBeTruthy();
-      for (const rel of UI_STRINGS_COPIES) expect(JSON.parse(fs.readFileSync(path.join(process.cwd(), rel), 'utf8')).stem.zoomGallery[k], rel + ' ' + k).toBe(toolInl[k]);
+      for (const [rel, sec] of UI_ZOOM_SECTIONS) expect(sec[k], rel + ' ' + k).toBe(toolInl[k]);
     }
   });
 });

@@ -84677,7 +84677,12 @@
       "chal_reset": "Try another estimate",
       "chal_show_answer": "Show the accepted value",
       "chal_unit_km": "km",
-      "chal_unit_ly": "light years"
+      "chal_unit_ly": "light years",
+      "img_farside_describe": "A black-and-white image of the whole Moon as a grey disc filling the frame against black. The surface is crowded edge to edge with overlapping craters of every size, from bowls with bright rims down to specks, with brighter rough highlands between them. Unlike the familiar side of the Moon there are almost no large dark plains: one dark oval patch sits toward the upper left, and a small dark-floored crater with a bright central peak sits near the lower left. Toward the very top and bottom the craters stretch and the picture looks streaky, because the map was stitched from strips.",
+      "img_farside_meta": "The side of the Moon that never faces Earth, assembled from more than 15,000 Lunar Reconnaissance Orbiter Camera images taken between 2009 and 2011",
+      "img_farside_name": "The far side of the Moon (LRO mosaic)",
+      "img_farside_notice": "Zoom into the middle and count how many craters sit inside one bigger crater. Then find the dark oval patch toward the upper left and describe how its surface differs from the rough ground around it.",
+      "img_farside_wonder": "The side of the Moon we see from Earth has big dark plains across it; this side has almost none. What might have made the two sides so different?"
     },
     "circuitShelf": {
       "popup_blocked": "The Circuit Shelf window was blocked. Allow pop-ups for this page, then try again.",
