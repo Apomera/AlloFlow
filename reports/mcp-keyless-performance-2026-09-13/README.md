@@ -56,7 +56,7 @@ Aaron asked for the improvements that carry no trade-off. Outcome, in the order 
 
 ## Installer
 
-`desktop/dist/mcpb/alloflow-remediation.mcpb` was rebuilt twice more. After the palette-prompt fix: v0.11.0, 71,150,584 bytes, SHA-256 `86831fe731fe60e7aa4fc4c3f31e8bb1cb860b00193c1afaf81e941070d09cfd`. After the three enhancements above (a67ae4919): v0.11.0, 70,572,456 bytes, SHA-256 `5ac99487db787d82f8e319c0bf82577a7cc5a9f1e7de67189a94376dcf484f29` (build verification passed: 41 tools, 59 hashed vendor files, HTTP transport probed). The last one is the build to hand out; it supersedes the 13:10 build (`7bd8ba60…`) recorded in the gap-lane report and the 14:35 build. `verify:mcpb-ci` (41 tests), `verify:mcp-parity` (73) and `verify:mcp-calibration` (219) all pass on this tree. Nothing was published or sent anywhere.
+`desktop/dist/mcpb/alloflow-remediation.mcpb` was rebuilt twice more. After the palette-prompt fix: v0.11.0, 71,150,584 bytes, SHA-256 `86831fe731fe60e7aa4fc4c3f31e8bb1cb860b00193c1afaf81e941070d09cfd`. After the three enhancements above (a67ae4919) and the third-party notice correction that followed (9120638be): v0.11.0, 70,572,484 bytes, SHA-256 `d6d63f221a8002475e2af1ace03ab787fe3f6a4a380b601e526add4624464e35` (build verification passed: 41 tools, 59 hashed vendor files, HTTP transport probed). That is the build to hand out; it supersedes the 13:10 build (`7bd8ba60…`) recorded in the gap-lane report, the 14:35 build and an intermediate 14:56 build (`5ac99487…`) whose licence notice still named the old core files. `verify:mcpb-ci` (41 tests), `verify:mcp-parity` (73) and `verify:mcp-calibration` (219) all pass on this tree. Nothing was published or sent anywhere.
 
 ## Files
 

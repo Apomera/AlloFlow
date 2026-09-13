@@ -15,3 +15,6 @@ Not published or sent anywhere.
 
 Rebuilt again at 14:56 local after the UNCHANGED reply, verification export and SIMD Tesseract core (a67ae4919): 70,572,456 bytes, SHA-256 5ac99487db787d82f8e319c0bf82577a7cc5a9f1e7de67189a94376dcf484f29. This is the build to hand out; it supersedes both earlier builds above.
 Not published or sent anywhere.
+
+Rebuilt once more at 15:05 local after correcting the third-party notice (9120638be): 70,572,484 bytes, SHA-256 d6d63f221a8002475e2af1ace03ab787fe3f6a4a380b601e526add4624464e35. This is the build to hand out; the 14:56 build above (5ac99487) still named the old core files in its licence notice.
+Not published or sent anywhere.
