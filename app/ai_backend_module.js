@@ -1065,6 +1065,11 @@ const LOCAL_CONTEXT_FALLBACK = 4096;
 const LOCAL_CONTEXT_MIN = 2048;
 const LOCAL_CONTEXT_MAX = 131072;
 const LOCAL_MODEL_PROFILE_RULES = [
+    // MiniCPM5 (OpenBMB, Apache-2.0; Ollama tag openbmb/minicpm5-2b) advertises 131k of
+    // context, but a teacher laptop cannot hold that KV cache: 16k keeps the prompt
+    // budget generous while the num_ctx we now send to Ollama stays affordable.
+    { id: 'minicpm5-local', match: /minicpm[-_ ]?5/i, contextWindow: 16384, outputTokenLimit: 2200, jsonOutputTokenLimit: 1600 },
+    { id: 'minicpm-local', match: /minicpm/i, contextWindow: 8192, outputTokenLimit: 1800, jsonOutputTokenLimit: 1400 },
     { id: 'alloflow-qwen2.5-3b', match: /qwen2?\.?5.*3b|qwen.*3b/i, contextWindow: 4096, outputTokenLimit: 1400, jsonOutputTokenLimit: 1100 },
     { id: 'gemma-local', match: /gemma/i, contextWindow: 8192, outputTokenLimit: 1800, jsonOutputTokenLimit: 1400 },
     { id: 'llama-local', match: /llama|mistral|mixtral/i, contextWindow: 8192, outputTokenLimit: 1800, jsonOutputTokenLimit: 1400 },
@@ -1718,6 +1723,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 ...(json ? { format: (schema && this.backend === 'ollama') ? schema : 'json' } : {}),
                 options: {
                     num_predict: maxTokens,
+                    // Ollama defaults num_ctx to 4096 whatever the model can hold; without
+                    // this the prompt budget computed from the profile is silently cut.
+                    ...(localProfile && localProfile.contextWindow ? { num_ctx: localProfile.contextWindow } : {}),
                     ...(temperature !== null ? { temperature } : {}),
                 },
             }
@@ -1901,6 +1909,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 ...(json ? { format: (schema && this.backend === 'ollama') ? schema : 'json' } : {}),
                 options: {
                     num_predict: maxTokens,
+                    // Ollama defaults num_ctx to 4096 whatever the model can hold; without
+                    // this the prompt budget computed from the profile is silently cut.
+                    ...(localProfile && localProfile.contextWindow ? { num_ctx: localProfile.contextWindow } : {}),
                     ...(temperature != null ? { temperature } : {}),
                 },
             }
@@ -2585,13 +2596,18 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         const headers = { 'Content-Type': 'application/json' };
         if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`;
 
-        const messages = [{
-            role: 'user',
-            content: [
-                { type: 'text', text: prompt },
-                { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Data}` } },
-            ],
-        }];
+        // Ollama's native /api/chat takes a string `content` plus an `images` array of
+        // raw base64; the OpenAI content-part shape below is understood only by its /v1
+        // compatibility layer and by the other OpenAI-style servers.
+        const messages = this.backend === 'ollama'
+            ? [{ role: 'user', content: prompt, images: [base64Data] }]
+            : [{
+                role: 'user',
+                content: [
+                    { type: 'text', text: prompt },
+                    { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Data}` } },
+                ],
+            }];
 
         const payload = this.backend === 'ollama'
             ? { model: this.models.vision, messages, stream: false }
@@ -2611,6 +2627,129 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
 
         return this.backend === 'ollama'
+            ? data.message?.content || ''
+            : data.choices?.[0]?.message?.content || '';
+    }
+
+    // ─── MULTI-IMAGE ANALYSIS ──────────────────────────────────────
+    /**
+     * Send several images plus one prompt in a single request. The remediation
+     * transport attaches every rendered page of a document at once, so this is
+     * the shape it needs from every backend, not just Gemini.
+     *
+     * @param {string} prompt
+     * @param {Array<{data: string, mimeType?: string}>} images  base64 payloads
+     * @param {Object} [opts]
+     * @param {AbortSignal} [opts.signal]
+     * @param {number} [opts.maxTokens]
+     * @returns {Promise<string>} Analysis text
+     */
+    async analyzeImages(prompt, images, { signal = null, maxTokens = null } = {}) {
+        if (signal && signal.aborted) {
+            const error = new Error('Image analysis cancelled.');
+            error.name = 'AbortError';
+            throw error;
+        }
+        const list = (Array.isArray(images) ? images : []).map((image) => ({
+            data: String((image && (image.data || image.base64)) || ''),
+            mimeType: String((image && (image.mimeType || image.mime_type)) || 'image/png'),
+        })).filter((image) => image.data);
+        this._debugLog(`[AIProvider] analyzeImages (${list.length}): ${prompt?.substring(0, 50)}`);
+
+        switch (this.backend) {
+            case 'gemini':
+                return this._geminiAnalyzeImages(prompt, list, { signal, maxTokens });
+            case 'claude':
+                return this._claudeAnalyzeImages(prompt, list, { signal, maxTokens });
+            case 'openai':
+            case 'localai':
+            case 'lmstudio':
+            case 'ollama':
+            case 'alloflow-local':
+            case 'custom':
+            default:
+                return this._openaiAnalyzeImages(prompt, list, { signal, maxTokens });
+        }
+    }
+
+    async _geminiAnalyzeImages(prompt, images, { signal, maxTokens }) {
+        // Header auth, like the app's gemini_api_module: AI Studio's newer keys are refused
+        // on the legacy ?key= query path, and a header keeps the credential out of URL logs.
+        const url = `${this.baseUrl}/models/${this.models.vision}:generateContent`;
+        const headers = { 'Content-Type': 'application/json' };
+        if (this.apiKey) headers['x-goog-api-key'] = this.apiKey;
+        const payload = {
+            contents: [{
+                parts: [{ text: prompt }].concat(images.map((image) => ({ inlineData: { mimeType: image.mimeType, data: image.data } }))),
+            }],
+        };
+        if (maxTokens) payload.generationConfig = { maxOutputTokens: maxTokens };
+        const response = await this._fetchWithRetry(url, {
+            method: 'POST', headers, body: JSON.stringify(payload), signal: signal || undefined,
+        });
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.map((part) => (typeof part.text === 'string' ? part.text : '')).join('') || '';
+    }
+
+    async _claudeAnalyzeImages(prompt, images, { signal, maxTokens }) {
+        // Native Messages API rather than Anthropic's OpenAI-compatibility layer, which its
+        // own docs describe as a testing aid rather than a production path.
+        const url = `${this.baseUrl}/v1/messages`;
+        // Claude reads PDFs natively as document blocks, so a whole-document part does not
+        // have to be rasterised first the way the OpenAI-style servers require.
+        const content = images.map((image) => ({
+            type: /^application\/pdf$/i.test(image.mimeType) ? 'document' : 'image',
+            source: { type: 'base64', media_type: image.mimeType, data: image.data },
+        }));
+        content.push({ type: 'text', text: prompt });
+        const payload = {
+            model: this.models.vision,
+            max_tokens: maxTokens || 8192,
+            messages: [{ role: 'user', content }],
+        };
+        const response = await this._fetchWithRetry(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': this.apiKey,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true',
+            },
+            body: JSON.stringify(payload),
+            signal: signal || undefined,
+        });
+        const data = await response.json();
+        return (Array.isArray(data.content) ? data.content : []).map((block) => (block && typeof block.text === 'string' ? block.text : '')).join('');
+    }
+
+    async _openaiAnalyzeImages(prompt, images, { signal, maxTokens }) {
+        const isOllama = this.backend === 'ollama';
+        const url = isOllama ? `${this.baseUrl}/api/chat` : `${this.baseUrl}/v1/chat/completions`;
+        const headers = { 'Content-Type': 'application/json' };
+        if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`;
+        // Ollama's native /api/chat takes a string content plus raw base64 `images`; every
+        // OpenAI-style server takes content parts with data URLs.
+        const messages = isOllama
+            ? [{ role: 'user', content: prompt, images: images.map((image) => image.data) }]
+            : [{
+                role: 'user',
+                content: [{ type: 'text', text: prompt }].concat(images.map((image) => ({
+                    type: 'image_url', image_url: { url: `data:${image.mimeType};base64,${image.data}` },
+                }))),
+            }];
+        const payload = isOllama
+            ? { model: this.models.vision, messages, stream: false, ...(maxTokens ? { options: { num_predict: maxTokens } } : {}) }
+            : { model: this.models.vision, messages, ...(maxTokens ? { max_tokens: maxTokens } : {}) };
+        const response = await this._fetchWithRetry(url, {
+            method: 'POST', headers, body: JSON.stringify(payload), signal: signal || undefined,
+        });
+        const data = await response.json();
+        if (signal && signal.aborted) {
+            const error = new Error('Image analysis cancelled.');
+            error.name = 'AbortError';
+            throw error;
+        }
+        return isOllama
             ? data.message?.content || ''
             : data.choices?.[0]?.message?.content || '';
     }
