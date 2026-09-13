@@ -135,14 +135,20 @@ function _alloAiAuditHasFullCoverage(audit) {
 // An auto-fix score delta is comparable only when both audits covered the full
 // document and every fixer chunk made it through the pass. A partial fixer wave
 // is progress-incomplete, not evidence that the document regressed.
+// "Made it through" means the chunk was answered: a chunk the model returned
+// unchanged, or one the strict gate kept as original, is a complete outcome.
+// Only throttle-deferred chunks (deferredChunks) were never carried through.
+// Reading every unchanged chunk as incomplete (2026-08-16 to 2026-09-13) meant a
+// pass could only be promoted when EVERY chunk changed, so the loop shipped the
+// pre-pass snapshot and dropped the fixes the other chunks had landed.
 function _alloAutoFixPassHasCompleteEvidence(fixMeta, beforeAudit, afterAudit) {
   var meta = fixMeta || {};
   var total = Number(meta.totalChunks);
-  var shippedOriginal = Number(meta.shippedOriginalChunks);
+  var deferred = Number(meta.deferredChunks == null ? 0 : meta.deferredChunks);
   return _alloAiAuditHasFullCoverage(beforeAudit)
     && _alloAiAuditHasFullCoverage(afterAudit)
     && Number.isSafeInteger(total) && total > 0
-    && Number.isSafeInteger(shippedOriginal) && shippedOriginal === 0;
+    && Number.isSafeInteger(deferred) && deferred === 0;
 }
 // H8 (audit 2026-07-26): ONE definition of "did the model return usable content blocks?", shared by
 // the single-pass and the CHUNKED extraction paths. The single-pass path has had this guard since
@@ -11481,7 +11487,7 @@ var createDocPipeline = function(deps) {
       return original.match(/^\s*/)[0] + candidate.trim() + original.match(/\s*$/)[0];
     };
     let _passCoverageReported = false;
-    const _reportPassCoverage = (shippedOriginalChunks) => {
+    const _reportPassCoverage = (shippedOriginalChunks, deferredChunks) => {
       if (_passCoverageReported) return;
       _passCoverageReported = true;
       if (_control && typeof _control.onPassEvidence === 'function') {
@@ -11489,6 +11495,8 @@ var createDocPipeline = function(deps) {
           _control.onPassEvidence({
             totalChunks: chunks.length,
             shippedOriginalChunks: Math.max(0, Number(shippedOriginalChunks) || 0),
+            // Chunks never carried through this pass (throttle-deferred); unchanged is not deferred.
+            deferredChunks: Math.max(0, Number(deferredChunks) || 0),
             candidateRejectionCount: _candidateRejectionCount,
             candidateRejections: _candidateRejections.map((entry) => Object.assign({}, entry)),
           });
@@ -11537,12 +11545,13 @@ var createDocPipeline = function(deps) {
         return html;
       } catch (e) {
         if ((e && (e.name === 'AbortError' || e.isAbort)) || _controlAborted()) throw e;
-        if (_isThrottleErr(e)) {
+        const _singleDeferred = _isThrottleErr(e);
+        if (_singleDeferred) {
           _markThrottleDeferred(1);
           warnLog(`[aiFixChunked:${label}] single-chunk throttle deferred — keeping the verified input and pausing for a later resume`);
         }
         warnLog(`[aiFixChunked:${label}] single-chunk failed:`, e?.message);
-        _reportPassCoverage(1);
+        _reportPassCoverage(1, _singleDeferred ? 1 : 0);
         return html;
       }
     }
@@ -11725,7 +11734,7 @@ var createDocPipeline = function(deps) {
       _reportPassCoverage(chunks.length);
       return html;
     }
-    _reportPassCoverage(_shippedOriginalChunks);
+    _reportPassCoverage(_shippedOriginalChunks, new Set(_deferredIdx).size);
     // H-4 (audit 2026-06-23): the per-chunk + aggregate gates above are MAGNITUDE-only — a block reorder (or a
     // mid-table chunk split that re-interleaves rows) passes silently. Surface a reading-order WARN on the
     // assembled doc vs the source so it isn't shipped unnoticed with a high score. Non-blocking for now
@@ -26295,8 +26304,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // audit's bounded circle-back (which self-heals sections), and keep fixing — the fixer
           // kept landing chunks all run while the audits failed. Passes whose fixer ran CLEAN
           // still reverify in full.
+          // Only a deferral is throttle evidence. A chunk that came back unchanged is a finished
+          // chunk with nothing left to fix; treating it as a storm skipped the re-verify and, with the
+          // evidence helper above, discarded every fix the pass had landed (found 2026-09-13 on the
+          // agent-bridge lane, where the last fragment of a form had nothing to change).
           const _fixPassSawThrottle = !!(_fixThrottleDeferred
-            || (Number(_fixPassEvidence && _fixPassEvidence.shippedOriginalChunks) || 0) > 0);
+            || (Number(_fixPassEvidence && _fixPassEvidence.deferredChunks) || 0) > 0);
           const _deterministicPassHtml = _stripChromeForAudit(accessibleHtml);
           if (!_aiFixApplied || _fixPassSawThrottle) {
             _reAuditSkipped = true;
@@ -26358,9 +26371,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _passCoverageComplete = _alloAutoFixPassHasCompleteEvidence(_fixPassEvidence, verification, reVerify);
           const _passEvidenceComplete = _reThreeEngine.engineExecutionComplete === true && _passCoverageComplete;
           const _shippedOriginalChunks = Number(_fixPassEvidence && _fixPassEvidence.shippedOriginalChunks);
+          const _deferredChunks = Number(_fixPassEvidence && _fixPassEvidence.deferredChunks);
           const _passIncompleteReasons = [];
+          if (Number.isFinite(_deferredChunks) && _deferredChunks > 0) {
+            _passIncompleteReasons.push(_deferredChunks + ' fixer chunk(s) deferred by a throttle and kept as original');
+          }
           if (Number.isFinite(_shippedOriginalChunks) && _shippedOriginalChunks > 0) {
-            _passIncompleteReasons.push(_shippedOriginalChunks + ' fixer chunk(s) shipped as original');
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: ${_shippedOriginalChunks} of ${Number(_fixPassEvidence && _fixPassEvidence.totalChunks) || '?'} fixer chunk(s) came back unchanged (nothing left to fix or kept by the gate); that is a complete outcome, not a throttle.`);
           }
           if (!_alloAiAuditHasFullCoverage(verification) || !_alloAiAuditHasFullCoverage(reVerify)) {
             _passIncompleteReasons.push('AI audit section coverage was incomplete');

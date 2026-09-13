@@ -68,10 +68,16 @@ describe('remediation evidence predicates', () => {
     expect(evidence.usableAi(completeAi({ synthesized: true }))).toBe(false);
   });
 
-  it('rejects auto-fix pass deltas when any fixer chunk shipped as original or either audit is partial', () => {
-    const meta = { totalChunks: 3, shippedOriginalChunks: 0 };
+  it('rejects auto-fix pass deltas when a fixer chunk was throttle-deferred or either audit is partial, not when a chunk came back unchanged', () => {
+    const meta = { totalChunks: 3, shippedOriginalChunks: 0, deferredChunks: 0 };
     expect(evidence.passComplete(meta, completeAi(), completeAi())).toBe(true);
-    expect(evidence.passComplete({ ...meta, shippedOriginalChunks: 1 }, completeAi(), completeAi())).toBe(false);
+    // An unchanged chunk is a finished chunk (nothing left to fix, or kept by the gate); only a
+    // deferred chunk was never carried through the pass (2026-09-13: the old rule discarded every
+    // landed fix whenever one chunk had nothing to change).
+    expect(evidence.passComplete({ ...meta, shippedOriginalChunks: 1 }, completeAi(), completeAi())).toBe(true);
+    expect(evidence.passComplete({ ...meta, shippedOriginalChunks: 3 }, completeAi(), completeAi())).toBe(true);
+    expect(evidence.passComplete({ ...meta, deferredChunks: 1 }, completeAi(), completeAi())).toBe(false);
+    expect(evidence.passComplete({ totalChunks: 3, shippedOriginalChunks: 1 }, completeAi(), completeAi())).toBe(true);
     expect(evidence.passComplete(meta, completeAi({ chunksAudited: 9 }), completeAi())).toBe(false);
     expect(evidence.passComplete(meta, completeAi(), completeAi({ chunksAudited: 9 }))).toBe(false);
     expect(evidence.passComplete(null, completeAi(), completeAi())).toBe(false);
@@ -157,6 +163,10 @@ describe('canonical remediation outcome', () => {
 describe('source-level anti-drift wiring', () => {
   it('requires fresh complete evidence for promotion and clean/target stops', () => {
     expect(src).toContain('const _passCoverageComplete = _alloAutoFixPassHasCompleteEvidence(_fixPassEvidence, verification, reVerify);');
+    expect(src).toContain('deferredChunks: Math.max(0, Number(deferredChunks) || 0),');
+    expect(src).toContain('|| (Number(_fixPassEvidence && _fixPassEvidence.deferredChunks) || 0) > 0);');
+    expect(src).not.toContain('|| (Number(_fixPassEvidence && _fixPassEvidence.shippedOriginalChunks) || 0) > 0);');
+    expect(src).toContain('&& Number.isSafeInteger(deferred) && deferred === 0;');
     expect(src).toContain('const _passEvidenceComplete = _reThreeEngine.engineExecutionComplete === true && _passCoverageComplete;');
     expect(src).toContain('const _comparisonEvidenceComplete = _passEvidenceComplete && _bestEvidenceComplete;');
     expect(src).toContain('const _passIsBest = _passEvidenceComplete');
