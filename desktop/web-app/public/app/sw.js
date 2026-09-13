@@ -9,11 +9,29 @@ const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./static/
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');
 
+// Cloudflare Pages answers ./index.html with a 308 to ./ (clean URLs), so the
+// precached shell arrived as a REDIRECTED response. A navigation request's
+// redirect mode is not "follow", and a redirected response may not be served
+// to it: Chrome failed the load with net::ERR_FAILED. Measured 2026-09-13 on
+// the live app: the first reload after every install or update died, and the
+// next one worked only because the background refetch had replaced the entry.
+// Anything that goes into the cache as the shell is re-wrapped first, and a
+// redirected entry left by an older worker is never served.
+const cleanCopy = (response) => {
+    if (!response || !response.redirected) return response;
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers: response.headers });
+};
+
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing:', CACHE_NAME);
     // Install succeeds only when the HTML and every hashed boot asset are cached.
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_PATHS.map(scopedUrl)))
+        caches.open(CACHE_NAME).then((cache) => Promise.all(PRECACHE_PATHS.map(scopedUrl).map((assetUrl) =>
+            fetch(assetUrl).then((response) => {
+                if (!response.ok) throw new Error('[SW] precache failed: ' + assetUrl + ' -> ' + response.status);
+                return cache.put(assetUrl, cleanCopy(response));
+            })
+        )))
     );
     // Do not call skipWaiting(): never interrupt an active classroom tab.
 });
@@ -42,9 +60,10 @@ self.addEventListener('fetch', (event) => {
 
     if (event.request.mode === 'navigate') {
         event.respondWith(
-            caches.open(CACHE_NAME).then((cache) => cache.match(SHELL_URL).then((cached) => {
+            caches.open(CACHE_NAME).then((cache) => cache.match(SHELL_URL).then((stored) => {
+                const cached = stored && !stored.redirected ? stored : null;
                 const networkFetch = fetch(event.request).then((response) => {
-                    if (response.ok) cache.put(SHELL_URL, response.clone());
+                    if (response.ok) cache.put(SHELL_URL, cleanCopy(response.clone()));
                     return response;
                 }).catch(() => cached || new Response('AlloFlow is loading...', {
                     status: 503,
