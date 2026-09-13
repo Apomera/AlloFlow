@@ -2,101 +2,315 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 1934
-Defined help keys (help_strings.js): 995
-Referenced help keys (data-help-key attrs): 962
-  - With definition: 934
-  - MISSING definition: 28
-Dead entries (defined but never referenced): 61
+Files scanned: 1470
+Defined help keys (help_strings.js): 1037
+Referenced help keys (data-help-key attrs): 1045
+  - With definition: 953
+  - MISSING definition: 92
+Dead entries (defined but never referenced): 84
 
 --- MISSING help strings (referenced, no definition) ---
-  adminhub_backup_export  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/admin_hub_module.js
-     - .release-memory-palace-20260820/admin_hub_source.jsx
-  adminhub_backup_restore  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/admin_hub_module.js
-     - .release-memory-palace-20260820/admin_hub_source.jsx
-  adminhub_backup_section  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/admin_hub_module.js
-     - .release-memory-palace-20260820/admin_hub_source.jsx
-  adminhub_drive_connect  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/admin_hub_module.js
-     - .release-memory-palace-20260820/admin_hub_source.jsx
-  adminhub_drive_disconnect  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/admin_hub_module.js
-     - .release-memory-palace-20260820/admin_hub_source.jsx
-  adminhub_drive_save_now  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/admin_hub_module.js
-     - .release-memory-palace-20260820/admin_hub_source.jsx
-  adminhub_drive_section  [16x in 8 file(s)]
-     - .release-memory-palace-20260820/admin_hub_module.js
-     - .release-memory-palace-20260820/admin_hub_source.jsx
-  adminhub_drive_setup_open  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/admin_hub_module.js
-     - .release-memory-palace-20260820/admin_hub_source.jsx
-  adminhub_drive_status  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/admin_hub_module.js
-     - .release-memory-palace-20260820/admin_hub_source.jsx
-  adminhub_guide_link  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/admin_hub_module.js
-     - .release-memory-palace-20260820/admin_hub_source.jsx
-  adventure_immersive_reading_practice  [6x in 6 file(s)]
+  adminhub_backup_export  [5x in 5 file(s)]
+     - admin_hub_module.js
+     - admin_hub_source.jsx
+  adminhub_backup_restore  [5x in 5 file(s)]
+     - admin_hub_module.js
+     - admin_hub_source.jsx
+  adminhub_backup_section  [5x in 5 file(s)]
+     - admin_hub_module.js
+     - admin_hub_source.jsx
+  adminhub_drive_connect  [5x in 5 file(s)]
+     - admin_hub_module.js
+     - admin_hub_source.jsx
+  adminhub_drive_disconnect  [5x in 5 file(s)]
+     - admin_hub_module.js
+     - admin_hub_source.jsx
+  adminhub_drive_save_now  [5x in 5 file(s)]
+     - admin_hub_module.js
+     - admin_hub_source.jsx
+  adminhub_drive_section  [10x in 5 file(s)]
+     - admin_hub_module.js
+     - admin_hub_source.jsx
+  adminhub_drive_setup_open  [5x in 5 file(s)]
+     - admin_hub_module.js
+     - admin_hub_source.jsx
+  adminhub_drive_status  [5x in 5 file(s)]
+     - admin_hub_module.js
+     - admin_hub_source.jsx
+  adminhub_guide_link  [5x in 5 file(s)]
+     - admin_hub_module.js
+     - admin_hub_source.jsx
+  adventure_immersive_reading_practice  [12x in 12 file(s)]
+     - .tmp/lesson-script-spoken-baseline/AlloFlowANTI.txt
      - AlloFlowANTI.txt
-     - desktop/app-build/view_adventure_module.js
-  adventure_scene_reading_practice  [6x in 6 file(s)]
+  adventure_scene_reading_practice  [12x in 12 file(s)]
+     - .tmp/lesson-script-spoken-baseline/AlloFlowANTI.txt
      - AlloFlowANTI.txt
-     - desktop/app-build/view_adventure_module.js
-  adventure_setup_chk_reading_practice  [5x in 5 file(s)]
-     - desktop/app-build/view_adventure_module.js
-     - desktop/web-app/build/view_adventure_module.js
-  adventure_setup_chk_typing_pace  [5x in 5 file(s)]
-     - desktop/app-build/view_adventure_module.js
-     - desktop/web-app/build/view_adventure_module.js
-  ae_manual_link  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/desktop/web-app/public/educator_evaluation_module.js
-     - .release-memory-palace-20260820/educator_evaluation_module.js
-  ai_backend_forget_gemini_key  [5x in 5 file(s)]
+  ae_component_heat_cell  [6x in 6 file(s)]
+     - desktop/app-build/educator_evaluation_module.js
+     - desktop/web-app/build/educator_evaluation_module.js
+  ae_manual_link  [6x in 6 file(s)]
+     - desktop/app-build/educator_evaluation_module.js
+     - desktop/web-app/build/educator_evaluation_module.js
+  ae_practice_menu  [6x in 6 file(s)]
+     - desktop/app-build/educator_evaluation_module.js
+     - desktop/web-app/build/educator_evaluation_module.js
+  ae_saved_scenarios  [6x in 6 file(s)]
+     - desktop/app-build/educator_evaluation_module.js
+     - desktop/web-app/build/educator_evaluation_module.js
+  ae_tour_script  [6x in 6 file(s)]
+     - desktop/app-build/educator_evaluation_module.js
+     - desktop/web-app/build/educator_evaluation_module.js
+  ae_tour_steps  [6x in 6 file(s)]
+     - desktop/app-build/educator_evaluation_module.js
+     - desktop/web-app/build/educator_evaluation_module.js
+  ai_backend_forget_gemini_key  [6x in 6 file(s)]
      - desktop/app-build/view_misc_modals_module.js
      - desktop/web-app/build/view_misc_modals_module.js
-  ai_backend_forget_gemini_services_key  [5x in 5 file(s)]
+  ai_backend_forget_gemini_services_key  [6x in 6 file(s)]
      - desktop/app-build/view_misc_modals_module.js
      - desktop/web-app/build/view_misc_modals_module.js
-  ai_backend_gemini_services_key_input  [5x in 5 file(s)]
+  ai_backend_gemini_services_key_input  [6x in 6 file(s)]
      - desktop/app-build/view_misc_modals_module.js
      - desktop/web-app/build/view_misc_modals_module.js
-  ai_backend_guided_card_canvas  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/desktop/web-app/public/view_misc_modals_module.js
-     - .release-memory-palace-20260820/view_misc_modals_module.js
-  educator_hub_assessment_center_card  [5x in 5 file(s)]
+  ai_backend_guided_card_canvas  [6x in 6 file(s)]
+     - desktop/app-build/view_misc_modals_module.js
+     - desktop/web-app/build/view_misc_modals_module.js
+  bingo_new_card  [6x in 6 file(s)]
+     - desktop/app-build/games_module.js
+     - desktop/web-app/build/games_module.js
+  concept_sort_retry_incorrect  [6x in 6 file(s)]
+     - desktop/app-build/games_module.js
+     - desktop/web-app/build/games_module.js
+  detective_choice  [6x in 6 file(s)]
+     - desktop/app-build/games_module.js
+     - desktop/web-app/build/games_module.js
+  detective_new_round  [6x in 6 file(s)]
+     - desktop/app-build/games_module.js
+     - desktop/web-app/build/games_module.js
+  detective_next  [6x in 6 file(s)]
+     - desktop/app-build/games_module.js
+     - desktop/web-app/build/games_module.js
+  detective_not_sure  [6x in 6 file(s)]
+     - desktop/app-build/games_module.js
+     - desktop/web-app/build/games_module.js
+  detective_practice_missed  [6x in 6 file(s)]
+     - desktop/app-build/games_module.js
+     - desktop/web-app/build/games_module.js
+  detective_read_aloud  [6x in 6 file(s)]
+     - desktop/app-build/games_module.js
+     - desktop/web-app/build/games_module.js
+  educator_hub_assessment_center_card  [6x in 6 file(s)]
      - desktop/app-build/view_educator_hub_modal_module.js
      - desktop/web-app/build/view_educator_hub_modal_module.js
-  educator_hub_research_suite_card  [5x in 5 file(s)]
+  educator_hub_research_suite_card  [6x in 6 file(s)]
      - desktop/app-build/view_educator_hub_modal_module.js
      - desktop/web-app/build/view_educator_hub_modal_module.js
-  glossary_audio_review  [5x in 5 file(s)]
+  educator_hub_school_rewards_card  [6x in 6 file(s)]
+     - desktop/app-build/view_educator_hub_modal_module.js
+     - desktop/web-app/build/view_educator_hub_modal_module.js
+  glossary_audio_review  [6x in 6 file(s)]
      - desktop/app-build/view_glossary_module.js
      - desktop/web-app/build/view_glossary_module.js
-  glossary_image_style_mode  [5x in 5 file(s)]
+  glossary_definition_detective  [6x in 6 file(s)]
      - desktop/app-build/view_glossary_module.js
      - desktop/web-app/build/view_glossary_module.js
-  header_return_to_start  [5x in 5 file(s)]
+  glossary_image_style_mode  [6x in 6 file(s)]
+     - desktop/app-build/view_glossary_module.js
+     - desktop/web-app/build/view_glossary_module.js
+  header_return_to_start  [6x in 6 file(s)]
      - desktop/app-build/view_header_module.js
      - desktop/web-app/build/view_header_module.js
-  header_voice_configure_gemini  [5x in 5 file(s)]
+  header_voice_configure_gemini  [6x in 6 file(s)]
      - desktop/app-build/view_header_module.js
      - desktop/web-app/build/view_header_module.js
-  math_open_studio  [8x in 8 file(s)]
-     - .release-memory-palace-20260820/desktop/web-app/public/view_sidebar_panels_module.js
-     - .release-memory-palace-20260820/view_sidebar_panels_module.js
-  sidebar_ai_setup_notice  [10x in 10 file(s)]
-     - .release-memory-palace-20260820/AlloFlowANTI.txt
-     - .release-memory-palace-20260820/desktop/web-app/public/view_sidebar_panels_module.js
-  simplified_instructional_role  [5x in 5 file(s)]
+  matching_print_btn  [3x in 3 file(s)]
+     - desktop/web-app/public/games_module.js
+     - games_module.js
+  math_open_studio  [6x in 6 file(s)]
+     - desktop/app-build/view_sidebar_panels_module.js
+     - desktop/web-app/build/view_sidebar_panels_module.js
+  pdf_audit_view_mode_  [2x in 2 file(s)]
+     - desktop/web-app/public/view_pdf_audit_module.js
+     - view_pdf_audit_module.js
+  pdf_workspace_fix_verify  [7x in 3 file(s)]
+     - desktop/web-app/public/view_pdf_audit_module.js
+     - view_pdf_audit_module.js
+  pdf_workspace_manual  [3x in 3 file(s)]
+     - desktop/web-app/public/view_pdf_audit_module.js
+     - view_pdf_audit_module.js
+  pdf_workspace_retry_audit  [3x in 3 file(s)]
+     - desktop/web-app/public/view_pdf_audit_module.js
+     - view_pdf_audit_module.js
+  schoolrewards_add_later  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_connect  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_copy_snippet  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_copy_source  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_discard_address  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_disconnect  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_domain_requirement  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_guide  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_guide_back  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_guide_next  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_guide_section  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_handoff  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_handoff_copy  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_handoff_download  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_health_hint  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_launch_fallback  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_launch_feedback  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_manual  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_next_step  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_open_check  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_open_portal  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_open_recognition  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_opening_help  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_paths  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_persistence_warning  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_practice  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_recognition_worksheet  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_retry_setup_save  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_review_address  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_roster_bridge  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_roster_download  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_roster_group  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_setup_snippet  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_share_copy  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_share_qr  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_share_staff  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_status  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_step_  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_toggle_setup  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_troubleshooting_item  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_unsaved_address  [5x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_voice_boundary  [10x in 5 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_worksheet_copy  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_worksheet_download  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  schoolrewards_worksheet_row  [6x in 6 file(s)]
+     - desktop/app-build/school_rewards_module.js
+     - desktop/web-app/build/school_rewards_module.js
+  sidebar_ai_setup_notice  [11x in 11 file(s)]
+     - desktop/app-build/view_sidebar_panels_module.js
+     - desktop/web-app/build/view_full_pack_run_module.js
+  simplified_instructional_role  [6x in 6 file(s)]
      - desktop/app-build/view_simplified_module.js
      - desktop/web-app/build/view_simplified_module.js
+  voice_skip_audio  [3x in 3 file(s)]
+     - .tmp/lesson-script-spoken-baseline/AlloFlowANTI.txt
+     - AlloFlowANTI.txt
 
 --- DEAD entries (defined but never used) ---
+  adventure_allow_cloud
+  adventure_art_style
+  adventure_auto_climax
+  adventure_chance_mode
+  adventure_cloud_storage
+  adventure_consistent_characters
   adventure_custom_instructions
+  adventure_difficulty
+  adventure_free_response
+  adventure_input_mode
+  adventure_language
+  adventure_lock_settings
+  adventure_low_quality
+  adventure_setup_chk_chance
+  adventure_setup_chk_consistent_characters
+  adventure_setup_chk_freeresponse
+  adventure_setup_chk_story
+  adventure_setup_difficulty
+  adventure_setup_input_mode
+  adventure_setup_language
+  adventure_social_story
+  adventure_story_mode
+  adventure_system_state
   alignment_generate_button
   alignment_grade_select
   alignment_standard_select
@@ -112,6 +326,7 @@ Dead entries (defined but never referenced): 61
   concept_sort_custom_instructions
   concept_sort_image_style
   concept_sort_input
+  dashboard_live_sync
   dbq_custom_instructions
   educator_hub_bridge_card
   educator_hub_cinematic_studio_card
@@ -153,19 +368,23 @@ Dead entries (defined but never referenced): 61
   timeline_count_detailed
   timeline_image_style
   timeline_topic_detailed
-  visuals_custom_instructions
-  visuals_low_quality
-  wizard_close_btn
-  wizard_url_source
+  ... and 4 more
 
 --- Top sections of MISSING keys (by snake_case prefix) ---
+    45  schoolrewards
     10  adminhub
-     4  adventure
+     6  ae
+     6  detective
      4  ai
-     2  educator
-     2  glossary
+     4  pdf
+     3  educator
+     3  glossary
+     2  adventure
      2  header
-     1  ae
+     1  bingo
+     1  concept
+     1  matching
      1  math
      1  sidebar
      1  simplified
+     1  voice
