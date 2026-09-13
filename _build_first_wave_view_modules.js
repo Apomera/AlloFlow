@@ -27,6 +27,11 @@ const CONFIGS = {
     output: 'video_studio_host_bridge_module.js',
     exports: ['VideoStudioHostBridgeView'],
   },
+  AlloCommandContext: {
+    source: 'allo_command_context_source.js',
+    output: 'allo_command_context_module.js',
+    exports: ['buildAlloCommandContext'],
+  },
   CanvasRecoveryDialogView: {
     source: 'view_canvas_recovery_dialog_source.jsx',
     output: 'view_canvas_recovery_dialog_module.js',

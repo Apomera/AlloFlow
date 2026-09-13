@@ -990,6 +990,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'AlloCommandContext',
+        filename: 'allo_command_context_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'CanvasRecoveryDialogView',
         filename: 'view_canvas_recovery_dialog_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -2046,6 +2051,13 @@ const COMPILE_PAIRS = [
         wrap(src) { return require('./_build_first_wave_view_modules.js').buildFirstWaveModule('VideoStudioHostBridgeView', src); },
     },
     {
+        name: 'AlloCommandContext',
+        srcPath: path.join(ROOT, 'allo_command_context_source.js'),
+        modPath: path.join(ROOT, 'allo_command_context_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/allo_command_context_module.js'),
+        wrap(src) { return require('./_build_first_wave_view_modules.js').buildFirstWaveModule('AlloCommandContext', src); },
+    },
+    {
         name: 'CanvasRecoveryDialogView',
         srcPath: path.join(ROOT, 'view_canvas_recovery_dialog_source.jsx'),
         modPath: path.join(ROOT, 'view_canvas_recovery_dialog_module.js'),
@@ -2401,6 +2413,7 @@ let replacementCount = 0;
 
 // Contract modules pinned by content hash (see EXCEPTION note below).
 const CONTENT_HASH_PINNED = new Set([
+    'allo_command_context_module.js',
     'view_canvas_recovery_dialog_module.js',
     'view_cold_path_surfaces_module.js',
     'student_interaction_module.js',
