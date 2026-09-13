@@ -18,3 +18,6 @@ Not published or sent anywhere.
 
 Rebuilt once more at 15:05 local after correcting the third-party notice (9120638be): 70,572,484 bytes, SHA-256 d6d63f221a8002475e2af1ace03ab787fe3f6a4a380b601e526add4624464e35. This is the build to hand out; the 14:56 build above (5ac99487) still named the old core files in its licence notice.
 Not published or sent anywhere.
+
+Final build of the day at 18:52 local (after the sliced-audit fix 3f3ae1896 and the keyless-lane guidance in the bundled skill f30ee4fa9): 70,573,214 bytes, SHA-256 1c89336639c4dad2ba195e10ded921d8eb35257eac054ac5f5d3b7a1cd9814ef. This is the build to hand out; every earlier build listed above is superseded.
+Not published or sent anywhere.
