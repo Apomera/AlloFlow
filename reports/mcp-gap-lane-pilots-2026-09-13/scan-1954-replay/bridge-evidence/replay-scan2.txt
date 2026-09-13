@@ -1,0 +1,14 @@
+round 0: status=running calls=3 pending=3 replayable=3 new=0 (2-1<-2-1 2-2<-2-2 2-3<-2-3)
+round 1: status=running calls=4 pending=1 replayable=1 new=0 (2-4<-2-4)
+round 2: status=running calls=5 pending=1 replayable=1 new=0 (2-5<-2-5)
+round 3: status=running calls=6 pending=1 replayable=1 new=0 (2-6<-2-6)
+round 4: status=running calls=6 pending=0 replayable=0 new=0
+round 5: status=running calls=6 pending=0 replayable=0 new=0
+round 6: status=running calls=6 pending=0 replayable=0 new=0
+round 7: status=running calls=6 pending=0 replayable=0 new=0
+round 8: status=running calls=7 pending=1 replayable=1 new=0 (2-7<-2-7)
+round 9: status=running calls=8 pending=1 replayable=1 new=0 (2-8<-2-8)
+round 10: status=running calls=9 pending=1 replayable=1 new=0 (2-9<-2-9)
+round 11: status=running calls=10 pending=1 replayable=0 new=1
+NEW PROMPTS need an answer: mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-10 kind=text chars=18658
+exit=0

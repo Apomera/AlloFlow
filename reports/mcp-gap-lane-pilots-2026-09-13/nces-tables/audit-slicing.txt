@@ -1,0 +1,14 @@
+# Verbose server log excerpt for the NCES tables run (arun-cce6811e), 2026-09-13.
+# Source: the connector's stderr with ALLOFLOW_MCP_VERBOSE=1 (scratch file server-8766-d.log). Timestamps and unrelated runs removed.
+
+[alloflow-remediation-mcp] [arun-cce6811e] agent-bridge run started: nces-condition-of-education.pdf — the client model answers all pipeline calls
+[alloflow-remediation-mcp] [arun-cce6811e] [GeminiGate] Pacing skipped: host transport profile (agent-bridge) declares no provider quota to protect.
+[alloflow-remediation-mcp] [arun-cce6811e] console: [PDF Audit] Large document (~2077KB) — auditing in page slices from the start (a whole-document pass would exceed the Vision model).
+[alloflow-remediation-mcp] [arun-cce6811e] console: [PDF Audit/slices] merged 14/14 slices for a 54-page document
+[alloflow-remediation-mcp] [arun-cce6811e] console: [PDF Audit] Auditor self-score 0 replaced by deduction-grounded 70 (0C/0S/1M/0m, 10 passes)
+[alloflow-remediation-mcp] [arun-cce6811e] console: [PDF Audit] Baseline deterministic: axe 100 (0 violations), EqualAccess 94 (0 fails) — using the more conservative
+[alloflow-remediation-mcp] [arun-cce6811e] [GeminiGate] Pacing skipped: host transport profile (agent-bridge) declares no provider quota to protect.
+[alloflow-remediation-mcp] [arun-cce6811e] console: [fixAndVerifyPdf] Starting — batch: true base64: true audit: true file: [document.pdf]
+[alloflow-remediation-mcp] [arun-cce6811e] console: [fixAndVerifyPdf] auditResult.pageCount=54, fullPageCount=54, effective pageCount=5 (range 19-23), auditResult keys: [score, _scoreUnavailableReason, _sliceCoverage, _partialAudit, _aiPanelMeanScore, _consolidatedDeductions, scores, scoreSD, scoreRange, scoreSEM, ci95, icc, cronbachAlpha, auditorCou
+[alloflow-remediation-mcp] [arun-cce6811e] progress: fix — step 1: Step 1/4 📄 Reading Document (5 of 54 pages) — Extracting images...  (typically ~10-20s)
+[alloflow-remediation-mcp] [arun-cce6811e] cancelled: Agent-bridge run cancelled
