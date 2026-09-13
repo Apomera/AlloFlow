@@ -1,0 +1,247 @@
+{
+  "status": 200,
+  "isError": false,
+  "structuredContent": {
+    "runId": "arun-fe680c0b-fcdb-475c-845b-717c88084394",
+    "status": "completed",
+    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ohchr-udhr-hebrew.pdf",
+    "startedAt": "2026-09-13T15:52:19.100Z",
+    "modelCallsSoFar": 20,
+    "pendingCount": 0,
+    "log": [
+      "[PDF Fix] Final HTML: 29362 chars from 7354 chars extracted text",
+      "progress: fix — step 2: Step 2/4 🏗️ Building Accessible Version (4 pages) — Checking spelling & grammar (OCR text)...  (typically ~15-30s)",
+      "[DocPipe][API-start][4sylhp/e2] +1416.7s — callGemini #1 transport start after 1ms queued",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-10 (text) in 13s",
+      "progress: fix — step 3: Step 3/4 🔍 Auditing Accessibility (4 pages) — Running baseline axe-core audit...  (typically ~10-15s)",
+      "progress: fix — step 3: Step 3/4 🔍 Auditing Accessibility (4 pages) — Running baseline AI verification...  (typically ~10-15s)",
+      "[DocPipe][API-start][4sylhp/e2] +1430.8s — callGemini #2 transport start after 1ms queued",
+      "[DocPipe][API-start][4sylhp/e2] +1430.8s — callGemini #3 transport start after 0ms queued",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-11 (text) in 71s",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-12 (text) in 71s",
+      "[PDF Fix] Applied 1 deterministic accessibility fixes",
+      "progress: toast: 🔧 Auto-fixed 1 accessibility issues",
+      "[PDF Fix] Removed executable scripts or unsupported generated crop controls for static export (data/JSON-LD scripts kept)",
+      "progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (4 pages) — Running deterministic WCAG fixes...  (typically ~15-30s per pass)",
+      "[Auto-fix] Starting three-engine fix loop: 5 engine findings (5 AI, 0 axe, 0 Equal Access), score 63, target 95",
+      "progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (4 pages) — Improving accessibility — pass 1 of 2 (5 AI, 0 axe, 0 EA)...  (typically ~15-30s per pass)",
+      "[DocPipe][API-start][4sylhp/e2] +1503.2s — callGemini #4 transport start after 0ms queued",
+      "[DocPipe][API-start][4sylhp/e2] +1503.2s — callGemini #5 transport start after 1ms queued",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-13 (text) in 52s",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-14 (text) in 52s",
+      "progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (4 pages) — Verifying improvements — checking pass 1 results...  (typically ~15-30s per pass)",
+      "[DocPipe][API-start][4sylhp/e2] +1555.2s — callGemini #6 transport start after 1ms queued",
+      "[DocPipe][API-start][4sylhp/e2] +1555.2s — callGemini #7 transport start after 0ms queued",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-15 (text) in 39s",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-16 (text) in 39s",
+      "[Auto-fix] Pass 1: AI 100/100, axe 0 violations, Equal Access 0 failures + 2 review findings",
+      "progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (4 pages) — Improving accessibility — pass 2 of 2 (0 AI, 0 axe, 0 EA) ✔ verifying......  (typically ~15-30s per pass)",
+      "[DocPipe][API-start][4sylhp/e2] +1594.8s — callGemini #8 transport start after 1ms queued",
+      "[DocPipe][API-start][4sylhp/e2] +1594.8s — callGemini #9 transport start after 0ms queued",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-17 (text) in 13s",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-18 (text) in 13s",
+      "[Auto-fix] Pass 2: no changes produced — skipping re-audit of identical HTML (stall 1/2)",
+      "[WCAG Sanitizer] Applied 3 fixes (level: AA, minFont: 12px)",
+      "[DocPipe][API-start][4sylhp/e2] +1608.2s — callGemini #10 transport start after 0ms queued",
+      "[DocPipe][API-start][4sylhp/e2] +1608.2s — callGemini #11 transport start after 0ms queued",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-20 (text) in 19s",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-19 (text) in 30s",
+      "[PDF Fix] Final AI semantic audit: AI layer score 100, 0 remaining issues, 30 passes",
+      "[PDF Fix] Final headline (weakest-layer): min(AI 100, deterministic 96 [axe 100, EqualAccess 96, using the more conservative]) = 96",
+      "completed: verdict review"
+    ],
+    "progress": {
+      "total": 1,
+      "completed": 1,
+      "failed": 0,
+      "currentFile": null
+    },
+    "resumable": true,
+    "pendingRequests": [],
+    "result": {
+      "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ohchr-udhr-hebrew.pdf",
+      "files": {
+        "accessibleHtml": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\hebrew-udhr\\ohchr-udhr-hebrew-accessible.html",
+        "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\hebrew-udhr\\ohchr-udhr-hebrew-remediation-report.json",
+        "completionManifest": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\hebrew-udhr\\ohchr-udhr-hebrew-remediation-completion.json"
+      },
+      "pdfUa": {
+        "standard": "PDF/UA-1 (ISO 14289-1)",
+        "profile": "ua1",
+        "scope": "machine-verifiable PDF/UA checks",
+        "status": "not-applicable",
+        "reason": "No tagged PDF was produced."
+      },
+      "verdict": {
+        "level": "review",
+        "reviewCount": 2,
+        "cautionCount": 0
+      },
+      "beforeScore": 0,
+      "afterScore": 96,
+      "aiVerificationIncomplete": false,
+      "scoreSource": "min",
+      "estimatedMinimumScore": null,
+      "contentCoverage": {
+        "status": "review_required",
+        "reviewRequired": true,
+        "method": "normalized-token-occurrence-check",
+        "sourceTokens": 1287,
+        "outputTokens": 1315,
+        "matchedTokens": 1278,
+        "missingTokens": 9,
+        "tokenRecall": 0.993,
+        "missingPassages": [
+          {
+            "sourceUnit": 7,
+            "startToken": 240,
+            "expectedTokens": 40,
+            "missingTokens": 1
+          },
+          {
+            "sourceUnit": 8,
+            "startToken": 280,
+            "expectedTokens": 40,
+            "missingTokens": 1
+          },
+          {
+            "sourceUnit": 15,
+            "startToken": 560,
+            "expectedTokens": 40,
+            "missingTokens": 2
+          },
+          {
+            "sourceUnit": 16,
+            "startToken": 600,
+            "expectedTokens": 40,
+            "missingTokens": 1
+          },
+          {
+            "sourceUnit": 18,
+            "startToken": 680,
+            "expectedTokens": 40,
+            "missingTokens": 3
+          },
+          {
+            "sourceUnit": 20,
+            "startToken": 760,
+            "expectedTokens": 40,
+            "missingTokens": 1
+          }
+        ],
+        "missingPassagesTruncated": 0,
+        "extraction": {
+          "method": "vision-ocr",
+          "pagesExamined": 4,
+          "emptyPageCandidates": 0,
+          "pageErrorCount": 0,
+          "lowConfidencePageCount": 0,
+          "errorPages": [],
+          "lowConfidencePages": []
+        },
+        "scope": {
+          "pageRange": null,
+          "wholeDocument": true
+        },
+        "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+        "sourceSha256": "d38e6f39e98af665f49157796b6cd807dacec381ca1e35157a6453e0292e49a8",
+        "htmlSha256": "72ece37c24ddbdb2cc462dd921f38d47eb17e80703d6cb89dc9c914177177688"
+      },
+      "integrityCoverage": 100,
+      "integrityWarning": null,
+      "fidelityNotes": [],
+      "candidateRejectionCount": 0,
+      "candidateRejections": [],
+      "verificationState": "review-required",
+      "verificationHtmlBound": true,
+      "remainingAxeViolations": 0,
+      "remainingEqualAccessFailures": 0,
+      "taggedPdfDelivery": null,
+      "taggedPdfExportMode": null,
+      "activeContentScanVerified": true,
+      "activeContentDetected": false,
+      "auditCoverage": {
+        "configuredAuditorCap": 5,
+        "requestedAuditors": 3,
+        "completedAuditors": 3,
+        "sliced": false
+      },
+      "taggedPdfError": "content_coverage_requires_review",
+      "runId": "run-mtzzugcf-4sylhp",
+      "stats": {
+        "apiCalls": 11,
+        "visionCalls": 6,
+        "retries": 0,
+        "recoveredRetries": 0,
+        "authThrottles": 0,
+        "terminalFailures": 0
+      },
+      "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.",
+      "htmlVerificationState": "review-required",
+      "verificationChecks": {
+        "pdfUa": {
+          "standard": "PDF/UA-1 (ISO 14289-1)",
+          "profile": "ua1",
+          "scope": "machine-verifiable PDF/UA checks",
+          "status": "not-applicable",
+          "reason": "No tagged PDF was produced."
+        }
+      },
+      "deliveryReviewReasons": [],
+      "reviewRequired": true,
+      "deliveryStatus": "review-required",
+      "resources": [
+        {
+          "role": "source",
+          "label": "Original document (before)",
+          "uri": "alloflow-remediation://artifact/run-mtzzugcf-4sylhp/source",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ohchr-udhr-hebrew.pdf",
+          "mimeType": "application/pdf"
+        },
+        {
+          "role": "accessibleHtml",
+          "label": "Accessible HTML (after)",
+          "uri": "alloflow-remediation://artifact/run-mtzzugcf-4sylhp/accessibleHtml",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\hebrew-udhr\\ohchr-udhr-hebrew-accessible.html",
+          "mimeType": "text/html"
+        },
+        {
+          "role": "report",
+          "label": "Remediation report",
+          "uri": "alloflow-remediation://artifact/run-mtzzugcf-4sylhp/report",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\hebrew-udhr\\ohchr-udhr-hebrew-remediation-report.json",
+          "mimeType": "application/json"
+        },
+        {
+          "role": "completionManifest",
+          "label": "Completion manifest",
+          "uri": "alloflow-remediation://artifact/run-mtzzugcf-4sylhp/completionManifest",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\hebrew-udhr\\ohchr-udhr-hebrew-remediation-completion.json",
+          "mimeType": "application/json"
+        }
+      ],
+      "modelTransport": "agent-bridge",
+      "modelCallsAnswered": 20,
+      "bridgeStats": {
+        "pipelineModelCalls": 20,
+        "requestsPublished": 20,
+        "coalescedReasks": 0,
+        "replayedAnswers": 0,
+        "clientLatencySeconds": {
+          "count": 20,
+          "mean": 52,
+          "max": 195
+        }
+      }
+    },
+    "note": "Run is completed."
+  },
+  "images": [],
+  "error": null,
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"runId\": \"arun-fe680c0b-fcdb-475c-845b-717c88084394\",\n  \"status\": \"completed\",\n  \"file\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\born-digital\\\\ohchr-udhr-hebrew.pdf\",\n  \"startedAt\": \"2026-09-13T15:52:19.100Z\",\n  \"modelCallsSoFar\": 20,\n  \"pendingCount\": 0,\n  \"log\": [\n    \"[PDF Fix] Final HTML: 29362 chars from 7354 chars extracted text\",\n    \"progress: fix — step 2: Step 2/4 🏗️ Building Accessible Version (4 pages) — Checking spelling & grammar (OCR text)...  (typically ~15-30s)\",\n    \"[DocPipe][API-start][4sylhp/e2] +1416.7s — callGemini #1 transport start after 1ms queued\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-10 (text) in 13s\",\n    \"progress: fix — step 3: Step 3/4 🔍 Auditing Accessibility (4 pages) — Running baseline axe-core audit...  (typically ~10-15s)\",\n    \"progress: fix — step 3: Step 3/4 🔍 Auditing Accessibility (4 pages) — Running baseline AI verification...  (typically ~10-15s)\",\n    \"[DocPipe][API-start][4sylhp/e2] +1430.8s — callGemini #2 transport start after 1ms queued\",\n    \"[DocPipe][API-start][4sylhp/e2] +1430.8s — callGemini #3 transport start after 0ms queued\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-11 (text) in 71s\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-12 (text) in 71s\",\n    \"[PDF Fix] Applied 1 deterministic accessibility fixes\",\n    \"progress: toast: 🔧 Auto-fixed 1 accessibility issues\",\n    \"[PDF Fix] Removed executable scripts or unsupported generated crop controls for static export (data/JSON-LD scripts kept)\",\n    \"progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (4 pages) — Running deterministic WCAG fixes...  (typically ~15-30s per pass)\",\n    \"[Auto-fix] Starting three-engine fix loop: 5 engine findings (5 AI, 0 axe, 0 Equal Access), score 63, target 95\",\n    \"progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (4 pages) — Improving accessibility — pass 1 of 2 (5 AI, 0 axe, 0 EA)...  (typically ~15-30s per pass)\",\n    \"[DocPipe][API-start][4sylhp/e2] +1503.2s — callGemini #4 transport start after 0ms queued\",\n    \"[DocPipe][API-start][4sylhp/e2] +1503.2s — callGemini #5 transport start after 1ms queued\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-13 (text) in 52s\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-14 (text) in 52s\",\n    \"progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (4 pages) — Verifying improvements — checking pass 1 results...  (typically ~15-30s per pass)\",\n    \"[DocPipe][API-start][4sylhp/e2] +1555.2s — callGemini #6 transport start after 1ms queued\",\n    \"[DocPipe][API-start][4sylhp/e2] +1555.2s — callGemini #7 transport start after 0ms queued\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-15 (text) in 39s\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-16 (text) in 39s\",\n    \"[Auto-fix] Pass 1: AI 100/100, axe 0 violations, Equal Access 0 failures + 2 review findings\",\n    \"progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (4 pages) — Improving accessibility — pass 2 of 2 (0 AI, 0 axe, 0 EA) ✔ verifying......  (typically ~15-30s per pass)\",\n    \"[DocPipe][API-start][4sylhp/e2] +1594.8s — callGemini #8 transport start after 1ms queued\",\n    \"[DocPipe][API-start][4sylhp/e2] +1594.8s — callGemini #9 transport start after 0ms queued\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-17 (text) in 13s\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-18 (text) in 13s\",\n    \"[Auto-fix] Pass 2: no changes produced — skipping re-audit of identical HTML (stall 1/2)\",\n    \"[WCAG Sanitizer] Applied 3 fixes (level: AA, minFont: 12px)\",\n    \"[DocPipe][API-start][4sylhp/e2] +1608.2s — callGemini #10 transport start after 0ms queued\",\n    \"[DocPipe][API-start][4sylhp/e2] +1608.2s — callGemini #11 transport start after 0ms queued\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-20 (text) in 19s\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-19 (text) in 30s\",\n    \"[PDF Fix] Final AI semantic audit: AI layer score 100, 0 remaining issues, 30 passes\",\n    \"[PDF Fix] Final headline (weakest-layer): min(AI 100, deterministic 96 [axe 100, EqualAccess 96, using the more conservative]) = 96\",\n    \"completed: verdict review\"\n  ],\n  \"progress\": {\n    \"total\": 1,\n    \"completed\": 1,\n    \"failed\": 0,\n    \"currentFile\": null\n  },\n  \"resumable\": true,\n  \"pendingRequests\": [],\n  \"result\": {\n    \"input\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\born-digital\\\\ohchr-udhr-hebrew.pdf\",\n    \"files\": {\n      \"accessibleHtml\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\hebrew-udhr\\\\ohchr-udhr-hebrew-accessible.html\",\n      \"report\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\hebrew-udhr\\\\ohchr-udhr-hebrew-remediation-report.json\",\n      \"completionManifest\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\hebrew-udhr\\\\ohchr-udhr-hebrew-remediation-completion.json\"\n    },\n    \"pdfUa\": {\n      \"standard\": \"PDF/UA-1 (ISO 14289-1)\",\n      \"profile\": \"ua1\",\n      \"scope\": \"machine-verifiable PDF/UA checks\",\n      \"status\": \"not-applicable\",\n      \"reason\": \"No tagged PDF was produced.\"\n    },\n    \"verdict\": {\n      \"level\": \"review\",\n      \"reviewCount\": 2,\n      \"cautionCount\": 0\n    },\n    \"beforeScore\": 0,\n    \"afterScore\": 96,\n    \"aiVerificationIncomplete\": false,\n    \"scoreSource\": \"min\",\n    \"estimatedMinimumScore\": null,\n    \"contentCoverage\": {\n      \"status\": \"review_required\",\n      \"reviewRequired\": true,\n      \"method\": \"normalized-token-occurrence-check\",\n      \"sourceTokens\": 1287,\n      \"outputTokens\": 1315,\n      \"matchedTokens\": 1278,\n      \"missingTokens\": 9,\n      \"tokenRecall\": 0.993,\n      \"missingPassages\": [\n        {\n          \"sourceUnit\": 7,\n          \"startToken\": 240,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 1\n        },\n        {\n          \"sourceUnit\": 8,\n          \"startToken\": 280,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 1\n        },\n        {\n          \"sourceUnit\": 15,\n          \"startToken\": 560,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 2\n        },\n        {\n          \"sourceUnit\": 16,\n          \"startToken\": 600,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 1\n        },\n        {\n          \"sourceUnit\": 18,\n          \"startToken\": 680,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 3\n        },\n        {\n          \"sourceUnit\": 20,\n          \"startToken\": 760,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 1\n        }\n      ],\n      \"missingPassagesTruncated\": 0,\n      \"extraction\": {\n        \"method\": \"vision-ocr\",\n        \"pagesExamined\": 4,\n        \"emptyPageCandidates\": 0,\n        \"pageErrorCount\": 0,\n        \"lowConfidencePageCount\": 0,\n        \"errorPages\": [],\n        \"lowConfidencePages\": []\n      },\n      \"scope\": {\n        \"pageRange\": null,\n        \"wholeDocument\": true\n      },\n      \"note\": \"Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.\",\n      \"sourceSha256\": \"d38e6f39e98af665f49157796b6cd807dacec381ca1e35157a6453e0292e49a8\",\n      \"htmlSha256\": \"72ece37c24ddbdb2cc462dd921f38d47eb17e80703d6cb89dc9c914177177688\"\n    },\n    \"integrityCoverage\": 100,\n    \"integrityWarning\": null,\n    \"fidelityNotes\": [],\n    \"candidateRejectionCount\": 0,\n    \"candidateRejections\": [],\n    \"verificationState\": \"review-required\",\n    \"verificationHtmlBound\": true,\n    \"remainingAxeViolations\": 0,\n    \"remainingEqualAccessFailures\": 0,\n    \"taggedPdfDelivery\": null,\n    \"taggedPdfExportMode\": null,\n    \"activeContentScanVerified\": true,\n    \"activeContentDetected\": false,\n    \"auditCoverage\": {\n      \"configuredAuditorCap\": 5,\n      \"requestedAuditors\": 3,\n      \"completedAuditors\": 3,\n      \"sliced\": false\n    },\n    \"taggedPdfError\": \"content_coverage_requires_review\",\n    \"runId\": \"run-mtzzugcf-4sylhp\",\n    \"stats\": {\n      \"apiCalls\": 11,\n      \"visionCalls\": 6,\n      \"retries\": 0,\n      \"recoveredRetries\": 0,\n      \"authThrottles\": 0,\n      \"terminalFailures\": 0\n    },\n    \"note\": \"Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.\",\n    \"htmlVerificationState\": \"review-required\",\n    \"verificationChecks\": {\n      \"pdfUa\": {\n        \"standard\": \"PDF/UA-1 (ISO 14289-1)\",\n        \"profile\": \"ua1\",\n        \"scope\": \"machine-verifiable PDF/UA checks\",\n        \"status\": \"not-applicable\",\n        \"reason\": \"No tagged PDF was produced.\"\n      }\n    },\n    \"deliveryReviewReasons\": [],\n    \"reviewRequired\": true,\n    \"deliveryStatus\": \"review-required\",\n    \"resources\": [\n      {\n        \"role\": \"source\",\n        \"label\": \"Original document (before)\",\n        \"uri\": \"alloflow-remediation://artifact/run-mtzzugcf-4sylhp/source\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\born-digital\\\\ohchr-udhr-hebrew.pdf\",\n        \"mimeType\": \"application/pdf\"\n      },\n      {\n        \"role\": \"accessibleHtml\",\n        \"label\": \"Accessible HTML (after)\",\n        \"uri\": \"alloflow-remediation://artifact/run-mtzzugcf-4sylhp/accessibleHtml\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\hebrew-udhr\\\\ohchr-udhr-hebrew-accessible.html\",\n        \"mimeType\": \"text/html\"\n      },\n      {\n        \"role\": \"report\",\n        \"label\": \"Remediation report\",\n        \"uri\": \"alloflow-remediation://artifact/run-mtzzugcf-4sylhp/report\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\hebrew-udhr\\\\ohchr-udhr-hebrew-remediation-report.json\",\n        \"mimeType\": \"application/json\"\n      },\n      {\n        \"role\": \"completionManifest\",\n        \"label\": \"Completion manifest\",\n        \"uri\": \"alloflow-remediation://artifact/run-mtzzugcf-4sylhp/completionManifest\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\hebrew-udhr\\\\ohchr-udhr-hebrew-remediation-completion.json\",\n        \"mimeType\": \"application/json\"\n      }\n    ],\n    \"modelTransport\": \"agent-bridge\",\n    \"modelCallsAnswered\": 20,\n    \"bridgeStats\": {\n      \"pipelineModelCalls\": 20,\n      \"requestsPublished\": 20,\n      \"coalescedReasks\": 0,\n      \"replayedAnswers\": 0,\n      \"clientLatencySeconds\": {\n        \"count\": 20,\n        \"mean\": 52,\n        \"max\": 195\n      }\n    }\n  },\n  \"note\": \"Run is completed.\"\n}"
+    }
+  ]
+}

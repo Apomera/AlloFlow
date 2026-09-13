@@ -1,0 +1,34 @@
+{
+  "score": 10,
+  "confidence": "high",
+  "summary": "The four pages are clean, high-contrast Hebrew prose in a consistent reading order, but the PDF is untagged with no language, title or headings, its text layer decodes to unmapped glyph codes rather than Hebrew characters, and the thirty numbered articles and their sub-clauses have no list or heading structure, so assistive technology can read none of it correctly.",
+  "critical": [
+    {"ruleId": "searchable-text", "claimKind": "quality", "issue": "The text layer is present but its fonts carry no character mapping, so the extracted text is control-character noise instead of Hebrew and the document is effectively image-only for search and screen readers.", "wcag": "1.1.1", "count": 4, "location": "document"},
+    {"ruleId": "document-language", "claimKind": "absence", "issue": "The document declares no language although every page is Hebrew, so screen readers cannot select Hebrew pronunciation or right-to-left handling.", "wcag": "3.1.1", "count": 1, "location": "document"},
+    {"ruleId": "document-title", "claimKind": "absence", "issue": "The document has no title in its metadata even though the first line, the Universal Declaration of Human Rights in Hebrew, is its visible title.", "wcag": "2.4.2", "count": 1, "location": "document"},
+    {"ruleId": "main-landmark", "claimKind": "absence", "issue": "The file is untagged with no structure tree, so there is no main content region or landmark of any kind.", "wcag": "1.3.1", "count": 1, "location": "document"}
+  ],
+  "serious": [
+    {"ruleId": "heading-root", "claimKind": "absence", "issue": "The title line on page 1 and the thirty article labels from סעיף א through סעיף ל are visually distinct only by position and have no heading structure of any level.", "wcag": "1.3.1", "count": 1, "location": "page 1"},
+    {"ruleId": "reading-order", "claimKind": "structure", "issue": "The right-to-left Hebrew paragraphs have no declared reading order or direction, so a reader cannot rely on the sequence in which the preamble and articles would be announced.", "wcag": "1.3.2", "count": 4, "location": "document"}
+  ],
+  "moderate": [
+    {"ruleId": "semantic-list", "claimKind": "structure", "issue": "The numbered sub-clauses of articles such as סעיף ב, סעיף יג, סעיף טז and סעיף כו are presented as (1), (2), (3) in plain text rather than as list items.", "wcag": "1.3.1", "count": 9, "location": "page 1"}
+  ],
+  "minor": [
+    {"ruleId": "document-metadata", "claimKind": "absence", "issue": "The metadata provides no author or subject and the producer field only names the Ghostscript tool that generated the file.", "wcag": "2.4.2", "count": 1, "location": "document"}
+  ],
+  "passes": [
+    "CONTRAST: black serif text on a white background throughout the four pages, well above 4.5:1.",
+    "IMAGES: the document contains no images, so no alternative text is missing.",
+    "TABLES: the document contains no tables.",
+    "FORMS: the document contains no form fields.",
+    "LINKS: the document contains no hyperlinks."
+  ],
+  "pageCount": 4,
+  "hasSearchableText": false,
+  "hasImages": false,
+  "hasTables": false,
+  "hasForms": false,
+  "documentLanguage": "he"
+}

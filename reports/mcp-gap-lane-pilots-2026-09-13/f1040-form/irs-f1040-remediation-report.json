@@ -1,0 +1,260 @@
+{
+  "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\forms\\irs-f1040.pdf",
+  "files": {
+    "accessibleHtml": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\f1040-form\\irs-f1040-accessible.html",
+    "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\f1040-form\\irs-f1040-remediation-report.json",
+    "completionManifest": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\f1040-form\\irs-f1040-remediation-completion.json"
+  },
+  "pdfUa": {
+    "standard": "PDF/UA-1 (ISO 14289-1)",
+    "profile": "ua1",
+    "scope": "machine-verifiable PDF/UA checks",
+    "status": "not-applicable",
+    "reason": "No tagged PDF was produced."
+  },
+  "verdict": {
+    "level": "review",
+    "reviewCount": 4,
+    "cautionCount": 2
+  },
+  "beforeScore": 63,
+  "afterScore": 94,
+  "aiVerificationIncomplete": false,
+  "scoreSource": "min",
+  "estimatedMinimumScore": null,
+  "contentCoverage": {
+    "status": "review_required",
+    "reviewRequired": true,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 1593,
+    "outputTokens": 1835,
+    "matchedTokens": 1517,
+    "missingTokens": 76,
+    "tokenRecall": 0.9523,
+    "missingPassages": [
+      {
+        "sourceUnit": 1,
+        "startToken": 0,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 14,
+        "startToken": 520,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 15,
+        "startToken": 560,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 16,
+        "startToken": 600,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 17,
+        "startToken": 640,
+        "expectedTokens": 40,
+        "missingTokens": 4
+      },
+      {
+        "sourceUnit": 18,
+        "startToken": 680,
+        "expectedTokens": 40,
+        "missingTokens": 7
+      },
+      {
+        "sourceUnit": 19,
+        "startToken": 720,
+        "expectedTokens": 40,
+        "missingTokens": 8
+      },
+      {
+        "sourceUnit": 20,
+        "startToken": 760,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 21,
+        "startToken": 800,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 22,
+        "startToken": 840,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 23,
+        "startToken": 880,
+        "expectedTokens": 40,
+        "missingTokens": 6
+      },
+      {
+        "sourceUnit": 24,
+        "startToken": 920,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 25,
+        "startToken": 960,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 26,
+        "startToken": 1000,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 27,
+        "startToken": 1040,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 28,
+        "startToken": 1080,
+        "expectedTokens": 40,
+        "missingTokens": 4
+      },
+      {
+        "sourceUnit": 29,
+        "startToken": 1120,
+        "expectedTokens": 40,
+        "missingTokens": 8
+      },
+      {
+        "sourceUnit": 30,
+        "startToken": 1160,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 31,
+        "startToken": 1200,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 32,
+        "startToken": 1240,
+        "expectedTokens": 40,
+        "missingTokens": 7
+      },
+      {
+        "sourceUnit": 33,
+        "startToken": 1280,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 34,
+        "startToken": 1320,
+        "expectedTokens": 40,
+        "missingTokens": 4
+      },
+      {
+        "sourceUnit": 36,
+        "startToken": 1400,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 39,
+        "startToken": 1520,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 40,
+        "startToken": 1560,
+        "expectedTokens": 33,
+        "missingTokens": 1
+      }
+    ],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "pdfjs",
+      "pagesExamined": 2,
+      "emptyPageCandidates": 0,
+      "pageErrorCount": 0,
+      "lowConfidencePageCount": 0,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+    "sourceSha256": "3d31c226df0d189ced80e039d01cf0f8820c1019681a0f0ca6264de277b7e982",
+    "htmlSha256": "25d26d3cacb2f6a6ae0c13d273a69c5c12d320fce2ee6544c8d094f1235a537e"
+  },
+  "integrityCoverage": 100,
+  "integrityWarning": "18 source numeric value(s) not found unchanged in the output (31, 20, 10, 14, 15, 16, 17, 18, …). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.",
+  "fidelityNotes": [
+    {
+      "kind": "formFields",
+      "msg": "Form fields: the source is a fillable form with 199 field(s) but the output has 0 — the accessible version can be read but not filled in. Give learners the tagged PDF, or an editable copy, if they need to type answers."
+    },
+    {
+      "kind": "numeric",
+      "msg": "18 source numeric value(s) not found unchanged in the output (31, 20, 10, 14, 15, 16, 17, 18, …). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact."
+    },
+    {
+      "kind": "activeContent",
+      "msg": "The ORIGINAL PDF contains 3 embedded JavaScript action(s). The remediated HTML and generated exports do not carry active content, but the standard tagged-PDF export preserves the original bytes — including these. For a distributable PDF without them, use the 🧼 Rebuild-clean export."
+    }
+  ],
+  "candidateRejectionCount": 0,
+  "candidateRejections": [],
+  "verificationState": "review-required",
+  "verificationHtmlBound": true,
+  "remainingAxeViolations": 0,
+  "remainingEqualAccessFailures": 0,
+  "taggedPdfDelivery": null,
+  "taggedPdfExportMode": null,
+  "activeContentScanVerified": false,
+  "activeContentDetected": false,
+  "auditCoverage": {
+    "configuredAuditorCap": 5,
+    "requestedAuditors": 3,
+    "completedAuditors": 3,
+    "sliced": false
+  },
+  "taggedPdfError": "active_content_scan_unavailable",
+  "runId": "run-mu02a6id-ebewqr",
+  "stats": {
+    "apiCalls": 17,
+    "visionCalls": 3,
+    "retries": 0,
+    "recoveredRetries": 0,
+    "authThrottles": 0,
+    "terminalFailures": 0
+  },
+  "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.",
+  "htmlVerificationState": "review-required",
+  "verificationChecks": {
+    "pdfUa": {
+      "standard": "PDF/UA-1 (ISO 14289-1)",
+      "profile": "ua1",
+      "scope": "machine-verifiable PDF/UA checks",
+      "status": "not-applicable",
+      "reason": "No tagged PDF was produced."
+    }
+  },
+  "deliveryReviewReasons": [],
+  "reviewRequired": true,
+  "deliveryStatus": "review-required"
+}

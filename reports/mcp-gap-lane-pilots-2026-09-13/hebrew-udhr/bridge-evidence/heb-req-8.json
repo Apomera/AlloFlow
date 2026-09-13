@@ -1,0 +1,71 @@
+{
+  "status": 200,
+  "isError": false,
+  "structuredContent": {
+    "runId": "arun-fe680c0b-fcdb-475c-845b-717c88084394",
+    "status": "running",
+    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ohchr-udhr-hebrew.pdf",
+    "startedAt": "2026-09-13T15:52:19.100Z",
+    "modelCallsSoFar": 6,
+    "pendingCount": 0,
+    "log": [
+      "progress: audit — opening accessibility audit",
+      "[GeminiGate] Pacing skipped: host transport profile (agent-bridge) declares no provider quota to protect.",
+      "[DocPipe][Vision-start][-/e-]  — callGeminiVision #1 transport start after 1ms queued",
+      "[DocPipe][Vision-start][-/e-]  — callGeminiVision #2 transport start after 0ms queued",
+      "[DocPipe][Vision-start][-/e-]  — callGeminiVision #3 transport start after 1ms queued",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-1 (vision) in 76s",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-2 (vision) in 76s",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-3 (vision) in 76s",
+      "[PDF Det] content-stream spacing repair: removed 17 spurious space(s) across 4 page(s) — characters untouched",
+      "progress: audit — before-score 0",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Reading document content...  (typically ~10-20s)",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Extracting PDF text layer deterministically...  (typically ~10-20s)",
+      "[PDF Det] content-stream spacing repair: removed 17 spurious space(s) across 4 page(s) — characters untouched",
+      "progress: toast: toasts.garbled_text_layer_ocr",
+      "[GeminiGate] Pacing skipped: host transport profile (agent-bridge) declares no provider quota to protect.",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Re-scanning with OCR (Tesseract + AI Vision) as requested...  (typically ~10-20s)",
+      "progress: toast: toasts.running_tesseract_vision_ocr_maximum",
+      "[DocPipe][Vision-start][4sylhp/e2] +1.2s — callGeminiVision #1 transport start after 2ms queued",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-4 (vision) in 10s",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Document language: he → OCR model \"heb\" (auto-detected)  (typically ~10-20s)",
+      "[DocPipe][Vision-start][4sylhp/e2] +11.2s — callGeminiVision #2 transport start after 0ms queued",
+      "[DocPipe][Vision-start][4sylhp/e2] +11.2s — callGeminiVision #3 transport start after 0ms queued",
+      "[Tesseract] background-worker rasterization unavailable on this host — using the main-thread renderer (a hidden tab will slow page rendering)",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 1/4 (render)…  (typically ~10-20s)",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 1/4 (ocr)…  (typically ~10-20s)",
+      "[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p1 lang=heb))) — falling back to fresh-spawn attempts (p1)",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-5 (vision) in 127s",
+      "client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-6 (vision) in 195s",
+      "[Tesseract] recognize recovered on attempt 3/4 (lang=eng, p1)",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 2/4 (render)…  (typically ~10-20s)",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 2/4 (ocr)…  (typically ~10-20s)",
+      "[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p2 lang=heb))) — falling back to fresh-spawn attempts (p2)",
+      "[Tesseract] recognize recovered on attempt 3/4 (lang=eng, p2)",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 3/4 (render)…  (typically ~10-20s)",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 3/4 (ocr)…  (typically ~10-20s)",
+      "[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p3 lang=heb))) — falling back to fresh-spawn attempts (p3)",
+      "[Tesseract] recognize recovered on attempt 3/4 (lang=eng, p3)",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 4/4 (render)…  (typically ~10-20s)",
+      "progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 4/4 (ocr)…  (typically ~10-20s)",
+      "[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p4 lang=heb))) — falling back to fresh-spawn attempts (p4)"
+    ],
+    "progress": {
+      "total": 1,
+      "completed": 0,
+      "failed": 0,
+      "currentFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ohchr-udhr-hebrew.pdf"
+    },
+    "resumable": true,
+    "pendingRequests": [],
+    "note": "Nothing pending — the pipeline is working. Poll again."
+  },
+  "images": [],
+  "error": null,
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"runId\": \"arun-fe680c0b-fcdb-475c-845b-717c88084394\",\n  \"status\": \"running\",\n  \"file\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\born-digital\\\\ohchr-udhr-hebrew.pdf\",\n  \"startedAt\": \"2026-09-13T15:52:19.100Z\",\n  \"modelCallsSoFar\": 6,\n  \"pendingCount\": 0,\n  \"log\": [\n    \"progress: audit — opening accessibility audit\",\n    \"[GeminiGate] Pacing skipped: host transport profile (agent-bridge) declares no provider quota to protect.\",\n    \"[DocPipe][Vision-start][-/e-]  — callGeminiVision #1 transport start after 1ms queued\",\n    \"[DocPipe][Vision-start][-/e-]  — callGeminiVision #2 transport start after 0ms queued\",\n    \"[DocPipe][Vision-start][-/e-]  — callGeminiVision #3 transport start after 1ms queued\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-1 (vision) in 76s\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-2 (vision) in 76s\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-3 (vision) in 76s\",\n    \"[PDF Det] content-stream spacing repair: removed 17 spurious space(s) across 4 page(s) — characters untouched\",\n    \"progress: audit — before-score 0\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Reading document content...  (typically ~10-20s)\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Extracting PDF text layer deterministically...  (typically ~10-20s)\",\n    \"[PDF Det] content-stream spacing repair: removed 17 spurious space(s) across 4 page(s) — characters untouched\",\n    \"progress: toast: toasts.garbled_text_layer_ocr\",\n    \"[GeminiGate] Pacing skipped: host transport profile (agent-bridge) declares no provider quota to protect.\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Re-scanning with OCR (Tesseract + AI Vision) as requested...  (typically ~10-20s)\",\n    \"progress: toast: toasts.running_tesseract_vision_ocr_maximum\",\n    \"[DocPipe][Vision-start][4sylhp/e2] +1.2s — callGeminiVision #1 transport start after 2ms queued\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-4 (vision) in 10s\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Document language: he → OCR model \\\"heb\\\" (auto-detected)  (typically ~10-20s)\",\n    \"[DocPipe][Vision-start][4sylhp/e2] +11.2s — callGeminiVision #2 transport start after 0ms queued\",\n    \"[DocPipe][Vision-start][4sylhp/e2] +11.2s — callGeminiVision #3 transport start after 0ms queued\",\n    \"[Tesseract] background-worker rasterization unavailable on this host — using the main-thread renderer (a hidden tab will slow page rendering)\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 1/4 (render)…  (typically ~10-20s)\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 1/4 (ocr)…  (typically ~10-20s)\",\n    \"[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p1 lang=heb))) — falling back to fresh-spawn attempts (p1)\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-5 (vision) in 127s\",\n    \"client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-6 (vision) in 195s\",\n    \"[Tesseract] recognize recovered on attempt 3/4 (lang=eng, p1)\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 2/4 (render)…  (typically ~10-20s)\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 2/4 (ocr)…  (typically ~10-20s)\",\n    \"[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p2 lang=heb))) — falling back to fresh-spawn attempts (p2)\",\n    \"[Tesseract] recognize recovered on attempt 3/4 (lang=eng, p2)\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 3/4 (render)…  (typically ~10-20s)\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 3/4 (ocr)…  (typically ~10-20s)\",\n    \"[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p3 lang=heb))) — falling back to fresh-spawn attempts (p3)\",\n    \"[Tesseract] recognize recovered on attempt 3/4 (lang=eng, p3)\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 4/4 (render)…  (typically ~10-20s)\",\n    \"progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Tesseract OCR page 4/4 (ocr)…  (typically ~10-20s)\",\n    \"[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p4 lang=heb))) — falling back to fresh-spawn attempts (p4)\"\n  ],\n  \"progress\": {\n    \"total\": 1,\n    \"completed\": 0,\n    \"failed\": 0,\n    \"currentFile\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\born-digital\\\\ohchr-udhr-hebrew.pdf\"\n  },\n  \"resumable\": true,\n  \"pendingRequests\": [],\n  \"note\": \"Nothing pending — the pipeline is working. Poll again.\"\n}"
+    }
+  ]
+}

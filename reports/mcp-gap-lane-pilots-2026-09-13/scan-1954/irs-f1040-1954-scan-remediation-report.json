@@ -1,0 +1,402 @@
+{
+  "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\scanned\\irs-f1040-1954-scan.pdf",
+  "files": {
+    "accessibleHtml": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\scan-1954\\irs-f1040-1954-scan-accessible.html",
+    "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\scan-1954\\irs-f1040-1954-scan-remediation-report.json",
+    "completionManifest": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\scan-1954\\irs-f1040-1954-scan-remediation-completion.json"
+  },
+  "pdfUa": {
+    "standard": "PDF/UA-1 (ISO 14289-1)",
+    "profile": "ua1",
+    "scope": "machine-verifiable PDF/UA checks",
+    "status": "not-applicable",
+    "reason": "No tagged PDF was produced."
+  },
+  "verdict": {
+    "level": "review",
+    "reviewCount": 4,
+    "cautionCount": 1
+  },
+  "beforeScore": 0,
+  "afterScore": 65,
+  "aiVerificationIncomplete": false,
+  "scoreSource": "min",
+  "estimatedMinimumScore": null,
+  "contentCoverage": {
+    "status": "review_required",
+    "reviewRequired": true,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 2941,
+    "outputTokens": 3099,
+    "matchedTokens": 2418,
+    "missingTokens": 523,
+    "tokenRecall": 0.8222,
+    "missingPassages": [
+      {
+        "sourceUnit": 5,
+        "startToken": 160,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 8,
+        "startToken": 280,
+        "expectedTokens": 40,
+        "missingTokens": 4
+      },
+      {
+        "sourceUnit": 9,
+        "startToken": 320,
+        "expectedTokens": 40,
+        "missingTokens": 27
+      },
+      {
+        "sourceUnit": 10,
+        "startToken": 360,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 11,
+        "startToken": 400,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 18,
+        "startToken": 680,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 23,
+        "startToken": 880,
+        "expectedTokens": 40,
+        "missingTokens": 12
+      },
+      {
+        "sourceUnit": 24,
+        "startToken": 920,
+        "expectedTokens": 40,
+        "missingTokens": 6
+      },
+      {
+        "sourceUnit": 25,
+        "startToken": 960,
+        "expectedTokens": 40,
+        "missingTokens": 13
+      },
+      {
+        "sourceUnit": 26,
+        "startToken": 1000,
+        "expectedTokens": 40,
+        "missingTokens": 19
+      },
+      {
+        "sourceUnit": 27,
+        "startToken": 1040,
+        "expectedTokens": 40,
+        "missingTokens": 5
+      },
+      {
+        "sourceUnit": 28,
+        "startToken": 1080,
+        "expectedTokens": 40,
+        "missingTokens": 13
+      },
+      {
+        "sourceUnit": 29,
+        "startToken": 1120,
+        "expectedTokens": 40,
+        "missingTokens": 11
+      },
+      {
+        "sourceUnit": 30,
+        "startToken": 1160,
+        "expectedTokens": 40,
+        "missingTokens": 9
+      },
+      {
+        "sourceUnit": 31,
+        "startToken": 1200,
+        "expectedTokens": 40,
+        "missingTokens": 8
+      },
+      {
+        "sourceUnit": 32,
+        "startToken": 1240,
+        "expectedTokens": 40,
+        "missingTokens": 25
+      },
+      {
+        "sourceUnit": 33,
+        "startToken": 1280,
+        "expectedTokens": 40,
+        "missingTokens": 10
+      },
+      {
+        "sourceUnit": 34,
+        "startToken": 1320,
+        "expectedTokens": 40,
+        "missingTokens": 9
+      },
+      {
+        "sourceUnit": 35,
+        "startToken": 1360,
+        "expectedTokens": 40,
+        "missingTokens": 8
+      },
+      {
+        "sourceUnit": 36,
+        "startToken": 1400,
+        "expectedTokens": 40,
+        "missingTokens": 7
+      },
+      {
+        "sourceUnit": 37,
+        "startToken": 1440,
+        "expectedTokens": 40,
+        "missingTokens": 19
+      },
+      {
+        "sourceUnit": 38,
+        "startToken": 1480,
+        "expectedTokens": 40,
+        "missingTokens": 9
+      },
+      {
+        "sourceUnit": 40,
+        "startToken": 1560,
+        "expectedTokens": 40,
+        "missingTokens": 13
+      },
+      {
+        "sourceUnit": 41,
+        "startToken": 1600,
+        "expectedTokens": 40,
+        "missingTokens": 11
+      },
+      {
+        "sourceUnit": 42,
+        "startToken": 1640,
+        "expectedTokens": 40,
+        "missingTokens": 8
+      },
+      {
+        "sourceUnit": 43,
+        "startToken": 1680,
+        "expectedTokens": 40,
+        "missingTokens": 9
+      },
+      {
+        "sourceUnit": 44,
+        "startToken": 1720,
+        "expectedTokens": 40,
+        "missingTokens": 14
+      },
+      {
+        "sourceUnit": 45,
+        "startToken": 1760,
+        "expectedTokens": 40,
+        "missingTokens": 18
+      },
+      {
+        "sourceUnit": 46,
+        "startToken": 1800,
+        "expectedTokens": 40,
+        "missingTokens": 7
+      },
+      {
+        "sourceUnit": 47,
+        "startToken": 1840,
+        "expectedTokens": 40,
+        "missingTokens": 6
+      },
+      {
+        "sourceUnit": 48,
+        "startToken": 1880,
+        "expectedTokens": 40,
+        "missingTokens": 5
+      },
+      {
+        "sourceUnit": 49,
+        "startToken": 1920,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 50,
+        "startToken": 1960,
+        "expectedTokens": 40,
+        "missingTokens": 9
+      },
+      {
+        "sourceUnit": 51,
+        "startToken": 2000,
+        "expectedTokens": 40,
+        "missingTokens": 7
+      },
+      {
+        "sourceUnit": 52,
+        "startToken": 2040,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 53,
+        "startToken": 2080,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 54,
+        "startToken": 2120,
+        "expectedTokens": 40,
+        "missingTokens": 5
+      },
+      {
+        "sourceUnit": 55,
+        "startToken": 2160,
+        "expectedTokens": 40,
+        "missingTokens": 11
+      },
+      {
+        "sourceUnit": 56,
+        "startToken": 2200,
+        "expectedTokens": 40,
+        "missingTokens": 9
+      },
+      {
+        "sourceUnit": 57,
+        "startToken": 2240,
+        "expectedTokens": 40,
+        "missingTokens": 10
+      },
+      {
+        "sourceUnit": 58,
+        "startToken": 2280,
+        "expectedTokens": 40,
+        "missingTokens": 12
+      },
+      {
+        "sourceUnit": 59,
+        "startToken": 2320,
+        "expectedTokens": 40,
+        "missingTokens": 6
+      },
+      {
+        "sourceUnit": 60,
+        "startToken": 2360,
+        "expectedTokens": 40,
+        "missingTokens": 19
+      },
+      {
+        "sourceUnit": 61,
+        "startToken": 2400,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 62,
+        "startToken": 2440,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 63,
+        "startToken": 2480,
+        "expectedTokens": 40,
+        "missingTokens": 7
+      },
+      {
+        "sourceUnit": 64,
+        "startToken": 2520,
+        "expectedTokens": 40,
+        "missingTokens": 10
+      },
+      {
+        "sourceUnit": 65,
+        "startToken": 2560,
+        "expectedTokens": 40,
+        "missingTokens": 5
+      },
+      {
+        "sourceUnit": 66,
+        "startToken": 2600,
+        "expectedTokens": 40,
+        "missingTokens": 4
+      },
+      {
+        "sourceUnit": 67,
+        "startToken": 2640,
+        "expectedTokens": 40,
+        "missingTokens": 11
+      }
+    ],
+    "missingPassagesTruncated": 7,
+    "extraction": {
+      "method": "vision-ocr",
+      "pagesExamined": 4,
+      "emptyPageCandidates": 0,
+      "pageErrorCount": 0,
+      "lowConfidencePageCount": 0,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+    "sourceSha256": "5f610bb8dc37598d1d296da4ef46914e1aea618db45747b594f603a0e4c187dc",
+    "htmlSha256": "c89960111e3e16c3bdfc39327f2cd39b5b06d3186e3ab9f6407b3f3f0edbe23a"
+  },
+  "integrityCoverage": 100,
+  "integrityWarning": "11 source numeric value(s) not found unchanged in the output (10, 11, 12, 41, 81, 5.52, 108, 58, …). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.",
+  "fidelityNotes": [
+    {
+      "kind": "numeric",
+      "msg": "11 source numeric value(s) not found unchanged in the output (10, 11, 12, 41, 81, 5.52, 108, 58, …). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact."
+    }
+  ],
+  "candidateRejectionCount": 0,
+  "candidateRejections": [],
+  "verificationState": "review-required",
+  "verificationHtmlBound": true,
+  "remainingAxeViolations": 0,
+  "remainingEqualAccessFailures": 0,
+  "taggedPdfDelivery": null,
+  "taggedPdfExportMode": null,
+  "activeContentScanVerified": true,
+  "activeContentDetected": false,
+  "auditCoverage": {
+    "configuredAuditorCap": 5,
+    "requestedAuditors": 3,
+    "completedAuditors": 3,
+    "sliced": false
+  },
+  "taggedPdfError": "content_coverage_requires_review",
+  "runId": "run-mtzyyd4m-y5rx1m",
+  "stats": {
+    "apiCalls": 21,
+    "visionCalls": 6,
+    "retries": 0,
+    "recoveredRetries": 0,
+    "authThrottles": 0,
+    "terminalFailures": 0
+  },
+  "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.",
+  "htmlVerificationState": "review-required",
+  "verificationChecks": {
+    "pdfUa": {
+      "standard": "PDF/UA-1 (ISO 14289-1)",
+      "profile": "ua1",
+      "scope": "machine-verifiable PDF/UA checks",
+      "status": "not-applicable",
+      "reason": "No tagged PDF was produced."
+    }
+  },
+  "deliveryReviewReasons": [],
+  "reviewRequired": true,
+  "deliveryStatus": "review-required"
+}

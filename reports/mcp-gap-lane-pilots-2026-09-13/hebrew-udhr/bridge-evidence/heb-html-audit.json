@@ -1,0 +1,43 @@
+{
+  "mreq-f5281d86-4564-4414-84b3-d39b583d5b78-11": {
+    "score": 83,
+    "summary": "The document declares Hebrew as its language, has a descriptive title, a skip link, a main landmark, a sequential h1/h2 outline with one heading per article and semantic ordered lists for the numbered clauses, with the remaining issues being a duplicated banner h1, no right-to-left direction declared for a Hebrew document, English interface text without its own language mark, and no header landmark.",
+    "issues": [
+      {"ruleId": "reading-order", "claimKind": "structure", "issue": "The html element declares lang=\"he\" but no element carries dir=\"rtl\", so the Hebrew paragraphs, headings and numbered lists are laid out left-to-right and punctuation and list markers fall on the wrong side for a right-to-left script.", "wcag": "1.3.2", "severity": "serious", "count": 1, "location": "document"},
+      {"ruleId": "heading-multiple", "claimKind": "structure", "issue": "The page contains two h1 elements with the same text, one inside the styled banner and one immediately after it.", "wcag": "1.3.1", "severity": "minor", "count": 1, "location": "הכרזה לכל באי עולם בדבר זכויות האדם"},
+      {"ruleId": "other", "claimKind": "quality", "issue": "The English skip link text Skip to main content and the English footer sentence sit inside a document whose language is Hebrew without a lang=\"en\" mark, so a Hebrew screen reader voice will mispronounce them.", "wcag": "3.1.2", "severity": "moderate", "count": 2, "location": "Skip to main content"},
+      {"ruleId": "region-landmarks", "claimKind": "absence", "issue": "There is no header or navigation landmark for the opening banner; only the main landmark and the closing footer are exposed as regions.", "wcag": "1.3.1", "severity": "moderate", "count": 1, "location": "document"}
+    ],
+    "passes": [
+      "1. LANGUAGE: the html element declares lang=\"he\", matching the Hebrew content.",
+      "2. TITLE: a title element is present and identifies the document.",
+      "3. HEADINGS: an h1 is present and every article from סעיף א to סעיף ל is an h2 with no skipped level (the duplicate banner h1 is noted above).",
+      "4. LANDMARKS: a main landmark with id main-content wraps the content and a footer with role=\"contentinfo\" closes it (header noted above as missing).",
+      "5. IMAGES: no img elements are present, so no alt text is missing.",
+      "6. TABLES: the document contains no tables.",
+      "7. CONTRAST: text is #111111 or #1e293b on #ffffff, above 12:1; the focused skip link is white on #2563eb, about 5.2:1.",
+      "8. LINKS: the only link is the skip link, whose text describes its target.",
+      "9. LISTS: the numbered clauses of articles such as סעיף ב and סעיף טז use ol with li children; no bullet or number characters stand in for list markup.",
+      "10. SKIP NAV: a skip link to #main-content is the first focusable element.",
+      "11. FORMS: the document contains no form controls."
+    ]
+  },
+  "mreq-f5281d86-4564-4414-84b3-d39b583d5b78-12": {
+    "score": 88,
+    "summary": "This section keeps one h2 per article with the article text in paragraphs and semantic ordered lists for numbered clauses, ends with a contentinfo footer, and has strong contrast throughout, with the remaining issues being the absence of a right-to-left direction for the Hebrew text and the English footer sentence carrying no language mark.",
+    "issues": [
+      {"ruleId": "reading-order", "claimKind": "structure", "issue": "No element declares dir=\"rtl\", so the Hebrew headings, paragraphs and ordered lists in this section are laid out left-to-right with punctuation and list markers on the wrong side.", "wcag": "1.3.2", "severity": "serious", "count": 1, "location": "document"},
+      {"ruleId": "other", "claimKind": "quality", "issue": "The English footer sentence beginning This document was automatically transformed sits inside a lang=\"he\" document without a lang=\"en\" mark.", "wcag": "3.1.2", "severity": "moderate", "count": 1, "location": "This document was automatically transformed for accessibility"}
+    ],
+    "passes": [
+      "3. HEADINGS: the articles in this section are h2 headings under the single content h1, with no skipped level.",
+      "4. LANDMARKS: the main landmark closes after סעיף ל and a footer with role=\"contentinfo\" follows it.",
+      "5. IMAGES: no img elements occur in this section.",
+      "6. TABLES: no tables occur in this section.",
+      "7. CONTRAST: text is #111111 on #ffffff and the footer text #475569 on #ffffff is about 7.5:1.",
+      "8. LINKS: no links occur in this section.",
+      "9. LISTS: numbered clauses use ol and li elements.",
+      "11. FORMS: no form controls are present."
+    ]
+  }
+}

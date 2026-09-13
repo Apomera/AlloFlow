@@ -1,0 +1,19 @@
+{
+  "status": 200,
+  "isError": false,
+  "structuredContent": {
+    "ok": true,
+    "runId": "arun-cce6811e-2afb-469f-aa48-7eb01976764a",
+    "status": "cancelled",
+    "killedRun": true,
+    "note": "Output files already written stay on disk."
+  },
+  "images": [],
+  "error": null,
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"ok\": true,\n  \"runId\": \"arun-cce6811e-2afb-469f-aa48-7eb01976764a\",\n  \"status\": \"cancelled\",\n  \"killedRun\": true,\n  \"note\": \"Output files already written stay on disk.\"\n}"
+    }
+  ]
+}

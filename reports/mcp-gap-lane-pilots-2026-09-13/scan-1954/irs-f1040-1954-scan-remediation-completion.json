@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "alloflow-remediation-completion",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\scanned\\irs-f1040-1954-scan.pdf",
+    "sizeBytes": 502650,
+    "sha256": "5f610bb8dc37598d1d296da4ef46914e1aea618db45747b594f603a0e4c187dc"
+  },
+  "compatibility": {
+    "optionsSha256": "45f503332609c48df6147f9440df45f1e71ea640442a437ce1e5be1a26a22b57",
+    "engineSha256": "47e9741f889e2788f1e0a340ed273ff94e074036e6da4424cf6570d2ecf62110"
+  },
+  "attempt": {
+    "jobId": null,
+    "attemptId": null,
+    "attemptNumber": 0
+  },
+  "completedAt": "2026-09-13T15:49:18.429Z",
+  "artifacts": [
+    {
+      "role": "accessibleHtml",
+      "relativePath": "irs-f1040-1954-scan-accessible.html",
+      "sizeBytes": 50312,
+      "sha256": "c89960111e3e16c3bdfc39327f2cd39b5b06d3186e3ab9f6407b3f3f0edbe23a"
+    },
+    {
+      "role": "report",
+      "relativePath": "irs-f1040-1954-scan-remediation-report.json",
+      "sizeBytes": 10579,
+      "sha256": "f63642b5ed24a2b1ac9944c9234f7d3368c11218e0fd7b6663cd8c4a3a75efa5"
+    }
+  ]
+}

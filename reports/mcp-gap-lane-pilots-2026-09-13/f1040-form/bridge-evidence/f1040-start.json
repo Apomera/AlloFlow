@@ -1,0 +1,18 @@
+{
+  "status": 200,
+  "isError": false,
+  "structuredContent": {
+    "runId": "arun-bcdd26fc-082e-4dbb-b40b-d69dd778e855",
+    "status": "running",
+    "modelTransport": "agent-bridge",
+    "note": "Use remediation_agent_requests and answer the pending requests until terminal. Folder files run sequentially. After restart use remediation_agent_resume; verified completed files are reused. Optional narration uses local Kokoro/Piper and may download public dependencies."
+  },
+  "images": [],
+  "error": null,
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"runId\": \"arun-bcdd26fc-082e-4dbb-b40b-d69dd778e855\",\n  \"status\": \"running\",\n  \"modelTransport\": \"agent-bridge\",\n  \"note\": \"Use remediation_agent_requests and answer the pending requests until terminal. Folder files run sequentially. After restart use remediation_agent_resume; verified completed files are reused. Optional narration uses local Kokoro/Piper and may download public dependencies.\"\n}"
+    }
+  ]
+}

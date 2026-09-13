@@ -1,0 +1,438 @@
+{
+  "status": 200,
+  "isError": false,
+  "structuredContent": {
+    "runId": "arun-0084bf67-1b4a-40aa-8d44-1d319e26b638",
+    "status": "completed",
+    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\scanned\\irs-f1040-1954-scan.pdf",
+    "startedAt": "2026-09-13T16:37:15.969Z",
+    "modelCallsSoFar": 30,
+    "pendingCount": 0,
+    "log": [
+      "[aiFixChunked:pdf-pass-2] $4 routing: 2/10 violation(s) element-routed, 0/4 chunk(s) skipped",
+      "[aiFixChunked:pdf-pass-2] splitting 48664 chars into 4 chunks (parallel)",
+      "[DocPipe][API-start][jdajig/e1] +238.2s — callGemini #10 transport start after 3ms queued",
+      "[DocPipe][API-start][jdajig/e1] +238.3s — callGemini #11 transport start after 2ms queued",
+      "[DocPipe][API-start][jdajig/e1] +238.3s — callGemini #12 transport start after 1ms queued",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-19 (text) in 0s",
+      "[DocPipe][API-start][jdajig/e1] +238.4s — callGemini #13 transport start after 117ms queued",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-20 (text) in 0s",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-21 (text) in 0s",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-22 (text) in 0s",
+      "progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (4 pages) — Verifying improvements — checking pass 2 results...  (typically ~15-30s per pass)",
+      "[Auto-fix] Pass 2: fixer chunks were throttle-deferred this pass — deferring the 3-call AI re-audit instead of firing it into the same storm (axe still verifies locally; the final audit completes AI coverage)",
+      "[Auto-fix] Pass 2: AI audit evidence was incomplete (0% section coverage or unusable score); it cannot stop the loop or promote best-so-far.",
+      "[Auto-fix] Pass 2: evidence incomplete - 3 fixer chunk(s) shipped as original; AI audit section coverage was incomplete; score delta is not comparable and will not drive a regression verdict.",
+      "[Auto-fix] Pass 2: AI audit evidence was incomplete (0% section coverage or unusable score); it cannot stop the loop or promote best-so-far.",
+      "[Auto-fix] Pass 2: AI null/100, axe 0 violations, Equal Access 0 failures + 6 review findings",
+      "[Auto-fix] Pass 2: AI verification skipped this pass (no AI chunk applied) — axe 0 violation(s), Equal Access 0 failure(s); not treating as three-engine clean",
+      "progress: toast: ⚠️ Fix pass 2: AI verification unavailable — axe-only clean, continuing",
+      "[Auto-fix] Shipping best verified version (AI 63, axe 0, Equal Access 0) instead of the loop's last working state.",
+      "[WCAG Sanitizer] Applied 3 fixes (level: AA, minFont: 12px)",
+      "[DocPipe][API-start][jdajig/e1] +240.5s — callGemini #14 transport start after 1ms queued",
+      "[DocPipe][API-start][jdajig/e1] +240.5s — callGemini #15 transport start after 1ms queued",
+      "[DocPipe][API-start][jdajig/e1] +240.5s — callGemini #16 transport start after 1ms queued",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-23 (text) in 0s",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-24 (text) in 0s",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-25 (text) in 0s",
+      "[DocPipe][API-start][jdajig/e1] +240.8s — callGemini #17 transport start after 0ms queued",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-26 (text) in 0s",
+      "[PDF Fix] Final AI semantic audit: AI layer score 65, 2 remaining issues, 42 passes",
+      "[PDF Fix] Final headline (weakest-layer): min(AI 65, deterministic 88 [axe 100, EqualAccess 88, using the more conservative]) = 65",
+      "[DocPipe][API-start][jdajig/e1] +245.3s — callGemini #18 transport start after 1ms queued",
+      "[DocPipe][API-start][jdajig/e1] +245.3s — callGemini #19 transport start after 0ms queued",
+      "[DocPipe][API-start][jdajig/e1] +245.3s — callGemini #20 transport start after 0ms queued",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-27 (text) in 0s",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-28 (text) in 348s",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-29 (text) in 348s",
+      "[DocPipe][API-start][jdajig/e1] +593.4s — callGemini #21 transport start after 1ms queued",
+      "client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-30 (text) in 1s",
+      "[PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI 65, deterministic 88) = 65 (was 65)",
+      "completed: verdict review"
+    ],
+    "progress": {
+      "total": 1,
+      "completed": 1,
+      "failed": 0,
+      "currentFile": null
+    },
+    "resumable": true,
+    "pendingRequests": [],
+    "result": {
+      "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\scanned\\irs-f1040-1954-scan.pdf",
+      "files": {
+        "accessibleHtml": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\scan-1954-replay\\irs-f1040-1954-scan-accessible.html",
+        "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\scan-1954-replay\\irs-f1040-1954-scan-remediation-report.json",
+        "completionManifest": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\scan-1954-replay\\irs-f1040-1954-scan-remediation-completion.json"
+      },
+      "pdfUa": {
+        "standard": "PDF/UA-1 (ISO 14289-1)",
+        "profile": "ua1",
+        "scope": "machine-verifiable PDF/UA checks",
+        "status": "not-applicable",
+        "reason": "No tagged PDF was produced."
+      },
+      "verdict": {
+        "level": "review",
+        "reviewCount": 4,
+        "cautionCount": 2
+      },
+      "beforeScore": 0,
+      "afterScore": 65,
+      "aiVerificationIncomplete": false,
+      "scoreSource": "min",
+      "estimatedMinimumScore": null,
+      "contentCoverage": {
+        "status": "review_required",
+        "reviewRequired": true,
+        "method": "normalized-token-occurrence-check",
+        "sourceTokens": 3036,
+        "outputTokens": 3093,
+        "matchedTokens": 2704,
+        "missingTokens": 332,
+        "tokenRecall": 0.8906,
+        "missingPassages": [
+          {
+            "sourceUnit": 5,
+            "startToken": 160,
+            "expectedTokens": 40,
+            "missingTokens": 1
+          },
+          {
+            "sourceUnit": 8,
+            "startToken": 280,
+            "expectedTokens": 40,
+            "missingTokens": 4
+          },
+          {
+            "sourceUnit": 9,
+            "startToken": 320,
+            "expectedTokens": 40,
+            "missingTokens": 27
+          },
+          {
+            "sourceUnit": 10,
+            "startToken": 360,
+            "expectedTokens": 40,
+            "missingTokens": 1
+          },
+          {
+            "sourceUnit": 11,
+            "startToken": 400,
+            "expectedTokens": 40,
+            "missingTokens": 1
+          },
+          {
+            "sourceUnit": 18,
+            "startToken": 680,
+            "expectedTokens": 40,
+            "missingTokens": 1
+          },
+          {
+            "sourceUnit": 24,
+            "startToken": 920,
+            "expectedTokens": 40,
+            "missingTokens": 22
+          },
+          {
+            "sourceUnit": 25,
+            "startToken": 960,
+            "expectedTokens": 40,
+            "missingTokens": 5
+          },
+          {
+            "sourceUnit": 31,
+            "startToken": 1200,
+            "expectedTokens": 40,
+            "missingTokens": 4
+          },
+          {
+            "sourceUnit": 32,
+            "startToken": 1240,
+            "expectedTokens": 40,
+            "missingTokens": 27
+          },
+          {
+            "sourceUnit": 33,
+            "startToken": 1280,
+            "expectedTokens": 40,
+            "missingTokens": 5
+          },
+          {
+            "sourceUnit": 34,
+            "startToken": 1320,
+            "expectedTokens": 40,
+            "missingTokens": 1
+          },
+          {
+            "sourceUnit": 35,
+            "startToken": 1360,
+            "expectedTokens": 40,
+            "missingTokens": 5
+          },
+          {
+            "sourceUnit": 36,
+            "startToken": 1400,
+            "expectedTokens": 40,
+            "missingTokens": 30
+          },
+          {
+            "sourceUnit": 37,
+            "startToken": 1440,
+            "expectedTokens": 40,
+            "missingTokens": 8
+          },
+          {
+            "sourceUnit": 38,
+            "startToken": 1480,
+            "expectedTokens": 40,
+            "missingTokens": 1
+          },
+          {
+            "sourceUnit": 39,
+            "startToken": 1520,
+            "expectedTokens": 40,
+            "missingTokens": 26
+          },
+          {
+            "sourceUnit": 43,
+            "startToken": 1680,
+            "expectedTokens": 40,
+            "missingTokens": 9
+          },
+          {
+            "sourceUnit": 44,
+            "startToken": 1720,
+            "expectedTokens": 40,
+            "missingTokens": 10
+          },
+          {
+            "sourceUnit": 45,
+            "startToken": 1760,
+            "expectedTokens": 40,
+            "missingTokens": 10
+          },
+          {
+            "sourceUnit": 46,
+            "startToken": 1800,
+            "expectedTokens": 40,
+            "missingTokens": 3
+          },
+          {
+            "sourceUnit": 56,
+            "startToken": 2200,
+            "expectedTokens": 40,
+            "missingTokens": 3
+          },
+          {
+            "sourceUnit": 57,
+            "startToken": 2240,
+            "expectedTokens": 40,
+            "missingTokens": 22
+          },
+          {
+            "sourceUnit": 58,
+            "startToken": 2280,
+            "expectedTokens": 40,
+            "missingTokens": 8
+          },
+          {
+            "sourceUnit": 59,
+            "startToken": 2320,
+            "expectedTokens": 40,
+            "missingTokens": 7
+          },
+          {
+            "sourceUnit": 65,
+            "startToken": 2560,
+            "expectedTokens": 40,
+            "missingTokens": 12
+          },
+          {
+            "sourceUnit": 66,
+            "startToken": 2600,
+            "expectedTokens": 40,
+            "missingTokens": 12
+          },
+          {
+            "sourceUnit": 67,
+            "startToken": 2640,
+            "expectedTokens": 40,
+            "missingTokens": 5
+          },
+          {
+            "sourceUnit": 68,
+            "startToken": 2680,
+            "expectedTokens": 40,
+            "missingTokens": 8
+          },
+          {
+            "sourceUnit": 69,
+            "startToken": 2720,
+            "expectedTokens": 40,
+            "missingTokens": 4
+          },
+          {
+            "sourceUnit": 70,
+            "startToken": 2760,
+            "expectedTokens": 40,
+            "missingTokens": 4
+          },
+          {
+            "sourceUnit": 71,
+            "startToken": 2800,
+            "expectedTokens": 40,
+            "missingTokens": 13
+          },
+          {
+            "sourceUnit": 72,
+            "startToken": 2840,
+            "expectedTokens": 40,
+            "missingTokens": 14
+          },
+          {
+            "sourceUnit": 73,
+            "startToken": 2880,
+            "expectedTokens": 40,
+            "missingTokens": 12
+          },
+          {
+            "sourceUnit": 74,
+            "startToken": 2920,
+            "expectedTokens": 40,
+            "missingTokens": 4
+          },
+          {
+            "sourceUnit": 76,
+            "startToken": 3000,
+            "expectedTokens": 36,
+            "missingTokens": 3
+          }
+        ],
+        "missingPassagesTruncated": 0,
+        "extraction": {
+          "method": "vision-ocr",
+          "pagesExamined": 4,
+          "emptyPageCandidates": 0,
+          "pageErrorCount": 0,
+          "lowConfidencePageCount": 1,
+          "errorPages": [],
+          "lowConfidencePages": [
+            2
+          ]
+        },
+        "scope": {
+          "pageRange": null,
+          "wholeDocument": true
+        },
+        "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+        "sourceSha256": "5f610bb8dc37598d1d296da4ef46914e1aea618db45747b594f603a0e4c187dc",
+        "htmlSha256": "eee0be982f92bc59e5ee8089bb89c39c2b233fdc670e336f36e94e3fa29c3f68"
+      },
+      "integrityCoverage": 100,
+      "integrityWarning": "6 source numeric value(s) not found unchanged in the output (65, 10, 11, 12, 16, 70997). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.",
+      "fidelityNotes": [
+        {
+          "kind": "numeric",
+          "msg": "6 source numeric value(s) not found unchanged in the output (65, 10, 11, 12, 16, 70997). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact."
+        },
+        {
+          "kind": "lowOcrConfidence",
+          "msg": "1 page(s) were OCR’d at low confidence (mean <60) (page 2) — the recognized text may contain errors; verify against the original before distributing."
+        }
+      ],
+      "candidateRejectionCount": 0,
+      "candidateRejections": [],
+      "verificationState": "review-required",
+      "verificationHtmlBound": true,
+      "remainingAxeViolations": 0,
+      "remainingEqualAccessFailures": 0,
+      "taggedPdfDelivery": null,
+      "taggedPdfExportMode": null,
+      "activeContentScanVerified": true,
+      "activeContentDetected": false,
+      "auditCoverage": {
+        "configuredAuditorCap": 5,
+        "requestedAuditors": 3,
+        "completedAuditors": 3,
+        "sliced": false
+      },
+      "taggedPdfError": "content_coverage_requires_review",
+      "runId": "run-mu01fvcb-jdajig",
+      "stats": {
+        "apiCalls": 21,
+        "visionCalls": 6,
+        "retries": 0,
+        "recoveredRetries": 0,
+        "authThrottles": 0,
+        "terminalFailures": 0
+      },
+      "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.",
+      "htmlVerificationState": "review-required",
+      "verificationChecks": {
+        "pdfUa": {
+          "standard": "PDF/UA-1 (ISO 14289-1)",
+          "profile": "ua1",
+          "scope": "machine-verifiable PDF/UA checks",
+          "status": "not-applicable",
+          "reason": "No tagged PDF was produced."
+        }
+      },
+      "deliveryReviewReasons": [],
+      "reviewRequired": true,
+      "deliveryStatus": "review-required",
+      "resources": [
+        {
+          "role": "source",
+          "label": "Original document (before)",
+          "uri": "alloflow-remediation://artifact/run-mu01fvcb-jdajig/source",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\scanned\\irs-f1040-1954-scan.pdf",
+          "mimeType": "application/pdf"
+        },
+        {
+          "role": "accessibleHtml",
+          "label": "Accessible HTML (after)",
+          "uri": "alloflow-remediation://artifact/run-mu01fvcb-jdajig/accessibleHtml",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\scan-1954-replay\\irs-f1040-1954-scan-accessible.html",
+          "mimeType": "text/html"
+        },
+        {
+          "role": "report",
+          "label": "Remediation report",
+          "uri": "alloflow-remediation://artifact/run-mu01fvcb-jdajig/report",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\scan-1954-replay\\irs-f1040-1954-scan-remediation-report.json",
+          "mimeType": "application/json"
+        },
+        {
+          "role": "completionManifest",
+          "label": "Completion manifest",
+          "uri": "alloflow-remediation://artifact/run-mu01fvcb-jdajig/completionManifest",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-gap-lane-pilots-2026-09-13\\scan-1954-replay\\irs-f1040-1954-scan-remediation-completion.json",
+          "mimeType": "application/json"
+        }
+      ],
+      "modelTransport": "agent-bridge",
+      "modelCallsAnswered": 30,
+      "bridgeStats": {
+        "pipelineModelCalls": 30,
+        "requestsPublished": 30,
+        "coalescedReasks": 0,
+        "replayedAnswers": 0,
+        "clientLatencySeconds": {
+          "count": 30,
+          "mean": 33,
+          "max": 348
+        }
+      }
+    },
+    "note": "Run is completed."
+  },
+  "images": [],
+  "error": null,
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"runId\": \"arun-0084bf67-1b4a-40aa-8d44-1d319e26b638\",\n  \"status\": \"completed\",\n  \"file\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\scanned\\\\irs-f1040-1954-scan.pdf\",\n  \"startedAt\": \"2026-09-13T16:37:15.969Z\",\n  \"modelCallsSoFar\": 30,\n  \"pendingCount\": 0,\n  \"log\": [\n    \"[aiFixChunked:pdf-pass-2] $4 routing: 2/10 violation(s) element-routed, 0/4 chunk(s) skipped\",\n    \"[aiFixChunked:pdf-pass-2] splitting 48664 chars into 4 chunks (parallel)\",\n    \"[DocPipe][API-start][jdajig/e1] +238.2s — callGemini #10 transport start after 3ms queued\",\n    \"[DocPipe][API-start][jdajig/e1] +238.3s — callGemini #11 transport start after 2ms queued\",\n    \"[DocPipe][API-start][jdajig/e1] +238.3s — callGemini #12 transport start after 1ms queued\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-19 (text) in 0s\",\n    \"[DocPipe][API-start][jdajig/e1] +238.4s — callGemini #13 transport start after 117ms queued\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-20 (text) in 0s\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-21 (text) in 0s\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-22 (text) in 0s\",\n    \"progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (4 pages) — Verifying improvements — checking pass 2 results...  (typically ~15-30s per pass)\",\n    \"[Auto-fix] Pass 2: fixer chunks were throttle-deferred this pass — deferring the 3-call AI re-audit instead of firing it into the same storm (axe still verifies locally; the final audit completes AI coverage)\",\n    \"[Auto-fix] Pass 2: AI audit evidence was incomplete (0% section coverage or unusable score); it cannot stop the loop or promote best-so-far.\",\n    \"[Auto-fix] Pass 2: evidence incomplete - 3 fixer chunk(s) shipped as original; AI audit section coverage was incomplete; score delta is not comparable and will not drive a regression verdict.\",\n    \"[Auto-fix] Pass 2: AI audit evidence was incomplete (0% section coverage or unusable score); it cannot stop the loop or promote best-so-far.\",\n    \"[Auto-fix] Pass 2: AI null/100, axe 0 violations, Equal Access 0 failures + 6 review findings\",\n    \"[Auto-fix] Pass 2: AI verification skipped this pass (no AI chunk applied) — axe 0 violation(s), Equal Access 0 failure(s); not treating as three-engine clean\",\n    \"progress: toast: ⚠️ Fix pass 2: AI verification unavailable — axe-only clean, continuing\",\n    \"[Auto-fix] Shipping best verified version (AI 63, axe 0, Equal Access 0) instead of the loop's last working state.\",\n    \"[WCAG Sanitizer] Applied 3 fixes (level: AA, minFont: 12px)\",\n    \"[DocPipe][API-start][jdajig/e1] +240.5s — callGemini #14 transport start after 1ms queued\",\n    \"[DocPipe][API-start][jdajig/e1] +240.5s — callGemini #15 transport start after 1ms queued\",\n    \"[DocPipe][API-start][jdajig/e1] +240.5s — callGemini #16 transport start after 1ms queued\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-23 (text) in 0s\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-24 (text) in 0s\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-25 (text) in 0s\",\n    \"[DocPipe][API-start][jdajig/e1] +240.8s — callGemini #17 transport start after 0ms queued\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-26 (text) in 0s\",\n    \"[PDF Fix] Final AI semantic audit: AI layer score 65, 2 remaining issues, 42 passes\",\n    \"[PDF Fix] Final headline (weakest-layer): min(AI 65, deterministic 88 [axe 100, EqualAccess 88, using the more conservative]) = 65\",\n    \"[DocPipe][API-start][jdajig/e1] +245.3s — callGemini #18 transport start after 1ms queued\",\n    \"[DocPipe][API-start][jdajig/e1] +245.3s — callGemini #19 transport start after 0ms queued\",\n    \"[DocPipe][API-start][jdajig/e1] +245.3s — callGemini #20 transport start after 0ms queued\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-27 (text) in 0s\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-28 (text) in 348s\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-29 (text) in 348s\",\n    \"[DocPipe][API-start][jdajig/e1] +593.4s — callGemini #21 transport start after 1ms queued\",\n    \"client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-30 (text) in 1s\",\n    \"[PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI 65, deterministic 88) = 65 (was 65)\",\n    \"completed: verdict review\"\n  ],\n  \"progress\": {\n    \"total\": 1,\n    \"completed\": 1,\n    \"failed\": 0,\n    \"currentFile\": null\n  },\n  \"resumable\": true,\n  \"pendingRequests\": [],\n  \"result\": {\n    \"input\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\scanned\\\\irs-f1040-1954-scan.pdf\",\n    \"files\": {\n      \"accessibleHtml\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\scan-1954-replay\\\\irs-f1040-1954-scan-accessible.html\",\n      \"report\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\scan-1954-replay\\\\irs-f1040-1954-scan-remediation-report.json\",\n      \"completionManifest\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\scan-1954-replay\\\\irs-f1040-1954-scan-remediation-completion.json\"\n    },\n    \"pdfUa\": {\n      \"standard\": \"PDF/UA-1 (ISO 14289-1)\",\n      \"profile\": \"ua1\",\n      \"scope\": \"machine-verifiable PDF/UA checks\",\n      \"status\": \"not-applicable\",\n      \"reason\": \"No tagged PDF was produced.\"\n    },\n    \"verdict\": {\n      \"level\": \"review\",\n      \"reviewCount\": 4,\n      \"cautionCount\": 2\n    },\n    \"beforeScore\": 0,\n    \"afterScore\": 65,\n    \"aiVerificationIncomplete\": false,\n    \"scoreSource\": \"min\",\n    \"estimatedMinimumScore\": null,\n    \"contentCoverage\": {\n      \"status\": \"review_required\",\n      \"reviewRequired\": true,\n      \"method\": \"normalized-token-occurrence-check\",\n      \"sourceTokens\": 3036,\n      \"outputTokens\": 3093,\n      \"matchedTokens\": 2704,\n      \"missingTokens\": 332,\n      \"tokenRecall\": 0.8906,\n      \"missingPassages\": [\n        {\n          \"sourceUnit\": 5,\n          \"startToken\": 160,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 1\n        },\n        {\n          \"sourceUnit\": 8,\n          \"startToken\": 280,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 4\n        },\n        {\n          \"sourceUnit\": 9,\n          \"startToken\": 320,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 27\n        },\n        {\n          \"sourceUnit\": 10,\n          \"startToken\": 360,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 1\n        },\n        {\n          \"sourceUnit\": 11,\n          \"startToken\": 400,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 1\n        },\n        {\n          \"sourceUnit\": 18,\n          \"startToken\": 680,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 1\n        },\n        {\n          \"sourceUnit\": 24,\n          \"startToken\": 920,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 22\n        },\n        {\n          \"sourceUnit\": 25,\n          \"startToken\": 960,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 5\n        },\n        {\n          \"sourceUnit\": 31,\n          \"startToken\": 1200,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 4\n        },\n        {\n          \"sourceUnit\": 32,\n          \"startToken\": 1240,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 27\n        },\n        {\n          \"sourceUnit\": 33,\n          \"startToken\": 1280,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 5\n        },\n        {\n          \"sourceUnit\": 34,\n          \"startToken\": 1320,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 1\n        },\n        {\n          \"sourceUnit\": 35,\n          \"startToken\": 1360,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 5\n        },\n        {\n          \"sourceUnit\": 36,\n          \"startToken\": 1400,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 30\n        },\n        {\n          \"sourceUnit\": 37,\n          \"startToken\": 1440,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 8\n        },\n        {\n          \"sourceUnit\": 38,\n          \"startToken\": 1480,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 1\n        },\n        {\n          \"sourceUnit\": 39,\n          \"startToken\": 1520,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 26\n        },\n        {\n          \"sourceUnit\": 43,\n          \"startToken\": 1680,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 9\n        },\n        {\n          \"sourceUnit\": 44,\n          \"startToken\": 1720,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 10\n        },\n        {\n          \"sourceUnit\": 45,\n          \"startToken\": 1760,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 10\n        },\n        {\n          \"sourceUnit\": 46,\n          \"startToken\": 1800,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 3\n        },\n        {\n          \"sourceUnit\": 56,\n          \"startToken\": 2200,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 3\n        },\n        {\n          \"sourceUnit\": 57,\n          \"startToken\": 2240,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 22\n        },\n        {\n          \"sourceUnit\": 58,\n          \"startToken\": 2280,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 8\n        },\n        {\n          \"sourceUnit\": 59,\n          \"startToken\": 2320,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 7\n        },\n        {\n          \"sourceUnit\": 65,\n          \"startToken\": 2560,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 12\n        },\n        {\n          \"sourceUnit\": 66,\n          \"startToken\": 2600,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 12\n        },\n        {\n          \"sourceUnit\": 67,\n          \"startToken\": 2640,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 5\n        },\n        {\n          \"sourceUnit\": 68,\n          \"startToken\": 2680,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 8\n        },\n        {\n          \"sourceUnit\": 69,\n          \"startToken\": 2720,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 4\n        },\n        {\n          \"sourceUnit\": 70,\n          \"startToken\": 2760,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 4\n        },\n        {\n          \"sourceUnit\": 71,\n          \"startToken\": 2800,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 13\n        },\n        {\n          \"sourceUnit\": 72,\n          \"startToken\": 2840,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 14\n        },\n        {\n          \"sourceUnit\": 73,\n          \"startToken\": 2880,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 12\n        },\n        {\n          \"sourceUnit\": 74,\n          \"startToken\": 2920,\n          \"expectedTokens\": 40,\n          \"missingTokens\": 4\n        },\n        {\n          \"sourceUnit\": 76,\n          \"startToken\": 3000,\n          \"expectedTokens\": 36,\n          \"missingTokens\": 3\n        }\n      ],\n      \"missingPassagesTruncated\": 0,\n      \"extraction\": {\n        \"method\": \"vision-ocr\",\n        \"pagesExamined\": 4,\n        \"emptyPageCandidates\": 0,\n        \"pageErrorCount\": 0,\n        \"lowConfidencePageCount\": 1,\n        \"errorPages\": [],\n        \"lowConfidencePages\": [\n          2\n        ]\n      },\n      \"scope\": {\n        \"pageRange\": null,\n        \"wholeDocument\": true\n      },\n      \"note\": \"Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.\",\n      \"sourceSha256\": \"5f610bb8dc37598d1d296da4ef46914e1aea618db45747b594f603a0e4c187dc\",\n      \"htmlSha256\": \"eee0be982f92bc59e5ee8089bb89c39c2b233fdc670e336f36e94e3fa29c3f68\"\n    },\n    \"integrityCoverage\": 100,\n    \"integrityWarning\": \"6 source numeric value(s) not found unchanged in the output (65, 10, 11, 12, 16, 70997). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.\",\n    \"fidelityNotes\": [\n      {\n        \"kind\": \"numeric\",\n        \"msg\": \"6 source numeric value(s) not found unchanged in the output (65, 10, 11, 12, 16, 70997). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.\"\n      },\n      {\n        \"kind\": \"lowOcrConfidence\",\n        \"msg\": \"1 page(s) were OCR’d at low confidence (mean <60) (page 2) — the recognized text may contain errors; verify against the original before distributing.\"\n      }\n    ],\n    \"candidateRejectionCount\": 0,\n    \"candidateRejections\": [],\n    \"verificationState\": \"review-required\",\n    \"verificationHtmlBound\": true,\n    \"remainingAxeViolations\": 0,\n    \"remainingEqualAccessFailures\": 0,\n    \"taggedPdfDelivery\": null,\n    \"taggedPdfExportMode\": null,\n    \"activeContentScanVerified\": true,\n    \"activeContentDetected\": false,\n    \"auditCoverage\": {\n      \"configuredAuditorCap\": 5,\n      \"requestedAuditors\": 3,\n      \"completedAuditors\": 3,\n      \"sliced\": false\n    },\n    \"taggedPdfError\": \"content_coverage_requires_review\",\n    \"runId\": \"run-mu01fvcb-jdajig\",\n    \"stats\": {\n      \"apiCalls\": 21,\n      \"visionCalls\": 6,\n      \"retries\": 0,\n      \"recoveredRetries\": 0,\n      \"authThrottles\": 0,\n      \"terminalFailures\": 0\n    },\n    \"note\": \"Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.\",\n    \"htmlVerificationState\": \"review-required\",\n    \"verificationChecks\": {\n      \"pdfUa\": {\n        \"standard\": \"PDF/UA-1 (ISO 14289-1)\",\n        \"profile\": \"ua1\",\n        \"scope\": \"machine-verifiable PDF/UA checks\",\n        \"status\": \"not-applicable\",\n        \"reason\": \"No tagged PDF was produced.\"\n      }\n    },\n    \"deliveryReviewReasons\": [],\n    \"reviewRequired\": true,\n    \"deliveryStatus\": \"review-required\",\n    \"resources\": [\n      {\n        \"role\": \"source\",\n        \"label\": \"Original document (before)\",\n        \"uri\": \"alloflow-remediation://artifact/run-mu01fvcb-jdajig/source\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\scanned\\\\irs-f1040-1954-scan.pdf\",\n        \"mimeType\": \"application/pdf\"\n      },\n      {\n        \"role\": \"accessibleHtml\",\n        \"label\": \"Accessible HTML (after)\",\n        \"uri\": \"alloflow-remediation://artifact/run-mu01fvcb-jdajig/accessibleHtml\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\scan-1954-replay\\\\irs-f1040-1954-scan-accessible.html\",\n        \"mimeType\": \"text/html\"\n      },\n      {\n        \"role\": \"report\",\n        \"label\": \"Remediation report\",\n        \"uri\": \"alloflow-remediation://artifact/run-mu01fvcb-jdajig/report\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\scan-1954-replay\\\\irs-f1040-1954-scan-remediation-report.json\",\n        \"mimeType\": \"application/json\"\n      },\n      {\n        \"role\": \"completionManifest\",\n        \"label\": \"Completion manifest\",\n        \"uri\": \"alloflow-remediation://artifact/run-mu01fvcb-jdajig/completionManifest\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-gap-lane-pilots-2026-09-13\\\\scan-1954-replay\\\\irs-f1040-1954-scan-remediation-completion.json\",\n        \"mimeType\": \"application/json\"\n      }\n    ],\n    \"modelTransport\": \"agent-bridge\",\n    \"modelCallsAnswered\": 30,\n    \"bridgeStats\": {\n      \"pipelineModelCalls\": 30,\n      \"requestsPublished\": 30,\n      \"coalescedReasks\": 0,\n      \"replayedAnswers\": 0,\n      \"clientLatencySeconds\": {\n        \"count\": 30,\n        \"mean\": 33,\n        \"max\": 348\n      }\n    }\n  },\n  \"note\": \"Run is completed.\"\n}"
+    }
+  ]
+}

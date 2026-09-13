@@ -58,7 +58,7 @@ The two budget-limited documents above were the only benign sources still withhe
 
 ## Installer
 
-`desktop/dist/mcpb/alloflow-remediation.mcpb`, v0.11.0, 71,105,830 bytes, SHA-256 `8a6a3eb013af6de361c636f22b88ed2a04062a6bb90832c003e713c6af0f7af6`, built 2026-09-13 15:04 UTC. Build-time verification passed: 41 tools, 1 skill, 1 prompt, 59 hashed vendor files, HTTP transport probed; `sha256sum -c SHA256SUMS.txt` OK. This supersedes the v0.10.0 bundle of 5 September, which carried none of the 12 September fixes. Nothing was published, pushed or sent to anyone.
+`desktop/dist/mcpb/alloflow-remediation.mcpb`, v0.11.0, 71,105,830 bytes, SHA-256 `8a6a3eb013af6de361c636f22b88ed2a04062a6bb90832c003e713c6af0f7af6`, built 2026-09-13 15:04 UTC. Build-time verification passed: 41 tools, 1 skill, 1 prompt, 59 hashed vendor files, HTTP transport probed; `sha256sum -c SHA256SUMS.txt` OK. This supersedes the v0.10.0 bundle of 5 September, which carried none of the 12 September fixes. Nothing was published, pushed or sent to anyone. Superseded the same afternoon by the rebuild recorded in [the gap-lane report](../mcp-gap-lane-pilots-2026-09-13/installer.txt) (71,108,845 bytes, SHA-256 `7bd8ba60498f290fc2ce25634b19f184a435bf9ccd007a9450b3a35a1b7a3612`), which carries the OCR, list-marker, Tesseract and auto-fix fixes found by the pilots.
 
 ## Limits
 

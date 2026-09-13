@@ -1,0 +1,35 @@
+{
+  "score": 8,
+  "confidence": "high",
+  "summary": "The scan is crisp, high-contrast and carries a document title and subject, but it is an untagged image-only capture of a four-page tax form with no text layer, no language, no headings, no table structure and no usable form fields, so assistive technology can read nothing from it.",
+  "critical": [
+    {"ruleId": "searchable-text", "claimKind": "absence", "issue": "All four pages are scanned images with no searchable text layer, so none of the printed instructions, line items or schedule text can be read by a screen reader or searched.", "wcag": "1.1.1", "count": 4, "location": "document"},
+    {"ruleId": "image-alt", "claimKind": "absence", "issue": "Each page is a single full-page image without alternative text, so the entire content of the return is exposed only as an unnamed picture.", "wcag": "1.1.1", "count": 4, "location": "document"},
+    {"ruleId": "document-language", "claimKind": "absence", "issue": "The document declares no language even though all content is English, so screen readers cannot select the correct pronunciation rules.", "wcag": "3.1.1", "count": 1, "location": "document"},
+    {"ruleId": "main-landmark", "claimKind": "absence", "issue": "The file is untagged with no structure tree, so there is no main content region or any landmark to navigate to.", "wcag": "1.3.1", "count": 1, "location": "document"}
+  ],
+  "serious": [
+    {"ruleId": "heading-root", "claimKind": "absence", "issue": "The form title and the schedule titles such as Schedule A Income From Dividends and Itemized Deductions are printed as visual headings but no heading of any level exists in the document structure.", "wcag": "1.3.1", "count": 1, "location": "document"},
+    {"ruleId": "table-header", "claimKind": "structure", "issue": "Schedules B, F, H, I, J and K are data tables with printed column headers such as Name of payor and Amount received before 8/1/54, but nothing associates those headers with their cells.", "wcag": "1.3.1", "count": 6, "location": "Schedule B.—INCOME FROM INTEREST"},
+    {"ruleId": "form-label", "claimKind": "absence", "issue": "Every fill-in blank on the four pages, including the name and address boxes, the exemption checkboxes and the dollar-amount columns, is a static printed line with no form field or programmatic label, so the return cannot be completed or navigated with assistive technology.", "wcag": "1.3.1", "count": 4, "location": "Name — If this is a joint return of husband and wife"},
+    {"ruleId": "reading-order", "claimKind": "structure", "issue": "The pages mix side labels such as Your exemptions and Your income, multi-column schedules and boxed amount columns with no defined reading order, so the sequence in which items would be announced is undefined.", "wcag": "1.3.2", "count": 4, "location": "document"}
+  ],
+  "moderate": [
+    {"ruleId": "semantic-list", "claimKind": "structure", "issue": "The numbered line items 1 through 14 on page 1 and the numbered lines within each schedule are presented as lists only visually, with no list structure for navigation.", "wcag": "1.3.1", "count": 8, "location": "1. List your name"},
+    {"ruleId": "table-caption", "claimKind": "absence", "issue": "The schedule tables have printed titles but no programmatic caption identifying each table.", "wcag": "1.3.1", "count": 6, "location": "Schedule F.—INCOME FROM RENTS AND ROYALTIES"}
+  ],
+  "minor": [
+    {"ruleId": "document-metadata", "claimKind": "absence", "issue": "The document metadata provides a title and subject but no author, and the producer field is an import plug-in name rather than an issuing office.", "wcag": "2.4.2", "count": 1, "location": "document"}
+  ],
+  "passes": [
+    "CONTRAST: black printed text on a white scanned background throughout, well above 4.5:1, including the small instruction text and the shaded unused cells on page 4.",
+    "LINKS: the document contains no hyperlinks, so there is no non-descriptive link text.",
+    "METADATA (partial): a document title, FORM 1040 (1954), and a subject, U.S. INDIVIDUAL INCOME TAX RETURN, are present."
+  ],
+  "pageCount": 4,
+  "hasSearchableText": false,
+  "hasImages": true,
+  "hasTables": true,
+  "hasForms": true,
+  "documentLanguage": "en"
+}
