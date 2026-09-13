@@ -542,3 +542,24 @@ describe('Scale Explorer shareable views', () => {
     }
   });
 });
+
+describe('Scale Explorer compare follows the thing in focus', () => {
+  it('a link that names a focus preselects it in Compare, against the person', () => {
+    expect(src).toMatch(/var linkedFocus = start\.focusId && start\.focusId !== 'human' \? start\.focusId : null;/);
+    expect(src).toMatch(/React\.useState\(linkedFocus \|\| 'human'\)/);
+    expect(src).toMatch(/React\.useState\(linkedFocus \? 'human' : 'rbc'\)/);
+  });
+  it('the focus card offers "Compare this", which fills the first slot and moves focus to the second', () => {
+    expect(src).toMatch(/onClick: compareFocused/);
+    expect(src).toMatch(/'aria-label': S\('cmp_from_focus_aria', 'Compare \{name\} with something else'/);
+    const fn = src.slice(src.indexOf('function compareFocused'), src.indexOf('function runCompare'));
+    expect(fn).toMatch(/setCmpA\(item\.id\)/);
+    expect(fn).toMatch(/if \(cmpB === item\.id\) setCmpB/); // never the same thing twice
+    expect(fn).toMatch(/cmpSecondRef\.current/);
+    expect(src).toMatch(/h\('select', \{ ref: cmpSecondRef, value: cmpB/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['cmp_from_focus', 'cmp_from_focus_aria', 'cmp_from_focus_sr']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});

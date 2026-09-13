@@ -234,7 +234,7 @@
     blocked_note: 'Pop-up blocked — allow pop-ups for this page and try again.',
     open_note: 'Zoom Gallery is open. Keep this AlloFlow window open too — it powers the AI coach.',
     closed_note: 'Zoom Gallery was closed. You can reopen it whenever you are ready.',
-    copy_link: '🔗 Copy link to this image',
+    copy_link: '🔗 Copy link',
     copy_link_title: 'Copy a link that opens Zoom Gallery on this image',
     link_copied: 'Link copied',
     link_copied_sr: 'Link to {name} copied.',
@@ -1037,7 +1037,10 @@
             h('span', { className: 'sr-only' }, W('select_label')),
             h('select', { value: current && current.id !== 'custom' ? current.id : '', 'aria-label': W('select_label'),
               onChange: function (e) { if (e.target.value) openImage(e.target.value); },
-              style: { background: P.bg, color: P.text, border: '1px solid ' + P.line, borderRadius: 8, padding: '6px 8px', fontSize: '0.8125rem', maxWidth: '46vw' } },
+              // Narrower once an image is open: the row then also carries Gallery,
+              // Copy link and Fullscreen, and the full image name is in the credit
+              // bar. Measured 2026-09-13: one line at 1366 px, two from 1280 down.
+              style: { background: P.bg, color: P.text, border: '1px solid ' + P.line, borderRadius: 8, padding: '6px 8px', fontSize: '0.8125rem', maxWidth: current ? 'min(30vw, 260px)' : '46vw' } },
               h('option', { value: '' }, W('select_placeholder')),
               IMAGES.map(function (s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + imgText(s, 'name')); }))),
           h('button', { type: 'button', style: btnBase, onClick: function () { openPopout(current && current.id); }, title: I('pop_out_title'), 'aria-label': I('pop_out_title') }, I('pop_out')),

@@ -364,8 +364,12 @@
       var _focus = React.useState(start.focusId || 'human'); var focusId = _focus[0], setFocusId = _focus[1];
       var _exp = React.useState(start.exp); var exp = _exp[0], setExp = _exp[1];
       var _link = React.useState(''); var linkState = _link[0], setLinkState = _link[1]; // '' | 'copied' | 'failed'
-      var _cmpA = React.useState('human'); var cmpA = _cmpA[0], setCmpA = _cmpA[1];
-      var _cmpB = React.useState('rbc'); var cmpB = _cmpB[0], setCmpB = _cmpB[1];
+      // A link that names a place usually means "look at this"; Compare starts
+      // from it, against the person, so the first comparison is about the thing
+      // the link was for.
+      var linkedFocus = start.focusId && start.focusId !== 'human' ? start.focusId : null;
+      var _cmpA = React.useState(linkedFocus || 'human'); var cmpA = _cmpA[0], setCmpA = _cmpA[1];
+      var _cmpB = React.useState(linkedFocus ? 'human' : 'rbc'); var cmpB = _cmpB[0], setCmpB = _cmpB[1];
       var _speaking = React.useState(''); var speaking = _speaking[0], setSpeaking = _speaking[1];
       var _journey = React.useState(0); var journey = _journey[0], setJourney = _journey[1];
       var journeyRef = React.useRef(null);
@@ -782,6 +786,16 @@
           { dec: round2(challenge.decades), big: itemText(challenge.big, 'name'),
             times: timesPhrase(challenge.ratio), small: lowerArticle(itemText(challenge.small, 'name')) });
       }
+      var cmpSecondRef = React.useRef(null);
+      // From the focus card: put what you are looking at into the first slot and
+      // hand focus to the second, so the next keystroke picks the other thing.
+      function compareFocused() {
+        var item = focused;
+        setCmpA(item.id);
+        if (cmpB === item.id) setCmpB(item.id === 'human' ? 'rbc' : 'human');
+        say(S('cmp_from_focus_sr', '{name} is now the first thing to compare. Choose the second.', { name: itemText(item, 'name') }));
+        setTimeout(function () { var el = cmpSecondRef.current; if (el && el.focus) { try { el.scrollIntoView({ block: 'nearest' }); } catch (_) {} el.focus(); } }, 0);
+      }
       function runCompare() {
         if (!compare) return;
         updateSlice(function (cur) { cur.compareCount = (cur.compareCount || 0) + 1; });
@@ -899,7 +913,10 @@
                   h('button', { type: 'button', onClick: copyLink, 'aria-label': S('copy_link_aria', 'Copy a link that opens Scale Explorer at {name}', { name: itemText(focused, 'name') }),
                     title: S('copy_link_title', 'Copy a link that opens Scale Explorer here'),
                     style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) },
-                    linkState === 'copied' ? '✓ ' + S('link_copied', 'Link copied') : '🔗 ' + S('copy_link', 'Copy link to this view'))),
+                    linkState === 'copied' ? '✓ ' + S('link_copied', 'Link copied') : '🔗 ' + S('copy_link', 'Copy link to this view')),
+                  h('button', { type: 'button', onClick: compareFocused,
+                    'aria-label': S('cmp_from_focus_aria', 'Compare {name} with something else', { name: itemText(focused, 'name') }),
+                    style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, '⚖️ ' + S('cmp_from_focus', 'Compare this'))),
                 linkState === 'failed' ? h('div', { style: { marginTop: 6 } },
                   h('div', { style: { fontSize: '0.71875rem', color: P.dim, marginBottom: 4 } }, S('link_failed', 'Copying was blocked here. Select the link and copy it by hand:')),
                   h('input', { type: 'text', readOnly: true, value: shareLinkFor(focused), 'aria-label': S('link_field_aria', 'Link to this view'),
@@ -934,7 +951,7 @@
                 h('label', { style: { fontSize: '0.71875rem', color: P.dim } }, S('cmp_a', 'First thing'),
                   h('select', { value: cmpA, onChange: function (e) { setCmpA(e.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
                 h('label', { style: { fontSize: '0.71875rem', color: P.dim } }, S('cmp_b', 'Second thing'),
-                  h('select', { value: cmpB, onChange: function (e) { setCmpB(e.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
+                  h('select', { ref: cmpSecondRef, value: cmpB, onChange: function (e) { setCmpB(e.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
                 h('button', { type: 'button', style: goBtn, onClick: runCompare }, S('cmp_go', 'Compare them')),
                 compare ? h('p', { role: 'status', style: Object.assign({}, card, { margin: 0, borderColor: P.accent }) }, compareSentence()) : null)),
 
