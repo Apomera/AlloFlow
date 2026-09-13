@@ -64,9 +64,14 @@
   // ── The ladder ────────────────────────────────────────────────────────
   // size: metres. dim: which dimension the size refers to.
   var ITEMS = [
+    { id: 'ten-billion-ly', emoji: '📏', name: 'Ten billion light years', size: 9.461e25, dim: 'distance', group: 'cosmic',
+      describe: 'A ruler for the deepest views: how far light travels in ten billion years. Light that has come this distance set out before the Sun and Earth existed; the faint red galaxies in the Webb telescope\u2019s deep fields are seen by light older than this.' },
     { id: 'universe', emoji: '🌌', name: 'The observable universe', size: 8.8e26, dim: 'across', group: 'cosmic',
       describe: 'Everything close enough that its light has had time to reach us since the universe began. It is not the whole universe, only the part we can possibly see.',
       note: 'About 93 billion light years across. It is wider than the age of the universe in light years because space itself has stretched while the light travelled.' },
+    { id: 'coma-dist', emoji: '📍', name: 'Distance to the Coma Cluster', size: 3.0e24, dim: 'distance', group: 'cosmic',
+      describe: 'How far away a dense swarm of more than a thousand galaxies lies, in the direction of the constellation Coma Berenices. It was here, in 1933, that galaxies were first seen moving too fast for their visible mass, the earliest evidence for dark matter.',
+      note: 'About 320 million light years; distances on this scale carry an uncertainty of a few percent depending on the method.' },
     { id: 'laniakea', emoji: '🕸️', name: 'The Laniakea Supercluster', size: 4.9e24, dim: 'across', group: 'cosmic',
       describe: 'The sheet of about a hundred thousand galaxies our own galaxy drifts within, all of them streaming toward a common region.',
       note: 'About 520 million light years across, from the 2014 survey that first defined it.' },
@@ -90,6 +95,8 @@
     { id: 'oort', emoji: '🫧', name: 'The Oort Cloud', size: 1.5e16, dim: 'across', group: 'cosmic',
       describe: 'A vast shell of icy bodies thought to surround the Solar System far beyond the planets, and the source of long-period comets.',
       note: 'Inferred from comet orbits rather than seen directly, so its size is an estimate.' },
+    { id: 'light-month', emoji: '🗓️', name: 'One light month', size: 7.77e14, dim: 'distance', group: 'cosmic',
+      describe: 'How far light travels in thirty days. No spacecraft has gone this far: Voyager 1, the most distant, is under one light day out after nearly fifty years of flight.' },
     { id: 'lightyear', emoji: '📏', name: 'One light year', size: 9.461e15, dim: 'distance', group: 'cosmic',
       describe: 'How far light travels in a year, and the ruler astronomers reach for once kilometres stop being useful. Light crosses this whole distance in the time Earth takes to go once around the Sun.' },
     { id: 'heliosphere', emoji: '🛡️', name: 'The heliosphere', size: 3.64e13, dim: 'across', group: 'cosmic',
@@ -100,6 +107,8 @@
     { id: 'betelgeuse', emoji: '🔴', name: 'The star Betelgeuse', size: 1.06e12, dim: 'across', group: 'cosmic',
       describe: 'A red supergiant in Orion. If it replaced the Sun, it would swallow the orbits of the inner planets.',
       note: 'Genuinely uncertain: published radii run from about 640 to about 887 times the Sun\'s. Even famous stars are hard to measure.' },
+    { id: 'light-minute', emoji: '⏱️', name: 'One light minute', size: 1.799e10, dim: 'distance', group: 'cosmic',
+      describe: 'How far light travels in one minute: about 18 million kilometres, or nearly fifty times the distance to the Moon. Sunlight is a little over eight of these old when it reaches you.' },
     { id: 'au', emoji: '📍', name: 'Distance from the Earth to the Sun', size: 1.496e11, dim: 'distance', group: 'cosmic',
       describe: 'One astronomical unit, the standard yardstick for distances inside the Solar System.' },
     { id: 'sun', photo: 'solarflare', emoji: '☀️', name: 'The Sun', size: 1.392e9, dim: 'across', group: 'cosmic',

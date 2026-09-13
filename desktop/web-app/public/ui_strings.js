@@ -13132,7 +13132,16 @@
       "you_label": "Make the person your height:",
       "you_name": "You",
       "you_reset": "Back to average",
-      "you_set_sr": "The person is now you, {len} tall."
+      "you_set_sr": "The person is now you, {len} tall.",
+      "item_coma_dist_describe": "How far away a dense swarm of more than a thousand galaxies lies, in the direction of the constellation Coma Berenices. It was here, in 1933, that galaxies were first seen moving too fast for their visible mass, the earliest evidence for dark matter.",
+      "item_coma_dist_name": "Distance to the Coma Cluster",
+      "item_coma_dist_note": "About 320 million light years; distances on this scale carry an uncertainty of a few percent depending on the method.",
+      "item_light_minute_describe": "How far light travels in one minute: about 18 million kilometres, or nearly fifty times the distance to the Moon. Sunlight is a little over eight of these old when it reaches you.",
+      "item_light_minute_name": "One light minute",
+      "item_light_month_describe": "How far light travels in thirty days. No spacecraft has gone this far: Voyager 1, the most distant, is under one light day out after nearly fifty years of flight.",
+      "item_light_month_name": "One light month",
+      "item_ten_billion_ly_describe": "A ruler for the deepest views: how far light travels in ten billion years. Light that has come this distance set out before the Sun and Earth existed; the faint red galaxies in the Webb telescope’s deep fields are seen by light older than this.",
+      "item_ten_billion_ly_name": "Ten billion light years"
     },
     "cellatlas": {
       "sr_all_marker_features_restored": "All marker features restored.",
